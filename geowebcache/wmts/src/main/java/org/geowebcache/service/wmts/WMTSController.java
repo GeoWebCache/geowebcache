@@ -43,14 +43,16 @@ import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.util.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
-@RequestMapping("**/" + WMTSService.SERVICE_WMTS)
+@Component
+@RestController
+@RequestMapping(path="${gwc.context.suffix:}/rest/" + WMTSService.SERVICE_WMTS)
 public class WMTSController {
 
     private static Log log = LogFactory.getLog(WMTSController.class);

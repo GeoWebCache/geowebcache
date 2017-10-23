@@ -8,6 +8,6 @@
     http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
 
   <mvc:annotation-driven/>
-  <context:component-scan base-package="org.geowebcache.rest, org.geowebcache.diskquota.rest.controller" />
+  <context:component-scan base-package="org.geowebcache.rest, org.geowebcache.diskquota.rest.controller, org.geowebcache.service.wmts" />
 
 </beans>

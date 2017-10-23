@@ -65,8 +65,7 @@ public class WMTSRestTest {
     @Test
     public void testGetCap() throws Exception {
         MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        mockMvc.perform(get("/geowebcache" + WMTSService.REST_PATH + "/WMTSCapabilities.xml")
-                .contextPath("/geowebcache").servletPath("/rest"))
+        mockMvc.perform(get("/rest/wmts/WMTSCapabilities.xml"))
                 .andExpect(content().contentType("application/vnd.ogc.wms_xml"))
                 .andExpect(status().is(200))
                 .andExpect(xpath("//wmts:Contents/wmts:Layer", namespaces).nodeCount(1))
@@ -85,24 +84,22 @@ public class WMTSRestTest {
                 .andExpect(xpath(
                         "//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='tile']"
                                 + "[@format='image/jpeg']"
-                                + "[@template='http://localhost/geowebcache" + WMTSService.REST_PATH
+                                + "[@template='http://localhost/rest/wmts"
                                 + "/mockLayer/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}?format=image/jpeg&time={time}&elevation={elevation}']",
                         namespaces).nodeCount(1))
                 .andExpect(xpath(
                         "//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='FeatureInfo']"
                                 + "[@format='text/plain']"
-                                + "[@template='http://localhost/geowebcache" + WMTSService.REST_PATH
+                                + "[@template='http://localhost/rest/wmts"
                                 + "/mockLayer/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}/{J}/{I}?format=text/plain&time={time}&elevation={elevation}']",
                         namespaces).nodeCount(1))
                 .andExpect(
-                        xpath("//wmts:ServiceMetadataURL[@xlink:href='http://localhost/geowebcache"
-                                + WMTSService.SERVICE_PATH
+                        xpath("//wmts:ServiceMetadataURL[@xlink:href='http://localhost/service/wmts"
                                 + "?REQUEST=getcapabilities&VERSION=1.0.0']", namespaces)
                                         .nodeCount(1))
                 .andExpect(
-                        xpath("//wmts:ServiceMetadataURL[@xlink:href='http://localhost/geowebcache"
-                                + WMTSService.REST_PATH + "/WMTSCapabilities.xml']", namespaces)
-                                        .nodeCount(1));
+                        xpath("//wmts:ServiceMetadataURL[@xlink:href='http://localhost/rest/wmts"
+                                + "/WMTSCapabilities.xml']", namespaces).nodeCount(1));
     }
 
     @Test
@@ -112,9 +109,7 @@ public class WMTSRestTest {
         BufferedImage originalImage = ImageIO.read(imgPath);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(originalImage, "png", baos);
-        mockMvc.perform(get("/geowebcache" + WMTSService.REST_PATH
-                + "/mockLayer/style-a/EPSG:4326/EPSG:4326:0/0/0?format=image/png")
-                        .contextPath("/geowebcache").servletPath("/rest"))
+        mockMvc.perform(get("/rest/wmts/mockLayer/style-a/EPSG:4326/EPSG:4326:0/0/0?format=image/png"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("geowebcache-crs", "EPSG:4326"))
                 .andExpect(content().contentType("image/png"))
@@ -124,9 +119,7 @@ public class WMTSRestTest {
     @Test
     public void testGetTileWithoutStyle() throws Exception {
         MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        mockMvc.perform(get("/geowebcache" + WMTSService.REST_PATH
-                + "/mockLayer/EPSG:4326/EPSG:4326:0/0/0?format=image/png")
-                        .contextPath("/geowebcache").servletPath("/rest"))
+        mockMvc.perform(get("/rest/wmts/mockLayer/EPSG:4326/EPSG:4326:0/0/0?format=image/png"))
                 .andExpect(status().isOk());
     }
 
@@ -137,27 +130,21 @@ public class WMTSRestTest {
         BufferedImage originalImage = ImageIO.read(imgPath);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(originalImage, "png", baos);
-        mockMvc.perform(get("/geowebcache" + WMTSService.REST_PATH
-                + "/mockLayer/style-a/EPSG:4326/EPSG:4326:0/0/0/0/0?format=text/plain")
-                        .contextPath("/geowebcache").servletPath("/rest"))
+        mockMvc.perform(get("/rest/wmts/mockLayer/style-a/EPSG:4326/EPSG:4326:0/0/0/0/0?format=text/plain"))
                 .andExpect(status().isOk()).andExpect(content().contentType("text/plain"));
     }
 
     @Test
     public void testGetInfoWithoutStyle() throws Exception {
         MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        mockMvc.perform(get("/geowebcache" + WMTSService.REST_PATH
-                + "/mockLayer/EPSG:4326/EPSG:4326:0/0/0/0/0?format=text/plain")
-                        .contextPath("/geowebcache").servletPath("/rest"))
+        mockMvc.perform(get("/rest/wmts/mockLayer/EPSG:4326/EPSG:4326:0/0/0/0/0?format=text/plain"))
                 .andExpect(status().isOk()).andExpect(content().contentType("text/plain"));
     }
 
     @Test
     public void testOWSException() throws Exception {
         MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        mockMvc.perform(get("/geowebcache" + WMTSService.REST_PATH
-                + "/mockLayer/EPSG:4326/EPSG:4326:0/0/0/0/0?format=text/none")
-                        .contextPath("/geowebcache").servletPath("/rest"))
+        mockMvc.perform(get("/rest/wmts/mockLayer/EPSG:4326/EPSG:4326:0/0/0/0/0?format=text/none"))
                 .andDo(print()).andExpect(status().isBadRequest())
                 .andExpect(content().contentType("text/xml")).andExpect(
                         xpath("//ows:ExceptionReport/ows:Exception[@exceptionCode='InvalidParameterValue']",
