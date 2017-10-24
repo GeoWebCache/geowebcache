@@ -121,6 +121,13 @@
          </exclusion>
       </exclusions>
     </dependency>
+    
+    
+    <dependency>
+      <groupId>com.vividsolutions</groupId>
+      <artifactId>jts-core</artifactId>
+      <version>${jts.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>commons-httpclient</groupId>

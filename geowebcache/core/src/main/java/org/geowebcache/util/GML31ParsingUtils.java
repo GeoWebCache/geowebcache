@@ -14,13 +14,11 @@
  *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *    Lesser General Public License for more details.
  */
-package org.geowebcache.georss;
+package org.geowebcache.util;
 
+import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
-import static org.geowebcache.georss.GeoRSSParsingUtils.consume;
-import static org.geowebcache.georss.GeoRSSParsingUtils.nextTag;
-import static org.geowebcache.georss.GeoRSSParsingUtils.text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +49,7 @@ import com.vividsolutions.jts.geom.Polygon;
  * @version $Id$
  */
 @SuppressWarnings("nls")
-class GML31ParsingUtils {
+public class GML31ParsingUtils {
 
     private final GeometryFactory geomFac;
 
@@ -499,6 +497,68 @@ class GML31ParsingUtils {
             currCoordIdx++;
         }
         return coords;
+    }
+
+    /**
+     * Safely advances until the next tag element (either start or end element) and returns its
+     * name, or {@code null} in case the end of document is reached before any tag
+     * 
+     * @param reader
+     * @return
+     * @throws XMLStreamException
+     */
+    public static QName nextTag(XMLStreamReader reader) throws XMLStreamException {
+    
+        while (reader.next() != END_DOCUMENT) {
+            if (reader.isStartElement() || reader.isEndElement()) {
+                return reader.getName();
+            }
+        }
+    
+        return null;
+    }
+
+    /**
+     * Consumes the current element (given by tagName) until it's end element is fount (assuming
+     * there's no nested element called the same)
+     * 
+     * @param reader
+     * @param tagName
+     * @throws XMLStreamException
+     */
+    public static void consume(XMLStreamReader reader, QName tagName) throws XMLStreamException {
+    
+        if (reader.getEventType() == END_ELEMENT && tagName.equals(reader.getName())) {
+            return;// already consumed
+        }
+    
+        while (reader.next() != END_DOCUMENT) {
+            if (reader.isEndElement() && tagName.equals(reader.getName())) {
+                return;
+            }
+        }
+    }
+
+    /**
+     * Being at a start element tag, returns its coalesced text value
+     * 
+     * @param reader
+     * @return
+     * @throws XMLStreamException
+     */
+    public static String text(XMLStreamReader reader) throws XMLStreamException {
+        reader.require(START_ELEMENT, null, null);
+        StringBuilder sb = new StringBuilder();
+    
+        while (true) {
+            reader.next();
+            if (reader.isCharacters() || reader.isWhiteSpace()) {
+                sb.append(reader.getText());
+            } else if (reader.isEndElement()) {
+                break;
+            }
+        }
+        return sb.toString();
     }
 
 }

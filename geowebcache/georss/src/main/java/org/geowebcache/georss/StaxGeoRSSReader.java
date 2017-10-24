@@ -20,10 +20,7 @@ package org.geowebcache.georss;
 import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
-import static org.geowebcache.georss.GML31ParsingUtils.GML.GML_NS_URI;
-import static org.geowebcache.georss.GeoRSSParsingUtils.consume;
-import static org.geowebcache.georss.GeoRSSParsingUtils.nextTag;
-import static org.geowebcache.georss.GeoRSSParsingUtils.text;
+import static org.geowebcache.util.GML31ParsingUtils.GML.GML_NS_URI;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -38,7 +35,8 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.georss.GML31ParsingUtils.GML;
+import org.geowebcache.util.GML31ParsingUtils;
+import org.geowebcache.util.GML31ParsingUtils.GML;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -150,7 +148,7 @@ class StaxGeoRSSReader implements GeoRSSReader {
         reader.require(END_ELEMENT, ATOM.NSURI, ATOM.entry.getLocalPart());
 
         QName nextTag;
-        while ((nextTag = nextTag(reader)) != null) {
+        while ((nextTag = GML31ParsingUtils.nextTag(reader)) != null) {
             // position parser ready for next entry
             if (reader.isStartElement() && nextTag.equals(ATOM.entry)) {
                 break;
@@ -171,11 +169,11 @@ class StaxGeoRSSReader implements GeoRSSReader {
         reader.require(START_ELEMENT, memberName.getNamespaceURI(), memberName.getLocalPart());
         if (ATOM.id.equals(memberName)) {
 
-            String id = text(reader);
+            String id = GML31ParsingUtils.text(reader);
             entry.setId(id);
         } else if (ATOM.link.equals(memberName)) {
 
-            String uri = text(reader);
+            String uri = GML31ParsingUtils.text(reader);
             URI link;
             try {
                 link = new URI(uri);
@@ -185,21 +183,21 @@ class StaxGeoRSSReader implements GeoRSSReader {
             }
         } else if (ATOM.title.equals(memberName)) {
 
-            String title = text(reader);
+            String title = GML31ParsingUtils.text(reader);
             entry.setTitle(title);
         } else if (ATOM.subtitle.equals(memberName)) {
 
-            String subtitle = text(reader);
+            String subtitle = GML31ParsingUtils.text(reader);
             entry.setSubtitle(subtitle);
         } else if (ATOM.updated.equals(memberName)) {
 
-            String upd = text(reader);
+            String upd = GML31ParsingUtils.text(reader);
             if (upd != null && upd.length() > 0) {
                 entry.setUpdated(upd);
             }
         } else if (GEORSS.where.equals(memberName)) {
 
-            QName nextTag = nextTag(reader);
+            QName nextTag = GML31ParsingUtils.nextTag(reader);
             if (reader.isStartElement() && GML_NS_URI.equals(nextTag.getNamespaceURI())) {
                 Geometry where = geometry(reader);
                 if (logger.isTraceEnabled()) {
@@ -209,7 +207,7 @@ class StaxGeoRSSReader implements GeoRSSReader {
             }
         }
 
-        consume(reader, memberName);
+        GML31ParsingUtils.consume(reader, memberName);
 
         reader.require(END_ELEMENT, memberName.getNamespaceURI(), memberName.getLocalPart());
     }
