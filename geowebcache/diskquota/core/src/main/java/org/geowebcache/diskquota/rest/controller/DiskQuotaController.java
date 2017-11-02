@@ -21,6 +21,8 @@ import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.geowebcache.config.ContextualConfigurationProvider.Context;
@@ -47,6 +49,8 @@ import java.io.StringWriter;
 @RestController
 @RequestMapping(path="${gwc.context.suffix:}/rest")
 public class DiskQuotaController {
+
+    static final Log log = LogFactory.getLog(DiskQuotaController.class);
 
     @Autowired
     DiskQuotaMonitor monitor;
@@ -178,7 +182,7 @@ public class DiskQuotaController {
             JSONObject obj = new JSONObject(xs.toXML(config));
             rep = obj;
         } catch (JSONException jse) {
-            jse.printStackTrace();
+            log.debug(jse);
         }
         return new ResponseEntity(rep.toString(), HttpStatus.OK);
     }

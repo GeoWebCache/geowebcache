@@ -312,7 +312,7 @@ public final class ResponseUtils {
         try {
             blankTile.transferFrom(ch);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.debug(e);
         } finally {
             ch.close();
         }

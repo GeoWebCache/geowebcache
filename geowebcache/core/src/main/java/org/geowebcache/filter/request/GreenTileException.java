@@ -59,7 +59,7 @@ public class GreenTileException extends RequestFilterException {
             try {
                 is.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                // close quietly
             }
         }
         

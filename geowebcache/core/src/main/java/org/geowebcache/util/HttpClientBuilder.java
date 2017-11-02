@@ -17,12 +17,6 @@
  */
 package org.geowebcache.util;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpConnectionManager;
@@ -30,12 +24,22 @@ import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
 
 /**
  * Builder class for HttpClients
  * 
  */
 public class HttpClientBuilder {
+
+    static final Log log = LogFactory.getLog(HttpClientBuilder.class);
 
     private UsernamePasswordCredentials httpcredentials = null;
 
@@ -90,7 +94,7 @@ public class HttpClientBuilder {
             try {
                 proxyUrl = new URL(proxyHost + ((proxyPort != null) ? (":" + proxyPort) : ("")));
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                log.debug(e);
             }
         this.setProxy(proxyUrl);
         this.setBackendTimeout(backendTimeout);

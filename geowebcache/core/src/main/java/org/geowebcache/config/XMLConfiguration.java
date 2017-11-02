@@ -533,8 +533,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
             writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
             xs.toXML(gwcConfig, writer);
         } catch (UnsupportedEncodingException uee) {
-            uee.printStackTrace();
-            throw new IOException(uee.getMessage());
+            throw new IOException(uee.getMessage(), uee);
         } catch (FileNotFoundException fnfe) {
             throw fnfe;
         } catch (IOException e) {
@@ -840,12 +839,8 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         try {
             transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(is));
             transformer.transform(new DOMSource(oldRootNode), result);
-        } catch (TransformerConfigurationException e) {
-            e.printStackTrace();
-        } catch (TransformerFactoryConfigurationError e) {
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            e.printStackTrace();
+        } catch (TransformerFactoryConfigurationError | TransformerException e) {
+            log.debug(e);
         }
 
         return result.getNode();

@@ -564,7 +564,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         } catch (Exception e) {
             // Sometimes this doesn't work (network conditions?),
             // and it's really not worth getting caught up on it.
-            e.printStackTrace();
+            log.debug(e);
         }
     }
 

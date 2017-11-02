@@ -134,7 +134,7 @@ public class MemoryCacheController {
             JSONObject obj = new JSONObject(xs.toXML(stats));
             rep = obj;
         } catch (JSONException jse) {
-            jse.printStackTrace();
+            LOG.debug(jse);
         }
         return new ResponseEntity(rep.toString(), HttpStatus.OK);
     }

@@ -719,7 +719,6 @@ public class BDBQuotaStore implements QuotaStore {
                 tx.commit();
                 return null;
             } catch (RuntimeException e) {
-                e.printStackTrace();
                 tx.abort();
                 throw e;
             }

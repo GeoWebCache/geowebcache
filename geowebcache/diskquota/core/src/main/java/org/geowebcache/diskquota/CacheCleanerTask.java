@@ -84,7 +84,6 @@ class CacheCleanerTask implements Runnable {
             innerRun();
         } catch (InterruptedException e) {
             log.info("CacheCleanerTask called for shut down", e);
-            e.printStackTrace();
         } catch (Exception e) {
             log.error("Error running cache diskquota enforcement task", e);
         }

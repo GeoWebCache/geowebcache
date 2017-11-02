@@ -407,7 +407,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
                 try {
                     tileLayer = tileLayerDispatcher.getTileLayer(layerName);
                 } catch (GeoWebCacheException e) {
-                    e.printStackTrace();
+                    log.debug(e);
                     continue;
                 }
                 cacheInfoBuilder.buildCacheInfo(tileLayer);
