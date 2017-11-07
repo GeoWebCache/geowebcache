@@ -387,15 +387,9 @@ public class Demo {
             buf.append("      tileSize: [")
                     .append(gridSubset.getTileWidth()).append(",")
                     .append(gridSubset.getTileHeight()).append("],\n");
-            if (gridSet.isTopLeftAligned()) {
-                buf.append("      origin: [")
-                        .append(bbox.getMaxX()).append(", ")
-                        .append(bbox.getMinY()).append("],\n");
-            } else {
-                buf.append("      origin: [")
-                        .append(bbox.getMinX()).append(", ")
-                        .append(bbox.getMaxY()).append("],\n");
-            }
+            buf.append("      origin: [")
+                    .append(bbox.getMinX()).append(", ")
+                    .append(bbox.getMaxY()).append("],\n");
             buf.append("      resolutions: resolutions,\n"
                     + "      matrixIds: gridNames\n"
                     + "    }),\n"
@@ -454,27 +448,15 @@ public class Demo {
                         buf.append(",");
                     }
                     BoundingBox subbox = gridSubset.getCoverageBounds(i);
-                    if (gridSet.isTopLeftAligned()) {
-                        buf.append("[")
-                                .append(subbox.getMaxX()).append(", ")
-                                .append(subbox.getMinY()).append("]");
-                    } else {
-                        buf.append("[")
-                                .append(subbox.getMinX()).append(", ")
-                                .append(subbox.getMaxY()).append("]");
-                    }
+                    buf.append("[")
+                            .append(subbox.getMinX()).append(", ")
+                            .append(subbox.getMaxY()).append("]");
                 }
                 buf.append("],\n");
             } else {
-                if (gridSet.isTopLeftAligned()) {
-                    buf.append("      origin: [")
-                            .append(bbox.getMaxX()).append(", ")
-                            .append(bbox.getMinY()).append("],\n");
-                } else {
-                    buf.append("      origin: [")
-                            .append(bbox.getMinX()).append(", ")
-                            .append(bbox.getMaxY()).append("],\n");
-                }
+                buf.append("      origin: [")
+                        .append(bbox.getMinX()).append(", ")
+                        .append(bbox.getMaxY()).append("],\n");
             }
             buf.append("      resolutions: resolutions,\n"
                     + "      matrixIds: params['TILEMATRIX']\n"
