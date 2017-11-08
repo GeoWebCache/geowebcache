@@ -55,9 +55,8 @@ class TruncateTask extends GWCTask {
         try {
             storageBroker.delete(tr);
         } catch (Exception e) {
-            e.printStackTrace();
             super.state = GWCTask.STATE.DEAD;
-            log.error("During truncate request: " + e.getMessage());
+            log.error("During truncate request", e);
         }
 
         checkInterrupted();

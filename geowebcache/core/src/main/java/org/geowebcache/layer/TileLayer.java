@@ -715,9 +715,7 @@ public abstract class TileLayer {
                         }
                     }
                 } catch (IOException ioe) {
-                    log.error("Unable to write image tile to " + "ByteArrayOutputStream: "
-                            + ioe.getMessage());
-                    ioe.printStackTrace();
+                    log.error("Unable to write image tile to " + "ByteArrayOutputStream", ioe);
                 }
             }
         }

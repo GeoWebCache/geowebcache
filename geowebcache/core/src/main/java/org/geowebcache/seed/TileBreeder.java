@@ -318,7 +318,7 @@ public class TileBreeder implements ApplicationContextAware {
             try {
                 mimeType = MimeType.createFromFormat(format);
             } catch (MimeException e4) {
-                e4.printStackTrace();
+                log.debug(e4);
             }
         }
 

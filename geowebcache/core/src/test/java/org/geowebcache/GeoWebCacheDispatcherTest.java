@@ -48,6 +48,9 @@ import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
 import org.easymock.MockType;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 public class GeoWebCacheDispatcherTest {
     
     @Rule 
@@ -83,7 +86,7 @@ public class GeoWebCacheDispatcherTest {
         ConveyorTile conv = new ConveyorTile(sb, "testLayer", "testGrid", new long[] {1,2,3}, ImageMime.png, Collections.emptyMap(), request, response);
 
         layer.applyRequestFilters(conv); EasyMock.expectLastCall().anyTimes();
-        EasyMock.expect(testService.getConveyor(request, response)).andReturn(conv);
+        EasyMock.expect(testService.getConveyor(EasyMock.eq(request), EasyMock.anyObject(HttpServletResponse.class))).andReturn(conv);
         EasyMock.expect(layer.getTile(conv)).andReturn(conv).once();
         EasyMock.expect(layer.getGridSubset("testGrid")).andStubReturn(subset);
         EasyMock.expect(layer.useETags()).andStubReturn(false);
@@ -142,7 +145,7 @@ public class GeoWebCacheDispatcherTest {
         ConveyorTile conv = new ConveyorTile(sb, "testLayer", "testGrid", new long[] {1,2,3}, ImageMime.png, Collections.emptyMap(), request, response);
 
         layer.applyRequestFilters(conv); EasyMock.expectLastCall().anyTimes();
-        EasyMock.expect(testService.getConveyor(request, response)).andReturn(conv);
+        EasyMock.expect(testService.getConveyor(EasyMock.eq(request), EasyMock.anyObject(HttpServletResponse.class))).andReturn(conv);
         //EasyMock.expect(layer.getTile(conv)).andReturn(conv).once(); // Intentionally don't expect this
         EasyMock.expect(layer.getGridSubset("testGrid")).andStubReturn(subset);
         EasyMock.expect(subset.boundsFromIndex(EasyMock.aryEq(new long[]{1,2,3}))).andStubReturn(new BoundingBox(10, 20, 30, 40));

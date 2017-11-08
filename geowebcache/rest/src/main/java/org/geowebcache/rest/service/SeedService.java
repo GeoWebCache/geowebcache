@@ -32,6 +32,8 @@ import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ContextualConfigurationProvider;
 import org.geowebcache.config.XMLConfiguration;
@@ -59,6 +61,9 @@ import java.util.Map;
 
 @Service
 public class SeedService {
+
+    static final Log log = LogFactory.getLog(SeedService.class);
+
     @Autowired
     TileBreeder seeder;
 
@@ -107,7 +112,7 @@ public class SeedService {
             obj = new JSONObject(xs.toXML(list));
             return new ResponseEntity<>(obj.toString(), HttpStatus.OK);
         } catch (JSONException jse) {
-            jse.printStackTrace();
+            log.error(jse);
             return new ResponseEntity<Object>("error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

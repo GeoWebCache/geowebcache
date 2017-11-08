@@ -137,7 +137,7 @@ public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
             } catch (RuntimeException e) {
                 // we're running as a single task on a single thread... we need to be really sure if
                 // we should terminate... think how to handle recovery if at all
-                e.printStackTrace();
+                log.debug(e);
                 // throw e;
             }
 

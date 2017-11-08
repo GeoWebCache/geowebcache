@@ -24,6 +24,9 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import junit.framework.TestCase;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.helpers.LogLog;
 
 /**
  * This class comes from GeoTools
@@ -37,6 +40,8 @@ import junit.framework.TestCase;
  * @source $URL$
  */
 public class FixtureUtilities {
+
+    static final Log log = LogFactory.getLog(FixtureUtilities.class);
 
     /**
      * Load {@link Properties} from a {@link File}.
@@ -102,7 +107,7 @@ public class FixtureUtilities {
             System.out.println("Skipping " + fixtureId + " tests. Fixture file "
                     + fixtureFile.getCanonicalPath() + " not found.");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.debug(e);
         }
     }
 

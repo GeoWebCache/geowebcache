@@ -298,8 +298,7 @@ public class WMSService extends Service{
                 } catch (SecurityException e) {
                     throw e;
                 } catch (Exception e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    log.debug(e);
                 }
             } else if (tile.getHint().equalsIgnoreCase("getfeatureinfo")) {
                 getSecurityDispatcher().checkSecurity(tile);

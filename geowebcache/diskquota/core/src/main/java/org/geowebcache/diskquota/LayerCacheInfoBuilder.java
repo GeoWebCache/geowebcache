@@ -239,8 +239,7 @@ final class LayerCacheInfoBuilder {
                 log.debug("Gathering cache information for " + zLevelKey + " was canceled.");
                 return null;
             } catch (Exception e) {
-                e.printStackTrace();
-                throw (e);
+                throw e;
             }
             log.debug("Cache information for " + zLevelKey + " collected in " + stats.runTimeMillis
                     / 1000D + "s. Counted " + stats.numTiles + " tiles for a storage space of "
@@ -324,7 +323,7 @@ final class LayerCacheInfoBuilder {
             }
             return numRunning > 0;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.debug(e);
             return false;
         }
     }

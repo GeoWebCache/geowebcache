@@ -57,13 +57,13 @@ public class BlankTileException extends RequestFilterException {
             
             return new ByteArrayResource(blankTile);
         } catch (IOException ioe) {
-            log.error(ioe.getMessage());
+            log.error(ioe);
         } finally {
             try {
                 if(is != null) 
                     is.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                // close quietly
             }
         }
         

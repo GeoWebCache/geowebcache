@@ -291,8 +291,7 @@ public abstract class AbstractTileLayer extends TileLayer {
                 formats.add(1, MimeType.createFromFormat("image/jpeg"));
             }
         } catch (GeoWebCacheException gwce) {
-            log.error(gwce.getMessage());
-            gwce.printStackTrace();
+            log.error(gwce);
         }
 
         try {
@@ -309,8 +308,7 @@ public abstract class AbstractTileLayer extends TileLayer {
             	infoFormats.add(MimeType.createFromFormat("application/vnd.ogc.gml"));
             }
         } catch (GeoWebCacheException gwce) {
-            log.error(gwce.getMessage());
-            gwce.printStackTrace();
+            log.error(gwce);
         }
         
         if (subSets == null) {

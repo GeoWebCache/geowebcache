@@ -95,7 +95,6 @@ public class MockWMSSourceHelper extends WMSSourceHelper {
                     try {
                         ImageIO.write(img, format, output);
                     } catch (IOException e) {
-                        e.printStackTrace();
                         throw new RuntimeException(e);
                     }
                     result = output.toByteArray();

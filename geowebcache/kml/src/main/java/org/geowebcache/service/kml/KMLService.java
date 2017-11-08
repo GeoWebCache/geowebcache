@@ -221,7 +221,7 @@ public class KMLService extends Service {
                 try {
                     layer.getTile(tile);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.debug(e);
                 }
 
                 String mimeStr = getMimeTypeOverride(tile);
@@ -440,8 +440,7 @@ public class KMLService extends Service {
                 }
                 tile.setWrapperMimeType(XMLMime.kmz);
             } catch (IOException ioe) {
-                log.error(ioe.getMessage());
-                ioe.printStackTrace();
+                log.error(ioe);
                 throw new ServiceException(ioe.getMessage());
             }
 

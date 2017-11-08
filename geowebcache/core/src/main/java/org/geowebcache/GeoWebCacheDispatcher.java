@@ -17,21 +17,6 @@
 
 package org.geowebcache;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.BlobStoreConfig;
@@ -66,6 +51,24 @@ import org.geowebcache.util.ServletUtils;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
+import org.xml.sax.SAXException;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Level;
 
 /**
  * This is the main router for requests of all types.
@@ -191,7 +194,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 try {
                     loadBlankTile(blankTile, fh.toURI().toURL());
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    log.debug("Failed to load the blank tile", e);
                 }
 
                 if (fileSize == blankTile.getSize()) {
@@ -214,7 +217,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             int ret = (int) blankTile.getSize();
             log.info("Read " + ret + " from blank PNG file (expected 425).");
         } catch (IOException ioe) {
-            log.error(ioe.getMessage());
+            log.error(ioe);
         }
     }
 
@@ -224,7 +227,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         try {
             blankTile.transferFrom(ch);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Failed to load blank tile", e);
         } finally {
             ch.close();
         }
@@ -238,7 +241,14 @@ public class GeoWebCacheDispatcher extends AbstractController {
      */
     @Override
     protected ModelAndView handleRequestInternal(HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
+            HttpServletResponse originalResponse) throws Exception {
+
+        HttpServletResponseWrapper response = new HttpServletResponseWrapper(originalResponse) {
+            @Override
+            public ServletOutputStream getOutputStream() throws IOException {
+                return new DispatcherOutputStream(super.getOutputStream());
+            }
+        };
 
         // Break the request into components, {type, service name}
         String[] requestComps = null;
@@ -292,11 +302,29 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
             ResponseUtils.writeErrorPage(response, 400, e.getMessage(), runtimeStats);
 
-            if (!(e instanceof GeoWebCacheException) || log.isDebugEnabled()) {
-                e.printStackTrace();
+            if (!isClientStreamAbortedException(e)) {
+                log.error("Request failed", e);
+            } else if(log.isDebugEnabled()) {
+                log.debug("Request failed, client closed connection", e);
             }
         }
         return null;
+    }
+
+    private boolean isClientStreamAbortedException(Throwable t) {
+        Throwable current = t;
+        while (current != null && !(current instanceof ClientStreamAbortedException)
+                && !(current instanceof HttpErrorCodeException)) {
+            if (current instanceof SAXException)
+                current = ((SAXException) current).getException();
+            else
+                current = current.getCause();
+        }
+        if (current instanceof ClientStreamAbortedException) {
+            log.debug("Client has closed stream", t);
+            return true;
+        }
+        return false;
     }
 
     /**

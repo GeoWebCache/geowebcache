@@ -451,7 +451,7 @@ public class RestIT {
             IOUtils.copy(response.getEntity().getContent(), writer, null);
             doc = writer.toString();
         } catch (IOException e) {
-            e.printStackTrace();
+
             doc = e.getMessage().toString();
         }
         return doc;
