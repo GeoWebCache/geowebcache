@@ -55,15 +55,13 @@
     </constructor-arg>
     <constructor-arg>
       <description>
-        Parameter filters
+        Cached parameters, requests will be cached separately based on the value of these filters.
+        For each cached vender parameter add an entry line between the map tags.
+        The entry's "key" is the parameter key, "value" is the default value which will be used when the parameter isn't included in a request.
       </description>
-      <list>
-        <bean class="org.geowebcache.filter.parameters.RegexParameterFilter">
-          <property name="defaultValue" value="0"/>
-          <property name="regex" value="^(.*)$"/>
-          <property name="key" value="angle"/>
-        </bean>
-      </list>
+      <map>
+        <entry key="" value="" />
+      </map>
     </constructor-arg>
     <constructor-arg value="false">
       <description>Whether to allow cached=false to specificed for certain requests</description>

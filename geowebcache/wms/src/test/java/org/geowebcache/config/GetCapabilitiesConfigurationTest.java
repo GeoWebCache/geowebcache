@@ -13,6 +13,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.HashMap;
 
 
 import org.easymock.Capture;
@@ -94,7 +95,40 @@ import com.google.common.collect.Sets;
             expect(cap.getLayerList()).andReturn(layers);
 
             GetCapabilitiesConfiguration config =
-                    new GetCapabilitiesConfiguration(broker,  "http://test/wms", "image/png", "3x3", "", new LinkedList(), "false"){
+                    new GetCapabilitiesConfiguration(broker,  "http://test/wms", "image/png", "3x3", "", new HashMap(), "false"){
+
+                        @Override
+                        WebMapServer getWMS() {
+                            return server;
+                        }
+
+                    };
+
+            replay(server, cap, req, gcOpType, globalConfig);
+            config.setPrimaryConfig(globalConfig);
+            config.initialize(broker);
+
+            WMSLayer wmsLayer = (WMSLayer) config.getTileLayers().get(0);
+            List<ParameterFilter> outputParameterFilters = wmsLayer.getParameterFilters();
+
+            assertThat(outputParameterFilters, containsInAnyOrder(
+                    hasProperty("key", equalToIgnoringCase("styles"))));
+        }
+
+        @Test
+        public void testBlankParameterFilters() throws Exception {
+            Layer l = new Layer();
+            l.setName("Foo");
+            l.setLatLonBoundingBox(new CRSEnvelope());
+            List<Layer> layers = new LinkedList<Layer>();
+            layers.add(l);
+            expect(cap.getLayerList()).andReturn(layers);
+
+            HashMap<String, String> cachedParams = new HashMap<String, String>();
+            cachedParams.put("", "");
+
+            GetCapabilitiesConfiguration config =
+                    new GetCapabilitiesConfiguration(broker,  "http://test/wms", "image/png", "3x3", "", cachedParams, "false"){
 
                         @Override
                         WebMapServer getWMS() {
@@ -120,13 +154,13 @@ import com.google.common.collect.Sets;
             String mimeTypes = "image/png";
             String vendorParameters = "map=/osgeo/mapserver/msautotest/world/world.map";
 
-            List<ParameterFilter> inputParameterFilters = new LinkedList();
-            ParameterFilter cachedFilter = new StringParameterFilter();
-            cachedFilter.setKey("angle");
-            inputParameterFilters.add(cachedFilter);
+            HashMap<String, String> cachedParams = new HashMap<String, String>();
+
+            cachedParams.put("angle", "");
+            cachedParams.put("CQL_FILTER", "1=1");
 
             GetCapabilitiesConfiguration config =
-                new GetCapabilitiesConfiguration(broker, url, mimeTypes, "3x3", vendorParameters, inputParameterFilters, "false"){
+                new GetCapabilitiesConfiguration(broker, url, mimeTypes, "3x3", vendorParameters, cachedParams, "false"){
 
                         @Override
                         WebMapServer getWMS() {
@@ -190,6 +224,7 @@ import com.google.common.collect.Sets;
 
             assertThat(outputParameterFilters, containsInAnyOrder(
                     hasProperty("key", equalToIgnoringCase("styles")),
+                    hasProperty("key", equalToIgnoringCase("CQL_FILTER")),
                     hasProperty("key", equalToIgnoringCase("angle"))));
 
         }

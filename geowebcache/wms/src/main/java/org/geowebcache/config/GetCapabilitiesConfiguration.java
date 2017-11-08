@@ -55,6 +55,8 @@ import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.parameters.NaiveWMSDimensionFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.StringParameterFilter;
+import org.geowebcache.filter.parameters.RegexParameterFilter;
+
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -90,7 +92,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
     private String vendorParameters = null;
 
-    private Collection<ParameterFilter> cachedParameters = null;
+    private Map<String, String> cachedParameters = null;
 
     private boolean allowCacheBypass = false;
 
@@ -126,7 +128,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
     }
 
     public GetCapabilitiesConfiguration(GridSetBroker gridSetBroker, String url, String mimeTypes,
-                                        String metaTiling, String vendorParameters, Collection<ParameterFilter> cachedParameters, String allowCacheBypass) {
+                                        String metaTiling, String vendorParameters, Map<String, String> cachedParameters, String allowCacheBypass) {
         this(gridSetBroker, url, mimeTypes, metaTiling, vendorParameters, allowCacheBypass);
         this.cachedParameters = cachedParameters;
     }
@@ -280,8 +282,14 @@ public class GetCapabilitiesConfiguration implements Configuration {
                 }
 
                 if (this.cachedParameters != null) {
-                    for (ParameterFilter f : this.cachedParameters) {
-                        paramFilters.add(f);
+                    for(Map.Entry<String, String> entry : this.cachedParameters.entrySet()) {
+                        if(entry.getKey()!= "") {
+                            RegexParameterFilter f = new RegexParameterFilter();
+                            f.setRegex(".*");
+                            f.setKey(entry.getKey());
+                            f.setDefaultValue(entry.getValue());
+                            paramFilters.add(f);
+                        }
                     }
                 }
 
