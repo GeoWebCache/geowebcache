@@ -20,12 +20,19 @@ import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+
+import org.geowebcache.grid.SRS;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -35,6 +42,7 @@ import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.PrecisionModel;
 
 /**
  * Utility class to parse GML 3.1 geometries out of an {@link XMLStreamReader}
@@ -50,8 +58,6 @@ import com.vividsolutions.jts.geom.Polygon;
  */
 @SuppressWarnings("nls")
 public class GML31ParsingUtils {
-
-    private final GeometryFactory geomFac;
 
     public static final class GML {
 
@@ -95,12 +101,10 @@ public class GML31ParsingUtils {
 
     }
 
-    public GML31ParsingUtils() {
-        this(new GeometryFactory());
-    }
-
-    public GML31ParsingUtils(GeometryFactory gFac) {
-        this.geomFac = gFac;
+    private Map<SRS, GeometryFactory> factories = new HashMap<>();
+    
+    GeometryFactory getFactory(SRS srs) {
+        return factories.computeIfAbsent(srs, srs2->new GeometryFactory(new PrecisionModel(), srs2.getNumber()));
     }
 
     /**
@@ -121,31 +125,54 @@ public class GML31ParsingUtils {
 
         final QName startingGeometryTagName = reader.getName();
         int dimension = crsDimension(reader, 2);
-
+        
+        SRS srs = getSRS(reader.getAttributeValue(null, "srsName"));
+        GeometryFactory fact = getFactory(srs);
         Geometry geom;
         if (GML.Point.equals(startingGeometryTagName)) {
-            geom = parsePoint(reader, dimension);
+            geom = parsePoint(reader, fact, dimension);
         } else if (GML.LineString.equals(startingGeometryTagName)) {
-            geom = parseLineString(reader, dimension);
+            geom = parseLineString(reader, fact, dimension);
         } else if (GML.Polygon.equals(startingGeometryTagName)) {
-            geom = parsePolygon(reader, dimension);
+            geom = parsePolygon(reader, fact, dimension);
         } else if (GML.MultiPoint.equals(startingGeometryTagName)) {
-            geom = parseMultiPoint(reader, dimension);
+            geom = parseMultiPoint(reader, fact, dimension);
         } else if (GML.MultiLineString.equals(startingGeometryTagName)) {
-            geom = parseMultiLineString(reader, dimension);
+            geom = parseMultiLineString(reader, fact, dimension);
         } else if (GML.MultiSurface.equals(startingGeometryTagName)) {
-            geom = parseMultiSurface(reader, dimension);
+            geom = parseMultiSurface(reader, fact, dimension);
         } else if (GML.MultiPolygon.equals(startingGeometryTagName)) {
-            geom = parseMultiPolygon(reader, dimension);
+            geom = parseMultiPolygon(reader, fact, dimension);
         } else {
             throw new IllegalStateException("Unrecognized geometry element "
                     + startingGeometryTagName);
         }
-
+        
         reader.require(END_ELEMENT, startingGeometryTagName.getNamespaceURI(),
                 startingGeometryTagName.getLocalPart());
-
+        
         return geom;
+    }
+    
+    SRS getSRS(String srsName) {
+        Objects.requireNonNull(srsName);
+        try {
+            // Yes this is horrible but it's about all we can do given the current state of CRS/SRS
+            // handling in GeoWebCache
+            if(srsName.startsWith("urn:x-ogc:def:crs:EPSG:")) {
+                return SRS.getSRS(Integer.parseInt(srsName.substring(srsName.lastIndexOf(':')+1)));
+            } if(srsName.startsWith("urn:ogc:def:crs:EPSG:")) {
+                return SRS.getSRS(Integer.parseInt(srsName.substring(srsName.lastIndexOf(':')+1)));
+            } else if (srsName.startsWith("http://www.opengis.net/def/crs/EPSG/0/")) {
+                return SRS.getSRS(Integer.parseInt(srsName.substring(srsName.lastIndexOf('/')+1)));
+            } else if (srsName.matches("urn:ogc:def:crs:OGC:[0-9]\\.[0-9]:CRS:84")) {
+                return SRS.getEPSG4326();
+            }
+            return null;
+        } catch (NumberFormatException e) {
+            throw new IllegalStateException("Illegal URI for srsName", e);
+        }
+        
     }
 
     /**
@@ -160,7 +187,7 @@ public class GML31ParsingUtils {
      * 
      * @throws XMLStreamException
      */
-    private Geometry parseMultiPoint(XMLStreamReader reader, int dimension)
+    private Geometry parseMultiPoint(XMLStreamReader reader, GeometryFactory geomFac, int dimension)
             throws XMLStreamException {
         Geometry geom;
         nextTag(reader);
@@ -174,7 +201,7 @@ public class GML31ParsingUtils {
                     // we're done
                     break;
                 }
-                Point p = parsePoint(reader, dimension);
+                Point p = parsePoint(reader, geomFac, dimension);
                 points.add(p);
             }
             nextTag(reader);
@@ -183,7 +210,7 @@ public class GML31ParsingUtils {
                 nextTag(reader);
                 reader.require(START_ELEMENT, GML.GML_NS_URI, GML.Point.getLocalPart());
 
-                Point p = parsePoint(reader, dimension);
+                Point p = parsePoint(reader, geomFac, dimension);
                 points.add(p);
                 nextTag(reader);
                 reader.require(END_ELEMENT, GML.GML_NS_URI, GML.pointMember.getLocalPart());
@@ -212,7 +239,7 @@ public class GML31ParsingUtils {
      * 
      * @throws XMLStreamException
      */
-    private MultiLineString parseMultiLineString(XMLStreamReader reader, int dimension)
+    private MultiLineString parseMultiLineString(XMLStreamReader reader, GeometryFactory geomFac, int dimension)
             throws XMLStreamException {
         MultiLineString geom;
 
@@ -231,7 +258,7 @@ public class GML31ParsingUtils {
             nextTag(reader);
             reader.require(START_ELEMENT, GML.GML_NS_URI, GML.LineString.getLocalPart());
 
-            LineString line = parseLineString(reader, dimension);
+            LineString line = parseLineString(reader, geomFac, dimension);
             lines.add(line);
             nextTag(reader);
             reader.require(END_ELEMENT, GML.GML_NS_URI, GML.lineStringMember.getLocalPart());
@@ -256,7 +283,7 @@ public class GML31ParsingUtils {
      * 
      * @param reader
      */
-    private Geometry parseMultiSurface(XMLStreamReader reader, int dimension)
+    private Geometry parseMultiSurface(XMLStreamReader reader, GeometryFactory geomFac, int dimension)
             throws XMLStreamException {
         Geometry geom;
         nextTag(reader);
@@ -270,14 +297,14 @@ public class GML31ParsingUtils {
                     // we're done
                     break;
                 }
-                Polygon p = parsePolygon(reader, dimension);
+                Polygon p = parsePolygon(reader, geomFac, dimension);
                 polygons.add(p);
             }
             nextTag(reader);
         } else if (GML.surfaceMember.equals(memberTag)) {
             while (true) {
                 nextTag(reader);
-                Polygon p = parsePolygon(reader, dimension);
+                Polygon p = parsePolygon(reader, geomFac, dimension);
                 polygons.add(p);
                 nextTag(reader);
                 reader.require(END_ELEMENT, GML.GML_NS_URI, GML.surfaceMember.getLocalPart());
@@ -295,7 +322,7 @@ public class GML31ParsingUtils {
         return geom;
     }
 
-    private Geometry parseMultiPolygon(XMLStreamReader reader, int dimension)
+    private Geometry parseMultiPolygon(XMLStreamReader reader, GeometryFactory geomFac, int dimension)
             throws XMLStreamException {
 
         reader.require(START_ELEMENT, GML.GML_NS_URI, GML.MultiPolygon.getLocalPart());
@@ -306,7 +333,7 @@ public class GML31ParsingUtils {
             reader.require(START_ELEMENT, GML.GML_NS_URI, GML.polygonMember.getLocalPart());
             nextTag(reader);
             reader.require(START_ELEMENT, GML.GML_NS_URI, GML.Polygon.getLocalPart());
-            Polygon p = parsePolygon(reader, dimension);
+            Polygon p = parsePolygon(reader, geomFac, dimension);
             polygons.add(p);
             nextTag(reader);
             reader.require(END_ELEMENT, GML.GML_NS_URI, GML.polygonMember.getLocalPart());
@@ -338,7 +365,7 @@ public class GML31ParsingUtils {
      * @return
      * @throws XMLStreamException
      */
-    private Polygon parsePolygon(XMLStreamReader reader, int dimension) throws XMLStreamException {
+    private Polygon parsePolygon(XMLStreamReader reader, GeometryFactory geomFac, int dimension) throws XMLStreamException {
         Polygon geom;
         LinearRing shell;
         List<LinearRing> holes = null;
@@ -346,7 +373,7 @@ public class GML31ParsingUtils {
         nextTag(reader);
         reader.require(START_ELEMENT, GML.GML_NS_URI, GML.exterior.getLocalPart());
         nextTag(reader);
-        shell = parseLinearRing(reader, dimension);
+        shell = parseLinearRing(reader, geomFac, dimension);
         nextTag(reader);
         reader.require(END_ELEMENT, GML.GML_NS_URI, GML.exterior.getLocalPart());
         nextTag(reader);
@@ -356,7 +383,7 @@ public class GML31ParsingUtils {
             holes = new ArrayList<LinearRing>(2);
             while (true) {
                 nextTag(reader);
-                LinearRing hole = parseLinearRing(reader, dimension);
+                LinearRing hole = parseLinearRing(reader, geomFac, dimension);
                 holes.add(hole);
                 nextTag(reader);
                 reader.require(END_ELEMENT, GML.GML_NS_URI, GML.interior.getLocalPart());
@@ -380,7 +407,7 @@ public class GML31ParsingUtils {
         return geom;
     }
 
-    private LinearRing parseLinearRing(final XMLStreamReader reader, final int dimension)
+    private LinearRing parseLinearRing(final XMLStreamReader reader, GeometryFactory geomFac, final int dimension)
             throws XMLStreamException {
 
         reader.require(START_ELEMENT, GML.GML_NS_URI, GML.LinearRing.getLocalPart());
@@ -416,7 +443,7 @@ public class GML31ParsingUtils {
         return linearRing;
     }
 
-    private LineString parseLineString(XMLStreamReader reader, int dimension)
+    private LineString parseLineString(XMLStreamReader reader, GeometryFactory geomFac, int dimension)
             throws XMLStreamException {
         LineString geom;
         nextTag(reader);
@@ -430,7 +457,7 @@ public class GML31ParsingUtils {
         return geom;
     }
 
-    private Point parsePoint(XMLStreamReader reader, int dimension) throws XMLStreamException {
+    private Point parsePoint(XMLStreamReader reader, GeometryFactory geomFac, int dimension) throws XMLStreamException {
 
         reader.require(START_ELEMENT, GML.GML_NS_URI, GML.Point.getLocalPart());
 
