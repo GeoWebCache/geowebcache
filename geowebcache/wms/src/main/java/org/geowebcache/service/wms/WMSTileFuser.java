@@ -308,7 +308,8 @@ public class WMSTileFuser{
             hints = HintsLevel.getHintsForMode(values.get("hints")).getRenderingHints();
         }        
     }
-
+    
+    @Deprecated
     protected WMSTileFuser(TileLayer layer, GridSubset gridSubset, BoundingBox bounds, int width,
             int height) {
         this.sb = null;
@@ -526,6 +527,8 @@ public class WMSTileFuser{
 
                 ConveyorTile tile = new ConveyorTile(sb, layer.getName(), gridSubset.getName(),
                         gridLoc, srcFormat, fullParameters, null, null);
+                
+                tile.setTileLayer(layer);
                 
                 securityDispatcher.checkSecurity(tile);
                 
