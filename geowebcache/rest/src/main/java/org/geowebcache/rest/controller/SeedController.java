@@ -36,6 +36,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.stream.Collectors;
 
 @Component
 @RestController
@@ -114,7 +118,8 @@ public class SeedController {
      */
     @RequestMapping(value = "/seed/{layer:.+}", method = RequestMethod.POST)
     public ResponseEntity<?> doPost(HttpServletRequest request,
-                                    @PathVariable String layer, @RequestBody String body) {
+                                    @PathVariable String layer, InputStream inputStream) {
+        String body = new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.joining("\n"));
         if (layer.indexOf(".") == -1) {
             try {
                 return formService.handleFormPost(request, layer, body);
@@ -127,6 +132,10 @@ public class SeedController {
             String layerName = layer.substring(0, layer.indexOf("."));
             return seedService.doSeeding(request, layerName, extension, body);
         }
+    }
+
+    public void setXmlConfig(XMLConfiguration xmlConfig) {
+        this.xmlConfig = xmlConfig;
     }
 
 }
