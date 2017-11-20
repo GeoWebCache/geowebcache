@@ -308,7 +308,12 @@ public class WMSTileFuser{
             hints = HintsLevel.getHintsForMode(values.get("hints")).getRenderingHints();
         }        
     }
-    
+	
+    /**
+     * This was used for unit tests and should not have been used elsewhere.  It will likely cause 
+     * NullPointerExceptions if used in production.  Use WMSTileFuser(TileLayerDispatcher tld, 
+     * StorageBroker sb, HttpServletRequest servReq) instead.  It will be removed in future.
+     */
     @Deprecated
     protected WMSTileFuser(TileLayer layer, GridSubset gridSubset, BoundingBox bounds, int width,
             int height) {
