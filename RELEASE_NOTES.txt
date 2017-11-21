@@ -1,3 +1,16 @@
+GeoWebCache 1.12.1 (2017-11-21)
+-------------------------------
+
+Second stable release of 1.12 branch
+
+Fixes:
+++++++
+- Blank page when submitting seed job
+- Error when submitting seed job with default bounds
+- Fix SeedController Post for embedded GWC
+- Fix NPE when checking security of tile fuser requests
+
+
 GeoWebCache 1.12.0 (2017-10-09)
 -------------------------------
 
