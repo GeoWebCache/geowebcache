@@ -66,7 +66,7 @@ public class WMTSRestTest {
     public void testGetCap() throws Exception {
         MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         mockMvc.perform(get("/rest/wmts/WMTSCapabilities.xml"))
-                .andExpect(content().contentType("application/vnd.ogc.wms_xml"))
+                .andExpect(content().contentType("text/xml"))
                 .andExpect(status().is(200))
                 .andExpect(xpath("//wmts:Contents/wmts:Layer", namespaces).nodeCount(1))
                 .andExpect(
