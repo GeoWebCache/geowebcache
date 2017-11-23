@@ -93,7 +93,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
     private final HashMap<String, TileLayer> layers;
 
-    private XMLConfiguration primaryConfig;
+    private DefaultingConfiguration primaryConfig;
 
     public GetCapabilitiesConfiguration(GridSetBroker gridSetBroker, String url, String mimeTypes,
             String metaTiling, String allowCacheBypass) {
@@ -592,14 +592,14 @@ public class GetCapabilitiesConfiguration implements Configuration {
     /**
      * Get the global configuration delegated to.
      */
-    protected XMLConfiguration getPrimaryConfig() {
+    protected DefaultingConfiguration getPrimaryConfig() {
         return primaryConfig;
     }
 
     /**
      * Set the global configuration object to delegate to.
      */
-     public void setPrimaryConfig(XMLConfiguration primaryConfig) {
+     public void setPrimaryConfig(DefaultingConfiguration primaryConfig) {
         this.primaryConfig = primaryConfig;
     }
     

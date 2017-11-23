@@ -100,7 +100,7 @@ import com.thoughtworks.xstream.io.xml.DomReader;
  * otherwise this configuration is in an inconsistent and unpredictable state.
  * </p>
  */
-public class XMLConfiguration implements Configuration, InitializingBean {
+public class XMLConfiguration implements Configuration, InitializingBean, DefaultingConfiguration {
     
     public static final String DEFAULT_CONFIGURATION_FILE_NAME = "geowebcache.xml";
 
@@ -271,10 +271,18 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         }
     }
     
+    /**
+     * Path to template to use when there is no config file.
+     * @param template
+     */
     public void setTemplate(String template) {
        resourceProvider.setTemplate(template);
     }
-
+    
+    /**
+     * @return The root path where configuration is stored
+     * @throws ConfigurationException
+     */
     public String getConfigLocation() throws ConfigurationException {
         try {
             return resourceProvider.getLocation();
@@ -282,7 +290,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
             throw new ConfigurationException(e.getMessage(), e);
         }
     }
-
+    
     public boolean isRuntimeStatsEnabled() {
         if (gwcConfig == null || gwcConfig.getRuntimeStats() == null) {
             return true;
@@ -299,6 +307,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
      * Configuration objects lacking their own defaults can delegate to this
      * @param layer
      */
+    @Override
     public void setDefaultValues(TileLayer layer) {
         // Additional values that can have defaults set
         if (layer.isCacheBypassAllowed() == null) {

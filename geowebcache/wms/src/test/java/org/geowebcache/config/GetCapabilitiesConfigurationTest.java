@@ -37,7 +37,7 @@ public class GetCapabilitiesConfigurationTest {
         WMSCapabilities cap = createMock(WMSCapabilities.class);
         WMSRequest req = createMock(WMSRequest.class);
         OperationType gcOpType = createMock(OperationType.class);
-        XMLConfiguration globalConfig = createMock(XMLConfiguration.class);
+        DefaultingConfiguration globalConfig = createMock(XMLConfiguration.class);
         Capture<TileLayer> layerCapture = new Capture<TileLayer>();
         
         GetCapabilitiesConfiguration config = 
