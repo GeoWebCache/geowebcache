@@ -232,9 +232,18 @@ class S3Ops {
             throw new StorageException("Error fetching " + key + ": " + e.getMessage(), e);
         }
         if (isPendingDelete(object)) {
+            closeObject(object);
             return null;
         }
         return object;
+    }
+
+    private void closeObject(S3Object object) throws StorageException {
+        try {
+            object.close();
+        } catch (IOException e) {
+            throw new StorageException("Error closing connection to " + object.getKey() + ": " + e.getMessage(), e);
+        }
     }
 
     public boolean deleteObject(final String key) {
