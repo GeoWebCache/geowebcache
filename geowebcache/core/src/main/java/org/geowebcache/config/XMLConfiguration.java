@@ -211,7 +211,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
     @Override
     public void afterPropertiesSet() throws Exception {
         if (resourceProvider.hasInput()) {
-            this.gwcConfig = loadConfiguration();
+            this.setGwcConfig(loadConfiguration());
         }
         this.reloadConfigOnInit = false;
     }
@@ -265,7 +265,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
             
         });
         try {
-            gwcConfig = loadConfiguration(is);
+            setGwcConfig(loadConfiguration(is));
         } catch (IOException e) {
             throw new ConfigurationException(e.getMessage(), e);
         }
@@ -292,15 +292,15 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
     }
     
     public boolean isRuntimeStatsEnabled() {
-        if (gwcConfig == null || gwcConfig.getRuntimeStats() == null) {
+        if (getGwcConfig() == null || getGwcConfig().getRuntimeStats() == null) {
             return true;
         } else {
-            return gwcConfig.getRuntimeStats();
+            return getGwcConfig().getRuntimeStats();
         }
     }
 
     public synchronized ServiceInformation getServiceInformation() {
-        return gwcConfig.getServiceInformation();
+        return getGwcConfig().getServiceInformation();
     }
 
     /**
@@ -311,24 +311,24 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
     public void setDefaultValues(TileLayer layer) {
         // Additional values that can have defaults set
         if (layer.isCacheBypassAllowed() == null) {
-            if (gwcConfig.getCacheBypassAllowed() != null) {
-                layer.setCacheBypassAllowed(gwcConfig.getCacheBypassAllowed());
+            if (getGwcConfig().getCacheBypassAllowed() != null) {
+                layer.setCacheBypassAllowed(getGwcConfig().getCacheBypassAllowed());
             } else {
                 layer.setCacheBypassAllowed(false);
             }
         }
 
         if (layer.getBackendTimeout() == null) {
-            if (gwcConfig.getBackendTimeout() != null) {
-                layer.setBackendTimeout(gwcConfig.getBackendTimeout());
+            if (getGwcConfig().getBackendTimeout() != null) {
+                layer.setBackendTimeout(getGwcConfig().getBackendTimeout());
             } else {
                 layer.setBackendTimeout(120);
             }
         }
 
         if (layer.getFormatModifiers() == null) {
-            if (gwcConfig.getFormatModifiers() != null) {
-                layer.setFormatModifiers(gwcConfig.getFormatModifiers());
+            if (getGwcConfig().getFormatModifiers() != null) {
+                layer.setFormatModifiers(getGwcConfig().getFormatModifiers());
             }
         }
 
@@ -337,8 +337,8 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
 
             URL proxyUrl = null;
             try {
-                if (gwcConfig.getProxyUrl() != null) {
-                    proxyUrl = new URL(gwcConfig.getProxyUrl());
+                if (getGwcConfig().getProxyUrl() != null) {
+                    proxyUrl = new URL(getGwcConfig().getProxyUrl());
                     log.debug("Using proxy " + proxyUrl.getHost() + ":" + proxyUrl.getPort());
                 } else if (wl.getProxyUrl() != null) {
                     proxyUrl = new URL(wl.getProxyUrl());
@@ -356,9 +356,9 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
                         proxyUrl);
                 log.debug("Using per-layer HTTP credentials for " + wl.getName() + ", "
                         + "username " + wl.getHttpUsername());
-            } else if (gwcConfig.getHttpUsername() != null) {
-                sourceHelper = new WMSHttpHelper(gwcConfig.getHttpUsername(),
-                        gwcConfig.getHttpPassword(), proxyUrl);
+            } else if (getGwcConfig().getHttpUsername() != null) {
+                sourceHelper = new WMSHttpHelper(getGwcConfig().getHttpUsername(),
+                        getGwcConfig().getHttpPassword(), proxyUrl);
                 log.debug("Using global HTTP credentials for " + wl.getName());
             } else {
                 sourceHelper = new WMSHttpHelper(null, null, proxyUrl);
@@ -366,7 +366,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
             }
 
             wl.setSourceHelper(sourceHelper);
-            wl.setLockProvider(gwcConfig.getLockProvider());
+            wl.setLockProvider(getGwcConfig().getLockProvider());
         }
     }
 
@@ -537,10 +537,10 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
         try (OutputStreamWriter writer = new OutputStreamWriter(resourceProvider.out(), "UTF-8")) {
             // set version to latest
             String currentSchemaVersion = getCurrentSchemaVersion();
-            gwcConfig.setVersion(currentSchemaVersion);
+            getGwcConfig().setVersion(currentSchemaVersion);
 
             writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-            xs.toXML(gwcConfig, writer);
+            xs.toXML(getGwcConfig(), writer);
         } catch (UnsupportedEncodingException uee) {
             throw new IOException(uee.getMessage(), uee);
         } catch (FileNotFoundException fnfe) {
@@ -582,7 +582,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
         }
 
         initialize(tl);
-        gwcConfig.getLayers().add(tl);
+        getGwcConfig().getLayers().add(tl);
         updateLayers();
     }
 
@@ -600,9 +600,9 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
             throw new NoSuchElementException("Layer " + tl.getName() + " does not exist");
         }
 
-        gwcConfig.getLayers().remove(previous);
+        getGwcConfig().getLayers().remove(previous);
         initialize(tl);
-        gwcConfig.getLayers().add(tl);
+        getGwcConfig().getLayers().add(tl);
         updateLayers();
     }
 
@@ -617,7 +617,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
         }
 
         boolean removed = false;
-        removed = gwcConfig.getLayers().remove(tileLayer);
+        removed = getGwcConfig().getLayers().remove(tileLayer);
         if (removed) {
             updateLayers();
             
@@ -633,7 +633,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
             throws IllegalArgumentException {
         final String gridsetName = gridSet.getName();
 
-        List<XMLGridSet> gridSets = gwcConfig.getGridSets();
+        List<XMLGridSet> gridSets = getGwcConfig().getGridSets();
 
         for (Iterator<XMLGridSet> it = gridSets.iterator(); it.hasNext();) {
             XMLGridSet gset = it.next();
@@ -652,7 +652,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
      * @return the removed griset, or {@code null} if no such gridset exists
      */
     public synchronized XMLGridSet removeGridset(final String gridsetName) {
-        List<XMLGridSet> gridSets = gwcConfig.getGridSets();
+        List<XMLGridSet> gridSets = getGwcConfig().getGridSets();
         for (Iterator<XMLGridSet> it = gridSets.iterator(); it.hasNext();) {
             XMLGridSet gset = it.next();
             if (gridsetName.equals(gset.getName())) {
@@ -863,7 +863,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
         this.gridSetBroker = gridSetBroker;
 
         if (this.reloadConfigOnInit && resourceProvider.hasInput()) {
-            this.gwcConfig = loadConfiguration();
+            this.setGwcConfig(loadConfiguration());
         }
 
         log.info("Initializing GridSets from " + getIdentifier());
@@ -873,7 +873,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
         log.info("Initializing layers from " + getIdentifier());
 
         // Loop over the layers and set appropriate values
-        for (TileLayer layer : gwcConfig.getLayers()) {
+        for (TileLayer layer : getGwcConfig().getLayers()) {
             if (layer == null) {
                 throw new IllegalStateException(getIdentifier() + " contains a null layer");
             }
@@ -889,15 +889,15 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
 
     private void updateLayers() {
         Map<String, TileLayer> buff = new HashMap<String, TileLayer>();
-        for (TileLayer layer : gwcConfig.getLayers()) {
+        for (TileLayer layer : getGwcConfig().getLayers()) {
             buff.put(layer.getName(), layer);
         }
         this.layers = buff;
     }
 
     private void contributeGridSets(final GridSetBroker gridSetBroker) {
-        if (gwcConfig.getGridSets() != null) {
-            Iterator<XMLGridSet> iter = gwcConfig.getGridSets().iterator();
+        if (getGwcConfig().getGridSets() != null) {
+            Iterator<XMLGridSet> iter = getGwcConfig().getGridSets().iterator();
             while (iter.hasNext()) {
                 XMLGridSet xmlGridSet = iter.next();
 
@@ -941,14 +941,14 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
      * @see org.geowebcache.config.Configuration#getTileLayers()
      */
     public List<TileLayer> getTileLayers() {
-        return Collections.unmodifiableList(gwcConfig.getLayers());
+        return Collections.unmodifiableList(getGwcConfig().getLayers());
     }
 
     /**
      * @see org.geowebcache.config.Configuration#getLayers()
      */
     public Iterable<TileLayer> getLayers() {
-        return Collections.unmodifiableList(gwcConfig.getLayers());
+        return Collections.unmodifiableList(getGwcConfig().getLayers());
     }
 
     /**
@@ -989,7 +989,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
     }
 
     public String getVersion() {
-        return gwcConfig.getVersion();
+        return getGwcConfig().getVersion();
     }
     
     /**
@@ -997,18 +997,26 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
      * @return
      */
     public Boolean getfullWMS(){
-        if(gwcConfig!=null){
-            return gwcConfig.getFullWMS();
+        if(getGwcConfig()!=null){
+            return getGwcConfig().getFullWMS();
         }
         return null;        
     }
 
     public List<BlobStoreConfig> getBlobStores() {
-        return gwcConfig.getBlobStores();
+        return getGwcConfig().getBlobStores();
     }
     
     public LockProvider getLockProvider() {
-        return gwcConfig.getLockProvider();
+        return getGwcConfig().getLockProvider();
+    }
+
+    private GeoWebCacheConfiguration getGwcConfig() {
+        return gwcConfig;
+    }
+
+    private void setGwcConfig(GeoWebCacheConfiguration gwcConfig) {
+        this.gwcConfig = gwcConfig;
     }
 
 }
