@@ -57,6 +57,7 @@ public class ServletUtils {
      * @param map
      * @param key
      * @return all matchings string
+     * @deprecated use HttpServletRequest.getParameters(String key)
      */
     public static String[] stringsFromMap(Map<String, String[]> map, String encoding, String key) {
         String[] strArray = (String[]) map.get(key);
@@ -82,6 +83,7 @@ public class ServletUtils {
      * @param map
      * @param key
      * @return
+     * @deprecated use HttpServletRequest.getParameter(String key)
      */
     public static String stringFromMap(Map<String, String[]> map, String encoding, String key) {
         String[] strArray = stringsFromMap(map, encoding, key);
@@ -98,6 +100,7 @@ public class ServletUtils {
      * @param map
      * @param keys
      * @return
+     * @deprecated
      */
     public static String[][] selectedStringArraysFromMap(Map<String, String[]> map,
             String encoding, String[] keys) {
@@ -126,6 +129,7 @@ public class ServletUtils {
      * @param keys
      * @return map subset containing (URL decoded) values for {@code keys}, with keys normalized to
      *         upper case
+     * @deprecated
      */
     @SuppressWarnings("unchecked")
     public static Map<String, String> selectedStringsFromMap(Map<String, ?> map, String encoding,

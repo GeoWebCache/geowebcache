@@ -18,16 +18,19 @@
 package org.geowebcache.service.wmts;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
@@ -48,6 +51,7 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
+import org.h2.expression.Function;
 
 public class WMTSService extends Service  {
 
@@ -126,6 +130,7 @@ public class WMTSService extends Service  {
         String encoding = request.getCharacterEncoding();
         String[] keys = { "layer", "request", "style", "format", "infoformat", "tilematrixset", "tilematrix",
                 "tilerow", "tilecol", "i", "j" };
+        Arrays.stream(keys).collect(Collectors.toMap(Function.IDENTITY, request::getParameter, Map::merge, CaseInsensitiveMap::new));
         Map<String, String> values = ServletUtils.selectedStringsFromMap(request.getParameterMap(),
                 encoding, keys);
         return getConveyor(request, response, values);

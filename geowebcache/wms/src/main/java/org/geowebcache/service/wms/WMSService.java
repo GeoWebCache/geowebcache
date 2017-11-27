@@ -145,7 +145,7 @@ public class WMSService extends Service{
         if (req != null && !req.equalsIgnoreCase("getmap")) {
             // If no LAYERS specified, try using LAYER.
             if (layers == null || layers.length() == 0) {
-                layers = ServletUtils.stringFromMap(requestParameterMap, encoding, "layer");
+                layers = request.getParameter("layer");
                 values.put("LAYERS", layers);
                 
                 if(layers!=null) {

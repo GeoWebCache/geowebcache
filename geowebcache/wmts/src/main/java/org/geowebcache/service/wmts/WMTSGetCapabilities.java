@@ -82,7 +82,7 @@ public class WMTSGetCapabilities {
         this.tld = tld;
         this.gsb = gsb;
 
-        String forcedBaseUrl = ServletUtils.stringFromMap(servReq.getParameterMap(), servReq.getCharacterEncoding(), "base_url");
+        String forcedBaseUrl = servReq.getParameter("base_url");
 
         if(forcedBaseUrl!=null) {
             this.baseUrl = forcedBaseUrl;

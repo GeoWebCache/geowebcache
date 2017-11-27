@@ -65,15 +65,12 @@ public class MGMapsConverter extends Service {
     throws ServiceException {
         String layerId = super.getLayersParameter(request);
         
-        String encoding = request.getCharacterEncoding();
-        
-        Map<String,String[]> params = request.getParameterMap();
-        String strFormat = ServletUtils.stringFromMap(params, encoding, "format");
-        String strZoom = ServletUtils.stringFromMap(params, encoding, "zoom");
-        String strX = ServletUtils.stringFromMap(params, encoding, "x");
-        String strY = ServletUtils.stringFromMap(params, encoding, "y");
-        String strCached = ServletUtils.stringFromMap(params, encoding, "cached");
-        String strMetaTiled = ServletUtils.stringFromMap(params, encoding, "metatiled");
+        String strFormat = request.getParameter("format");
+        String strZoom = request.getParameter("zoom");
+        String strX = request.getParameter("x");
+        String strY = request.getParameter("y");
+        String strCached = request.getParameter("cached");
+        String strMetaTiled = request.getParameter("metatiled");
         
         long[] gridLoc = MGMapsConverter.convert(Integer.parseInt(strZoom),
                 Integer.parseInt(strX), Integer.parseInt(strY));

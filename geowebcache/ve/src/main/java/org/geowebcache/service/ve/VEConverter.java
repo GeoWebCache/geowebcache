@@ -66,16 +66,13 @@ public class VEConverter extends Service {
 
     public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response)  
     throws ServiceException  {
-        Map<String,String[]> params = request.getParameterMap();
         
         String layerId = super.getLayersParameter(request);
         
-        String encoding = request.getCharacterEncoding();
-        
-        String strQuadKey = ServletUtils.stringFromMap(params, encoding, "quadkey");
-        String strFormat = ServletUtils.stringFromMap(params, encoding, "format");
-        String strCached = ServletUtils.stringFromMap(params, encoding, "cached");
-        String strMetaTiled = ServletUtils.stringFromMap(params, encoding, "metatiled");
+        String strQuadKey = request.getParameter("quadkey");
+        String strFormat = request.getParameter("format");
+        String strCached = request.getParameter("cached");
+        String strMetaTiled = request.getParameter("metatiled");
         
         long[] gridLoc = VEConverter.convert(strQuadKey);
         
