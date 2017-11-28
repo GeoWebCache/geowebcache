@@ -16,6 +16,9 @@
  */
 package org.geowebcache.s3;
 
+import org.geowebcache.GeoWebCacheEnvironment;
+import org.geowebcache.GeoWebCacheExtensions;
+import org.geowebcache.config.BlobStoreConfig;
 import org.geowebcache.config.XMLConfigurationProvider;
 
 import com.google.common.base.Strings;
@@ -23,13 +26,17 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 import com.thoughtworks.xstream.converters.basic.BooleanConverter;
 import com.thoughtworks.xstream.converters.basic.IntConverter;
+import com.thoughtworks.xstream.converters.basic.StringConverter;
 
 public class S3BlobStoreConfigProvider implements XMLConfigurationProvider {
+
+    private static GeoWebCacheEnvironment gwcEnvironment = null;
 
     private static SingleValueConverter NullableIntConverter = new IntConverter() {
 
         @Override
         public Object fromString(String str) {
+            str = resolveFromEnv(str);
             if (Strings.isNullOrEmpty(str)) {
                 return null;
             }
@@ -41,12 +48,39 @@ public class S3BlobStoreConfigProvider implements XMLConfigurationProvider {
 
         @Override
         public Object fromString(String str) {
+            str = resolveFromEnv(str);
             if (Strings.isNullOrEmpty(str)) {
                 return null;
             }
             return super.fromString(str);
         }
     };
+
+    private static SingleValueConverter NullableStringConverter = new StringConverter() {
+        @Override
+        public Object fromString(String str) {
+            str = resolveFromEnv(str);
+            if (Strings.isNullOrEmpty(str)) {
+                return null;
+            }
+            return str;
+        }
+    };
+
+    private static String resolveFromEnv(String str) {
+        if (gwcEnvironment == null) {
+            gwcEnvironment = GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
+        }
+        if (gwcEnvironment != null && str != null
+                && GeoWebCacheEnvironment.ALLOW_ENV_PARAMETRIZATION) {
+            Object result = gwcEnvironment.resolveValue(str);
+            if (result == null) {
+                return null;
+            }
+            return result.toString();
+        }
+        return str;
+    }
 
     @Override
     public XStream getConfiguredXStream(XStream xs) {
@@ -55,6 +89,12 @@ public class S3BlobStoreConfigProvider implements XMLConfigurationProvider {
         xs.registerLocalConverter(S3BlobStoreConfig.class, "proxyPort", NullableIntConverter);
         xs.registerLocalConverter(S3BlobStoreConfig.class, "useHTTPS", NullableBooleanConverter);
         xs.registerLocalConverter(S3BlobStoreConfig.class, "useGzip", NullableBooleanConverter);
+        xs.registerLocalConverter(S3BlobStoreConfig.class, "bucket", NullableStringConverter);
+        xs.registerLocalConverter(S3BlobStoreConfig.class, "awsAccessKey", NullableStringConverter);
+        xs.registerLocalConverter(S3BlobStoreConfig.class, "awsSecretKey", NullableStringConverter);
+        xs.registerLocalConverter(S3BlobStoreConfig.class, "prefix", NullableStringConverter);
+        xs.registerLocalConverter(S3BlobStoreConfig.class, "proxyHost", NullableStringConverter);
+        xs.registerLocalConverter(BlobStoreConfig.class, "enabled", NullableBooleanConverter);
         return xs;
     }
 
