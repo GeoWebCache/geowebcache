@@ -31,8 +31,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
+import org.geowebcache.config.Configuration;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.filter.parameters.ParameterException;
 import org.geowebcache.filter.security.SecurityDispatcher;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
@@ -72,6 +74,8 @@ public class WMTSService extends Service  {
     private URLMangler urlMangler = new NullURLMangler();
     
     private GeoWebCacheDispatcher controller = null;
+
+    private Configuration mainConfiguration;
 
     // list of this service extensions ordered by their priority
     private final List<WMTSExtension> extensions = new ArrayList<>();
@@ -142,6 +146,12 @@ public class WMTSService extends Service  {
                 return conveyor;
             }
         }
+
+        // check if we need to be CITE strictly compliant
+        boolean isCitecompliant = isCiteCompliant();
+        if (isCitecompliant) {
+            performCiteValidation(request);
+        }
         
         String req = values.get("request");
         if (req == null) {
@@ -153,6 +163,14 @@ public class WMTSService extends Service  {
         }
 
         if (req.equals("gettile")) {
+            if (isCitecompliant) {
+                // we need to make sure that a style was provided, otherwise GWC will just assume the default one
+                if (getParameterValue("STYLE", request) == null) {
+                    // mandatory STYLE query parameter is missing
+                    throw new OWSException(400, "MissingParameterValue", "Style",
+                            "Mandatory STYLE query parameter not provided.");
+                }
+            }
             ConveyorTile tile = getTile(values, request, response, RequestType.TILE);
             return tile;
         } else if (req.equals("getcapabilities")) {
@@ -166,8 +184,9 @@ public class WMTSService extends Service  {
             tile.setRequestHandler(Conveyor.RequestHandler.SERVICE);
             return tile;
         } else {
-            throw new OWSException(501, "OperationNotSupported", "request", req
-                    + " is not implemented");
+            // we implement all WMTS supported request, this means that the provided request name is invalid
+            throw new OWSException(400, "InvalidParameterValue", "request", String.format(
+                    "Invalid request name '%s'.", req));
         }
     }
 
@@ -209,6 +228,8 @@ public class WMTSService extends Service  {
             }
             filteringParameters = tileLayer.getModifiableParameters(rawParameters, encoding);
 
+        } catch (ParameterException e) {
+            throw new OWSException(e.getHttpCode(), e.getExceptionCode(), e.getLocator(), e.getMessage());
         } catch (GeoWebCacheException e) {
             throw new OWSException(500, "NoApplicableCode", "", e.getMessage()
                     + " while fetching modifiable parameters for LAYER " + layer);
@@ -364,4 +385,103 @@ public class WMTSService extends Service  {
         return securityDispatcher;
     }
 
+    /**
+     * Sets GWC main configuration.
+     *
+     * @param mainConfiguration GWC main configuration
+     */
+    public void setMainConfiguration(Configuration mainConfiguration) {
+        this.mainConfiguration = mainConfiguration;
+    }
+
+    /**
+     * Helper method that checks if WMTS implementation should be CITE strictly compliant.
+     *
+     * @return TRUE if GWC main configuration or at least one of the WMTS extensions forces
+     *         CITE compliance
+     */
+    private boolean isCiteCompliant() {
+        // let's if main GWC configuration forces WMTS implementation to be CITE compliant
+        if (mainConfiguration != null && mainConfiguration.isWmtsCiteCompliant()) {
+            return true;
+        }
+        // let's see if at least one of the extensions forces CITE compliant mode
+        for (WMTSExtension extension : extensions) {
+            if (extension.getServiceInformation().isCiteCompliant()) {
+                return true;
+            }
+        }
+        // we are not in CITE compliant mode
+        return false;
+    }
+
+    /**
+     * Helper method that performs CITE tests mandatory validations.
+     */
+    private static void performCiteValidation(HttpServletRequest request) throws OWSException {
+        // base path should end with WMTS
+        String basePath = request.getPathInfo();
+        String[] paths = basePath.split("/");
+        String lastPath = paths[paths.length - 1];
+        if (!lastPath.equalsIgnoreCase("WMTS")) {
+            // invalid base path, not found should be returned
+            throw new OWSException(404, "NoApplicableCode", "request", "Service or request not found");
+        }
+        // service query parameter is mandatory and should be equal to WMTS
+        validateWmtsServiceName("wmts", request);
+    }
+
+    /**
+     * Checks if the URL base path extracted service name matches the HTTP request SERVICE query parameter value.
+     * If the HTTP request doesn't contains any SERVICE query parameter an OWS exception will be returned.
+     *
+     * This validation only happens for WMTS service and if CITE strict compliance is activated.
+     *
+     * @param pathServiceName service name extracted from the URL base path
+     * @param request         the original HTTP request
+     * @throws OWSException if the URL path extracted service name and the HTTP request service name don't match
+     */
+    private static void validateWmtsServiceName(String pathServiceName, HttpServletRequest request) throws OWSException {
+        if (pathServiceName == null || !pathServiceName.equalsIgnoreCase("WMTS")) {
+            // not an OGC service, so nothing to do
+            return;
+        }
+        // let's see if the service path and requested service match
+        String requestedServiceName = getParameterValue("SERVICE", request);
+        if (requestedServiceName == null) {
+            // mandatory service query parameter not provided
+            throw new OWSException(400, "MissingParameterValue", "service",
+                    "Mandatory SERVICE query parameter not provided.");
+        }
+        if (!pathServiceName.equalsIgnoreCase(requestedServiceName)) {
+            // bad request, the URL path service and the requested service don't match
+            throw new OWSException(400, "InvalidParameterValue", "service",
+                    String.format("URL path service '%s' don't match the requested service '%s'.",
+                            pathServiceName, requestedServiceName));
+        }
+    }
+
+    /**
+     * Search in a non case sensitive way for a query parameter in the provided HTTP request.
+     * If the query parameter is found is first value is returned otherwise NULL is returned.
+     *
+     * @param parameterName query parameter name to search
+     * @param request HTTP request
+     * @return the first value of the query parameter if it exists otherwise NULL
+     */
+    private static String getParameterValue(String parameterName, HttpServletRequest request) {
+        if (parameterName == null) {
+            // nothing to do
+            return null;
+        }
+        for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+            if (entry.getKey() != null && entry.getKey().equalsIgnoreCase(parameterName)) {
+                // we found our parameter
+                String[] values = entry.getValue();
+                return values != null ? values[0] : null;
+            }
+        }
+        // parameter not found
+        return null;
+    }
 }
