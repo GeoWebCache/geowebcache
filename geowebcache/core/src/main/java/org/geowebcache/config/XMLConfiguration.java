@@ -38,7 +38,6 @@ import java.util.Set;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -489,6 +488,8 @@ public class XMLConfiguration implements Configuration, InitializingBean {
 
         xs.alias("serviceInformation", ServiceInformation.class);
         xs.alias("contactInformation", ContactInformation.class);
+
+        xs.omitField(ServiceInformation.class, "citeCompliant");
         
         xs.processAnnotations(TruncateLayerRequest.class);
 
@@ -1002,4 +1003,27 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         return gwcConfig.getLockProvider();
     }
 
+    @Override
+    public boolean isWmtsCiteCompliant() {
+        if (gwcConfig == null || gwcConfig.isWmtsCiteCompliant() == null) {
+            // if there is not configuration available we consider CITE strict compliance to be deactivated
+            return false;
+        }
+        // return whatever CITE compliance mode is defined
+        return gwcConfig.isWmtsCiteCompliant();
+    }
+
+    /**
+     * Can be used to force WMTS service implementation to be strictly compliant with the
+     * correspondent CITE tests.
+     *
+     * @param wmtsCiteStrictCompliant TRUE or FALSE, activating or deactivation CITE
+     *                                strict compliance mode for WMTS
+     */
+    public void setWmtsCiteStrictCompliant(boolean wmtsCiteStrictCompliant) {
+        if (gwcConfig != null) {
+            // activate or deactivate CITE strict compliance mode for WMTS implementation
+            gwcConfig.setWmtsCiteCompliant(wmtsCiteStrictCompliant);
+        }
+    }
 }

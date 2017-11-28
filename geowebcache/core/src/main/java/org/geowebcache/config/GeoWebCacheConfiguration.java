@@ -27,8 +27,6 @@ import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.MemoryLockProvider;
 import org.geowebcache.mime.FormatModifier;
 
-import com.thoughtworks.xstream.annotations.XStreamOmitField;
-
 /**
  * POJO for geowebcache.xml configuration
  * 
@@ -76,6 +74,8 @@ public class GeoWebCacheConfiguration {
     private List<XMLGridSet> gridSets;
     
     private Boolean fullWMS;
+
+    private Boolean wmtsCiteCompliant;
 
     /**
      * The persisted list of layers
@@ -313,5 +313,26 @@ public class GeoWebCacheConfiguration {
      */
     public void setFullWMS(Boolean fullWMS) {
         this.fullWMS = fullWMS;
+    }
+
+    /**
+     * If this method returns NULL CITE strict compliance mode should not be considered for WMTS
+     * service implementation.
+     *
+     * @return may return TRUE, FALSE or NULL
+     */
+    public Boolean isWmtsCiteCompliant() {
+        return wmtsCiteCompliant;
+    }
+
+    /**
+     * Can be used to force WMTS service implementation to be strictly compliant with the
+     * correspondent CITE tests.
+     *
+     * @param wmtsCiteStrictCompliant TRUE or FALSE, activating or deactivation CITE
+     *                                strict compliance mode for WMTS
+     */
+    public void setWmtsCiteCompliant(Boolean wmtsCiteCompliant) {
+        this.wmtsCiteCompliant = wmtsCiteCompliant;
     }
 }

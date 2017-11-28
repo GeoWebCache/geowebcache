@@ -132,4 +132,15 @@ public interface Configuration {
     public void addLayer(TileLayer tl) throws IllegalArgumentException;
 
     public boolean containsLayer(String tileLayerId);
+
+    /**
+     * If this method returns TRUE WMTS service implementation will strictly comply with the
+     * correspondent CITE tests.
+     *
+     * @return TRUE or FALSE, activating or deactivation CITE strict compliance mode for WMTS
+     */
+    default boolean isWmtsCiteCompliant() {
+        // by default CITE tests strict compliance is not activated
+        return false;
+    }
 }
