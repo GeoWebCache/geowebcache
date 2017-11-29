@@ -155,7 +155,7 @@ public class WMTSGetCapabilities {
 
             contents(xml);
             xml.indentElement("ServiceMetadataURL")
-                    .attribute("xlink:href", baseUrl + "?REQUEST=getcapabilities&VERSION=1.0.0")
+                    .attribute("xlink:href", baseUrl + "?SERVICE=wmts&REQUEST=getcapabilities&VERSION=1.0.0")
                     .endElement();
 
             xml.indentElement("ServiceMetadataURL")

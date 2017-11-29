@@ -95,7 +95,7 @@ public class WMTSRestTest {
                         namespaces).nodeCount(1))
                 .andExpect(
                         xpath("//wmts:ServiceMetadataURL[@xlink:href='http://localhost/service/wmts"
-                                + "?REQUEST=getcapabilities&VERSION=1.0.0']", namespaces)
+                                + "?SERVICE=wmts&REQUEST=getcapabilities&VERSION=1.0.0']", namespaces)
                                         .nodeCount(1))
                 .andExpect(
                         xpath("//wmts:ServiceMetadataURL[@xlink:href='http://localhost/rest/wmts"
