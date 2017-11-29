@@ -321,8 +321,8 @@ public class GeoWebCacheConfiguration {
      *
      * @return may return TRUE, FALSE or NULL
      */
-    public Boolean isWmtsCiteCompliant() {
-        return wmtsCiteCompliant;
+    public boolean isWmtsCiteCompliant() {
+        return wmtsCiteCompliant != null ? wmtsCiteCompliant : false;
     }
 
     /**
@@ -332,7 +332,7 @@ public class GeoWebCacheConfiguration {
      * @param wmtsCiteStrictCompliant TRUE or FALSE, activating or deactivation CITE
      *                                strict compliance mode for WMTS
      */
-    public void setWmtsCiteCompliant(Boolean wmtsCiteCompliant) {
+    public void setWmtsCiteCompliant(boolean wmtsCiteCompliant) {
         this.wmtsCiteCompliant = wmtsCiteCompliant;
     }
 }

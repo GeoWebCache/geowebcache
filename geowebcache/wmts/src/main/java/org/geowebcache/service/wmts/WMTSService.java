@@ -17,17 +17,6 @@
  */
 package org.geowebcache.service.wmts;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
@@ -50,6 +39,17 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class WMTSService extends Service  {
 
@@ -162,13 +162,30 @@ public class WMTSService extends Service  {
             req = req.toLowerCase();
         }
 
+        if (isCitecompliant) {
+            String acceptedVersions = getParameterValue("AcceptVersions", request);
+            // if provided handle accepted versions parameter
+            if (acceptedVersions != null) {
+                // we only support version 1.0.0, so make sure that's one of the accepted versions
+                String[] versions = acceptedVersions.split("\\s*,\\s*");
+                int foundIndex = Arrays.binarySearch(versions, "1.0.0");
+                if (foundIndex < 0) {
+                    // no supported version is accepted
+                    throw new OWSException(400, "VersionNegotiationFailed", null,
+                            "List of versions in AcceptVersions parameter value, in GetCapabilities " +
+                                    "operation request, did not include any version supported by this server.");
+                }
+
+            }
+        }
+
         if (req.equals("gettile")) {
             if (isCitecompliant) {
                 // we need to make sure that a style was provided, otherwise GWC will just assume the default one
-                if (getParameterValue("STYLE", request) == null) {
+                if (getParameterValue("Style", request) == null) {
                     // mandatory STYLE query parameter is missing
                     throw new OWSException(400, "MissingParameterValue", "Style",
-                            "Mandatory STYLE query parameter not provided.");
+                            "Mandatory Style query parameter not provided.");
                 }
             }
             ConveyorTile tile = getTile(values, request, response, RequestType.TILE);
@@ -401,7 +418,7 @@ public class WMTSService extends Service  {
      *         CITE compliance
      */
     private boolean isCiteCompliant() {
-        // let's if main GWC configuration forces WMTS implementation to be CITE compliant
+        // let's see if main GWC configuration forces WMTS implementation to be CITE compliant
         if (mainConfiguration != null && mainConfiguration.isWmtsCiteCompliant()) {
             return true;
         }

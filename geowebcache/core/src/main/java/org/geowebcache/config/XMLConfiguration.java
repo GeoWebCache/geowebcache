@@ -1005,7 +1005,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
 
     @Override
     public boolean isWmtsCiteCompliant() {
-        if (gwcConfig == null || gwcConfig.isWmtsCiteCompliant() == null) {
+        if (gwcConfig == null) {
             // if there is not configuration available we consider CITE strict compliance to be deactivated
             return false;
         }
