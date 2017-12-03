@@ -157,13 +157,10 @@ public class JettyRule extends org.junit.rules.ExternalResource {
     
     @Override
     protected void after() {
-        // Jetty shutdown takes 100 seconds so do this in a thread to speed it up.
-        new Thread(()->{
-            try {
-                jettyServer.stop();
-            } catch (Exception e) {
-                throw new IllegalStateException("Error while shutting down test Jetty",e);
-            }
-        }).start();
+        try {
+            jettyServer.stop();
+        } catch (Exception e) {
+            log.error("Could not stop Jetty server: " + e.getMessage());
+        }
     }
 }
