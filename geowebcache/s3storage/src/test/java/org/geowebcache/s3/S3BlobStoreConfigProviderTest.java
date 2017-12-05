@@ -44,10 +44,10 @@ public class S3BlobStoreConfigProviderTest {
 
     @After
     public void tearDown() throws Exception {
-        System.setProperty("BUCKET", "");
-        System.setProperty("CONNECTIONS", "");
-        System.setProperty("ENABLED", "");
-        System.setProperty("ALLOW_ENV_PARAMETRIZATION", "");
+        System.clearProperty("BUCKET");
+        System.clearProperty("CONNECTIONS");
+        System.clearProperty("ENABLED");
+        System.clearProperty("ALLOW_ENV_PARAMETRIZATION");
     }
 
     @Test
