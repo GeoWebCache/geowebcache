@@ -272,7 +272,7 @@ public class XMLConfigurationTest {
             fail(e.getMessage());
         }
 
-        XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
+        ServerConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
         GridSetBroker gridSetBroker2 = new GridSetBroker(true, false);
         config2.initialize(gridSetBroker2);
 

@@ -39,7 +39,9 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
+import org.geowebcache.config.BaseConfiguration;
 import org.geowebcache.config.Configuration;
+import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
@@ -422,10 +424,10 @@ public class WMSService extends Service{
         // Selection of the configurations 
         List<Configuration> configs = new ArrayList<Configuration>(GeoWebCacheExtensions.extensions(Configuration.class));
         // Selection of the Configuration file associated to geowebcache.xml
-        XMLConfiguration gwcXMLconfig = null;
-        for(Configuration config : configs){
+        ServerConfiguration gwcXMLconfig = null;
+        for(BaseConfiguration config : configs){
             if(config instanceof XMLConfiguration){
-                gwcXMLconfig = (XMLConfiguration) config;
+                gwcXMLconfig = (ServerConfiguration) config;
                 break;
             }
         }

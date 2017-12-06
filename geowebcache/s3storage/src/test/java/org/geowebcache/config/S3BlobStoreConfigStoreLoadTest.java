@@ -111,7 +111,7 @@ public class S3BlobStoreConfigStoreLoadTest {
         }
     }
 
-    private void createFromSavedConfig(XMLConfiguration configLoad) throws StorageException {
+    private void createFromSavedConfig(BlobStoreConfigurationCatalog configLoad) throws StorageException {
         List<BlobStoreConfig> blobStores2 = configLoad.getBlobStores();
         for (BlobStoreConfig blobStoreConfig : blobStores2) {
             LockProvider lockProvider = new NoOpLockProvider();

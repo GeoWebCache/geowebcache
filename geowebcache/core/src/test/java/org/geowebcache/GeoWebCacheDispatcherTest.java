@@ -23,7 +23,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Collections;
 
-import org.geowebcache.config.Configuration;
+import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.security.SecurityDispatcher;
 import org.geowebcache.grid.BoundingBox;
@@ -62,7 +62,7 @@ public class GeoWebCacheDispatcherTest {
         TileLayerDispatcher tld = stubs.createMock("tld", TileLayerDispatcher.class);
         GridSetBroker gsb = stubs.createMock("gsb", GridSetBroker.class);
         StorageBroker sb = stubs.createMock("sb", StorageBroker.class);
-        Configuration config = stubs.createMock("config", Configuration.class);
+        ServerConfiguration config = stubs.createMock("config", ServerConfiguration.class);
         RuntimeStats rts = stubs.createMock("rts", RuntimeStats.class);
         DefaultStorageFinder dfs = stubs.createMock("dfs", DefaultStorageFinder.class);
         TileLayer layer = EasyMock.createMock("layer", TileLayer.class);
@@ -121,7 +121,7 @@ public class GeoWebCacheDispatcherTest {
         TileLayerDispatcher tld = stubs.createMock("tld", TileLayerDispatcher.class);
         GridSetBroker gsb = stubs.createMock("gsb", GridSetBroker.class);
         StorageBroker sb = stubs.createMock("sb", StorageBroker.class);
-        Configuration config = stubs.createMock("config", Configuration.class);
+        ServerConfiguration config = stubs.createMock("config", ServerConfiguration.class);
         RuntimeStats rts = stubs.createMock("rts", RuntimeStats.class);
         DefaultStorageFinder dfs = stubs.createMock("dfs", DefaultStorageFinder.class);
         TileLayer layer = EasyMock.createMock("layer", TileLayer.class);

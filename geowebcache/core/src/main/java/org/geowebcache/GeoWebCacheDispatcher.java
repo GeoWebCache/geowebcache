@@ -19,9 +19,10 @@ package org.geowebcache;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.config.BaseConfiguration;
 import org.geowebcache.config.BlobStoreConfig;
-import org.geowebcache.config.Configuration;
 import org.geowebcache.config.ConfigurationException;
+import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
@@ -100,7 +101,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
     private String servletPrefix = null;
 
-    private Configuration mainConfiguration;
+    private BaseConfiguration mainConfiguration;
     
     private SecurityDispatcher securityDispatcher;
     
@@ -112,7 +113,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
      */
     public GeoWebCacheDispatcher(TileLayerDispatcher tileLayerDispatcher,
             GridSetBroker gridSetBroker, StorageBroker storageBroker,
-            Configuration mainConfiguration, RuntimeStats runtimeStats) {
+            ServerConfiguration mainConfiguration, RuntimeStats runtimeStats) {
         super();
         this.tileLayerDispatcher = tileLayerDispatcher;
         this.gridSetBroker = gridSetBroker;

@@ -26,7 +26,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
+import org.geowebcache.config.BaseConfiguration;
 import org.geowebcache.config.Configuration;
+import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLGridSet;
 import org.geowebcache.config.meta.ServiceInformation;
@@ -199,9 +201,9 @@ public class TileLayerDispatcher implements DisposableBean {
         }
 
         // Check whether there is any general service information
-        if (this.serviceInformation == null) {
+        if (this.serviceInformation == null && config instanceof ServerConfiguration) {
             log.debug("Reading service information.");
-            this.serviceInformation = config.getServiceInformation();
+            this.serviceInformation = ((ServerConfiguration) config).getServiceInformation();
         }
         return layerCount;
     }
@@ -349,7 +351,7 @@ public class TileLayerDispatcher implements DisposableBean {
     }
 
     private XMLConfiguration getXmlConfiguration() throws IllegalStateException {
-        for (Configuration c : configs) {
+        for (BaseConfiguration c : configs) {
             if (c instanceof XMLConfiguration) {
                 return (XMLConfiguration) c;
             }

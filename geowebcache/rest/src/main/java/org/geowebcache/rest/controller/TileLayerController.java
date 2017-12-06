@@ -38,7 +38,7 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
 import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.Configuration;
+import org.geowebcache.config.BaseConfiguration;
 import org.geowebcache.config.ContextualConfigurationProvider.Context;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -169,7 +169,7 @@ public class TileLayerController extends GWCController {
         TileLayer tl = deserializeAndCheckLayer(req, layer, extension, false);
 
         try {
-            Configuration configuration = layerDispatcher.modify(tl);
+            BaseConfiguration configuration = layerDispatcher.modify(tl);
             configuration.save();
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<Object>("Layer " + tl.getName()
@@ -198,7 +198,7 @@ public class TileLayerController extends GWCController {
         }
 
         if (testtl == null) {
-            Configuration config = layerDispatcher.addLayer(tl);
+            BaseConfiguration config = layerDispatcher.addLayer(tl);
             config.save();
         } else {
             throw new RestException("Layer with name " + tl.getName() + " already exists, "
@@ -233,7 +233,7 @@ public class TileLayerController extends GWCController {
             storageBrokerDeleteException = se;
         }
         try {
-            Configuration configuration = layerDispatcher.removeLayer(layerName);
+            BaseConfiguration configuration = layerDispatcher.removeLayer(layerName);
             if (configuration == null) {
                 throw new RestException("Configuration to remove layer not found",
                         HttpStatus.INTERNAL_SERVER_ERROR);

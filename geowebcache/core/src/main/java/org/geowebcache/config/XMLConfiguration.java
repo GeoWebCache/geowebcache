@@ -100,7 +100,7 @@ import com.thoughtworks.xstream.io.xml.DomReader;
  * otherwise this configuration is in an inconsistent and unpredictable state.
  * </p>
  */
-public class XMLConfiguration implements Configuration, InitializingBean, DefaultingConfiguration {
+public class XMLConfiguration implements Configuration, InitializingBean, DefaultingConfiguration, ServerConfiguration, BlobStoreConfigurationCatalog {
     
     public static final String DEFAULT_CONFIGURATION_FILE_NAME = "geowebcache.xml";
 
@@ -992,10 +992,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
         return getGwcConfig().getVersion();
     }
     
-    /**
-     * Used for getting the "fullWMS" parameter from GeoWebCacheConfigration
-     * @return
-     */
+    @Override
     public Boolean getfullWMS(){
         if(getGwcConfig()!=null){
             return getGwcConfig().getFullWMS();
@@ -1003,10 +1000,12 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
         return null;        
     }
 
+    @Override
     public List<BlobStoreConfig> getBlobStores() {
         return getGwcConfig().getBlobStores();
     }
     
+    @Override
     public LockProvider getLockProvider() {
         return getGwcConfig().getLockProvider();
     }

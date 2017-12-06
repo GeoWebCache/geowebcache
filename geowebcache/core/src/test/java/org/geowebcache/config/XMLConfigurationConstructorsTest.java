@@ -144,7 +144,7 @@ public class XMLConfigurationConstructorsTest {
     
     @Test
     public void testDefaultToCacheDirCreate() throws Exception {
-        XMLConfiguration config = new XMLConfiguration(provider, storageFinder);
+        ServerConfiguration config = new XMLConfiguration(provider, storageFinder);
         config.initialize(broker);
         
         assertThat(configFile(cacheDir).exists(), is(true));
@@ -155,7 +155,7 @@ public class XMLConfigurationConstructorsTest {
     public void testOverrideWithPropertyCreate() throws Exception {
         gwcConfigDirProp.setValue(configDir.getCanonicalPath());
         
-        XMLConfiguration config = new XMLConfiguration(provider, storageFinder);
+        ServerConfiguration config = new XMLConfiguration(provider, storageFinder);
         config.initialize(broker);
         
         assertThat(configFile(cacheDir).exists(), is(false));
@@ -164,7 +164,7 @@ public class XMLConfigurationConstructorsTest {
     
     @Test
     public void testPathAsArgumentCreate() throws Exception {
-        XMLConfiguration config = new XMLConfiguration(provider, configDir.getCanonicalPath());
+        ServerConfiguration config = new XMLConfiguration(provider, configDir.getCanonicalPath());
         config.initialize(broker);
         
         assertThat(configFile(cacheDir).exists(), is(false));

@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 
 import org.easymock.Capture;
 import org.easymock.EasyMock;
+import org.geowebcache.config.BaseConfiguration;
 import org.geowebcache.config.Configuration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
@@ -166,7 +167,7 @@ public class BDBQuotaStoreTest {
                 new TileSet("topp:states2", "EPSG:2163", "image/jpeg", null))));
 
         // remove one layer from the dispatcher
-        Configuration configuration = layerDispatcher.removeLayer("topp:states");
+        BaseConfiguration configuration = layerDispatcher.removeLayer("topp:states");
         configuration.save();
         // and make sure at the next startup the store catches up (note this behaviour is just a
         // startup consistency check in case the store got out of sync for some reason. On normal
