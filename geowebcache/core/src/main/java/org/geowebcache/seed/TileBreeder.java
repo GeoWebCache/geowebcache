@@ -247,7 +247,7 @@ public class TileBreeder implements ApplicationContextAware {
     public GWCTask[] createTasks(TileRange tr, TileLayer tl, GWCTask.TYPE type, int threadCount,
             boolean filterUpdate) throws GeoWebCacheException {
 
-        if (type == GWCTask.TYPE.TRUNCATE || threadCount < 1) {
+        if (threadCount < 1) {
             log.trace("Forcing thread count to 1");
             threadCount = 1;
         }
