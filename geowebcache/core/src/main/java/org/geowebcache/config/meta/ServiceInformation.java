@@ -40,6 +40,9 @@ public class ServiceInformation implements Serializable{
 
     private String providerSite;
 
+    // if TRUE the implementation of this service should strictly comply with CITE tests
+    private boolean citeCompliant;
+
     /**
      * @return the title
      */
@@ -152,4 +155,11 @@ public class ServiceInformation implements Serializable{
         this.serviceProvider = serviceProvider;
     }
 
+    public boolean isCiteCompliant() {
+        return citeCompliant;
+    }
+
+    public void setCiteCompliant(boolean citeCompliant) {
+        this.citeCompliant = citeCompliant;
+    }
 }
