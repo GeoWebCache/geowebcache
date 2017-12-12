@@ -206,7 +206,7 @@ public class FormService {
         int threadCount = Integer.parseInt(form.get("threadCount"));
         int zoomStart = Integer.parseInt(form.get("zoomStart"));
         int zoomStop = Integer.parseInt(form.get("zoomStop"));
-        String format = form.get("format");
+        String format = form.get("tileFormat");
         Map<String, String> fullParameters;
         {
             Map<String, String> parameters = new HashMap<String, String>();;
@@ -515,7 +515,7 @@ public class FormService {
             keysValues.put(mime.getFormat(), mime.getFormat());
         }
 
-        makePullDown(doc, "format", keysValues, ImageMime.png.getFormat());
+        makePullDown(doc, "tileFormat", keysValues, ImageMime.png.getFormat());
         doc.append("</td></tr>\n");
     }
 
