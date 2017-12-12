@@ -100,7 +100,7 @@ public class WMTSGetCapabilities {
         byte[] data = generateGetCapabilities(encoding).getBytes(encoding);
         
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("application/vnd.ogc.wms_xml");
+        response.setContentType("text/xml");
         response.setCharacterEncoding(encoding.name());
         response.setContentLength(data.length);
         response.setHeader("content-disposition", "inline;filename=wmts-getcapabilities.xml");
@@ -155,7 +155,7 @@ public class WMTSGetCapabilities {
 
             contents(xml);
             xml.indentElement("ServiceMetadataURL")
-                    .attribute("xlink:href", baseUrl + "?REQUEST=getcapabilities&VERSION=1.0.0")
+                    .attribute("xlink:href", baseUrl + "?SERVICE=wmts&REQUEST=getcapabilities&VERSION=1.0.0")
                     .endElement();
 
             xml.indentElement("ServiceMetadataURL")

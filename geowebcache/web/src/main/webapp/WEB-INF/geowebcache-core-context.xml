@@ -53,6 +53,16 @@
           to add any vendor specific parameter.
       </description>
     </constructor-arg>
+    <constructor-arg>
+      <description>
+        Cached parameters, requests will be cached separately based on the value of these filters.
+        For each cached vender parameter add an entry line between the map tags.
+        The entry's "key" is the parameter key, "value" is the default value which will be used when the parameter isn't included in a request.
+      </description>
+      <map>
+        <entry key="" value="" />
+      </map>
+    </constructor-arg>
     <constructor-arg value="false">
       <description>Whether to allow cached=false to specificed for certain requests</description>
     </constructor-arg>

@@ -142,6 +142,8 @@ public class XMLConfigurationTest {
         config.setTemplate("/geowebcache.xml");
         config.initialize(gridSetBroker);
         assertEquals(3, config.getTileLayerCount());
+        // WMTS CITE strict compliance should be deactivated
+        assertThat(config.isWmtsCiteCompliant(), is(false));
     }
 
     @Test
@@ -353,5 +355,16 @@ public class XMLConfigurationTest {
         config.initialize(gridSetBroker);
         final String savedVersion = config.getVersion();
         assertEquals(currVersion, savedVersion);
+    }
+
+    @Test
+    public void testWmtsCiteStrictComplianceIsActivated() throws Exception {
+        // delete existing GWC configuration file
+        assertThat(configFile.delete(), is(true));
+        // instantiate a new one based with strict CITE compliance activated
+        config.setTemplate("/geowebcache_cite.xml");
+        config.initialize(gridSetBroker);
+        // CITE strict compliance should be activated for WMTS
+        assertThat(config.isWmtsCiteCompliant(), is(true));
     }
 }

@@ -97,11 +97,21 @@ public class LegendInfoBuilder {
     }
 
     public LegendInfoBuilder withMinScale(Double minScale) {
+        if (minScale == null || Math.abs(minScale) < 0.000001) {
+            // NULL or zero minimum scale means that there is no minimum scale
+            this.minScale = null;
+            return this;
+        }
         this.minScale = minScale;
         return this;
     }
 
     public LegendInfoBuilder withMaxScale(Double maxScale) {
+        if (maxScale == null || maxScale == Double.POSITIVE_INFINITY) {
+            // NULL or positive infinity means that no max scale was defined
+            this.maxScale = null;
+            return this;
+        }
         this.maxScale = maxScale;
         return this;
     }

@@ -290,7 +290,7 @@ public class WMTSServiceTest {
                 + "[@template='http://localhost:8080/geowebcache" + WMTSService.REST_PATH + "/mockLayer/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}/{J}/{I}?format=application/vnd.ogc.gml'])", doc));        
         // Checking the service metadata URL
         assertEquals("1", xpath.evaluate(
-                "count(//wmts:ServiceMetadataURL[@xlink:href='http://localhost:8080/geowebcache" + WMTSService.SERVICE_PATH + "?REQUEST=getcapabilities&VERSION=1.0.0'])", doc));
+                "count(//wmts:ServiceMetadataURL[@xlink:href='http://localhost:8080/geowebcache" + WMTSService.SERVICE_PATH + "?SERVICE=wmts&REQUEST=getcapabilities&VERSION=1.0.0'])", doc));
         assertEquals("1", xpath.evaluate(
                 "count(//wmts:ServiceMetadataURL[@xlink:href='http://localhost:8080/geowebcache" + WMTSService.REST_PATH + "/WMTSCapabilities.xml'])", doc));
     }

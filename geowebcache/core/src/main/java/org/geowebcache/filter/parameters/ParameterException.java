@@ -26,8 +26,33 @@ public class ParameterException extends GeoWebCacheException {
     
     private static final long serialVersionUID = 2471474123508934754L;
 
+    private final int httpCode;
+    private final String exceptionCode;
+    private final String locator;
+
     public ParameterException(String msg) {
         super(msg);
+        httpCode = 500;
+        exceptionCode = "NoApplicableCode";
+        locator = "";
     }
 
+    public ParameterException(int httpCode, String exceptionCode, String locator, String msg) {
+        super(msg);
+        this.httpCode = httpCode;
+        this.exceptionCode = exceptionCode;
+        this.locator = locator;
+    }
+
+    public int getHttpCode() {
+        return httpCode;
+    }
+
+    public String getExceptionCode() {
+        return exceptionCode;
+    }
+
+    public String getLocator() {
+        return locator;
+    }
 }
