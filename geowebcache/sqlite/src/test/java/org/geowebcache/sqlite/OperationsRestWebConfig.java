@@ -71,7 +71,7 @@ public class OperationsRestWebConfig extends WebMvcConfigurationSupport {
     }
 
     @Bean
-    public DefaultingConfiguration xmlConfiguration() {
+    public XMLConfiguration xmlConfiguration() {
         XMLConfiguration gwcConfiguration = mock(XMLConfiguration.class);
         List<BlobStoreConfig> mbtilesStoreConfig = new ArrayList<>();
         MbtilesConfiguration configuration = new MbtilesConfiguration("mbtiles-store");

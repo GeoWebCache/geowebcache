@@ -20,6 +20,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.BlobStoreConfig;
+import org.geowebcache.config.BlobStoreConfigurationCatalog;
+import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +53,9 @@ public class OperationsRest {
     private TileLayerDispatcher tileLayerDispatcher;
 
     @Autowired
-    private XMLConfiguration gwcConfiguration;
+    private BlobStoreConfigurationCatalog blobConfiguration;
+    @Autowired
+    private ServerConfiguration gwcConfiguration;
 
     @RequestMapping(value = "/replace", method = RequestMethod.POST)
     public
@@ -172,7 +176,7 @@ public class OperationsRest {
         // let's find layer associated store
         String blobStoreId = tileLayerDispatcher.getTileLayer(layerName).getBlobStoreId();
         BlobStoreConfig blobStoreConfig = null;
-        for (BlobStoreConfig candidateBlobStoreConfig : gwcConfiguration.getBlobStores()) {
+        for (BlobStoreConfig candidateBlobStoreConfig : blobConfiguration.getBlobStores()) {
             if (blobStoreId == null) {
                 // we need to find the default configuration
                 if (candidateBlobStoreConfig.isDefault()) {
