@@ -181,6 +181,70 @@ public class SpringRestIT {
                 admin.getClient());
         assertEquals(200, response.getStatusLine().getStatusCode());
     }
+
+    /* Content in body, not in query
+     * Simulates request with no content type set
+     */
+    @Test
+    public void testSeedFormPost() throws Exception {
+        String seedQuery = "threadCount=04&type=truncate&gridSetId=EPSG:4326&tileFormat=image/png&zoomStart=01&zoomStop=12&minX=&minY=&maxX=&maxY=";
+
+        CloseableHttpResponse response = handlePost(URI.create("/geowebcache/rest/seed/topp:states"),
+                admin.getClient(), seedQuery);
+        assertEquals(200, response.getStatusLine().getStatusCode());
+
+    }
+
+    /* Content in body, with URL encoding
+     * Simulates request with Content-Type application/x-www-urlencoded, sent from the actual UI page.
+     */
+    @Test
+    public void testSeedFormPostUrlEncoded() throws Exception {
+        String seedQueryUrlEncoded = "threadCount=04&type=truncate&gridSetId=EPSG%3A4326&tileFormat=image%2Fpng&zoomStart=01&zoomStop=12&minX=&minY=&maxX=&maxY=";
+
+        CloseableHttpResponse response = handlePost(URI.create("/geowebcache/rest/seed/topp:states"),
+                admin.getClient(), seedQueryUrlEncoded);
+        assertEquals(200, response.getStatusLine().getStatusCode());
+    }
+
+    /* Content in body, space delimited
+     * Simulates an edge case that GWC supports (presumably for backwards compatibility reasons)
+     */
+    @Test
+    public void testSeedFormPostSpaceDelimited() throws Exception {
+        String seedQuerySpaceDelimited = "threadCount=04 type=truncate gridSetId=EPSG:4326 tileFormat=image/png zoomStart=01 zoomStop=12 minX= minY= maxX= maxY=";
+
+        CloseableHttpResponse response = handlePost(URI.create("/geowebcache/rest/seed/topp:states"),
+                admin.getClient(), seedQuerySpaceDelimited);
+        assertEquals(200, response.getStatusLine().getStatusCode());
+    }
+
+    /* Content in query, not in body
+     * Simulates request with Content-Type application/x-www-urlencoded when certain content negotiation parameter
+     * filters are enabled
+     */
+    @Test
+    public void testSeedFormPostQuery() throws Exception {
+        String seedQueryUrlEncoded = "threadCount=04&type=truncate&gridSetId=EPSG%3A4326&tileFormat=image%2Fpng&zoomStart=01&zoomStop=12&minX=&minY=&maxX=&maxY=";
+
+        CloseableHttpResponse response = handlePost(URI.create("/geowebcache/rest/seed/topp:states?" + seedQueryUrlEncoded),
+                admin.getClient(), "");
+        assertEquals(200, response.getStatusLine().getStatusCode());
+    }
+
+    /* Content in query, and in body
+     * Simulates request with Content-Type application/x-www-urlencoded when certain content negotiation parameter
+     * filters are enabled, and the request is wrapped with a BufferedRequestWrapper (Embedded GWC only)
+     */
+    @Test
+    public void testSeedFormPostQueryBody() throws Exception {
+        String seedQuery = "threadCount=04&type=truncate&gridSetId=EPSG:4326&tileFormat=image/png&zoomStart=01&zoomStop=12&minX=&minY=&maxX=&maxY=";
+        String seedQueryUrlEncoded = "threadCount=04&type=truncate&gridSetId=EPSG%3A4326&tileFormat=image%2Fpng&zoomStart=01&zoomStop=12&minX=&minY=&maxX=&maxY=";
+
+        CloseableHttpResponse response = handlePost(URI.create("/geowebcache/rest/seed/topp:states?"+seedQueryUrlEncoded),
+                admin.getClient(), seedQuery);
+        assertEquals(200, response.getStatusLine().getStatusCode());
+    }
     
     @Test
     public void testGetLogo() throws Exception {

@@ -137,7 +137,7 @@ public class FormService {
         return new ResponseEntity<Object>(doc.toString(), getHeaders(), HttpStatus.OK);
     }
 
-    public ResponseEntity<?> handleFormPost(HttpServletRequest request, String layer, String body) throws RestException,
+    public ResponseEntity<?> handleFormPost(String layer, Map<String, String> params) throws RestException,
             GeoWebCacheException {
         final TileLayer tl;
         {
@@ -152,21 +152,6 @@ public class FormService {
                 tl = null;
             }
         }
-
-        try {
-            body = URLDecoder.decode(body, "UTF-8");
-        } catch (IOException e) {
-            body = null;
-        }
-
-
-
-        if (body == null || body == "") {
-            throw new RestException("Unable to parse form result.",
-                    HttpStatus.BAD_REQUEST);
-        }
-
-        Map<String, String> params = splitToMap(body);
 
         if (params.containsKey("list")) {
             if (tl == null) {
@@ -769,14 +754,6 @@ public class FormService {
 
     private void makeFooter(StringBuilder doc) {
         doc.append("</body></html>\n");
-    }
-
-    private Map<String, String> splitToMap(String data) {
-        if (data.contains("&")) {
-            return Splitter.on("&").withKeyValueSeparator("=").split(data);
-        }else {
-            return Splitter.on(" ").withKeyValueSeparator("=").split(data);
-        }
     }
 
     private HttpHeaders getHeaders() {
