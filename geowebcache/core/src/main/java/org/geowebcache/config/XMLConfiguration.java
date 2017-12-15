@@ -99,7 +99,7 @@ import com.thoughtworks.xstream.io.xml.DomReader;
  * otherwise this configuration is in an inconsistent and unpredictable state.
  * </p>
  */
-public class XMLConfiguration implements Configuration, InitializingBean, DefaultingConfiguration, ServerConfiguration, BlobStoreConfigurationCatalog {
+public class XMLConfiguration implements Configuration, InitializingBean, DefaultingConfiguration, ServerConfiguration, BlobStoreConfigurationCatalog, GridSetConfiguration {
     
     public static final String DEFAULT_CONFIGURATION_FILE_NAME = "geowebcache.xml";
 
@@ -1040,6 +1040,16 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
         if (gwcConfig != null) {
             // activate or deactivate CITE strict compliance mode for WMTS implementation
             gwcConfig.setWmtsCiteCompliant(wmtsCiteStrictCompliant);
+        }
+    }
+
+    @Override
+    public String getLocation() {
+        try {
+            return this.resourceProvider.getLocation();
+        } catch (IOException e) {
+            log.error("Could not get config location", e);
+            return "Error, see log for details";
         }
     }
 }

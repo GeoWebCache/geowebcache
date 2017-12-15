@@ -98,4 +98,13 @@ public interface Configuration extends BaseConfiguration {
         // by default CITE tests strict compliance is not activated
         return false;
     }
+
+    /**
+     * @param tl
+     *            a tile layer to be added or saved
+     * @return {@code true} if this configuration is capable of saving the given tile layer,
+     *         {@code false} otherwise (usually this check is based on an instanceof check, as
+     *         different configurations may be specialized on different kinds of layers).
+     */
+    boolean canSave(TileLayer tl);
 }

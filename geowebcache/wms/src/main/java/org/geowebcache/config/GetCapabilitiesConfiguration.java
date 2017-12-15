@@ -70,7 +70,7 @@ import org.geowebcache.layer.meta.MetadataURL;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
 
-public class GetCapabilitiesConfiguration implements Configuration {
+public class GetCapabilitiesConfiguration implements Configuration, GridSetConfiguration {
 
     private static Log log = LogFactory
             .getLog(org.geowebcache.config.GetCapabilitiesConfiguration.class);
@@ -180,10 +180,6 @@ public class GetCapabilitiesConfiguration implements Configuration {
         }
 
         return layers;
-    }
-
-    public ServiceInformation getServiceInformation() {
-        return null;
     }
 
     /**
@@ -494,13 +490,6 @@ public class GetCapabilitiesConfiguration implements Configuration {
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#isRuntimeStatsEnabled()
-     */
-    public boolean isRuntimeStatsEnabled() {
-        return false;
-    }
-
-    /**
      * @see org.geowebcache.config.Configuration#initialize(org.geowebcache.grid.GridSetBroker)
      */
     public int initialize(GridSetBroker gridSetBroker) throws GeoWebCacheException {
@@ -624,6 +613,11 @@ public class GetCapabilitiesConfiguration implements Configuration {
      */
      public void setPrimaryConfig(DefaultingConfiguration primaryConfig) {
         this.primaryConfig = primaryConfig;
+    }
+
+    @Override
+    public String getLocation() {
+        return this.url;
     }
     
 }

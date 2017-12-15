@@ -22,6 +22,8 @@ public interface BaseConfiguration {
      * @param gridSetBroker
      * @return the count of layers provided by this configuration after initialization.
      * @throws GeoWebCacheException
+     * 
+     * TODO Get rid of this, adding gridsets should be done by implementing GridSetConfiguration 
      */
     int initialize(GridSetBroker gridSetBroker) throws GeoWebCacheException;
 
@@ -29,22 +31,25 @@ public interface BaseConfiguration {
      * @return non null identifier for this configuration
      */
     String getIdentifier();
+    
+    /**
+     * The location is a string identifying where this configuration is persisted Configuration 
+     * implementations may choose whatever form is appropriate to their persistence mechanism and 
+     * callers should not assume any particular format. In many but not all cases this will be a URL
+     * or filesystem path.
+     * 
+     * @return Location string for this configuration
+     */
+    String getLocation();
 
 
     /**
      * Saves this configuration
      * 
      * @throws IOException
+     * 
+     * TODO get rid of this, 
      */
     void save() throws IOException;
-
-    /**
-     * @param tl
-     *            a tile layer to be added or saved
-     * @return {@code true} if this configuration is capable of saving the given tile layer,
-     *         {@code false} otherwise (usually this check is based on an instanceof check, as
-     *         different configurations may be specialized on different kinds of layers).
-     */
-    boolean canSave(TileLayer tl);
 
 }
