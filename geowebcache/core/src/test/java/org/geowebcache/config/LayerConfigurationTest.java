@@ -141,8 +141,7 @@ public abstract class LayerConfigurationTest {
         assertThat(retrieved, layerEquals(goodLayer));
     }
 
-    //TODO: Currently failing
-    //@Test
+    @Test
     public void testModifyBadLayerException() throws Exception {
         testAdd();
         TileLayer badLayer = getBadLayer("test", 2);
@@ -152,8 +151,7 @@ public abstract class LayerConfigurationTest {
         config.modifyLayer(badLayer);
     }
 
-    //TODO: Currently failing
-    //@Test
+    @Test
     public void testModifyBadLayerNoChange() throws Exception {
         testAdd();
         TileLayer goodLayer = config.getTileLayerById("test");

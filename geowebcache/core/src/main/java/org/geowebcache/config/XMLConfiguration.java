@@ -600,7 +600,10 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         if (null == previous) {
             throw new NoSuchElementException("Layer " + tl.getName() + " does not exist");
         }
-
+        if (!(tl instanceof WMSLayer)) {
+            throw new IllegalArgumentException("Can't add layers of type "
+                    + tl.getClass().getName());
+        }
         getGwcConfig().getLayers().remove(previous);
         initialize(tl);
         getGwcConfig().getLayers().add(tl);
