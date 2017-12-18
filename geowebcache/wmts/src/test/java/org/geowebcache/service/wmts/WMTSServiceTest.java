@@ -297,25 +297,7 @@ public class WMTSServiceTest {
 
     @Test
     public void testGetCapWithExtensions() throws Exception {
-        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
-        when(gwcd.getServletPrefix()).thenReturn(null);
-        service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
-        @SuppressWarnings("unchecked")
-        Map<String, String[]> kvp = new CaseInsensitiveMap();
-        kvp.put("service", new String[]{"WMTS"});
-        kvp.put("version", new String[]{"1.0.0"});
-        kvp.put("request", new String[]{"GetCapabilities"});
-        HttpServletRequest req = mock(HttpServletRequest.class);
-        MockHttpServletResponse resp = new MockHttpServletResponse();
-        when(req.getCharacterEncoding()).thenReturn("UTF-8");
-        when(req.getParameterMap()).thenReturn(kvp);
-        List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale","EPSG:4326");
-        TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames, Collections.<ParameterFilter>emptyList());
-        when(tld.getLayerList()).thenReturn(Collections.singletonList(tileLayer));
-        Conveyor conv = service.getConveyor(req, resp);
-        assertNotNull(conv);
-        assertEquals(Conveyor.RequestHandler.SERVICE, conv.reqHandler);
-        // setup a wmts extension
+        // setup some WMTS extensions
         List<WMTSExtension> extensions = new ArrayList<>();
         extensions.add(new WMTSExtension() {
             @Override
@@ -376,6 +358,26 @@ public class WMTSServiceTest {
             }
         });
         extensions.add(new WMTSExtensionImpl());
+        // mock execution context
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
+        extensions.forEach(service::addExtension);
+        @SuppressWarnings("unchecked")
+        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        kvp.put("service", new String[]{"WMTS"});
+        kvp.put("version", new String[]{"1.0.0"});
+        kvp.put("request", new String[]{"GetCapabilities"});
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        when(req.getCharacterEncoding()).thenReturn("UTF-8");
+        when(req.getParameterMap()).thenReturn(kvp);
+        List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale","EPSG:4326");
+        TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames, Collections.<ParameterFilter>emptyList());
+        when(tld.getLayerList()).thenReturn(Collections.singletonList(tileLayer));
+        Conveyor conv = service.getConveyor(req, resp);
+        assertNotNull(conv);
+        assertEquals(Conveyor.RequestHandler.SERVICE, conv.reqHandler);
         // perform the get capabilities request
         WMTSGetCapabilities wmsCap = new WMTSGetCapabilities(tld, gridsetBroker, conv.servletReq, "http://localhost:8080", "/service/wmts",
                 new NullURLMangler(), extensions);
