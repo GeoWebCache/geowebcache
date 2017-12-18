@@ -1,3 +1,13 @@
+GeoWebCache 1.11.3 (2017-12-18)
+-------------------------------
+
+Bug fix release
+
+Fixes:
+++++++
+- #552, Demo page breaks with gridset GoogleCRS84Quad
+
+
 GeoWebCache 1.11.2 (2017-10-21)
 -------------------------------
 
@@ -5,11 +15,11 @@ GeoWebCache 1.11.2 (2017-10-21)
 
 Improvements:
 +++++++++++++
-- <New feature>
+- Upgrading to JAI-EXT 1.1.18
 
 Fixes:
 ++++++
-- <Bug fix>
+- Extra checks for misaligned requests, see https://osgeo-org.atlassian.net/browse/GEOS-8279
 
 
 GeoWebCache 1.11.1 (2017-07-31)
