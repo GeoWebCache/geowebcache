@@ -424,7 +424,7 @@ public class WMTSService extends Service  {
         }
         // let's see if at least one of the extensions forces CITE compliant mode
         for (WMTSExtension extension : extensions) {
-            if (extension.getServiceInformation().isCiteCompliant()) {
+            if (extension.getServiceInformation() != null && extension.getServiceInformation().isCiteCompliant()) {
                 return true;
             }
         }
