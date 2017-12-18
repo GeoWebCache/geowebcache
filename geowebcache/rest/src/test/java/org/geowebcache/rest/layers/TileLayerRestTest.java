@@ -19,7 +19,7 @@ package org.geowebcache.rest.layers;
 
 import org.easymock.EasyMock;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.Configuration;
+import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
 import org.geowebcache.grid.*;
@@ -30,13 +30,11 @@ import org.geowebcache.rest.exception.RestException;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -84,7 +82,7 @@ public class TileLayerRestTest {
 
         XMLConfiguration xmlConfig = loadXMLConfig();
         xmlConfig.initialize(gridSetBroker);
-        LinkedList<Configuration> configList = new LinkedList<Configuration>();
+        LinkedList<TileLayerConfiguration> configList = new LinkedList<TileLayerConfiguration>();
         configList.add(xmlConfig);
 
         tld = new TileLayerDispatcher(gridSetBroker, configList);

@@ -235,7 +235,7 @@ public class TileLayerController extends GWCController {
         try {
             BaseConfiguration configuration = layerDispatcher.removeLayer(layerName);
             if (configuration == null) {
-                throw new RestException("Configuration to remove layer not found",
+                throw new RestException("TileLayerConfiguration to remove layer not found",
                         HttpStatus.INTERNAL_SERVER_ERROR);
             }
             configuration.save();

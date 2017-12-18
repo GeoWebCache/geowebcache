@@ -99,7 +99,7 @@ import com.thoughtworks.xstream.io.xml.DomReader;
  * otherwise this configuration is in an inconsistent and unpredictable state.
  * </p>
  */
-public class XMLConfiguration implements Configuration, InitializingBean, DefaultingConfiguration, ServerConfiguration, BlobStoreConfigurationCatalog, GridSetConfiguration {
+public class XMLConfiguration implements TileLayerConfiguration, InitializingBean, DefaultingConfiguration, ServerConfiguration, BlobStoreConfigurationCatalog, GridSetConfiguration {
     
     public static final String DEFAULT_CONFIGURATION_FILE_NAME = "geowebcache.xml";
 
@@ -107,7 +107,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
 
     /**
      * Web app context, used to look up {@link XMLConfigurationProvider}s. Will be null if used the
-     * {@link #XMLConfiguration(File)} constructor
+     * {@link #XMLConfiguration(InputStream)} constructor
      */
     private final WebApplicationContext context;
     
@@ -161,7 +161,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
      * 
      * @param appCtx
      *            use to lookup {@link XMLConfigurationProvider} extenions, may be {@code null}
-     * @param defaultStorage
+     * @param storageDirFinder
      * @throws ConfigurationException
      */
     public XMLConfiguration(final ApplicationContextProvider appCtx,
@@ -185,7 +185,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
 
     
     /**
-     * @deprecated use {@link #XMLFileConfiguration(ApplicationContextProvider, DefaultStorageFinder)}
+     * @deprecated use {@link #XMLConfiguration(ApplicationContextProvider, DefaultStorageFinder)}
      */
     @Deprecated
     public XMLConfiguration(final ApplicationContextProvider appCtx,
@@ -196,7 +196,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
     }
 
     /**
-     * @deprecated use {@link #XMLFileConfiguration(ApplicationContextProvider, String)}
+     * @deprecated use {@link #XMLConfiguration(ApplicationContextProvider, String)}
      */
     @Deprecated
     public XMLConfiguration(final ApplicationContextProvider appCtx,
@@ -303,7 +303,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
     }
 
     /**
-     * Configuration objects lacking their own defaults can delegate to this
+     * TileLayerConfiguration objects lacking their own defaults can delegate to this
      * @param layer
      */
     @Override
@@ -396,7 +396,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#save()
+     * @see TileLayerConfiguration#save()
      */
     public synchronized void save() throws IOException {
         if (!resourceProvider.hasOutput()) {
@@ -432,7 +432,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
             xs.allowTypeHierarchy(org.geowebcache.filter.parameters.ParameterFilter.class);
             xs.allowTypeHierarchy(org.geowebcache.filter.request.RequestFilter.class);
             xs.allowTypeHierarchy(org.geowebcache.config.BlobStoreConfig.class);
-            xs.allowTypeHierarchy(org.geowebcache.config.Configuration.class);
+            xs.allowTypeHierarchy(TileLayerConfiguration.class);
             
             // Allow anything that's part of GWC
             // TODO: replace this with a more narrow whitelist
@@ -556,7 +556,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
 
     /**
      * @return {@code true} only if {@code tl instanceof WMSLayer}
-     * @see org.geowebcache.config.Configuration#canSave(org.geowebcache.layer.TileLayer)
+     * @see TileLayerConfiguration#canSave(org.geowebcache.layer.TileLayer)
      */
     public boolean canSave(TileLayer tl) {
         return tl instanceof WMSLayer && !tl.isTransientLayer();
@@ -568,7 +568,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
      * @return
      * @throws IllegalArgumentException
      *             if a layer named the same than {@code tl} already exists
-     * @see org.geowebcache.config.Configuration#addLayer(org.geowebcache.layer.TileLayer)
+     * @see TileLayerConfiguration#addLayer(org.geowebcache.layer.TileLayer)
      */
     public synchronized void addLayer(TileLayer tl) throws IllegalArgumentException {
         if (tl == null) {
@@ -593,7 +593,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
      * @param tl
      *            the new layer to overwrite the existing layer
      * @throws NoSuchElementException
-     * @see org.geowebcache.config.Configuration#modifyLayer(org.geowebcache.layer.TileLayer)
+     * @see TileLayerConfiguration#modifyLayer(org.geowebcache.layer.TileLayer)
      */
     public synchronized void modifyLayer(TileLayer tl) throws NoSuchElementException {
         TileLayer previous = getTileLayer(tl.getName());
@@ -609,7 +609,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
 
     /**
      * @return {@code true} if the layer was removed, {@code false} if no such layer exists
-     * @see org.geowebcache.config.Configuration#removeLayer(java.lang.String)
+     * @see TileLayerConfiguration#removeLayer(java.lang.String)
      */
     public synchronized boolean removeLayer(final String layerName) {
         final TileLayer tileLayer = getTileLayer(layerName);
@@ -667,7 +667,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
     /**
      * Method responsible for loading xml configuration file and parsing it into a W3C DOM Document
      * 
-     * @param file
+     * @param xmlFile
      *            the file contaning the layer configurations
      * @return W3C DOM Document
      */
@@ -784,7 +784,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
             // Parsing the schema file
             try {
                 validate(rootNode);
-                log.info("Configuration file validated fine.");
+                log.info("TileLayerConfiguration file validated fine.");
             } catch (SAXException e) {
                 String msg = "*** GWC configuration validation error: " + e.getMessage();
                 char[] c = new char[4 + msg.length()];
@@ -857,7 +857,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#initialize(org.geowebcache.grid.GridSetBroker)
+     * @see TileLayerConfiguration#initialize(org.geowebcache.grid.GridSetBroker)
      */
     public int initialize(final GridSetBroker gridSetBroker) throws GeoWebCacheException {
 
@@ -922,7 +922,7 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getIdentifier()
+     * @see TileLayerConfiguration#getIdentifier()
      */
     public String getIdentifier() {
         return resourceProvider.getId();
@@ -939,28 +939,35 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getTileLayers()
+     * @see TileLayerConfiguration#getTileLayers()
      */
     public List<TileLayer> getTileLayers() {
         return Collections.unmodifiableList(getGwcConfig().getLayers());
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getLayers()
+     * @see TileLayerConfiguration#getLayers()
      */
     public Iterable<TileLayer> getLayers() {
         return Collections.unmodifiableList(getGwcConfig().getLayers());
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getTileLayer(java.lang.String)
+     * @see TileLayerConfiguration#getTileLayer(java.lang.String)
      */
-    public TileLayer getTileLayer(String layerName) {
+    public TileLayer getLayer(String layerName) {
         return layers.get(layerName);
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getTileLayerById(String)
+     * @see TileLayerConfiguration#getTileLayer(java.lang.String)
+     */
+    public TileLayer getTileLayer(String layerName) {
+        return getLayer(layerName);
+    }
+
+    /**
+     * @see TileLayerConfiguration#getTileLayerById(String)
      */
     public TileLayer getTileLayerById(String layerId) {
         // this configuration does not differentiate between identifier and identity yet
@@ -968,25 +975,39 @@ public class XMLConfiguration implements Configuration, InitializingBean, Defaul
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#containsLayer(java.lang.String)
+     * @see TileLayerConfiguration#containsLayer(java.lang.String)
      */
     public boolean containsLayer(String layerId) {
         return layers.containsKey(layerId);
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getTileLayerCount()
+     * @see TileLayerConfiguration#getLayerCount()
      */
-    public int getTileLayerCount() {
+    public int getLayerCount() {
         return layers.size();
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getTileLayerNames()
+     * @see TileLayerConfiguration#getTileLayerCount()
      */
-    public Set<String> getTileLayerNames() {
+    public int getTileLayerCount() {
+        return getLayerCount();
+    }
+
+    /**
+     * @see TileLayerConfiguration#getLayerNames()
+     */
+    public Set<String> getLayerNames() {
         Set<String> names = Collections.unmodifiableSet(this.layers.keySet());
         return names;
+    }
+
+    /**
+     * @see TileLayerConfiguration#getTileLayerNames()
+     */
+    public Set<String> getTileLayerNames() {
+        return getLayerNames();
     }
 
     public String getVersion() {

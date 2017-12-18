@@ -18,7 +18,7 @@
 package org.geowebcache.rest.bounds;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.Configuration;
+import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
 import org.geowebcache.grid.*;
@@ -68,7 +68,7 @@ public class BoundsControllerTest {
 
         XMLConfiguration xmlConfig = loadXMLConfig();
         xmlConfig.initialize(gridSetBroker);
-        LinkedList<Configuration> configList = new LinkedList<Configuration>();
+        LinkedList<TileLayerConfiguration> configList = new LinkedList<TileLayerConfiguration>();
         configList.add(xmlConfig);
 
         tld = new TileLayerDispatcher(gridSetBroker, configList);

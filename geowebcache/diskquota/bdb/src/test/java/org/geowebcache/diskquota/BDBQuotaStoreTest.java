@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.geowebcache.config.BaseConfiguration;
-import org.geowebcache.config.Configuration;
+import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
 import org.geowebcache.diskquota.bdb.BDBQuotaStore;
@@ -112,7 +112,7 @@ public class BDBQuotaStoreTest {
                             .collect(Collectors.toSet())
                         ));
         XMLConfiguration xmlConfig = loadXMLConfig();
-        LinkedList<Configuration> configList = new LinkedList<Configuration>();
+        LinkedList<TileLayerConfiguration> configList = new LinkedList<TileLayerConfiguration>();
         configList.add(xmlConfig);
 
         layerDispatcher = new TileLayerDispatcher(new GridSetBroker(true, true), configList);

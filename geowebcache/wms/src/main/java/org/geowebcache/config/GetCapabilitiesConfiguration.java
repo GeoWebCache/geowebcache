@@ -20,7 +20,6 @@ package org.geowebcache.config;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,7 +50,6 @@ import org.geotools.xml.XMLHandlerHints;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.legends.LegendRawInfo;
 import org.geowebcache.config.legends.LegendsRawInfo;
-import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.parameters.NaiveWMSDimensionFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.StringParameterFilter;
@@ -70,7 +68,7 @@ import org.geowebcache.layer.meta.MetadataURL;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
 
-public class GetCapabilitiesConfiguration implements Configuration, GridSetConfiguration {
+public class GetCapabilitiesConfiguration implements TileLayerConfiguration, GridSetConfiguration {
 
     private static Log log = LogFactory
             .getLog(org.geowebcache.config.GetCapabilitiesConfiguration.class);
@@ -143,7 +141,7 @@ public class GetCapabilitiesConfiguration implements Configuration, GridSetConfi
     }
 
     /**
-     * Identifier for this Configuration instance
+     * Identifier for this TileLayerConfiguration instance
      * 
      * @return the URL given to the constructor
      */
@@ -490,7 +488,7 @@ public class GetCapabilitiesConfiguration implements Configuration, GridSetConfi
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#initialize(org.geowebcache.grid.GridSetBroker)
+     * @see TileLayerConfiguration#initialize(org.geowebcache.grid.GridSetBroker)
      */
     public int initialize(GridSetBroker gridSetBroker) throws GeoWebCacheException {
         this.gridSetBroker = gridSetBroker;
@@ -510,7 +508,7 @@ public class GetCapabilitiesConfiguration implements Configuration, GridSetConfi
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getTileLayers()
+     * @see TileLayerConfiguration#getTileLayers()
      * @deprecated
      */
     public List<TileLayer> getTileLayers() {
@@ -518,57 +516,78 @@ public class GetCapabilitiesConfiguration implements Configuration, GridSetConfi
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getLayers()
+     * @see TileLayerConfiguration#getLayers()
      */
     public Iterable<? extends TileLayer> getLayers() {
         return Collections.unmodifiableList(new ArrayList<TileLayer>(layers.values()));
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getTileLayerNames()
+     * @see TileLayerConfiguration#getLayerNames()
      */
-    public Set<String> getTileLayerNames() {
+    public Set<String> getLayerNames() {
         return new HashSet<String>(layers.keySet());
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#containsLayer(java.lang.String)
+     * @see TileLayerConfiguration#getTileLayerNames()
+     */
+    public Set<String> getTileLayerNames() {
+        return getLayerNames();
+    }
+
+    /**
+     * @see TileLayerConfiguration#containsLayer(java.lang.String)
      */
     public boolean containsLayer(String tileLayerId) {
         return getTileLayerById(tileLayerId) != null;
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getTileLayerById(java.lang.String)
+     * @see TileLayerConfiguration#getTileLayer(java.lang.String)
      */
-    public TileLayer getTileLayerById(String layerId) {
-        // this configuration does not differentiate between layer identifier and identity
-        return getTileLayer(layerId);
-    }
-
-    /**
-     * @see org.geowebcache.config.Configuration#getTileLayer(java.lang.String)
-     */
-    public TileLayer getTileLayer(String layerName) {
+    public TileLayer getLayer(String layerName) {
         return layers.get(layerName);
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getTileLayerCount()
+     * @see TileLayerConfiguration#getTileLayerById(java.lang.String)
      */
-    public int getTileLayerCount() {
+    public TileLayer getTileLayerById(String layerId) {
+        // this configuration does not differentiate between layer identifier and identity
+        return getLayer(layerId);
+    }
+
+    /**
+     * @see TileLayerConfiguration#getTileLayer(java.lang.String)
+     */
+    public TileLayer getTileLayer(String layerName) {
+        return getLayer(layerName);
+    }
+
+    /**
+     * @see TileLayerConfiguration#getTileLayerCount()
+     */
+    public int getLayerCount() {
         return layers.size();
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#removeLayer(java.lang.String)
+     * @see TileLayerConfiguration#getTileLayerCount()
+     */
+    public int getTileLayerCount() {
+        return getLayerCount();
+    }
+
+    /**
+     * @see TileLayerConfiguration#removeLayer(java.lang.String)
      */
     public boolean removeLayer(String layerName) {
         return layers.remove(layerName) != null;
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#modifyLayer(org.geowebcache.layer.TileLayer)
+     * @see TileLayerConfiguration#modifyLayer(org.geowebcache.layer.TileLayer)
      */
     public void modifyLayer(TileLayer tl) throws NoSuchElementException {
         throw new UnsupportedOperationException("modifyLayer is not supported by "
@@ -576,7 +595,7 @@ public class GetCapabilitiesConfiguration implements Configuration, GridSetConfi
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#save()
+     * @see TileLayerConfiguration#save()
      */
     public void save() throws IOException {
         // silently do nothing
@@ -584,14 +603,14 @@ public class GetCapabilitiesConfiguration implements Configuration, GridSetConfi
 
     /**
      * @return {@code false}
-     * @see org.geowebcache.config.Configuration#canSave(org.geowebcache.layer.TileLayer)
+     * @see TileLayerConfiguration#canSave(org.geowebcache.layer.TileLayer)
      */
     public boolean canSave(TileLayer tl) {
         return false;
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#addLayer(org.geowebcache.layer.TileLayer)
+     * @see TileLayerConfiguration#addLayer(org.geowebcache.layer.TileLayer)
      */
     public void addLayer(TileLayer tl) throws IllegalArgumentException {
         if (tl == null) {

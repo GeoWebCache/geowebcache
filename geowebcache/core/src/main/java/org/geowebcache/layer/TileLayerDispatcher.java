@@ -27,7 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.BaseConfiguration;
-import org.geowebcache.config.Configuration;
+import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLGridSet;
@@ -42,13 +42,13 @@ import org.springframework.util.Assert;
 import com.google.common.base.Preconditions;
 
 /**
- * Serves tile layers from the {@link Configuration}s available in the application context.
+ * Serves tile layers from the {@link TileLayerConfiguration}s available in the application context.
  */
 public class TileLayerDispatcher implements DisposableBean {
 
     private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayerDispatcher.class);
 
-    private List<Configuration> configs;
+    private List<TileLayerConfiguration> configs;
 
     private GridSetBroker gridSetBroker;
 
@@ -59,9 +59,9 @@ public class TileLayerDispatcher implements DisposableBean {
      *             loaded from the application context, this {@code config} parameter will be
      *             ignored
      */
-    public TileLayerDispatcher(GridSetBroker gridSetBroker, List<Configuration> configs) {
+    public TileLayerDispatcher(GridSetBroker gridSetBroker, List<TileLayerConfiguration> configs) {
         this.gridSetBroker = gridSetBroker;
-        this.configs = configs == null ? new ArrayList<Configuration>() : configs;
+        this.configs = configs == null ? new ArrayList<TileLayerConfiguration>() : configs;
         initialize();
     }
 
@@ -70,16 +70,16 @@ public class TileLayerDispatcher implements DisposableBean {
         reInit();
     }
 
-    public void addConfiguration(Configuration config) {
+    public void addConfiguration(TileLayerConfiguration config) {
         initialize(config);
-        List<Configuration> newList = new ArrayList<Configuration>(configs);
+        List<TileLayerConfiguration> newList = new ArrayList<TileLayerConfiguration>(configs);
         newList.add(config);
         this.configs = newList;
     }
 
     public boolean layerExists(final String layerName) {
         for (int i = 0; i < configs.size(); i++) {
-            Configuration configuration = configs.get(i);
+            TileLayerConfiguration configuration = configs.get(i);
             TileLayer layer = configuration.getTileLayer(layerName);
             if (layer != null) {
                 return true;
@@ -98,7 +98,7 @@ public class TileLayerDispatcher implements DisposableBean {
         Preconditions.checkNotNull(layerName, "layerName is null");
 
         for (int i = 0; i < configs.size(); i++) {
-            Configuration configuration = configs.get(i);
+            TileLayerConfiguration configuration = configs.get(i);
             TileLayer layer = configuration.getTileLayer(layerName);
             if (layer != null) {
                 return layer;
@@ -118,15 +118,15 @@ public class TileLayerDispatcher implements DisposableBean {
      * 
      */
     public void reInit() {
-        List<Configuration> extensions = GeoWebCacheExtensions.extensions(Configuration.class);
-        this.configs = new ArrayList<Configuration>(extensions);
+        List<TileLayerConfiguration> extensions = GeoWebCacheExtensions.extensions(TileLayerConfiguration.class);
+        this.configs = new ArrayList<TileLayerConfiguration>(extensions);
         initialize();
     }
 
     public int getLayerCount() {
         int count = 0;
         for (int i = 0; i < configs.size(); i++) {
-            Configuration configuration = configs.get(i);
+            TileLayerConfiguration configuration = configs.get(i);
             count += configuration.getTileLayerCount();
         }
         return count;
@@ -135,7 +135,7 @@ public class TileLayerDispatcher implements DisposableBean {
     public Set<String> getLayerNames() {
         Set<String> names = new HashSet<String>();
         for (int i = 0; i < configs.size(); i++) {
-            Configuration configuration = configs.get(i);
+            TileLayerConfiguration configuration = configs.get(i);
             names.addAll(configuration.getTileLayerNames());
         }
         return names;
@@ -155,7 +155,7 @@ public class TileLayerDispatcher implements DisposableBean {
         List<Iterable<TileLayer>> perConfigLayers = new ArrayList<Iterable<TileLayer>>(
                 configs.size());
 
-        for (Configuration config : configs) {
+        for (TileLayerConfiguration config : configs) {
             perConfigLayers.add((Iterable<TileLayer>) config.getLayers());
         }
 
@@ -165,12 +165,12 @@ public class TileLayerDispatcher implements DisposableBean {
     private void initialize() {
         log.debug("Thread initLayers(), initializing");
 
-        for (Configuration config : configs) {
+        for (TileLayerConfiguration config : configs) {
             initialize(config);
         }
     }
 
-    private int initialize(Configuration config) {
+    private int initialize(TileLayerConfiguration config) {
         if (config == null) {
             throw new IllegalStateException(
                     "TileLayerDispatcher got a null GWC configuration object");
@@ -180,7 +180,7 @@ public class TileLayerDispatcher implements DisposableBean {
         try {
             configIdent = config.getIdentifier();
         } catch (Exception gwce) {
-            log.error("Error obtaining identify from Configuration " + config, gwce);
+            log.error("Error obtaining identify from TileLayerConfiguration " + config, gwce);
             return 0;
         }
 
@@ -197,7 +197,7 @@ public class TileLayerDispatcher implements DisposableBean {
             return 0;
         }
         if (layerCount <= 0) {
-            log.info("Configuration " + config.getIdentifier() + " contained no layers.");
+            log.info("TileLayerConfiguration " + config.getIdentifier() + " contained no layers.");
         }
 
         // Check whether there is any general service information
@@ -220,22 +220,22 @@ public class TileLayerDispatcher implements DisposableBean {
     }
 
     /**
-     * Finds out which {@link Configuration} contains the given layer,
-     * {@link Configuration#removeLayer(String) removes} it, and returns the configuration, without
+     * Finds out which {@link TileLayerConfiguration} contains the given layer,
+     * {@link TileLayerConfiguration#removeLayer(String) removes} it, and returns the configuration, without
      * saving it.
      * <p>
-     * The calling code is responsible from calling {@link Configuration#save()} on the returned
+     * The calling code is responsible from calling {@link TileLayerConfiguration#save()} on the returned
      * configuration object if the change is to be made persistent.
      * </p>
      * 
      * @param layerName
      *            the name of the layer to remove
-     * @return the Configuration from which the layer has been removed, or {@code null} if no
+     * @return the TileLayerConfiguration from which the layer has been removed, or {@code null} if no
      *         configuration contained such a layer
      */
-    public synchronized Configuration removeLayer(final String layerName)
+    public synchronized TileLayerConfiguration removeLayer(final String layerName)
             throws IllegalArgumentException {
-        for (Configuration config : configs) {
+        for (TileLayerConfiguration config : configs) {
             if (config.removeLayer(layerName)) {
                 return config;
             }
@@ -244,19 +244,19 @@ public class TileLayerDispatcher implements DisposableBean {
     }
 
     /**
-     * Adds a layer and returns (but doesn't save) the {@link Configuration} to which the layer was
+     * Adds a layer and returns (but doesn't save) the {@link TileLayerConfiguration} to which the layer was
      * added.
      * 
      * @param tl
      *            the layer to add
      * @return the configuration to which the layer was added; calling code is in charge of decising
-     *         whether to {@link Configuration#save() save} the configuration permanently or not.
+     *         whether to {@link TileLayerConfiguration#save() save} the configuration permanently or not.
      * @throws IllegalArgumentException
      *             if the given tile layer can't be added to any configuraion managed by this tile
      *             layer dispatcher.
      */
-    public synchronized Configuration addLayer(final TileLayer tl) throws IllegalArgumentException {
-        for (Configuration c : configs) {
+    public synchronized TileLayerConfiguration addLayer(final TileLayer tl) throws IllegalArgumentException {
+        for (TileLayerConfiguration c : configs) {
             if (c.canSave(tl)) {
                 c.addLayer(tl);
                 return c;
@@ -272,20 +272,20 @@ public class TileLayerDispatcher implements DisposableBean {
      * @param tl
      * @throws IllegalArgumentException
      */
-    public synchronized Configuration modify(final TileLayer tl) throws IllegalArgumentException {
-        Configuration config = getConfiguration(tl);
+    public synchronized TileLayerConfiguration modify(final TileLayer tl) throws IllegalArgumentException {
+        TileLayerConfiguration config = getConfiguration(tl);
         config.modifyLayer(tl);
         return config;
     }
 
-    public Configuration getConfiguration(TileLayer tl) throws IllegalArgumentException {
+    public TileLayerConfiguration getConfiguration(TileLayer tl) throws IllegalArgumentException {
         Assert.notNull(tl, "layer is null");
         return getConfiguration(tl.getId());
     }
 
-    public Configuration getConfiguration(final String tileLayerId) throws IllegalArgumentException {
+    public TileLayerConfiguration getConfiguration(final String tileLayerId) throws IllegalArgumentException {
         Assert.notNull(tileLayerId, "tileLayerId is null");
-        for (Configuration c : configs) {
+        for (TileLayerConfiguration c : configs) {
             if (c.containsLayer(tileLayerId)) {
                 return c;
             }
@@ -309,7 +309,7 @@ public class TileLayerDispatcher implements DisposableBean {
      * @throws IOException
      * @see {@link GridSetBroker#remove(String)}
      */
-    public synchronized Configuration removeGridset(final String gridSetName)
+    public synchronized TileLayerConfiguration removeGridset(final String gridSetName)
             throws IllegalStateException, IOException {
 
         GridSet gridSet = gridSetBroker.get(gridSetName);

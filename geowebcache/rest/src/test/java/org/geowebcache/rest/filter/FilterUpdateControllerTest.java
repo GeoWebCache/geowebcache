@@ -1,14 +1,12 @@
 package org.geowebcache.rest.filter;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.Configuration;
+import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
 import org.geowebcache.grid.*;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.controller.FilterUpdateController;
-import org.geowebcache.rest.controller.TileLayerController;
-import org.geowebcache.util.NullURLMangler;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.MediaType;
@@ -49,7 +47,7 @@ public class FilterUpdateControllerTest {
 
         XMLConfiguration xmlConfig = loadXMLConfig();
         xmlConfig.initialize(gridSetBroker);
-        LinkedList<Configuration> configList = new LinkedList<Configuration>();
+        LinkedList<TileLayerConfiguration> configList = new LinkedList<TileLayerConfiguration>();
         configList.add(xmlConfig);
 
         tld = new TileLayerDispatcher(gridSetBroker, configList);

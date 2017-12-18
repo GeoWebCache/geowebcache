@@ -34,7 +34,7 @@ import org.apache.commons.io.IOUtils;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.geowebcache.config.BaseConfiguration;
-import org.geowebcache.config.Configuration;
+import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
 import org.geowebcache.diskquota.DiskQuotaMonitor;
@@ -160,7 +160,7 @@ public abstract class JDBCQuotaStoreTest extends OnlineTestCase {
         EasyMock.replay(cacheDirFinder);
 
         XMLConfiguration xmlConfig = loadXMLConfig();
-        LinkedList<Configuration> configList = new LinkedList<Configuration>();
+        LinkedList<TileLayerConfiguration> configList = new LinkedList<TileLayerConfiguration>();
         configList.add(xmlConfig);
 
         layerDispatcher = new TileLayerDispatcher(new GridSetBroker(true, true), configList);

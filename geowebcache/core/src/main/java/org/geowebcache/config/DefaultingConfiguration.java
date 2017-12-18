@@ -9,7 +9,7 @@ import org.geowebcache.layer.TileLayer;
 public interface DefaultingConfiguration extends BaseConfiguration {
 
     /**
-     * Configuration objects lacking their own defaults can delegate to this
+     * TileLayerConfiguration objects lacking their own defaults can delegate to this
      * @param layer
      */
     void setDefaultValues(TileLayer layer);

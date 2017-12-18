@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.Info;
 import org.geowebcache.config.legends.LegendInfo;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -64,7 +65,7 @@ import org.geowebcache.util.ServletUtils;
  * tile
  * </p>
  */
-public abstract class TileLayer {
+public abstract class TileLayer implements Info {
 
     private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayer.class);
 
@@ -94,7 +95,10 @@ public abstract class TileLayer {
     /**
      * The unique identifier for the layer.
      * @return
+     *
+     * @deprecated use {@link #getName()}
      */
+    @Deprecated
     public abstract String getId();
     
     /**

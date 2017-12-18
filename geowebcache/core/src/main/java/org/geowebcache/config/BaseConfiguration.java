@@ -33,7 +33,7 @@ public interface BaseConfiguration {
     String getIdentifier();
     
     /**
-     * The location is a string identifying where this configuration is persisted Configuration 
+     * The location is a string identifying where this configuration is persisted TileLayerConfiguration
      * implementations may choose whatever form is appropriate to their persistence mechanism and 
      * callers should not assume any particular format. In many but not all cases this will be a URL
      * or filesystem path.

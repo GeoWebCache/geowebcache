@@ -32,12 +32,13 @@ import org.geowebcache.layer.TileLayerDispatcher;
  * spring beans)
  * </p>
  */
-public interface Configuration extends BaseConfiguration {
+public interface TileLayerConfiguration extends BaseConfiguration {
 
     /**
      * @return an unmodifiable list of layers, may be empty, but not null.
-     * @deprecated
+     * @deprecated use {@link #getLayers()}
      */
+    @Deprecated
     public List<? extends TileLayer> getTileLayers();
 
     /**
@@ -51,6 +52,16 @@ public interface Configuration extends BaseConfiguration {
      * @return the layer named {@code layerIdent} or {@code null} if no such layer exists in this
      *         configuration
      */
+    public TileLayer getLayer(String layerName);
+
+    /**
+     * @param layerName
+     *            the layer name
+     * @return the layer named {@code layerIdent} or {@code null} if no such layer exists in this
+     *         configuration
+     * @deprecated use {@link #getLayer(String)}
+     */
+    @Deprecated
     public TileLayer getTileLayer(String layerName);
 
     /**
@@ -58,11 +69,37 @@ public interface Configuration extends BaseConfiguration {
      *            the layer identifier
      * @return the layer identified by {@code layerId} or {@code null} if no such layer exists in
      *         this configuration
+     * @deprecated use {@link #getLayer(String)}
      */
+    @Deprecated
     public TileLayer getTileLayerById(String layerId);
 
+    /**
+     * Get the number of TileLayers configured
+     * @return
+     */
+    public int getLayerCount();
+
+    /**
+     * Get the number of TileLayers configured
+     * @return
+     * @deprecated use {@link #getLayerCount()}
+     */
+    @Deprecated
     public int getTileLayerCount();
 
+    /**
+     * Get the names of all TileLayers configured
+     * @return
+     */
+    public Set<String> getLayerNames();
+
+    /**
+     * Get the names of all TileLayers configured
+     * @return
+     * @deprecated use {@link #getLayerNames()}
+     */
+    @Deprecated
     public Set<String> getTileLayerNames();
 
     /**

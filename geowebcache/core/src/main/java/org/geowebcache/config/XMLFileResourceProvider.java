@@ -174,11 +174,11 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
 
         if (!configDirectory.exists() && !configDirectory.mkdirs()) {
             throw new IOException(
-                    "Configuration directory does not exist and cannot be created: '"
+                    "TileLayerConfiguration directory does not exist and cannot be created: '"
                             + configDirectory.getAbsolutePath() + "'");
         }
         if (!configDirectory.canWrite()) {
-            throw new IOException("Configuration directory is not writable: '"
+            throw new IOException("TileLayerConfiguration directory is not writable: '"
                     + configDirectory.getAbsolutePath() + "'");
         }
 

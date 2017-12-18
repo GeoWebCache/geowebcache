@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import javax.servlet.ServletOutputStream;
@@ -40,7 +39,7 @@ import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.BaseConfiguration;
-import org.geowebcache.config.Configuration;
+import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.conveyor.Conveyor;
@@ -422,8 +421,8 @@ public class WMSService extends Service{
 
     public void setFullWMS(String trueFalse) {
         // Selection of the configurations 
-        List<Configuration> configs = new ArrayList<Configuration>(GeoWebCacheExtensions.extensions(Configuration.class));
-        // Selection of the Configuration file associated to geowebcache.xml
+        List<TileLayerConfiguration> configs = new ArrayList<TileLayerConfiguration>(GeoWebCacheExtensions.extensions(TileLayerConfiguration.class));
+        // Selection of the TileLayerConfiguration file associated to geowebcache.xml
         ServerConfiguration gwcXMLconfig = null;
         for(BaseConfiguration config : configs){
             if(config instanceof XMLConfiguration){

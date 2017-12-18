@@ -82,7 +82,7 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
     private File configFile;
     
     @Override
-    protected Configuration getConfig() throws Exception {
+    protected TileLayerConfiguration getConfig() throws Exception {
         if(configFile==null) {
             configDir = temp.getRoot();
             configFile = temp.newFile("geowebcache.xml");
