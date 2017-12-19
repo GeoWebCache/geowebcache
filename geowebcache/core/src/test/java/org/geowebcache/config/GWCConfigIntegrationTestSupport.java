@@ -3,6 +3,7 @@ package org.geowebcache.config;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -11,6 +12,12 @@ import java.util.List;
 public abstract class GWCConfigIntegrationTestSupport {
 
     GridSetBroker broker = new GridSetBroker(true, true);
+
+    /**
+     * Resets to an empty configuration;
+     */
+    public abstract void resetConfiguration() throws Exception;
+
     public abstract List<TileLayerConfiguration> getTileLayerConfigurations();
 
     public GridSetBroker getGridSetBroker() {

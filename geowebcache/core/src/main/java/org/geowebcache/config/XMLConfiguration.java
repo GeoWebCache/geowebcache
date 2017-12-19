@@ -633,6 +633,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
      * @param gridSet
      * @throws GeoWebCacheException
      */
+    @Deprecated
     public synchronized void addOrReplaceGridSet(final XMLGridSet gridSet)
             throws IllegalArgumentException {
         final String gridsetName = gridSet.getName();
@@ -655,6 +656,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
      *            the name of the gridset to remove
      * @return the removed griset, or {@code null} if no such gridset exists
      */
+    @Deprecated
     public synchronized XMLGridSet removeGridset(final String gridsetName) {
         List<XMLGridSet> gridSets = getGwcConfig().getGridSets();
         for (Iterator<XMLGridSet> it = gridSets.iterator(); it.hasNext();) {
@@ -1075,5 +1077,28 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
             log.error("Could not get config location", e);
             return "Error, see log for details";
         }
+    }
+
+    @Override
+    public synchronized void addGridSet(GridSet gridSet)  {
+        if (null != gridSetBroker.get(gridSet.getName())) {
+            throw new IllegalArgumentException("GridSet " + gridSet.getName() + " already exists");
+        }
+        try {
+            saveGridSet(gridSet);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    private void saveGridSet(GridSet gridSet) throws IOException {
+        addOrReplaceGridSet(new XMLGridSet(gridSet));
+        save();
+        gridSetBroker.put(gridSet);
+    }
+
+    @Override
+    public synchronized boolean removeGridSet(String gridSetName) {
+        return removeGridset(gridSetName) != null;
     }
 }

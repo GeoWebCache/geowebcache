@@ -6,6 +6,7 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.Collections;
@@ -19,18 +20,22 @@ public class GWCXMLConfigIntegrationTestSupport extends GWCConfigIntegrationTest
     protected XMLConfiguration config;
 
     public GWCXMLConfigIntegrationTestSupport() throws Exception {
-        if(configFile==null) {
-            configDir = Files.createTempDirectory("gwc").toFile();
-            configFile = new File(configDir, "geowebcache.xml");
-            configDir.deleteOnExit();
+        configDir = Files.createTempDirectory("gwc").toFile();
+        configFile = new File(configDir, "geowebcache.xml");
+        configDir.deleteOnExit();
 
+        resetConfiguration();
+    }
+
+    @Override
+    public void resetConfiguration() throws Exception {
+        if (configFile != null) {
             URL source = XMLConfiguration.class.getResource("geowebcache-empty.xml");
             FileUtils.copyURLToFile(source, configFile);
         }
-
-        GridSetBroker gridSetBroker = new GridSetBroker(true, true);
+        broker = new GridSetBroker(true, true);
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
-        config.initialize(gridSetBroker);
+        config.initialize(broker);
     }
 
     @Override

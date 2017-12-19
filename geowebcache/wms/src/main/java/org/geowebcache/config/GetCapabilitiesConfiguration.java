@@ -582,6 +582,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     /**
      * @see TileLayerConfiguration#removeLayer(java.lang.String)
      */
+    //TODO: Why doesn't this throw an IllegalArgument exception: read-only?
     public boolean removeLayer(String layerName) {
         return layers.remove(layerName) != null;
     }
@@ -638,5 +639,18 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     public String getLocation() {
         return this.url;
     }
-    
+
+    @Override
+    public void addGridSet(GridSet gridSet) throws IllegalArgumentException {
+        if (gridSet == null) {
+            throw new NullPointerException();
+        }
+        throw new IllegalArgumentException(
+                "This is a read only configuration object, can't add gridset " + gridSet.getName());
+    }
+
+    @Override
+    public boolean removeGridSet(String gridSetName) {
+        throw new IllegalArgumentException("This is a read only configuration object, can't add gridset " + gridSetName);
+    }
 }

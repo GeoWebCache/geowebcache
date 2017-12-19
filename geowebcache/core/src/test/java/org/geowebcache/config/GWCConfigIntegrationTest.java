@@ -18,6 +18,7 @@ public abstract class GWCConfigIntegrationTest {
     public static Collection<GWCConfigIntegrationTestSupport[]> data() throws Exception {
         return Arrays.asList(new GWCConfigIntegrationTestSupport[][] {
                 {new GWCXMLConfigIntegrationTestSupport()}
+                //TODO: Add new configurations as they are implemented
         });
     }
 
@@ -29,6 +30,7 @@ public abstract class GWCConfigIntegrationTest {
 
     @Before
     public void setUpTest() throws Exception {
+        testSupport.resetConfiguration();
         GWCConfigIntegrationTestData.setUpTestData(testSupport);
 
         gridSetBroker = testSupport.getGridSetBroker();
