@@ -39,6 +39,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.Enumeration;
 import java.util.stream.Collectors;
 
 @Component
@@ -118,8 +121,20 @@ public class SeedController {
      */
     @RequestMapping(value = "/seed/{layer:.+}", method = RequestMethod.POST)
     public ResponseEntity<?> doPost(HttpServletRequest request,
-                                    @PathVariable String layer, InputStream inputStream) {
+                                    @PathVariable String layer,InputStream inputStream) {
         String body = new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.joining("\n"));
+        if(body == null || body.length() == 0) {
+            Enumeration<String> names = request.getParameterNames();
+            StringBuffer sbu = new StringBuffer();
+            while (names.hasMoreElements()) {
+                String name = names.nextElement();
+                sbu.append(name + "=" + request.getParameter(name)).append("&");
+            }
+            if(sbu.length()>0){
+                sbu.deleteCharAt(sbu.length() - 1);
+            }
+        }
+
         if (layer.indexOf(".") == -1) {
             try {
                 return formService.handleFormPost(request, layer, body);
