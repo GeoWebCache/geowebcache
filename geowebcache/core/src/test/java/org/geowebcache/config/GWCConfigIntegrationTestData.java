@@ -16,10 +16,19 @@ public class GWCConfigIntegrationTestData {
     // Names / ids for config objects
     public static final String LAYER_TOPP_STATES = "topp:states";
 
-    public static final String GRIDSET_EPSG4326 = "EPSG:4326";
+    public static final String[] LAYERS = {LAYER_TOPP_STATES};
+
     public static final String GRIDSET_EPSG2163 = "EPSG:2163";
 
+    //Native gridsets
+    public static final String GRIDSET_EPSG4326 = "EPSG:4326";
+
+
+    public static final String[] CUSTOM_GRIDSETS = {GRIDSET_EPSG2163};
+
     public static final String BLOBSTORE_FILE_DEFAULT = "defaultCache";
+
+    public static final String[] BLOBSTORES = {BLOBSTORE_FILE_DEFAULT};
 
     public static void setUpTestData(GWCConfigIntegrationTestSupport testSupport) throws GeoWebCacheException, IOException {
         //set up service information

@@ -14,8 +14,8 @@ import java.util.List;
 
 public class GWCXMLConfigIntegrationTestSupport extends GWCConfigIntegrationTestSupport {
 
-    private File configDir;
-    private File configFile;
+    protected File configDir;
+    protected File configFile;
 
     protected XMLConfiguration config;
 
