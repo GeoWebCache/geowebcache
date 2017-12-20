@@ -42,9 +42,7 @@ public abstract class LayerConfigurationTest {
     public void testPersistAdd() throws Exception {
         TileLayer goodLayer = getGoodLayer("test", 1);
         config.addLayer(goodLayer);
-        
-        config.save(); // TODO Remove this
-        
+
         TileLayerConfiguration config2 = getConfig();
         TileLayer retrieved = config2.getLayer("test");
         assertThat(retrieved, layerEquals(goodLayer));
@@ -113,9 +111,7 @@ public abstract class LayerConfigurationTest {
         testPersistAdd();
         
         assertThat(config.removeLayer("test"), is(true));
-        
-        config.save(); // TODO Remove this
-        
+
         TileLayerConfiguration config2 = getConfig();
         TileLayer retrieved = config2.getLayer("test");
         assertThat(retrieved, nullValue());
@@ -173,9 +169,7 @@ public abstract class LayerConfigurationTest {
         
         TileLayer goodLayer = getGoodLayer("test", 2);
         config.modifyLayer(goodLayer);
-        
-        config.save(); // TODO Remove this
-        
+
         TileLayerConfiguration config2 = getConfig();
         TileLayer retrieved = config2.getLayer("test");
         assertThat(retrieved, layerEquals(goodLayer));

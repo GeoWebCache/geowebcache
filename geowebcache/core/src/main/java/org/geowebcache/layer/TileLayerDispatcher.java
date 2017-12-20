@@ -220,67 +220,53 @@ public class TileLayerDispatcher implements DisposableBean {
     }
 
     /**
-     * Finds out which {@link TileLayerConfiguration} contains the given layer,
-     * {@link TileLayerConfiguration#removeLayer(String) removes} it, and returns the configuration, without
-     * saving it.
-     * <p>
-     * The calling code is responsible from calling {@link TileLayerConfiguration#save()} on the returned
-     * configuration object if the change is to be made persistent.
-     * </p>
+     * Finds out which {@link TileLayerConfiguration} contains the given layer, removes it, and saves the configuration.
      * 
-     * @param layerName
-     *            the name of the layer to remove
-     * @return the TileLayerConfiguration from which the layer has been removed, or {@code null} if no
-     *         configuration contained such a layer
+     * @param layerName the name of the layer to remove
+     * @return true if the layer was removed, false if it was not found.
      */
-    public synchronized TileLayerConfiguration removeLayer(final String layerName)
+    public synchronized boolean removeLayer(final String layerName)
             throws IllegalArgumentException {
         for (TileLayerConfiguration config : configs) {
             if (config.removeLayer(layerName)) {
-                return config;
+                return true;
             }
         }
-        return null;
+        return false;
     }
 
     /**
-     * Adds a layer and returns (but doesn't save) the {@link TileLayerConfiguration} to which the layer was
-     * added.
+     * Adds a layer and returns the {@link TileLayerConfiguration} to which the layer was added.
      * 
-     * @param tl
-     *            the layer to add
-     * @return the configuration to which the layer was added; calling code is in charge of decising
-     *         whether to {@link TileLayerConfiguration#save() save} the configuration permanently or not.
-     * @throws IllegalArgumentException
-     *             if the given tile layer can't be added to any configuraion managed by this tile
-     *             layer dispatcher.
+     * @param tl the layer to add
+     * @throws IllegalArgumentException if the given tile layer can't be added to any configuration managed by this tile
+     *         layer dispatcher.
      */
-    public synchronized TileLayerConfiguration addLayer(final TileLayer tl) throws IllegalArgumentException {
+    public synchronized void addLayer(final TileLayer tl) throws IllegalArgumentException {
         for (TileLayerConfiguration c : configs) {
             if (c.canSave(tl)) {
                 c.addLayer(tl);
-                return c;
+                return;
             }
         }
         throw new IllegalArgumentException("No configuration found capable of saving " + tl);
     }
 
     /**
-     * Replaces the given layer and returns the Layer's configuration, does not save the
-     * configuration, the calling code shall do that if the change is to be made persistent.
+     * Replaces the given layer and returns the Layer's configuration, saving the configuration.
      * 
-     * @param tl
+     * @param tl The layer to modify
      * @throws IllegalArgumentException
      */
-    public synchronized TileLayerConfiguration modify(final TileLayer tl) throws IllegalArgumentException {
+    public synchronized void modify(final TileLayer tl) throws IllegalArgumentException {
         TileLayerConfiguration config = getConfiguration(tl);
+        //TODO: this won't work with GetCapabilitiesConfiguration
         config.modifyLayer(tl);
-        return config;
     }
 
     public TileLayerConfiguration getConfiguration(TileLayer tl) throws IllegalArgumentException {
         Assert.notNull(tl, "layer is null");
-        return getConfiguration(tl.getId());
+        return getConfiguration(tl.getName());
     }
 
     public TileLayerConfiguration getConfiguration(final String tileLayerId) throws IllegalArgumentException {

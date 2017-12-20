@@ -169,8 +169,7 @@ public class TileLayerController extends GWCController {
         TileLayer tl = deserializeAndCheckLayer(req, layer, extension, false);
 
         try {
-            BaseConfiguration configuration = layerDispatcher.modify(tl);
-            configuration.save();
+            layerDispatcher.modify(tl);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<Object>("Layer " + tl.getName()
                     + " is not known by the configuration."
@@ -198,8 +197,7 @@ public class TileLayerController extends GWCController {
         }
 
         if (testtl == null) {
-            BaseConfiguration config = layerDispatcher.addLayer(tl);
-            config.save();
+            layerDispatcher.addLayer(tl);
         } else {
             throw new RestException("Layer with name " + tl.getName() + " already exists, "
                     + "use POST if you want to replace it.", HttpStatus.BAD_REQUEST);
@@ -233,13 +231,8 @@ public class TileLayerController extends GWCController {
             storageBrokerDeleteException = se;
         }
         try {
-            BaseConfiguration configuration = layerDispatcher.removeLayer(layerName);
-            if (configuration == null) {
-                throw new RestException("TileLayerConfiguration to remove layer not found",
-                        HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-            configuration.save();
-        } catch (IOException e) {
+            layerDispatcher.removeLayer(layerName);
+        } catch (IllegalArgumentException e) {
             throw new RestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
         if (storageBrokerDeleteException != null) {

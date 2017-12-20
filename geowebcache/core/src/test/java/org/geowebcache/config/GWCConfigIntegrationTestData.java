@@ -68,10 +68,6 @@ public class GWCConfigIntegrationTestData {
                 Arrays.asList("image/gif", "image/jpeg", "image/png", "image/png8"),  subSets,
                 Collections.singletonList(parameterFilter), null, null, true));
 
-        //TODO: update to use new API
-
-        tileLayerConfiguration.save();
-
         //Set up blobstores
         BlobStoreConfigurationCatalog blobStoreConfiguration = testSupport.getBlobStoreConfiguration();
 

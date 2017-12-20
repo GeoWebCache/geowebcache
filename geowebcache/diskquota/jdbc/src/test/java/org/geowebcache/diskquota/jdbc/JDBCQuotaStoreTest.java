@@ -281,8 +281,7 @@ public abstract class JDBCQuotaStoreTest extends OnlineTestCase {
         assertQuotaZero("topp:states3");
 
         // remove one layer from the dispatcher
-        BaseConfiguration configuration = layerDispatcher.removeLayer("topp:states");
-        configuration.save();
+        layerDispatcher.removeLayer("topp:states");
         // and make sure at the next startup the store catches up (note this behaviour is just a
         // startup consistency check in case the store got out of sync for some reason. On normal
         // situations the store should have been notified through store.deleteLayer(layerName) if

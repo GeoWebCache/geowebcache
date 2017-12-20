@@ -94,9 +94,8 @@ public class TileLayerDispatcherTest extends GWCConfigIntegrationTest {
 
     @Test
     public void testRemoveLayerException() {
-        //TODO: This behavior will change after the API change
-        assertNull("Expected failure when trying to remove null layer", tileLayerDispatcher.removeLayer(null));
-        assertNull("Expected failure when trying to remove nonexistant layer", tileLayerDispatcher.removeLayer("nonexistantLayer"));
+        assertFalse("Expected failure when trying to remove null layer", tileLayerDispatcher.removeLayer(null));
+        assertFalse("Expected failure when trying to remove nonexistant layer", tileLayerDispatcher.removeLayer("nonexistantLayer"));
     }
 
     @Test

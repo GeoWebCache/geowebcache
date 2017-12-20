@@ -204,7 +204,6 @@ public class XMLConfigurationTest {
         layer.setLegends(legendsRawInfo);
 
         config.addLayer(layer);
-        config.save();
 
         try {
             XMLConfiguration.validate(XMLConfiguration
