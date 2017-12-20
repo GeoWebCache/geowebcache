@@ -915,7 +915,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         
         this.reloadConfigOnInit = true;
 
-        return getTileLayerCount();
+        return getLayerCount();
     }
 
     private void updateLayers() {

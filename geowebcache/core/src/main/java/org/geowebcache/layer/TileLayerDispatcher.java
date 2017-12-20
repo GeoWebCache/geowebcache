@@ -80,7 +80,7 @@ public class TileLayerDispatcher implements DisposableBean {
     public boolean layerExists(final String layerName) {
         for (int i = 0; i < configs.size(); i++) {
             TileLayerConfiguration configuration = configs.get(i);
-            TileLayer layer = configuration.getTileLayer(layerName);
+            TileLayer layer = configuration.getLayer(layerName);
             if (layer != null) {
                 return true;
             }
@@ -99,7 +99,7 @@ public class TileLayerDispatcher implements DisposableBean {
 
         for (int i = 0; i < configs.size(); i++) {
             TileLayerConfiguration configuration = configs.get(i);
-            TileLayer layer = configuration.getTileLayer(layerName);
+            TileLayer layer = configuration.getLayer(layerName);
             if (layer != null) {
                 return layer;
             }
@@ -127,7 +127,7 @@ public class TileLayerDispatcher implements DisposableBean {
         int count = 0;
         for (int i = 0; i < configs.size(); i++) {
             TileLayerConfiguration configuration = configs.get(i);
-            count += configuration.getTileLayerCount();
+            count += configuration.getLayerCount();
         }
         return count;
     }
@@ -136,7 +136,7 @@ public class TileLayerDispatcher implements DisposableBean {
         Set<String> names = new HashSet<String>();
         for (int i = 0; i < configs.size(); i++) {
             TileLayerConfiguration configuration = configs.get(i);
-            names.addAll(configuration.getTileLayerNames());
+            names.addAll(configuration.getLayerNames());
         }
         return names;
     }

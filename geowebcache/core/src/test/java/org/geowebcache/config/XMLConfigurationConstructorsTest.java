@@ -102,7 +102,7 @@ public class XMLConfigurationConstructorsTest {
         XMLConfiguration config = new XMLConfiguration(provider, storageFinder);
         config.initialize(broker);
         
-        assertThat(config.getTileLayer(MARKED_LAYER), notNullValue());
+        assertThat(config.getLayer(MARKED_LAYER), notNullValue());
     }
     
     @Test
@@ -115,7 +115,7 @@ public class XMLConfigurationConstructorsTest {
         XMLConfiguration config = new XMLConfiguration(provider, storageFinder);
         config.initialize(broker);
         
-        assertThat(config.getTileLayer(MARKED_LAYER), notNullValue());
+        assertThat(config.getLayer(MARKED_LAYER), notNullValue());
     }
     
     @Test
@@ -128,7 +128,7 @@ public class XMLConfigurationConstructorsTest {
         XMLConfiguration config = new XMLConfiguration(provider, storageFinder);
         config.initialize(broker);
         
-        assertThat(config.getTileLayer(MARKED_LAYER), notNullValue());
+        assertThat(config.getLayer(MARKED_LAYER), notNullValue());
     }
     
     @Test
@@ -139,7 +139,7 @@ public class XMLConfigurationConstructorsTest {
         XMLConfiguration config = new XMLConfiguration(provider, configDir.getCanonicalPath());
         config.initialize(broker);
         
-        assertThat(config.getTileLayer(MARKED_LAYER), notNullValue());
+        assertThat(config.getLayer(MARKED_LAYER), notNullValue());
     }
     
     @Test

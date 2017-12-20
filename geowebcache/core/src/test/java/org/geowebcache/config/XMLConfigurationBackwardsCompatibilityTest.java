@@ -35,7 +35,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
 
     @Test
     public void testLoadPre10() throws Exception {
-        List<TileLayer> layers = loadResource("geowebcache_pre10.xml");
+        Iterable<TileLayer> layers = loadResource("geowebcache_pre10.xml");
         TileLayer layer = findLayer(layers, "topp:states");
         assertTrue(layer != null);
         TileLayer layer2 = findLayer(layers, "topp:states2");
@@ -46,7 +46,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
 
     @Test
     public void testLoad10() throws Exception {
-        List<TileLayer> layers = loadResource("geowebcache_10.xml");
+        Iterable<TileLayer> layers = loadResource("geowebcache_10.xml");
         TileLayer layer = findLayer(layers, "topp:states");
         assertTrue(layer != null);
         // assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
@@ -58,7 +58,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
 
     @Test
     public void testLoad101() throws Exception {
-        List<TileLayer> layers = loadResource("geowebcache_101.xml");
+        Iterable<TileLayer> layers = loadResource("geowebcache_101.xml");
         TileLayer layer = findLayer(layers, "topp:states");
         assertTrue(layer != null);
         // assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
@@ -76,7 +76,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
 
     @Test
     public void testLoad114() throws Exception {
-        List<TileLayer> layers = loadResource("geowebcache_114.xml");
+        Iterable<TileLayer> layers = loadResource("geowebcache_114.xml");
         TileLayer layer = findLayer(layers, "topp:states");
         assertTrue(layer != null);
         // assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
@@ -102,7 +102,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
 
     @Test
     public void testLoad115() throws Exception {
-        List<TileLayer> layers = loadResource("geowebcache_115.xml");
+        Iterable<TileLayer> layers = loadResource("geowebcache_115.xml");
         TileLayer layer = findLayer(layers, "topp:states");
         assertTrue(layer != null);
         // assertEquals(layer.getCachePrefix(), "/var/lib/geowebcache/topp_states");
@@ -160,7 +160,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getPhoneNumber());
         assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getPositionName());
 
-        List<TileLayer> layers = config.getTileLayers();
+        Iterable<TileLayer> layers = config.getLayers();
         TileLayer layer = findLayer(layers, "topp:states");
         assertNotNull(layer);
 
@@ -168,23 +168,25 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         assertTrue(layer.getGridSubsets().contains("EPSG:2163"));
     }
 
-    private TileLayer findLayer(List<TileLayer> layers, String layerName)
+    private TileLayer findLayer(Iterable<TileLayer> layers, String layerName)
             throws GeoWebCacheException {
         Iterator<TileLayer> iter = layers.iterator();
 
+        int i = 0;
         while (iter.hasNext()) {
             TileLayer layer = iter.next();
             if (layer.getName().equals(layerName)) {
                 return layer;
             }
+            i++;
         }
 
         throw new GeoWebCacheException("Layer " + layerName + " not found, set has "
-                + layers.size() + " layers.");
+                + i + " layers.");
     }
 
-    private List<TileLayer> loadResource(String fileName) throws Exception {
-        return loadConfig(fileName).getTileLayers();
+    private Iterable<TileLayer> loadResource(String fileName) throws Exception {
+        return loadConfig(fileName).getLayers();
     }
 
     private XMLConfiguration loadConfig(String fileName) throws Exception {
@@ -206,9 +208,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         GridSetBroker gsb = new GridSetBroker(false, false);
         xmlConfig.initialize(gsb);
 
-        List<TileLayer> list = xmlConfig.getTileLayers();
-
-        Iterator<TileLayer> iter = list.iterator();
+        Iterator<TileLayer> iter = xmlConfig.getLayers().iterator();
         while (iter.hasNext()) {
             TileLayer layer = iter.next();
 

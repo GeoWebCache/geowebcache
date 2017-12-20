@@ -79,7 +79,7 @@ public class GetCapabilitiesConfigurationTest {
         config.setPrimaryConfig(globalConfig);
         config.initialize(broker);
 
-        WMSLayer wmsLayer = (WMSLayer) config.getTileLayers().get(0);
+        WMSLayer wmsLayer = (WMSLayer) config.getLayers().iterator().next();
         List<ParameterFilter> outputParameterFilters = wmsLayer.getParameterFilters();
 
         assertThat(outputParameterFilters, containsInAnyOrder(
@@ -109,7 +109,7 @@ public class GetCapabilitiesConfigurationTest {
         config.setPrimaryConfig(globalConfig);
         config.initialize(broker);
 
-        WMSLayer wmsLayer = (WMSLayer) config.getTileLayers().get(0);
+        WMSLayer wmsLayer = (WMSLayer) config.getLayers().iterator().next();
         List<ParameterFilter> outputParameterFilters = wmsLayer.getParameterFilters();
 
         assertThat(outputParameterFilters, containsInAnyOrder(
@@ -142,7 +142,7 @@ public class GetCapabilitiesConfigurationTest {
         config.setPrimaryConfig(globalConfig);
         config.initialize(broker);
 
-        WMSLayer wmsLayer = (WMSLayer) config.getTileLayers().get(0);
+        WMSLayer wmsLayer = (WMSLayer) config.getLayers().iterator().next();
         List<ParameterFilter> outputParameterFilters = wmsLayer.getParameterFilters();
 
         assertThat(outputParameterFilters, containsInAnyOrder(
@@ -208,7 +208,7 @@ public class GetCapabilitiesConfigurationTest {
         verify(server, cap, req, gcOpType, globalConfig);
 
         // check legends information
-        WMSLayer wmsLayer = (WMSLayer) config.getTileLayer("Foo");
+        WMSLayer wmsLayer = (WMSLayer) config.getLayer("Foo");
         assertThat(wmsLayer, notNullValue());
         assertThat(wmsLayer.getLegends(), notNullValue());
         // check legends default for the test layer

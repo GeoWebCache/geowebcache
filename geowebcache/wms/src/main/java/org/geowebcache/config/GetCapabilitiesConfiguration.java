@@ -541,8 +541,8 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     /**
      * @see TileLayerConfiguration#containsLayer(java.lang.String)
      */
-    public boolean containsLayer(String tileLayerId) {
-        return getTileLayerById(tileLayerId) != null;
+    public boolean containsLayer(String layerName) {
+        return getLayer(layerName) != null;
     }
 
     /**
@@ -570,7 +570,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     }
 
     /**
-     * @see TileLayerConfiguration#getTileLayerCount()
+     * @see TileLayerConfiguration#getLayerCount()
      */
     public int getLayerCount() {
         return layers.size();

@@ -34,7 +34,7 @@ public abstract class LayerConfigurationTest {
     public void testAdd() throws Exception {
         TileLayer goodLayer = getGoodLayer("test", 1);
         config.addLayer(goodLayer);
-        TileLayer retrieved = config.getTileLayerById("test");
+        TileLayer retrieved = config.getLayer("test");
         assertThat(retrieved, layerEquals(goodLayer));
     }
     
@@ -46,7 +46,7 @@ public abstract class LayerConfigurationTest {
         config.save(); // TODO Remove this
         
         TileLayerConfiguration config2 = getConfig();
-        TileLayer retrieved = config2.getTileLayerById("test");
+        TileLayer retrieved = config2.getLayer("test");
         assertThat(retrieved, layerEquals(goodLayer));
     }
     
@@ -71,7 +71,7 @@ public abstract class LayerConfigurationTest {
         } catch (IllegalArgumentException ex) { // May want to change to something more specific.
             
         }
-        TileLayer retrieved = config.getTileLayerById("test");
+        TileLayer retrieved = config.getLayer("test");
         assertThat(retrieved, layerEquals(goodLayer));
     }
     
@@ -96,7 +96,7 @@ public abstract class LayerConfigurationTest {
         } catch (IllegalArgumentException ex) { // May want to change to something more specific.
             
         }
-        TileLayer retrieved = config.getTileLayerById("test");
+        TileLayer retrieved = config.getLayer("test");
         assertThat(retrieved, layerEquals(badLayer));
     }
     
@@ -104,7 +104,7 @@ public abstract class LayerConfigurationTest {
     public void testRemove() throws Exception {
         testAdd();
         assertThat(config.removeLayer("test"), is(true));
-        TileLayer retrieved = config.getTileLayerById("test");
+        TileLayer retrieved = config.getLayer("test");
         assertThat(retrieved, nullValue());
     }
     
@@ -117,13 +117,13 @@ public abstract class LayerConfigurationTest {
         config.save(); // TODO Remove this
         
         TileLayerConfiguration config2 = getConfig();
-        TileLayer retrieved = config2.getTileLayerById("test");
+        TileLayer retrieved = config2.getLayer("test");
         assertThat(retrieved, nullValue());
     }
     
     @Test
     public void testGetNotExists() throws Exception {
-        TileLayer retrieved = config.getTileLayerById("layerThatDoesntExist");
+        TileLayer retrieved = config.getLayer("layerThatDoesntExist");
         assertThat(retrieved, nullValue()); // Possibly should be exception instead?
     }
     
@@ -137,7 +137,7 @@ public abstract class LayerConfigurationTest {
         TileLayer goodLayer = getGoodLayer("test", 2);
         config.modifyLayer(goodLayer);
         
-        TileLayer retrieved = config.getTileLayerById("test");
+        TileLayer retrieved = config.getLayer("test");
         assertThat(retrieved, layerEquals(goodLayer));
     }
 
@@ -154,7 +154,7 @@ public abstract class LayerConfigurationTest {
     @Test
     public void testModifyBadLayerNoChange() throws Exception {
         testAdd();
-        TileLayer goodLayer = config.getTileLayerById("test");
+        TileLayer goodLayer = config.getLayer("test");
         TileLayer badLayer = getBadLayer("test", 2);
         
         try {
@@ -163,7 +163,7 @@ public abstract class LayerConfigurationTest {
             
         }
         
-        TileLayer retrieved = config.getTileLayerById("test");
+        TileLayer retrieved = config.getLayer("test");
         assertThat(retrieved, layerEquals(goodLayer));
     }
     
@@ -177,7 +177,7 @@ public abstract class LayerConfigurationTest {
         config.save(); // TODO Remove this
         
         TileLayerConfiguration config2 = getConfig();
-        TileLayer retrieved = config2.getTileLayerById("test");
+        TileLayer retrieved = config2.getLayer("test");
         assertThat(retrieved, layerEquals(goodLayer));
     }
     
@@ -196,13 +196,13 @@ public abstract class LayerConfigurationTest {
         } catch(NoSuchElementException ex) {// Inconsistent with other methods.
             
         }
-        TileLayer retrieved = config.getTileLayerById("layerThatDoesntExist");
+        TileLayer retrieved = config.getLayer("layerThatDoesntExist");
         assertThat(retrieved, nullValue()); // Possibly should be exception instead?
     }
     
     @Test
     public void testGetExisting() throws Exception {
-        TileLayer retrieved = config.getTileLayerById(getExistingLayer());
+        TileLayer retrieved = config.getLayer(getExistingLayer());
         assertThat(retrieved, notNullValue());
     }
     
@@ -227,8 +227,6 @@ public abstract class LayerConfigurationTest {
     /**
      * Get an ID for a pre-existing layer. Throw AssumptionViolatedException if this this
      * configuration does not have existing layers.
-     * @param id ID for the layer
-     * @param rand Layers created with different values should not be equal to one another.
      * @return
      */
     protected abstract String getExistingLayer() throws Exception;

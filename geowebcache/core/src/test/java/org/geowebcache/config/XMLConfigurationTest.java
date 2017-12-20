@@ -69,12 +69,12 @@ public class XMLConfigurationTest {
     
     @Test
     public void testAddLayer() throws Exception {
-        int count = config.getTileLayerCount();
+        int count = config.getLayerCount();
 
         TileLayer tl = createTestLayer("testLayer");
         config.addLayer(tl);
-        assertEquals(count + 1, config.getTileLayerCount());
-        assertSame(tl, config.getTileLayer("testLayer"));
+        assertEquals(count + 1, config.getLayerCount());
+        assertSame(tl, config.getLayer("testLayer"));
         try {
             config.addLayer(tl);
             fail("Expected IllegalArgumentException on duplicate layer name");
@@ -98,13 +98,13 @@ public class XMLConfigurationTest {
         WMSLayer layer1 = createTestLayer("testLayer");
 
         config.addLayer(layer1);
-        int count = config.getTileLayerCount();
+        int count = config.getLayerCount();
 
         WMSLayer layer2 = createTestLayer("testLayer");
         config.modifyLayer(layer2);
 
-        assertEquals(count, config.getTileLayerCount());
-        assertSame(layer2, config.getTileLayer("testLayer"));
+        assertEquals(count, config.getLayerCount());
+        assertSame(layer2, config.getLayer("testLayer"));
 
         layer1 = createTestLayer("another");
         try {
@@ -120,11 +120,11 @@ public class XMLConfigurationTest {
 
         assertFalse(config.removeLayer("nonExistent"));
 
-        Set<String> tileLayerNames = config.getTileLayerNames();
+        Set<String> tileLayerNames = config.getLayerNames();
         for (String name : tileLayerNames) {
-            int count = config.getTileLayerCount();
+            int count = config.getLayerCount();
             assertTrue(config.removeLayer(name));
-            assertEquals(count - 1, config.getTileLayerCount());
+            assertEquals(count - 1, config.getLayerCount());
         }
     }
 
@@ -133,22 +133,22 @@ public class XMLConfigurationTest {
         assertTrue(configFile.delete());
         config.setTemplate("/geowebcache_empty.xml");
         config.initialize(gridSetBroker);
-        assertEquals(0, config.getTileLayerCount());
+        assertEquals(0, config.getLayerCount());
 
         assertTrue(configFile.delete());
         config.setTemplate("/geowebcache.xml");
         config.initialize(gridSetBroker);
-        assertEquals(3, config.getTileLayerCount());
+        assertEquals(3, config.getLayerCount());
         // WMTS CITE strict compliance should be deactivated
         assertThat(config.isWmtsCiteCompliant(), is(false));
     }
 
     @Test
     public void testSave() throws Exception {
-        for (String name : config.getTileLayerNames()) {
-            int count = config.getTileLayerCount();
+        for (String name : config.getLayerNames()) {
+            int count = config.getLayerCount();
             assertTrue(config.removeLayer(name));
-            assertEquals(count - 1, config.getTileLayerCount());
+            assertEquals(count - 1, config.getLayerCount());
         }
 
         String layerName = "testLayer";
@@ -216,10 +216,10 @@ public class XMLConfigurationTest {
 
         XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
         config2.initialize(gridSetBroker);
-        assertEquals(1, config2.getTileLayerCount());
-        assertNotNull(config2.getTileLayer("testLayer"));
+        assertEquals(1, config2.getLayerCount());
+        assertNotNull(config2.getLayer("testLayer"));
 
-        WMSLayer l = (WMSLayer) config2.getTileLayer("testLayer");
+        WMSLayer l = (WMSLayer) config2.getLayer("testLayer");
         assertTrue(Arrays.equals(wmsURL, l.getWMSurl()));
         assertEquals(wmsStyles, l.getStyles());
         assertEquals(wmsLayers, l.getWmsLayers());
