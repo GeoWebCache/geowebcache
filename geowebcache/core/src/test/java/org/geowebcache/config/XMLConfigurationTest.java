@@ -71,8 +71,7 @@ public class XMLConfigurationTest {
     public void testAddLayer() throws Exception {
         int count = config.getTileLayerCount();
 
-        TileLayer tl = mock(WMSLayer.class);
-        when(tl.getName()).thenReturn("testLayer");
+        TileLayer tl = createTestLayer("testLayer");
         config.addLayer(tl);
         assertEquals(count + 1, config.getTileLayerCount());
         assertSame(tl, config.getTileLayer("testLayer"));
@@ -96,20 +95,18 @@ public class XMLConfigurationTest {
     @Test
     public void testModifyLayer() throws Exception {
 
-        TileLayer layer1 = mock(WMSLayer.class);
-        when(layer1.getName()).thenReturn("testLayer");
+        WMSLayer layer1 = createTestLayer("testLayer");
 
         config.addLayer(layer1);
         int count = config.getTileLayerCount();
 
-        TileLayer layer2 = mock(WMSLayer.class);
-        when(layer2.getName()).thenReturn("testLayer");
+        WMSLayer layer2 = createTestLayer("testLayer");
         config.modifyLayer(layer2);
 
         assertEquals(count, config.getTileLayerCount());
         assertSame(layer2, config.getTileLayer("testLayer"));
 
-        when(layer1.getName()).thenReturn("another");
+        layer1 = createTestLayer("another");
         try {
             config.modifyLayer(layer1);
             fail("Expected NoSuchElementException");
@@ -241,6 +238,61 @@ public class XMLConfigurationTest {
         assertThat(l.getLegends().getDefaultFormat(), is("image/png"));
         assertThat(l.getLegends().getLegendsRawInfo().size(), is(3));
         assertThat(l.getLegends().getLegendsRawInfo(), containsInAnyOrder(legendRawInfoA, legendRawInfoB, legendRawInfoC));
+    }
+
+    public WMSLayer createTestLayer(String layerName) {
+        String[] wmsURL = { "http://wms.example.com/1", "http://wms.example.com/2" };
+        String wmsStyles = "default,line";
+        String wmsLayers = "states,border";
+        List<String> mimeFormats = Arrays.asList("image/png", "image/jpeg");
+        Map<String, GridSubset> subSets = new HashMap<String, GridSubset>();
+        GridSubset gridSubSet = GridSubsetFactory.createGridSubSet(gridSetBroker.get("EPSG:4326"));
+        subSets.put(gridSubSet.getName(), gridSubSet);
+
+        StringParameterFilter filter = new StringParameterFilter();
+        filter.setKey("STYLES");
+        filter.setValues(Arrays.asList("polygon", "point"));
+        filter.setDefaultValue("polygon");
+
+        List<ParameterFilter> parameterFilters = new ArrayList<ParameterFilter>(
+                new ArrayList<ParameterFilter>(Arrays.asList((ParameterFilter) filter)));
+        int[] metaWidthHeight = { 9, 9 };
+        String vendorParams = "vendor=1";
+        boolean queryable = false;
+        String wmsQueryLayers = null;
+
+        WMSLayer layer = new WMSLayer(layerName, wmsURL, wmsStyles, wmsLayers, mimeFormats,
+                subSets, parameterFilters, metaWidthHeight, vendorParams, queryable, wmsQueryLayers);
+
+        // create legends information
+        LegendsRawInfo legendsRawInfo = new LegendsRawInfo();
+        legendsRawInfo.setDefaultWidth(50);
+        legendsRawInfo.setDefaultHeight(100);
+        legendsRawInfo.setDefaultFormat("image/png");
+        // legend with all values and custom url
+        LegendRawInfo legendRawInfoA = new LegendRawInfo();
+        legendRawInfoA.setStyle("polygon");
+        legendRawInfoA.setWidth(75);
+        legendRawInfoA.setHeight(125);
+        legendRawInfoA.setFormat("image/jpeg");
+        legendRawInfoA.setUrl("http://url");
+        legendRawInfoA.setMinScale(5000D);
+        legendRawInfoA.setMaxScale(10000D);
+
+        // legend with a complete url
+        LegendRawInfo legendRawInfoB = new LegendRawInfo();
+        legendRawInfoB.setStyle("point");
+        legendRawInfoB.setCompleteUrl("http://url");
+        // default style legend
+        LegendRawInfo legendRawInfoC = new LegendRawInfo();
+        legendRawInfoC.setStyle("");
+        // tie the legend information together
+        legendsRawInfo.addLegendRawInfo(legendRawInfoA);
+        legendsRawInfo.addLegendRawInfo(legendRawInfoB);
+        legendsRawInfo.addLegendRawInfo(legendRawInfoC);
+        layer.setLegends(legendsRawInfo);
+
+        return layer;
     }
 
     @Test

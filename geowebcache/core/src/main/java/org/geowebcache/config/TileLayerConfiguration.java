@@ -26,7 +26,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 
 /**
- * A layer and gridset provider for {@link TileLayerDispatcher}.
+ * A layer provider for {@link TileLayerDispatcher}.
  * <p>
  * Implementations must be singletons discoverable through {@link GeoWebCacheExtensions} (i.e.
  * spring beans)
@@ -39,20 +39,23 @@ public interface TileLayerConfiguration extends BaseConfiguration {
      * @deprecated use {@link #getLayers()}
      */
     @Deprecated
-    public List<? extends TileLayer> getTileLayers();
+    List<? extends TileLayer> getTileLayers();
 
     /**
+     * Get all {@link TileLayer}s included in a TileLayerConfiguration.
+     *
      * @return an unmodifiable list of layers, may be empty, but not null.
      */
-    public Iterable<? extends TileLayer> getLayers();
+    Iterable<? extends TileLayer> getLayers();
 
     /**
-     * @param layerName
-     *            the layer name
+     * Gets a single {@link TileLayer} from the configuration, using the layer's unique name as a key.
+     *
+     * @param layerName the layer name
      * @return the layer named {@code layerIdent} or {@code null} if no such layer exists in this
      *         configuration
      */
-    public TileLayer getLayer(String layerName);
+    TileLayer getLayer(String layerName);
 
     /**
      * @param layerName
@@ -62,7 +65,7 @@ public interface TileLayerConfiguration extends BaseConfiguration {
      * @deprecated use {@link #getLayer(String)}
      */
     @Deprecated
-    public TileLayer getTileLayer(String layerName);
+    TileLayer getTileLayer(String layerName);
 
     /**
      * @param layerId
@@ -72,13 +75,14 @@ public interface TileLayerConfiguration extends BaseConfiguration {
      * @deprecated use {@link #getLayer(String)}
      */
     @Deprecated
-    public TileLayer getTileLayerById(String layerId);
+    TileLayer getTileLayerById(String layerId);
 
     /**
      * Get the number of TileLayers configured
-     * @return
+     *
+     * @return the number of {@link TileLayer}s configured
      */
-    public int getLayerCount();
+    int getLayerCount();
 
     /**
      * Get the number of TileLayers configured
@@ -86,13 +90,14 @@ public interface TileLayerConfiguration extends BaseConfiguration {
      * @deprecated use {@link #getLayerCount()}
      */
     @Deprecated
-    public int getTileLayerCount();
+    int getTileLayerCount();
 
     /**
      * Get the names of all TileLayers configured
-     * @return
+     *
+     * @return The set of all TileLayers configured. May be empty, but not null.
      */
-    public Set<String> getLayerNames();
+    Set<String> getLayerNames();
 
     /**
      * Get the names of all TileLayers configured
@@ -100,30 +105,43 @@ public interface TileLayerConfiguration extends BaseConfiguration {
      * @deprecated use {@link #getLayerNames()}
      */
     @Deprecated
-    public Set<String> getTileLayerNames();
+    Set<String> getTileLayerNames();
 
     /**
-     * @param layerName
+     * Removes the given tile layer from this configuration
+     * @param layerName name of the layer to remove
      * @return {@code true} if the layer was removed, {@code false} if no such layer exists
+     * @throws IllegalArgumentException If this configuration is not able to remove the layer.
      */
-    public boolean removeLayer(String layerName);
-
-    public void modifyLayer(TileLayer tl) throws NoSuchElementException;
+    boolean removeLayer(String layerName);
 
     /**
-     * Adds, but not saves, the given tile layer to this configuration, provided
+     * Replaces an existing tile layer of the same name with this tile layer.
+     *
+     * @param tl the modified tile layer. Its name must be the same as a tile layer that already exists.
+     * @throws NoSuchElementException If no tile layer with a matching name exists.
+     */
+    void modifyLayer(TileLayer tl) throws NoSuchElementException;
+
+    /**
+     * Adds the given tile layer to this configuration, provided
      * {@link #canSave(TileLayer) canSave(tl) == true}.
      * 
-     * @param tl
-     *            the tile layer to add to the configuration
+     * @param tl the tile layer to add to the configuration
      * @throws IllegalArgumentException
      *             if this configuration is not able of saving the specific type of layer given, or
      *             if any required piece of information is missing or invalid in the layer (for
      *             example, a missing or duplicated name or id, etc).
      */
-    public void addLayer(TileLayer tl) throws IllegalArgumentException;
+    void addLayer(TileLayer tl) throws IllegalArgumentException;
 
-    public boolean containsLayer(String tileLayerId);
+    /**
+     * Whether a tile layer with the given name exists in the configuration.
+     *
+     * @param layerName The name of of the layer
+     * @return true if the layer exists, false otherwise
+     */
+    boolean containsLayer(String layerName);
 
     /**
      * If this method returns TRUE WMTS service implementation will strictly comply with the
@@ -137,8 +155,9 @@ public interface TileLayerConfiguration extends BaseConfiguration {
     }
 
     /**
-     * @param tl
-     *            a tile layer to be added or saved
+     * Whether the configuration is capable of saving the provided tile layer.
+     *
+     * @param tl a tile layer to be added or saved
      * @return {@code true} if this configuration is capable of saving the given tile layer,
      *         {@code false} otherwise (usually this check is based on an instanceof check, as
      *         different configurations may be specialized on different kinds of layers).

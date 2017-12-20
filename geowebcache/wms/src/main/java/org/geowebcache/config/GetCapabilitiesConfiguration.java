@@ -511,6 +511,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
      * @see TileLayerConfiguration#getTileLayers()
      * @deprecated
      */
+    @Deprecated
     public List<TileLayer> getTileLayers() {
         return Collections.unmodifiableList(new ArrayList<TileLayer>(layers.values()));
     }
@@ -532,6 +533,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     /**
      * @see TileLayerConfiguration#getTileLayerNames()
      */
+    @Deprecated
     public Set<String> getTileLayerNames() {
         return getLayerNames();
     }
@@ -553,6 +555,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     /**
      * @see TileLayerConfiguration#getTileLayerById(java.lang.String)
      */
+    @Deprecated
     public TileLayer getTileLayerById(String layerId) {
         // this configuration does not differentiate between layer identifier and identity
         return getLayer(layerId);
@@ -561,6 +564,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     /**
      * @see TileLayerConfiguration#getTileLayer(java.lang.String)
      */
+    @Deprecated
     public TileLayer getTileLayer(String layerName) {
         return getLayer(layerName);
     }
@@ -575,6 +579,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     /**
      * @see TileLayerConfiguration#getTileLayerCount()
      */
+    @Deprecated
     public int getTileLayerCount() {
         return getLayerCount();
     }
@@ -595,6 +600,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
                 + getClass().getSimpleName());
     }
 
+    //TODO: Remove
     /**
      * @see TileLayerConfiguration#save()
      */

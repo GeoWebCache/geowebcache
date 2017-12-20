@@ -395,6 +395,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         return config;
     }
 
+    //TODO - convert to private method
     /**
      * @see TileLayerConfiguration#save()
      */
@@ -563,11 +564,9 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     }
 
     /**
-     * @param tl
-     *            the layer to add to this configuration
+     * @param tl the layer to add to this configuration
      * @return
-     * @throws IllegalArgumentException
-     *             if a layer named the same than {@code tl} already exists
+     * @throws IllegalArgumentException if a layer named the same than {@code tl} already exists
      * @see TileLayerConfiguration#addLayer(org.geowebcache.layer.TileLayer)
      */
     public synchronized void addLayer(TileLayer tl) throws IllegalArgumentException {
@@ -578,25 +577,33 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
             throw new IllegalArgumentException("Can't add layers of type "
                     + tl.getClass().getName());
         }
-        if (null != getTileLayer(tl.getName())) {
+        if (null != getLayer(tl.getName())) {
             throw new IllegalArgumentException("Layer '" + tl.getName() + "' already exists");
         }
 
         initialize(tl);
         getGwcConfig().getLayers().add(tl);
         updateLayers();
+        try {
+            save();
+        } catch (IOException e) {
+            //If save fails, try to revert the change to maintain a consistent state.
+            if (getGwcConfig().getLayers().remove(tl)) {
+                updateLayers();
+            }
+            throw new IllegalArgumentException("Unable to add layer " + tl.getName(), e);
+        }
     }
 
     /**
      * Method responsible for modifying an existing layer.
      * 
-     * @param tl
-     *            the new layer to overwrite the existing layer
+     * @param tl the new layer to overwrite the existing layer
      * @throws NoSuchElementException
      * @see TileLayerConfiguration#modifyLayer(org.geowebcache.layer.TileLayer)
      */
     public synchronized void modifyLayer(TileLayer tl) throws NoSuchElementException {
-        TileLayer previous = getTileLayer(tl.getName());
+        TileLayer previous = getLayer(tl.getName());
         if (null == previous) {
             throw new NoSuchElementException("Layer " + tl.getName() + " does not exist");
         }
@@ -608,6 +615,16 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         initialize(tl);
         getGwcConfig().getLayers().add(tl);
         updateLayers();
+        try {
+            save();
+        } catch (IOException e) {
+            //If save fails, try to revert the change to maintain a consistent state.
+            getGwcConfig().getLayers().remove(tl);
+            initialize(previous);
+            getGwcConfig().getLayers().add(previous);
+            updateLayers();
+            throw new IllegalArgumentException("Unable to modify layer " + tl.getName(), e);
+        }
     }
 
     /**
@@ -615,16 +632,24 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
      * @see TileLayerConfiguration#removeLayer(java.lang.String)
      */
     public synchronized boolean removeLayer(final String layerName) {
-        final TileLayer tileLayer = getTileLayer(layerName);
+        final TileLayer tileLayer = getLayer(layerName);
         if (tileLayer == null) {
             return false;
         }
 
-        boolean removed = false;
-        removed = getGwcConfig().getLayers().remove(tileLayer);
+        boolean removed = getGwcConfig().getLayers().remove(tileLayer);
         if (removed) {
             updateLayers();
             
+        }
+        try {
+            save();
+        } catch (IOException e) {
+            //If save fails, try to revert the removal to maintain a consistent state.
+            if (getGwcConfig().getLayers().add(tileLayer)) {
+                updateLayers();
+            }
+            throw new IllegalArgumentException("Unable to remove layer " + tileLayer, e);
         }
         return removed;
     }
@@ -946,6 +971,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     /**
      * @see TileLayerConfiguration#getTileLayers()
      */
+    @Deprecated
     public List<TileLayer> getTileLayers() {
         return Collections.unmodifiableList(getGwcConfig().getLayers());
     }
@@ -958,7 +984,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     }
 
     /**
-     * @see TileLayerConfiguration#getTileLayer(java.lang.String)
+     * @see TileLayerConfiguration#getLayer(java.lang.String)
      */
     public TileLayer getLayer(String layerName) {
         return layers.get(layerName);
@@ -967,6 +993,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     /**
      * @see TileLayerConfiguration#getTileLayer(java.lang.String)
      */
+    @Deprecated
     public TileLayer getTileLayer(String layerName) {
         return getLayer(layerName);
     }
@@ -974,6 +1001,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     /**
      * @see TileLayerConfiguration#getTileLayerById(String)
      */
+    @Deprecated
     public TileLayer getTileLayerById(String layerId) {
         // this configuration does not differentiate between identifier and identity yet
         return layers.get(layerId);
@@ -996,6 +1024,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     /**
      * @see TileLayerConfiguration#getTileLayerCount()
      */
+    @Deprecated
     public int getTileLayerCount() {
         return getLayerCount();
     }
@@ -1004,13 +1033,13 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
      * @see TileLayerConfiguration#getLayerNames()
      */
     public Set<String> getLayerNames() {
-        Set<String> names = Collections.unmodifiableSet(this.layers.keySet());
-        return names;
+        return Collections.unmodifiableSet(this.layers.keySet());
     }
 
     /**
      * @see TileLayerConfiguration#getTileLayerNames()
      */
+    @Deprecated
     public Set<String> getTileLayerNames() {
         return getLayerNames();
     }
