@@ -17,18 +17,12 @@
  */
 package org.geowebcache.layer.wms;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.util.Map;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,6 +36,14 @@ import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.HttpClientBuilder;
 import org.geowebcache.util.ServletUtils;
 import org.springframework.util.Assert;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.util.Map;
 
 /**
  * This class is a wrapper for HTTP interaction with WMS backend
@@ -119,7 +121,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
             }
             try {
                 connectAndCheckHeaders(tileRespRecv, wmsBackendUrl, wmsParams, expectedMimeType,
-                        backendTimeout, target);
+                        backendTimeout, target, layer.getHttpRequestMode());
             } catch (GeoWebCacheException e) {
                 fetchException = e;
             }
@@ -146,26 +148,27 @@ public class WMSHttpHelper extends WMSSourceHelper {
     /**
      * Executes the actual HTTP request, checks the response headers (status and MIME) and
      * 
-     * @param tileRespRecv
-     * @param wmsBackendUrl
      * @param data
      * @param wmsparams
+     * @param tileRespRecv
+     * @param wmsBackendUrl
+     * @param httpRequestMode
      * @return
      * @throws GeoWebCacheException
      */
     private void connectAndCheckHeaders(TileResponseReceiver tileRespRecv, URL wmsBackendUrl,
-            Map<String, String> wmsParams, MimeType requestMimeType, Integer backendTimeout,
-            Resource target) throws GeoWebCacheException {
+                                        Map<String, String> wmsParams, MimeType requestMimeType, Integer backendTimeout,
+                                        Resource target, WMSLayer.HttpRequestMode httpRequestMode) throws GeoWebCacheException {
 
-        GetMethod getMethod = null;
+        HttpMethodBase method = null;
         final int responseCode;
         final int responseLength;
 
         try { // finally
             try {
-                getMethod = executeRequest(wmsBackendUrl, wmsParams, backendTimeout);
-                responseCode = getMethod.getStatusCode();
-                responseLength = (int) getMethod.getResponseContentLength();
+                method = executeRequest(wmsBackendUrl, wmsParams, backendTimeout, httpRequestMode);
+                responseCode = method.getStatusCode();
+                responseLength = (int) method.getResponseContentLength();
 
                 // Do not set error at this stage
             } catch (IOException ce) {
@@ -184,7 +187,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
             }
 
             // Check that we're not getting an error MIME back.
-            String responseMime = getMethod.getResponseHeader("Content-Type").getValue();
+            String responseMime = method.getResponseHeader("Content-Type").getValue();
             if (responseCode != 204 && responseMime != null
                     && !requestMimeType.isCompatible(responseMime)) {
                 String message = null;
@@ -193,7 +196,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
                     // out of an ogc_se_inimage response?
                     InputStream stream = null;
                     try {
-                        stream = getMethod.getResponseBodyAsStream();
+                        stream = method.getResponseBodyAsStream();
                         byte[] error = IOUtils.toByteArray(stream);
                         message = new String(error);
                     } catch (IOException ioe) {
@@ -205,7 +208,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
                         && responseMime.toLowerCase().startsWith("application/vnd.ogc.se_xml")) {
                     InputStream stream = null;
                     try {
-                        stream = getMethod.getResponseBodyAsStream();
+                        stream = method.getResponseBodyAsStream();
                         message = IOUtils.toString(stream);
                     } catch (IOException e) {
                         //
@@ -223,7 +226,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
 
             // Everything looks okay, try to save expiration
             if (tileRespRecv.getExpiresHeader() == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
-                String expireValue = getMethod.getResponseHeader("Expires").getValue();
+                String expireValue = method.getResponseHeader("Expires").getValue();
                 long expire = ServletUtils.parseExpiresHeader(expireValue);
                 if (expire != -1) {
                     tileRespRecv.setExpiresHeader(expire / 1000);
@@ -233,10 +236,10 @@ public class WMSHttpHelper extends WMSSourceHelper {
             // Read the actual data
             if (responseCode != 204) {
                 try {
-                    InputStream inStream = getMethod.getResponseBodyAsStream();
+                    InputStream inStream = method.getResponseBodyAsStream();
                     if( inStream == null ){
-                    	String uri = getMethod.getURI().getURI();
-                    	log.error( "No response for "+getMethod.getName() +" " + uri );
+                    	String uri = method.getURI().getURI();
+                    	log.error( "No response for "+method.getName() +" " + uri );
                     }
                     else {
 	                    ReadableByteChannel channel = Channels.newChannel(inStream);
@@ -263,48 +266,77 @@ public class WMSHttpHelper extends WMSSourceHelper {
             }
 
         } finally {
-            if (getMethod != null) {
-                getMethod.releaseConnection();
+            if (method != null) {
+                method.releaseConnection();
             }
         }
     }
 
     /**
      * sets up a HTTP GET request to a URL and configures authentication.
-     * 
-     * @param url
-     *            endpoint to talk to
-     * @param queryParams
-     *            parameters for the query string
-     * @param backendTimeout
-     *            timeout to use in seconds
+     *
+     * @param url             endpoint to talk to
+     * @param queryParams     parameters for the query string
+     * @param backendTimeout  timeout to use in seconds
+     * @param httpRequestMode the method used to perform requests
      * @return executed GetMethod (that has to be closed after reading the response!)
-     * @throws HttpException
      * @throws IOException
+     * @deprecated Use {@link #executeRequest(URL, Map, Integer, WMSLayer.HttpRequestMode)} instead
      */
     public GetMethod executeRequest(final URL url, final Map<String, String> queryParams,
-            final Integer backendTimeout) throws HttpException, IOException {
+                                         final Integer backendTimeout) throws IOException {
+        return (GetMethod) executeRequest(url, queryParams, backendTimeout, WMSLayer.HttpRequestMode.Get);
+    }
+
+    /**
+     * sets up a HTTP request to a URL and configures authentication.
+     *
+     * @param url             endpoint to talk to
+     * @param queryParams     parameters for the query string
+     * @param backendTimeout  timeout to use in seconds
+     * @param httpRequestMode the method used to perform requests (can be null, in such case 
+     * {@link org.geowebcache.layer.wms.WMSLayer.HttpRequestMode#Get} will be used
+     * @return executed method (that has to be closed after reading the response!)
+     * @throws IOException
+     */
+    public HttpMethodBase executeRequest(final URL url, final Map<String, String> queryParams,
+                                         final Integer backendTimeout,
+                                         WMSLayer.HttpRequestMode httpRequestMode) throws IOException {
         // grab the client
         HttpClient httpClient = getHttpClient();
         
         // prepare the request
-        GetMethod getMethod = new GetMethod(url.toString());
-        if (queryParams != null && queryParams.size() > 0) {
-            NameValuePair[] params = new NameValuePair[queryParams.size()];
+        NameValuePair[] params = null;
+
+        if (queryParams != null) {
+            params = new NameValuePair[queryParams.size()];
             int i = 0;
             for (Map.Entry<String, String> e : queryParams.entrySet()) {
                 params[i] = new NameValuePair(e.getKey(), e.getValue());
                 i++;
             }
-            getMethod.setQueryString(params);
         }
-        getMethod.setDoAuthentication(doAuthentication);
+        
+        HttpMethodBase method;
+        if (httpRequestMode == WMSLayer.HttpRequestMode.FormPost) {
+            PostMethod pm = new PostMethod(url.toString());
+            if (queryParams != null && queryParams.size() > 0) {
+                pm.setRequestBody(params);
+            }
+            method = pm;
+        } else {
+            method = new GetMethod(url.toString());
+            if (queryParams != null && queryParams.size() > 0) {
+                method.setQueryString(params);
+            }
+        }
+        method.setDoAuthentication(doAuthentication);
 
         // fire!
         if (log.isDebugEnabled()) {
-        	log.trace( getMethod.getURI().getURI() );
+        	log.trace( method.getURI().getURI() );
         }
-        httpClient.executeMethod(getMethod);
-        return getMethod;
+        httpClient.executeMethod(method);
+        return method;
     }
 }

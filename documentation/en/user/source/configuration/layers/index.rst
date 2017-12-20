@@ -21,6 +21,7 @@ This section describes how to manually configure layers in GeoWebCache and provi
    expiretiles
    gridsets
    selectivezoom
+   requestmode
    examples
    
 

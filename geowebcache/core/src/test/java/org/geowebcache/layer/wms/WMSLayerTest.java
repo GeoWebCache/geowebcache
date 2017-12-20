@@ -25,7 +25,6 @@ import static org.geowebcache.TestHelpers.createRequest;
 import static org.geowebcache.TestHelpers.createWMSLayer;
 import static org.junit.Assert.*;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -35,9 +34,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +63,6 @@ import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
@@ -250,7 +246,7 @@ public class WMSLayerTest extends TileLayerTest {
         layer.setSourceHelper(new WMSHttpHelper() {
             @Override
             public GetMethod executeRequest(URL url, Map<String, String> queryParams,
-                    Integer backendTimeout) throws HttpException, IOException {
+                                            Integer backendTimeout, WMSLayer.HttpRequestMode httpRequestMode) throws HttpException, IOException {
                 GetMethod response = EasyMock.createMock(GetMethod.class);
                 expect(response.getStatusCode()).andReturn(200);
                 expect(response.getResponseBodyAsStream()).andReturn(new ByteArrayInputStream(responseBody));
