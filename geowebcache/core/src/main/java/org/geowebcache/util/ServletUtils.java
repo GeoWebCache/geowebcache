@@ -19,6 +19,8 @@ package org.geowebcache.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.ParseException;
@@ -458,18 +460,20 @@ public class ServletUtils {
      */
     public static String getServletBaseURL(HttpServletRequest req, String servletPrefix) {
         String result;
-        if (req.getServerPort() == 80 || req.getServerPort() == 443) {
-            result = req.getScheme() + "://" + req.getServerName();
-        } else {
-            result = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
-        }
-        if(servletPrefix==null){
-            return result;
-        } else {
+        result = req.getScheme() + "://" + req.getHeader("Host");
+        
+        if(servletPrefix!=null){
             // If the servlet is embeded within another, include the context path of the parent 
             // servlet in the base.
             String reqUrl = req.getContextPath();
-            return result+reqUrl;
+            result = result+reqUrl;
+        }
+        
+        try {
+        	URI url = new URI(result);
+        	return url.toString();
+        } catch(URISyntaxException e) {
+        	return "";	// prevents passing invalid stuff via nasty headers
         }
     }
     
@@ -479,11 +483,15 @@ public class ServletUtils {
      * @param trailingPath
      */
     public static String getServletContextPath(HttpServletRequest req, String trailingPath, String servletPrefix) {
-        String reqUrl = req.getRequestURL().toString();
-        String servletBase = ServletUtils.getServletBaseURL(req, servletPrefix);
-        int prefixIdx = servletBase.length();
-        int suffixIdx = reqUrl.indexOf(trailingPath);
-        String context = reqUrl.substring(prefixIdx, suffixIdx);
+        URI urlTokens = null;
+        try {
+        	urlTokens = new URI(req.getRequestURL().toString());
+        } catch(URISyntaxException e) {
+        	return "";	// Prevents passing nasty things in 
+        }
+        String path = urlTokens.getPath();
+        int suffixIdx = path.indexOf(trailingPath);
+        String context = path.substring(0,suffixIdx);
         return context;
     }
 }
