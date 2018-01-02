@@ -17,10 +17,7 @@
 package org.geowebcache.layer;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -253,8 +250,20 @@ public class TileLayerDispatcher implements DisposableBean {
     }
 
     /**
-     * Replaces the given layer and returns the Layer's configuration, saving the configuration.
+     * Renames an existing layer.
      * 
+     * @param oldName The name of the existing layer
+     * @param newName The name to rename the layer to
+     * @throws IllegalArgumentException
+     */
+    public synchronized void rename(final String oldName, final String newName) throws NoSuchElementException, IllegalArgumentException {
+        TileLayerConfiguration config = getConfiguration(oldName);
+        config.renameLayer(oldName, newName);
+    }
+
+    /**
+     * Replaces the given layer and returns the Layer's configuration, saving the configuration.
+     *
      * @param tl The layer to modify
      * @throws IllegalArgumentException
      */
@@ -269,14 +278,14 @@ public class TileLayerDispatcher implements DisposableBean {
         return getConfiguration(tl.getName());
     }
 
-    public TileLayerConfiguration getConfiguration(final String tileLayerId) throws IllegalArgumentException {
-        Assert.notNull(tileLayerId, "tileLayerId is null");
+    public TileLayerConfiguration getConfiguration(final String tileLayerName) throws IllegalArgumentException {
+        Assert.notNull(tileLayerName, "tileLayerName is null");
         for (TileLayerConfiguration c : configs) {
-            if (c.containsLayer(tileLayerId)) {
+            if (c.containsLayer(tileLayerName)) {
                 return c;
             }
         }
-        throw new IllegalArgumentException("No configuration found containing layer " + tileLayerId);
+        throw new IllegalArgumentException("No configuration found containing layer " + tileLayerName);
     }
 
     /**

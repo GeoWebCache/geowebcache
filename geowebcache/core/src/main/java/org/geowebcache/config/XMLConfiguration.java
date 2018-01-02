@@ -628,6 +628,14 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     }
 
     /**
+     * @see TileLayerConfiguration#renameLayer(String, String)
+     */
+    public void renameLayer(String oldName, String newName) throws NoSuchElementException, IllegalArgumentException {
+        throw new UnsupportedOperationException("renameLayer is not supported by "
+                + getClass().getSimpleName());
+    }
+
+    /**
      * @return {@code true} if the layer was removed, {@code false} if no such layer exists
      * @see TileLayerConfiguration#removeLayer(java.lang.String)
      */
