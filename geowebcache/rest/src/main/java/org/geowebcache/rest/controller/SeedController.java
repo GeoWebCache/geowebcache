@@ -23,6 +23,7 @@
 
 package org.geowebcache.rest.controller;
 
+import com.google.common.base.Splitter;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.rest.exception.RestException;
@@ -31,6 +32,7 @@ import org.geowebcache.rest.service.SeedService;
 import org.geowebcache.seed.TileBreeder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +41,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -114,23 +119,39 @@ public class SeedController {
      * POST method for Seeding and Truncating
      * @param request
      * @param layer
+     * @param params Query parameters, including urlencoded form values
      * @return
      */
     @RequestMapping(value = "/seed/{layer:.+}", method = RequestMethod.POST)
-    public ResponseEntity<?> doPost(HttpServletRequest request,
-                                    @PathVariable String layer, InputStream inputStream) {
+    public ResponseEntity<?> doPost(HttpServletRequest request, InputStream inputStream,
+                                    @PathVariable String layer, @RequestParam Map<String, String> params) {
         String body = new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.joining("\n"));
         if (layer.indexOf(".") == -1) {
             try {
-                return formService.handleFormPost(request, layer, body);
+                //If Content-Type is not application/x-www-urlencoded, the form contents will still be in the body.
+                if (body != null && body.length() > 0) {
+                    Map<String, String> formMap = splitToMap(URLDecoder.decode(body, "UTF-8"));
+                    params.putAll(formMap);
+                }
+                return formService.handleFormPost(layer, params);
             } catch (GeoWebCacheException e) {
                 return new ResponseEntity<Object>("error", HttpStatus.INTERNAL_SERVER_ERROR);
+            } catch (UnsupportedEncodingException e) {
+                return new ResponseEntity<Object>("Unable to parse form result.", HttpStatus.BAD_REQUEST);
             }
 
         } else {
             String extension = layer.substring(layer.indexOf(".") +1);
             String layerName = layer.substring(0, layer.indexOf("."));
             return seedService.doSeeding(request, layerName, extension, body);
+        }
+    }
+
+    private Map<String, String> splitToMap(String data) {
+        if (data.contains("&")) {
+            return Splitter.on("&").withKeyValueSeparator("=").split(data);
+        }else {
+            return Splitter.on(" ").withKeyValueSeparator("=").split(data);
         }
     }
 
