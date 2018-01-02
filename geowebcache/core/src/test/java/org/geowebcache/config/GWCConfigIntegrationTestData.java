@@ -11,6 +11,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Test data for {@link GWCConfigIntegrationTest}
+ */
 public class GWCConfigIntegrationTestData {
 
     // Names / ids for config objects
