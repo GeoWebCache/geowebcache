@@ -640,16 +640,17 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
      * @return {@code true} if the layer was removed, {@code false} if no such layer exists
      * @see TileLayerConfiguration#removeLayer(java.lang.String)
      */
-    public synchronized boolean removeLayer(final String layerName) {
+    public synchronized void removeLayer(final String layerName) throws NoSuchElementException, IllegalArgumentException {
         final TileLayer tileLayer = getLayer(layerName);
         if (tileLayer == null) {
-            return false;
+            throw new NoSuchElementException("Layer " + tileLayer.getName() + " does not exist");
         }
 
         boolean removed = getGwcConfig().getLayers().remove(tileLayer);
         if (removed) {
             updateLayers();
-            
+        } else {
+            throw new NoSuchElementException("Layer " + tileLayer.getName() + " does not exist");
         }
         try {
             save();
@@ -660,7 +661,6 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
             }
             throw new IllegalArgumentException("Unable to remove layer " + tileLayer, e);
         }
-        return removed;
     }
 
     /**

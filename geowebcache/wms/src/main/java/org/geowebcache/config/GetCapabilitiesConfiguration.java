@@ -521,7 +521,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
      * @see TileLayerConfiguration#getLayers()
      */
     public Collection<? extends TileLayer> getLayers() {
-        return Collections.unmodifiableList(new ArrayList<TileLayer>(layers.values()));
+        return Collections.unmodifiableList(new ArrayList<>(layers.values()));
     }
 
     /**
@@ -589,8 +589,10 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
      * @see TileLayerConfiguration#removeLayer(java.lang.String)
      */
     //TODO: Why doesn't this throw an IllegalArgument exception: read-only?
-    public boolean removeLayer(String layerName) {
-        return layers.remove(layerName) != null;
+    public void removeLayer(String layerName) throws NoSuchElementException  {
+        if (layers.remove(layerName) == null) {
+            throw new NoSuchElementException("Layer " + layerName + " does not exist");
+        }
     }
 
     /**

@@ -111,10 +111,10 @@ public interface TileLayerConfiguration extends BaseConfiguration {
     /**
      * Removes the given tile layer from this configuration
      * @param layerName name of the layer to remove
-     * @return {@code true} if the layer was removed, {@code false} if no such layer exists
      * @throws IllegalArgumentException If this configuration is not able to remove the layer.
+     * @throws NoSuchElementException If the layer with the specified name doesn't exist.
      */
-    boolean removeLayer(String layerName);
+    void removeLayer(String layerName) throws NoSuchElementException, IllegalArgumentException;
 
     /**
      * Replaces an existing tile layer of the same name with this tile layer.
