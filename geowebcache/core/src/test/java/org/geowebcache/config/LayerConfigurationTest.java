@@ -3,11 +3,14 @@ package org.geowebcache.config;
 import static org.junit.Assert.*;
 
 import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.*;
 
 import org.geowebcache.layer.TileLayer;
 import org.hamcrest.Matcher;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,6 +27,12 @@ public abstract class LayerConfigurationTest {
     public void setUpTestUnit() throws Exception {
         config = getConfig();
     }
+    
+    @After 
+    public void assertNameSetMatchesCollection() throws Exception {
+        assertNameSetMatchesCollection(config);
+    }
+    
     
     @Test
     public void testCanSaveGoodLayer() throws Exception {
@@ -46,6 +55,7 @@ public abstract class LayerConfigurationTest {
         TileLayerConfiguration config2 = getConfig();
         TileLayer retrieved = config2.getLayer("test");
         assertThat(retrieved, layerEquals(goodLayer));
+        assertNameSetMatchesCollection(config2);
     }
     
     @Test
@@ -115,6 +125,7 @@ public abstract class LayerConfigurationTest {
         TileLayerConfiguration config2 = getConfig();
         TileLayer retrieved = config2.getLayer("test");
         assertThat(retrieved, nullValue());
+        assertNameSetMatchesCollection(config2);
     }
     
     @Test
@@ -173,6 +184,7 @@ public abstract class LayerConfigurationTest {
         TileLayerConfiguration config2 = getConfig();
         TileLayer retrieved = config2.getLayer("test");
         assertThat(retrieved, layerEquals(goodLayer));
+        assertNameSetMatchesCollection(config2);
     }
     
     @Test
@@ -198,6 +210,12 @@ public abstract class LayerConfigurationTest {
     public void testGetExisting() throws Exception {
         TileLayer retrieved = config.getLayer(getExistingLayer());
         assertThat(retrieved, notNullValue());
+    }
+    
+    public void assertNameSetMatchesCollection(TileLayerConfiguration config) throws Exception {
+        Set<String> collectionNames = config.getLayers().stream().map(TileLayer::getName).collect(Collectors.toSet());
+        Set<String> setNames = config.getLayerNames();
+        assertThat(setNames, equalTo(collectionNames));
     }
     
     /**

@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -979,7 +980,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     /**
      * @see TileLayerConfiguration#getLayers()
      */
-    public Iterable<TileLayer> getLayers() {
+    public Collection<TileLayer> getLayers() {
         return Collections.unmodifiableList(getGwcConfig().getLayers());
     }
 

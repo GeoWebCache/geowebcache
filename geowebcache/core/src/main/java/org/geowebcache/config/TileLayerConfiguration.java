@@ -17,6 +17,7 @@
  */
 package org.geowebcache.config;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -46,7 +47,7 @@ public interface TileLayerConfiguration extends BaseConfiguration {
      *
      * @return an unmodifiable list of layers, may be empty, but not null.
      */
-    Iterable<? extends TileLayer> getLayers();
+    Collection<? extends TileLayer> getLayers();
 
     /**
      * Gets a single {@link TileLayer} from the configuration, using the layer's unique name as a key.
