@@ -1128,7 +1128,39 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     }
 
     @Override
-    public synchronized boolean removeGridSet(String gridSetName) {
-        return removeGridset(gridSetName) != null;
+    public synchronized void removeGridSet(String gridSetName) {
+        removeGridset(gridSetName);
+    }
+
+    @Override
+    public GridSet getGridSet(String name) throws NoSuchElementException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Collection<GridSet> getGridSets() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void modifyGridSet(GridSet gridSet)
+            throws NoSuchElementException, IllegalArgumentException, UnsupportedOperationException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void renameGridSet(String oldName, String newName)
+            throws NoSuchElementException, IllegalArgumentException, UnsupportedOperationException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public boolean canSave(GridSet gridset) {
+        // TODO Auto-generated method stub
+        return false;
     }
 }
