@@ -11,6 +11,11 @@ import org.junit.runners.Parameterized.Parameters;
 import java.util.Arrays;
 import java.util.Collection;
 
+/**
+ * Base class for testing different GWC Configuration implementations
+ * Uses different {@link GWCConfigIntegrationTestSupport} implementations as {@link Parameters} to access the respective GWC Configurations
+ * Uses {@link GWCConfigIntegrationTestData} to populate each implementation with consistent data.
+ */
 @RunWith(Parameterized.class)
 public abstract class GWCConfigIntegrationTest {
 

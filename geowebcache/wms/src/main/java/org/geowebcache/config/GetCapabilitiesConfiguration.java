@@ -600,6 +600,14 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
                 + getClass().getSimpleName());
     }
 
+    /**
+     * @see TileLayerConfiguration#renameLayer(String, String)
+     */
+    public void renameLayer(String oldName, String newName) throws NoSuchElementException, IllegalArgumentException {
+        throw new UnsupportedOperationException("renameLayer is not supported by "
+                + getClass().getSimpleName());
+    }
+
     //TODO: Remove
     /**
      * @see TileLayerConfiguration#save()

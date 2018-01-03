@@ -125,6 +125,16 @@ public interface TileLayerConfiguration extends BaseConfiguration {
     void modifyLayer(TileLayer tl) throws NoSuchElementException;
 
     /**
+     * Changes the name of an existing tile layer.
+     *
+     * @param oldName the current name of the layer
+     * @param newName the new name of the layer
+     * @throws NoSuchElementException If no tile layer with a matching name exists.
+     * @throws IllegalArgumentException If a tile layer with the new name already exists
+     */
+    void renameLayer(String oldName, String newName) throws NoSuchElementException, IllegalArgumentException;
+
+    /**
      * Adds the given tile layer to this configuration, provided
      * {@link #canSave(TileLayer) canSave(tl) == true}.
      * 
