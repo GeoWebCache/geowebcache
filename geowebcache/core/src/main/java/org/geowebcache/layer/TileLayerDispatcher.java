@@ -222,14 +222,15 @@ public class TileLayerDispatcher implements DisposableBean {
      * @param layerName the name of the layer to remove
      * @return true if the layer was removed, false if it was not found.
      */
-    public synchronized boolean removeLayer(final String layerName)
+    public synchronized void removeLayer(final String layerName)
             throws IllegalArgumentException {
         for (TileLayerConfiguration config : configs) {
-            if (config.removeLayer(layerName)) {
-                return true;
+            if (config.containsLayer(layerName)) {
+                config.removeLayer(layerName);
+                return;
             }
         }
-        return false;
+        throw new NoSuchElementException("No configuration found containing layer "+layerName);
     }
 
     /**

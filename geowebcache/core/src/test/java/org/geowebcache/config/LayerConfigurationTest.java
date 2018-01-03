@@ -111,7 +111,7 @@ public abstract class LayerConfigurationTest {
     @Test
     public void testRemove() throws Exception {
         testAdd();
-        assertThat(config.removeLayer("test"), is(true));
+        config.removeLayer("test");
         TileLayer retrieved = config.getLayer("test");
         assertThat(retrieved, nullValue());
     }
@@ -120,7 +120,7 @@ public abstract class LayerConfigurationTest {
     public void testPersistRemove() throws Exception {
         testPersistAdd();
         
-        assertThat(config.removeLayer("test"), is(true));
+        config.removeLayer("test");
 
         TileLayerConfiguration config2 = getConfig();
         TileLayer retrieved = config2.getLayer("test");
@@ -136,7 +136,10 @@ public abstract class LayerConfigurationTest {
     
     @Test
     public void testRemoveNotExists() throws Exception {
-        assertThat(config.removeLayer("layerThatDoesntExist"), is(false)); // Possibly should be exception instead?
+        try {
+            config.removeLayer("layerThatDoesntExist");
+            fail("Expected exception removing layerThatDoesntExist");
+        } catch (Exception e) { }
     }
     @Test
     public void testModify() throws Exception {

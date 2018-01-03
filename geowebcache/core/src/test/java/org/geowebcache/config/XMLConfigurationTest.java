@@ -118,12 +118,15 @@ public class XMLConfigurationTest {
     @Test
     public void testRemoveLayer() {
 
-        assertFalse(config.removeLayer("nonExistent"));
+        try {
+            config.removeLayer("nonExistent");
+            fail("Expected exception removing nonExistant layer");
+        } catch (Exception e) { }
 
         Set<String> tileLayerNames = config.getLayerNames();
         for (String name : tileLayerNames) {
             int count = config.getLayerCount();
-            assertTrue(config.removeLayer(name));
+            config.removeLayer(name);
             assertEquals(count - 1, config.getLayerCount());
         }
     }
@@ -147,7 +150,7 @@ public class XMLConfigurationTest {
     public void testSave() throws Exception {
         for (String name : config.getLayerNames()) {
             int count = config.getLayerCount();
-            assertTrue(config.removeLayer(name));
+            config.removeLayer(name);
             assertEquals(count - 1, config.getLayerCount());
         }
 
