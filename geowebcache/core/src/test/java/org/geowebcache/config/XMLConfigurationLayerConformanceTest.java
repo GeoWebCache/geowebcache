@@ -20,7 +20,7 @@ import org.junit.rules.TemporaryFolder;
 public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest {
 
     @Override
-    protected TileLayer getGoodLayer(String id, int rand) {
+    protected TileLayer getGoodInfo(String id, int rand) {
         WMSLayer layer = new WMSLayer(id, new String[] {"http://example.com/"}, null, 
                 Integer.toString(rand),null, null, null, null,
                 null, false, null);
@@ -28,7 +28,7 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
     }
 
     @Override
-    protected TileLayer getBadLayer(String id, int rand) {
+    protected TileLayer getBadInfo(String id, int rand) {
         return new AbstractTileLayer() {
             {
                 this.name=id;
@@ -99,7 +99,7 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
     }
 
     @Override
-    protected Matcher<TileLayer> layerEquals(TileLayer expected) {
+    protected Matcher<TileLayer> infoEquals(TileLayer expected) {
         return new CustomMatcher<TileLayer>("Layer matching "+expected.getId()+" with "+ ((WMSLayer)expected).getWmsLayers()){
             
             @Override
@@ -112,7 +112,7 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
     }
 
     @Override
-    protected String getExistingLayer() throws Exception {
+    protected String getExistingInfo() throws Exception {
         return "topp:states";
     }
 

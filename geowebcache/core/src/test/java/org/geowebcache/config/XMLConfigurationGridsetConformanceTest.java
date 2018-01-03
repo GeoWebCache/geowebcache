@@ -19,13 +19,13 @@ import org.junit.rules.TemporaryFolder;
 public class XMLConfigurationGridsetConformanceTest extends GridSetConfigurationTest {
 
     @Override
-    protected GridSet getGoodGridSet(String id, int rand) {
+    protected GridSet getGoodInfo(String id, int rand) {
         GridSet gridset = GridSetFactory.createGridSet(id, SRS.getSRS(rand), new BoundingBox(0,0,1,1), true, 3, 1.0, GridSetFactory.DEFAULT_PIXEL_SIZE_METER, 256, 256, false);
         return gridset;
     }
 
     @Override
-    protected GridSet getBadGridSet(String id, int rand) {
+    protected GridSet getBadInfo(String id, int rand) {
         return new GridSet() {};
     }
     
@@ -52,7 +52,7 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
     }
 
     @Override
-    protected Matcher<GridSet> GridSetEquals(GridSet expected) {
+    protected Matcher<GridSet> infoEquals(GridSet expected) {
         return new CustomMatcher<GridSet>("GridSet matching "+expected.getName()+" with " + expected.getSrs()){
             
             @Override
@@ -65,7 +65,7 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
     }
 
     @Override
-    protected String getExistingGridSet() throws Exception {
+    protected String getExistingInfo() throws Exception {
         return "topp:states";
     }
 

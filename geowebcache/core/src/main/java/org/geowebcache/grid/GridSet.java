@@ -22,8 +22,9 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.geowebcache.config.Info;
 
-public class GridSet {
+public class GridSet implements Info {
 
     private String name;
 
