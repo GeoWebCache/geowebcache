@@ -44,7 +44,7 @@ public abstract class GridSetConfigurationTest extends ConfigurationTest<GridSet
 
 
     @Override
-    protected Collection<GridSet> getInfos(GridSetConfiguration config) throws Exception {
+    protected Collection<? extends GridSet> getInfos(GridSetConfiguration config) throws Exception {
         return config.getGridSets();
     }
 
