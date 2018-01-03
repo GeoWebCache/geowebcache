@@ -1,23 +1,21 @@
 package org.geowebcache.config;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
-import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSetFactory;
-import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.grid.SRS;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
+@Ignore // Tests not implemented yet
 public class XMLConfigurationGridsetConformanceTest extends GridSetConfigurationTest {
 
     @Override

@@ -20,6 +20,7 @@ package org.geowebcache.config;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -519,7 +520,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     /**
      * @see TileLayerConfiguration#getLayers()
      */
-    public Iterable<? extends TileLayer> getLayers() {
+    public Collection<? extends TileLayer> getLayers() {
         return Collections.unmodifiableList(new ArrayList<TileLayer>(layers.values()));
     }
 
@@ -664,7 +665,39 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     }
 
     @Override
-    public boolean removeGridSet(String gridSetName) {
+    public void removeGridSet(String gridSetName) {
         throw new IllegalArgumentException("This is a read only configuration object, can't add gridset " + gridSetName);
+    }
+
+    @Override
+    public GridSet getGridSet(String name) throws NoSuchElementException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Collection<GridSet> getGridSets() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void modifyGridSet(GridSet gridSet)
+            throws NoSuchElementException, IllegalArgumentException, UnsupportedOperationException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void renameGridSet(String oldName, String newName)
+            throws NoSuchElementException, IllegalArgumentException, UnsupportedOperationException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public boolean canSave(GridSet gridset) {
+        // TODO Auto-generated method stub
+        return false;
     }
 }
