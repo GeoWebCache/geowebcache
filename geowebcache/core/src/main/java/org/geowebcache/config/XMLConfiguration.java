@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -1148,18 +1149,30 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     
     @Override
     public synchronized void addGridSet(GridSet gridSet)  {
+        
+        validateGridSet(gridSet);
+        
         GridSet old = gridSets.get(gridSet.getName());
-        
-        
-        getGwcConfig().getGridSets();
-        
-        if (null != gridSetBroker.get(gridSet.getName())) {
+        if(old!=null) {
             throw new IllegalArgumentException("GridSet " + gridSet.getName() + " already exists");
         }
+        
+        assert getGwcConfig().getGridSets().stream().noneMatch(xgs->xgs.getName().equals(gridSet.getName()));
+        
         try {
             saveGridSet(gridSet);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
+        }
+        this.gridSets.put(gridSet.getName(), gridSet);
+    }
+
+    private void validateGridSet(GridSet gridSet) {
+        if(Objects.isNull(gridSet.getName())) {
+            throw new IllegalArgumentException("GridSet name is not set");
+        }
+        if(Objects.isNull(gridSet.getGridLevels())) {
+            throw new IllegalArgumentException("GridSet has no levels");
         }
     }
 
