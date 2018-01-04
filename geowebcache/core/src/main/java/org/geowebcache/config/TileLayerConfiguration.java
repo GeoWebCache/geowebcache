@@ -20,6 +20,7 @@ package org.geowebcache.config;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 
 import org.geowebcache.GeoWebCacheExtensions;
@@ -56,7 +57,7 @@ public interface TileLayerConfiguration extends BaseConfiguration {
      * @return the layer named {@code layerIdent} or {@code null} if no such layer exists in this
      *         configuration
      */
-    TileLayer getLayer(String layerName);
+    Optional<TileLayer> getLayer(String layerName);
 
     /**
      * @param layerName

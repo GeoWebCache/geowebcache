@@ -208,7 +208,7 @@ public class GetCapabilitiesConfigurationTest {
         verify(server, cap, req, gcOpType, globalConfig);
 
         // check legends information
-        WMSLayer wmsLayer = (WMSLayer) config.getLayer("Foo");
+        WMSLayer wmsLayer = (WMSLayer) config.getLayer("Foo").get();
         assertThat(wmsLayer, notNullValue());
         assertThat(wmsLayer.getLegends(), notNullValue());
         // check legends default for the test layer

@@ -2,6 +2,7 @@ package org.geowebcache.config;
 
 import java.util.Collection;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,7 +17,7 @@ public interface GridSetConfiguration extends BaseConfiguration {
      * @return
      * @throw NoSuchElementException if the named gridset is not available.
      */
-    GridSet getGridSet(final String name) throws NoSuchElementException;
+    Optional<GridSet> getGridSet(final String name) throws NoSuchElementException;
     
     /**
      * Get all the gridsets provided by this configuration

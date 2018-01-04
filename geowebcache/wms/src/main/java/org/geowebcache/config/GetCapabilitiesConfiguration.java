@@ -30,10 +30,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -549,25 +552,25 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     /**
      * @see TileLayerConfiguration#getTileLayer(java.lang.String)
      */
-    public TileLayer getLayer(String layerName) {
-        return layers.get(layerName);
+    public Optional<TileLayer> getLayer(String layerName) {
+        return Optional.ofNullable(layers.get(layerName));
     }
 
     /**
      * @see TileLayerConfiguration#getTileLayerById(java.lang.String)
      */
     @Deprecated
-    public TileLayer getTileLayerById(String layerId) {
+    public @Nullable TileLayer getTileLayerById(String layerId) {
         // this configuration does not differentiate between layer identifier and identity
-        return getLayer(layerId);
+        return getLayer(layerId).orElse(null);
     }
 
     /**
      * @see TileLayerConfiguration#getTileLayer(java.lang.String)
      */
     @Deprecated
-    public TileLayer getTileLayer(String layerName) {
-        return getLayer(layerName);
+    public @Nullable TileLayer getTileLayer(String layerName) {
+        return getLayer(layerName).orElse(null);
     }
 
     /**
@@ -672,9 +675,9 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     }
 
     @Override
-    public GridSet getGridSet(String name) throws NoSuchElementException {
+    public Optional<GridSet> getGridSet(String name) throws NoSuchElementException {
         // TODO Auto-generated method stub
-        return null;
+        return Optional.empty();
     }
 
     @Override

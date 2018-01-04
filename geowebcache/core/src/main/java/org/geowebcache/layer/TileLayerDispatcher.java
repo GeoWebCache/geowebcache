@@ -77,8 +77,8 @@ public class TileLayerDispatcher implements DisposableBean {
     public boolean layerExists(final String layerName) {
         for (int i = 0; i < configs.size(); i++) {
             TileLayerConfiguration configuration = configs.get(i);
-            TileLayer layer = configuration.getLayer(layerName);
-            if (layer != null) {
+            Optional<TileLayer> layer = configuration.getLayer(layerName);
+            if (layer.isPresent()) {
                 return true;
             }
         }
@@ -96,9 +96,9 @@ public class TileLayerDispatcher implements DisposableBean {
 
         for (int i = 0; i < configs.size(); i++) {
             TileLayerConfiguration configuration = configs.get(i);
-            TileLayer layer = configuration.getLayer(layerName);
-            if (layer != null) {
-                return layer;
+            Optional<TileLayer> layer = configuration.getLayer(layerName);
+            if (layer.isPresent()) {
+                return layer.get();
             }
         }
         throw new GeoWebCacheException("Thread " + Thread.currentThread().getId()

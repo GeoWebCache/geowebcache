@@ -1,17 +1,19 @@
 package org.geowebcache.config;
 
+import static org.geowebcache.util.TestUtils.isPresent;
+import static org.geowebcache.util.TestUtils.notPresent;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.util.Collection;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.geowebcache.util.TestUtils;
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
@@ -40,7 +42,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     public void testAdd() throws Exception {
         I goodGridSet = getGoodInfo("test", 1);
         addInfo(config, goodGridSet);
-        I retrieved = getInfo(config, "test");
+        I retrieved = getInfo(config, "test").get();
         assertThat(retrieved, infoEquals(goodGridSet));
     }
     
@@ -50,7 +52,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         addInfo(config, goodGridSet);
 
         C config2 = getConfig();
-        I retrieved = getInfo(config2, "test");
+        I retrieved = getInfo(config2, "test").get();
         assertThat(retrieved, infoEquals(goodGridSet));
         assertNameSetMatchesCollection(config2);
     }
@@ -76,7 +78,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         } catch (IllegalArgumentException ex) { // May want to change to something more specific.
             
         }
-        I retrieved = getInfo(config, "test");
+        I retrieved = getInfo(config, "test").get();
         assertThat(retrieved, infoEquals(goodGridSet));
     }
     
@@ -89,23 +91,22 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     
     @Test
     public void testBadInfoNoAdd() throws Exception {
-        I badGridSet = getGoodInfo("test", 1);
-        addInfo(config, badGridSet);
+        I badInfo = getBadInfo("test", 1);
         try {
-            addInfo(config, badGridSet);
+            addInfo(config, badInfo);
         } catch (IllegalArgumentException ex) { // May want to change to something more specific.
             
         }
-        I retrieved = getInfo(config, "test");
-        assertThat(retrieved, infoEquals(badGridSet));
+        Optional<I> retrieved = getInfo(config, "test");
+        assertThat(retrieved, TestUtils.notPresent());
     }
-    
+
     @Test
     public void testRemove() throws Exception {
         testAdd();
         removeInfo(config, "test");
-        I retrieved = getInfo(config, "test");
-        assertThat(retrieved, nullValue());
+        Optional<I> retrieved = getInfo(config, "test");
+        assertThat(retrieved, TestUtils.notPresent());
     }
     
     @Test
@@ -115,16 +116,16 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         removeInfo(config, "test");
 
         C config2 = getConfig();
-        I retrieved = getInfo(config2, "test");
-        assertThat(retrieved, nullValue());
+        Optional<I> retrieved = getInfo(config2, "test");
+        assertThat(retrieved, notPresent());
         assertNameSetMatchesCollection(config2);
     }
     
     @Test
     public void testGetNotExists() throws Exception {
-        exception.expect(NoSuchElementException.class);
+        
         @SuppressWarnings("unused")
-        I retrieved = getInfo(config, "GridSetThatDoesntExist");
+        Optional<I> retrieved = getInfo(config, "GridSetThatDoesntExist");
     }
     
     @Test
@@ -138,8 +139,8 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         I goodGridSet = getGoodInfo("test", 2);
         modifyInfo(config, goodGridSet);
         
-        I retrieved = getInfo(config, "test");
-        assertThat(retrieved, infoEquals(goodGridSet));
+        Optional<I> retrieved = getInfo(config, "test");
+        assertThat(retrieved, isPresent(infoEquals(goodGridSet)));
     }
 
     @Test
@@ -155,7 +156,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     @Test
     public void testModifyBadGridSetNoChange() throws Exception {
         testAdd();
-        I goodGridSet = getInfo(config, "test");
+        I goodGridSet = getInfo(config, "test").get();
         I badGridSet = getBadInfo("test", 2);
         
         try {
@@ -164,8 +165,8 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
             
         }
         
-        I retrieved = getInfo(config, "test");
-        assertThat(retrieved, infoEquals(goodGridSet));
+        Optional<I> retrieved = getInfo(config, "test");
+        assertThat(retrieved, isPresent(infoEquals(goodGridSet)));
     }
     
     @Test
@@ -176,15 +177,15 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         modifyInfo(config, goodGridSet);
 
         C config2 = getConfig();
-        I retrieved = getInfo(config2, "test");
-        assertThat(retrieved, infoEquals(goodGridSet));
+        Optional<I> retrieved = getInfo(config2, "test");
+        assertThat(retrieved, isPresent(infoEquals(goodGridSet)));
         assertNameSetMatchesCollection(config2);
     }
     
     @Test
     public void testModifyNotExistsExcpetion() throws Exception {
         I goodGridSet = getGoodInfo("test", 2);
-        exception.expect(NoSuchElementException.class);// Inconsistent with other methods
+        exception.expect(NoSuchElementException.class);
         modifyInfo(config, goodGridSet);
     }
     
@@ -193,17 +194,17 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         I goodGridSet = getGoodInfo("GridSetThatDoesntExist", 2);
         try {
             modifyInfo(config, goodGridSet);
-        } catch(NoSuchElementException ex) {// Inconsistent with other methods.
+        } catch(NoSuchElementException ex) {
             
         }
-        I retrieved = getInfo(config, "GridSetThatDoesntExist");
-        assertThat(retrieved, nullValue()); // Possibly should be exception instead?
+        Optional<I> retrieved = getInfo(config, "GridSetThatDoesntExist");
+        assertThat(retrieved, notPresent());
     }
     
     @Test
     public void testGetExisting() throws Exception {
-        I retrieved = getInfo(config, getExistingInfo());
-        assertThat(retrieved, notNullValue());
+        Optional<I> retrieved = getInfo(config, getExistingInfo());
+        assertThat(retrieved, isPresent());
     }
     
     /**
@@ -249,7 +250,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     protected abstract Matcher<I> infoEquals(final I expected);
     
     protected abstract void addInfo(C config, I info) throws Exception;
-    protected abstract I getInfo(C config, String name) throws Exception;
+    protected abstract Optional<I> getInfo(C config, String name) throws Exception;
     protected abstract Collection<? extends I> getInfos(C config) throws Exception;
     protected abstract Set<String> getInfoNames(C config) throws Exception;
     protected abstract void removeInfo(C config, String name) throws Exception;

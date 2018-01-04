@@ -3,6 +3,7 @@ package org.geowebcache.config;
 import static org.junit.Assert.*;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
@@ -38,7 +39,7 @@ public abstract class GridSetConfigurationTest extends ConfigurationTest<GridSet
 
 
     @Override
-    protected GridSet getInfo(GridSetConfiguration config, String name) throws Exception {
+    protected Optional<GridSet> getInfo(GridSetConfiguration config, String name) throws Exception {
         return config.getGridSet(name);
     }
 

@@ -34,8 +34,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
@@ -578,7 +580,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
             throw new IllegalArgumentException("Can't add layers of type "
                     + tl.getClass().getName());
         }
-        if (null != getLayer(tl.getName())) {
+        if (getLayer(tl.getName()).isPresent()) {
             throw new IllegalArgumentException("Layer '" + tl.getName() + "' already exists");
         }
 
@@ -604,10 +606,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
      * @see TileLayerConfiguration#modifyLayer(org.geowebcache.layer.TileLayer)
      */
     public synchronized void modifyLayer(TileLayer tl) throws NoSuchElementException {
-        TileLayer previous = getLayer(tl.getName());
-        if (null == previous) {
-            throw new NoSuchElementException("Layer " + tl.getName() + " does not exist");
-        }
+        TileLayer previous = findLayer(tl.getName());
         if (!(tl instanceof WMSLayer)) {
             throw new IllegalArgumentException("Can't add layers of type "
                     + tl.getClass().getName());
@@ -628,6 +627,12 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         }
     }
 
+    protected TileLayer findLayer(String layerName) throws NoSuchElementException {
+        TileLayer layer = getLayer(layerName).orElseThrow(
+                ()-> new NoSuchElementException("Layer " + layerName + " does not exist"));
+        return layer;
+    }
+
     /**
      * @see TileLayerConfiguration#renameLayer(String, String)
      */
@@ -641,9 +646,9 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
      * @see TileLayerConfiguration#removeLayer(java.lang.String)
      */
     public synchronized void removeLayer(final String layerName) throws NoSuchElementException, IllegalArgumentException {
-        final TileLayer tileLayer = getLayer(layerName);
+        final TileLayer tileLayer = findLayer(layerName);
         if (tileLayer == null) {
-            throw new NoSuchElementException("Layer " + tileLayer.getName() + " does not exist");
+            throw new NoSuchElementException("Layer " + layerName + " does not exist");
         }
 
         boolean removed = getGwcConfig().getLayers().remove(tileLayer);
@@ -995,23 +1000,23 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     /**
      * @see TileLayerConfiguration#getLayer(java.lang.String)
      */
-    public TileLayer getLayer(String layerName) {
-        return layers.get(layerName);
+    public Optional<TileLayer> getLayer(String layerName) {
+        return Optional.ofNullable(layers.get(layerName));
     }
 
     /**
      * @see TileLayerConfiguration#getTileLayer(java.lang.String)
      */
     @Deprecated
-    public TileLayer getTileLayer(String layerName) {
-        return getLayer(layerName);
+    public @Nullable TileLayer getTileLayer(String layerName) {
+        return getLayer(layerName).orElse(null);
     }
 
     /**
      * @see TileLayerConfiguration#getTileLayerById(String)
      */
     @Deprecated
-    public TileLayer getTileLayerById(String layerId) {
+    public @Nullable TileLayer getTileLayerById(String layerId) {
         // this configuration does not differentiate between identifier and identity yet
         return layers.get(layerId);
     }
@@ -1141,7 +1146,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     }
 
     @Override
-    public GridSet getGridSet(String name) throws NoSuchElementException {
+    public Optional<GridSet> getGridSet(String name) throws NoSuchElementException {
         // TODO Auto-generated method stub
         return null;
     }

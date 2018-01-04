@@ -74,7 +74,7 @@ public class XMLConfigurationTest {
         TileLayer tl = createTestLayer("testLayer");
         config.addLayer(tl);
         assertEquals(count + 1, config.getLayerCount());
-        assertSame(tl, config.getLayer("testLayer"));
+        assertSame(tl, config.getLayer("testLayer").get());
         try {
             config.addLayer(tl);
             fail("Expected IllegalArgumentException on duplicate layer name");
@@ -104,7 +104,7 @@ public class XMLConfigurationTest {
         config.modifyLayer(layer2);
 
         assertEquals(count, config.getLayerCount());
-        assertSame(layer2, config.getLayer("testLayer"));
+        assertSame(layer2, config.getLayer("testLayer").get());
 
         layer1 = createTestLayer("another");
         try {
@@ -221,7 +221,7 @@ public class XMLConfigurationTest {
         assertEquals(1, config2.getLayerCount());
         assertNotNull(config2.getLayer("testLayer"));
 
-        WMSLayer l = (WMSLayer) config2.getLayer("testLayer");
+        WMSLayer l = (WMSLayer) config2.getLayer("testLayer").get();
         assertTrue(Arrays.equals(wmsURL, l.getWMSurl()));
         assertEquals(wmsStyles, l.getStyles());
         assertEquals(wmsLayers, l.getWmsLayers());

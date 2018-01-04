@@ -3,6 +3,7 @@ package org.geowebcache.config;
 import static org.junit.Assert.*;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
@@ -31,7 +32,7 @@ public abstract class LayerConfigurationTest extends ConfigurationTest<TileLayer
 
 
     @Override
-    protected TileLayer getInfo(TileLayerConfiguration config, String name) throws Exception {
+    protected Optional<TileLayer> getInfo(TileLayerConfiguration config, String name) throws Exception {
         return config.getLayer(name);
     }
 
