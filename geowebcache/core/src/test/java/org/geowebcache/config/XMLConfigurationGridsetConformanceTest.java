@@ -64,7 +64,7 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
 
     @Override
     protected String getExistingInfo() throws Exception {
-        return "topp:states";
+        return "EPSG:2163";
     }
 
 }

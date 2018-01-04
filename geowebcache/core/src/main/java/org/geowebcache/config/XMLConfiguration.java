@@ -917,7 +917,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
 
         log.info("Initializing GridSets from " + getIdentifier());
 
-        contributeGridSets(gridSetBroker);
+        loadGridSets(gridSetBroker);
 
         log.info("Initializing layers from " + getIdentifier());
 
@@ -1144,9 +1144,15 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
             return "Error, see log for details";
         }
     }
-
+    
+    
     @Override
     public synchronized void addGridSet(GridSet gridSet)  {
+        GridSet old = gridSets.get(gridSet.getName());
+        
+        
+        getGwcConfig().getGridSets();
+        
         if (null != gridSetBroker.get(gridSet.getName())) {
             throw new IllegalArgumentException("GridSet " + gridSet.getName() + " already exists");
         }
@@ -1170,8 +1176,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
 
     @Override
     public Optional<GridSet> getGridSet(String name) {
-        // TODO Auto-generated method stub
-        return null;
+        return Optional.ofNullable(gridSets.get(name));
     }
 
     @Override
