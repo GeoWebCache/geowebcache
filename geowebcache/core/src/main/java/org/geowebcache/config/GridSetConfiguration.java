@@ -17,7 +17,7 @@ public interface GridSetConfiguration extends BaseConfiguration {
      * @return
      * @throw NoSuchElementException if the named gridset is not available.
      */
-    Optional<GridSet> getGridSet(final String name) throws NoSuchElementException;
+    Optional<GridSet> getGridSet(final String name);
     
     /**
      * Get all the gridsets provided by this configuration

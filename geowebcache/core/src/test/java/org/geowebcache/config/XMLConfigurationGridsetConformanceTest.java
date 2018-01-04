@@ -11,11 +11,9 @@ import org.geowebcache.grid.GridSetFactory;
 import org.geowebcache.grid.SRS;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
-@Ignore // Tests not implemented yet
 public class XMLConfigurationGridsetConformanceTest extends GridSetConfigurationTest {
 
     @Override

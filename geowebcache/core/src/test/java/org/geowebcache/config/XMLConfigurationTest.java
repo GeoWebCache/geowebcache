@@ -32,6 +32,7 @@ import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.util.TestUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -219,7 +220,7 @@ public class XMLConfigurationTest {
         XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
         config2.initialize(gridSetBroker);
         assertEquals(1, config2.getLayerCount());
-        assertNotNull(config2.getLayer("testLayer"));
+        assertThat(config2.getLayer("testLayer"), TestUtils.isPresent());
 
         WMSLayer l = (WMSLayer) config2.getLayer("testLayer").get();
         assertTrue(Arrays.equals(wmsURL, l.getWMSurl()));

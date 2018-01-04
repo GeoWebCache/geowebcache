@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
@@ -119,6 +121,8 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     private GeoWebCacheConfiguration gwcConfig;
 
     private transient Map<String, TileLayer> layers;
+    
+    private transient Map<String, GridSet> gridSets;
 
     private GridSetBroker gridSetBroker;
 
@@ -958,6 +962,25 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
             }
         }
     }
+    private void loadGridSets(final GridSetBroker gridSetBroker) {
+        if (getGwcConfig().getGridSets() != null) {
+            this.gridSets = getGwcConfig().getGridSets().stream()
+                .map((xmlGridSet)->{
+                        
+                        if (log.isDebugEnabled()) {
+                            log.debug("Reading " + xmlGridSet.getName());
+                        }
+                        
+                        GridSet gridSet = xmlGridSet.makeGridSet();
+                        
+                        log.info("Read GridSet " + gridSet.getName());
+                        return gridSet;
+                    })
+                .collect(Collectors.toMap(GridSet::getName, Function.identity(), 
+                        (GridSet x,GridSet y)->{throw new IllegalStateException("Gridsets with duplicate name "+x.getName());},
+                        HashMap::new));
+        }
+    }
 
     private void initialize(final TileLayer layer) {
         log.info("Initializing TileLayer '" + layer.getName() + "'");
@@ -1146,15 +1169,16 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     }
 
     @Override
-    public Optional<GridSet> getGridSet(String name) throws NoSuchElementException {
+    public Optional<GridSet> getGridSet(String name) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public Collection<GridSet> getGridSets() {
-        // TODO Auto-generated method stub
-        return null;
+        return getGwcConfig().getGridSets().stream()
+                .map(XMLGridSet::makeGridSet)
+                .collect(Collectors.toList());
     }
 
     @Override
