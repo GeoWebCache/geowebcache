@@ -2,6 +2,8 @@ package org.geowebcache.config;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
@@ -16,9 +18,16 @@ import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
+import org.springframework.web.context.WebApplicationContext;
+
 
 public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest {
 
+    private ConfigurationResourceProvider configProvider;
+    
+    private boolean failNextRead = false;
+    private boolean failNextWrite = false;
+    
     @Override
     protected TileLayer getGoodInfo(String id, int rand) {
         WMSLayer layer = new WMSLayer(id, new String[] {"http://example.com/"}, null, 
@@ -93,7 +102,29 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
         }
         
         GridSetBroker gridSetBroker = new GridSetBroker(true, true);
-        config = new XMLConfiguration(null, configDir.getAbsolutePath());
+        configProvider = new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
+                (WebApplicationContext)null, configDir.getAbsolutePath(), null) {
+
+                    @Override
+                    public InputStream in() throws IOException {
+                        if(failNextRead) {
+                            failNextRead = false;
+                            throw new IOException("Test failure on read");
+                        }
+                        return super.in();
+                    }
+
+                    @Override
+                    public OutputStream out() throws IOException {
+                        if(failNextWrite) {
+                            failNextWrite = false;
+                            throw new IOException("Test failure on write");
+                        }
+                        return super.out();
+                    }
+            
+        };
+        config = new XMLConfiguration(null, configProvider);
         config.initialize(gridSetBroker);
         return config;
     }
@@ -114,6 +145,16 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
     @Override
     protected String getExistingInfo() throws Exception {
         return "topp:states";
+    }
+
+    @Override
+    public void failNextRead() {
+        failNextRead = true;
+    }
+
+    @Override
+    public void failNextWrite() {
+        failNextWrite = true;
     }
 
 }

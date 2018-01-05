@@ -318,8 +318,7 @@ public class XMLConfigurationTest {
                 tileHeight, yCoordinateFirst);
         gridSet.setDescription("test description");
 
-        config.addOrReplaceGridSet(new XMLGridSet(gridSet));
-        config.save();
+        config.addGridSet(gridSet);
 
         try {
             XMLConfiguration.validate(XMLConfiguration

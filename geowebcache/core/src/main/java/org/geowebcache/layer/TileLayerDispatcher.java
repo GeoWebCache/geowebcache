@@ -341,9 +341,8 @@ public class TileLayerDispatcher implements DisposableBean {
 
     private void saveGridSet(final GridSet gridSet) throws IOException {
         XMLConfiguration persistingConfig = getXmlConfiguration();
-        persistingConfig.addOrReplaceGridSet(new XMLGridSet(gridSet));
-        persistingConfig.save();
-        gridSetBroker.put(gridSet);
+        persistingConfig.addGridSet(gridSet);
+        gridSetBroker.put(gridSet); // TODO REMOVE
     }
 
     private XMLConfiguration getXmlConfiguration() throws IllegalStateException {

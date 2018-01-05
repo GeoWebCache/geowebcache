@@ -207,6 +207,42 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         assertThat(retrieved, isPresent());
     }
     
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Test
+    public void testCantModifyReturnedCollection() throws Exception {
+        I info = getGoodInfo("test", 1);
+        try {
+            ((Collection)getInfos(config)).add(info);
+        } catch (Exception e) {
+            
+        }
+        assertThat(getInfo(config, "test"), notPresent());
+    }
+    
+    
+    @Test
+    public void testNoChangeOnPersistExceptionOnAdd() throws Exception {
+        I goodGridSet = getGoodInfo("test", 1);
+        
+        // Force a failure
+        failNextWrite();
+        exception.expect(ConfigurationPersistenceException.class);
+        
+        try {
+            addInfo(config, goodGridSet);
+        } finally {
+            // Should be unchanged
+            Optional<I> retrieved = getInfo(config, "test");
+            assertThat(retrieved, notPresent());
+            
+            // Persistence should also be unchanged
+            C config2 = getConfig();
+            Optional<I> retrieved2 = getInfo(config2, "test");
+            assertThat(retrieved2, notPresent());
+            assertNameSetMatchesCollection(config2);
+        }
+    }
+    
     /**
      * Create a GridSet that should be saveable in the configuration being tested. Throw 
      * AssumptionViolatedException if this is a read only GridSetConfiguration.
@@ -262,5 +298,8 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         Set<String> setNames = getInfoNames(config);
         assertThat(setNames, equalTo(collectionNames));
     }
+    
+    public abstract void failNextRead();
+    public abstract void failNextWrite();
 
 }

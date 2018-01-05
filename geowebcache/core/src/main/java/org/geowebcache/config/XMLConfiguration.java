@@ -599,7 +599,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
             if (getGwcConfig().getLayers().remove(tl)) {
                 updateLayers();
             }
-            throw new IllegalArgumentException("Unable to add layer " + tl.getName(), e);
+            throw new ConfigurationPersistenceException("Unable to add layer " + tl.getName(), e);
         }
     }
 
@@ -677,20 +677,15 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
      * @param gridSet
      * @throws GeoWebCacheException
      */
-    @Deprecated
-    public synchronized void addOrReplaceGridSet(final XMLGridSet gridSet)
+    private synchronized void addOrReplaceGridSet(final XMLGridSet gridSet)
             throws IllegalArgumentException {
         final String gridsetName = gridSet.getName();
-
-        List<XMLGridSet> gridSets = getGwcConfig().getGridSets();
-
-        for (Iterator<XMLGridSet> it = gridSets.iterator(); it.hasNext();) {
-            XMLGridSet gset = it.next();
-            if (gridsetName.equals(gset.getName())) {
-                it.remove();
-            }
-        }
-        gridSets.add(gridSet);
+        
+        List<XMLGridSet> xmlGridSets = getGwcConfig().getGridSets();
+        
+        xmlGridSets.removeIf(xgs->gridsetName.equals(xgs.getName()));
+        
+        xmlGridSets.add(gridSet);
     }
 
     /**
@@ -699,6 +694,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
      * @param gridsetName
      *            the name of the gridset to remove
      * @return the removed griset, or {@code null} if no such gridset exists
+     * @deprecated use removeGridSet
      */
     @Deprecated
     public synchronized XMLGridSet removeGridset(final String gridsetName) {
@@ -1162,7 +1158,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         try {
             saveGridSet(gridSet);
         } catch (IOException e) {
-            throw new IllegalArgumentException(e);
+            throw new ConfigurationPersistenceException(e);
         }
         this.gridSets.put(gridSet.getName(), gridSet);
     }
@@ -1184,7 +1180,30 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
 
     @Override
     public synchronized void removeGridSet(String gridSetName) {
-        removeGridset(gridSetName);
+        GridSet gsRemoved = gridSets.remove(gridSetName);
+        XMLGridSet xgsRemoved = null;
+        for(Iterator<XMLGridSet> it = getGwcConfig().getGridSets().iterator(); it.hasNext();) {
+            XMLGridSet xgs = it.next();
+            if(gridSetName.equals(xgs.getName())) {
+                it.remove();
+                xgsRemoved=xgs;
+                break;
+            }
+        }
+        
+        assert Objects.isNull(gsRemoved)==Objects.isNull(xgsRemoved);
+        
+        if (Objects.isNull(gsRemoved)) {
+            throw new NoSuchElementException("Could not remeove GridSet "+gridSetName+" as it does not exist");
+        }
+        
+        try {
+            save();
+        } catch (IOException ex) {
+            gridSets.put(gridSetName,  gsRemoved);
+            getGwcConfig().getGridSets().add(xgsRemoved);
+            throw new ConfigurationPersistenceException("Could not persist removal of Gridset "+gridSetName,ex);
+        }
     }
 
     @Override
@@ -1194,16 +1213,27 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
 
     @Override
     public Collection<GridSet> getGridSets() {
-        return getGwcConfig().getGridSets().stream()
-                .map(XMLGridSet::makeGridSet)
-                .collect(Collectors.toList());
+        return Collections.unmodifiableCollection(gridSets.values());
     }
 
     @Override
     public void modifyGridSet(GridSet gridSet)
             throws NoSuchElementException, IllegalArgumentException, UnsupportedOperationException {
-        // TODO Auto-generated method stub
+        validateGridSet(gridSet);
         
+        GridSet old = gridSets.get(gridSet.getName());
+        if(old==null) {
+            throw new NoSuchElementException("GridSet " + gridSet.getName() + " already exists");
+        }
+        
+        assert getGwcConfig().getGridSets().stream().anyMatch(xgs->xgs.getName().equals(gridSet.getName()));
+        
+        try {
+            saveGridSet(gridSet);
+        } catch (IOException e) {
+            throw new ConfigurationPersistenceException(e);
+        }
+        this.gridSets.put(gridSet.getName(), gridSet);
     }
 
     @Override
