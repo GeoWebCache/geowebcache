@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -205,7 +206,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
 
         XMLConfiguration xmlConfig = new XMLConfiguration(is);
 
-        GridSetBroker gsb = new GridSetBroker(false, false);
+        GridSetBroker gsb = new GridSetBroker(Arrays.asList(new DefaultGridsets(true, true), xmlConfig));
         xmlConfig.initialize(gsb);
 
         Iterator<TileLayer> iter = xmlConfig.getLayers().iterator();

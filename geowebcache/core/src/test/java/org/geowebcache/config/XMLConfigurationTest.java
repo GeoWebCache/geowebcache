@@ -10,6 +10,7 @@ import java.io.FileInputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -328,8 +329,8 @@ public class XMLConfigurationTest {
             fail(e.getMessage());
         }
 
-        ServerConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
-        GridSetBroker gridSetBroker2 = new GridSetBroker(true, false);
+        XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
+        GridSetBroker gridSetBroker2 = new GridSetBroker(Arrays.asList(new DefaultGridsets(true, true), (GridSetConfiguration)config2));
         config2.initialize(gridSetBroker2);
 
         GridSet gridSet2 = gridSetBroker2.get(name);
