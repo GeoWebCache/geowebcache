@@ -67,6 +67,25 @@ public class GridSet implements Info {
         // Blank
     }
 
+    
+    public GridSet(GridSet g) {
+        super();
+        this.name = g.name;
+        this.srs = g.srs;
+        this.tileWidth = g.tileWidth;
+        this.tileHeight = g.tileHeight;
+        this.yBaseToggle = g.yBaseToggle;
+        this.yCoordinateFirst = g.yCoordinateFirst;
+        this.scaleWarning = g.scaleWarning;
+        this.metersPerUnit = g.metersPerUnit;
+        this.pixelSize = g.pixelSize;
+        this.originalExtent = g.originalExtent;
+        this.gridLevels = g.gridLevels;
+        this.description = g.description;
+        this.resolutionsPreserved = g.resolutionsPreserved;
+    }
+
+
     /**
      * @return the originalExtent
      */

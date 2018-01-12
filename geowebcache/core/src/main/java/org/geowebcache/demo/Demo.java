@@ -178,7 +178,7 @@ public class Demo {
                     
                 buf.append("]</td><td>\n");
                 
-                if (gridSubset.getName().equals(gridSetBroker.WORLD_EPSG4326.getName())) {
+                if (gridSubset.getName().equals(gridSetBroker.getWorldEpsg4326().getName())) {
                     buf.append(" &nbsp; KML: [");
                     String prefix = "";
                     

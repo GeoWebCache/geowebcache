@@ -8,7 +8,10 @@ import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
 
+import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
+import org.geowebcache.grid.GridSetFactory;
+import org.geowebcache.grid.SRS;
 import org.junit.Test;
 
 
@@ -71,6 +74,26 @@ public abstract class GridSetConfigurationTest extends ConfigurationTest<GridSet
     @Override
     protected void modifyInfo(GridSetConfiguration config, GridSet info) throws Exception {
         config.modifyGridSet(info);
+    }
+
+
+    @Override
+    protected GridSet getGoodInfo(String id, int rand) {
+        GridSet gridset = GridSetFactory.createGridSet(id, SRS.getSRS(4326), new BoundingBox(0,0,1,1), true, 3, 1.0, GridSetFactory.DEFAULT_PIXEL_SIZE_METER, 256, 256, false);
+        gridset.setDescription(Integer.toString(rand));
+        return gridset;
+    }
+
+
+    @Override
+    protected GridSet getBadInfo(String id, int rand) {
+        return new GridSet() {};
+    }
+
+
+    @Override
+    protected void doModifyInfo(GridSet info, int rand) throws Exception {
+        info.setDescription(Integer.toString(rand));
     }
     
 }

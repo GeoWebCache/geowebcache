@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,8 +34,8 @@ public class GWCXMLConfigIntegrationTestSupport extends GWCConfigIntegrationTest
             URL source = XMLConfiguration.class.getResource("geowebcache-empty.xml");
             FileUtils.copyURLToFile(source, configFile);
         }
-        broker = new GridSetBroker(true, true);
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
+        broker = new GridSetBroker(getGridSetConfigurations());
         config.initialize(broker);
     }
 
@@ -49,12 +50,17 @@ public class GWCXMLConfigIntegrationTestSupport extends GWCConfigIntegrationTest
     }
 
     @Override
-    public GridSetConfiguration getGridSetConfiguration() {
-        return config;
+    public List<GridSetConfiguration> getGridSetConfigurations() {
+        return Arrays.asList(new DefaultGridsets(true, true), config);
     }
 
     @Override
     public BlobStoreConfigurationCatalog getBlobStoreConfiguration() {
+        return config;
+    }
+
+    @Override
+    public GridSetConfiguration getWritableGridSetConfiguration() {
         return config;
     }
 }

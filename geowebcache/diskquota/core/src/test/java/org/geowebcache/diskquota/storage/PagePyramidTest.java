@@ -35,9 +35,9 @@ import org.geowebcache.storage.blobstore.file.FilePathUtils;
 
 public class PagePyramidTest extends TestCase {
 
-    GridSet world_EPSG3857 = new GridSetBroker(true, false).WORLD_EPSG3857;
+    GridSet world_EPSG3857 = new GridSetBroker(true, false).getWorldEpsg3857();
 
-    GridSet world_EPSG4326 = new GridSetBroker(true, false).WORLD_EPSG4326;
+    GridSet world_EPSG4326 = new GridSetBroker(true, false).getWorldEpsg4326();
 
     private long[][] coverages;
 

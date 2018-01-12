@@ -40,7 +40,7 @@ public class GWCConfigIntegrationTestData {
 
         //Set up layers & gridsets
         //TODO: Update to use the new api
-        GridSetConfiguration gridSetConfiguration = testSupport.getGridSetConfiguration();
+        GridSetConfiguration gridSetConfiguration = testSupport.getWritableGridSetConfiguration();
 
         GridSet epsg2163 = GridSetFactory.createGridSet(GRIDSET_EPSG2163, SRS.getSRS(GRIDSET_EPSG2163),
                 new BoundingBox(-2495667.977678598, -2223677.196231552,
@@ -54,11 +54,10 @@ public class GWCConfigIntegrationTestData {
 
         TileLayerConfiguration tileLayerConfiguration = testSupport.getTileLayerConfigurations().get(0);
 
-        testSupport.getGridSetBroker().put(epsg2163);
         tileLayerConfiguration.initialize(testSupport.getGridSetBroker());
 
         Map<String, GridSubset > subSets = new HashMap<>();
-        subSets.put(GRIDSET_EPSG4326, GridSubsetFactory.createGridSubSet(testSupport.getGridSetBroker().WORLD_EPSG4326, new BoundingBox(-129.6, 3.45,-62.1,70.9), null, null));
+        subSets.put(GRIDSET_EPSG4326, GridSubsetFactory.createGridSubSet(testSupport.getGridSetBroker().getWorldEpsg4326(), new BoundingBox(-129.6, 3.45,-62.1,70.9), null, null));
         subSets.put(GRIDSET_EPSG2163, GridSubsetFactory.createGridSubSet(epsg2163));
 
         StringParameterFilter parameterFilter = new StringParameterFilter();

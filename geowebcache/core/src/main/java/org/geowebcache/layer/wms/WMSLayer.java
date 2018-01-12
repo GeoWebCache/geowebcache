@@ -698,6 +698,9 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     public String getWmsLayers() {
         return wmsLayers;
     }
+    public void setWmsLayers(String wmsLayers) {
+        this.wmsLayers = wmsLayers;
+    }
     
     public String getWmsQueryLayers() {
     	return wmsQueryLayers;

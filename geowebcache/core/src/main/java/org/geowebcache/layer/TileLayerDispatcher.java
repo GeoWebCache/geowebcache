@@ -18,6 +18,8 @@ package org.geowebcache.layer;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,6 +39,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.util.Assert;
 
 import com.google.common.base.Preconditions;
+import com.sun.media.imageio.stream.StreamSegment;
 
 /**
  * Serves tile layers from the {@link TileLayerConfiguration}s available in the application context.
@@ -305,6 +308,7 @@ public class TileLayerDispatcher implements DisposableBean {
      * @throws IOException
      * @see {@link GridSetBroker#remove(String)}
      */
+    @Deprecated
     public synchronized TileLayerConfiguration removeGridset(final String gridSetName)
             throws IllegalStateException, IOException {
 
@@ -353,5 +357,13 @@ public class TileLayerDispatcher implements DisposableBean {
         }
         throw new IllegalStateException("Found no configuration of type "
                 + XMLConfiguration.class.getName());
+    }
+
+    public synchronized void removeGridSet(String gridsetToRemove) {
+        if( StreamSupport.stream(getLayerList().spliterator(), true)
+            .anyMatch(g->Objects.nonNull(g.getGridSubset(gridsetToRemove)))) {
+            throw new IllegalStateException("Can not remove gridset "+gridsetToRemove+" as it is used by layers");
+        }
+        gridSetBroker.removeGridSet(gridsetToRemove);
     }
 }

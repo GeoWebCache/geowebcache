@@ -218,7 +218,39 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         }
         assertThat(getInfo(config, "test"), notPresent());
     }
+
+    @Test
+    public void testModifyCallRequiredToChangeInfoFromGetInfo() throws Exception {
+        testAdd();
+        I goodGridSet = getInfo(config, "test").get();
+        doModifyInfo(goodGridSet, 2);
+        
+        Optional<I> retrieved = getInfo(config, "test");
+        assertThat(retrieved, isPresent(infoEquals(getGoodInfo("test", 1))));
+        assertThat(retrieved, isPresent(not(infoEquals(getGoodInfo("test", 2)))));
+    }
     
+    @Test
+    public void testModifyCallRequiredToChangeInfoFromGetInfos() throws Exception {
+        testAdd();
+        I goodGridSet = getInfos(config).stream()
+                .filter(i->i.getName().equals("test"))
+                .findAny()
+                .get();
+        doModifyInfo(goodGridSet, 2);
+        
+        Optional<I> retrieved = getInfo(config, "test");
+        assertThat(retrieved, isPresent(infoEquals(getGoodInfo("test", 1))));
+        assertThat(retrieved, isPresent(not(infoEquals(getGoodInfo("test", 2)))));
+    }
+    
+    /**
+     * Modify an existing info object.
+     * @param info
+     * @param rand
+     * @throws Exception
+     */
+    protected abstract void doModifyInfo(I info, int rand) throws Exception;
     
     @Test
     public void testNoChangeOnPersistExceptionOnAdd() throws Exception {
@@ -242,6 +274,18 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
             assertNameSetMatchesCollection(config2);
         }
     }
+    
+    @Test
+    public void testRename() throws Exception {
+        testAdd();
+        renameInfo(config, "test", "test2");
+        
+        Optional<I> retrieved = getInfo(config, "test2");
+        assertThat(retrieved, isPresent());
+        Optional<I> retrievedOld = getInfo(config, "test");
+        assertThat(retrievedOld, notPresent());
+    }
+
     
     /**
      * Create a GridSet that should be saveable in the configuration being tested. Throw 

@@ -8,13 +8,11 @@ import java.net.URL;
 import java.util.Objects;
 
 import org.apache.commons.io.FileUtils;
-import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSetFactory;
-import org.geowebcache.grid.SRS;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.context.ApplicationContext;
@@ -22,17 +20,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 public class XMLConfigurationGridsetConformanceTest extends GridSetConfigurationTest {
 
-    @Override
-    protected GridSet getGoodInfo(String id, int rand) {
-        GridSet gridset = GridSetFactory.createGridSet(id, SRS.getSRS(rand), new BoundingBox(0,0,1,1), true, 3, 1.0, GridSetFactory.DEFAULT_PIXEL_SIZE_METER, 256, 256, false);
-        return gridset;
-    }
-
-    @Override
-    protected GridSet getBadInfo(String id, int rand) {
-        return new GridSet() {};
-    }
-    
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
     private File configDir;
@@ -88,7 +75,7 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
             @Override
             public boolean matches(Object item) {
                 return item instanceof GridSet && ((GridSet)item).getName().equals(((GridSet)expected).getName()) &&
-                    ((GridSet)item).getSrs().equals(((GridSet)expected).getSrs());
+                    ((GridSet)item).getDescription().equals(((GridSet)expected).getDescription());
             }
             
         };
@@ -109,4 +96,9 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
         failNextWrite = true;
     }
 
+    @Override
+    protected void renameInfo(GridSetConfiguration config, String name1, String name2)
+            throws Exception {
+        Assume.assumeFalse(true);
+    }
 }

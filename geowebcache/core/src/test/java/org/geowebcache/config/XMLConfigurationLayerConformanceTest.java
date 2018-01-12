@@ -16,6 +16,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.web.context.WebApplicationContext;
@@ -155,6 +156,17 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
     @Override
     public void failNextWrite() {
         failNextWrite = true;
+    }
+
+    @Override
+    protected void renameInfo(TileLayerConfiguration config, String name1, String name2)
+            throws Exception {
+        Assume.assumeFalse(true);
+    }
+
+    @Override
+    protected void doModifyInfo(TileLayer info, int rand) throws Exception {
+        ((WMSLayer)info).setWmsLayers(Integer.toString(rand));
     }
 
 }

@@ -71,9 +71,9 @@ public class XMLOldGrid implements Serializable{
         GridSet gridSet;
         
         if(srs.equals(SRS.getEPSG4326()) && gridBounds.equals(BoundingBox.WORLD4326) && resolutions == null) {
-            gridSet = gridSetBroker.WORLD_EPSG4326;
+            gridSet = gridSetBroker.getWorldEpsg4326();
         } else if(srs.equals(SRS.getEPSG3857()) && gridBounds.equals(BoundingBox.WORLD3857) && resolutions == null) {
-            gridSet = gridSetBroker.WORLD_EPSG3857;
+            gridSet = gridSetBroker.getWorldEpsg3857();
         } else {
             if(resolutions != null) {
                 gridSet = GridSetFactory.createGridSet(srs.toString(), srs, gridBounds, false, resolutions, 

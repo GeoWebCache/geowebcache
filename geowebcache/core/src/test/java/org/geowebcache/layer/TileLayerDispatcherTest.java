@@ -184,7 +184,7 @@ public class TileLayerDispatcherTest extends GWCConfigIntegrationTest {
         String gridsetToRemove = GWCConfigIntegrationTestData.GRIDSET_EPSG2163;
         //remove the only layer referencing the gridset first
         tileLayerDispatcher.removeLayer(GWCConfigIntegrationTestData.LAYER_TOPP_STATES);
-        tileLayerDispatcher.removeGridset(gridsetToRemove);
+        tileLayerDispatcher.removeGridSet(gridsetToRemove);
 
         assertFalse(gridSetBroker.getNames().contains(gridsetToRemove));
         assertNull(gridSetBroker.get(gridsetToRemove));
@@ -194,7 +194,7 @@ public class TileLayerDispatcherTest extends GWCConfigIntegrationTest {
     public void testRemoveGridsetException() throws IOException {
         String gridsetToRemove = GWCConfigIntegrationTestData.GRIDSET_EPSG2163;
         try {
-            tileLayerDispatcher.removeGridset(gridsetToRemove);
+            tileLayerDispatcher.removeGridSet(gridsetToRemove);
             fail("Expected exception removing a gridset referenced by a layer");
         } catch (IllegalStateException e) {
 

@@ -95,7 +95,7 @@ public class GMapsConverter extends Service {
             throw new ServiceException("Unable to determine requested format, " + strFormat);
         }
 
-        ConveyorTile ret = new ConveyorTile(sb, layerId, gsb.WORLD_EPSG3857.getName(), gridLoc,
+        ConveyorTile ret = new ConveyorTile(sb, layerId, gsb.getWorldEpsg3857().getName(), gridLoc,
                 mimeType, filteringParameters, request, response);
 
         if (strCached != null && !Boolean.parseBoolean(strCached)) {

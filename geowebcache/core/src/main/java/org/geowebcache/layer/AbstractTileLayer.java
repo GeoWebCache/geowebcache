@@ -345,10 +345,10 @@ public abstract class AbstractTileLayer extends TileLayer {
         }
 
         if (this.subSets.size() == 0) {
-            subSets.put(gridSetBroker.WORLD_EPSG4326.getName(),
-                    GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326));
-            subSets.put(gridSetBroker.WORLD_EPSG3857.getName(),
-                    GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857));
+            subSets.put(gridSetBroker.getWorldEpsg4326().getName(),
+                    GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326()));
+            subSets.put(gridSetBroker.getWorldEpsg3857().getName(),
+                    GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg3857()));
         }
 
         return initializeInternal(gridSetBroker);

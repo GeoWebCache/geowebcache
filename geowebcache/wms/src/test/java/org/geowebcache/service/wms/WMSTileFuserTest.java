@@ -309,7 +309,7 @@ public class WMSTileFuserTest {
         
         Hashtable<String,GridSubset> grids = new Hashtable<String,GridSubset>();
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, new BoundingBox(-30.0,15.0,45.0,30), 0,10);
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), new BoundingBox(-30.0,15.0,45.0,30), 0,10);
         
         grids.put(grid.getName(), grid);
         int[] metaWidthHeight = {3,3};

@@ -165,7 +165,7 @@ public class KMLService extends Service {
             gridLoc = KMLService.parseGridLocString(parsed[1]);
         }
 
-        ConveyorKMLTile tile = new ConveyorKMLTile(sb, parsed[0], gsb.WORLD_EPSG4326.getName(),
+        ConveyorKMLTile tile = new ConveyorKMLTile(sb, parsed[0], gsb.getWorldEpsg4326().getName(),
                 gridLoc, MimeType.createFromExtension(parsed[2]), null, request, response);
 
         // Sitemap index ? kml/sitemap.xml

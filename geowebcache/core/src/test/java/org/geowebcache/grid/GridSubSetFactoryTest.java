@@ -11,7 +11,7 @@ public class GridSubSetFactoryTest extends TestCase {
     public void testCoverageBounds() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bbox, 0,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0,
                 0);
 
         long[] ret = grid.getCoverage(0);
@@ -23,7 +23,7 @@ public class GridSubSetFactoryTest extends TestCase {
     public void testCoverageBounds2() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bbox, 0,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0,
                 1);
 
         long[] ret = grid.getCoverage(1);
@@ -37,7 +37,7 @@ public class GridSubSetFactoryTest extends TestCase {
 
         int zoomStart = 3;
         int zoomStop = 9;
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bbox,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox,
                 zoomStart, zoomStop);
 
         String[] gridNames = grid.getGridNames();
@@ -51,7 +51,7 @@ public class GridSubSetFactoryTest extends TestCase {
     public void testWMTSCoverage() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bbox, 1,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 1,
                 3);
 
         long[][] coverages = grid.getWMTSCoverages();
@@ -66,7 +66,7 @@ public class GridSubSetFactoryTest extends TestCase {
 
         int zoomStart = 3;
         int zoomStop = 9;
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bbox,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox,
                 zoomStart, zoomStop);
 
         String[] gridNames = grid.getGridNames();

@@ -225,9 +225,9 @@ public class TMSDocumentFactory {
     }
     
     protected String profileForGridSet(GridSet gridSet) {
-        if(gridSet == gsb.WORLD_EPSG4326) {
+        if(gridSet == gsb.getWorldEpsg4326()) {
             return "global-geodetic";
-        } else if(gridSet == gsb.WORLD_EPSG3857) {
+        } else if(gridSet == gsb.getWorldEpsg3857()) {
             return "global-mercator";
         } else {
             return "local";

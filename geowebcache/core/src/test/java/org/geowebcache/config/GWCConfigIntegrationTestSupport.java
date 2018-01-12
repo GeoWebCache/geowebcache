@@ -41,7 +41,13 @@ public abstract class GWCConfigIntegrationTestSupport {
     /**
      * @return The {@link GridSetConfiguration} for this configuration
      */
-    public abstract GridSetConfiguration getGridSetConfiguration();
+    public abstract List<GridSetConfiguration> getGridSetConfigurations();
+    
+    /**
+     * @return The {@link GridSetConfiguration} for this configuration
+     */
+    public abstract GridSetConfiguration getWritableGridSetConfiguration();
+
 
     /**
      * @return The {@link BlobStoreConfigurationCatalog} for this configuration

@@ -72,7 +72,7 @@ public class TestUtils {
 
         Hashtable<String, GridSubset> grids = new Hashtable<String, GridSubset>();
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(),
                 boundingBox, 0, 10);
 
         grids.put(grid.getName(), grid);

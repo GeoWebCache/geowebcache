@@ -51,7 +51,7 @@ public class GridSubSetTest {
         GridSetBroker gridSetBroker = new GridSetBroker(false, false);
         
         // Creation of a GridSubSet with a non-zero zoomStart parameter 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(),
                 new BoundingBox(-30.0, 15.0, 45.0, 30), 5, 10, null, null);
 
         grids.put(grid.getName(), grid);

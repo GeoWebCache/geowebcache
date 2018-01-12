@@ -698,15 +698,10 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
      */
     @Deprecated
     public synchronized XMLGridSet removeGridset(final String gridsetName) {
-        List<XMLGridSet> gridSets = getGwcConfig().getGridSets();
-        for (Iterator<XMLGridSet> it = gridSets.iterator(); it.hasNext();) {
-            XMLGridSet gset = it.next();
-            if (gridsetName.equals(gset.getName())) {
-                it.remove();
-                return gset;
-            }
-        }
-        return null;
+        return getGridSet(gridsetName)
+            .map(g-> {removeGridSet(gridsetName); return g;})
+            .map(XMLGridSet::new)
+            .orElse(null);
     }
 
     /**
@@ -1175,7 +1170,6 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     private void saveGridSet(GridSet gridSet) throws IOException {
         addOrReplaceGridSet(new XMLGridSet(gridSet));
         save();
-        gridSetBroker.put(gridSet);
     }
 
     @Override
@@ -1208,12 +1202,15 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
 
     @Override
     public Optional<GridSet> getGridSet(String name) {
-        return Optional.ofNullable(gridSets.get(name));
+        return Optional.ofNullable(gridSets.get(name))
+                .map(GridSet::new);
     }
 
     @Override
     public Collection<GridSet> getGridSets() {
-        return Collections.unmodifiableCollection(gridSets.values());
+        return gridSets.values().stream()
+                .map(GridSet::new)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -1239,13 +1236,17 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     @Override
     public void renameGridSet(String oldName, String newName)
             throws NoSuchElementException, IllegalArgumentException, UnsupportedOperationException {
-        // TODO Auto-generated method stub
-        
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean canSave(GridSet gridset) {
-        // TODO Auto-generated method stub
-        return false;
+        // TODO Exceptions are expensive so do something else.
+        try {
+            validateGridSet(gridset);
+            return true;
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
     }
 }
