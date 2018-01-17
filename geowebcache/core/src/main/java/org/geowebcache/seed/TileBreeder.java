@@ -500,7 +500,7 @@ public class TileBreeder implements ApplicationContextAware {
      * Find a layer by name.
      * @param layerName
      * @return
-     * @throws GeoWebCacheException
+     * @throws GeoWebCacheException if the layer is not found
      */
     public TileLayer findTileLayer(String layerName) throws GeoWebCacheException {
         TileLayer layer = null;
@@ -508,7 +508,7 @@ public class TileBreeder implements ApplicationContextAware {
         layer = layerDispatcher.getTileLayer(layerName);
 
         if (layer == null) {
-            throw new GeoWebCacheException("Uknown layer: " + layerName);
+            throw new GeoWebCacheException("Unknown layer: " + layerName);
         }
 
         return layer;
