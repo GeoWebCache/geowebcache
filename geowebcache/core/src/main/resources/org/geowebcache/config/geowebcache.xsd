@@ -737,6 +737,20 @@
               </xs:documentation>
             </xs:annotation>
           </xs:element>
+          <xs:element name="httpRequestMode" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                What WMS request mode to use, Get, the default WMS stardard mode, FormPost, a urlencoded form POST
+                supported by many servers, useful to cascade large requests exceeding the limits of a URL length
+              </xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="Get"/>
+                <xs:enumeration value="FormPost"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
         </xs:sequence>
      </xs:extension>
     </xs:complexContent>

@@ -28,13 +28,12 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.legends.LegendInfo;
 import org.geowebcache.config.legends.LegendsRawInfo;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
@@ -70,6 +69,10 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     public enum RequestType {
         MAP, FEATUREINFO
     };
+    
+    public enum HttpRequestMode {
+        Get, FormPost;
+    }
 
     private String[] wmsUrl;
 
@@ -122,6 +125,8 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     private transient LockProvider lockProvider;
 
     private LegendsRawInfo legends;
+
+    private HttpRequestMode httpRequestMode = HttpRequestMode.Get;
 
     WMSLayer() {
         //default constructor for XStream
@@ -816,7 +821,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         String queryStr = tile.servletReq.getQueryString();
         String serverStr = getWMSurl()[0];
 
-        GetMethod getMethod = null;
+        HttpMethodBase method = null;
         InputStream is = null;
         try {
             URL url;
@@ -831,12 +836,12 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
                throw new GeoWebCacheException("Can only proxy if WMS Layer is backed by an HTTP backend"); 
             }
 
-            getMethod = ((WMSHttpHelper) helper).executeRequest(url, null, getBackendTimeout());
-            is = getMethod.getResponseBodyAsStream();
+            method = ((WMSHttpHelper) helper).executeRequest(url, null, getBackendTimeout(), getHttpRequestMode());
+            is = method.getResponseBodyAsStream();
 
             HttpServletResponse response = tile.servletResp;
-            response.setCharacterEncoding(getMethod.getResponseCharSet());
-            Header contentType = getMethod.getResponseHeader("Content-Type");
+            response.setCharacterEncoding(method.getResponseCharSet());
+            Header contentType = method.getResponseHeader("Content-Type");
             if(contentType != null) {
                 response.setContentType(contentType.getValue());
             }
@@ -855,8 +860,8 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
             tile.servletResp.setStatus(500);
             log.error(ioe.getMessage());
         } finally{
-            if (getMethod != null) {
-                getMethod.releaseConnection();
+            if (method != null) {
+                method.releaseConnection();
             }
             IOUtils.closeQuietly(is);
         }
@@ -876,5 +881,12 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         String layerName = wmsLayers == null ? getName() : wmsLayers;
         return legends == null ? super.getLayerLegendsInfo() :
                 legends.getLegendsInfo(layerName, wmsUrl != null && wmsUrl.length > 0 ? wmsUrl[0] : null);
+    }
+    
+    /**
+     * The request mode used for this layer, defaults to {@link HttpRequestMode#Get} if not set in the configuration
+     */
+    public HttpRequestMode getHttpRequestMode() {
+        return httpRequestMode == null ? HttpRequestMode.Get : httpRequestMode;
     }
 }
