@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<S3BlobStore default="true">
+  <id>S3-BlobStore</id>
+  <enabled>${ENABLED}</enabled>
+  <bucket>${BUCKET}</bucket>
+  <awsAccessKey>mykey</awsAccessKey>
+  <awsSecretKey>mykey</awsSecretKey>
+  <maxConnections>${CONNECTIONS}</maxConnections>
+</S3BlobStore>
