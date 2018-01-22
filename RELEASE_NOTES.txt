@@ -1,3 +1,15 @@
+GeoWebCache 1.12.2 (2018-01-22)
+-------------------------------
+
+Third stable release of 1.12 branch
+
+
+Fixes:
+++++++
+- Mass truncate layer misleading 500 response when nothing is cached
+- Fixes for downstream project GeoServer
+
+
 GeoWebCache 1.12.1 (2017-11-21)
 -------------------------------
 
