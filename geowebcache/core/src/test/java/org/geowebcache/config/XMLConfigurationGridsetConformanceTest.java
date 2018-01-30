@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.Objects;
 
 import org.apache.commons.io.FileUtils;
+import org.geowebcache.MockWepAppContextRule;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.hamcrest.CustomMatcher;
@@ -26,6 +27,8 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
     private File configFile;
     private ConfigurationResourceProvider configProvider;
     
+    public @Rule MockWepAppContextRule extensions = new MockWepAppContextRule();
+
     private boolean failNextRead = false;
     private boolean failNextWrite = false;
     
@@ -63,7 +66,7 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
                     }
             
         };
-        config = new XMLConfiguration(null, configProvider);
+        config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
         config.initialize(gridSetBroker);
         return config;
     }

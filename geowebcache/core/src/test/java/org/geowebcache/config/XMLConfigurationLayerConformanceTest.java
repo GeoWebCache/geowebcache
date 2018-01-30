@@ -8,6 +8,7 @@ import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.MockWepAppContextRule;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.OutsideCoverageException;
@@ -26,6 +27,8 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
 
     private ConfigurationResourceProvider configProvider;
     
+    public @Rule MockWepAppContextRule extensions = new MockWepAppContextRule();
+
     private boolean failNextRead = false;
     private boolean failNextWrite = false;
     
@@ -125,7 +128,7 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
                     }
             
         };
-        config = new XMLConfiguration(null, configProvider);
+        TileLayerConfiguration config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
         config.initialize(gridSetBroker);
         return config;
     }

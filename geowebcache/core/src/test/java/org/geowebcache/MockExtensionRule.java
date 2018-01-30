@@ -54,14 +54,18 @@ public class MockExtensionRule extends ExternalResource {
     
     @Override
     protected void before() throws Throwable {
-        mockContext = (ApplicationContext) Proxy.newProxyInstance(
-                MockExtensionRule.class.getClassLoader(),
-                new Class[] {ApplicationContext.class},
-                new ContextInvocationHandler());
+        mockContext = makeContext();
         lock.lock();
         oldContext = GeoWebCacheExtensions.context;
         GeoWebCacheExtensions.extensionsCache.clear();
         GeoWebCacheExtensions.context = mockContext;
+    }
+
+    protected ApplicationContext makeContext() throws IllegalArgumentException {
+        return (ApplicationContext) Proxy.newProxyInstance(
+                MockExtensionRule.class.getClassLoader(),
+                new Class[] {ApplicationContext.class},
+                new ContextInvocationHandler());
     }
     
     /**
