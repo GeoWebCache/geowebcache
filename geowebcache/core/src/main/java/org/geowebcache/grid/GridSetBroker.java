@@ -29,12 +29,13 @@ import javax.annotation.Nullable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheExtensions;
+import org.geowebcache.config.ConfigurationAggregator;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.GridSetConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayerDispatcher;
 
-public class GridSetBroker {
+public class GridSetBroker implements ConfigurationAggregator<GridSetConfiguration> {
     private static Log log = LogFactory.getLog(GridSetBroker.class);
     
     private List<GridSetConfiguration> configurations;
@@ -148,4 +149,9 @@ public class GridSetBroker {
         return defaults.worldEpsg3857();
     }
 
+    
+    @SuppressWarnings("unchecked")
+    public <GSC extends GridSetConfiguration> List<? extends GSC> getConfigurations(Class<GSC> type) {
+        return (List<? extends GSC>) configurations.stream().filter(type::isInstance).collect(Collectors.toList());
+    }
 }
