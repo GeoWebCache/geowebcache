@@ -22,7 +22,7 @@ public class DefaultGridsetsConfigurationGridsetConformanceTest extends GridSetC
 
     @Override
     protected Matcher<GridSet> infoEquals(GridSet expected) {
-        return new CustomMatcher<GridSet>("GridSet matching "+expected.getName()+" with " + expected.getSrs()){
+        return new CustomMatcher<GridSet>("GridSet matching "+expected.getName()+" with " + expected.getDescription()){
             
             @Override
             public boolean matches(Object item) {
@@ -32,9 +32,21 @@ public class DefaultGridsetsConfigurationGridsetConformanceTest extends GridSetC
             
         };
     }
+    
+    @Override
+    protected Matcher<GridSet> infoEquals(int expected) {
+        return new CustomMatcher<GridSet>("GridSet with value " + expected){
+            
+            @Override
+            public boolean matches(Object item) {
+                return item instanceof GridSet && ((GridSet)item).getDescription().equals(Integer.toString(expected));
+            }
+            
+        };
+    }
 
     @Override
-    protected String getExistingInfo() throws Exception {
+    protected String getExistingInfo() {
         return "EPSG:4326";
     }
 

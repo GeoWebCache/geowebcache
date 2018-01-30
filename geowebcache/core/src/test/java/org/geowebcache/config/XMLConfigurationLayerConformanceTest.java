@@ -145,9 +145,21 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
             
         };
     }
+    @Override
+    protected Matcher<TileLayer> infoEquals(int expected) {
+        return new CustomMatcher<TileLayer>("Layer with value"+ expected){
+            
+            @Override
+            public boolean matches(Object item) {
+                return item instanceof WMSLayer &&
+                    ((WMSLayer)item).getWmsLayers().equals(expected);
+            }
+            
+        };
+    }
 
     @Override
-    protected String getExistingInfo() throws Exception {
+    protected String getExistingInfo() {
         return "topp:states";
     }
 

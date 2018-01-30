@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils;
 import org.geowebcache.MockWepAppContextRule;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.SRS;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
 import org.junit.Assume;
@@ -73,7 +74,7 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
 
     @Override
     protected Matcher<GridSet> infoEquals(GridSet expected) {
-        return new CustomMatcher<GridSet>("GridSet matching "+expected.getName()+" with " + expected.getSrs()){
+        return new CustomMatcher<GridSet>("GridSet matching "+expected.getName()+" with " + expected.getDescription()){
             
             @Override
             public boolean matches(Object item) {
@@ -83,9 +84,21 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
             
         };
     }
+    
+    @Override
+    protected Matcher<GridSet> infoEquals(int expected) {
+        return new CustomMatcher<GridSet>("GridSet with value " + expected){
+            
+            @Override
+            public boolean matches(Object item) {
+                return item instanceof GridSet && (Objects.equals(((GridSet)item).getDescription(), Integer.toString(expected)));
+            }
+            
+        };
+    }
 
     @Override
-    protected String getExistingInfo() throws Exception {
+    protected String getExistingInfo() {
         return "EPSG:2163";
     }
 
