@@ -6,11 +6,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.config.BaseConfiguration;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -166,6 +168,28 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
         return extensions(extensionPoint, context);
     }
 
+    /**
+     * Return a list of configurations in priority order.
+     * @param extensionPoint The extension point of the configuration, may affect priority.
+     * @param context
+     * @return
+     */
+    public static <T extends BaseConfiguration> List<T> configurations(Class<T> extensionPoint, ApplicationContext context) {
+        return extensions(extensionPoint, context).stream()
+            .sorted((x,y)->Integer.signum(x.getPriority(extensionPoint)-y.getPriority(extensionPoint)))
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * Return a list of configurations in priority order.
+     * @param extensionPoint The extension point of the configuration, may affect priority.
+     * @param context
+     * @return
+     */
+    public static <T extends BaseConfiguration> List<T> configurations(Class<T> extensionPoint) {
+        return configurations(extensionPoint, context);
+    }
+    
     /**
      * Returns a specific bean given its name
      * 

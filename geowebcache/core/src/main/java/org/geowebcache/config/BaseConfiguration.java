@@ -3,12 +3,13 @@ package org.geowebcache.config;
 import java.io.IOException;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
 
 public interface BaseConfiguration {
 
+    public static final int BASE_PRIORITY = 0;
+    
     /**
      * Initializes this configuration.
      * <p>
@@ -51,5 +52,13 @@ public interface BaseConfiguration {
      * TODO get rid of this, 
      */
     void save() throws IOException;
+    
+    /**
+     * Get the priority of this configuration when aggregating. Lower values will be used before 
+     * higher ones.  This should always return the same value, for a given input.
+     */
+    default int getPriority(Class<? extends BaseConfiguration> clazz) {
+        return BASE_PRIORITY;
+    }
 
 }

@@ -57,7 +57,7 @@ public class GridSetBroker {
     }
 
     public void initialize() {
-        configurations = GeoWebCacheExtensions.extensions(GridSetConfiguration.class);
+        configurations = GeoWebCacheExtensions.configurations(GridSetConfiguration.class);
     }
     
     public @Nullable GridSet get(String gridSetId) {
