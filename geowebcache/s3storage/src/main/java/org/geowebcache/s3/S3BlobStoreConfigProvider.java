@@ -19,6 +19,7 @@ package org.geowebcache.s3;
 import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.BlobStoreConfig;
+import org.geowebcache.config.Info;
 import org.geowebcache.config.XMLConfigurationProvider;
 
 import com.google.common.base.Strings;
@@ -96,6 +97,11 @@ public class S3BlobStoreConfigProvider implements XMLConfigurationProvider {
         xs.registerLocalConverter(S3BlobStoreConfig.class, "proxyHost", EnvironmentStringConverter);
         xs.registerLocalConverter(BlobStoreConfig.class, "enabled", EnvironmentNullableBooleanConverter);
         return xs;
+    }
+
+    @Override
+    public boolean canSave(Info i) {
+        return i instanceof S3BlobStoreConfig;
     }
 
 }

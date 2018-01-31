@@ -7,25 +7,27 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.Objects;
 
+import javax.security.auth.login.Configuration;
+
 import org.apache.commons.io.FileUtils;
 import org.geowebcache.MockWepAppContextRule;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.SRS;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 
 public class XMLConfigurationGridsetConformanceTest extends GridSetConfigurationTest {
 
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
-    private File configDir;
-    private File configFile;
+    
+    protected File configDir;
+    protected File configFile;
+    
     private ConfigurationResourceProvider configProvider;
     
     public @Rule MockWepAppContextRule extensions = new MockWepAppContextRule();
@@ -35,16 +37,10 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
     
     @Override
     protected GridSetConfiguration getConfig() throws Exception {
-        if(configFile==null) {
-            configDir = temp.getRoot();
-            configFile = temp.newFile("geowebcache.xml");
-            
-            URL source = XMLConfiguration.class
-                .getResource(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
-            FileUtils.copyURLToFile(source, configFile);
-        }
+        makeConfigFile();
         
         GridSetBroker gridSetBroker = new GridSetBroker(true, true);
+        gridSetBroker.initialize();
         configProvider = new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
                 (WebApplicationContext)null, configDir.getAbsolutePath(), null) {
 
@@ -68,10 +64,21 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
             
         };
         config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
+        extensions.addBean("XMLConfiguration", config, Configuration.class, GridSetConfiguration.class, TileLayerConfiguration.class);
         config.initialize(gridSetBroker);
         return config;
     }
-
+    
+    protected void makeConfigFile() throws IOException {
+        if(configFile==null) {
+            configDir = temp.getRoot();
+            configFile = temp.newFile("geowebcache.xml");
+            
+            URL source = XMLConfiguration.class
+                .getResource(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
+            FileUtils.copyURLToFile(source, configFile);
+        }
+    }
     @Override
     protected Matcher<GridSet> infoEquals(GridSet expected) {
         return new CustomMatcher<GridSet>("GridSet matching "+expected.getName()+" with " + expected.getDescription()){

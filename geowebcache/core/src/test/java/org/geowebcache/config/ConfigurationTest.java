@@ -23,7 +23,7 @@ import org.junit.rules.ExpectedException;
 
 public abstract class ConfigurationTest<I extends Info, C extends BaseConfiguration> {
     
-    C config;
+    protected C config;
     
     @Rule 
     public ExpectedException exception = ExpectedException.none();

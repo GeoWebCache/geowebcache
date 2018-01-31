@@ -72,7 +72,7 @@ public class TileLayerDispatcherTest extends GWCConfigIntegrationTest {
         try {
             tileLayerDispatcher.addLayer(null);
             fail("Expected error when adding a null layer");
-        } catch (IllegalArgumentException e) {
+        } catch (NullPointerException e) {
 
         }
     }

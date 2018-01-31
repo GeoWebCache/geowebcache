@@ -43,7 +43,7 @@ public class FilterUpdateControllerTest {
         GridSet gridSet = GridSetFactory.createGridSet("EPSG:3395", SRS.getSRS("EPSG:3395"),
                 extent, alignTopLeft, levels, metersPerUnit, pixelSize, tileWidth, tileHeight,
                 yCoordinateFirst);
-        gridSetBroker.put(gridSet);
+        gridSetBroker.addGridSet(gridSet);
 
         XMLConfiguration xmlConfig = loadXMLConfig();
         xmlConfig.initialize(gridSetBroker);

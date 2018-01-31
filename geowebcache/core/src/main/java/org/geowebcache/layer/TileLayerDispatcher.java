@@ -18,6 +18,7 @@ package org.geowebcache.layer;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -346,7 +347,6 @@ public class TileLayerDispatcher implements DisposableBean {
     private void saveGridSet(final GridSet gridSet) throws IOException {
         XMLConfiguration persistingConfig = getXmlConfiguration();
         persistingConfig.addGridSet(gridSet);
-        gridSetBroker.put(gridSet); // TODO REMOVE
     }
 
     private XMLConfiguration getXmlConfiguration() throws IllegalStateException {
@@ -365,5 +365,36 @@ public class TileLayerDispatcher implements DisposableBean {
             throw new IllegalStateException("Can not remove gridset "+gridsetToRemove+" as it is used by layers");
         }
         gridSetBroker.removeGridSet(gridsetToRemove);
+    }
+    
+    public synchronized void removeGridSetRecursive(String gridsetToRemove) {
+        Collection<TileLayer> deletedLayers = new LinkedList<>();
+        try {
+            for(TileLayer tl: getLayerList()) {
+                if(Objects.nonNull(tl.getGridSubset(gridsetToRemove))) {
+                    this.removeLayer(tl.getName());
+                    deletedLayers.add(tl);
+                }
+            }
+        } catch (NoSuchElementException e) {
+            IllegalStateException wrappedException = new IllegalStateException("Layer was found referencing gridset but was missing during recursive delete",e);
+            try {
+                deletedLayers.forEach(this::addLayer);
+            } catch (RuntimeException exceptionOnRestore) {
+                wrappedException.addSuppressed(exceptionOnRestore);
+            }
+            throw wrappedException;
+        }
+        
+        try {
+            gridSetBroker.removeGridSet(gridsetToRemove);
+        } catch (RuntimeException exceptionOnRestore) {
+            try {
+                deletedLayers.forEach(this::addLayer);
+            } catch (RuntimeException ex) {
+                exceptionOnRestore.addSuppressed(ex);
+            }
+            throw exceptionOnRestore;
+        }
     }
 }

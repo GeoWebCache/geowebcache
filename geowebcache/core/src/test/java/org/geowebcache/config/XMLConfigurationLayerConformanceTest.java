@@ -27,12 +27,12 @@ import org.springframework.web.context.WebApplicationContext;
 
 public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest {
 
-    private ConfigurationResourceProvider configProvider;
+    protected ConfigurationResourceProvider configProvider;
     
     public @Rule MockWepAppContextRule extensions = new MockWepAppContextRule();
 
-    private boolean failNextRead = false;
-    private boolean failNextWrite = false;
+    protected boolean failNextRead = false;
+    protected boolean failNextWrite = false;
     
     @Override
     protected TileLayer getGoodInfo(String id, int rand) {
@@ -93,21 +93,15 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
     
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
-    private File configDir;
-    private File configFile;
+    protected File configDir;
+    protected File configFile;
     
     @Override
     protected TileLayerConfiguration getConfig() throws Exception {
-        if(configFile==null) {
-            configDir = temp.getRoot();
-            configFile = temp.newFile("geowebcache.xml");
-            
-            URL source = XMLConfiguration.class
-                .getResource(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
-            FileUtils.copyURLToFile(source, configFile);
-        }
+        makeConfigFile();
         
         GridSetBroker gridSetBroker = new GridSetBroker(true, true);
+        gridSetBroker.initialize();
         configProvider = new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
                 (WebApplicationContext)null, configDir.getAbsolutePath(), null) {
 
@@ -133,6 +127,17 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
         TileLayerConfiguration config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
         config.initialize(gridSetBroker);
         return config;
+    }
+
+    protected void makeConfigFile() throws IOException {
+        if(configFile==null) {
+            configDir = temp.getRoot();
+            configFile = temp.newFile("geowebcache.xml");
+            
+            URL source = XMLConfiguration.class
+                .getResource(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
+            FileUtils.copyURLToFile(source, configFile);
+        }
     }
 
     @Override

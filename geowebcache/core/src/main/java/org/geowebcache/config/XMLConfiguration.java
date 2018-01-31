@@ -568,7 +568,18 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
      * @see TileLayerConfiguration#canSave(org.geowebcache.layer.TileLayer)
      */
     public boolean canSave(TileLayer tl) {
-        return tl instanceof WMSLayer && !tl.isTransientLayer();
+        if(tl.isTransientLayer()) {
+            return false;
+        }
+        return canSaveIfNotTransient(tl);
+    }
+
+    protected boolean canSaveIfNotTransient(TileLayer tl) {
+        if(tl instanceof WMSLayer) {
+            return true;
+        }
+        return GeoWebCacheExtensions.extensions(XMLConfigurationProvider.class, this.context).stream()
+            .anyMatch(provider->provider.canSave(tl));
     }
 
     /**
@@ -581,7 +592,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         if (tl == null) {
             throw new NullPointerException();
         }
-        if (!(tl instanceof WMSLayer)) {
+        if (!canSaveIfNotTransient(tl)) {
             throw new IllegalArgumentException("Can't add layers of type "
                     + tl.getClass().getName());
         }
@@ -936,24 +947,6 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         this.layers = buff;
     }
 
-    private void contributeGridSets(final GridSetBroker gridSetBroker) {
-        if (getGwcConfig().getGridSets() != null) {
-            Iterator<XMLGridSet> iter = getGwcConfig().getGridSets().iterator();
-            while (iter.hasNext()) {
-                XMLGridSet xmlGridSet = iter.next();
-
-                if (log.isDebugEnabled()) {
-                    log.debug("Reading " + xmlGridSet.getName());
-                }
-
-                GridSet gridSet = xmlGridSet.makeGridSet();
-
-                log.info("Read GridSet " + gridSet.getName());
-
-                gridSetBroker.put(gridSet);
-            }
-        }
-    }
     private void loadGridSets(final GridSetBroker gridSetBroker) {
         if (getGwcConfig().getGridSets() != null) {
             this.gridSets = getGwcConfig().getGridSets().stream()

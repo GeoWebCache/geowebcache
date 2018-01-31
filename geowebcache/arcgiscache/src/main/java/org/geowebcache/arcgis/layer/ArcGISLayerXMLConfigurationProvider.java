@@ -1,5 +1,6 @@
 package org.geowebcache.arcgis.layer;
 
+import org.geowebcache.config.Info;
 import org.geowebcache.config.XMLConfigurationProvider;
 
 import com.thoughtworks.xstream.XStream;
@@ -16,6 +17,11 @@ public class ArcGISLayerXMLConfigurationProvider implements XMLConfigurationProv
     public XStream getConfiguredXStream(final XStream xs) {
         xs.alias("arcgisLayer", ArcGISCacheLayer.class);
         return xs;
+    }
+
+    @Override
+    public boolean canSave(Info i) {
+        return i instanceof ArcGISCacheLayer;
     }
 
 }

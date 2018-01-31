@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -72,6 +73,8 @@ import org.geowebcache.layer.meta.MetadataURL;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
 
+import com.google.common.collect.Sets;
+
 public class GetCapabilitiesConfiguration implements TileLayerConfiguration, GridSetConfiguration {
 
     private static Log log = LogFactory
@@ -101,6 +104,8 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     private final HashMap<String, TileLayer> layers;
 
     private DefaultingConfiguration primaryConfig;
+    
+    private Map<String, GridSet> generatedGridSets = new HashMap<>();
 
     public GetCapabilitiesConfiguration(GridSetBroker gridSetBroker, String url, String mimeTypes,
             String metaTiling, String allowCacheBypass) {
@@ -159,9 +164,9 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
      * @return the layers described at the given URL
      */
     private synchronized List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
-        List<TileLayer> layers = null;
+        final List<TileLayer> layers;
 
-        WebMapServer wms = null;
+        final WebMapServer wms;
         
         try {
             wms = getWMS();
@@ -498,6 +503,8 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
         this.gridSetBroker = gridSetBroker;
         List<TileLayer> tileLayers = getTileLayers(true);
         this.layers.clear();
+        this.generatedGridSets.clear();
+        Set<String> brokerNames = gridSetBroker.getGridSetNames();
         for (TileLayer layer : tileLayers) {
             layer.initialize(gridSetBroker);
             if(primaryConfig!=null) {
@@ -507,6 +514,12 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
                         "values as it does not have a global configuration to delegate to.");
             }
             layers.put(layer.getName(), layer);
+            
+            Map<String, GridSet> generatedForLayer = Sets.difference(layer.getGridSubsets(), brokerNames).stream()
+                .map(layer::getGridSubset)
+                .map(GridSubset::getGridSet)
+                .collect(Collectors.toMap(GridSet::getName, UnaryOperator.identity()));
+            generatedGridSets.putAll(generatedForLayer);
         }
         return tileLayers.size();
     }
@@ -665,39 +678,40 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
         if (gridSet == null) {
             throw new NullPointerException();
         }
-        throw new IllegalArgumentException(
+        throw new UnsupportedOperationException(
                 "This is a read only configuration object, can't add gridset " + gridSet.getName());
     }
 
     @Override
     public void removeGridSet(String gridSetName) {
-        throw new IllegalArgumentException("This is a read only configuration object, can't add gridset " + gridSetName);
+        throw new UnsupportedOperationException("This is a read only configuration object, can't add gridset " + gridSetName);
     }
 
     @Override
     public Optional<GridSet> getGridSet(String name) throws NoSuchElementException {
-        // TODO Auto-generated method stub
-        return Optional.empty();
+        return Optional.ofNullable(generatedGridSets.get(name))
+                .map(GridSet::new);
     }
 
     @Override
     public Collection<GridSet> getGridSets() {
-        // TODO Auto-generated method stub
-        return null;
+        return generatedGridSets.values().stream()
+                .map(GridSet::new)
+                .collect(Collectors.toList());
     }
 
     @Override
     public void modifyGridSet(GridSet gridSet)
             throws NoSuchElementException, IllegalArgumentException, UnsupportedOperationException {
         // TODO Auto-generated method stub
-        
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void renameGridSet(String oldName, String newName)
             throws NoSuchElementException, IllegalArgumentException, UnsupportedOperationException {
         // TODO Auto-generated method stub
-        
+        throw new UnsupportedOperationException();
     }
 
     @Override
