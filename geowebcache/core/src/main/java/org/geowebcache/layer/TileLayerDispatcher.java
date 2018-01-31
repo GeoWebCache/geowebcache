@@ -118,7 +118,7 @@ public class TileLayerDispatcher implements DisposableBean {
      * 
      */
     public void reInit() {
-        List<TileLayerConfiguration> extensions = GeoWebCacheExtensions.extensions(TileLayerConfiguration.class);
+        List<TileLayerConfiguration> extensions = GeoWebCacheExtensions.configurations(TileLayerConfiguration.class);
         this.configs = new ArrayList<TileLayerConfiguration>(extensions);
         initialize();
     }

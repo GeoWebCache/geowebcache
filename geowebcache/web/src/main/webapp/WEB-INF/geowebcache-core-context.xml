@@ -113,6 +113,9 @@
   
   
   <bean id="gwcGridSetBroker" class="org.geowebcache.grid.GridSetBroker">
+  </bean>
+  
+  <bean id="gwcDefaultGridsets" class="org.geowebcache.grid.DefaultGridsets">
     <!-- Should we used EPSG:900913 instead of EPSG:3857 ? -->
     <constructor-arg type="boolean" value="TRUE" />
     <!--

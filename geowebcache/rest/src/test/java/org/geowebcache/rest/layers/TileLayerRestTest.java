@@ -19,6 +19,7 @@ package org.geowebcache.rest.layers;
 
 import org.easymock.EasyMock;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
@@ -40,6 +41,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -65,7 +68,6 @@ public class TileLayerRestTest {
 
     @Before
     public void setup() throws GeoWebCacheException {
-        GridSetBroker gridSetBroker = new GridSetBroker(false, false);
 
         BoundingBox extent = new BoundingBox(0, 0, 10E6, 10E6);
         boolean alignTopLeft = false;
@@ -75,12 +77,15 @@ public class TileLayerRestTest {
         int tileWidth = 256;
         int tileHeight = 256;
         boolean yCoordinateFirst = false;
+
+        XMLConfiguration xmlConfig = loadXMLConfig();
+        GridSetBroker gridSetBroker = new GridSetBroker(Arrays.asList(new DefaultGridsets(false, false), xmlConfig));
+        
         GridSet gridSet = GridSetFactory.createGridSet("EPSG:3395", SRS.getSRS("EPSG:3395"),
                 extent, alignTopLeft, levels, metersPerUnit, pixelSize, tileWidth, tileHeight,
                 yCoordinateFirst);
         gridSetBroker.put(gridSet);
-
-        XMLConfiguration xmlConfig = loadXMLConfig();
+        
         xmlConfig.initialize(gridSetBroker);
         LinkedList<TileLayerConfiguration> configList = new LinkedList<TileLayerConfiguration>();
         configList.add(xmlConfig);
