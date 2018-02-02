@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,14 +35,20 @@ import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.GridSetConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-public class GridSetBroker implements ConfigurationAggregator<GridSetConfiguration> {
+public class GridSetBroker implements ConfigurationAggregator<GridSetConfiguration>, ApplicationContextAware {
     private static Log log = LogFactory.getLog(GridSetBroker.class);
     
     private List<GridSetConfiguration> configurations;
 
     private DefaultGridsets defaults;
 
+    private ApplicationContext applicationContext;
+
+    @Deprecated // use GridSetBroker(Collections.singletonList(new DefaultGridset(useEPSG900913, boolean useGWC11xNames)))
     public GridSetBroker(boolean useEPSG900913, boolean useGWC11xNames) {
         configurations = new LinkedList<>();
         defaults = new DefaultGridsets(useEPSG900913, useGWC11xNames);
@@ -58,7 +65,12 @@ public class GridSetBroker implements ConfigurationAggregator<GridSetConfigurati
     }
 
     public void initialize() {
-        configurations = GeoWebCacheExtensions.configurations(GridSetConfiguration.class);
+        if(Objects.nonNull(applicationContext)) {
+            configurations = GeoWebCacheExtensions.configurations(GridSetConfiguration.class, applicationContext);
+        } else {
+            log.warn("GridSetBroker.initialize() called without having set application context");
+            configurations = GeoWebCacheExtensions.configurations(GridSetConfiguration.class);
+        }
     }
     
     public @Nullable GridSet get(String gridSetId) {
@@ -153,5 +165,10 @@ public class GridSetBroker implements ConfigurationAggregator<GridSetConfigurati
     @SuppressWarnings("unchecked")
     public <GSC extends GridSetConfiguration> List<? extends GSC> getConfigurations(Class<GSC> type) {
         return (List<? extends GSC>) configurations.stream().filter(type::isInstance).collect(Collectors.toList());
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }
