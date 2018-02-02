@@ -65,7 +65,8 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
         };
         config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
         extensions.addBean("XMLConfiguration", config, Configuration.class, GridSetConfiguration.class, TileLayerConfiguration.class);
-        config.initialize(gridSetBroker);
+        ((XMLConfiguration) config).setGridSetBroker(gridSetBroker);
+        config.initialize();
         return config;
     }
     

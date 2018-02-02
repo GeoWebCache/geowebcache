@@ -18,8 +18,7 @@ public class ArcGISCacheGridsetConfiguration extends SimpleGridSetConfiguration 
     }
     
     @Override
-    public int initialize(GridSetBroker gridSetBroker) throws GeoWebCacheException {
-        return 0;
+    public void initialize() throws GeoWebCacheException {
     }
 
     @Override

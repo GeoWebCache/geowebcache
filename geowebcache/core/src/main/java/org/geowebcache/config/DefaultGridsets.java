@@ -107,9 +107,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
     }
 
     @Override
-    public int initialize(GridSetBroker gridSetBroker) throws GeoWebCacheException {
-        // TODO Auto-generated method stub
-        return 0;
+    public void initialize() throws GeoWebCacheException {
     }
 
     @Override

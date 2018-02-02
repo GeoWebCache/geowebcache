@@ -171,7 +171,7 @@ public class TileLayerDispatcher implements DisposableBean {
         }
     }
 
-    private int initialize(TileLayerConfiguration config) {
+    private void initialize(TileLayerConfiguration config) {
         if (config == null) {
             throw new IllegalStateException(
                     "TileLayerDispatcher got a null GWC configuration object");
@@ -182,22 +182,21 @@ public class TileLayerDispatcher implements DisposableBean {
             configIdent = config.getIdentifier();
         } catch (Exception gwce) {
             log.error("Error obtaining identify from TileLayerConfiguration " + config, gwce);
-            return 0;
+            return;
         }
 
         if (configIdent == null) {
             log.warn("Got a GWC configuration with no identity, ignoring it:" + config);
-            return 0;
+            return;
         }
 
-        int layerCount;
         try {
-            layerCount = config.initialize(gridSetBroker);
+            config.initialize();
         } catch (GeoWebCacheException gwce) {
             log.error("Failed to add layers from " + configIdent, gwce);
-            return 0;
+            return;
         }
-        if (layerCount <= 0) {
+        if (config.getLayerCount()<=0) {
             log.info("TileLayerConfiguration " + config.getIdentifier() + " contained no layers.");
         }
 
@@ -206,7 +205,6 @@ public class TileLayerDispatcher implements DisposableBean {
             log.debug("Reading service information.");
             this.serviceInformation = ((ServerConfiguration) config).getServiceInformation();
         }
-        return layerCount;
     }
 
     public ServiceInformation getServiceInformation() {

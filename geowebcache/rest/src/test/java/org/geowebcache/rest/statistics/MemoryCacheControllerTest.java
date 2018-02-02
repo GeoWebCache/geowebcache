@@ -55,7 +55,8 @@ public class MemoryCacheControllerTest {
     public void setup() throws GeoWebCacheException {
         GridSetBroker gridSetBroker = new GridSetBroker(false, false);
         XMLConfiguration xmlConfig = loadXMLConfig();
-        xmlConfig.initialize(gridSetBroker);
+        xmlConfig.setGridSetBroker(gridSetBroker);
+        xmlConfig.initialize();
 
         mcc = new MemoryCacheController();
         mcc.setXMLConfiguration(xmlConfig);

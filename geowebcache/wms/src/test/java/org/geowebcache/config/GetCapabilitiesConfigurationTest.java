@@ -77,7 +77,8 @@ public class GetCapabilitiesConfigurationTest {
 
         replay(server, cap, req, gcOpType, globalConfig);
         config.setPrimaryConfig(globalConfig);
-        config.initialize(broker);
+        config.setGridSetBroker(broker);
+        config.initialize();
 
         WMSLayer wmsLayer = (WMSLayer) config.getLayers().iterator().next();
         List<ParameterFilter> outputParameterFilters = wmsLayer.getParameterFilters();
@@ -107,8 +108,8 @@ public class GetCapabilitiesConfigurationTest {
 
         replay(server, cap, req, gcOpType, globalConfig);
         config.setPrimaryConfig(globalConfig);
-        config.initialize(broker);
-
+        config.setGridSetBroker(broker);
+        config.initialize();
         WMSLayer wmsLayer = (WMSLayer) config.getLayers().iterator().next();
         List<ParameterFilter> outputParameterFilters = wmsLayer.getParameterFilters();
 
@@ -140,8 +141,8 @@ public class GetCapabilitiesConfigurationTest {
 
         replay(server, cap, req, gcOpType, globalConfig);
         config.setPrimaryConfig(globalConfig);
-        config.initialize(broker);
-
+        config.setGridSetBroker(broker);
+        config.initialize();
         WMSLayer wmsLayer = (WMSLayer) config.getLayers().iterator().next();
         List<ParameterFilter> outputParameterFilters = wmsLayer.getParameterFilters();
 
@@ -199,8 +200,10 @@ public class GetCapabilitiesConfigurationTest {
         replay(server, cap, req, gcOpType, globalConfig);
         
         config.setPrimaryConfig(globalConfig);
+        config.setGridSetBroker(broker);
+        config.initialize();
         
-        config.initialize(broker);
+        
         
         // Check that the XMLConfiguration's setDefaultValues method has been called on each of the layers returened.
         assertThat(Sets.newHashSet(config.getLayers()), is(Sets.newHashSet(layerCapture.getValues())));

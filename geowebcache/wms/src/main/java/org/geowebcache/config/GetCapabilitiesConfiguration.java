@@ -496,11 +496,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
         return 20037508.34 * Math.log(Math.tan(tmp)) / Math.PI;
     }
 
-    /**
-     * @see TileLayerConfiguration#initialize(org.geowebcache.grid.GridSetBroker)
-     */
-    public int initialize(GridSetBroker gridSetBroker) throws GeoWebCacheException {
-        this.gridSetBroker = gridSetBroker;
+    public void initialize() throws GeoWebCacheException {
         List<TileLayer> tileLayers = getTileLayers(true);
         this.layers.clear();
         this.generatedGridSets.clear();
@@ -521,7 +517,6 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
                 .collect(Collectors.toMap(GridSet::getName, UnaryOperator.identity()));
             generatedGridSets.putAll(generatedForLayer);
         }
-        return tileLayers.size();
     }
 
     /**
@@ -718,5 +713,17 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     public boolean canSave(GridSet gridset) {
         // TODO Auto-generated method stub
         return false;
+    }
+    
+    @Override
+    public void setGridSetBroker(GridSetBroker broker) {
+        this.gridSetBroker = broker;
+    }
+
+    @Override
+    public int initialize(GridSetBroker broker) throws GeoWebCacheException {
+        setGridSetBroker(broker);
+        initialize();
+        return 0;//getLayerCount();
     }
 }

@@ -107,7 +107,9 @@ public class GetCapabilitiesLayerConfigurationConformanceTest extends LayerConfi
                     }
 
                 };
-        config.initialize(broker);
+        config.setGridSetBroker(broker);
+        config.initialize();
+        
         return config;
     }
 

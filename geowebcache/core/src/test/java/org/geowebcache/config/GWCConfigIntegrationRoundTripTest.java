@@ -34,7 +34,8 @@ public class GWCConfigIntegrationRoundTripTest {
 
         FileUtils.copyFile(testSupport.configFile, configFileCopy);
         XMLConfiguration configCopy = new XMLConfiguration(null, configDirCopy.getAbsolutePath());
-        configCopy.initialize(new GridSetBroker(true, true));
+        configCopy.setGridSetBroker(new GridSetBroker(true, true));
+        configCopy.initialize();
 
         assertTileLayerConfiguration(configCopy);
         assertGridSetConfiguration(configCopy);

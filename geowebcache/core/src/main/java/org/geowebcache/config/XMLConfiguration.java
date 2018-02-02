@@ -907,12 +907,11 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         return result.getNode();
     }
 
-    /**
-     * @see TileLayerConfiguration#initialize(org.geowebcache.grid.GridSetBroker)
-     */
-    public int initialize(final GridSetBroker gridSetBroker) throws GeoWebCacheException {
+    public void initialize() throws GeoWebCacheException {
 
-        this.gridSetBroker = gridSetBroker;
+        if(gridSetBroker==null) {
+            throw new IllegalStateException("GridSetBroker has not been set");
+        }
 
         if (this.reloadConfigOnInit && resourceProvider.hasInput()) {
             this.setGwcConfig(loadConfiguration());
@@ -920,7 +919,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
 
         log.info("Initializing GridSets from " + getIdentifier());
 
-        loadGridSets(gridSetBroker);
+        loadGridSets();
 
         log.info("Initializing layers from " + getIdentifier());
 
@@ -935,8 +934,6 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         updateLayers();
         
         this.reloadConfigOnInit = true;
-
-        return getLayerCount();
     }
 
     private void updateLayers() {
@@ -947,7 +944,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         this.layers = buff;
     }
 
-    private void loadGridSets(final GridSetBroker gridSetBroker) {
+    private void loadGridSets() {
         if (getGwcConfig().getGridSets() != null) {
             this.gridSets = getGwcConfig().getGridSets().stream()
                 .map((xmlGridSet)->{
@@ -1241,5 +1238,10 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         } catch (IllegalArgumentException ex) {
             return false;
         }
+    }
+
+    @Override
+    public void setGridSetBroker(GridSetBroker broker) {
+        this.gridSetBroker = broker;
     }
 }

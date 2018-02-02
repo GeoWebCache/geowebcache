@@ -12,21 +12,10 @@ public interface BaseConfiguration {
     
     /**
      * Initializes this configuration.
-     * <p>
-     * Any gridset provided by this configuration must be added to {@code gridSetBroker}
-     * </p>
-     * <p>
-     * Any layer provided by this configuration must be {@link TileLayer#initialize(GridSetBroker)
-     * initialized} with the provided {@code gridSetBroker}.
-     * </p>
      * 
-     * @param gridSetBroker
-     * @return the count of layers provided by this configuration after initialization.
      * @throws GeoWebCacheException
-     * 
-     * TODO Get rid of this, adding gridsets should be done by implementing GridSetConfiguration 
      */
-    int initialize(GridSetBroker gridSetBroker) throws GeoWebCacheException;
+    void initialize() throws GeoWebCacheException;
 
     /**
      * @return non null identifier for this configuration

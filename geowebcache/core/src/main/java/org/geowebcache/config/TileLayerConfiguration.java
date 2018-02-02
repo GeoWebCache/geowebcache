@@ -23,7 +23,9 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
+import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 
@@ -175,4 +177,17 @@ public interface TileLayerConfiguration extends BaseConfiguration {
      *         different configurations may be specialized on different kinds of layers).
      */
     boolean canSave(TileLayer tl);
+    
+    /**
+     * Set the GridSetBroker
+     * @param broker
+     */
+    void setGridSetBroker(GridSetBroker broker);
+
+    @Deprecated
+    default int initialize(GridSetBroker broker) throws GeoWebCacheException {
+        setGridSetBroker(broker);
+        initialize();
+        return getLayerCount();
+    }
 }

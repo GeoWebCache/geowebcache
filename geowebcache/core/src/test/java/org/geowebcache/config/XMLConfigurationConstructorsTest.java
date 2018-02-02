@@ -100,7 +100,9 @@ public class XMLConfigurationConstructorsTest {
         shouldLoadFrom(cacheDir);
         
         XMLConfiguration config = new XMLConfiguration(provider, storageFinder);
-        config.initialize(broker);
+        config.setGridSetBroker(broker);
+        config.initialize();
+        config.getLayerCount();
         
         assertThat(config.getLayer(MARKED_LAYER), notNullValue());
     }
@@ -113,7 +115,9 @@ public class XMLConfigurationConstructorsTest {
         gwcConfigDirProp.setValue(configDir.getCanonicalPath());
         
         XMLConfiguration config = new XMLConfiguration(provider, storageFinder);
-        config.initialize(broker);
+        config.setGridSetBroker(broker);
+        config.initialize();
+        config.getLayerCount();
         
         assertThat(config.getLayer(MARKED_LAYER), notNullValue());
     }
@@ -126,7 +130,9 @@ public class XMLConfigurationConstructorsTest {
         gwcConfigDirProp.setValue(configDir.getName());
         
         XMLConfiguration config = new XMLConfiguration(provider, storageFinder);
-        config.initialize(broker);
+        config.setGridSetBroker(broker);
+        config.initialize();
+        config.getLayerCount();
         
         assertThat(config.getLayer(MARKED_LAYER), notNullValue());
     }
@@ -137,7 +143,8 @@ public class XMLConfigurationConstructorsTest {
         shouldNotLoadFrom(cacheDir);
         
         XMLConfiguration config = new XMLConfiguration(provider, configDir.getCanonicalPath());
-        config.initialize(broker);
+        config.setGridSetBroker(broker);
+        config.initialize();
         
         assertThat(config.getLayer(MARKED_LAYER), notNullValue());
     }
@@ -145,7 +152,8 @@ public class XMLConfigurationConstructorsTest {
     @Test
     public void testDefaultToCacheDirCreate() throws Exception {
         ServerConfiguration config = new XMLConfiguration(provider, storageFinder);
-        config.initialize(broker);
+        ((XMLConfiguration) config).setGridSetBroker(broker);
+        config.initialize();
         
         assertThat(configFile(cacheDir).exists(), is(true));
         assertThat(configFile(configDir).exists(), is(false));
@@ -156,7 +164,8 @@ public class XMLConfigurationConstructorsTest {
         gwcConfigDirProp.setValue(configDir.getCanonicalPath());
         
         ServerConfiguration config = new XMLConfiguration(provider, storageFinder);
-        config.initialize(broker);
+        ((XMLConfiguration) config).setGridSetBroker(broker);
+        config.initialize();
         
         assertThat(configFile(cacheDir).exists(), is(false));
         assertThat(configFile(configDir).exists(), is(true));
@@ -165,7 +174,8 @@ public class XMLConfigurationConstructorsTest {
     @Test
     public void testPathAsArgumentCreate() throws Exception {
         ServerConfiguration config = new XMLConfiguration(provider, configDir.getCanonicalPath());
-        config.initialize(broker);
+        ((XMLConfiguration) config).setGridSetBroker(broker);
+        config.initialize();
         
         assertThat(configFile(cacheDir).exists(), is(false));
         assertThat(configFile(configDir).exists(), is(true));

@@ -110,8 +110,8 @@ public class DefaultingConfigurationTest {
             }
 
             @Override
-            public int initialize(GridSetBroker gridSetBroker) throws GeoWebCacheException {
-                return 0;
+            public void initialize() throws GeoWebCacheException {
+                return;
             }
 
             @Override
