@@ -13,14 +13,19 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 
 public class MockWepAppContextRule extends MockExtensionRule {
-
+    
     public MockWepAppContextRule() {
-        
+        super();
+    }
+    
+    public MockWepAppContextRule(boolean staticContext) {
+        super(staticContext);
     }
     
     ServletContext servletContext;
     
     Map<String, String> servletInitParameters;
+
 
     @Override
     public WebApplicationContext getMockContext() {
