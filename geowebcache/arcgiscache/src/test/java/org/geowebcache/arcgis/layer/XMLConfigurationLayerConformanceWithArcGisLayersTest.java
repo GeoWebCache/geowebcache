@@ -29,8 +29,6 @@ import org.junit.Rule;
 
 public class XMLConfigurationLayerConformanceWithArcGisLayersTest
         extends XMLConfigurationLayerConformanceTest {
-
-    public @Rule MockWepAppContextRule extensions = new MockWepAppContextRule();
     
     @Override
     public void setUpTestUnit() throws Exception {
