@@ -3,19 +3,18 @@ package org.geowebcache.config;
 import java.io.IOException;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.layer.TileLayer;
+import org.springframework.beans.factory.InitializingBean;
 
-public interface BaseConfiguration {
+public interface BaseConfiguration extends InitializingBean {
 
     public static final int BASE_PRIORITY = 0;
     
     /**
-     * Initializes this configuration.
+     * Reinitialize the configuration from its persistence.
      * 
      * @throws GeoWebCacheException
      */
-    void initialize() throws GeoWebCacheException;
+    void reinitialize() throws GeoWebCacheException;
 
     /**
      * @return non null identifier for this configuration
@@ -49,5 +48,9 @@ public interface BaseConfiguration {
     default int getPriority(Class<? extends BaseConfiguration> clazz) {
         return BASE_PRIORITY;
     }
-
+    
+    @Override
+    default void afterPropertiesSet() throws Exception {
+        reinitialize();
+    }
 }

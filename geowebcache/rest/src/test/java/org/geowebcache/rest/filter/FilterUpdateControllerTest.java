@@ -47,7 +47,7 @@ public class FilterUpdateControllerTest {
 
         XMLConfiguration xmlConfig = loadXMLConfig();
         xmlConfig.setGridSetBroker(gridSetBroker);
-        xmlConfig.initialize();
+        xmlConfig.reinitialize();
         LinkedList<TileLayerConfiguration> configList = new LinkedList<TileLayerConfiguration>();
         configList.add(xmlConfig);
 

@@ -126,7 +126,7 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
         };
         TileLayerConfiguration config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
         config.setGridSetBroker(gridSetBroker);
-        config.initialize();
+        config.reinitialize();
         
         return config;
     }

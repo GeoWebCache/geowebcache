@@ -18,7 +18,7 @@ public class ArcGISCacheGridsetConfiguration extends SimpleGridSetConfiguration 
     }
     
     @Override
-    public void initialize() throws GeoWebCacheException {
+    public void reinitialize() throws GeoWebCacheException {
     }
 
     @Override

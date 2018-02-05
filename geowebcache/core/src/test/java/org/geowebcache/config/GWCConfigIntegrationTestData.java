@@ -54,7 +54,7 @@ public class GWCConfigIntegrationTestData {
 
         TileLayerConfiguration tileLayerConfiguration = testSupport.getTileLayerConfigurations().get(0);
         tileLayerConfiguration.setGridSetBroker(testSupport.getGridSetBroker());
-        tileLayerConfiguration.initialize();
+        tileLayerConfiguration.reinitialize();
 
         Map<String, GridSubset > subSets = new HashMap<>();
         subSets.put(GRIDSET_EPSG4326, GridSubsetFactory.createGridSubSet(testSupport.getGridSetBroker().getWorldEpsg4326(), new BoundingBox(-129.6, 3.45,-62.1,70.9), null, null));

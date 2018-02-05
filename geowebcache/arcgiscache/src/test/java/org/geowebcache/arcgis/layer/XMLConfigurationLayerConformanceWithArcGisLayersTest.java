@@ -182,7 +182,7 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
         };
         TileLayerConfiguration config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
         config.setGridSetBroker(gridSetBroker);
-        config.initialize();
+        config.reinitialize();
         
         return config;
     }

@@ -907,7 +907,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         return result.getNode();
     }
 
-    public void initialize() throws GeoWebCacheException {
+    public void reinitialize() throws GeoWebCacheException {
 
         if(gridSetBroker==null) {
             throw new IllegalStateException("GridSetBroker has not been set");

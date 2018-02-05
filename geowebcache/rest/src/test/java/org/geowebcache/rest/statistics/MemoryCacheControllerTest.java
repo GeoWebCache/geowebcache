@@ -56,7 +56,7 @@ public class MemoryCacheControllerTest {
         GridSetBroker gridSetBroker = new GridSetBroker(false, false);
         XMLConfiguration xmlConfig = loadXMLConfig();
         xmlConfig.setGridSetBroker(gridSetBroker);
-        xmlConfig.initialize();
+        xmlConfig.reinitialize();
 
         mcc = new MemoryCacheController();
         mcc.setXMLConfiguration(xmlConfig);

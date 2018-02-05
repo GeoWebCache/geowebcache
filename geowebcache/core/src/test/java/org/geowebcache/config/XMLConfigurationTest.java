@@ -67,7 +67,7 @@ public class XMLConfigurationTest {
         gridSetBroker = new GridSetBroker(true, true);
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
         config.setGridSetBroker(gridSetBroker);
-        config.initialize();
+        config.reinitialize();
     }
     
     @Test
@@ -139,14 +139,14 @@ public class XMLConfigurationTest {
         assertTrue(configFile.delete());
         config.setTemplate("/geowebcache_empty.xml");
         config.setGridSetBroker(gridSetBroker);
-        config.initialize();
+        config.reinitialize();
         config.getLayerCount();
         assertEquals(0, config.getLayerCount());
 
         assertTrue(configFile.delete());
         config.setTemplate("/geowebcache.xml");
         config.setGridSetBroker(gridSetBroker);
-        config.initialize();
+        config.reinitialize();
         config.getLayerCount();
         assertEquals(3, config.getLayerCount());
         // WMTS CITE strict compliance should be deactivated
@@ -225,7 +225,7 @@ public class XMLConfigurationTest {
 
         XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
         config2.setGridSetBroker(gridSetBroker);
-        config2.initialize();
+        config2.reinitialize();
         config2.getLayerCount();
         assertEquals(1, config2.getLayerCount());
         assertThat(config2.getLayer("testLayer"), TestUtils.isPresent());
@@ -339,7 +339,7 @@ public class XMLConfigurationTest {
         XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
         GridSetBroker gridSetBroker2 = new GridSetBroker(Arrays.asList(new DefaultGridsets(true, true), (GridSetConfiguration)config2));
         config2.setGridSetBroker(gridSetBroker2);
-        config2.initialize();
+        config2.reinitialize();
         config2.getLayerCount();
 
         GridSet gridSet2 = gridSetBroker2.get(name);
@@ -383,7 +383,7 @@ public class XMLConfigurationTest {
 
         XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
         config2.setGridSetBroker(new GridSetBroker(true, false));
-        config2.initialize();
+        config2.reinitialize();
         config2.getLayerCount();
         
         List<BlobStoreConfig> stores = config2.getBlobStores();
@@ -407,7 +407,7 @@ public class XMLConfigurationTest {
         gridSetBroker = new GridSetBroker(true, false);
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
         config.setGridSetBroker(gridSetBroker);
-        config.initialize();
+        config.reinitialize();
         config.getLayerCount();
 
         final String previousVersion = config.getVersion();
@@ -421,7 +421,7 @@ public class XMLConfigurationTest {
 
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
         config.setGridSetBroker(gridSetBroker);
-        config.initialize();
+        config.reinitialize();
         config.getLayerCount();
         final String savedVersion = config.getVersion();
         assertEquals(currVersion, savedVersion);
@@ -434,7 +434,7 @@ public class XMLConfigurationTest {
         // instantiate a new one based with strict CITE compliance activated
         config.setTemplate("/geowebcache_cite.xml");
         config.setGridSetBroker(gridSetBroker);
-        config.initialize();
+        config.reinitialize();
         config.getLayerCount();
         // CITE strict compliance should be activated for WMTS
         assertThat(config.isWmtsCiteCompliant(), is(true));

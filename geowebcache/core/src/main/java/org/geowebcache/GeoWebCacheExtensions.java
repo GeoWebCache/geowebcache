@@ -39,6 +39,8 @@ import org.springframework.web.context.WebApplicationContext;
  * 
  */
 public class GeoWebCacheExtensions implements ApplicationContextAware, ApplicationListener {
+    
+    private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayerDispatcher.class);
 
     /**
      * logger
@@ -188,6 +190,22 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
      */
     public static <T extends BaseConfiguration> List<T> configurations(Class<T> extensionPoint) {
         return configurations(extensionPoint, context);
+    }
+    
+    /**
+     * Reinitialize all configuration beans in the context.
+     * @param context
+     * @throws GeoWebCacheException
+     */
+    public static void reinitializeConfigurations(ApplicationContext context) {
+        for (BaseConfiguration config: configurations(BaseConfiguration.class, context)) {
+            try {
+                config.reinitialize();
+            } catch (GeoWebCacheException e) {
+                log.error("Error while reinitializing configuration "+config.getIdentifier()
+                    +" from "+config.getLocation(), e);
+            }
+        }
     }
     
     /**

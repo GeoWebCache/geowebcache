@@ -183,11 +183,4 @@ public interface TileLayerConfiguration extends BaseConfiguration {
      * @param broker
      */
     void setGridSetBroker(GridSetBroker broker);
-
-    @Deprecated
-    default int initialize(GridSetBroker broker) throws GeoWebCacheException {
-        setGridSetBroker(broker);
-        initialize();
-        return getLayerCount();
-    }
 }

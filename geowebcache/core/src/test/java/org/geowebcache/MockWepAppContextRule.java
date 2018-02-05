@@ -26,7 +26,6 @@ public class MockWepAppContextRule extends MockExtensionRule {
     
     Map<String, String> servletInitParameters;
 
-
     @Override
     public WebApplicationContext getMockContext() {
 
@@ -74,6 +73,12 @@ public class MockWepAppContextRule extends MockExtensionRule {
             throw new UnsupportedOperationException();
         }
         
+    }
+    
+    public void subContext(org.junit.runners.model.Statement statement) throws Exception {
+        MockWepAppContextRule subRule = new MockWepAppContextRule(false);
+        
+        subRule.apply(statement,  org.junit.runner.Description.EMPTY);
     }
 
 }

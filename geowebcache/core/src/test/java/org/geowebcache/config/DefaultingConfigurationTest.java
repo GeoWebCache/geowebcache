@@ -110,7 +110,7 @@ public class DefaultingConfigurationTest {
             }
 
             @Override
-            public void initialize() throws GeoWebCacheException {
+            public void reinitialize() throws GeoWebCacheException {
                 return;
             }
 

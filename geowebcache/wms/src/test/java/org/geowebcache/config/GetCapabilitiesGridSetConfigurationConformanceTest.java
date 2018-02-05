@@ -98,7 +98,7 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
 
                 };
         config.setGridSetBroker(broker);
-        config.initialize();
+        config.reinitialize();
         
         return config;
     }

@@ -162,6 +162,11 @@ public abstract class JDBCQuotaStoreTest extends OnlineTestCase {
         XMLConfiguration xmlConfig = loadXMLConfig();
         LinkedList<TileLayerConfiguration> configList = new LinkedList<TileLayerConfiguration>();
         configList.add(xmlConfig);
+        
+        // add extra tests gwc configuration
+        InputStream input = this.getClass().getClassLoader().getResourceAsStream("gwc-test-config.xml");
+        XMLConfiguration extraConfig = new XMLConfiguration(input);
+        configList.add(extraConfig);
 
         layerDispatcher = new TileLayerDispatcher(new GridSetBroker(true, true), configList);
         Capture<String> layerNameCap = new Capture<>();
@@ -184,11 +189,6 @@ public abstract class JDBCQuotaStoreTest extends OnlineTestCase {
                             .map(ParametersUtils::getKvp)
                             .collect(Collectors.toSet())
                         ));
-        
-        // add extra tests gwc configuration
-        InputStream input = this.getClass().getClassLoader().getResourceAsStream("gwc-test-config.xml");
-        XMLConfiguration extraConfig = new XMLConfiguration(input);
-        layerDispatcher.addConfiguration(extraConfig);
 
         tilePageCalculator = new TilePageCalculator(layerDispatcher, storageBroker);
 

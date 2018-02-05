@@ -85,7 +85,7 @@ public class TileLayerRestTest {
                 yCoordinateFirst);
         gridSetBroker.put(gridSet);
         xmlConfig.setGridSetBroker(gridSetBroker);
-        xmlConfig.initialize();
+        xmlConfig.reinitialize();
         
         LinkedList<TileLayerConfiguration> configList = new LinkedList<TileLayerConfiguration>();
         configList.add(xmlConfig);
