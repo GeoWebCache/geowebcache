@@ -297,7 +297,10 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
             throw new ConfigurationException(e.getMessage(), e);
         }
     }
-    
+
+    /**
+     * @see ServerConfiguration#isRuntimeStatsEnabled()
+     */
     public boolean isRuntimeStatsEnabled() {
         if (getGwcConfig() == null || getGwcConfig().getRuntimeStats() == null) {
             return true;
@@ -306,8 +309,29 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         }
     }
 
+    /**
+     * @see ServerConfiguration#setIsRuntimeStatsEnabled(boolean)
+     * @param isEnabled
+     */
+    public void setIsRuntimeStatsEnabled(boolean isEnabled) throws IOException {
+        getGwcConfig().setRuntimeStats(isEnabled);
+        save();
+    }
+
+    /**
+     * @see ServerConfiguration#getServiceInformation()
+     */
     public synchronized ServiceInformation getServiceInformation() {
         return getGwcConfig().getServiceInformation();
+    }
+
+    /**
+     * @see ServerConfiguration#setServiceInformation(ServiceInformation);
+     * @param serviceInfo
+     */
+    public void setServiceInformation(ServiceInformation serviceInfo) throws IOException {
+        getGwcConfig().setServiceInformation(serviceInfo);
+        save();
     }
 
     /**
@@ -1076,7 +1100,10 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     public String getVersion() {
         return getGwcConfig().getVersion();
     }
-    
+
+    /**
+     * @see ServerConfiguration#getfullWMS()
+     */
     @Override
     public Boolean getfullWMS(){
         if(getGwcConfig()!=null){
@@ -1085,14 +1112,37 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         return null;        
     }
 
+    /**
+     * @see ServerConfiguration#setFullWMS(boolean)
+     * @param isFullWMS
+     */
+    @Override
+    public void setFullWMS(boolean isFullWMS) throws IOException {
+        getGwcConfig().setFullWMS(isFullWMS);
+        save();
+    }
+
     @Override
     public List<BlobStoreConfig> getBlobStores() {
         return getGwcConfig().getBlobStores();
     }
-    
+
+    /**
+     * @see ServerConfiguration#getLockProvider()
+     */
     @Override
     public LockProvider getLockProvider() {
         return getGwcConfig().getLockProvider();
+    }
+
+    /**
+     * @see ServerConfiguration#setLockProvider(LockProvider)
+     * @param lockProvider
+     */
+    @Override
+    public void setLockProvider(LockProvider lockProvider) throws IOException {
+        getGwcConfig().setLockProvider(lockProvider);
+        save();
     }
 
     private GeoWebCacheConfiguration getGwcConfig() {
@@ -1120,11 +1170,12 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
      * @param wmtsCiteStrictCompliant TRUE or FALSE, activating or deactivation CITE
      *                                strict compliance mode for WMTS
      */
-    public void setWmtsCiteStrictCompliant(boolean wmtsCiteStrictCompliant) {
+    public void setWmtsCiteStrictCompliant(boolean wmtsCiteStrictCompliant) throws IOException {
         if (gwcConfig != null) {
             // activate or deactivate CITE strict compliance mode for WMTS implementation
             gwcConfig.setWmtsCiteCompliant(wmtsCiteStrictCompliant);
         }
+        save();
     }
 
     @Override
