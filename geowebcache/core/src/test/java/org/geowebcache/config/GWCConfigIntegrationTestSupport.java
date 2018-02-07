@@ -50,7 +50,7 @@ public abstract class GWCConfigIntegrationTestSupport {
 
 
     /**
-     * @return The {@link BlobStoreConfigurationCatalog} for this configuration
+     * @return The {@link BlobStoreConfiguration} for this configuration
      */
-    public abstract BlobStoreConfigurationCatalog getBlobStoreConfiguration();
+    public abstract BlobStoreConfiguration getBlobStoreConfiguration();
 }

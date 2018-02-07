@@ -56,11 +56,11 @@ public class GWCConfigIntegrationRoundTripTest {
         //TODO: Fill in this test once the GridSetConfiguration API is complete
     }
 
-    private void assertBlobStoreConfiguration(BlobStoreConfigurationCatalog config) {
-        List<BlobStoreConfig> blobStores = config.getBlobStores();
+    private void assertBlobStoreConfiguration(BlobStoreConfiguration config) {
+        List<BlobStoreInfo> blobStores = config.getBlobStores();
         List<String> blobStoreNames = Arrays.asList(BLOBSTORES);
-        for (BlobStoreConfig blobStoreConfig : blobStores) {
-            assertTrue(blobStoreNames.contains(blobStoreConfig.getId()));
+        for (BlobStoreInfo blobStoreConfig : blobStores) {
+            assertTrue(blobStoreNames.contains(blobStoreConfig.getName()));
         }
         assertEquals(BLOBSTORES.length, blobStores.size());
     }

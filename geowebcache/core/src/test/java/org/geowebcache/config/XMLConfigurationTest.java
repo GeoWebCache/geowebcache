@@ -10,7 +10,6 @@ import java.io.FileInputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -346,15 +345,15 @@ public class XMLConfigurationTest {
 
     @Test
     public void testSaveBlobStores() throws Exception{
-        FileBlobStoreConfig store1 = new FileBlobStoreConfig();
-        store1.setId("store1");
+        FileBlobStoreInfo store1 = new FileBlobStoreInfo();
+        store1.setName("store1");
         store1.setDefault(true);
         store1.setEnabled(true);
         store1.setFileSystemBlockSize(8096);
         store1.setBaseDirectory("/tmp/test");
         
-        FileBlobStoreConfig store2 = new FileBlobStoreConfig();
-        store2.setId("store2");
+        FileBlobStoreInfo store2 = new FileBlobStoreInfo();
+        store2.setName("store2");
         store2.setDefault(false);
         store2.setEnabled(false);
         store2.setFileSystemBlockSize(512);
@@ -375,7 +374,7 @@ public class XMLConfigurationTest {
         XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
         config2.initialize(new GridSetBroker(true, false));
         
-        List<BlobStoreConfig> stores = config2.getBlobStores();
+        List<BlobStoreInfo> stores = config2.getBlobStores();
         assertNotNull(stores);
         assertEquals(2, stores.size());
         assertNotSame(store1, stores.get(0));

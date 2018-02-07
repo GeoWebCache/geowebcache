@@ -5,12 +5,19 @@ import static org.geowebcache.util.TestUtils.notPresent;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.stream.Collectors;
 
 import org.geowebcache.util.TestUtils;
@@ -286,6 +293,111 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         assertThat(retrievedOld, notPresent());
     }
 
+    @Test
+    public void testConcurrentAdds() throws Exception {
+        // get the initial number of default configured Info elements
+        final int defaultCount = getInfoNames(config).size();
+        // add a bunch of Infos
+        for (int i=0; i< 10; ++i) {
+            I goodInfo = this.getGoodInfo(Integer.toString(i), i);
+            this.addInfo(config, goodInfo);
+        }
+        // ensure all 10 got added to the initial info
+        assertEquals("Unexpected number of Info config elements", defaultCount + 10, getInfoNames(config).size());
+        // get a thread pool
+        ExecutorService pool = Executors.newFixedThreadPool(16,
+            (Runnable r) -> new Thread(r, "Info Concurrency Test for ADD"));
+        // create a bunch of concurrent adds
+        ArrayList<Future<I>> futures = new ArrayList<>(100);
+        for (int i=0; i<100; ++i) {
+            // create a new info
+            int id = 100 + i;
+            I info = getGoodInfo(Integer.toString(id), id);
+            // schedule the add
+            Future<I> future = pool.submit(() -> {
+                addInfo(config, info);
+                return info;
+            });
+            futures.add(future);
+        }
+        // get the results
+        for (Future<I> f : futures) {
+            f.get();
+        }
+        // ensure the 110 added are in the list
+        assertEquals("Unexpected number of Info config elements", defaultCount + 110,
+            getInfoNames(config).size());
+    }
+
+    @Test
+    public void testConcurrentDeletes() throws Exception {
+        // get the initial number of default configured Info elements
+        final int defaultCount = getInfoNames(config).size();
+        // add a bunch of Infos
+        for (int i=0; i< 100; ++i) {
+            I goodInfo = this.getGoodInfo(Integer.toString(i), i);
+            this.addInfo(config, goodInfo);
+        }
+        // ensure all 100 got added to the initial info
+        assertEquals("Unexpected number of Info config elements", defaultCount + 100,
+            getInfoNames(config).size());
+        // get a thread pool
+        ExecutorService pool = Executors.newFixedThreadPool(16,
+            (Runnable r) -> new Thread(r, "Info Concurrency Test for DELETE"));
+        // create a bunch of concurrent deletes
+        ArrayList<Future<String>> futures = new ArrayList<>(100);
+        for (int i=0; i<100; ++i) {
+            // schedule the delete
+            final String name = Integer.toString(i);
+            Future<String> future = pool.submit(() -> {
+                removeInfo(config, name);
+                return name;
+            });
+            futures.add(future);
+        }
+        // get the results
+        for (Future<String> f : futures) {
+            f.get();
+        }
+        // ensure only the default configured Info elements are left
+        assertEquals("Unexpected number of Info config elements", defaultCount, getInfoNames(config).size());
+    }
+
+    @Test
+    public void testConcurrentModifies() throws Exception {
+        // get the initial number of default configured Info elements
+        final int defaultCount = getInfoNames(config).size();
+        // add a bunch of Infos
+        for (int i=0; i< 100; ++i) {
+            I goodInfo = this.getGoodInfo(Integer.toString(i), i);
+            this.addInfo(config, goodInfo);
+        }
+        // ensure all 100 got added to the initial info
+        assertEquals("Unexpected number of Info config elements", defaultCount + 100, getInfoNames(config).size());
+        // get a thread pool
+        ExecutorService pool = Executors.newFixedThreadPool(16,
+            (Runnable r) -> new Thread(r, "Info Concurrency Test for MODIFY"));
+        // create a bunch of concurrent modifies
+        ArrayList<Future<I>> futures = new ArrayList<>(100);
+        for (int i=0; i<100; ++i) {
+            // create a modified info
+            int originalId = i;
+            int modifiedId = 200 + i;
+            I modifiedInfo = getGoodInfo(Integer.toString(originalId), modifiedId);
+            // schedule the add
+            Future<I> future = pool.submit(() -> {
+                modifyInfo(config, modifiedInfo);
+                return modifiedInfo;
+            });
+            futures.add(future);
+        }
+        // get the results
+        for (Future<I> f : futures) {
+            f.get();
+        }
+        // ensure the 100 added are still in the list
+        assertEquals("Unexpected number of Info config elements", defaultCount + 100, getInfoNames(config).size());
+    }
     
     /**
      * Create a GridSet that should be saveable in the configuration being tested. Throw 

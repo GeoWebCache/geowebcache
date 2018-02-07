@@ -69,7 +69,7 @@ public class GeoWebCacheConfiguration {
 
     private List<FormatModifier> formatModifiers;
 
-    private List<BlobStoreConfig> blobStores;
+    private List<BlobStoreInfo> blobStores;
 
     private List<XMLGridSet> gridSets;
     
@@ -256,7 +256,7 @@ public class GeoWebCacheConfiguration {
         this.formatModifiers = formatModifiers;
     }
 
-    public List<BlobStoreConfig> getBlobStores(){
+    public List<BlobStoreInfo> getBlobStores(){
     	return blobStores;
     }
     

@@ -34,9 +34,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.BlobStoreConfig;
+import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.config.ConfigurationException;
-import org.geowebcache.config.FileBlobStoreConfig;
+import org.geowebcache.config.FileBlobStoreInfo;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -87,7 +87,7 @@ public class CompositeBlobStoreTest {
 
     XMLConfiguration configuration;
 
-    List<BlobStoreConfig> configs;
+    List<BlobStoreInfo> configs;
 
     private CompositeBlobStore store;
 
@@ -123,8 +123,8 @@ public class CompositeBlobStoreTest {
         assertEquals(1, store.blobStores.size());
         LiveStore liveStore = store.blobStores.get(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID);
         assertNotNull(liveStore);
-        assertTrue(liveStore.config instanceof FileBlobStoreConfig);
-        FileBlobStoreConfig config = (FileBlobStoreConfig) liveStore.config;
+        assertTrue(liveStore.config instanceof FileBlobStoreInfo);
+        FileBlobStoreInfo config = (FileBlobStoreInfo) liveStore.config;
         assertTrue(config.isEnabled());
         assertTrue(config.isDefault());
         assertEquals(tmpFolder.getRoot().getAbsolutePath(), config.getBaseDirectory());
@@ -215,7 +215,7 @@ public class CompositeBlobStoreTest {
     public void configuredDefaultRespectedAndNoLegacyDefaultCreated() throws Exception {
         configs.add(config("some-other", false /* isDefault */, true, tmpFolder.newFolder()
                 .getAbsolutePath(), 1024));
-        FileBlobStoreConfig defaultStore = config("default-store", true, true, tmpFolder
+        FileBlobStoreInfo defaultStore = config("default-store", true, true, tmpFolder
                 .newFolder().getAbsolutePath(), 1024);
         configs.add(defaultStore);
 
@@ -285,9 +285,9 @@ public class CompositeBlobStoreTest {
         store.get(tile);
     }
 
-    private FileBlobStoreConfig config(String id, boolean isDefault, boolean isEnabled,
+    private FileBlobStoreInfo config(String id, boolean isDefault, boolean isEnabled,
             String baseDirectory, int fileSystemBlockSize) {
-        FileBlobStoreConfig c = new FileBlobStoreConfig(id);
+        FileBlobStoreInfo c = new FileBlobStoreInfo(id);
         c.setDefault(isDefault);
         c.setEnabled(isEnabled);
         c.setBaseDirectory(baseDirectory);

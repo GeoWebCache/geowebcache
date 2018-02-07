@@ -93,7 +93,7 @@ public class S3BlobStoreIntegrationTest {
     @Before
     public void before() throws Exception {
         Assume.assumeTrue(tempFolder.isConfigured());
-        S3BlobStoreConfig config = tempFolder.getConfig();
+        S3BlobStoreInfo config = tempFolder.getConfig();
 
         TileLayerDispatcher layers = mock(TileLayerDispatcher.class);
         LockProvider lockProvider = new NoOpLockProvider();

@@ -26,7 +26,7 @@ public class MbtilesConfigurationProvider implements XMLConfigurationProvider {
 
     @Override
     public XStream getConfiguredXStream(XStream xs) {
-        xs.alias("MbtilesBlobStore", MbtilesConfiguration.class);
+        xs.alias("MbtilesBlobStore", MbtilesInfo.class);
         return xs;
     }
 }

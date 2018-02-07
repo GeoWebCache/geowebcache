@@ -47,7 +47,7 @@ public final class SqliteConnectionManager {
 
     private volatile boolean stopPoolReaper = false;
 
-    public SqliteConnectionManager(SqliteConfiguration configuration) {
+    public SqliteConnectionManager(SqliteInfo configuration) {
         this(configuration.getPoolSize(), configuration.getPoolReaperIntervalMs());
     }
 

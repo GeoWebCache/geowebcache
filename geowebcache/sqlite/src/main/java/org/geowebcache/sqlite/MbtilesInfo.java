@@ -24,13 +24,13 @@ import org.geowebcache.storage.StorageException;
 /**
  * Holder for the properties needed to configure a mbtiles blob store.
  */
-public class MbtilesConfiguration extends SqliteConfiguration {
+public class MbtilesInfo extends SqliteInfo {
 
-    public MbtilesConfiguration() {
+    public MbtilesInfo() {
         super();
     }
 
-    public MbtilesConfiguration(String id) {
+    public MbtilesInfo(String id) {
         super(id);
     }
 

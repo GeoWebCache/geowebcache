@@ -52,7 +52,7 @@ public class MbtilesPBFTest extends TestSupport {
     
     @Test
     public void testGetTileDefaultUnzip() throws Exception {
-        MbtilesConfiguration configuration = getDefaultConfiguration();
+        MbtilesInfo configuration = getDefaultConfiguration();
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
         addStoresToClean(store);
         TileObject tile = TileObject.createQueryTileObject(layer,
@@ -67,7 +67,7 @@ public class MbtilesPBFTest extends TestSupport {
     
     @Test
     public void testGetTileDoUnzip() throws Exception {
-        MbtilesConfiguration configuration = getDefaultConfiguration();
+        MbtilesInfo configuration = getDefaultConfiguration();
         configuration.setGzipVector(true);
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
         addStoresToClean(store);
@@ -83,7 +83,7 @@ public class MbtilesPBFTest extends TestSupport {
     
     @Test
     public void testGetTileNoUnzip() throws Exception {
-        MbtilesConfiguration configuration = getDefaultConfiguration();
+        MbtilesInfo configuration = getDefaultConfiguration();
         configuration.setGzipVector(false);
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
         addStoresToClean(store);
@@ -98,8 +98,8 @@ public class MbtilesPBFTest extends TestSupport {
     }
     
     @Override
-    protected MbtilesConfiguration getDefaultConfiguration() {
-        MbtilesConfiguration config = super.getDefaultConfiguration();
+    protected MbtilesInfo getDefaultConfiguration() {
+        MbtilesInfo config = super.getDefaultConfiguration();
         config.setTemplatePath("{layer}.mbtiles");
         return config;
     }

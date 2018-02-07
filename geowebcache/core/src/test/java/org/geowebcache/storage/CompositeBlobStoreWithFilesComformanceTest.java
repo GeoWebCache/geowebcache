@@ -26,7 +26,7 @@ import static org.easymock.EasyMock.expect;
 import java.util.LinkedList;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.BlobStoreConfig;
+import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -48,7 +48,7 @@ public class CompositeBlobStoreWithFilesComformanceTest extends AbstractBlobStor
     private TileLayer defaultLayer;
     private TileLayer defaultLayer1;
     private TileLayer defaultLayer2;
-    private LinkedList<BlobStoreConfig> configs;
+    private LinkedList<BlobStoreInfo> configs;
 
     private String DEFAULT_LAYER="testLayer";
     private String DEFAULT_LAYER1="testLayer1";

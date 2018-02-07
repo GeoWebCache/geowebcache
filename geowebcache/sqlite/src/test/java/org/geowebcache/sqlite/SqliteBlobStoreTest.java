@@ -35,9 +35,9 @@ public final class SqliteBlobStoreTest extends TestSupport {
         File rootDirectoryA = Files.createTempDirectory("gwc-").toFile();
         File rootDirectoryB = Files.createTempDirectory("gwc-").toFile();
         addFilesToDelete(rootDirectoryA, rootDirectoryB);
-        MbtilesConfiguration configurationA = getDefaultConfiguration();
+        MbtilesInfo configurationA = getDefaultConfiguration();
         configurationA.setRootDirectory(rootDirectoryA.getPath());
-        MbtilesConfiguration configurationB = getDefaultConfiguration();
+        MbtilesInfo configurationB = getDefaultConfiguration();
         configurationB.setRootDirectory(rootDirectoryB.getPath());
         MbtilesBlobStore storeA = new MbtilesBlobStore(configurationA);
         MbtilesBlobStore storeB = new MbtilesBlobStore(configurationB);
@@ -78,9 +78,9 @@ public final class SqliteBlobStoreTest extends TestSupport {
         File rootDirectoryA = Files.createTempDirectory("replace-tests-a-").toFile();
         File rootDirectoryB = Files.createTempDirectory("replace-tests-a-").toFile();
         addFilesToDelete(rootDirectoryA, rootDirectoryB);
-        MbtilesConfiguration configurationA = getDefaultConfiguration();
+        MbtilesInfo configurationA = getDefaultConfiguration();
         configurationA.setRootDirectory(rootDirectoryA.getPath());
-        MbtilesConfiguration configurationB = getDefaultConfiguration();
+        MbtilesInfo configurationB = getDefaultConfiguration();
         configurationB.setRootDirectory(rootDirectoryB.getPath());
         MbtilesBlobStore storeA = new MbtilesBlobStore(configurationA);
         MbtilesBlobStore storeB = new MbtilesBlobStore(configurationB);

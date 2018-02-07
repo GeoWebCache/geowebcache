@@ -43,7 +43,7 @@ public class XMLConfiguration {
             xs.allowTypeHierarchy(org.geowebcache.layer.TileLayer.class);
             xs.allowTypeHierarchy(org.geowebcache.filter.parameters.ParameterFilter.class);
             xs.allowTypeHierarchy(org.geowebcache.filter.request.RequestFilter.class);
-            xs.allowTypeHierarchy(org.geowebcache.config.BlobStoreConfig.class);
+            xs.allowTypeHierarchy(org.geowebcache.config.BlobStoreInfo.class);
             xs.allowTypeHierarchy(TileLayerConfiguration.class);
             
             // Allow anything that's part of GWC

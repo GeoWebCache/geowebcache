@@ -55,7 +55,7 @@ public class GWCXMLConfigIntegrationTestSupport extends GWCConfigIntegrationTest
     }
 
     @Override
-    public BlobStoreConfigurationCatalog getBlobStoreConfiguration() {
+    public BlobStoreConfiguration getBlobStoreConfiguration() {
         return config;
     }
 

@@ -35,7 +35,7 @@ import com.google.common.base.Preconditions;
 
 public class FileBlobStoreConfigTest {
 
-    private FileBlobStoreConfig config;
+    private FileBlobStoreInfo config;
 
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
@@ -49,7 +49,7 @@ public class FileBlobStoreConfigTest {
 
     @Before
     public void before() {
-        config = new FileBlobStoreConfig();
+        config = new FileBlobStoreInfo();
         layers = mock(TileLayerDispatcher.class);
         lockProvider = mock(LockProvider.class);
     }

@@ -17,7 +17,7 @@
 package org.geowebcache.sqlite;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.BlobStoreConfig;
+import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.config.DefaultingConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayer;
@@ -73,8 +73,8 @@ public class OperationsRestWebConfig extends WebMvcConfigurationSupport {
     @Bean
     public XMLConfiguration xmlConfiguration() {
         XMLConfiguration gwcConfiguration = mock(XMLConfiguration.class);
-        List<BlobStoreConfig> mbtilesStoreConfig = new ArrayList<>();
-        MbtilesConfiguration configuration = new MbtilesConfiguration("mbtiles-store");
+        List<BlobStoreInfo> mbtilesStoreConfig = new ArrayList<>();
+        MbtilesInfo configuration = new MbtilesInfo("mbtiles-store");
         configuration.setRootDirectory(ROOT_DIRECTORY.getPath());
         mbtilesStoreConfig.add(configuration);
         when(gwcConfiguration.getBlobStores()).thenReturn(mbtilesStoreConfig);

@@ -31,9 +31,9 @@ import javax.annotation.Nullable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.BlobStoreConfig;
+import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.config.ConfigurationException;
-import org.geowebcache.config.FileBlobStoreConfig;
+import org.geowebcache.config.FileBlobStoreInfo;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -47,17 +47,17 @@ import com.google.common.base.Throwables;
 
 /**
  * A composite {@link BlobStore} that multiplexes tile operations to configured blobstores based on
- * {@link BlobStoreConfig#getId() blobstore id} and TileLayers {@link TileLayer#getBlobStoreId()
+ * {@link BlobStoreInfo#getId() blobstore id} and TileLayers {@link TileLayer#getBlobStoreId()
  * BlobStoreId} matches.
  * <p>
  * Tile operations for {@link TileLayer}s with no configured {@link TileLayer#getBlobStoreId()
  * BlobStoreId} (i.e. {@code null}) are redirected to the "default blob store", which is either
- * <b>the</b> one configured as the {@link BlobStoreConfig#isDefault() default} one, or a
+ * <b>the</b> one configured as the {@link BlobStoreInfo#isDefault() default} one, or a
  * {@link FileBlobStore} following the {@link DefaultStorageFinder#getDefaultPath() legacy cache
  * directory lookup mechanism}, if no blobstore is set as default.
  * <p>
  * At construction time, {@link BlobStore} instances will be created for all
- * {@link BlobStoreConfig#isEnabled() enabled} configs.
+ * {@link BlobStoreInfo#isEnabled() enabled} configs.
  * 
  * @since 1.8
  */
@@ -82,11 +82,11 @@ public class CompositeBlobStore implements BlobStore {
 
     @VisibleForTesting
     static final class LiveStore {
-        BlobStoreConfig config;
+        BlobStoreInfo config;
 
         BlobStore liveInstance;
 
-        public LiveStore(BlobStoreConfig config, @Nullable BlobStore store) {
+        public LiveStore(BlobStoreInfo config, @Nullable BlobStore store) {
             Preconditions.checkArgument(config.isEnabled() == (store != null));
             this.config = config;
             this.liveInstance = store;
@@ -95,21 +95,21 @@ public class CompositeBlobStore implements BlobStore {
 
     /**
      * Create a composite blob store that multiplexes tile operations to configured blobstores based
-     * on {@link BlobStoreConfig#getId() blobstore id} and TileLayers
+     * on {@link BlobStoreInfo#getId() blobstore id} and TileLayers
      * {@link TileLayer#getBlobStoreId() BlobStoreId} matches.
      * 
      * @param layers used to get the layer's {@link TileLayer#getBlobStoreId() blobstore id}
      * @param defaultStorageFinder to resolve the location of the cache directory for the legacy
-     *        blob store when no {@link BlobStoreConfig#isDefault() default blob store} is given
+     *        blob store when no {@link BlobStoreInfo#isDefault() default blob store} is given
      * @param configuration the configuration as read from {@code geowebcache.xml} containing the
      *        configured {@link XMLConfiguration#getBlobStores() blob stores}
      * @throws ConfigurationException if there's a configuration error like a store confing having
      *         no id, or two store configs having the same id, or more than one store config being
      *         marked as the default one, or the default store is not
-     *         {@link BlobStoreConfig#isEnabled() enabled}
+     *         {@link BlobStoreInfo#isEnabled() enabled}
      * @throws StorageException if the live {@code BlobStore} instance can't be
-     *         {@link BlobStoreConfig#createInstance() created} of an enabled
-     *         {@link BlobStoreConfig}
+     *         {@link BlobStoreInfo#createInstance() created} of an enabled
+     *         {@link BlobStoreInfo}
      */
     public CompositeBlobStore(TileLayerDispatcher layers,
             DefaultStorageFinder defaultStorageFinder, XMLConfiguration configuration)
@@ -169,7 +169,7 @@ public class CompositeBlobStore implements BlobStore {
                     bs.liveInstance.destroy();
                 }
             } catch (Exception e) {
-                log.error("Error disposing BlobStore " + bs.config.getId(), e);
+                log.error("Error disposing BlobStore " + bs.config.getName(), e);
             }
         }
         blobStores.clear();
@@ -210,7 +210,7 @@ public class CompositeBlobStore implements BlobStore {
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
         return readFunctionUnsafe(()->{
             for (LiveStore bs : blobStores.values()) {
-                BlobStoreConfig config = bs.config;
+                BlobStoreInfo config = bs.config;
                 if (config.isEnabled()) {
                     if (bs.liveInstance.rename(oldLayerName, newLayerName)) {
                         return true;
@@ -249,7 +249,7 @@ public class CompositeBlobStore implements BlobStore {
         }
         if (!store.config.isEnabled()) {
             throw new StorageException("Attempted to use a blob store that's disabled: "
-                    + store.config.getId());
+                    + store.config.getName());
         }
 
         return store.liveInstance;
@@ -287,7 +287,7 @@ public class CompositeBlobStore implements BlobStore {
         return store;
     }
 
-    public void setBlobStores(Iterable<? extends BlobStoreConfig> configs) throws StorageException,
+    public void setBlobStores(Iterable<? extends BlobStoreInfo> configs) throws StorageException,
             ConfigurationException {
         configLock.writeLock().lock();
         try {
@@ -313,21 +313,21 @@ public class CompositeBlobStore implements BlobStore {
      * @throws ConfigurationException if there's a configuration error like a store confing having
      *         no id, or two store configs having the same id, or more than one store config being
      *         marked as the default one, or the default store is not
-     *         {@link BlobStoreConfig#isEnabled() enabled}
+     *         {@link BlobStoreInfo#isEnabled() enabled}
      * @throws StorageException if the live {@code BlobStore} instance can't be
-     *         {@link BlobStoreConfig#createInstance() created} of an enabled
-     *         {@link BlobStoreConfig}
+     *         {@link BlobStoreInfo#createInstance() created} of an enabled
+     *         {@link BlobStoreInfo}
      */
-    Map<String, LiveStore> loadBlobStores(Iterable<? extends BlobStoreConfig> configs)
+    Map<String, LiveStore> loadBlobStores(Iterable<? extends BlobStoreInfo> configs)
             throws StorageException, ConfigurationException {
 
         Map<String, LiveStore> stores = new HashMap<>();
 
-        BlobStoreConfig defaultStore = null;
+        BlobStoreInfo defaultStore = null;
 
         try {
-            for (BlobStoreConfig config : configs) {
-                final String id = config.getId();
+            for (BlobStoreInfo config : configs) {
+                final String id = config.getName();
                 final boolean enabled = config.isEnabled();
                 if (Strings.isNullOrEmpty(id)) {
                     throw new ConfigurationException("No id provided for blob store " + config);
@@ -347,27 +347,27 @@ public class CompositeBlobStore implements BlobStore {
                 }
 
                 LiveStore liveStore = new LiveStore(config, store);
-                stores.put(config.getId(), liveStore);
+                stores.put(config.getName(), liveStore);
 
                 if (config.isDefault()) {
                     if (defaultStore == null) {
                         if (!enabled) {
                             throw new ConfigurationException(
-                                    "The default blob store can't be disabled: " + config.getId());
+                                    "The default blob store can't be disabled: " + config.getName());
                         }
 
                         defaultStore = config;
                         stores.put(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID, liveStore);
                     } else {
                         throw new ConfigurationException("Duplicate default blob store: "
-                                + defaultStore.getId() + " and " + config.getId());
+                                + defaultStore.getName() + " and " + config.getName());
                     }
                 }
             }
 
             if (!stores.containsKey(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID)) {
 
-                FileBlobStoreConfig config = new FileBlobStoreConfig();
+                FileBlobStoreInfo config = new FileBlobStoreInfo();
                 config.setEnabled(true);
                 config.setDefault(true);
                 config.setBaseDirectory(defaultStorageFinder.getDefaultPath());
