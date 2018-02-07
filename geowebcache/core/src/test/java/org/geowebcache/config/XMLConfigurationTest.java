@@ -359,8 +359,8 @@ public class XMLConfigurationTest {
         store2.setFileSystemBlockSize(512);
         store2.setBaseDirectory("/tmp/test2");
 
-        config.getBlobStores().add(store1);
-        config.getBlobStores().add(store2);
+        config.addBlobStore(store1);
+        config.addBlobStore(store2);
         config.save();
 
         try {

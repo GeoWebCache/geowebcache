@@ -492,6 +492,9 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         xs.alias("blobStores", new ArrayList<BlobStoreInfo>().getClass());
         xs.alias("FileBlobStore", FileBlobStoreInfo.class);
         xs.aliasAttribute(BlobStoreInfo.class, "_default", "default");
+        // Alias added to retain XML backwards-compatibility.
+        // TODO: Would be nice to be able to use name for consistency
+        xs.aliasField("id", BlobStoreInfo.class, "name");
 
         // These two are for 1.1.x compatibility
         xs.alias("grids", new ArrayList<XMLOldGrid>().getClass());

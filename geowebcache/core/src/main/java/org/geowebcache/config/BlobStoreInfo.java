@@ -18,6 +18,7 @@ package org.geowebcache.config;
 
 import java.io.Serializable;
 
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.geowebcache.layer.TileLayer;
@@ -42,7 +43,7 @@ import org.geowebcache.storage.StorageException;
  * aliasing, attribute mappings, etc.
  * 
  * @since 1.8
- * @see FileBlobStoreConfig
+ * @see FileBlobStoreInfo
  */
 public abstract class BlobStoreInfo implements Serializable, Cloneable, Info {
 
