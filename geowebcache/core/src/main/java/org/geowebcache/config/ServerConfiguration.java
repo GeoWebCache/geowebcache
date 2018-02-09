@@ -73,4 +73,38 @@ public interface ServerConfiguration extends BaseConfiguration {
      */
     void setWmtsCiteStrictCompliant(boolean wmtsCiteStrictCompliant) throws IOException;
 
+    /**
+     * The backend timeout is the number of seconds GWC will wait for a backend server to return something
+     * before closing the connection.
+     * @return The backend timeout for this configuration.
+     */
+    Integer getBackendTimeout();
+
+    /**
+     * @param backendTimeout
+     * @throws IOException
+     */
+
+    void setBackendTimeout(Integer backendTimeout) throws IOException;
+
+    /**
+     *  Determines whether cached=false is allowed for requests going through the WMS service,
+     *  including converters such as Google Maps.
+     * @return True or False
+     */
+    Boolean getCacheBypassAllowed();
+
+    /**
+     *
+     * @param cacheBypassAllowed
+     * @throws IOException
+     */
+    void setCacheBypassAllowed(Boolean cacheBypassAllowed) throws IOException;
+
+    /**
+     * The version number should match the XSD namespace and the version of GWC
+     * @return
+     */
+    String getVersion();
+
 }

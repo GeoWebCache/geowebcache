@@ -1394,6 +1394,41 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         save();
     }
 
+    /**
+     * @see ServerConfiguration#getBackendTimeout()
+     */
+    @Override
+    public Integer getBackendTimeout() {
+        return gwcConfig.getBackendTimeout();
+    }
+
+    /**
+     * @see ServerConfiguration#setBackendTimeout(Integer)
+     */
+    @Override
+    public void setBackendTimeout(Integer backendTimeout) throws IOException {
+        gwcConfig.setBackendTimeout(backendTimeout);
+        save();
+    }
+
+    /**
+     * @see ServerConfiguration#getCacheBypassAllowed()
+     */
+    @Override
+    public Boolean getCacheBypassAllowed() {
+        return gwcConfig.getCacheBypassAllowed();
+    }
+
+    /**
+     * @see ServerConfiguration#setCacheBypassAllowed(Boolean)
+     */
+    @Override
+    public void setCacheBypassAllowed(Boolean cacheBypassAllowed) throws IOException {
+        gwcConfig.setCacheBypassAllowed(cacheBypassAllowed);
+        save();
+
+    }
+
     @Override
     public String getLocation() {
         try {

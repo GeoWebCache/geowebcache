@@ -58,6 +58,21 @@ public class ServerConfigurationTest {
         wmtsCiteCompliant = config.isWmtsCiteCompliant();
         assertTrue(wmtsCiteCompliant);
 
+        Boolean cacheBypassAllowed = config.getCacheBypassAllowed();
+        assertNull(cacheBypassAllowed);
+        config.setCacheBypassAllowed(true);
+        cacheBypassAllowed = config.getCacheBypassAllowed();
+        assertTrue(cacheBypassAllowed);
+
+        Integer backendTimeout = config.getBackendTimeout();
+        assertEquals(backendTimeout, (Integer) 120);
+        config.setBackendTimeout(60);
+        backendTimeout = config.getBackendTimeout();
+        assertEquals(backendTimeout, (Integer)60);
+
+        String version = config.getVersion();
+        assertEquals(version, "1.13.0");
+
         // Initialize to reload the configuration from the XML file and test persistence
         config.initialize(gridSetBroker);
         ServiceInformation savedInfo = config.getServiceInformation();
@@ -65,11 +80,9 @@ public class ServerConfigurationTest {
         assertFalse(config.isRuntimeStatsEnabled());
         assertTrue(config.getfullWMS());
         assertTrue((config.isWmtsCiteCompliant()));
-
-
-
-
-
+        assertTrue(config.getCacheBypassAllowed());
+        assertEquals(config.getBackendTimeout(), (Integer) 60);
+        assertEquals(config.getVersion(), "1.13.0");
     }
 
     protected ServerConfiguration getConfig() throws Exception {

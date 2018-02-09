@@ -137,15 +137,14 @@ public class GeoWebCacheConfiguration {
     }
 
     /**
-     * @return the backendTimeout
+     * @see ServerConfiguration#getBackendTimeout()
      */
     public Integer getBackendTimeout() {
         return backendTimeout;
     }
 
     /**
-     * @param backendTimeout
-     *            the backendTimeout to set
+     * @see ServerConfiguration#setBackendTimeout(Integer)
      */
     public void setBackendTimeout(Integer backendTimeout) {
         this.backendTimeout = backendTimeout;
