@@ -14,6 +14,7 @@ import org.geowebcache.config.ContextualConfigurationProvider;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.io.GeoWebCacheXStream;
+import org.geowebcache.layer.TileLayer;
 import org.geowebcache.rest.exception.RestException;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,7 +49,7 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
     @Autowired
     private XMLConfiguration xmlConfig;
 
-    public final List<Class> supportedClasses = Collections.unmodifiableList(Arrays.asList(BlobStoreInfo.class, GridSet.class));
+    public final List<Class> supportedClasses = Collections.unmodifiableList(Arrays.asList(BlobStoreInfo.class, GridSet.class, TileLayer.class));
 
     public GWCConverter() {
         super(MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML);

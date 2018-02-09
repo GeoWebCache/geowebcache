@@ -45,6 +45,7 @@ import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.rest.converter.XStreamListAliasWrapper;
 import org.geowebcache.rest.exception.RestException;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
@@ -59,6 +60,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -69,6 +71,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @Component
 @RestController
@@ -120,53 +123,29 @@ public class TileLayerController extends GWCController {
      * @return
      */
     @RequestMapping(value = "/layers", method = RequestMethod.GET)
-    public ResponseEntity<?> doGet(HttpServletRequest request) {
-        if (request.getPathInfo().contains("json")) {
-            return listLayers("json", request.getScheme() + "://" + request.getServerName()
-                    + ":" + request.getServerPort(), request.getContextPath() + request.getServletPath());
-        } else {
-            return listLayers(null, request.getScheme() + "://" + request.getServerName()
-                    + ":" + request.getServerPort(), request.getContextPath() + request.getServletPath());
-        }
+    public  XStreamListAliasWrapper layersGet(HttpServletRequest request) {
+        return new XStreamListAliasWrapper(layerDispatcher.getLayerNames(), "layer", Set.class, this.getClass());
     }
 
     /**
-     * Get List of layers as {xml, json}
-     * @param request
-     * @param response
-     * @param extension
-     * @return
-     */
-//    @RequestMapping(value = "/layers.{extension}", method = RequestMethod.GET)
-//    public ResponseEntity<?> doGet(HttpServletRequest request, HttpServletResponse response,
-//                                   @PathVariable String extension) {
-//        return listLayers(extension, request.getServerName(), request.getContextPath());
-//    }
-
-    /**
      * Get layer by name and requested output {xml, json}
-     * @param request
-     * @param response
      * @param layer
-     * @param extension
      * @return
      */
-    @RequestMapping(value = "/layers/{layer}.{extension}", method = RequestMethod.GET)
-    public ResponseEntity<?> doGet(HttpServletRequest request, HttpServletResponse response,
-                                   @PathVariable String layer,
-                                   @PathVariable String extension) {
-        return doGetInternal(layer, extension);
+    @RequestMapping(value = "/layers/{layer}", method = RequestMethod.GET)
+    public TileLayer layerGet(@PathVariable String layer) {
+        return findTileLayer(layer, layerDispatcher);
     }
 
     /*
     DO POST
      */
-    @RequestMapping(value = "/layers/{layer}.{extension}", method = RequestMethod.POST)
-    public ResponseEntity<?> doPost(HttpServletRequest req, HttpServletResponse resp,
-                                    @PathVariable String layer,
-                                    @PathVariable String extension) throws GeoWebCacheException,
+    @Deprecated
+    @RequestMapping(value = "/layers/{layerName}", method = RequestMethod.POST)
+    public ResponseEntity<?> layerPost(@RequestBody TileLayer tl,
+                                    @PathVariable String layerName) throws GeoWebCacheException,
             RestException, IOException {
-        TileLayer tl = deserializeAndCheckLayer(req, layer, extension, false);
+        tl = checkLayer(layerName, tl);
 
         try {
             layerDispatcher.modify(tl);
@@ -176,18 +155,19 @@ public class TileLayerController extends GWCController {
                     + "Maybe it was loaded from another source, or you're trying to add a new "
                     + "layer and need to do an HTTP PUT ?", HttpStatus.BAD_REQUEST);
         }
-        return null;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Warning", "299: Deprecated API. Use PUT instead.");
+        return new ResponseEntity<>(headers, HttpStatus.OK);
     }
 
     /*
     DO PUT
      */
-    @RequestMapping(value = "/layers/{layer}.{extension}", method = RequestMethod.PUT)
-    public ResponseEntity<?> doPut(HttpServletRequest req, HttpServletResponse resp,
-                                   @PathVariable String layer,
-                                   @PathVariable String extension) throws GeoWebCacheException,
+    @RequestMapping(value = "/layers/{layerName}", method = RequestMethod.PUT)
+    public ResponseEntity<?> layerPut(@RequestBody TileLayer tl,
+                                   @PathVariable String layerName) throws GeoWebCacheException,
             RestException, IOException {
-        TileLayer tl = deserializeAndCheckLayer(req, layer, extension, true);
+        tl = checkLayer(layerName, tl);
 
         TileLayer testtl = null;
         try {
@@ -199,8 +179,7 @@ public class TileLayerController extends GWCController {
         if (testtl == null) {
             layerDispatcher.addLayer(tl);
         } else {
-            throw new RestException("Layer with name " + tl.getName() + " already exists, "
-                    + "use POST if you want to replace it.", HttpStatus.BAD_REQUEST);
+            layerDispatcher.modify(tl);
         }
         return new ResponseEntity<Object>("layer saved", HttpStatus.OK);
     }
@@ -246,93 +225,7 @@ public class TileLayerController extends GWCController {
         return new ResponseEntity<Object>(layerName + " deleted", HttpStatus.OK);
     }
 
-    protected TileLayer deserializeAndCheckLayer(HttpServletRequest req, String layer, String extension, boolean isPut)
-            throws RestException, IOException {
-
-        // TODO UTF-8 may not always be right here
-        String layerName = layer;
-        String formatExtension = extension;
-        InputStream is = req.getInputStream();
-
-        // If appropriate, check whether this layer exists
-        if (!isPut) {
-            findTileLayer(layerName, layerDispatcher);
-        }
-
-        return deserializeAndCheckLayerInternal(layerName, formatExtension, is);
-    }
-
-    /**
-     * We separate out the internal to make unit testing easier
-     *
-     * @param layerName
-     * @param formatExtension
-     * @return
-     * @throws RestException
-     */
-    public ResponseEntity<? extends Object> doGetInternal(String layerName, String formatExtension)
-            throws RestException {
-        TileLayer tl = findTileLayer(layerName, layerDispatcher);
-
-        if (formatExtension.equalsIgnoreCase("xml")) {
-            return getXMLRepresentation(tl);
-        } else if (formatExtension.equalsIgnoreCase("json")) {
-            return getJsonRepresentation(tl);
-        } else {
-            throw new RestException("Unknown or missing format extension : " + formatExtension,
-                    HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    /**
-     * We separate out the internal to make unit testing easier
-     *
-     * @param layerName
-     * @param formatExtension
-     * @param is
-     * @return
-     * @throws RestException
-     * @throws IOException
-     */
-    protected TileLayer deserializeAndCheckLayerInternal(String layerName, String formatExtension,
-                                                         InputStream is) throws RestException, IOException {
-
-        XStream xs = xmlConfig.getConfiguredXStreamWithContext(new GeoWebCacheXStream(new DomDriver()), Context.REST);
-
-        TileLayer newLayer;
-
-        try {
-            if (formatExtension.equalsIgnoreCase("xml")) {
-                newLayer = (TileLayer) xs.fromXML(is);
-            } else if (formatExtension.equalsIgnoreCase("json")) {
-                HierarchicalStreamDriver driver = new JettisonMappedXmlDriver();
-                HierarchicalStreamReader hsr = driver.createReader(is);
-                // See http://jira.codehaus.org/browse/JETTISON-48
-                StringWriter writer = new StringWriter();
-                new HierarchicalStreamCopier().copy(hsr, new PrettyPrintWriter(writer));
-                writer.close();
-                newLayer = (TileLayer) xs.fromXML(writer.toString());
-            } else {
-                throw new RestException("Unknown or missing format extension: "
-                        + formatExtension, HttpStatus.BAD_REQUEST);
-            }
-        } catch (ConversionException xstreamExceptionWrapper) {
-            Throwable cause = xstreamExceptionWrapper.getCause();
-            if (cause instanceof Error) {
-                throw (Error) cause;
-            }
-            if (cause instanceof RuntimeException) {
-                throw (RuntimeException) cause;
-            }
-            if (cause!=null){
-                throw new RestException(cause.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR,
-                        (Exception) cause);
-            } else {
-                throw new RestException(xstreamExceptionWrapper.getMessage(),
-                        HttpStatus.INTERNAL_SERVER_ERROR, xstreamExceptionWrapper);
-            }
-        }
-
+    protected TileLayer checkLayer(String layerName, TileLayer newLayer) throws RestException, IOException {
         if (!newLayer.getName().equals(layerName)) {
             throw new RestException("There is a mismatch between the name of the "
                     + " layer in the submission and the URL you specified.",
@@ -355,130 +248,6 @@ public class TileLayerController extends GWCController {
             }
         }
         return newLayer;
-    }
-
-    /**
-     * @param extension
-     * @param rootPath
-     * @param contextPath
-     * @return
-     */
-    public ResponseEntity<?> listLayers(String extension, final String rootPath, final String contextPath) {
-
-        XStream xStream = new XStream();
-        if (null == extension) {
-            extension = "xml";
-        }
-        List<String> layerNames = new ArrayList<String>(layerDispatcher.getLayerNames());
-        Collections.sort(layerNames);
-
-        HttpHeaders headers = new HttpHeaders();
-        if (extension.equalsIgnoreCase("xml")) {
-            headers.setContentType(MediaType.APPLICATION_XML);
-        } else {
-            headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
-        }
-
-        if (extension.equalsIgnoreCase("xml")) {
-
-            xStream.alias("layers", List.class);
-            xStream.alias("name", String.class);
-
-            xmlConfig.getConfiguredXStreamWithContext(xStream, Context.REST);
-
-            xStream.registerConverter(new Converter() {
-
-                /**
-                 * @see com.thoughtworks.xstream.converters.ConverterMatcher#canConvert(java.lang.Class)
-                 */
-                public boolean canConvert(@SuppressWarnings("rawtypes") Class type) {
-                    return List.class.isAssignableFrom(type);
-                }
-
-                /**
-                 * @see com.thoughtworks.xstream.converters.Converter#marshal(java.lang.Object,
-                 *      com.thoughtworks.xstream.io.HierarchicalStreamWriter,
-                 *      com.thoughtworks.xstream.converters.MarshallingContext)
-                 */
-                public void marshal(Object source, HierarchicalStreamWriter writer,
-                                    MarshallingContext context) {
-
-                    @SuppressWarnings("unchecked")
-                    List<String> layers = (List<String>) source;
-
-                    for (String name : layers) {
-
-                        writer.startNode("layer");
-
-                        writer.startNode("name");
-                        writer.setValue(name);
-                        writer.endNode(); // name
-
-                        writer.startNode("atom:link");
-                        writer.addAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
-                        writer.addAttribute("rel", "alternate");
-                        String href = urlMangler.buildURL(rootPath, contextPath, "/layers/"
-                                + ServletUtils.URLEncode(name) + ".xml");
-                        writer.addAttribute("href", href);
-                        writer.addAttribute("type", MediaType.TEXT_XML.toString());
-
-                        writer.endNode();
-
-                        writer.endNode();// layer
-                    }
-                }
-
-                /**
-                 * @see com.thoughtworks.xstream.converters.Converter#unmarshal(com.thoughtworks.xstream.io.HierarchicalStreamReader,
-                 *      com.thoughtworks.xstream.converters.UnmarshallingContext)
-                 */
-                public Object unmarshal(HierarchicalStreamReader reader,
-                                        UnmarshallingContext context) {
-                    throw new UnsupportedOperationException();
-                }
-            });
-            return new ResponseEntity<Object>(xStream.toXML(layerNames), headers, HttpStatus.OK);
-        } else if (extension.equalsIgnoreCase("html")) {
-            throw new RestException("Unknown or missing format extension : " + extension,
-                    HttpStatus.BAD_REQUEST);
-        } else if (!extension.equalsIgnoreCase("json")) {
-            throw new RestException("Unknown or missing format extension : " + extension,
-                    HttpStatus.BAD_REQUEST);
-        }
-
-        return new ResponseEntity<Object>(layerNames, headers, HttpStatus.OK);
-    }
-
-    /**
-     * Returns a XMLRepresentation of the layer
-     *
-     * @param layer
-     * @return
-     */
-    public ResponseEntity<?> getXMLRepresentation(TileLayer layer) {
-        XStream xs = xmlConfig.getConfiguredXStreamWithContext(new GeoWebCacheXStream(), Context.REST);
-        String xmlText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + xs.toXML(layer);
-
-        return new ResponseEntity(xmlText, HttpStatus.OK);
-    }
-
-    /**
-     * Returns a JsonRepresentation of the layer
-     *
-     * @param layer
-     * @return
-     */
-    public ResponseEntity<?> getJsonRepresentation(TileLayer layer) {
-        JSONObject rep = null;
-        try {
-            XStream xs = xmlConfig.getConfiguredXStreamWithContext(new GeoWebCacheXStream(
-                    new JsonHierarchicalStreamDriver()), Context.REST);
-            JSONObject obj = new JSONObject(xs.toXML(layer));
-            rep = obj;
-        } catch (JSONException jse) {
-            return new ResponseEntity<Object>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return new ResponseEntity(rep, HttpStatus.OK);
     }
 
     public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {

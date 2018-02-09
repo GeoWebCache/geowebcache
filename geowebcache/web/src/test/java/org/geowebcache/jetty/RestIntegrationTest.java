@@ -126,13 +126,13 @@ public class RestIntegrationTest {
         
                 assertThat(doc, 
                     hasXPath("/layers/layer[name/text()='img states']/atom:link/@href", 
-                    equalTo(jetty.getUri().resolve("/geowebcache/layers/img+states.xml").toString())));
+                    equalTo(jetty.getUri().resolve("/geowebcache/rest/layers/img%20states.xml").toString())));
                 assertThat(doc, 
                     hasXPath("/layers/layer[name/text()='topp:states']/atom:link/@href", 
-                    equalTo(jetty.getUri().resolve("/geowebcache/layers/topp%3Astates.xml").toString())));
+                    equalTo(jetty.getUri().resolve("/geowebcache/rest/layers/topp:states.xml").toString())));
                 assertThat(doc, 
                     hasXPath("/layers/layer[name/text()='raster test layer']/atom:link/@href", 
-                    equalTo(jetty.getUri().resolve("/geowebcache/layers/raster+test+layer.xml").toString())));
+                    equalTo(jetty.getUri().resolve("/geowebcache/rest/layers/raster%20test%20layer.xml").toString())));
                 
                 assertThat(doc, 
                     hasXPath("count(/layers/layer)", 
@@ -163,7 +163,7 @@ public class RestIntegrationTest {
                     doc->{
                         assertThat(doc, 
                             hasXPath("/layers/layer[name/text()='"+layerName+"']/atom:link/@href",
-                            equalTo(jetty.getUri().resolve("/geowebcache/layers/"+layerName+".xml").toString())));
+                            equalTo(jetty.getUri().resolve("/geowebcache/rest/layers/"+layerName+".xml").toString())));
                     });
             doGetXML(
                     "rest/layers/"+layerName+".xml",

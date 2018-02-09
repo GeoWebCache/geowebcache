@@ -101,42 +101,22 @@ public class TileLayerRestTest {
     }
 
     @Test
-    public void testGetXml() {
-        ResponseEntity rep = tlc.doGetInternal("topp:states", "xml");
+    public void testGet() throws Exception {
+        TileLayer tl = tlc.layerGet("topp:states");
+        assertEquals("topp:states", tl.getName());
 
-        String str = rep.getBody().toString();
-
-        assertTrue(str.indexOf("<name>topp:states</name>") > 0);
-        // TODO This needs to get back in
-        // assertTrue(str.indexOf("<double>49.371735</double>") > 0);
-        // assertTrue(str.indexOf("<wmsStyles>population</wmsStyles>") > 0);
-        assertTrue(str.indexOf("</wmsLayer>") > 0);
-        assertTrue(str.indexOf("states2") == -1);
+        this.mockMvc.perform(get("/rest/layers/topp:states.xml")
+                .contentType(MediaType.APPLICATION_XML)
+                .contextPath(""))
+                .andExpect(status().is2xxSuccessful());
     }
 
     @Test
-    public void testGetJson() {
-        ResponseEntity rep = tlc.doGetInternal("topp:states2", "json");
-
-        String str = rep.getBody().toString();
-
-        assertTrue(str.indexOf(",\"name\":\"topp:states2\",") > 0);
-        // TODO this needs to go back in
-        // assertTrue(str.indexOf("959189.3312465074]},") > 0);
-        assertTrue(str.indexOf("[\"image/png\",\"image/jpeg\"]") > 0);
-        assertTrue(str.indexOf("}}") > 0);
-    }
-
-    @Test
-    public void testGetInvalid() {
-        ResponseEntity rep = null;
-        try {
-            rep = tlc.doGetInternal("topp:states", "jpeg");
-        } catch (RestException re) {
-            // Format should be invalid
-            assertTrue(re.getStatus().is4xxClientError());
-        }
-        assertTrue(rep == null);
+    public void testGetInvalid() throws Exception {
+        this.mockMvc.perform(get("/rest/layers/topp:states.jpeg")
+                .contentType(MediaType.APPLICATION_XML)
+                .contextPath(""))
+                .andExpect(status().is4xxClientError());
     }
 
     @Test
