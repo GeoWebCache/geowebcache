@@ -19,6 +19,11 @@ public class DefaultGridsetsConfigurationGridsetConformanceTest extends GridSetC
     protected GridSetConfiguration getConfig() throws Exception {
         return new DefaultGridsets(true, true);
     }
+    @Override
+    protected GridSetConfiguration getSecondConfig() throws Exception {
+        Assume.assumeFalse("This config does not have persistence.", true);
+        return null;
+    }
 
     @Override
     protected Matcher<GridSet> infoEquals(GridSet expected) {

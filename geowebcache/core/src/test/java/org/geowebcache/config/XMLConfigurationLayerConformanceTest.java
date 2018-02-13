@@ -27,9 +27,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest {
 
-    protected ConfigurationResourceProvider configProvider;
-    
     public @Rule MockWepAppContextRule extensions = new MockWepAppContextRule();
+    public @Rule MockWepAppContextRule extensions2 = new MockWepAppContextRule(false);
 
     protected boolean failNextRead = false;
     protected boolean failNextWrite = false;
@@ -96,14 +95,21 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
     protected File configDir;
     protected File configFile;
     
-    @Override
     protected TileLayerConfiguration getConfig() throws Exception {
         makeConfigFile();
+        return getConfig(extensions);
+    }
+    
+    protected TileLayerConfiguration getSecondConfig() throws Exception {
+        return getConfig(extensions2);
+    }
+    
+    protected TileLayerConfiguration getConfig(MockWepAppContextRule extensions) throws Exception {
         
         GridSetBroker gridSetBroker = new GridSetBroker(true, true);
         gridSetBroker.setApplicationContext(extensions.getMockContext());
         
-        configProvider = new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
+        XMLFileResourceProvider configProvider = new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
                 (WebApplicationContext)null, configDir.getAbsolutePath(), null) {
 
                     @Override

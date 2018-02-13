@@ -28,9 +28,8 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
     protected File configDir;
     protected File configFile;
     
-    private ConfigurationResourceProvider configProvider;
-    
     public @Rule MockWepAppContextRule extensions = new MockWepAppContextRule();
+    public @Rule MockWepAppContextRule extensions2 = new MockWepAppContextRule(false);
 
     private boolean failNextRead = false;
     private boolean failNextWrite = false;
@@ -38,11 +37,21 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
     @Override
     protected GridSetConfiguration getConfig() throws Exception {
         makeConfigFile();
+        return getConfig(extensions);
+    }
+    
+    @Override
+    protected GridSetConfiguration getSecondConfig() throws Exception {
+        return getConfig(extensions2);
+    }
+        
+    protected GridSetConfiguration getConfig(MockWepAppContextRule extensions) throws Exception {
+        makeConfigFile();
         
         GridSetBroker gridSetBroker = new GridSetBroker(true, true);
         gridSetBroker.setApplicationContext(extensions.getMockContext());
         
-        configProvider = new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
+        ConfigurationResourceProvider configProvider = new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
                 (WebApplicationContext)null, configDir.getAbsolutePath(), null) {
 
                     @Override
@@ -64,7 +73,7 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
                     }
             
         };
-        config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
+        XMLConfiguration config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
         extensions.addBean("XMLConfiguration", config, Configuration.class, GridSetConfiguration.class, TileLayerConfiguration.class);
         ((XMLConfiguration) config).setGridSetBroker(gridSetBroker);
         config.afterPropertiesSet();

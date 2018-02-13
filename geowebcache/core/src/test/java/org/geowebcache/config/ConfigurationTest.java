@@ -51,7 +51,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         I goodGridSet = getGoodInfo("test", 1);
         addInfo(config, goodGridSet);
 
-        C config2 = getConfig();
+        C config2 = getSecondConfig();
         I retrieved = getInfo(config2, "test").get();
         assertThat(retrieved, infoEquals(goodGridSet));
         assertNameSetMatchesCollection(config2);
@@ -115,7 +115,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         
         removeInfo(config, "test");
 
-        C config2 = getConfig();
+        C config2 = getSecondConfig();
         Optional<I> retrieved = getInfo(config2, "test");
         assertThat(retrieved, notPresent());
         assertNameSetMatchesCollection(config2);
@@ -176,7 +176,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         I goodGridSet = getGoodInfo("test", 2);
         modifyInfo(config, goodGridSet);
 
-        C config2 = getConfig();
+        C config2 = getSecondConfig();
         Optional<I> retrieved = getInfo(config2, "test");
         assertThat(retrieved, isPresent(infoEquals(goodGridSet)));
         assertNameSetMatchesCollection(config2);
@@ -291,7 +291,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
             assertThat(retrieved, notPresent());
             
             // Persistence should also be unchanged
-            C config2 = getConfig();
+            C config2 = getSecondConfig();
             Optional<I> retrieved2 = getInfo(config2, "test");
             assertThat(retrieved2, notPresent());
             assertNameSetMatchesCollection(config2);
@@ -336,13 +336,18 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     protected abstract String getExistingInfo();
 
     /**
-     * Create a GridSetConfiguration to test.  Subsequent calls should create new configurations using the
-     * same persistence or throw AssumptionViolatedException if this is a non-persistent 
-     * configuration.
+     * Create a GridSetConfiguration to test.
      * @return
      * @throws Exception 
      */
     protected abstract C getConfig() throws Exception;
+    /**
+     * Create a second config from the same persistence source or throw AssumptionViolatedException 
+     * if this is a non-persistent configuration.
+     * @return
+     * @throws Exception 
+     */
+    protected abstract C getSecondConfig() throws Exception;
     
     /**
      * Check that two GridSets created by calls to getGoodGridSet, which may have been persisted and 

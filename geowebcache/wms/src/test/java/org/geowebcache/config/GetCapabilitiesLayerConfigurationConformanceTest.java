@@ -112,7 +112,13 @@ public class GetCapabilitiesLayerConfigurationConformanceTest extends LayerConfi
         
         return config;
     }
-
+    
+    @Override
+    protected TileLayerConfiguration getSecondConfig() throws Exception {
+        Assume.assumeTrue("This configuration does not have persistance", false);
+        return null;
+    }
+    
     @Override
     protected Matcher<TileLayer> infoEquals(TileLayer expected) {
         return Matchers.allOf(

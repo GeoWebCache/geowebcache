@@ -102,6 +102,12 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
         
         return config;
     }
+    
+    @Override
+    protected GridSetConfiguration getSecondConfig() throws Exception {
+        Assume.assumeTrue("This configuration does not have persistance", false);
+        return null;
+    }
 
     
     @Test

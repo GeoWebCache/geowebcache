@@ -32,10 +32,6 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
     
     @Override
     public void setUpTestUnit() throws Exception {
-        extensions.addBean("ArcGISLayerConfigProvider", 
-                new ArcGISLayerXMLConfigurationProvider(), XMLConfigurationProvider.class);
-        extensions.addBean("ArcGISLayerGridSetConfiguration", 
-                new ArcGISCacheGridsetConfiguration(), GridSetConfiguration.class, ArcGISCacheGridsetConfiguration.class);
         super.setUpTestUnit();
     }
 
@@ -146,7 +142,10 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
 
     @Override
     protected TileLayerConfiguration getConfig() throws Exception {
-        extensions.addBean("", new ArcGISLayerXMLConfigurationProvider(), XMLConfigurationProvider.class);
+        extensions.addBean("ArcGISLayerConfigProvider", 
+                new ArcGISLayerXMLConfigurationProvider(), XMLConfigurationProvider.class);
+        extensions.addBean("ArcGISLayerGridSetConfiguration", 
+                new ArcGISCacheGridsetConfiguration(), GridSetConfiguration.class, ArcGISCacheGridsetConfiguration.class);
         
         if(configFile==null) {
             configDir = temp.getRoot();
@@ -159,7 +158,7 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
         
         GridSetBroker gridSetBroker = new GridSetBroker(true, true);
         gridSetBroker.setApplicationContext(extensions.getMockContext());
-        configProvider = new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
+        XMLFileResourceProvider configProvider = new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
                 extensions.getMockContext(), configDir.getAbsolutePath(), null) {
         
                     @Override
