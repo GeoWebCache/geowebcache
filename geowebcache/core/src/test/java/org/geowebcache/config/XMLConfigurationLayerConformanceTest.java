@@ -101,7 +101,8 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
         makeConfigFile();
         
         GridSetBroker gridSetBroker = new GridSetBroker(true, true);
-        gridSetBroker.initialize();
+        gridSetBroker.setApplicationContext(extensions.getMockContext());
+        
         configProvider = new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
                 (WebApplicationContext)null, configDir.getAbsolutePath(), null) {
 
@@ -126,8 +127,8 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
         };
         TileLayerConfiguration config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
         config.setGridSetBroker(gridSetBroker);
-        config.reinitialize();
-        
+        config.afterPropertiesSet();
+        gridSetBroker.afterPropertiesSet();
         return config;
     }
 

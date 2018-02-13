@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.Properties;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.junit.Assume;
 
 public class OracleQuotaStoreTest extends JDBCQuotaStoreTest {
 
@@ -15,15 +16,29 @@ public class OracleQuotaStoreTest extends JDBCQuotaStoreTest {
     }
 
     @Override
-    boolean checkAvailable() {
-        try {
-            Class.forName("oracle.jdbc.driver.OracleDriver");
-        } catch (Exception e) {
-            System.out.println("Skipping " + OracleQuotaStoreTest.class
-                    + " tests, Oracle driver not available");
-            return false;
-        }
-        return super.checkAvailable();
+    protected JDBCFixtureRule makeFixtureRule() {
+        return new JDBCFixtureRule(getFixtureId()) {
+            @Override
+            void checkAvailable() {
+                try {
+                    Class.forName("oracle.jdbc.driver.OracleDriver");
+                } catch (Exception e) {
+                    Assume.assumeFalse("Oracle driver not available", true);
+                }
+                super.checkAvailable();
+            }
+            
+            @Override
+            protected Properties createExampleFixture() {
+                Properties p = new Properties();
+                p.put("driver", "oracle.jdbc.driver.OracleDriver");
+                p.put("url", "jdbc:oracle:thin:@localhost:1521:xe");
+                p.put("username", "geoserver");
+                p.put("password", "postgis");
+                
+                return p;
+            }
+        };
     }
 
     protected BasicDataSource getDataSource() throws IOException, SQLException {
@@ -60,15 +75,6 @@ public class OracleQuotaStoreTest extends JDBCQuotaStoreTest {
         return "oracle";
     }
 
-    @Override
-    protected Properties createExampleFixture() {
-        Properties p = new Properties();
-        p.put("driver", "oracle.jdbc.driver.OracleDriver");
-        p.put("url", "jdbc:oracle:thin:@localhost:1521:xe");
-        p.put("username", "geoserver");
-        p.put("password", "postgis");
 
-        return p;
-    }
 
 }

@@ -158,6 +158,7 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
         }
         
         GridSetBroker gridSetBroker = new GridSetBroker(true, true);
+        gridSetBroker.setApplicationContext(extensions.getMockContext());
         configProvider = new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
                 extensions.getMockContext(), configDir.getAbsolutePath(), null) {
         
@@ -182,7 +183,8 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
         };
         TileLayerConfiguration config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
         config.setGridSetBroker(gridSetBroker);
-        config.reinitialize();
+        gridSetBroker.afterPropertiesSet();
+        config.afterPropertiesSet();
         
         return config;
     }

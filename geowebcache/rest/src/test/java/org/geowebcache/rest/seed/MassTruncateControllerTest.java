@@ -95,11 +95,11 @@ public class MassTruncateControllerTest {
 
     private XMLConfiguration loadXMLConfig() {
 
-        InputStream is = XMLConfiguration.class
-                .getResourceAsStream(XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE);
         XMLConfiguration xmlConfig = null;
         try {
-            xmlConfig = new XMLConfiguration(is);
+            xmlConfig = new XMLConfiguration(()->XMLConfiguration.class
+                    .getResourceAsStream(
+                            XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE));
         } catch (Exception e) {
             // Do nothing
         }

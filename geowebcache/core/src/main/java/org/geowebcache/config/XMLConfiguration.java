@@ -38,6 +38,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -128,13 +129,6 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     private GridSetBroker gridSetBroker;
 
     /**
-     * A flag for whether the config needs to be loaded at {@link #initialize(GridSetBroker)}. If
-     * the constructor loads the configuration, will set it to false, then each call to initialize()
-     * will reset this flag to true
-     */
-    private boolean reloadConfigOnInit = true;
-
-    /**
      * Base Constructor with custom ConfiguratioNResourceProvider
      *  
      * @param appCtx use to lookup {@link XMLConfigurationProvider} extensions, may be {@code null}
@@ -215,67 +209,13 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         log.warn("This constructor is deprecated");
     }
     
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        if (resourceProvider.hasInput()) {
-            this.setGwcConfig(loadConfiguration());
-        }
-        this.reloadConfigOnInit = false;
-    }
     
     /**
-     * Constructor with inputstream (only for testing)
+     * Constructor with inputstream supplier (only for testing)
      * @throws ConfigurationException 
      */
-    public XMLConfiguration(final InputStream is) throws ConfigurationException {
-        this (null, new ConfigurationResourceProvider() {
-                        
-            @Override
-            public InputStream in() {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public OutputStream out() throws IOException {
-                throw new UnsupportedOperationException();
-            }       
-            
-            @Override
-            public void backup() throws IOException {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public void setTemplate(String template) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public String getLocation() throws IOException {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public String getId() {
-                return "mockConfig";
-            }
-
-            @Override
-            public boolean hasInput() {
-                return false;
-            }
-
-            @Override
-            public boolean hasOutput() {
-                return false;
-            }
-            
-        });
-        try {
-            setGwcConfig(loadConfiguration(is));
-        } catch (IOException e) {
-            throw new ConfigurationException(e.getMessage(), e);
-        }
+    public XMLConfiguration(final Supplier<InputStream> is) throws ConfigurationException {
+        this (null, new MockConfigurationResourceProvider(is));
     }
     
     /**
@@ -623,10 +563,11 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
      */
     public synchronized void modifyLayer(TileLayer tl) throws NoSuchElementException {
         TileLayer previous = findLayer(tl.getName());
-        if (!(tl instanceof WMSLayer)) {
+        if (!canSaveIfNotTransient(tl)) {
             throw new IllegalArgumentException("Can't add layers of type "
                     + tl.getClass().getName());
         }
+        
         getGwcConfig().getLayers().remove(previous);
         initialize(tl);
         getGwcConfig().getLayers().add(tl);
@@ -913,13 +854,13 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
             throw new IllegalStateException("GridSetBroker has not been set");
         }
 
-        if (this.reloadConfigOnInit && resourceProvider.hasInput()) {
+        if (resourceProvider.hasInput()) {
             this.setGwcConfig(loadConfiguration());
         }
 
         log.info("Initializing GridSets from " + getIdentifier());
 
-        loadGridSets();
+        getGridSetsInternal();
 
         log.info("Initializing layers from " + getIdentifier());
 
@@ -932,8 +873,6 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         }
 
         updateLayers();
-        
-        this.reloadConfigOnInit = true;
     }
 
     private void updateLayers() {
@@ -1086,6 +1025,17 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     }
 
     private GeoWebCacheConfiguration getGwcConfig() {
+        try {
+            if(gwcConfig==null) {
+                synchronized(this) {
+                    if(gwcConfig==null) {
+                        gwcConfig=this.loadConfiguration();
+                    }
+                }
+            }
+        } catch (ConfigurationException e) {
+            throw new IllegalStateException("Configuration "+getIdentifier()+" is not fully initialized and lazy initialization failed", e);
+        }
         return gwcConfig;
     }
 
@@ -1133,7 +1083,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         
         validateGridSet(gridSet);
         
-        GridSet old = gridSets.get(gridSet.getName());
+        GridSet old = getGridSetsInternal().get(gridSet.getName());
         if(old!=null) {
             throw new IllegalArgumentException("GridSet " + gridSet.getName() + " already exists");
         }
@@ -1145,7 +1095,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         } catch (IOException e) {
             throw new ConfigurationPersistenceException(e);
         }
-        this.gridSets.put(gridSet.getName(), gridSet);
+        this.getGridSetsInternal().put(gridSet.getName(), gridSet);
     }
 
     private void validateGridSet(GridSet gridSet) {
@@ -1164,7 +1114,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
 
     @Override
     public synchronized void removeGridSet(String gridSetName) {
-        GridSet gsRemoved = gridSets.remove(gridSetName);
+        GridSet gsRemoved = getGridSetsInternal().remove(gridSetName);
         XMLGridSet xgsRemoved = null;
         for(Iterator<XMLGridSet> it = getGwcConfig().getGridSets().iterator(); it.hasNext();) {
             XMLGridSet xgs = it.next();
@@ -1184,7 +1134,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         try {
             save();
         } catch (IOException ex) {
-            gridSets.put(gridSetName,  gsRemoved);
+            getGridSetsInternal().put(gridSetName,  gsRemoved);
             getGwcConfig().getGridSets().add(xgsRemoved);
             throw new ConfigurationPersistenceException("Could not persist removal of Gridset "+gridSetName,ex);
         }
@@ -1192,13 +1142,25 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
 
     @Override
     public Optional<GridSet> getGridSet(String name) {
-        return Optional.ofNullable(gridSets.get(name))
+        return Optional.ofNullable(getGridSetsInternal().get(name))
                 .map(GridSet::new);
+    }
+
+    protected Map<String, GridSet> getGridSetsInternal() {
+        // Lazy init because we might have 
+        if(gridSets==null) {
+            synchronized(this)  {
+                if(gridSets==null) { 
+                    loadGridSets();
+                }
+            }
+        }
+        return gridSets;
     }
 
     @Override
     public Collection<GridSet> getGridSets() {
-        return gridSets.values().stream()
+        return getGridSetsInternal().values().stream()
                 .map(GridSet::new)
                 .collect(Collectors.toList());
     }
@@ -1208,7 +1170,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
             throws NoSuchElementException, IllegalArgumentException, UnsupportedOperationException {
         validateGridSet(gridSet);
         
-        GridSet old = gridSets.get(gridSet.getName());
+        GridSet old = getGridSetsInternal().get(gridSet.getName());
         if(old==null) {
             throw new NoSuchElementException("GridSet " + gridSet.getName() + " already exists");
         }
@@ -1220,7 +1182,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         } catch (IOException e) {
             throw new ConfigurationPersistenceException(e);
         }
-        this.gridSets.put(gridSet.getName(), gridSet);
+        this.getGridSetsInternal().put(gridSet.getName(), gridSet);
     }
 
     @Override

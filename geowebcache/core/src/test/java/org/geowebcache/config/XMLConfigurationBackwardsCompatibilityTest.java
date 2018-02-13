@@ -192,19 +192,12 @@ public class XMLConfigurationBackwardsCompatibilityTest {
 
     private XMLConfiguration loadConfig(String fileName) throws Exception {
 
-        InputStream is;
-
-        is = XMLConfiguration.class.getResourceAsStream(fileName);
-        try {
+        try (InputStream is = XMLConfiguration.class.getResourceAsStream(fileName);) {
             Node root = XMLConfiguration.loadDocument(is);
             print(root.getOwnerDocument());
-        } finally {
-            is.close();
         }
 
-        is = XMLConfiguration.class.getResourceAsStream(fileName);
-
-        XMLConfiguration xmlConfig = new XMLConfiguration(is);
+        XMLConfiguration xmlConfig = new XMLConfiguration(()->XMLConfiguration.class.getResourceAsStream(fileName));
 
         GridSetBroker gsb = new GridSetBroker(Arrays.asList(new DefaultGridsets(true, true), xmlConfig));
         xmlConfig.setGridSetBroker(gsb);

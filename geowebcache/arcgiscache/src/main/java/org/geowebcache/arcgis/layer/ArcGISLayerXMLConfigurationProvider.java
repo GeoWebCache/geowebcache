@@ -16,6 +16,8 @@ public class ArcGISLayerXMLConfigurationProvider implements XMLConfigurationProv
 
     public XStream getConfiguredXStream(final XStream xs) {
         xs.alias("arcgisLayer", ArcGISCacheLayer.class);
+        xs.alias("compactCache", org.geowebcache.arcgis.compact.ArcGISCompactCache.class);
+        
         return xs;
     }
 

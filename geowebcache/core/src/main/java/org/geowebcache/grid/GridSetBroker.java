@@ -36,10 +36,11 @@ import org.geowebcache.config.GridSetConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-public class GridSetBroker implements ConfigurationAggregator<GridSetConfiguration>, ApplicationContextAware {
+public class GridSetBroker implements ConfigurationAggregator<GridSetConfiguration>, ApplicationContextAware, InitializingBean {
     private static Log log = LogFactory.getLog(GridSetBroker.class);
     
     private List<GridSetConfiguration> configurations;
@@ -64,7 +65,7 @@ public class GridSetBroker implements ConfigurationAggregator<GridSetConfigurati
             .get();
     }
 
-    public void initialize() {
+    public void afterPropertiesSet() {
         if(Objects.nonNull(applicationContext)) {
             configurations = GeoWebCacheExtensions.configurations(GridSetConfiguration.class, applicationContext);
         } else {

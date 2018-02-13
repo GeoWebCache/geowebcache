@@ -40,7 +40,8 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
         makeConfigFile();
         
         GridSetBroker gridSetBroker = new GridSetBroker(true, true);
-        gridSetBroker.initialize();
+        gridSetBroker.setApplicationContext(extensions.getMockContext());
+        
         configProvider = new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
                 (WebApplicationContext)null, configDir.getAbsolutePath(), null) {
 
@@ -66,7 +67,8 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
         config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
         extensions.addBean("XMLConfiguration", config, Configuration.class, GridSetConfiguration.class, TileLayerConfiguration.class);
         ((XMLConfiguration) config).setGridSetBroker(gridSetBroker);
-        config.reinitialize();
+        config.afterPropertiesSet();
+        gridSetBroker.afterPropertiesSet();
         return config;
     }
     

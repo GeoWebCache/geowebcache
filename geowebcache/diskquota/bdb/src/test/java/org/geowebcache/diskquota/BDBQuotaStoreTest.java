@@ -125,11 +125,10 @@ public class BDBQuotaStoreTest {
     }
 
     private XMLConfiguration loadXMLConfig() {
-        InputStream is = XMLConfiguration.class
-                .getResourceAsStream(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
         XMLConfiguration xmlConfig = null;
         try {
-            xmlConfig = new XMLConfiguration(is);
+            xmlConfig = new XMLConfiguration(()->XMLConfiguration.class
+                .getResourceAsStream(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME));
         } catch (Exception e) {
             // Do nothing
         }
