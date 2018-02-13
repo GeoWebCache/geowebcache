@@ -300,7 +300,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     /**
      * @see ServerConfiguration#isRuntimeStatsEnabled()
      */
-    public boolean isRuntimeStatsEnabled() {
+    public Boolean isRuntimeStatsEnabled() {
         if (getGwcConfig() == null || getGwcConfig().getRuntimeStats() == null) {
             return true;
         } else {
@@ -309,10 +309,10 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     }
 
     /**
-     * @see ServerConfiguration#setIsRuntimeStatsEnabled(boolean)
+     * @see ServerConfiguration#setRuntimeStatsEnabled(Boolean)
      * @param isEnabled
      */
-    public void setIsRuntimeStatsEnabled(boolean isEnabled) throws IOException {
+    public void setRuntimeStatsEnabled(Boolean isEnabled) throws IOException {
         getGwcConfig().setRuntimeStats(isEnabled);
         save();
     }
@@ -1104,10 +1104,10 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     }
 
     /**
-     * @see ServerConfiguration#getfullWMS()
+     * @see ServerConfiguration#isFullWMS()
      */
     @Override
-    public Boolean getfullWMS(){
+    public Boolean isFullWMS(){
         if(getGwcConfig()!=null){
             return getGwcConfig().getFullWMS();
         }
@@ -1115,11 +1115,11 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     }
 
     /**
-     * @see ServerConfiguration#setFullWMS(boolean)
+     * @see ServerConfiguration#setFullWMS(Boolean)
      * @param isFullWMS
      */
     @Override
-    public void setFullWMS(boolean isFullWMS) throws IOException {
+    public void setFullWMS(Boolean isFullWMS) throws IOException {
         getGwcConfig().setFullWMS(isFullWMS);
         save();
     }
@@ -1370,7 +1370,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     }
 
     @Override
-    public boolean isWmtsCiteCompliant() {
+    public Boolean isWmtsCiteCompliant() {
         if (gwcConfig == null) {
             // if there is not configuration available we consider CITE strict compliance to be deactivated
             return false;
@@ -1386,7 +1386,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
      * @param wmtsCiteStrictCompliant TRUE or FALSE, activating or deactivation CITE
      *                                strict compliance mode for WMTS
      */
-    public void setWmtsCiteStrictCompliant(boolean wmtsCiteStrictCompliant) throws IOException {
+    public void setWmtsCiteCompliant(Boolean wmtsCiteStrictCompliant) throws IOException {
         if (gwcConfig != null) {
             // activate or deactivate CITE strict compliance mode for WMTS implementation
             gwcConfig.setWmtsCiteCompliant(wmtsCiteStrictCompliant);
@@ -1412,10 +1412,10 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     }
 
     /**
-     * @see ServerConfiguration#getCacheBypassAllowed()
+     * @see ServerConfiguration#isCacheBypassAllowed()
      */
     @Override
-    public Boolean getCacheBypassAllowed() {
+    public Boolean isCacheBypassAllowed() {
         return gwcConfig.getCacheBypassAllowed();
     }
 

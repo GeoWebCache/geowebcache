@@ -156,17 +156,6 @@ public interface TileLayerConfiguration extends BaseConfiguration {
     boolean containsLayer(String layerName);
 
     /**
-     * If this method returns TRUE WMTS service implementation will strictly comply with the
-     * correspondent CITE tests.
-     *
-     * @return TRUE or FALSE, activating or deactivation CITE strict compliance mode for WMTS
-     */
-    default boolean isWmtsCiteCompliant() {
-        // by default CITE tests strict compliance is not activated
-        return false;
-    }
-
-    /**
      * Whether the configuration is capable of saving the provided tile layer.
      *
      * @param tl a tile layer to be added or saved

@@ -433,7 +433,7 @@ public class WMSService extends Service{
         // From the configuration file the "fullWMS" parameter is searched
         Boolean wmsFull = null;
         if(gwcXMLconfig!=null){
-            wmsFull = gwcXMLconfig.getfullWMS();
+            wmsFull = gwcXMLconfig.isFullWMS();
         }                
         
         if(wmsFull!=null){

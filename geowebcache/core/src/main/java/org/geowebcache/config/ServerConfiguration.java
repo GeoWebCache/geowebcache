@@ -24,13 +24,13 @@ public interface ServerConfiguration extends BaseConfiguration {
      * been serving in the past 3, 15 and 60 seconds, as well as aggregate numbers.
      * @return True or False if disabled
      */
-    boolean isRuntimeStatsEnabled();
+    Boolean isRuntimeStatsEnabled();
 
     /**
      * Set if runtime statistics is enabled for this configuration, True or False.
      * @param isEnabled
      */
-    void setIsRuntimeStatsEnabled(boolean isEnabled) throws IOException;
+    void setRuntimeStatsEnabled(Boolean isEnabled) throws IOException;
 
     /**
      * The name of the lock provider.
@@ -48,13 +48,13 @@ public interface ServerConfiguration extends BaseConfiguration {
      * Used for getting the "fullWMS" parameter from GeoWebCacheConfigration if present
      * @return True, False or Null if not present
      */
-    Boolean getfullWMS();
+    Boolean isFullWMS();
 
     /**
      * Used to set fullWMS is parameter for this configuration if present.
      * @param isFullWMS
      */
-    void setFullWMS(boolean isFullWMS) throws IOException;
+    void setFullWMS(Boolean isFullWMS) throws IOException;
 
     /**
      * If this method returns NULL CITE strict compliance mode should not be considered for WMTS
@@ -62,7 +62,7 @@ public interface ServerConfiguration extends BaseConfiguration {
      *
      * @return may return TRUE, FALSE or NULL
      */
-    boolean isWmtsCiteCompliant();
+    Boolean isWmtsCiteCompliant();
 
     /**
      * Can be used to force WMTS service implementation to be strictly compliant with the
@@ -71,7 +71,7 @@ public interface ServerConfiguration extends BaseConfiguration {
      * @param wmtsCiteStrictCompliant TRUE or FALSE, activating or deactivation CITE
      *                                strict compliance mode for WMTS
      */
-    void setWmtsCiteStrictCompliant(boolean wmtsCiteStrictCompliant) throws IOException;
+    void setWmtsCiteCompliant(Boolean wmtsCiteStrictCompliant) throws IOException;
 
     /**
      * The backend timeout is the number of seconds GWC will wait for a backend server to return something
@@ -92,7 +92,7 @@ public interface ServerConfiguration extends BaseConfiguration {
      *  including converters such as Google Maps.
      * @return True or False
      */
-    Boolean getCacheBypassAllowed();
+    Boolean isCacheBypassAllowed();
 
     /**
      *

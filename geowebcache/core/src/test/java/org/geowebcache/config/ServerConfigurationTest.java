@@ -39,29 +39,29 @@ public class ServerConfigurationTest {
 
         Boolean runtimeStats = config.isRuntimeStatsEnabled();
         assertTrue(runtimeStats);
-        config.setIsRuntimeStatsEnabled(false);
+        config.setRuntimeStatsEnabled(false);
         runtimeStats = config.isRuntimeStatsEnabled();
         assertFalse(runtimeStats);
 
         LockProvider lockProvider = config.getLockProvider();
         assertNotNull(lockProvider);
 
-        Boolean fullWMS = config.getfullWMS();
+        Boolean fullWMS = config.isFullWMS();
         assertNull(fullWMS);
         config.setFullWMS(true);
-        fullWMS = config.getfullWMS();
+        fullWMS = config.isFullWMS();
         assertTrue(fullWMS);
 
         Boolean wmtsCiteCompliant = config.isWmtsCiteCompliant();
         assertFalse(wmtsCiteCompliant);
-        config.setWmtsCiteStrictCompliant(true);
+        config.setWmtsCiteCompliant(true);
         wmtsCiteCompliant = config.isWmtsCiteCompliant();
         assertTrue(wmtsCiteCompliant);
 
-        Boolean cacheBypassAllowed = config.getCacheBypassAllowed();
+        Boolean cacheBypassAllowed = config.isCacheBypassAllowed();
         assertNull(cacheBypassAllowed);
         config.setCacheBypassAllowed(true);
-        cacheBypassAllowed = config.getCacheBypassAllowed();
+        cacheBypassAllowed = config.isCacheBypassAllowed();
         assertTrue(cacheBypassAllowed);
 
         Integer backendTimeout = config.getBackendTimeout();
@@ -78,9 +78,9 @@ public class ServerConfigurationTest {
         ServiceInformation savedInfo = config.getServiceInformation();
         assertEquals(savedInfo.getProviderName(), "John Adams inc.");
         assertFalse(config.isRuntimeStatsEnabled());
-        assertTrue(config.getfullWMS());
+        assertTrue(config.isFullWMS());
         assertTrue((config.isWmtsCiteCompliant()));
-        assertTrue(config.getCacheBypassAllowed());
+        assertTrue(config.isCacheBypassAllowed());
         assertEquals(config.getBackendTimeout(), (Integer) 60);
         assertEquals(config.getVersion(), "1.13.0");
     }

@@ -310,7 +310,7 @@ public class GeoWebCacheConfiguration {
 
     /**
      * Get the FullWMS value if present
-     * @see ServerConfiguration#getfullWMS()
+     * @see ServerConfiguration#isFullWMS()
      * @return TRUE, FALSE, or NULL
      */
     public Boolean getFullWMS() {
@@ -319,7 +319,7 @@ public class GeoWebCacheConfiguration {
 
     /**
      * Set the FullWMS value if present
-     * @see ServerConfiguration#setFullWMS(boolean)
+     * @see ServerConfiguration#setFullWMS(Boolean)
      * @param fullWMS is true or false
      */
     public void setFullWMS(Boolean fullWMS) {
