@@ -14,7 +14,7 @@
     <jts.version>1.14.0</jts.version>
     <jaiext.version>1.0.17</jaiext.version>
     <spring.version>4.2.5.RELEASE</spring.version>
-    <xstream.version>1.4.7</xstream.version>
+    <xstream.version>1.4.10</xstream.version>
     <spring.security.version>4.0.4.RELEASE</spring.security.version>
     <commons-logging.version>1.1.1</commons-logging.version>
     <commons-io.version>2.1</commons-io.version>
