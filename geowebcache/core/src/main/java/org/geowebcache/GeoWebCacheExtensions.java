@@ -123,6 +123,10 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
         return result;
     }
 
+    public static <T> String[] getBeansNamesOrderedByPriority(Class<T> extensionType) {
+        return getBeansNamesOrderedByPriority(extensionType, context);
+    }
+
     /**
      * We lookup all the beans names that correspond to the provided extension type. If the provided
      * extensions type implements the {@link GeoWebCacheExtensionPriority} interface we sort the beans

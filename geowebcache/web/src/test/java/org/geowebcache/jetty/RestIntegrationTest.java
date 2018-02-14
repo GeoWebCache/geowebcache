@@ -76,11 +76,53 @@ public class RestIntegrationTest {
     private SimpleNamespaceContext nsContext;
     
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         nsContext = new SimpleNamespaceContext();
         nsContext.bindNamespaceUri("atom", "http://www.w3.org/2005/Atom");
         nsContext.bindNamespaceUri("wmts", "http://www.opengis.net/wmts/1.0");
         nsContext.bindNamespaceUri("ows", "http://www.opengis.net/ows/1.1");
+
+        //Reset Server configuration
+        final String globalUpdate =
+                "<global>\n" +
+                "  <serviceInformation>\n" +
+                "    <title>GeoWebCache</title>\n" +
+                "    <description>GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of protocols and\n" +
+                "      formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</description>\n" +
+                "    <keywords>\n" +
+                "      <string>WMS</string>\n" +
+                "      <string>WFS</string>\n" +
+                "      <string>WMTS</string>\n" +
+                "      <string>GEOWEBCACHE</string>\n" +
+                "    </keywords>\n" +
+                "    <serviceProvider>\n" +
+                "      <providerName>John Smith inc.</providerName>\n" +
+                "      <providerSite>http://www.example.com/</providerSite>\n" +
+                "      <serviceContact>\n" +
+                "        <individualName>John Smith</individualName>\n" +
+                "        <positionName>Geospatial Expert</positionName>\n" +
+                "        <addressType>Work</addressType>\n" +
+                "        <addressStreet>1 Bumpy St.</addressStreet>\n" +
+                "        <addressCity>Hobart</addressCity>\n" +
+                "        <addressAdministrativeArea>TAS</addressAdministrativeArea>\n" +
+                "        <addressPostalCode>7005</addressPostalCode>\n" +
+                "        <addressCountry>Australia</addressCountry>\n" +
+                "        <phoneNumber>+61 3 0000 0000</phoneNumber>\n" +
+                "        <faxNumber>+61 3 0000 0001</faxNumber>\n" +
+                "        <addressEmail>john.smith@example.com</addressEmail>\n" +
+                "      </serviceContact>\n" +
+                "    </serviceProvider>\n" +
+                "    <fees>NONE</fees>\n" +
+                "    <accessConstraints>NONE</accessConstraints>\n" +
+                "  </serviceInformation>\n" +
+                "  <runtimeStatsEnabled>true</runtimeStatsEnabled>\n" +
+                "  <wmtsCiteCompliant>false</wmtsCiteCompliant>\n" +
+                "  <backendTimeout>120</backendTimeout>\n" +
+                "</global>";
+
+        CloseableHttpResponse  response = handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate);
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        response.close();
     }
     
     Matcher<Node> hasXPath(final String xpathExpr, final Matcher<String> matcher) {
@@ -112,6 +154,171 @@ public class RestIntegrationTest {
         CloseableHttpResponse response = handleGet(URI.create("/geowebcache/rest/web/thisDoesNotExist"),
                 anonymous.getClient());
         TestCase.assertEquals(404, response.getStatusLine().getStatusCode());
+    }
+
+    /* ServerController Integration Tests ********************************************************/
+
+    @Test
+    public void testGetGlobal() throws Exception {
+        CloseableHttpResponse response = handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient());
+        assertEquals(200, response.getStatusLine().getStatusCode());
+
+        Document doc = getResponseEntityAsXML(response);
+
+        assertThat(doc, hasXPath("/global/serviceInformation/title", equalTo("GeoWebCache")));
+        assertThat(doc, hasXPath("normalize-space(/global/serviceInformation/description)", equalTo(
+                "GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of " +
+                        "protocols and formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.")));
+        assertThat(doc, hasXPath("count(/global/serviceInformation/keywords/string)", equalTo("4")));
+        assertThat(doc, hasXPath("/global/serviceInformation/serviceProvider/providerName", equalTo("John Smith inc.")));
+        assertThat(doc, hasXPath("/global/serviceInformation/serviceProvider/serviceContact/individualName", equalTo("John Smith")));
+        assertThat(doc, hasXPath("/global/runtimeStatsEnabled", equalTo("true")));
+        assertThat(doc, hasXPath("/global/wmtsCiteCompliant", equalTo("false")));
+        assertThat(doc, hasXPath("/global/backendTimeout", equalTo("120")));
+    }
+
+    @Test
+    public void testPutGlobal() throws Exception {
+        final String globalUpdate =
+                "<global>\n" +
+                "  <serviceInformation>\n" +
+                "    <title>GeoWebCache</title>\n" +
+                "    <description>GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of protocols and\n" +
+                "      formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</description>\n" +
+                "    <keywords>\n" +
+                "      <string>WMS</string>\n" +
+                "      <string>WMTS</string>\n" +
+                "      <string>GEOWEBCACHE</string>\n" +
+                "    </keywords>\n" +
+                "    <serviceProvider>\n" +
+                "      <providerName>Jane Doe inc.</providerName>\n" +
+                "      <providerSite>http://www.example.com/</providerSite>\n" +
+                "      <serviceContact>\n" +
+                "        <individualName>Jane Doe</individualName>\n" +
+                "        <positionName>Geospatial Expert</positionName>\n" +
+                "        <addressType>Work</addressType>\n" +
+                "        <addressStreet>1 Bumpy St.</addressStreet>\n" +
+                "        <addressCity>Hobart</addressCity>\n" +
+                "        <addressAdministrativeArea>TAS</addressAdministrativeArea>\n" +
+                "        <addressPostalCode>7005</addressPostalCode>\n" +
+                "        <addressCountry>Australia</addressCountry>\n" +
+                "        <phoneNumber>+61 3 0000 0000</phoneNumber>\n" +
+                "        <faxNumber>+61 3 0000 0001</faxNumber>\n" +
+                "        <addressEmail>jane.doe@example.com</addressEmail>\n" +
+                "      </serviceContact>\n" +
+                "    </serviceProvider>\n" +
+                "    <fees>NONE</fees>\n" +
+                "    <accessConstraints>NONE</accessConstraints>\n" +
+                "  </serviceInformation>\n" +
+                "  <runtimeStatsEnabled>false</runtimeStatsEnabled>\n" +
+                "  <wmtsCiteCompliant>false</wmtsCiteCompliant>\n" +
+                "  <backendTimeout>120</backendTimeout>\n" +
+                "</global>";
+
+        testGetGlobal();
+
+        CloseableHttpResponse  response = handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate);
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        response.close();
+
+        response = handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient());
+        assertEquals(200, response.getStatusLine().getStatusCode());
+
+        Document doc = getResponseEntityAsXML(response);
+
+        assertThat(doc, hasXPath("/global/serviceInformation/title", equalTo("GeoWebCache")));
+        assertThat(doc, hasXPath("normalize-space(/global/serviceInformation/description)", equalTo(
+                "GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of " +
+                        "protocols and formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.")));
+        assertThat(doc, hasXPath("count(/global/serviceInformation/keywords/string)", equalTo("3")));
+        assertThat(doc, hasXPath("/global/serviceInformation/serviceProvider/providerName", equalTo("Jane Doe inc.")));
+        assertThat(doc, hasXPath("/global/serviceInformation/serviceProvider/serviceContact/individualName", equalTo("Jane Doe")));
+        assertThat(doc, hasXPath("/global/runtimeStatsEnabled", equalTo("false")));
+        assertThat(doc, hasXPath("/global/wmtsCiteCompliant", equalTo("false")));
+        assertThat(doc, hasXPath("/global/backendTimeout", equalTo("120")));
+    }
+
+    @Test
+    public void testPutGlobalRoundTrip() throws Exception {
+        testGetGlobal();
+
+        CloseableHttpResponse response = handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient());
+        assertEquals(200, response.getStatusLine().getStatusCode());
+
+        final String globalUpdate = getResponseEntity(response);
+
+        response = handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate);
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        response.close();
+
+        //Round-tripping the XML should not cause changes
+        testGetGlobal();
+
+    }
+
+    @Test
+    public void testPutGlobalPartial() throws Exception {
+
+        //Only PUT a partial object
+        final String globalUpdate = "<global><backendTimeout>150</backendTimeout></global>";
+
+        testGetGlobal();
+
+        CloseableHttpResponse  response = handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate);
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        response.close();
+
+        response = handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient());
+        assertEquals(200, response.getStatusLine().getStatusCode());
+
+        Document doc = getResponseEntityAsXML(response);
+
+        //Verify only the PUT value has changed
+        assertThat(doc, hasXPath("/global/serviceInformation/title", equalTo("GeoWebCache")));
+        assertThat(doc, hasXPath("normalize-space(/global/serviceInformation/description)", equalTo(
+                "GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of " +
+                        "protocols and formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.")));
+        assertThat(doc, hasXPath("count(/global/serviceInformation/keywords/string)", equalTo("4")));
+        assertThat(doc, hasXPath("/global/serviceInformation/serviceProvider/providerName", equalTo("John Smith inc.")));
+        assertThat(doc, hasXPath("/global/serviceInformation/serviceProvider/serviceContact/individualName", equalTo("John Smith")));
+        assertThat(doc, hasXPath("/global/runtimeStatsEnabled", equalTo("true")));
+        assertThat(doc, hasXPath("/global/wmtsCiteCompliant", equalTo("false")));
+        assertThat(doc, hasXPath("/global/backendTimeout", equalTo("150")));
+    }
+
+    @Test
+    public void testPutGlobalLock() throws Exception {
+
+        final String globalUpdate = "<global><lockProvider>nioLock</lockProvider></global>";
+
+        CloseableHttpResponse response = handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient());
+        assertEquals(200, response.getStatusLine().getStatusCode());
+
+        Document doc = getResponseEntityAsXML(response);
+
+        //Lock provider is null by default. If this is the case, it won't show up in the configuration
+        assertThat(doc, hasXPath("count(/global/lockProvider)", equalTo("0")));
+
+        response = handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate);
+        assertEquals(200, response.getStatusLine().getStatusCode());
+        response.close();
+
+        response = handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient());
+        assertEquals(200, response.getStatusLine().getStatusCode());
+
+        doc = getResponseEntityAsXML(response);
+
+        assertThat(doc, hasXPath("/global/lockProvider", equalTo("nioLock")));
+    }
+
+    @Test
+    public void testPutGlobalReadOnly() throws Exception {
+        //PUT a value that is read-only
+        final String globalUpdate = "<global><location>foobar</location></global>";
+
+        CloseableHttpResponse  response = handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate);
+        assertEquals(400, response.getStatusLine().getStatusCode());
+        response.close();
     }
 
     /* TileLayerController Integration Tests *****************************************************/

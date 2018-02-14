@@ -49,10 +49,21 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
     @Autowired
     private XMLConfiguration xmlConfig;
 
-    public final List<Class> supportedClasses = Collections.unmodifiableList(Arrays.asList(BlobStoreInfo.class, GridSet.class, TileLayer.class));
+    public final List<Class> supportedClasses = Collections.unmodifiableList(
+            Arrays.asList(BlobStoreInfo.class, GridSet.class, TileLayer.class, ServerConfigurationPOJO.class));
 
     public GWCConverter() {
         super(MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML);
+    }
+
+    /**
+     * Apply additional global XStream configuration unique to this converter
+     * @param xs XStream to configure
+     * @return Configured XStream
+     */
+    private XStream configureXStream(XStream xs) {
+        xs.alias("global", ServerConfigurationPOJO.class);
+        return xs;
     }
 
     @Override
@@ -69,7 +80,9 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
     protected T readInternal(Class<? extends T> clazz, HttpInputMessage httpInputMessage) throws IOException, HttpMessageNotReadableException {
         MediaType contentType = httpInputMessage.getHeaders().getContentType();
 
-        XStream xs = xmlConfig.getConfiguredXStreamWithContext(new GeoWebCacheXStream(new DomDriver()), ContextualConfigurationProvider.Context.REST);
+        XStream xs = configureXStream(xmlConfig.getConfiguredXStreamWithContext(
+                new GeoWebCacheXStream(new DomDriver()), ContextualConfigurationProvider.Context.REST));
+
 
         try {
             if (MediaType.APPLICATION_XML.isCompatibleWith(contentType) || MediaType.TEXT_XML.isCompatibleWith(contentType)) {
@@ -119,13 +132,13 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
                     xs.registerConverter(wrapper.createConverter(gwcPrefix));
                 }
 
-                xs = xmlConfig.getConfiguredXStreamWithContext(xs, ContextualConfigurationProvider.Context.REST);
+                xs = configureXStream(xmlConfig.getConfiguredXStreamWithContext(xs, ContextualConfigurationProvider.Context.REST));
                 String xmlText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + xs.toXML(xsObject);
 
                 outputWriter.write(xmlText);
             } else if (MediaType.APPLICATION_JSON.isCompatibleWith(contentType)) {
-                XStream xs = xmlConfig.getConfiguredXStreamWithContext(new GeoWebCacheXStream(
-                        new JsonHierarchicalStreamDriver()), ContextualConfigurationProvider.Context.REST);
+                XStream xs = configureXStream(xmlConfig.getConfiguredXStreamWithContext(new GeoWebCacheXStream(
+                        new JsonHierarchicalStreamDriver()), ContextualConfigurationProvider.Context.REST));
                 Object jsonObject;
                 if (object instanceof XStreamListAliasWrapper) {
                     jsonObject = new JSONArray(((XStreamListAliasWrapper) object).object);
