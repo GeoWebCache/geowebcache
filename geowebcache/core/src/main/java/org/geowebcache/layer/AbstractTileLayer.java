@@ -321,7 +321,7 @@ public abstract class AbstractTileLayer extends TileLayer {
 
         for (XMLGridSubset xmlGridSubset : gridSubsets) {
             GridSubset gridSubset = xmlGridSubset.getGridSubSet(gridSetBroker);
-
+            
             if (gridSubset == null) {
                 log.error(xmlGridSubset.getGridSetName()
                         + " is not known by the GridSetBroker, skipping for layer " + name);

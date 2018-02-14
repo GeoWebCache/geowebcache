@@ -140,6 +140,7 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
             
         };
         TileLayerConfiguration config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
+        extensions.addBean("ConfigUnderTest", config, TileLayerConfiguration.class, GridSetConfiguration.class, BaseConfiguration.class, XMLConfiguration.class);
         config.setGridSetBroker(gridSetBroker);
         config.afterPropertiesSet();
         defaultGridsets.afterPropertiesSet();

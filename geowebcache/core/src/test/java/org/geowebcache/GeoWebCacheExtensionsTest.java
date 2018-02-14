@@ -5,7 +5,12 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,8 +21,11 @@ import javax.servlet.ServletContext;
 
 import junit.framework.TestCase;
 
+import org.geowebcache.util.PropertyRule;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -26,18 +34,15 @@ import org.springframework.context.ApplicationContext;
  * @author Gabriel Roldan (TOPP)
  * @version $Id$
  */
-public class GeoWebCacheExtensionsTest extends TestCase {
+public class GeoWebCacheExtensionsTest {
+    
+    @Rule
+    public PropertyRule testProperty = PropertyRule.system("TEST_PROPERTY");
+    
+    @Rule // Ensures the context is restored afterward
+    public MockWepAppContextRule contextRule= new MockWepAppContextRule();
 
-    protected void setUp() throws Exception {
-        super.setUp();
-        System.setProperty("TEST_PROPERTY", "ABC");
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        System.setProperty("TEST_PROPERTY", "");
-    }
-
+    @Test
     public void testSetApplicationContext() {
         ApplicationContext appContext1 = createMock(ApplicationContext.class);
         ApplicationContext appContext2 = createMock(ApplicationContext.class);
@@ -54,6 +59,7 @@ public class GeoWebCacheExtensionsTest extends TestCase {
         assertEquals(0, GeoWebCacheExtensions.extensionsCache.size());
     }
 
+    @Test
     public void testExtensions() {
         ApplicationContext appContext = createMock(ApplicationContext.class);
         GeoWebCacheExtensions gse = new GeoWebCacheExtensions();
@@ -94,6 +100,7 @@ public class GeoWebCacheExtensionsTest extends TestCase {
      * If a context is explicitly provided that is not the one set through setApplicationContext(),
      * the extensions() method shall look into it and bypass the cache
      */
+    @Test
     public void testExtensionsApplicationContext() {
         ApplicationContext appContext = createMock(ApplicationContext.class);
         ApplicationContext customAppContext = createMock(ApplicationContext.class);
@@ -126,6 +133,7 @@ public class GeoWebCacheExtensionsTest extends TestCase {
         verify(customAppContext);
     }
 
+    @Test
     public void testBeanString() {
         ApplicationContext appContext = createMock(ApplicationContext.class);
 
@@ -146,7 +154,9 @@ public class GeoWebCacheExtensionsTest extends TestCase {
         verify(appContext);
     }
 
+    @Test
     public void testSystemProperty() {
+        testProperty.setValue("ABC");
         // check for a property we did set up in the setUp
         assertEquals("ABC",
                 GeoWebCacheExtensions.getProperty("TEST_PROPERTY", (ApplicationContext) null));
@@ -154,7 +164,9 @@ public class GeoWebCacheExtensionsTest extends TestCase {
                 GeoWebCacheExtensions.getProperty("TEST_PROPERTY", (ServletContext) null));
     }
 
+    @Test
     public void testWebProperty() {
+        testProperty.setValue("ABC");
         ServletContext servletContext = createMock(ServletContext.class);
         expect(servletContext.getInitParameter("TEST_PROPERTY")).andReturn("DEF").anyTimes();
         expect(servletContext.getInitParameter("WEB_PROPERTY")).andReturn("WWW").anyTimes();
@@ -164,6 +176,7 @@ public class GeoWebCacheExtensionsTest extends TestCase {
         assertEquals("WWW", GeoWebCacheExtensions.getProperty("WEB_PROPERTY", servletContext));
     }
 
+    @Test
     public void testExtensionsWithPriority() {
         // creating a spring context with some beans that will implements priority interface
         ApplicationContext appContext = createMock(ApplicationContext.class);

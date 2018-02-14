@@ -75,10 +75,9 @@ public class MockWepAppContextRule extends MockExtensionRule {
         
     }
     
-    public void subContext(org.junit.runners.model.Statement statement) throws Exception {
+    public static void subContext(org.junit.runners.model.Statement statement) throws Exception {
         MockWepAppContextRule subRule = new MockWepAppContextRule(false);
         
         subRule.apply(statement,  org.junit.runner.Description.EMPTY);
     }
-
 }

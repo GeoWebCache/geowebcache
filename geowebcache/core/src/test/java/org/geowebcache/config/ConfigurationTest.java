@@ -111,7 +111,8 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     
     @Test
     public void testPersistRemove() throws Exception {
-        testPersistAdd();
+        I goodGridSet = getGoodInfo("test", 1);
+        addInfo(config, goodGridSet);
         
         removeInfo(config, "test");
 
@@ -171,7 +172,8 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     
     @Test
     public void testPersistModify() throws Exception {
-        testPersistAdd();
+        I goodGridSet1 = getGoodInfo("test", 1);
+        addInfo(config, goodGridSet1);
         
         I goodGridSet = getGoodInfo("test", 2);
         modifyInfo(config, goodGridSet);

@@ -20,6 +20,8 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheExtensions;
+import org.geowebcache.MockWepAppContextRule;
 import org.geowebcache.config.legends.LegendRawInfo;
 import org.geowebcache.config.legends.LegendsRawInfo;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -34,6 +36,7 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.util.TestUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,6 +57,8 @@ public class XMLConfigurationTest {
     
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
+    @Rule // Not actually used but it protects against other tests that clutter the extension system
+    public MockWepAppContextRule contextRule = new MockWepAppContextRule();
     
     @Before
     public void setUp() throws Exception {
@@ -382,7 +387,7 @@ public class XMLConfigurationTest {
         }
 
         XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
-        config2.setGridSetBroker(new GridSetBroker());
+        config2.setGridSetBroker(new GridSetBroker(true, true));
         config2.reinitialize();
         config2.getLayerCount();
         
@@ -404,7 +409,7 @@ public class XMLConfigurationTest {
         configFile = new File(configDir, "geowebcache.xml");
         FileUtils.copyURLToFile(source, configFile);
 
-        gridSetBroker = new GridSetBroker();
+        gridSetBroker = new GridSetBroker(true, true);
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
         config.setGridSetBroker(gridSetBroker);
         config.reinitialize();
