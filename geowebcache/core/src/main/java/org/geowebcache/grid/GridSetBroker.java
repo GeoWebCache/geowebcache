@@ -18,8 +18,10 @@ package org.geowebcache.grid;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -49,6 +51,9 @@ public class GridSetBroker implements ConfigurationAggregator<GridSetConfigurati
 
     private ApplicationContext applicationContext;
 
+    public GridSetBroker() {
+    }
+    
     @Deprecated // use GridSetBroker(Collections.singletonList(new DefaultGridset(useEPSG900913, boolean useGWC11xNames)))
     public GridSetBroker(boolean useEPSG900913, boolean useGWC11xNames) {
         configurations = new LinkedList<>();
@@ -66,12 +71,7 @@ public class GridSetBroker implements ConfigurationAggregator<GridSetConfigurati
     }
 
     public void afterPropertiesSet() {
-        if(Objects.nonNull(applicationContext)) {
-            configurations = GeoWebCacheExtensions.configurations(GridSetConfiguration.class, applicationContext);
-        } else {
-            log.warn("GridSetBroker.initialize() called without having set application context");
-            configurations = GeoWebCacheExtensions.configurations(GridSetConfiguration.class);
-        }
+        getConfigurations();
     }
     
     public @Nullable GridSet get(String gridSetId) {
@@ -79,7 +79,7 @@ public class GridSetBroker implements ConfigurationAggregator<GridSetConfigurati
     }
 
     protected Optional<GridSet> getGridSet(String name) {
-        return configurations.stream()
+        return getConfigurations().stream()
             .map(c->c.getGridSet(name))
             .filter(Optional::isPresent)
             .map(Optional::get)
@@ -98,14 +98,14 @@ public class GridSetBroker implements ConfigurationAggregator<GridSetConfigurati
     }
     
     public Set<String> getGridSetNames() {
-        return configurations.stream()
+        return getConfigurations().stream()
                 .map(GridSetConfiguration::getGridSetNames)
                 .flatMap(Set::stream)
                 .collect(Collectors.toSet());
     }
 
     public Collection<GridSet> getGridSets() {
-        return configurations.stream()
+        return getConfigurations().stream()
                 .map(GridSetConfiguration::getGridSets)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toMap(
@@ -123,7 +123,7 @@ public class GridSetBroker implements ConfigurationAggregator<GridSetConfigurati
     
     public void addGridSet(GridSet gridSet) {
         log.debug("Adding " + gridSet.getName());
-        configurations.stream()
+        getConfigurations().stream()
             .filter(c->c.canSave(gridSet))
             .findFirst()
             .orElseThrow(()-> new UnsupportedOperationException("No Configuration is able to save gridset "+gridSet.getName()))
@@ -149,23 +149,61 @@ public class GridSetBroker implements ConfigurationAggregator<GridSetConfigurati
     }
 
     public synchronized void removeGridSet(final String gridSetName) {
-        configurations.stream()
+        getConfigurations().stream()
             .filter(c->c.getGridSet(gridSetName).isPresent())
             .forEach(c->{c.removeGridSet(gridSetName);});
     }
     
+    public DefaultGridsets getDefaults() {
+        if(defaults==null) {
+            synchronized(this) {
+                if(defaults==null) {
+                    try {
+                        Iterator<? extends DefaultGridsets> it = 
+                                getConfigurations(DefaultGridsets.class).iterator();
+                        defaults=it.next();
+                        if(it.hasNext()) {
+                            log.warn(
+                                "GridSetBroker has more than one DefaultGridSets configuration");
+                        }
+                    } catch (NoSuchElementException ex) {
+                        throw new IllegalStateException(
+                                "GridSetBroker has no DefaultGridsets configuration", ex);
+                    }
+                }
+            }
+        }
+        return defaults;
+    }
+    
     public GridSet getWorldEpsg4326() {
-        return defaults.worldEpsg4326();
+        return getDefaults().worldEpsg4326();
     }
 
     public GridSet getWorldEpsg3857() {
-        return defaults.worldEpsg3857();
+        return getDefaults().worldEpsg3857();
     }
 
     
     @SuppressWarnings("unchecked")
     public <GSC extends GridSetConfiguration> List<? extends GSC> getConfigurations(Class<GSC> type) {
-        return (List<? extends GSC>) configurations.stream().filter(type::isInstance).collect(Collectors.toList());
+        return (List<? extends GSC>) getConfigurations().stream().filter(type::isInstance).collect(Collectors.toList());
+    }
+
+    private Collection<GridSetConfiguration> getConfigurations() {
+        if(this.configurations==null) {
+            synchronized(this) {
+                if(this.configurations==null) {
+                    if(Objects.nonNull(applicationContext)) {
+                        configurations = GeoWebCacheExtensions.configurations(GridSetConfiguration.class, applicationContext);
+                    } else {
+                        log.warn("GridSetBroker.initialize() called without having set application context");
+                        configurations = GeoWebCacheExtensions.configurations(GridSetConfiguration.class);
+                    }
+                }
+            }
+        }
+        return this.configurations;
     }
 
     @Override

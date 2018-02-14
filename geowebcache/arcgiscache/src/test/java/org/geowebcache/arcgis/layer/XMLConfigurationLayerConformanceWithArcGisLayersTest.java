@@ -11,6 +11,8 @@ import java.net.URL;
 import org.apache.commons.io.FileUtils;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.MockWepAppContextRule;
+import org.geowebcache.config.BaseConfiguration;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.GridSetConfiguration;
 import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
@@ -141,12 +143,8 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
     }
 
     @Override
-    protected TileLayerConfiguration getConfig() throws Exception {
-        extensions.addBean("ArcGISLayerConfigProvider", 
-                new ArcGISLayerXMLConfigurationProvider(), XMLConfigurationProvider.class);
-        extensions.addBean("ArcGISLayerGridSetConfiguration", 
-                new ArcGISCacheGridsetConfiguration(), GridSetConfiguration.class, ArcGISCacheGridsetConfiguration.class);
-        
+    
+    protected void makeConfigFile() throws IOException {
         if(configFile==null) {
             configDir = temp.getRoot();
             configFile = temp.newFile("geowebcache.xml");
@@ -155,37 +153,17 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
                 .getResource(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
             FileUtils.copyURLToFile(source, configFile);
         }
+    }
+    
+    @Override
+    protected TileLayerConfiguration getConfig(MockWepAppContextRule extensions) throws Exception {
+        extensions.addBean("ArcGISLayerConfigProvider", 
+                new ArcGISLayerXMLConfigurationProvider(), XMLConfigurationProvider.class);
+        ArcGISCacheGridsetConfiguration arcGISCacheGridsetConfiguration = new ArcGISCacheGridsetConfiguration();
+        extensions.addBean("ArcGISLayerGridSetConfiguration", 
+                arcGISCacheGridsetConfiguration, GridSetConfiguration.class, ArcGISCacheGridsetConfiguration.class);
         
-        GridSetBroker gridSetBroker = new GridSetBroker(true, true);
-        gridSetBroker.setApplicationContext(extensions.getMockContext());
-        XMLFileResourceProvider configProvider = new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
-                extensions.getMockContext(), configDir.getAbsolutePath(), null) {
-        
-                    @Override
-                    public InputStream in() throws IOException {
-                        if(failNextRead) {
-                            failNextRead = false;
-                            throw new IOException("Test failure on read");
-                        }
-                        return super.in();
-                    }
-        
-                    @Override
-                    public OutputStream out() throws IOException {
-                        if(failNextWrite) {
-                            failNextWrite = false;
-                            throw new IOException("Test failure on write");
-                        }
-                        return super.out();
-                    }
-            
-        };
-        TileLayerConfiguration config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
-        config.setGridSetBroker(gridSetBroker);
-        gridSetBroker.afterPropertiesSet();
-        config.afterPropertiesSet();
-        
-        return config;
+        return super.getConfig(extensions);
     }
 
     

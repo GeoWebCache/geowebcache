@@ -23,7 +23,9 @@ public class ArcGISLayerXMLConfigurationProvider implements XMLConfigurationProv
 
     @Override
     public boolean canSave(Info i) {
-        return i instanceof ArcGISCacheLayer;
+        return false;
+        // TODO Enable serialization of ArcGISCache layers
+        //return i instanceof ArcGISCacheLayer;
     }
 
 }

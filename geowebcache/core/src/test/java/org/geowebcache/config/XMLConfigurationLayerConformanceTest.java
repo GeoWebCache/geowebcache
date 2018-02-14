@@ -1,10 +1,15 @@
 package org.geowebcache.config;
 
+import static org.geowebcache.util.TestUtils.isPresent;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.junit.Assert.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 import org.geowebcache.GeoWebCacheException;
@@ -17,6 +22,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -106,8 +112,10 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
     
     protected TileLayerConfiguration getConfig(MockWepAppContextRule extensions) throws Exception {
         
-        GridSetBroker gridSetBroker = new GridSetBroker(true, true);
+        GridSetBroker gridSetBroker = new GridSetBroker();
         gridSetBroker.setApplicationContext(extensions.getMockContext());
+        DefaultGridsets defaultGridsets = new DefaultGridsets(true, true);
+        extensions.addBean("DefaultGridSets", defaultGridsets, DefaultGridsets.class, GridSetConfiguration.class, BaseConfiguration.class);
         
         XMLFileResourceProvider configProvider = new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
                 (WebApplicationContext)null, configDir.getAbsolutePath(), null) {
@@ -134,6 +142,7 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
         TileLayerConfiguration config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
         config.setGridSetBroker(gridSetBroker);
         config.afterPropertiesSet();
+        defaultGridsets.afterPropertiesSet();
         gridSetBroker.afterPropertiesSet();
         return config;
     }
@@ -144,7 +153,7 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
             configFile = temp.newFile("geowebcache.xml");
             
             URL source = XMLConfiguration.class
-                .getResource(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
+                .getResource("geowebcache_1120.xml");
             FileUtils.copyURLToFile(source, configFile);
         }
     }
@@ -226,6 +235,12 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
     @Test
     public void testModifyCallRequiredToChangeExistingInfoFromGetInfos() throws Exception {
         super.testModifyCallRequiredToChangeExistingInfoFromGetInfos();
+    }
+
+    @Test
+    public void testGetExistingHasGridset() throws Exception {
+        Optional<TileLayer> retrieved = getInfo(config, getExistingInfo());
+        assertThat(retrieved, isPresent(hasProperty("gridSubsets", Matchers.containsInAnyOrder("EPSG:4326", "EPSG:2163"))));
     }
 
     

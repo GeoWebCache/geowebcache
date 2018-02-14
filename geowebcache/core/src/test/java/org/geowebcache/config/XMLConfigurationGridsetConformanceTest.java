@@ -48,8 +48,10 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
     protected GridSetConfiguration getConfig(MockWepAppContextRule extensions) throws Exception {
         makeConfigFile();
         
-        GridSetBroker gridSetBroker = new GridSetBroker(true, true);
+        GridSetBroker gridSetBroker = new GridSetBroker();
         gridSetBroker.setApplicationContext(extensions.getMockContext());
+        DefaultGridsets defaultGridsets = new DefaultGridsets(true, true);
+        extensions.addBean("DefaultGridSets", defaultGridsets, DefaultGridsets.class, GridSetConfiguration.class, BaseConfiguration.class);
         
         ConfigurationResourceProvider configProvider = new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
                 (WebApplicationContext)null, configDir.getAbsolutePath(), null) {
@@ -77,6 +79,7 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
         extensions.addBean("XMLConfiguration", config, Configuration.class, GridSetConfiguration.class, TileLayerConfiguration.class);
         ((XMLConfiguration) config).setGridSetBroker(gridSetBroker);
         config.afterPropertiesSet();
+        defaultGridsets.afterPropertiesSet();
         gridSetBroker.afterPropertiesSet();
         return config;
     }

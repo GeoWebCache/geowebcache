@@ -382,7 +382,7 @@ public class XMLConfigurationTest {
         }
 
         XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
-        config2.setGridSetBroker(new GridSetBroker(true, false));
+        config2.setGridSetBroker(new GridSetBroker());
         config2.reinitialize();
         config2.getLayerCount();
         
@@ -404,7 +404,7 @@ public class XMLConfigurationTest {
         configFile = new File(configDir, "geowebcache.xml");
         FileUtils.copyURLToFile(source, configFile);
 
-        gridSetBroker = new GridSetBroker(true, false);
+        gridSetBroker = new GridSetBroker();
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
         config.setGridSetBroker(gridSetBroker);
         config.reinitialize();
