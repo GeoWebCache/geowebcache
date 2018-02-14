@@ -67,7 +67,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
 
     private String storageFormat;
 
-    private ArcGISCompactCache compactCache;
+    private transient ArcGISCompactCache compactCache;
 
     @VisibleForTesting
     ArcGISCacheLayer(String name) {

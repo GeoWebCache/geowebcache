@@ -16,16 +16,14 @@ public class ArcGISLayerXMLConfigurationProvider implements XMLConfigurationProv
 
     public XStream getConfiguredXStream(final XStream xs) {
         xs.alias("arcgisLayer", ArcGISCacheLayer.class);
-        xs.alias("compactCache", org.geowebcache.arcgis.compact.ArcGISCompactCache.class);
+        //xs.alias("compactCache", org.geowebcache.arcgis.compact.ArcGISCompactCache.class);
         
         return xs;
     }
 
     @Override
     public boolean canSave(Info i) {
-        return false;
-        // TODO Enable serialization of ArcGISCache layers
-        //return i instanceof ArcGISCacheLayer;
+        return i instanceof ArcGISCacheLayer;
     }
 
 }
