@@ -18,6 +18,7 @@
 package org.geowebcache.rest.seed;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.MockConfigurationResourceProvider;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
 import org.geowebcache.grid.GridSetBroker;
@@ -97,9 +98,9 @@ public class MassTruncateControllerTest {
 
         XMLConfiguration xmlConfig = null;
         try {
-            xmlConfig = new XMLConfiguration(()->XMLConfiguration.class
-                    .getResourceAsStream(
-                            XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE));
+            xmlConfig = new XMLConfiguration(null, new MockConfigurationResourceProvider(
+                    ()->XMLConfiguration.class.getResourceAsStream(
+                            XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE)));
         } catch (Exception e) {
             // Do nothing
         }

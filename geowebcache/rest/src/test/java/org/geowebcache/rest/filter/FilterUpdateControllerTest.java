@@ -1,6 +1,7 @@
 package org.geowebcache.rest.filter;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.MockConfigurationResourceProvider;
 import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
@@ -61,9 +62,9 @@ public class FilterUpdateControllerTest {
 
         XMLConfiguration xmlConfig = null;
         try {
-            xmlConfig = new XMLConfiguration(()->XMLConfiguration.class
-                    .getResourceAsStream(
-                            XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE));
+            xmlConfig = new XMLConfiguration(null, new MockConfigurationResourceProvider(
+                    ()->XMLConfiguration.class.getResourceAsStream(
+                            XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE)));
         } catch (Exception e) {
             // Do nothing
         }

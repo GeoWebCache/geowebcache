@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.geowebcache.config.BaseConfiguration;
+import org.geowebcache.config.MockConfigurationResourceProvider;
 import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
@@ -127,8 +128,8 @@ public class BDBQuotaStoreTest {
     private XMLConfiguration loadXMLConfig() {
         XMLConfiguration xmlConfig = null;
         try {
-            xmlConfig = new XMLConfiguration(()->XMLConfiguration.class
-                .getResourceAsStream(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME));
+            xmlConfig = new XMLConfiguration(null, new MockConfigurationResourceProvider(()->XMLConfiguration.class
+                .getResourceAsStream(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME)));
         } catch (Exception e) {
             // Do nothing
         }

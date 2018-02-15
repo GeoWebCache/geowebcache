@@ -38,9 +38,11 @@ import org.apache.commons.io.FileUtils;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.geowebcache.MockExtensionRule;
+import org.geowebcache.MockWepAppContextRule;
 import org.geowebcache.config.BaseConfiguration;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.GridSetConfiguration;
+import org.geowebcache.config.MockConfigurationResourceProvider;
 import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
@@ -105,8 +107,8 @@ public abstract class JDBCQuotaStoreTest {
             extensions.addBean("xmlConfig",xmlConfig, BaseConfiguration.class, TileLayerConfiguration.class, GridSetConfiguration.class);
             
             // add extra tests gwc configuration
-            XMLConfiguration extraConfig = new XMLConfiguration(()->this.getClass().getClassLoader()
-                    .getResourceAsStream("gwc-test-config.xml"));
+            XMLConfiguration extraConfig = new XMLConfiguration(extensions.getContextProvider(), new MockConfigurationResourceProvider(()->this.getClass().getClassLoader()
+                    .getResourceAsStream("gwc-test-config.xml")));
             extensions.addBean("extraConfig",extraConfig, BaseConfiguration.class, TileLayerConfiguration.class, GridSetConfiguration.class);
             
             extensions.addBean("defaultGridsets",new DefaultGridsets(true, true), GridSetConfiguration.class, DefaultGridsets.class);
@@ -215,7 +217,7 @@ public abstract class JDBCQuotaStoreTest {
 
     private StorageBroker storageBroker;
 
-    public MockExtensionRule extensions = new MockExtensionRule();
+    public MockWepAppContextRule extensions = new MockWepAppContextRule();
     
     
     public OnlineTestRule fixtureRule = makeFixtureRule();
@@ -291,8 +293,9 @@ public abstract class JDBCQuotaStoreTest {
         InputStream is = null;
         XMLConfiguration xmlConfig = null;
         
-        xmlConfig = new XMLConfiguration(()->XMLConfiguration.class
-            .getResourceAsStream(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME));
+        xmlConfig = new XMLConfiguration(null, new MockConfigurationResourceProvider(
+                ()->XMLConfiguration.class.getResourceAsStream(
+                        XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME)));
 
         return xmlConfig;
     }

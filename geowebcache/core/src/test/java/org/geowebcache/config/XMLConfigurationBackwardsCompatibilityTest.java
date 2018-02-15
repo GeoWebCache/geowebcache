@@ -197,7 +197,9 @@ public class XMLConfigurationBackwardsCompatibilityTest {
             print(root.getOwnerDocument());
         }
 
-        XMLConfiguration xmlConfig = new XMLConfiguration(()->XMLConfiguration.class.getResourceAsStream(fileName));
+        XMLConfiguration xmlConfig = new XMLConfiguration(null, 
+                new MockConfigurationResourceProvider(
+                        ()->XMLConfiguration.class.getResourceAsStream(fileName)));
 
         GridSetBroker gsb = new GridSetBroker(Arrays.asList(new DefaultGridsets(true, true), xmlConfig));
         xmlConfig.setGridSetBroker(gsb);

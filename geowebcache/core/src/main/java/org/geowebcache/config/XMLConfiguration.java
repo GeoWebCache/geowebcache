@@ -209,15 +209,6 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         log.warn("This constructor is deprecated");
     }
     
-    
-    /**
-     * Constructor with inputstream supplier (only for testing)
-     * @throws ConfigurationException 
-     */
-    public XMLConfiguration(final Supplier<InputStream> is) throws ConfigurationException {
-        this (null, new MockConfigurationResourceProvider(is));
-    }
-    
     /**
      * Path to template to use when there is no config file.
      * @param template
