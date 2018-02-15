@@ -1,5 +1,9 @@
 package org.geowebcache.arcgis.layer;
 
+import static org.geowebcache.util.TestUtils.isPresent;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.junit.Assert.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,6 +11,7 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 import org.geowebcache.GeoWebCacheException;
@@ -27,6 +32,7 @@ import org.geowebcache.layer.AbstractTileLayer;
 import org.geowebcache.layer.TileLayer;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 
 public class XMLConfigurationLayerConformanceWithArcGisLayersTest
@@ -134,7 +140,7 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
 
     @Override
     protected String getExistingInfo() {
-        return null;
+        return "testExisting";
     }
 
     @Override
@@ -143,14 +149,13 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
     }
 
     @Override
-    
     protected void makeConfigFile() throws IOException {
         if(configFile==null) {
             configDir = temp.getRoot();
             configFile = temp.newFile("geowebcache.xml");
             
-            URL source = XMLConfiguration.class
-                .getResource(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
+            URL source = XMLConfigurationLayerConformanceWithArcGisLayersTest.class
+                .getResource("geowebcache.xml");
             FileUtils.copyURLToFile(source, configFile);
         }
     }
@@ -166,5 +171,15 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
         return super.getConfig(extensions);
     }
 
-    
+    @Override
+    public void testGetExistingHasGridset() throws Exception {
+        Optional<TileLayer> retrieved = getInfo(config, getExistingInfo());
+        assertThat(retrieved, isPresent(hasProperty("gridSubsets", Matchers.containsInAnyOrder("EPSG:3857_testExisting"))));
+    }
+
+    public void testGetExistingIsArcGisLayer() throws Exception {
+        Optional<TileLayer> retrieved = getInfo(config, getExistingInfo());
+        assertThat(retrieved, Matchers.instanceOf(ArcGISCacheLayer.class));
+    }
+
 }
