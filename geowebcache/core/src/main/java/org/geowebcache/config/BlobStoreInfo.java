@@ -18,24 +18,23 @@ package org.geowebcache.config;
 
 import java.io.Serializable;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.storage.BlobStore;
+import org.geowebcache.storage.BlobStoreAggregator;
 import org.geowebcache.storage.StorageException;
 
 /**
  * Base class for configuration and factory of concrete {@link BlobStore} implementations.
  * <p>
  * Each realization of {@link BlobStore} should have a matching {@link BlobStoreInfo} subclass
- * that acts both as configuration and {@link #createInstance() factory}.
+ * that acts both as configuration and {@link #createInstance(TileLayerDispatcher, LockProvider)}  factory}.
  * <p>
  * Instances of this concrete subclasses of this class are meant to be obtained from
- * {@link XMLConfiguration#getBlobStores()} after parsed by {@code XStream} from the
- * {@code geowebcache.xml} file.
+ * {@link BlobStoreAggregator#getBlobStores()}.
  * <p>
  * When a blob store is defined in a module other than core, it is advisable that whatever
  * {@code XStream} configuration needed for correct parsing and encoding of the configuration object

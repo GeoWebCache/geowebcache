@@ -72,7 +72,7 @@ public class BlobStoreAggregator {
      * @throws GeoWebCacheException
      *             if no such blob store info exists
      */
-    public BlobStoreInfo getBlobStoreInfo(final String blobStoreName) throws GeoWebCacheException {
+    public BlobStoreInfo getBlobStore(final String blobStoreName) throws GeoWebCacheException {
         Preconditions.checkNotNull(blobStoreName, "blobStoreName is null");
 
         for (int i = 0; i < configs.size(); i++) {
@@ -136,7 +136,7 @@ public class BlobStoreAggregator {
      * @return a list view of this blob store aggregators's internal blob stores
      */
     @SuppressWarnings("unchecked")
-    public Iterable<BlobStoreInfo> getBlobStoreList() {
+    public Iterable<BlobStoreInfo> getBlobStores() {
         List<Iterable<BlobStoreInfo>> perConfigBlobStores = new ArrayList<Iterable<BlobStoreInfo>>(
                 configs.size());
 

@@ -83,6 +83,8 @@ public class CompositeBlobStoreTest {
 
     TileLayerDispatcher layers;
 
+    BlobStoreAggregator bsa;
+
     DefaultStorageFinder defaultStorageFinder;
 
     XMLConfiguration configuration;
@@ -97,11 +99,12 @@ public class CompositeBlobStoreTest {
     public void setup() throws Exception {
 
         layers = mock(TileLayerDispatcher.class);
+        bsa = mock(BlobStoreAggregator.class);
         defaultStorageFinder = mock(DefaultStorageFinder.class);
         configuration = mock(XMLConfiguration.class);
 
         configs = new LinkedList<>();
-        when(configuration.getBlobStores()).thenReturn(configs);
+        when(bsa.getBlobStores()).thenReturn(configs);
 
         when(defaultStorageFinder.getDefaultPath()).thenReturn(
                 tmpFolder.getRoot().getAbsolutePath());
@@ -113,7 +116,7 @@ public class CompositeBlobStoreTest {
     }
 
     private CompositeBlobStore create() throws StorageException, ConfigurationException {
-        return new CompositeBlobStore(layers, defaultStorageFinder, configuration);
+        return new CompositeBlobStore(layers, defaultStorageFinder, configuration, bsa);
     }
 
     @Test

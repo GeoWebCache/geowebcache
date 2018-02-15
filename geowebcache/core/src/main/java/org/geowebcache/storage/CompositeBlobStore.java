@@ -31,10 +31,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.BlobStoreInfo;
-import org.geowebcache.config.ConfigurationException;
-import org.geowebcache.config.FileBlobStoreInfo;
-import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.config.*;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
@@ -101,24 +98,25 @@ public class CompositeBlobStore implements BlobStore {
      * @param layers used to get the layer's {@link TileLayer#getBlobStoreId() blobstore id}
      * @param defaultStorageFinder to resolve the location of the cache directory for the legacy
      *        blob store when no {@link BlobStoreInfo#isDefault() default blob store} is given
-     * @param configuration the configuration as read from {@code geowebcache.xml} containing the
-     *        configured {@link XMLConfiguration#getBlobStores() blob stores}
+     * @param blobStoreAggregator the configuration as read from {@code geowebcache.xml} containing the
+     *        configured {@link BlobStoreAggregator#getBlobStores() blob stores}
+     * @param serverConfiguration
      * @throws ConfigurationException if there's a configuration error like a store confing having
      *         no id, or two store configs having the same id, or more than one store config being
      *         marked as the default one, or the default store is not
      *         {@link BlobStoreInfo#isEnabled() enabled}
      * @throws StorageException if the live {@code BlobStore} instance can't be
-     *         {@link BlobStoreInfo#createInstance() created} of an enabled
+     *         {@link BlobStoreInfo#createInstance(TileLayerDispatcher, LockProvider)}  created} of an enabled
      *         {@link BlobStoreInfo}
      */
-    public CompositeBlobStore(TileLayerDispatcher layers,
-            DefaultStorageFinder defaultStorageFinder, XMLConfiguration configuration)
+    public CompositeBlobStore(TileLayerDispatcher layers, DefaultStorageFinder defaultStorageFinder,
+                              ServerConfiguration serverConfiguration, BlobStoreAggregator blobStoreAggregator)
             throws StorageException, ConfigurationException {
 
         this.layers = layers;
         this.defaultStorageFinder = defaultStorageFinder;
-        this.lockProvider = configuration.getLockProvider();
-        this.blobStores = loadBlobStores(configuration.getBlobStores());
+        this.lockProvider = serverConfiguration.getLockProvider();
+        this.blobStores = loadBlobStores(blobStoreAggregator.getBlobStores());
     }
 
     @Override
@@ -315,7 +313,7 @@ public class CompositeBlobStore implements BlobStore {
      *         marked as the default one, or the default store is not
      *         {@link BlobStoreInfo#isEnabled() enabled}
      * @throws StorageException if the live {@code BlobStore} instance can't be
-     *         {@link BlobStoreInfo#createInstance() created} of an enabled
+     *         {@link BlobStoreInfo#createInstance(TileLayerDispatcher, LockProvider)}  created} of an enabled
      *         {@link BlobStoreInfo}
      */
     Map<String, LiveStore> loadBlobStores(Iterable<? extends BlobStoreInfo> configs)
