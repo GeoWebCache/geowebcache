@@ -22,8 +22,8 @@
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
+      <scope>provided</scope>
     </dependency>
-
     <dependency>
      <groupId>org.freemarker</groupId>
      <artifactId>freemarker</artifactId>
@@ -69,6 +69,7 @@
       <dependency>
           <groupId>org.springframework</groupId>
           <artifactId>spring-test</artifactId>
+          <scope>test</scope>
       </dependency>
     <dependency>
       <groupId>org.json</groupId>
