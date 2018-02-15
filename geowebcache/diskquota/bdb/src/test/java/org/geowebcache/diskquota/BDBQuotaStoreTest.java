@@ -27,7 +27,11 @@ import java.util.stream.Stream;
 
 import org.easymock.Capture;
 import org.easymock.EasyMock;
+import org.geowebcache.MockWepAppContextRule;
 import org.geowebcache.config.BaseConfiguration;
+import org.geowebcache.config.DefaultGridsets;
+import org.geowebcache.config.GridSetConfiguration;
+import org.geowebcache.config.MockConfigurationResourceProvider;
 import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
@@ -76,6 +80,8 @@ public class BDBQuotaStoreTest {
     
     @Rule
     public ExpectedException exception = ExpectedException.none();
+    @Rule
+    public MockWepAppContextRule context = new MockWepAppContextRule();
 
     Map<String, Set<String>> parameterIdsMap;
     Map<String, Set<Map<String, String>>> parametersMap;
@@ -112,24 +118,33 @@ public class BDBQuotaStoreTest {
                             .collect(Collectors.toSet())
                         ));
         XMLConfiguration xmlConfig = loadXMLConfig();
+        context.addBean("xmlConfig", xmlConfig, XMLConfiguration.class.getInterfaces());
         LinkedList<TileLayerConfiguration> configList = new LinkedList<TileLayerConfiguration>();
         configList.add(xmlConfig);
-
-        layerDispatcher = new TileLayerDispatcher(new GridSetBroker(true, true), configList);
+        context.addBean("DefaultGridsets", new DefaultGridsets(true, true), DefaultGridsets.class, GridSetConfiguration.class, BaseConfiguration.class);
+        GridSetBroker gridSetBroker = new GridSetBroker();
+        gridSetBroker.setApplicationContext(context.getMockContext());
+        layerDispatcher = new TileLayerDispatcher(gridSetBroker);
+        layerDispatcher.setApplicationContext(context.getMockContext());
 
         tilePageCalculator = new TilePageCalculator(layerDispatcher, storageBroker);
-
+        
+        xmlConfig.setGridSetBroker(gridSetBroker);
+        
+        xmlConfig.afterPropertiesSet();
+        layerDispatcher.afterPropertiesSet();
+        gridSetBroker.afterPropertiesSet();
+        
         store = new BDBQuotaStore(cacheDirFinder, tilePageCalculator);
         store.startUp();
         testTileSet = tilePageCalculator.getTileSetsFor("topp:states2").iterator().next();
     }
 
     private XMLConfiguration loadXMLConfig() {
-        InputStream is = XMLConfiguration.class
-                .getResourceAsStream(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
         XMLConfiguration xmlConfig = null;
         try {
-            xmlConfig = new XMLConfiguration(is);
+            xmlConfig = new XMLConfiguration(context.getContextProvider(), new MockConfigurationResourceProvider(()->XMLConfiguration.class
+                .getResourceAsStream(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME)));
         } catch (Exception e) {
             // Do nothing
         }

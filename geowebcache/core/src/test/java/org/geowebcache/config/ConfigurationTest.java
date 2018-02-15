@@ -30,7 +30,7 @@ import org.junit.rules.ExpectedException;
 
 public abstract class ConfigurationTest<I extends Info, C extends BaseConfiguration> {
     
-    C config;
+    protected C config;
     
     @Rule 
     public ExpectedException exception = ExpectedException.none();
@@ -58,7 +58,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         I goodGridSet = getGoodInfo("test", 1);
         addInfo(config, goodGridSet);
 
-        C config2 = getConfig();
+        C config2 = getSecondConfig();
         I retrieved = getInfo(config2, "test").get();
         assertThat(retrieved, infoEquals(goodGridSet));
         assertNameSetMatchesCollection(config2);
@@ -118,11 +118,12 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     
     @Test
     public void testPersistRemove() throws Exception {
-        testPersistAdd();
+        I goodGridSet = getGoodInfo("test", 1);
+        addInfo(config, goodGridSet);
         
         removeInfo(config, "test");
 
-        C config2 = getConfig();
+        C config2 = getSecondConfig();
         Optional<I> retrieved = getInfo(config2, "test");
         assertThat(retrieved, notPresent());
         assertNameSetMatchesCollection(config2);
@@ -178,12 +179,13 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     
     @Test
     public void testPersistModify() throws Exception {
-        testPersistAdd();
+        I goodGridSet1 = getGoodInfo("test", 1);
+        addInfo(config, goodGridSet1);
         
         I goodGridSet = getGoodInfo("test", 2);
         modifyInfo(config, goodGridSet);
 
-        C config2 = getConfig();
+        C config2 = getSecondConfig();
         Optional<I> retrieved = getInfo(config2, "test");
         assertThat(retrieved, isPresent(infoEquals(goodGridSet)));
         assertNameSetMatchesCollection(config2);
@@ -250,6 +252,29 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         assertThat(retrieved, isPresent(infoEquals(getGoodInfo("test", 1))));
         assertThat(retrieved, isPresent(not(infoEquals(getGoodInfo("test", 2)))));
     }
+
+    @Test
+    public void testModifyCallRequiredToChangeExistingInfoFromGetInfo() throws Exception {
+        String name = getExistingInfo();
+        I goodGridSet = getInfo(config, name).get();
+        doModifyInfo(goodGridSet, 2);
+        
+        Optional<I> retrieved = getInfo(config, name);
+        assertThat(retrieved, isPresent(not(infoEquals(2))));
+    }
+    
+    @Test
+    public void testModifyCallRequiredToChangeExistingInfoFromGetInfos() throws Exception {
+        String name = getExistingInfo();
+        I goodGridSet = getInfos(config).stream()
+                .filter(i->i.getName().equals(name))
+                .findAny()
+                .get();
+        doModifyInfo(goodGridSet, 2);
+        
+        Optional<I> retrieved = getInfo(config, name);
+        assertThat(retrieved, isPresent(not(infoEquals(2))));
+    }
     
     /**
      * Modify an existing info object.
@@ -275,7 +300,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
             assertThat(retrieved, notPresent());
             
             // Persistence should also be unchanged
-            C config2 = getConfig();
+            C config2 = getSecondConfig();
             Optional<I> retrieved2 = getInfo(config2, "test");
             assertThat(retrieved2, notPresent());
             assertNameSetMatchesCollection(config2);
@@ -422,16 +447,21 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
      * configuration does not have existing GridSets.
      * @return
      */
-    protected abstract String getExistingInfo() throws Exception;
+    protected abstract String getExistingInfo();
 
     /**
-     * Create a GridSetConfiguration to test.  Subsequent calls should create new configurations using the
-     * same persistence or throw AssumptionViolatedException if this is a non-persistent 
-     * configuration.
+     * Create a GridSetConfiguration to test.
      * @return
      * @throws Exception 
      */
     protected abstract C getConfig() throws Exception;
+    /**
+     * Create a second config from the same persistence source or throw AssumptionViolatedException 
+     * if this is a non-persistent configuration.
+     * @return
+     * @throws Exception 
+     */
+    protected abstract C getSecondConfig() throws Exception;
     
     /**
      * Check that two GridSets created by calls to getGoodGridSet, which may have been persisted and 
@@ -440,6 +470,13 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
      * @return
      */
     protected abstract Matcher<I> infoEquals(final I expected);
+    
+    /**
+     * Check that an info has the specified test value.
+     * @param expected
+     * @return
+     */
+    protected abstract Matcher<I> infoEquals(final int rand);
     
     protected abstract void addInfo(C config, I info) throws Exception;
     protected abstract Optional<I> getInfo(C config, String name) throws Exception;

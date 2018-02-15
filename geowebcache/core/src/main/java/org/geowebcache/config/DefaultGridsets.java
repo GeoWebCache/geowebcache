@@ -1,14 +1,5 @@
 package org.geowebcache.config;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -18,11 +9,9 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSetFactory;
 import org.geowebcache.grid.SRS;
 
-public class DefaultGridsets implements GridSetConfiguration {
+public class DefaultGridsets extends SimpleGridSetConfiguration {
     private static Log log = LogFactory.getLog(DefaultGridsets.class);
 
-    Map<String, GridSet> gridSets;
-    
     private final GridSet WORLD_EPSG4326;
 
     private final GridSet WORLD_EPSG3857;
@@ -50,7 +39,6 @@ public class DefaultGridsets implements GridSetConfiguration {
 
         }
         
-        gridSets = new HashMap<>();
         WORLD_EPSG4326 = GridSetFactory.createGridSet("EPSG:4326", SRS.getEPSG4326(),
                 BoundingBox.WORLD4326, false, GridSetFactory.DEFAULT_LEVELS, null,
                 GridSetFactory.DEFAULT_PIXEL_SIZE_METER, 256, 256, true);
@@ -58,7 +46,7 @@ public class DefaultGridsets implements GridSetConfiguration {
                 + "covers the world with two tiles on the horizonal axis and one tile "
                 + "over the vertical axis and each subsequent zoom level is calculated by half "
                 + "the resolution of its previous one.");
-        gridSets.put(WORLD_EPSG4326.getName(), WORLD_EPSG4326);
+        addInternal(WORLD_EPSG4326);
 
         final SRS googleMapsCompatibleSRS = useEPSG900913 ? SRS.getEPSG900913() : SRS.getEPSG3857();
         log.debug("Adding " + googleMapsCompatibleSRS
@@ -74,7 +62,7 @@ public class DefaultGridsets implements GridSetConfiguration {
                         + "world in a single 256x256 pixels. The next level represents the whole world in 2x2 tiles "
                         + "of 256x256 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
 
-        gridSets.put(WORLD_EPSG3857.getName(), WORLD_EPSG3857);
+        addInternal(WORLD_EPSG3857);
         
 
         log.debug("Adding GlobalCRS84Pixel");
@@ -88,7 +76,7 @@ public class DefaultGridsets implements GridSetConfiguration {
                         + "products like STRM (1\" and 3\"), GTOPO (30\") or ETOPO (2' and 5'). Scale denominator"
                         + "and approximated pixel size in meters are only accurate near the equator.");
 
-        gridSets.put(GlobalCRS84Pixel.getName(), GlobalCRS84Pixel);
+        addInternal(GlobalCRS84Pixel);
 
         log.debug("Adding GlobalCRS84Scale");
         GridSet GlobalCRS84Scale = GridSetFactory.createGridSet("GlobalCRS84Scale",
@@ -100,7 +88,7 @@ public class DefaultGridsets implements GridSetConfiguration {
                         + "Rounded scales have been chosen for intuitive cartographic representation of vector data. "
                         + "Scale denominator is only accurate near the equator.");
 
-        gridSets.put(GlobalCRS84Scale.getName(), GlobalCRS84Scale);
+        addInternal(GlobalCRS84Scale);
 
         log.debug("Adding GoogleCRS84Quad");
         GridSet GoogleCRS84Quad = GridSetFactory.createGridSet("GoogleCRS84Quad",
@@ -114,14 +102,12 @@ public class DefaultGridsets implements GridSetConfiguration {
                         + "of the tile are left blank). The next level represents the whole world in 2x2"
                         + " tiles of 256x256 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
 
-        gridSets.put(GoogleCRS84Quad.getName(), GoogleCRS84Quad);
+        addInternal(GoogleCRS84Quad);
 
     }
 
     @Override
-    public int initialize(GridSetBroker gridSetBroker) throws GeoWebCacheException {
-        // TODO Auto-generated method stub
-        return 0;
+    public void reinitialize() throws GeoWebCacheException {
     }
 
     @Override
@@ -134,54 +120,6 @@ public class DefaultGridsets implements GridSetConfiguration {
         return "Default";
     }
 
-    @Override
-    public void save() throws IOException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public Optional<GridSet> getGridSet(String name) {
-        return Optional.ofNullable(gridSets.get(name)).map(GridSet::new);
-    }
-
-    @Override
-    public Collection<GridSet> getGridSets() {
-        return gridSets.values().stream()
-                .map(GridSet::new) // Make sure that modifying them doesn't modify the real ones
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public void addGridSet(GridSet gridSet)
-            throws UnsupportedOperationException, IllegalArgumentException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void removeGridSet(String gridSetName)
-            throws NoSuchElementException, UnsupportedOperationException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void modifyGridSet(GridSet gridSet)
-            throws NoSuchElementException, IllegalArgumentException, UnsupportedOperationException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void renameGridSet(String oldName, String newName)
-            throws NoSuchElementException, IllegalArgumentException, UnsupportedOperationException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean canSave(GridSet gridset) {
-        return false;
-    }
-
-    
     private double[] scalesCRS84QuadScaleDenominators() {
         double[] scalesCRS84QuadScaleResolutions = { 559082264.0287178, 279541132.0143589,
                 139770566.0071794, 69885283.00358972, 34942641.50179486, 17471320.75089743,
@@ -273,4 +211,11 @@ public class DefaultGridsets implements GridSetConfiguration {
 
         return scalesCRS84Pixel;
     }
+
+    @Override
+    public int getPriority(Class<? extends BaseConfiguration> clazz) {
+        return -100;
+    }
+    
+    
 }

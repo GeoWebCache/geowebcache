@@ -18,6 +18,7 @@ package org.geowebcache.layer;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -26,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.BaseConfiguration;
+import org.geowebcache.config.ConfigurationAggregator;
 import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
@@ -35,7 +37,11 @@ import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.util.CompositeIterable;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
 
 import com.google.common.base.Preconditions;
@@ -44,7 +50,7 @@ import com.sun.media.imageio.stream.StreamSegment;
 /**
  * Serves tile layers from the {@link TileLayerConfiguration}s available in the application context.
  */
-public class TileLayerDispatcher implements DisposableBean {
+public class TileLayerDispatcher implements DisposableBean, InitializingBean, ApplicationContextAware, ConfigurationAggregator<TileLayerConfiguration> {
 
     private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayerDispatcher.class);
 
@@ -54,6 +60,8 @@ public class TileLayerDispatcher implements DisposableBean {
 
     private ServiceInformation serviceInformation;
 
+    private ApplicationContext applicationContext;
+
     /**
      * @deprecated use {@link #TileLayerDispatcher(GridSetBroker)} instead, configurations are
      *             loaded from the application context, this {@code config} parameter will be
@@ -62,19 +70,10 @@ public class TileLayerDispatcher implements DisposableBean {
     public TileLayerDispatcher(GridSetBroker gridSetBroker, List<TileLayerConfiguration> configs) {
         this.gridSetBroker = gridSetBroker;
         this.configs = configs == null ? new ArrayList<TileLayerConfiguration>() : configs;
-        initialize();
     }
 
     public TileLayerDispatcher(GridSetBroker gridSetBroker) {
         this.gridSetBroker = gridSetBroker;
-        reInit();
-    }
-
-    public void addConfiguration(TileLayerConfiguration config) {
-        initialize(config);
-        List<TileLayerConfiguration> newList = new ArrayList<TileLayerConfiguration>(configs);
-        newList.add(config);
-        this.configs = newList;
     }
 
     public boolean layerExists(final String layerName) {
@@ -115,12 +114,10 @@ public class TileLayerDispatcher implements DisposableBean {
      * 
      * So we'll just set the current layer set free, ready for garbage collection, and generate a
      * new one.
-     * 
+     * @deprecated use GeoWebCacheExtensions.reinitializeConfigurations instead
      */
     public void reInit() {
-        List<TileLayerConfiguration> extensions = GeoWebCacheExtensions.extensions(TileLayerConfiguration.class);
-        this.configs = new ArrayList<TileLayerConfiguration>(extensions);
-        initialize();
+        GeoWebCacheExtensions.reinitializeConfigurations(this.applicationContext);
     }
 
     public int getLayerCount() {
@@ -160,52 +157,6 @@ public class TileLayerDispatcher implements DisposableBean {
         }
 
         return new CompositeIterable<TileLayer>(perConfigLayers);
-    }
-
-    private void initialize() {
-        log.debug("Thread initLayers(), initializing");
-
-        for (TileLayerConfiguration config : configs) {
-            initialize(config);
-        }
-    }
-
-    private int initialize(TileLayerConfiguration config) {
-        if (config == null) {
-            throw new IllegalStateException(
-                    "TileLayerDispatcher got a null GWC configuration object");
-        }
-
-        String configIdent = null;
-        try {
-            configIdent = config.getIdentifier();
-        } catch (Exception gwce) {
-            log.error("Error obtaining identify from TileLayerConfiguration " + config, gwce);
-            return 0;
-        }
-
-        if (configIdent == null) {
-            log.warn("Got a GWC configuration with no identity, ignoring it:" + config);
-            return 0;
-        }
-
-        int layerCount;
-        try {
-            layerCount = config.initialize(gridSetBroker);
-        } catch (GeoWebCacheException gwce) {
-            log.error("Failed to add layers from " + configIdent, gwce);
-            return 0;
-        }
-        if (layerCount <= 0) {
-            log.info("TileLayerConfiguration " + config.getIdentifier() + " contained no layers.");
-        }
-
-        // Check whether there is any general service information
-        if (this.serviceInformation == null && config instanceof ServerConfiguration) {
-            log.debug("Reading service information.");
-            this.serviceInformation = ((ServerConfiguration) config).getServiceInformation();
-        }
-        return layerCount;
     }
 
     public ServiceInformation getServiceInformation() {
@@ -346,7 +297,6 @@ public class TileLayerDispatcher implements DisposableBean {
     private void saveGridSet(final GridSet gridSet) throws IOException {
         XMLConfiguration persistingConfig = getXmlConfiguration();
         persistingConfig.addGridSet(gridSet);
-        gridSetBroker.put(gridSet); // TODO REMOVE
     }
 
     private XMLConfiguration getXmlConfiguration() throws IllegalStateException {
@@ -365,5 +315,61 @@ public class TileLayerDispatcher implements DisposableBean {
             throw new IllegalStateException("Can not remove gridset "+gridsetToRemove+" as it is used by layers");
         }
         gridSetBroker.removeGridSet(gridsetToRemove);
+    }
+    
+    public synchronized void removeGridSetRecursive(String gridsetToRemove) {
+        Collection<TileLayer> deletedLayers = new LinkedList<>();
+        try {
+            for(TileLayer tl: getLayerList()) {
+                if(Objects.nonNull(tl.getGridSubset(gridsetToRemove))) {
+                    this.removeLayer(tl.getName());
+                    deletedLayers.add(tl);
+                }
+            }
+        } catch (NoSuchElementException e) {
+            IllegalStateException wrappedException = new IllegalStateException("Layer was found referencing gridset but was missing during recursive delete",e);
+            try {
+                deletedLayers.forEach(this::addLayer);
+            } catch (RuntimeException exceptionOnRestore) {
+                wrappedException.addSuppressed(exceptionOnRestore);
+            }
+            throw wrappedException;
+        }
+        
+        try {
+            gridSetBroker.removeGridSet(gridsetToRemove);
+        } catch (RuntimeException exceptionOnRestore) {
+            try {
+                deletedLayers.forEach(this::addLayer);
+            } catch (RuntimeException ex) {
+                exceptionOnRestore.addSuppressed(ex);
+            }
+            throw exceptionOnRestore;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends TileLayerConfiguration> List<? extends T> getConfigurations(Class<T> clazz) {
+        if(clazz==TileLayerConfiguration.class) {
+            return (List<? extends T>) Collections.unmodifiableList(configs);
+        } else {
+            return configs.stream()
+                    .filter(clazz::isInstance)
+                    .map(clazz::cast)
+                    .collect(Collectors.toList());
+        }
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        this.configs = GeoWebCacheExtensions.configurations(TileLayerConfiguration.class, applicationContext);
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        if(this.applicationContext!=null) throw new IllegalStateException("Application context has already been set");
+        Objects.requireNonNull(applicationContext);
+        this.applicationContext = applicationContext;
     }
 }

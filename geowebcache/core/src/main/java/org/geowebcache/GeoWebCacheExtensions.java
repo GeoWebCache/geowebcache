@@ -6,11 +6,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.config.BaseConfiguration;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -37,6 +39,8 @@ import org.springframework.web.context.WebApplicationContext;
  * 
  */
 public class GeoWebCacheExtensions implements ApplicationContextAware, ApplicationListener {
+    
+    private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayerDispatcher.class);
 
     /**
      * logger
@@ -166,6 +170,44 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
         return extensions(extensionPoint, context);
     }
 
+    /**
+     * Return a list of configurations in priority order.
+     * @param extensionPoint The extension point of the configuration, may affect priority.
+     * @param context
+     * @return
+     */
+    public static <T extends BaseConfiguration> List<T> configurations(Class<T> extensionPoint, ApplicationContext context) {
+        return extensions(extensionPoint, context).stream()
+            .sorted((x,y)->Integer.signum(x.getPriority(extensionPoint)-y.getPriority(extensionPoint)))
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * Return a list of configurations in priority order.
+     * @param extensionPoint The extension point of the configuration, may affect priority.
+     * @param context
+     * @return
+     */
+    public static <T extends BaseConfiguration> List<T> configurations(Class<T> extensionPoint) {
+        return configurations(extensionPoint, context);
+    }
+    
+    /**
+     * Reinitialize all configuration beans in the context.
+     * @param context
+     * @throws GeoWebCacheException
+     */
+    public static void reinitializeConfigurations(ApplicationContext context) {
+        for (BaseConfiguration config: configurations(BaseConfiguration.class, context)) {
+            try {
+                config.reinitialize();
+            } catch (GeoWebCacheException e) {
+                log.error("Error while reinitializing configuration "+config.getIdentifier()
+                    +" from "+config.getLocation(), e);
+            }
+        }
+    }
+    
     /**
      * Returns a specific bean given its name
      * 

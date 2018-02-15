@@ -3,29 +3,18 @@ package org.geowebcache.config;
 import java.io.IOException;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.meta.ServiceInformation;
-import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.layer.TileLayer;
+import org.springframework.beans.factory.InitializingBean;
 
-public interface BaseConfiguration {
+public interface BaseConfiguration extends InitializingBean {
 
+    public static final int BASE_PRIORITY = 0;
+    
     /**
-     * Initializes this configuration.
-     * <p>
-     * Any gridset provided by this configuration must be added to {@code gridSetBroker}
-     * </p>
-     * <p>
-     * Any layer provided by this configuration must be {@link TileLayer#initialize(GridSetBroker)
-     * initialized} with the provided {@code gridSetBroker}.
-     * </p>
+     * Reinitialize the configuration from its persistence.
      * 
-     * @param gridSetBroker
-     * @return the count of layers provided by this configuration after initialization.
      * @throws GeoWebCacheException
-     * 
-     * TODO Get rid of this, adding gridsets should be done by implementing GridSetConfiguration 
      */
-    int initialize(GridSetBroker gridSetBroker) throws GeoWebCacheException;
+    void reinitialize() throws GeoWebCacheException;
 
     /**
      * @return non null identifier for this configuration
@@ -51,5 +40,17 @@ public interface BaseConfiguration {
      * TODO get rid of this, 
      */
     void save() throws IOException;
-
+    
+    /**
+     * Get the priority of this configuration when aggregating. Lower values will be used before 
+     * higher ones.  This should always return the same value, for a given input.
+     */
+    default int getPriority(Class<? extends BaseConfiguration> clazz) {
+        return BASE_PRIORITY;
+    }
+    
+    @Override
+    default void afterPropertiesSet() throws Exception {
+        reinitialize();
+    }
 }

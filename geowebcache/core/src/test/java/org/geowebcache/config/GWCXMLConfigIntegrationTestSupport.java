@@ -36,7 +36,8 @@ public class GWCXMLConfigIntegrationTestSupport extends GWCConfigIntegrationTest
         }
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
         broker = new GridSetBroker(getGridSetConfigurations());
-        config.initialize(broker);
+        config.setGridSetBroker(broker);
+        config.reinitialize();
     }
 
     @Override

@@ -17,6 +17,8 @@
 package org.geowebcache.sqlite;
 
 import com.thoughtworks.xstream.XStream;
+
+import org.geowebcache.config.Info;
 import org.geowebcache.config.XMLConfigurationProvider;
 
 /**
@@ -28,5 +30,10 @@ public class MbtilesConfigurationProvider implements XMLConfigurationProvider {
     public XStream getConfiguredXStream(XStream xs) {
         xs.alias("MbtilesBlobStore", MbtilesInfo.class);
         return xs;
+    }
+
+    @Override
+    public boolean canSave(Info i) {
+        return i instanceof MbtilesConfiguration;
     }
 }

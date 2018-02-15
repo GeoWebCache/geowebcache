@@ -18,6 +18,8 @@ import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.GWCVars;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -65,8 +67,13 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
 
     private String storageFormat;
 
-    private ArcGISCompactCache compactCache;
+    private transient ArcGISCompactCache compactCache;
 
+    @VisibleForTesting
+    ArcGISCacheLayer(String name) {
+        this.name = name;
+    }
+    
     /**
      * @return {@code null}, this kind of layer handles its own storage.
      */
@@ -209,7 +216,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         final GridSetBuilder gsBuilder = new GridSetBuilder();
         GridSet gridSet = gsBuilder.buildGridset(layerName, info, layerBounds);
 
-        gridSetBroker.put(gridSet);
+        getGridsetConfiguration(gridSetBroker).addInternal(gridSet);
 
         final List<LODInfo> lodInfos = tileCacheInfo.getLodInfos();
         Integer zoomStart = lodInfos.get(0).getLevelID();
@@ -223,6 +230,18 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         return subsets;
     }
 
+    private ArcGISCacheGridsetConfiguration getGridsetConfiguration(final GridSetBroker gridSetBroker) {
+        List<? extends ArcGISCacheGridsetConfiguration> configs = gridSetBroker.getConfigurations(ArcGISCacheGridsetConfiguration.class);
+        if(configs.size()==0) {
+            throw new IllegalStateException("No ArcGISCacheGridsetConfiguration could be found");
+        } else {
+            if (configs.size()>1){
+                log.warn("Multiple instances of ArcGISCacheGridsetConfiguration, using first");
+            }
+            return configs.iterator().next();
+        }
+    }
+    
     /**
      * @see org.geowebcache.layer.TileLayer#getTile(org.geowebcache.conveyor.ConveyorTile)
      */

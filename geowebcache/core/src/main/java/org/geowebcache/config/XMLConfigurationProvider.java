@@ -22,4 +22,11 @@ public interface XMLConfigurationProvider {
      *         xml mappings
      */
     XStream getConfiguredXStream(XStream xs);
+    
+    /**
+     * Returns true if XStream has been configured to persist the given Info object.
+     * @param clazz
+     * @return
+     */
+    boolean canSave(Info i);
 }

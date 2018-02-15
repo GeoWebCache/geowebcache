@@ -17,6 +17,7 @@
 package org.geowebcache.rest.reload;
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.MockGridSetConfiguration;
 import org.geowebcache.grid.*;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.controller.ReloadController;
@@ -45,7 +46,6 @@ public class ReloadTest {
 
     @Before
     public void setup() throws GeoWebCacheException {
-        GridSetBroker gridSetBroker = new GridSetBroker(false, false);
 
         BoundingBox extent = new BoundingBox(0, 0, 10E6, 10E6);
         boolean alignTopLeft = false;
@@ -58,7 +58,8 @@ public class ReloadTest {
         GridSet gridSet = GridSetFactory.createGridSet("EPSG:3395", SRS.getSRS("EPSG:3395"),
                 extent, alignTopLeft, levels, metersPerUnit, pixelSize, tileWidth, tileHeight,
                 yCoordinateFirst);
-        gridSetBroker.put(gridSet);
+        GridSetBroker gridSetBroker = new GridSetBroker(
+                MockGridSetConfiguration.withDefaults(gridSet));
 
         tld = new TileLayerDispatcher(gridSetBroker);
         reload = new ReloadController();
