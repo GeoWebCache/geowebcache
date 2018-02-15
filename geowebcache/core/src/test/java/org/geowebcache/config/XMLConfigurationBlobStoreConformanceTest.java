@@ -5,20 +5,18 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.io.FileUtils;
-import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.MockWepAppContextRule;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -29,55 +27,45 @@ public class XMLConfigurationBlobStoreConformanceTest extends BlobStoreConfigura
     public TemporaryFolder temp = new TemporaryFolder();
     private File configDir;
     private File configFile;
-    private boolean failNextRead;
-    private boolean failNextWrite;
 
     @Override
     public void failNextRead() {
-        failNextRead = true;
+        configSource.setFailNextRead(true);
     }
 
     @Override
     public void failNextWrite() {
-        failNextWrite = true;
+        configSource.setFailNextWrite(true);
     }
 
+    public @Rule MockWepAppContextRule extensions = new MockWepAppContextRule();
+    public @Rule MockWepAppContextRule extensions2 = new MockWepAppContextRule(false);
+    
     @Override
     protected BlobStoreConfiguration getConfig() throws Exception {
+        makeConfigFile();
+        return getConfig(extensions);
+    }
+    
+    protected void makeConfigFile() throws IOException {
         if(configFile==null) {
-            // create a temp XML config
             configDir = temp.getRoot();
-            configFile = temp.newFile(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME);
-            // copy the example XML to the temp config file
-            URL source = XMLConfiguration.class.getResource("geowebcache_190.xml");
+            configFile = temp.newFile("geowebcache.xml");
+            
+            URL source = XMLConfiguration.class
+                .getResource("geowebcache_190.xml");
             FileUtils.copyURLToFile(source, configFile);
         }
-        // initialize the config with an XMLFileResourceProvider that uses the temp config file
-        GridSetBroker gridSetBroker = new GridSetBroker(true, true);
-        ConfigurationResourceProvider configProvider =
-            new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
-                (WebApplicationContext)null, configDir.getAbsolutePath(), null) {
-                    @Override
-                    public InputStream in() throws IOException {
-                        if(failNextRead) {
-                            failNextRead = false;
-                            throw new IOException("Test failure on read");
-                        }
-                        return super.in();
-                    }
-
-                    @Override
-                    public OutputStream out() throws IOException {
-                        if(failNextWrite) {
-                            failNextWrite = false;
-                            throw new IOException("Test failure on write");
-                        }
-                        return super.out();
-                    }
-                };
-        config = new XMLConfiguration(null, configProvider);
-        config.initialize(gridSetBroker);
-        return config;
+    }
+    @Override
+    protected BlobStoreConfiguration getSecondConfig() throws Exception {
+        return getConfig(extensions2);
+    }
+    
+    TestXMLConfigurationSource configSource = new TestXMLConfigurationSource();
+    
+    protected BlobStoreConfiguration getConfig(MockWepAppContextRule extensions) throws Exception {
+        return configSource.create(extensions, configDir);
     }
 
     @Test
@@ -123,7 +111,7 @@ public class XMLConfigurationBlobStoreConformanceTest extends BlobStoreConfigura
     }
 
     @Override
-    protected String getExistingInfo() throws Exception {
+    protected String getExistingInfo() {
         return "defaultCache";
     }
 
@@ -134,6 +122,18 @@ public class XMLConfigurationBlobStoreConformanceTest extends BlobStoreConfigura
             public boolean matches(Object item) {
                 return expected.equals(item);
             }
+        };
+    }
+    
+    @Override
+    protected Matcher<BlobStoreInfo> infoEquals(int expected) {
+        return new CustomMatcher<BlobStoreInfo>("BlobStoreInfo with value " + expected){
+            
+            @Override
+            public boolean matches(Object item) {
+                return item instanceof BlobStoreInfo && (Objects.equals(((BlobStoreInfo)item).getName(), Integer.toString(expected)));
+            }
+            
         };
     }
 }

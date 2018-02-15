@@ -34,6 +34,6 @@ public class MbtilesConfigurationProvider implements XMLConfigurationProvider {
 
     @Override
     public boolean canSave(Info i) {
-        return i instanceof MbtilesConfiguration;
+        return i instanceof MbtilesInfo;
     }
 }

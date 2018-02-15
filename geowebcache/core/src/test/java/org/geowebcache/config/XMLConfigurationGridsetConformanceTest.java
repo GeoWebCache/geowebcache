@@ -2,23 +2,17 @@ package org.geowebcache.config;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.Objects;
-
-import javax.security.auth.login.Configuration;
 
 import org.apache.commons.io.FileUtils;
 import org.geowebcache.MockWepAppContextRule;
 import org.geowebcache.grid.GridSet;
-import org.geowebcache.grid.GridSetBroker;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.springframework.web.context.WebApplicationContext;
 
 public class XMLConfigurationGridsetConformanceTest extends GridSetConfigurationTest {
 
@@ -30,9 +24,6 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
     
     public @Rule MockWepAppContextRule extensions = new MockWepAppContextRule();
     public @Rule MockWepAppContextRule extensions2 = new MockWepAppContextRule(false);
-
-    private boolean failNextRead = false;
-    private boolean failNextWrite = false;
     
     @Override
     protected GridSetConfiguration getConfig() throws Exception {
@@ -44,44 +35,11 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
     protected GridSetConfiguration getSecondConfig() throws Exception {
         return getConfig(extensions2);
     }
-        
+    
+    TestXMLConfigurationSource configSource = new TestXMLConfigurationSource();
+    
     protected GridSetConfiguration getConfig(MockWepAppContextRule extensions) throws Exception {
-        makeConfigFile();
-        
-        GridSetBroker gridSetBroker = new GridSetBroker();
-        gridSetBroker.setApplicationContext(extensions.getMockContext());
-        DefaultGridsets defaultGridsets = new DefaultGridsets(true, true);
-        extensions.addBean("DefaultGridSets", defaultGridsets, DefaultGridsets.class, GridSetConfiguration.class, BaseConfiguration.class);
-        
-        ConfigurationResourceProvider configProvider = new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
-                (WebApplicationContext)null, configDir.getAbsolutePath(), null) {
-
-                    @Override
-                    public InputStream in() throws IOException {
-                        if(failNextRead) {
-                            failNextRead = false;
-                            throw new IOException("Test failure on read");
-                        }
-                        return super.in();
-                    }
-
-                    @Override
-                    public OutputStream out() throws IOException {
-                        if(failNextWrite) {
-                            failNextWrite = false;
-                            throw new IOException("Test failure on write");
-                        }
-                        return super.out();
-                    }
-            
-        };
-        XMLConfiguration config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
-        extensions.addBean("XMLConfiguration", config, Configuration.class, GridSetConfiguration.class, TileLayerConfiguration.class);
-        ((XMLConfiguration) config).setGridSetBroker(gridSetBroker);
-        config.afterPropertiesSet();
-        defaultGridsets.afterPropertiesSet();
-        gridSetBroker.afterPropertiesSet();
-        return config;
+        return configSource.create(extensions, configDir);
     }
     
     protected void makeConfigFile() throws IOException {
@@ -126,12 +84,12 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
 
     @Override
     public void failNextRead() {
-        failNextRead = true;
+        configSource.setFailNextRead(true);
     }
 
     @Override
     public void failNextWrite() {
-        failNextWrite = true;
+        configSource.setFailNextWrite(true);
     }
 
     @Override

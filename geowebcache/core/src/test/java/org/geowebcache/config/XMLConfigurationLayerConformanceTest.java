@@ -35,9 +35,6 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
 
     public @Rule MockWepAppContextRule extensions = new MockWepAppContextRule();
     public @Rule MockWepAppContextRule extensions2 = new MockWepAppContextRule(false);
-
-    protected boolean failNextRead = false;
-    protected boolean failNextWrite = false;
     
     @Override
     protected TileLayer getGoodInfo(String id, int rand) {
@@ -110,42 +107,10 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
         return getConfig(extensions2);
     }
     
+    TestXMLConfigurationSource configSource = new TestXMLConfigurationSource();
+    
     protected TileLayerConfiguration getConfig(MockWepAppContextRule extensions) throws Exception {
-        
-        GridSetBroker gridSetBroker = new GridSetBroker();
-        gridSetBroker.setApplicationContext(extensions.getMockContext());
-        DefaultGridsets defaultGridsets = new DefaultGridsets(true, true);
-        extensions.addBean("DefaultGridSets", defaultGridsets, DefaultGridsets.class, GridSetConfiguration.class, BaseConfiguration.class);
-        
-        XMLFileResourceProvider configProvider = new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
-                (WebApplicationContext)null, configDir.getAbsolutePath(), null) {
-
-                    @Override
-                    public InputStream in() throws IOException {
-                        if(failNextRead) {
-                            failNextRead = false;
-                            throw new IOException("Test failure on read");
-                        }
-                        return super.in();
-                    }
-
-                    @Override
-                    public OutputStream out() throws IOException {
-                        if(failNextWrite) {
-                            failNextWrite = false;
-                            throw new IOException("Test failure on write");
-                        }
-                        return super.out();
-                    }
-            
-        };
-        TileLayerConfiguration config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
-        extensions.addBean("ConfigUnderTest", config, TileLayerConfiguration.class, GridSetConfiguration.class, BaseConfiguration.class, XMLConfiguration.class);
-        config.setGridSetBroker(gridSetBroker);
-        config.afterPropertiesSet();
-        defaultGridsets.afterPropertiesSet();
-        gridSetBroker.afterPropertiesSet();
-        return config;
+        return configSource.create(extensions, configDir);
     }
 
     protected void makeConfigFile() throws IOException {
@@ -191,12 +156,12 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
 
     @Override
     public void failNextRead() {
-        failNextRead = true;
+        configSource.setFailNextRead(true);
     }
 
     @Override
     public void failNextWrite() {
-        failNextWrite = true;
+        configSource.setFailNextWrite(true);
     }
 
     @Override

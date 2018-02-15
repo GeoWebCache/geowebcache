@@ -74,7 +74,7 @@ public class ServerConfigurationTest {
         assertEquals(version, "1.13.0");
 
         // Initialize to reload the configuration from the XML file and test persistence
-        config.initialize(gridSetBroker);
+        config.reinitialize();
         ServiceInformation savedInfo = config.getServiceInformation();
         assertEquals(savedInfo.getProviderName(), "John Adams inc.");
         assertFalse(config.isRuntimeStatsEnabled());
@@ -100,7 +100,8 @@ public class ServerConfigurationTest {
              new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
                  (WebApplicationContext)null, configDir.getAbsolutePath(), null);
          config = new XMLConfiguration(null, configProvider);
-         config.initialize(gridSetBroker);
+         ((XMLConfiguration) config).setGridSetBroker(gridSetBroker);
+         config.afterPropertiesSet();
          return config;
     }
 }

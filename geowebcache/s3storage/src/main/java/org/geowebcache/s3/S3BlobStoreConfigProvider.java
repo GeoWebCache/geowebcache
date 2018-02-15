@@ -96,12 +96,13 @@ public class S3BlobStoreConfigProvider implements XMLConfigurationProvider {
         xs.registerLocalConverter(S3BlobStoreInfo.class, "prefix", EnvironmentStringConverter);
         xs.registerLocalConverter(S3BlobStoreInfo.class, "proxyHost", EnvironmentStringConverter);
         xs.registerLocalConverter(BlobStoreInfo.class, "enabled", EnvironmentNullableBooleanConverter);
+        xs.aliasField("id", S3BlobStoreInfo.class, "name");
         return xs;
     }
 
     @Override
     public boolean canSave(Info i) {
-        return i instanceof S3BlobStoreConfig;
+        return i instanceof S3BlobStoreInfo;
     }
 
 }
