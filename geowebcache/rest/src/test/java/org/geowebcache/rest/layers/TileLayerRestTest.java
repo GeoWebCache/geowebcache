@@ -94,7 +94,6 @@ public class TileLayerRestTest {
         tld = new TileLayerDispatcher(gridSetBroker, configList);
 
         tlc = new TileLayerController();
-        tlc.setXMLConfiguration(xmlConfig);
         tlc.setTileLayerDispatcher(tld);
         tlc.setUrlMangler(new NullURLMangler());
         this.mockMvc = MockMvcBuilders.standaloneSetup(tlc).build();

@@ -59,8 +59,7 @@ public class MemoryCacheControllerTest {
         xmlConfig.setGridSetBroker(gridSetBroker);
         xmlConfig.afterPropertiesSet();
 
-        mcc = new MemoryCacheController();
-        mcc.setXMLConfiguration(xmlConfig);
+        mcc = new MemoryCacheController(null);
         this.mockMvc = MockMvcBuilders.standaloneSetup(mcc).build();
     }
 

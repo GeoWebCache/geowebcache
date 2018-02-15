@@ -43,12 +43,14 @@ import org.geowebcache.rest.exception.RestException;
 import org.geowebcache.seed.GWCTask;
 import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.seed.TileBreeder;
+import org.geowebcache.util.ApplicationContextProvider;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -67,8 +69,12 @@ public class SeedService {
     @Autowired
     TileBreeder seeder;
 
+    private final WebApplicationContext context;
+
     @Autowired
-    protected XMLConfiguration xmlConfig;
+    public SeedService(ApplicationContextProvider appCtx) {
+        context = appCtx.getApplicationContext();
+    }
 
     /**
      * GET method for querying running GWC tasks
@@ -238,7 +244,7 @@ public class SeedService {
     }
 
     protected XStream configXStream(XStream xs) {
-        return xmlConfig.getConfiguredXStreamWithContext(xs, ContextualConfigurationProvider.Context.REST);
+        return XMLConfiguration.getConfiguredXStreamWithContext(xs, context, ContextualConfigurationProvider.Context.REST);
     }
 
     private Map<String, String> splitToMap(String data) {

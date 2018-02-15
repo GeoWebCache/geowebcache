@@ -49,6 +49,7 @@ import org.geowebcache.rest.converter.XStreamListAliasWrapper;
 import org.geowebcache.rest.exception.RestException;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
+import org.geowebcache.util.ApplicationContextProvider;
 import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
@@ -62,6 +63,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -87,9 +89,6 @@ public class TileLayerController extends GWCController {
 
     @Autowired
     private StorageBroker storageBroker;
-
-    @Autowired
-    private XMLConfiguration xmlConfig;
 
     @ExceptionHandler(RestException.class)
     public ResponseEntity<?> handleRestException(RestException ex) {
@@ -253,9 +252,4 @@ public class TileLayerController extends GWCController {
     public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {
         layerDispatcher = tileLayerDispatcher;
     }
-
-    public void setXMLConfiguration(XMLConfiguration xmlConfig) {
-        this.xmlConfig = xmlConfig;
-    }
-
 }

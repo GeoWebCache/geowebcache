@@ -66,8 +66,7 @@ public class MassTruncateControllerTest {
         xmlConfig.setGridSetBroker(gridSetBroker);
         xmlConfig.afterPropertiesSet();
 
-        mtc = new MassTruncateController();
-        mtc.setXmlConfig(xmlConfig);
+        mtc = new MassTruncateController(null);
 
         this.mockMvc = MockMvcBuilders.standaloneSetup(mtc).build();
     }
