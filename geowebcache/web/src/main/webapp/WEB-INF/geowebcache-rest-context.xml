@@ -10,7 +10,7 @@
   <mvc:annotation-driven>
     <mvc:message-converters>
       <bean id="gwcConverter" class="org.geowebcache.rest.converter.GWCConverter">
-        <constructor-arg ref="gwcXmlConfig" />
+        <constructor-arg ref="gwcAppCtx" />
       </bean>
     </mvc:message-converters>
   </mvc:annotation-driven>

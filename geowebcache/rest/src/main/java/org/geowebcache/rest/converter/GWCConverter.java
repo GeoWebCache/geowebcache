@@ -16,10 +16,10 @@ import org.geowebcache.grid.GridSet;
 import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.rest.exception.RestException;
+import org.geowebcache.util.ApplicationContextProvider;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
@@ -29,12 +29,11 @@ import org.springframework.http.converter.AbstractHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
-import org.springframework.stereotype.Component;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -45,18 +44,15 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
     @Value("${gwc.context.suffix:}")
     private String gwcPrefix;
 
-    private XMLConfiguration xmlConfig;
+    private final WebApplicationContext context;
 
     public final List<Class> supportedClasses = Collections.unmodifiableList(
             Arrays.asList(BlobStoreInfo.class, GridSet.class, TileLayer.class, ServerConfigurationPOJO.class));
 
-    public GWCConverter() {
-        super(MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML);
-    }
 
-    public GWCConverter(XMLConfiguration xmlConfig) {
+    public GWCConverter(ApplicationContextProvider appCtx) {
         super(MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML);
-        this.xmlConfig = xmlConfig;
+        this.context = appCtx.getApplicationContext();
     }
 
     /**
@@ -83,8 +79,8 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
     protected T readInternal(Class<? extends T> clazz, HttpInputMessage httpInputMessage) throws IOException, HttpMessageNotReadableException {
         MediaType contentType = httpInputMessage.getHeaders().getContentType();
 
-        XStream xs = configureXStream(xmlConfig.getConfiguredXStreamWithContext(
-                new GeoWebCacheXStream(new DomDriver()), ContextualConfigurationProvider.Context.REST));
+        XStream xs = configureXStream(XMLConfiguration.getConfiguredXStreamWithContext(
+                new GeoWebCacheXStream(new DomDriver()), context, ContextualConfigurationProvider.Context.REST));
 
 
         try {
@@ -135,13 +131,13 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
                     xs.registerConverter(wrapper.createConverter(gwcPrefix));
                 }
 
-                xs = configureXStream(xmlConfig.getConfiguredXStreamWithContext(xs, ContextualConfigurationProvider.Context.REST));
+                xs = configureXStream(XMLConfiguration.getConfiguredXStreamWithContext(xs, context, ContextualConfigurationProvider.Context.REST));
                 String xmlText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + xs.toXML(xsObject);
 
                 outputWriter.write(xmlText);
             } else if (MediaType.APPLICATION_JSON.isCompatibleWith(contentType)) {
-                XStream xs = configureXStream(xmlConfig.getConfiguredXStreamWithContext(new GeoWebCacheXStream(
-                        new JsonHierarchicalStreamDriver()), ContextualConfigurationProvider.Context.REST));
+                XStream xs = configureXStream(XMLConfiguration.getConfiguredXStreamWithContext(new GeoWebCacheXStream(
+                        new JsonHierarchicalStreamDriver()), context, ContextualConfigurationProvider.Context.REST));
                 Object jsonObject;
                 if (object instanceof XStreamListAliasWrapper) {
                     jsonObject = new JSONArray(((XStreamListAliasWrapper) object).object);
