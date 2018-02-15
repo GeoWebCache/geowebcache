@@ -39,14 +39,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-@Component
 public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
         implements HttpMessageConverter<T> {
 
     @Value("${gwc.context.suffix:}")
     private String gwcPrefix;
 
-    @Autowired
     private XMLConfiguration xmlConfig;
 
     public final List<Class> supportedClasses = Collections.unmodifiableList(
@@ -54,6 +52,11 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
 
     public GWCConverter() {
         super(MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML);
+    }
+
+    public GWCConverter(XMLConfiguration xmlConfig) {
+        super(MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML);
+        this.xmlConfig = xmlConfig;
     }
 
     /**
