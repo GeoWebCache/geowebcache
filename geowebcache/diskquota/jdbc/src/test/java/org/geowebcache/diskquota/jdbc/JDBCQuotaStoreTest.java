@@ -113,7 +113,7 @@ public abstract class JDBCQuotaStoreTest {
             
             extensions.addBean("defaultGridsets",new DefaultGridsets(true, true), GridSetConfiguration.class, DefaultGridsets.class);
             
-            GridSetBroker broker = new GridSetBroker(true, true);
+            GridSetBroker broker = new GridSetBroker();
             broker.setApplicationContext(extensions.getMockContext());
             extensions.addBean("gridSetBroker",broker, GridSetBroker.class);
             
