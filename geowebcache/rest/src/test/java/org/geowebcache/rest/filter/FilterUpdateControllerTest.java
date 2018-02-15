@@ -2,6 +2,7 @@ package org.geowebcache.rest.filter;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.MockConfigurationResourceProvider;
+import org.geowebcache.config.MockGridSetConfiguration;
 import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
@@ -31,7 +32,6 @@ public class FilterUpdateControllerTest {
 
     @Before
     public void setup() throws GeoWebCacheException {
-        GridSetBroker gridSetBroker = new GridSetBroker(false, false);
 
         BoundingBox extent = new BoundingBox(0, 0, 10E6, 10E6);
         boolean alignTopLeft = false;
@@ -44,8 +44,10 @@ public class FilterUpdateControllerTest {
         GridSet gridSet = GridSetFactory.createGridSet("EPSG:3395", SRS.getSRS("EPSG:3395"),
                 extent, alignTopLeft, levels, metersPerUnit, pixelSize, tileWidth, tileHeight,
                 yCoordinateFirst);
-        gridSetBroker.addGridSet(gridSet);
-
+        
+        GridSetBroker gridSetBroker = new GridSetBroker(
+                MockGridSetConfiguration.withDefaults(gridSet));
+        
         XMLConfiguration xmlConfig = loadXMLConfig();
         xmlConfig.setGridSetBroker(gridSetBroker);
         xmlConfig.reinitialize();
