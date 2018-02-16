@@ -735,7 +735,7 @@ public class RestIntegrationTest {
 
         Document doc = getResponseEntityAsXML(response);
 
-        assertThat(doc, hasXPath("count(/gridSets/gridSet)", equalTo("1")));
+        assertThat(doc, hasXPath("count(/gridSets/gridSet)", equalTo("6")));
         assertThat(doc, hasXPath("/gridSets/gridSet[1]/name", equalTo("EPSG:2163")));
         assertThat(doc, hasXPath("/gridSets/gridSet[1]/atom:link/@href",
                 equalTo("http://localhost:8080/geowebcache/rest/gridsets/EPSG:2163.xml")));
@@ -749,7 +749,7 @@ public class RestIntegrationTest {
         assertEquals(200, response.getStatusLine().getStatusCode());
 
         JSONArray jsonArray = getResponseEntityAsJSONArray(response);
-        assertEquals(1, jsonArray.length());
+        assertEquals(6, jsonArray.length());
         assertEquals("EPSG:2163", jsonArray.get(0));
     }
 
