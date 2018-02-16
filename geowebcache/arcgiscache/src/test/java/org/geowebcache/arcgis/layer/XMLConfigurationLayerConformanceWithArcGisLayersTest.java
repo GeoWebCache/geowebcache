@@ -6,25 +6,21 @@ import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.MockWepAppContextRule;
-import org.geowebcache.config.BaseConfiguration;
-import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.GridSetConfiguration;
 import org.geowebcache.config.TileLayerConfiguration;
-import org.geowebcache.config.XMLConfiguration;
-import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
 import org.geowebcache.config.XMLConfigurationLayerConformanceTest;
 import org.geowebcache.config.XMLConfigurationProvider;
-import org.geowebcache.config.XMLFileResourceProvider;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.OutsideCoverageException;
@@ -33,8 +29,6 @@ import org.geowebcache.layer.TileLayer;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.Rule;
-
 public class XMLConfigurationLayerConformanceWithArcGisLayersTest
         extends XMLConfigurationLayerConformanceTest {
     
@@ -147,16 +141,23 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
     protected void doModifyInfo(TileLayer info, int rand) throws Exception {
         ((ArcGISCacheLayer)info).setBackendTimeout(rand);
     }
-
+    
     @Override
-    protected void makeConfigFile() throws IOException {
+    protected void makeConfigFile() throws Exception {
         if(configFile==null) {
             configDir = temp.getRoot();
             configFile = temp.newFile("geowebcache.xml");
             
             URL source = XMLConfigurationLayerConformanceWithArcGisLayersTest.class
                 .getResource("geowebcache.xml");
-            FileUtils.copyURLToFile(source, configFile);
+            try(Stream<String> lines = Files.lines(Paths.get(source.toURI()))) {
+                List<String> replaced = lines
+                        .map(line->line.replaceAll("TILING_SCHEME_PATH",
+                            resourceAsFile("/compactcache/Conf.xml").getAbsolutePath()))
+                        .collect(Collectors.toList());
+                Files.write(configFile.toPath(), replaced);
+            }
+            
         }
     }
     

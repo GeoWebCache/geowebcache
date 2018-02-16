@@ -13,7 +13,7 @@
   <layers>
     <arcgisLayer>
       <name>testExisting</name>
-      <tilingScheme>/home/smithkm/git/geowebcache/geowebcache/arcgiscache/target/test-classes/compactcache/Conf.xml</tilingScheme>
+      <tilingScheme>TILING_SCHEME_PATH</tilingScheme>
       <hexZoom>false</hexZoom>
       <storageFormat>esriMapCacheStorageModeCompact</storageFormat>
     </arcgisLayer>

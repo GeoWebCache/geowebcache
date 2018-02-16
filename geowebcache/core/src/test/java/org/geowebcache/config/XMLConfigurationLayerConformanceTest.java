@@ -113,7 +113,7 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
         return configSource.create(extensions, configDir);
     }
 
-    protected void makeConfigFile() throws IOException {
+    protected void makeConfigFile() throws Exception {
         if(configFile==null) {
             configDir = temp.getRoot();
             configFile = temp.newFile("geowebcache.xml");
