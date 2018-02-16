@@ -72,6 +72,8 @@ import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.meta.MetadataURL;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.google.common.collect.Sets;
 
@@ -619,15 +621,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
         throw new UnsupportedOperationException("renameLayer is not supported by "
                 + getClass().getSimpleName());
     }
-
-    //TODO: Remove
-    /**
-     * @see TileLayerConfiguration#save()
-     */
-    public void save() throws IOException {
-        // silently do nothing
-    }
-
+    
     /**
      * @return {@code false}
      * @see TileLayerConfiguration#canSave(org.geowebcache.layer.TileLayer)
@@ -696,25 +690,23 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     @Override
     public void modifyGridSet(GridSet gridSet)
             throws NoSuchElementException, IllegalArgumentException, UnsupportedOperationException {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException();
     }
 
     @Override
     public void renameGridSet(String oldName, String newName)
             throws NoSuchElementException, IllegalArgumentException, UnsupportedOperationException {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean canSave(GridSet gridset) {
-        // TODO Auto-generated method stub
         return false;
     }
     
+    @Autowired
     @Override
-    public void setGridSetBroker(GridSetBroker broker) {
+    public void setGridSetBroker(@Qualifier("gwcGridSetBroker") GridSetBroker broker) {
         this.gridSetBroker = broker;
     }
 
