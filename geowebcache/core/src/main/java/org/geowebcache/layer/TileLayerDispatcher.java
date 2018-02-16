@@ -273,7 +273,16 @@ public class TileLayerDispatcher implements DisposableBean, InitializingBean, Ap
             throw new IllegalStateException("There are TileLayers referencing gridset '"
                     + gridSetName + "': " + refereningLayers.toString());
         }
-        XMLConfiguration persistingConfig = getXmlConfiguration();
+        XMLConfiguration persistingConfig = null;
+        for (BaseConfiguration c : configs) {
+            if (c instanceof XMLConfiguration) {
+                persistingConfig = (XMLConfiguration) c;
+            }
+        }
+        if (persistingConfig == null) {
+            throw new IllegalStateException("Found no configuration of type "
+                    + XMLConfiguration.class.getName());
+        }
         GridSet removed = gridSetBroker.remove(gridSetName);
         Assert.notNull(removed != null);
         Assert.notNull(persistingConfig.removeGridset(gridSetName));
@@ -290,18 +299,7 @@ public class TileLayerDispatcher implements DisposableBean, InitializingBean, Ap
     }
 
     private void saveGridSet(final GridSet gridSet) throws IOException {
-        XMLConfiguration persistingConfig = getXmlConfiguration();
-        persistingConfig.addGridSet(gridSet);
-    }
-
-    private XMLConfiguration getXmlConfiguration() throws IllegalStateException {
-        for (BaseConfiguration c : configs) {
-            if (c instanceof XMLConfiguration) {
-                return (XMLConfiguration) c;
-            }
-        }
-        throw new IllegalStateException("Found no configuration of type "
-                + XMLConfiguration.class.getName());
+        gridSetBroker.addGridSet(gridSet);
     }
 
     public synchronized void removeGridSet(String gridsetToRemove) {
