@@ -1,5 +1,7 @@
 package org.geowebcache.rest.controller;
 
+import org.geowebcache.GeoWebCache;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.GridSetConfiguration;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -25,8 +27,8 @@ public class GridSetController extends GWCController {
 
     @Autowired
     //change to GridSetBroker after changes to gridset broker are added
-//    GridSetBroker broker;
-    GridSetConfiguration broker;
+    GridSetBroker broker;
+//    GridSetConfiguration broker;
     @ExceptionHandler(RestException.class)
     public ResponseEntity<?> handleRestException(RestException ex) {
         HttpHeaders headers = new HttpHeaders();
@@ -43,22 +45,22 @@ public class GridSetController extends GWCController {
     @RequestMapping(path = "/{gridSetName}", method = RequestMethod.GET,
             produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_XML_VALUE})
     public GridSet gridSetGet(@PathVariable String gridSetName) {
-        //TODO: Use GridSetBroker
-        Optional<GridSet> gridSet = broker.getGridSet(gridSetName);
-        if (!gridSet.isPresent()) {
+        if (broker.get(gridSetName) != null){
+            return broker.get(gridSetName);
+        } else{
             throw new RestException(String.format(
                     "Failed to get GridSet. A GridSet with name \"%s\" does not exist.", gridSetName),
                     HttpStatus.NOT_FOUND);
+            }
         }
-        return gridSet.get();
-    }
+
 
     @RequestMapping(path = "/{gridSetName}", method = RequestMethod.PUT,
             consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_XML_VALUE})
     public ResponseEntity<?> gridSetPut(@PathVariable String gridSetName, @RequestBody GridSet gridSet) {
 
-        if (broker.getGridSet(gridSetName).isPresent()) {
-            broker.modifyGridSet(gridSet);
+        if (broker.get(gridSetName) != null) {
+            broker.put(gridSet);
         } else {
             broker.addGridSet(gridSet);
             return new ResponseEntity<Object>("", HttpStatus.CREATED);
@@ -68,7 +70,7 @@ public class GridSetController extends GWCController {
 
     @RequestMapping(path = "/{gridSetName}", method = RequestMethod.DELETE)
     public void gridSetDelete(@PathVariable String gridSetName) {
-        if (broker.getGridSet(gridSetName).isPresent()) {
+        if (broker.get(gridSetName) != null) {
             broker.removeGridSet(gridSetName);
         } else {
             throw new RestException(String.format(
