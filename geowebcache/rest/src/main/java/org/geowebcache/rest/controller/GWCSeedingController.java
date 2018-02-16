@@ -36,10 +36,12 @@ import org.geowebcache.config.ContextualConfigurationProvider;
 import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.rest.exception.RestException;
+import org.geowebcache.util.ApplicationContextProvider;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -52,8 +54,12 @@ abstract public class GWCSeedingController extends GWCController {
 
     public JSONObject myrequest;
 
+    private WebApplicationContext context;
+
     @Autowired
-    protected XMLConfiguration xmlConfig;
+    public GWCSeedingController(ApplicationContextProvider appCtx) {
+        context = appCtx == null ? null : appCtx.getApplicationContext();
+    }
 
     /**
      * Handle a GET request
@@ -108,11 +114,11 @@ abstract public class GWCSeedingController extends GWCController {
         return writer.toString();
     }
 
-    public void setXmlConfig(XMLConfiguration xmlConfig) {
-        this.xmlConfig = xmlConfig;
+    public void setContext(WebApplicationContext context) {
+        this.context = context;
     }
 
     protected XStream configXStream(XStream xs) {
-        return xmlConfig.getConfiguredXStreamWithContext(xs, ContextualConfigurationProvider.Context.REST);
+        return XMLConfiguration.getConfiguredXStreamWithContext(xs, context, ContextualConfigurationProvider.Context.REST);
     }
 }

@@ -32,6 +32,7 @@ import org.geowebcache.diskquota.DiskQuotaConfig;
 import org.geowebcache.diskquota.DiskQuotaMonitor;
 import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.storage.blobstore.memory.CacheStatistics;
+import org.geowebcache.util.ApplicationContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -50,13 +52,17 @@ import java.io.StringWriter;
 @RequestMapping(path="${gwc.context.suffix:}/rest")
 public class DiskQuotaController {
 
+    private final WebApplicationContext context;
+
+    @Autowired
+    public DiskQuotaController(ApplicationContextProvider appCtx) {
+        context = appCtx == null ? null : appCtx.getApplicationContext();
+    }
+
     static final Log log = LogFactory.getLog(DiskQuotaController.class);
 
     @Autowired
     DiskQuotaMonitor monitor;
-
-    @Autowired
-    XMLConfiguration xmlConfig;
 
     public void setDiskQuotaMonitor(DiskQuotaMonitor monitor) {this.monitor = monitor;}
 
@@ -177,8 +183,8 @@ public class DiskQuotaController {
     private ResponseEntity<?> getJsonRepresentation(DiskQuotaConfig config) throws JSONException {
         JSONObject rep = null;
         try {
-            XStream xs = xmlConfig.getConfiguredXStreamWithContext(new GeoWebCacheXStream(
-                    new JsonHierarchicalStreamDriver()), Context.REST);
+            XStream xs = XMLConfiguration.getConfiguredXStreamWithContext(new GeoWebCacheXStream(
+                    new JsonHierarchicalStreamDriver()), context, Context.REST);
             JSONObject obj = new JSONObject(xs.toXML(config));
             rep = obj;
         } catch (JSONException jse) {

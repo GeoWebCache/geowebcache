@@ -34,7 +34,6 @@
     </property>
   </bean>
 
-  <mvc:annotation-driven />
   <context:component-scan base-package="org.geowebcache.controller"/>
   
 </beans>

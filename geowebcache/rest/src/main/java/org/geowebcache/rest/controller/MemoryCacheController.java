@@ -33,6 +33,7 @@ import org.geowebcache.storage.DefaultStorageBroker;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.blobstore.memory.CacheStatistics;
 import org.geowebcache.storage.blobstore.memory.MemoryBlobStore;
+import org.geowebcache.util.ApplicationContextProvider;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -56,8 +58,12 @@ public class MemoryCacheController {
     @Autowired
     StorageBroker broker;
 
+    private WebApplicationContext context;
+
     @Autowired
-    XMLConfiguration xmlConfig;
+    public MemoryCacheController(ApplicationContextProvider appCtx) {
+        context = appCtx == null ? null : appCtx.getApplicationContext();
+    }
 
     /** BlobStore used for getting statistics */
     private BlobStore store;
@@ -67,8 +73,8 @@ public class MemoryCacheController {
         this.broker = broker;
     }
 
-    public void setXMLConfiguration(XMLConfiguration xmlConfig) {
-        this.xmlConfig = xmlConfig;
+    public void setContext(WebApplicationContext context) {
+        this.context = context;
     }
 
     /**
@@ -129,8 +135,8 @@ public class MemoryCacheController {
     private ResponseEntity<?> getJsonRepresentation(CacheStatistics stats) throws JSONException {
         JSONObject rep = null;
         try {
-            XStream xs = xmlConfig.getConfiguredXStreamWithContext(new GeoWebCacheXStream(
-                    new JsonHierarchicalStreamDriver()), Context.REST);
+            XStream xs = XMLConfiguration.getConfiguredXStreamWithContext(new GeoWebCacheXStream(
+                    new JsonHierarchicalStreamDriver()), context, Context.REST);
             JSONObject obj = new JSONObject(xs.toXML(stats));
             rep = obj;
         } catch (JSONException jse) {
