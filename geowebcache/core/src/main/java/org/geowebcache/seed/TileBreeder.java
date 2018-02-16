@@ -247,7 +247,7 @@ public class TileBreeder implements ApplicationContextAware {
     public GWCTask[] createTasks(TileRange tr, TileLayer tl, GWCTask.TYPE type, int threadCount,
             boolean filterUpdate) throws GeoWebCacheException {
 
-        if (type == GWCTask.TYPE.TRUNCATE || threadCount < 1) {
+        if (threadCount < 1) {
             log.trace("Forcing thread count to 1");
             threadCount = 1;
         }
@@ -500,7 +500,7 @@ public class TileBreeder implements ApplicationContextAware {
      * Find a layer by name.
      * @param layerName
      * @return
-     * @throws GeoWebCacheException
+     * @throws GeoWebCacheException if the layer is not found
      */
     public TileLayer findTileLayer(String layerName) throws GeoWebCacheException {
         TileLayer layer = null;
@@ -508,7 +508,7 @@ public class TileBreeder implements ApplicationContextAware {
         layer = layerDispatcher.getTileLayer(layerName);
 
         if (layer == null) {
-            throw new GeoWebCacheException("Uknown layer: " + layerName);
+            throw new GeoWebCacheException("Unknown layer: " + layerName);
         }
 
         return layer;

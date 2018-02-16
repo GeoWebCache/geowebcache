@@ -137,7 +137,7 @@ public class FormService {
         return new ResponseEntity<Object>(doc.toString(), getHeaders(), HttpStatus.OK);
     }
 
-    public ResponseEntity<?> handleFormPost(HttpServletRequest request, String layer, String body) throws RestException,
+    public ResponseEntity<?> handleFormPost(String layer, Map<String, String> params) throws RestException,
             GeoWebCacheException {
         final TileLayer tl;
         {
@@ -152,21 +152,6 @@ public class FormService {
                 tl = null;
             }
         }
-
-        try {
-            body = URLDecoder.decode(body, "UTF-8");
-        } catch (IOException e) {
-            body = null;
-        }
-
-
-
-        if (body == null || body == "") {
-            throw new RestException("Unable to parse form result.",
-                    HttpStatus.BAD_REQUEST);
-        }
-
-        Map<String, String> params = splitToMap(body);
 
         if (params.containsKey("list")) {
             if (tl == null) {
@@ -206,7 +191,7 @@ public class FormService {
         int threadCount = Integer.parseInt(form.get("threadCount"));
         int zoomStart = Integer.parseInt(form.get("zoomStart"));
         int zoomStop = Integer.parseInt(form.get("zoomStop"));
-        String format = form.get("format");
+        String format = form.get("tileFormat");
         Map<String, String> fullParameters;
         {
             Map<String, String> parameters = new HashMap<String, String>();;
@@ -515,7 +500,7 @@ public class FormService {
             keysValues.put(mime.getFormat(), mime.getFormat());
         }
 
-        makePullDown(doc, "format", keysValues, ImageMime.png.getFormat());
+        makePullDown(doc, "tileFormat", keysValues, ImageMime.png.getFormat());
         doc.append("</td></tr>\n");
     }
 
@@ -769,14 +754,6 @@ public class FormService {
 
     private void makeFooter(StringBuilder doc) {
         doc.append("</body></html>\n");
-    }
-
-    private Map<String, String> splitToMap(String data) {
-        if (data.contains("&")) {
-            return Splitter.on("&").withKeyValueSeparator("=").split(data);
-        }else {
-            return Splitter.on(" ").withKeyValueSeparator("=").split(data);
-        }
     }
 
     private HttpHeaders getHeaders() {
