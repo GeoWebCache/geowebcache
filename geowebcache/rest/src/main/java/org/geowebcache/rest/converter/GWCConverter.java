@@ -41,9 +41,6 @@ import java.util.List;
 public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
         implements HttpMessageConverter<T> {
 
-    @Value("${gwc.context.suffix:}")
-    private String gwcPrefix;
-
     private final WebApplicationContext context;
 
     public final List<Class> supportedClasses = Collections.unmodifiableList(
@@ -128,7 +125,7 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
                     final XStreamListAliasWrapper wrapper = ((XStreamListAliasWrapper)object);
                     xsObject = wrapper.object;
                     xs.alias(wrapper.alias+"s", wrapper.collectionClass);
-                    xs.registerConverter(wrapper.createConverter(gwcPrefix));
+                    xs.registerConverter(wrapper.createConverter());
                 }
 
                 xs = configureXStream(XMLConfiguration.getConfiguredXStreamWithContext(xs, context, ContextualConfigurationProvider.Context.REST));

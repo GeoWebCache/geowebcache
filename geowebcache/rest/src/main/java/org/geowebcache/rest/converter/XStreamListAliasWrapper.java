@@ -46,7 +46,7 @@ public class XStreamListAliasWrapper {
      * Creates an XStream converter for the list object
      * @return A new XStream converter for the list of names
      */
-    public Converter createConverter(String gwcPrefix) {
+    public Converter createConverter() {
         return new Converter() {
             /**
              * @see com.thoughtworks.xstream.converters.ConverterMatcher#canConvert(java.lang.Class)
@@ -77,7 +77,8 @@ public class XStreamListAliasWrapper {
                     writer.startNode("atom:link");
                     writer.addAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
                     writer.addAttribute("rel", "alternate");
-                    UriComponents uriComponents = MvcUriComponentsBuilder.fromMethodName(controllerClass,alias+"Get",name).buildAndExpand(gwcPrefix);
+                    UriComponents uriComponents = MvcUriComponentsBuilder
+                            .fromMethodName(controllerClass,alias+"Get",name).buildAndExpand("");
                     writer.addAttribute("href", uriComponents.encode().toUriString().replace("$", "")+".xml");
                     writer.addAttribute("type", MediaType.TEXT_XML.toString());
 
