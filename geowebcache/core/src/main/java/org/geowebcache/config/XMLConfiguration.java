@@ -89,6 +89,8 @@ import org.geowebcache.seed.TruncateLayerRequest;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import org.w3c.dom.Document;
@@ -1495,8 +1497,9 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         }
     }
 
+    @Autowired
     @Override
-    public void setGridSetBroker(GridSetBroker broker) {
+    public void setGridSetBroker(@Qualifier("gwcGridSetBroker") GridSetBroker broker) {
         this.gridSetBroker = broker;
     }
 
