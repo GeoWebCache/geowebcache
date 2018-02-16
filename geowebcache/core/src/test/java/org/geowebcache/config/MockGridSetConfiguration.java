@@ -46,4 +46,8 @@ public class MockGridSetConfiguration extends SimpleGridSetConfiguration {
    public static List<GridSetConfiguration> withDefaults(GridSet... mocks) {
         return Arrays.asList(new DefaultGridsets(true, true), new MockGridSetConfiguration(mocks));
     }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+    }
 }

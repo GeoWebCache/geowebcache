@@ -33,7 +33,7 @@ public class GWCConfigIntegrationTestData {
 
     public static final String[] BLOBSTORES = {BLOBSTORE_FILE_DEFAULT};
 
-    public static void setUpTestData(GWCConfigIntegrationTestSupport testSupport) throws GeoWebCacheException, IOException {
+    public static void setUpTestData(GWCConfigIntegrationTestSupport testSupport) throws Exception {
         //set up service information
         ServerConfiguration serverConfiguration = testSupport.getServerConfiguration();
         serverConfiguration.getServiceInformation().setTitle("GeoWebCache");
@@ -54,7 +54,7 @@ public class GWCConfigIntegrationTestData {
 
         TileLayerConfiguration tileLayerConfiguration = testSupport.getTileLayerConfigurations().get(0);
         tileLayerConfiguration.setGridSetBroker(testSupport.getGridSetBroker());
-        tileLayerConfiguration.reinitialize();
+        tileLayerConfiguration.afterPropertiesSet();
 
         Map<String, GridSubset > subSets = new HashMap<>();
         subSets.put(GRIDSET_EPSG4326, GridSubsetFactory.createGridSubSet(testSupport.getGridSetBroker().getWorldEpsg4326(), new BoundingBox(-129.6, 3.45,-62.1,70.9), null, null));

@@ -78,7 +78,7 @@ public class GetCapabilitiesConfigurationTest {
         replay(server, cap, req, gcOpType, globalConfig);
         config.setPrimaryConfig(globalConfig);
         config.setGridSetBroker(broker);
-        config.reinitialize();
+        config.afterPropertiesSet();
 
         WMSLayer wmsLayer = (WMSLayer) config.getLayers().iterator().next();
         List<ParameterFilter> outputParameterFilters = wmsLayer.getParameterFilters();
@@ -109,7 +109,7 @@ public class GetCapabilitiesConfigurationTest {
         replay(server, cap, req, gcOpType, globalConfig);
         config.setPrimaryConfig(globalConfig);
         config.setGridSetBroker(broker);
-        config.reinitialize();
+        config.afterPropertiesSet();
         WMSLayer wmsLayer = (WMSLayer) config.getLayers().iterator().next();
         List<ParameterFilter> outputParameterFilters = wmsLayer.getParameterFilters();
 
@@ -142,7 +142,7 @@ public class GetCapabilitiesConfigurationTest {
         replay(server, cap, req, gcOpType, globalConfig);
         config.setPrimaryConfig(globalConfig);
         config.setGridSetBroker(broker);
-        config.reinitialize();
+        config.afterPropertiesSet();
         WMSLayer wmsLayer = (WMSLayer) config.getLayers().iterator().next();
         List<ParameterFilter> outputParameterFilters = wmsLayer.getParameterFilters();
 
@@ -201,7 +201,7 @@ public class GetCapabilitiesConfigurationTest {
         
         config.setPrimaryConfig(globalConfig);
         config.setGridSetBroker(broker);
-        config.reinitialize();
+        config.afterPropertiesSet();
         
         
         

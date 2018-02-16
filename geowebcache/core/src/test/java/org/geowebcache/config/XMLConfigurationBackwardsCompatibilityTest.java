@@ -203,7 +203,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
 
         GridSetBroker gsb = new GridSetBroker(Arrays.asList(new DefaultGridsets(true, true), xmlConfig));
         xmlConfig.setGridSetBroker(gsb);
-        xmlConfig.reinitialize();
+        xmlConfig.afterPropertiesSet();
 
         Iterator<TileLayer> iter = xmlConfig.getLayers().iterator();
         while (iter.hasNext()) {

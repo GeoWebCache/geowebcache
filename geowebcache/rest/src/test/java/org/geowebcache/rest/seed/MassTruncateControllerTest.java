@@ -64,7 +64,7 @@ public class MassTruncateControllerTest {
         GridSetBroker gridSetBroker = new GridSetBroker(false, false);
         XMLConfiguration xmlConfig = loadXMLConfig();
         xmlConfig.setGridSetBroker(gridSetBroker);
-        xmlConfig.reinitialize();
+        xmlConfig.afterPropertiesSet();
 
         mtc = new MassTruncateController();
         mtc.setXmlConfig(xmlConfig);

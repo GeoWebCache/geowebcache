@@ -193,17 +193,34 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
     }
     
     /**
-     * Reinitialize all configuration beans in the context.
+     * Reinitialize all reinitializable beans in the context.
      * @param context
      * @throws GeoWebCacheException
      */
-    public static void reinitializeConfigurations(ApplicationContext context) {
-        for (BaseConfiguration config: configurations(BaseConfiguration.class, context)) {
+    public static void reinitialize(ApplicationContext context) {
+        List<ReinitializingBean> extensions = extensions(ReinitializingBean.class, context);
+        for (ReinitializingBean bean: extensions) {
             try {
-                config.reinitialize();
-            } catch (GeoWebCacheException e) {
-                log.error("Error while reinitializing configuration "+config.getIdentifier()
-                    +" from "+config.getLocation(), e);
+                bean.deinitialize();
+            } catch (Exception e) {
+                if(bean instanceof BaseConfiguration) {
+                    log.error("Error while preparing configuration to reinitialize "+((BaseConfiguration) bean).getIdentifier()
+                        +" from "+((BaseConfiguration) bean).getLocation(), e);
+                } else {
+                    log.error("Error while preparing bean to reinitialize "+bean.toString(), e);
+                }
+            }
+        }
+        for (ReinitializingBean bean: extensions) {
+            try {
+                bean.reinitialize();
+            } catch (Exception e) {
+                if(bean instanceof BaseConfiguration) {
+                    log.error("Error while reinitializing configuration "+((BaseConfiguration) bean).getIdentifier()
+                        +" from "+((BaseConfiguration) bean).getLocation(), e);
+                } else {
+                    log.error("Error while reinitializing bean "+bean.toString(), e);
+                }
             }
         }
     }

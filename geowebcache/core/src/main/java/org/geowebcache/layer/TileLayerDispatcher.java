@@ -109,15 +109,10 @@ public class TileLayerDispatcher implements DisposableBean, InitializingBean, Ap
     }
 
     /***
-     * Reinitialization is tricky, because we can't really just lock all the layers, because this
-     * would cause people to queue on something that we may not want to exist post reinit.
-     * 
-     * So we'll just set the current layer set free, ready for garbage collection, and generate a
-     * new one.
      * @deprecated use GeoWebCacheExtensions.reinitializeConfigurations instead
      */
     public void reInit() {
-        GeoWebCacheExtensions.reinitializeConfigurations(this.applicationContext);
+        GeoWebCacheExtensions.reinitialize(this.applicationContext);
     }
 
     public int getLayerCount() {

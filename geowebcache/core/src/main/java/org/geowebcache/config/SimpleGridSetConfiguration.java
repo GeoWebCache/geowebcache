@@ -1,6 +1,5 @@
 package org.geowebcache.config;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,11 +15,6 @@ public abstract class SimpleGridSetConfiguration implements GridSetConfiguration
     
     public SimpleGridSetConfiguration() {
         gridSets = new HashMap<>();
-    }
-    
-    @Override
-    public void save() throws IOException {
-        // Does Nothing
     }
     
     @Override
@@ -67,7 +61,13 @@ public abstract class SimpleGridSetConfiguration implements GridSetConfiguration
     protected void addInternal(GridSet g) {
         gridSets.put(g.getName(), g);
     }
+    
     protected void removeInternal(String name) {
         gridSets.remove(name);
+    }
+
+    @Override
+    public void deinitialize() throws Exception {
+        gridSets.clear();
     }
 }

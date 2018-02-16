@@ -358,11 +358,10 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         return config;
     }
 
-    //TODO - convert to private method
     /**
      * @see TileLayerConfiguration#save()
      */
-    public synchronized void save() throws IOException {
+    private synchronized void save() throws IOException {
         if (!resourceProvider.hasOutput()) {
             return;
         }
@@ -866,7 +865,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         return result.getNode();
     }
 
-    public void reinitialize() throws GeoWebCacheException {
+    public void afterPropertiesSet() throws GeoWebCacheException {
 
         if(gridSetBroker==null) {
             throw new IllegalStateException("GridSetBroker has not been set");
@@ -1499,5 +1498,12 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     @Override
     public void setGridSetBroker(GridSetBroker broker) {
         this.gridSetBroker = broker;
+    }
+
+    @Override
+    public void deinitialize() throws Exception {
+        this.gridSets=null;
+        this.layers=null;
+        this.gwcConfig=null;
     }
 }

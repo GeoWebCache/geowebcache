@@ -74,7 +74,7 @@ public class ServerConfigurationTest {
         assertEquals(version, "1.13.0");
 
         // Initialize to reload the configuration from the XML file and test persistence
-        config.reinitialize();
+        config.afterPropertiesSet();
         ServiceInformation savedInfo = config.getServiceInformation();
         assertEquals(savedInfo.getProviderName(), "John Adams inc.");
         assertFalse(config.isRuntimeStatsEnabled());

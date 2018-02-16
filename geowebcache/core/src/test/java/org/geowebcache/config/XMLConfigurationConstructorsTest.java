@@ -101,7 +101,7 @@ public class XMLConfigurationConstructorsTest {
         
         XMLConfiguration config = new XMLConfiguration(provider, storageFinder);
         config.setGridSetBroker(broker);
-        config.reinitialize();
+        config.afterPropertiesSet();
         config.getLayerCount();
         
         assertThat(config.getLayer(MARKED_LAYER), notNullValue());
@@ -116,7 +116,7 @@ public class XMLConfigurationConstructorsTest {
         
         XMLConfiguration config = new XMLConfiguration(provider, storageFinder);
         config.setGridSetBroker(broker);
-        config.reinitialize();
+        config.afterPropertiesSet();
         config.getLayerCount();
         
         assertThat(config.getLayer(MARKED_LAYER), notNullValue());
@@ -131,7 +131,7 @@ public class XMLConfigurationConstructorsTest {
         
         XMLConfiguration config = new XMLConfiguration(provider, storageFinder);
         config.setGridSetBroker(broker);
-        config.reinitialize();
+        config.afterPropertiesSet();
         config.getLayerCount();
         
         assertThat(config.getLayer(MARKED_LAYER), notNullValue());
@@ -144,7 +144,7 @@ public class XMLConfigurationConstructorsTest {
         
         XMLConfiguration config = new XMLConfiguration(provider, configDir.getCanonicalPath());
         config.setGridSetBroker(broker);
-        config.reinitialize();
+        config.afterPropertiesSet();
         
         assertThat(config.getLayer(MARKED_LAYER), notNullValue());
     }
@@ -153,7 +153,7 @@ public class XMLConfigurationConstructorsTest {
     public void testDefaultToCacheDirCreate() throws Exception {
         ServerConfiguration config = new XMLConfiguration(provider, storageFinder);
         ((XMLConfiguration) config).setGridSetBroker(broker);
-        config.reinitialize();
+        config.afterPropertiesSet();
         
         assertThat(configFile(cacheDir).exists(), is(true));
         assertThat(configFile(configDir).exists(), is(false));
@@ -165,7 +165,7 @@ public class XMLConfigurationConstructorsTest {
         
         ServerConfiguration config = new XMLConfiguration(provider, storageFinder);
         ((XMLConfiguration) config).setGridSetBroker(broker);
-        config.reinitialize();
+        config.afterPropertiesSet();
         
         assertThat(configFile(cacheDir).exists(), is(false));
         assertThat(configFile(configDir).exists(), is(true));
@@ -175,7 +175,7 @@ public class XMLConfigurationConstructorsTest {
     public void testPathAsArgumentCreate() throws Exception {
         ServerConfiguration config = new XMLConfiguration(provider, configDir.getCanonicalPath());
         ((XMLConfiguration) config).setGridSetBroker(broker);
-        config.reinitialize();
+        config.afterPropertiesSet();
         
         assertThat(configFile(cacheDir).exists(), is(false));
         assertThat(configFile(configDir).exists(), is(true));

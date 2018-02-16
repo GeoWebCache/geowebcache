@@ -1,20 +1,16 @@
 package org.geowebcache.config;
 
-import java.io.IOException;
-
-import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.GeoWebCacheExtensionPriority;
+import org.geowebcache.ReinitializingBean;
 import org.springframework.beans.factory.InitializingBean;
 
-public interface BaseConfiguration extends InitializingBean {
-
-    public static final int BASE_PRIORITY = 0;
+public interface BaseConfiguration extends 
+        InitializingBean, ReinitializingBean, GeoWebCacheExtensionPriority {
     
     /**
-     * Reinitialize the configuration from its persistence.
-     * 
-     * @throws GeoWebCacheException
+     * Default priority for configuration beans.  Lower values will have higher priority.
      */
-    void reinitialize() throws GeoWebCacheException;
+    public static final int BASE_PRIORITY = 50;
 
     /**
      * @return non null identifier for this configuration
@@ -30,27 +26,23 @@ public interface BaseConfiguration extends InitializingBean {
      * @return Location string for this configuration
      */
     String getLocation();
-
-
-    /**
-     * Saves this configuration
-     * 
-     * @throws IOException
-     * 
-     * TODO get rid of this, 
-     */
-    void save() throws IOException;
     
     /**
-     * Get the priority of this configuration when aggregating. Lower values will be used before 
-     * higher ones.  This should always return the same value, for a given input.
+     * Priority for sorting against other configurations of the specified type.
+     * @param clazz
+     * @return
      */
     default int getPriority(Class<? extends BaseConfiguration> clazz) {
         return BASE_PRIORITY;
     }
     
+    /**
+     * Priority for sorting against other priority extensions.
+     * @param clazz
+     * @return
+     */
     @Override
-    default void afterPropertiesSet() throws Exception {
-        reinitialize();
+    default int getPriority() {
+        return getPriority(BaseConfiguration.class);
     }
 }

@@ -496,10 +496,8 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
         return 20037508.34 * Math.log(Math.tan(tmp)) / Math.PI;
     }
 
-    public void reinitialize() throws GeoWebCacheException {
+    public void afterPropertiesSet() throws GeoWebCacheException {
         List<TileLayer> tileLayers = getTileLayers(true);
-        this.layers.clear();
-        this.generatedGridSets.clear();
         Set<String> brokerNames = gridSetBroker.getGridSetNames();
         for (TileLayer layer : tileLayers) {
             layer.initialize(gridSetBroker);
@@ -718,5 +716,11 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     @Override
     public void setGridSetBroker(GridSetBroker broker) {
         this.gridSetBroker = broker;
+    }
+
+    @Override
+    public void deinitialize() throws Exception {
+        this.generatedGridSets.clear();
+        this.layers.clear();
     }
 }

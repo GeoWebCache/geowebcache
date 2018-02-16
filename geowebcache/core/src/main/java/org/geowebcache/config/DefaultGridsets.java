@@ -3,9 +3,9 @@ package org.geowebcache.config;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.GeoWebCacheExtensionPriority;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
-import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSetFactory;
 import org.geowebcache.grid.SRS;
 
@@ -107,7 +107,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
     }
 
     @Override
-    public void reinitialize() throws GeoWebCacheException {
+    public void afterPropertiesSet() throws GeoWebCacheException {
     }
 
     @Override
@@ -214,7 +214,16 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
 
     @Override
     public int getPriority(Class<? extends BaseConfiguration> clazz) {
-        return -100;
+        return GeoWebCacheExtensionPriority.HIGHEST;
+    }
+
+    @Override
+    public void deinitialize() throws Exception {
+    }
+
+    @Override
+    public int getPriority() {
+        return GeoWebCacheExtensionPriority.HIGHEST;
     }
     
     

@@ -89,7 +89,6 @@ public class S3BlobStoreConfigStoreLoadTest {
         List<BlobStoreInfo> blobStores = config.getBlobStores();
         blobStores.add(store1);
         blobStores.add(store2);
-        config.save();
     }
 
     private void validateAndLoadSavedConfig()
@@ -104,7 +103,7 @@ public class S3BlobStoreConfigStoreLoadTest {
                     null);
             GridSetBroker gridSetBroker = new GridSetBroker(true, true);
             configLoad.setGridSetBroker(gridSetBroker);
-            configLoad.reinitialize();
+            configLoad.afterPropertiesSet();
             createFromSavedConfig(configLoad);
         } catch (StorageException | GeoWebCacheException e) {
             log.error(e.getMessage());
@@ -160,7 +159,7 @@ public class S3BlobStoreConfigStoreLoadTest {
         GridSetBroker gridSetBroker = new GridSetBroker(true, true);
         config = new XMLConfiguration(context, configDir.getAbsolutePath());
         config.setGridSetBroker(gridSetBroker);
-        config.reinitialize();
+        config.afterPropertiesSet();
     }
 
 }

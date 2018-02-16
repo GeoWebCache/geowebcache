@@ -3,7 +3,6 @@ package org.geowebcache.arcgis.layer;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.SimpleGridSetConfiguration;
 import org.geowebcache.grid.GridSet;
-import org.geowebcache.grid.GridSetBroker;
 
 public class ArcGISCacheGridsetConfiguration extends SimpleGridSetConfiguration {
     
@@ -18,7 +17,7 @@ public class ArcGISCacheGridsetConfiguration extends SimpleGridSetConfiguration 
     }
     
     @Override
-    public void reinitialize() throws GeoWebCacheException {
+    public void afterPropertiesSet() throws GeoWebCacheException {
     }
 
     @Override
@@ -26,5 +25,4 @@ public class ArcGISCacheGridsetConfiguration extends SimpleGridSetConfiguration 
         super.addInternal(gs);
     }
     
-    // TODO should add some sort of clean up mechanism.
 }

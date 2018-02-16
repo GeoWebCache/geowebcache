@@ -110,7 +110,7 @@ public class DefaultingConfigurationTest {
             }
 
             @Override
-            public void reinitialize() throws GeoWebCacheException {
+            public void afterPropertiesSet() throws GeoWebCacheException {
                 return;
             }
 
@@ -125,9 +125,10 @@ public class DefaultingConfigurationTest {
             }
 
             @Override
-            public void save() throws IOException {
-
+            public void deinitialize() throws Exception {
+                return;
             }
+
         };
     }
 

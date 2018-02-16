@@ -71,7 +71,7 @@ public class XMLConfigurationTest {
         gridSetBroker = new GridSetBroker(true, true);
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
         config.setGridSetBroker(gridSetBroker);
-        config.reinitialize();
+        config.afterPropertiesSet();
     }
     
     @Test
@@ -143,6 +143,7 @@ public class XMLConfigurationTest {
         assertTrue(configFile.delete());
         config.setTemplate("/geowebcache_empty.xml");
         config.setGridSetBroker(gridSetBroker);
+        config.deinitialize();
         config.reinitialize();
         config.getLayerCount();
         assertEquals(0, config.getLayerCount());
@@ -150,6 +151,7 @@ public class XMLConfigurationTest {
         assertTrue(configFile.delete());
         config.setTemplate("/geowebcache.xml");
         config.setGridSetBroker(gridSetBroker);
+        config.deinitialize();
         config.reinitialize();
         config.getLayerCount();
         assertEquals(3, config.getLayerCount());
@@ -229,7 +231,7 @@ public class XMLConfigurationTest {
 
         XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
         config2.setGridSetBroker(gridSetBroker);
-        config2.reinitialize();
+        config2.afterPropertiesSet();
         config2.getLayerCount();
         assertEquals(1, config2.getLayerCount());
         assertThat(config2.getLayer("testLayer"), TestUtils.isPresent());
@@ -343,7 +345,7 @@ public class XMLConfigurationTest {
         XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
         GridSetBroker gridSetBroker2 = new GridSetBroker(Arrays.asList(new DefaultGridsets(true, true), (GridSetConfiguration)config2));
         config2.setGridSetBroker(gridSetBroker2);
-        config2.reinitialize();
+        config2.afterPropertiesSet();
         config2.getLayerCount();
 
         GridSet gridSet2 = gridSetBroker2.get(name);
@@ -375,7 +377,6 @@ public class XMLConfigurationTest {
 
         config.addBlobStore(store1);
         config.addBlobStore(store2);
-        config.save();
 
         try {
             XMLConfiguration.validate(XMLConfiguration
@@ -387,7 +388,7 @@ public class XMLConfigurationTest {
 
         XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
         config2.setGridSetBroker(new GridSetBroker(true, true));
-        config2.reinitialize();
+        config2.afterPropertiesSet();
         config2.getLayerCount();
         
         List<BlobStoreInfo> stores = config2.getBlobStores();
@@ -411,13 +412,14 @@ public class XMLConfigurationTest {
         gridSetBroker = new GridSetBroker(true, true);
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
         config.setGridSetBroker(gridSetBroker);
-        config.reinitialize();
+        config.afterPropertiesSet();
         config.getLayerCount();
 
         final String previousVersion = config.getVersion();
         assertNotNull(previousVersion);
 
-        config.save();
+        // Do a modify without any changes to trigger a save;
+        config.modifyLayer(config.getLayer(config.getLayerNames().iterator().next()).get());
 
         final String currVersion = XMLConfiguration.getCurrentSchemaVersion();
         assertNotNull(currVersion);
@@ -425,7 +427,7 @@ public class XMLConfigurationTest {
 
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
         config.setGridSetBroker(gridSetBroker);
-        config.reinitialize();
+        config.afterPropertiesSet();
         config.getLayerCount();
         final String savedVersion = config.getVersion();
         assertEquals(currVersion, savedVersion);
@@ -438,6 +440,7 @@ public class XMLConfigurationTest {
         // instantiate a new one based with strict CITE compliance activated
         config.setTemplate("/geowebcache_cite.xml");
         config.setGridSetBroker(gridSetBroker);
+        config.deinitialize();
         config.reinitialize();
         config.getLayerCount();
         // CITE strict compliance should be activated for WMTS
