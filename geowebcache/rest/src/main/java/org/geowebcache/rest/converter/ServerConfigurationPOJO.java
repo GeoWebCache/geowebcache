@@ -192,12 +192,17 @@ public class ServerConfigurationPOJO implements ServerConfiguration {
     }
 
     @Override
-    public int initialize(GridSetBroker gridSetBroker) throws GeoWebCacheException {
-        throw new UnsupportedOperationException("initialize() not supported for ServerConfigurationPOJO");
+    public void reinitialize() throws GeoWebCacheException {
+        throw new UnsupportedOperationException("reinitialize() not supported for ServerConfigurationPOJO");
     }
 
     @Override
-    public void save() throws IOException {
-        throw new UnsupportedOperationException("save() not supported for ServerConfigurationPOJO");
+    public void deinitialize() throws Exception {
+        throw new UnsupportedOperationException("deinitialize() not supported for ServerConfigurationPOJO");
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        throw new UnsupportedOperationException("afterPropertiesSet() not supported for ServerConfigurationPOJO");
     }
 }
