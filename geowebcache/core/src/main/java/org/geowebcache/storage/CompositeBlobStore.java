@@ -58,7 +58,7 @@ import com.google.common.base.Throwables;
  * 
  * @since 1.8
  */
-public class CompositeBlobStore implements BlobStore {
+public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationListener {
 
     private static Log log = LogFactory.getLog(CompositeBlobStore.class);
 
@@ -68,6 +68,8 @@ public class CompositeBlobStore implements BlobStore {
     Map<String, LiveStore> blobStores = new ConcurrentHashMap<>();
 
     private TileLayerDispatcher layers;
+
+    private BlobStoreAggregator blobStoreConfigs;
 
     private DefaultStorageFinder defaultStorageFinder;
 
@@ -116,7 +118,9 @@ public class CompositeBlobStore implements BlobStore {
         this.layers = layers;
         this.defaultStorageFinder = defaultStorageFinder;
         this.lockProvider = serverConfiguration.getLockProvider();
+        this.blobStoreConfigs = blobStoreAggregator;
         this.blobStores = loadBlobStores(blobStoreAggregator.getBlobStores());
+        blobStoreAggregator.addListener(this);
     }
 
     @Override
@@ -321,46 +325,9 @@ public class CompositeBlobStore implements BlobStore {
 
         Map<String, LiveStore> stores = new HashMap<>();
 
-        BlobStoreInfo defaultStore = null;
-
         try {
             for (BlobStoreInfo config : configs) {
-                final String id = config.getName();
-                final boolean enabled = config.isEnabled();
-                if (Strings.isNullOrEmpty(id)) {
-                    throw new ConfigurationException("No id provided for blob store " + config);
-                }
-                if (stores.containsKey(id)) {
-                    throw new ConfigurationException("Duplicate blob store id: " + id
-                            + ". Check your configuration.");
-                }
-                if (CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID.equals(id)) {
-                    throw new ConfigurationException(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID
-                            + " is a reserved identifier, please don't use it in the configuration");
-                }
-
-                BlobStore store = null;
-                if (enabled) {
-                    store = config.createInstance(layers, lockProvider);
-                }
-
-                LiveStore liveStore = new LiveStore(config, store);
-                stores.put(config.getName(), liveStore);
-
-                if (config.isDefault()) {
-                    if (defaultStore == null) {
-                        if (!enabled) {
-                            throw new ConfigurationException(
-                                    "The default blob store can't be disabled: " + config.getName());
-                        }
-
-                        defaultStore = config;
-                        stores.put(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID, liveStore);
-                    } else {
-                        throw new ConfigurationException("Duplicate default blob store: "
-                                + defaultStore.getName() + " and " + config.getName());
-                    }
-                }
+                loadBlobStore(stores, config);
             }
 
             if (!stores.containsKey(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID)) {
@@ -381,6 +348,63 @@ public class CompositeBlobStore implements BlobStore {
         }
 
         return new ConcurrentHashMap<>(stores);
+    }
+
+    /**
+     * Loads a single blob store from a configuration object
+     *
+     * @param stores The map of names to {@link LiveStore}s to load into
+     * @param config blob store configuration
+     * @return The LiveStore that was created and added to stores
+     * @throws ConfigurationException if there's a configuration error like a store confing having
+     *         no id, or two store configs having the same id, or more than one store config being
+     *         marked as the default one, or the default store is not
+     *         {@link BlobStoreInfo#isEnabled() enabled}
+     * @throws StorageException if the live {@code BlobStore} instance can't be
+     *         {@link BlobStoreInfo#createInstance(TileLayerDispatcher, LockProvider)}  created} of an enabled
+     *         {@link BlobStoreInfo}
+     */
+    private LiveStore loadBlobStore(Map<String, LiveStore> stores, BlobStoreInfo config)
+            throws ConfigurationException, StorageException {
+
+        final String id = config.getName();
+        final boolean enabled = config.isEnabled();
+        LiveStore defaultStore = stores.getOrDefault(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID, null);
+
+        if (Strings.isNullOrEmpty(id)) {
+            throw new ConfigurationException("No id provided for blob store " + config);
+        }
+        if (stores.containsKey(id)) {
+            throw new ConfigurationException("Duplicate blob store id: " + id
+                    + ". Check your configuration.");
+        }
+        if (CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID.equals(id)) {
+            throw new ConfigurationException(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID
+                    + " is a reserved identifier, please don't use it in the configuration");
+        }
+
+        BlobStore store = null;
+        if (enabled) {
+            store = config.createInstance(layers, lockProvider);
+        }
+
+        LiveStore liveStore = new LiveStore(config, store);
+        stores.put(config.getName(), liveStore);
+
+        if (config.isDefault()) {
+            if (defaultStore == null || defaultStore.config.getName().equals(config.getName())) {
+                if (!enabled) {
+                    throw new ConfigurationException(
+                            "The default blob store can't be disabled: " + config.getName());
+                }
+
+                stores.put(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID, liveStore);
+            } else {
+                throw new ConfigurationException("Duplicate default blob store: "
+                        + defaultStore.config.getName() + " and " + config.getName());
+            }
+        }
+        return liveStore;
     }
 
     @Override
@@ -436,5 +460,97 @@ public class CompositeBlobStore implements BlobStore {
 
     public Map<String,Optional<Map<String, String>>> getParametersMapping(String layerName) {
         return readFunction(()->store(layerName).getParametersMapping(layerName));
+    }
+
+
+    @Override
+    public void handleAddBlobStore(BlobStoreInfo newBlobStore) throws ConfigurationException, StorageException {
+        if (newBlobStore.isDefault()) {
+            loadBlobStoreOverwritingDefault(blobStores, newBlobStore);
+        } else {
+            loadBlobStore(blobStores, newBlobStore);
+        }
+    }
+
+    @Override
+    public void handleRemoveBlobStore(BlobStoreInfo removedBlobStore) throws ConfigurationException, StorageException {
+        if (removedBlobStore.getName().equals(blobStores.get(DEFAULT_STORE_DEFAULT_ID).config.getName())) {
+            throw new ConfigurationException(
+                    "The default blob store can't be removed: " + removedBlobStore.getName());
+        }
+        blobStores.remove(removedBlobStore.getName());
+    }
+
+    @Override
+    public void handleModifyBlobStore(BlobStoreInfo modifiedBlobStore) throws ConfigurationException, StorageException {
+        LiveStore removedStore = blobStores.remove(modifiedBlobStore.getName());
+        try {
+            if (modifiedBlobStore.isDefault() && !modifiedBlobStore.getName().equals(blobStores.get(DEFAULT_STORE_DEFAULT_ID).config.getName())) {
+                loadBlobStoreOverwritingDefault(blobStores, modifiedBlobStore);
+            } else {
+                loadBlobStore(blobStores, modifiedBlobStore);
+            }
+        } catch (StorageException | ConfigurationException e) {
+            blobStores.put(modifiedBlobStore.getName(), removedStore);
+            throw e;
+        }
+    }
+
+    @Override
+    public void handleRenameBlobStore(String oldName, BlobStoreInfo modifiedBlobStore) throws ConfigurationException, StorageException {
+        LiveStore removedStore = blobStores.remove(oldName);
+        try {
+            if (modifiedBlobStore.isDefault()) {
+                if (oldName.equals(blobStores.get(DEFAULT_STORE_DEFAULT_ID).config.getName())) {
+                    //Make sure the BlobStoreInfo names match, loadBlobStore will handle setting the default BlobStore
+                    BlobStoreInfo oldConfig = blobStores.get(DEFAULT_STORE_DEFAULT_ID).config;
+                    try {
+                        blobStores.get(DEFAULT_STORE_DEFAULT_ID).config = modifiedBlobStore;
+                        loadBlobStore(blobStores, modifiedBlobStore);
+                    } catch (StorageException | ConfigurationException e) {
+                        blobStores.get(DEFAULT_STORE_DEFAULT_ID).config = oldConfig;
+                        throw e;
+                    }
+                } else {
+                    loadBlobStoreOverwritingDefault(blobStores, modifiedBlobStore);
+                }
+            } else {
+                loadBlobStore(blobStores, modifiedBlobStore);
+            }
+        } catch (StorageException | ConfigurationException e) {
+            blobStores.put(oldName, removedStore);
+            throw e;
+        }
+    }
+
+    /**
+     * Sets the old default blob store to no longer be the default, and adds a new blob store as the default.
+     *
+     * 1) Removes DEFAULT_STORE_DEFAULT_ID from blobStores
+     * 2) Calls {@link #loadBlobStore(Map, BlobStoreInfo)}
+     * 3) Calls setDefault(false) on the config of the old default LiveStore, then saves this modified config via the
+     *    aggregator
+     * 4) If anything goes wrong, reverts these changes
+     *
+     * THIS METHOD SHOULD ONLY BE CALLED IF THE CONFIG ARGUMENT HAS <code>default=true</code> AND WAS NOT ALREADY THE
+     * DEFAULT BLOB STORE.
+     *
+     * @param stores The blobStores map to update
+     * @param config The new default blob store
+     * @throws StorageException
+     * @throws ConfigurationException
+     */
+    private void loadBlobStoreOverwritingDefault(Map<String, LiveStore> stores, BlobStoreInfo config) throws StorageException, ConfigurationException {
+        LiveStore oldDefaultStore = stores.get(DEFAULT_STORE_DEFAULT_ID);
+        try {
+            stores.remove(DEFAULT_STORE_DEFAULT_ID);
+            loadBlobStore(stores, config);
+            oldDefaultStore.config.setDefault(false);
+            blobStoreConfigs.modifyBlobStore(oldDefaultStore.config);
+        } catch (StorageException | ConfigurationException e) {
+            stores.put(DEFAULT_STORE_DEFAULT_ID, oldDefaultStore);
+            oldDefaultStore.config.setDefault(true);
+            throw e;
+        }
     }
 }

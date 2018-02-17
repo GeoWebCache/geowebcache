@@ -130,6 +130,8 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
 
     private GridSetBroker gridSetBroker;
 
+    private List<BlobStoreConfigurationListener> blobStoreListeners = new ArrayList<>();
+
     /**
      * Base Constructor with custom ConfiguratioNResourceProvider
      *
@@ -1078,12 +1080,16 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         // try to save the config
         try {
             save();
-        } catch (IOException ioe) {
+            for (BlobStoreConfigurationListener listener : blobStoreListeners) {
+                listener.handleAddBlobStore(info);
+            }
+        } catch (IOException | GeoWebCacheException ioe) {
             // save failed, roll back the add
             blobStores.remove(info);
             throw new ConfigurationPersistenceException(String.format(
                 "Unable to add BlobStoreInfo \"%s\"", info), ioe);
         }
+
     }
 
     /**
@@ -1104,12 +1110,16 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         // try to save
         try {
             save();
-        } catch (IOException ioe) {
+            for (BlobStoreConfigurationListener listener : blobStoreListeners) {
+                listener.handleRemoveBlobStore(infoToRemove);
+            }
+        } catch (IOException | GeoWebCacheException ioe) {
             // save failed, roll back the delete
             blobStores.add(infoToRemove);
             throw new ConfigurationPersistenceException(String.format(
                 "Unable to remove BlobStoreInfo \"%s\"", name), ioe);
         }
+
     }
 
     /**
@@ -1134,13 +1144,17 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         // try to save
         try {
             save();
-        } catch (IOException ioe) {
+            for (BlobStoreConfigurationListener listener : blobStoreListeners) {
+                listener.handleModifyBlobStore(info);
+            }
+        } catch (IOException | GeoWebCacheException ioe) {
             // save failed, roll back the modify
             blobStores.remove(info);
             blobStores.add(infoToRemove);
             throw new ConfigurationPersistenceException(String.format(
                 "Unable to modify BlobStoreInfo \"%s\"", info.getName()), ioe);
         }
+
     }
 
     /**
@@ -1224,11 +1238,15 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         // persist the info
         try {
             save();
+            for (BlobStoreConfigurationListener listener : blobStoreListeners) {
+                listener.handleRenameBlobStore(oldName, blobStoreInfoToRename);
+            }
+
             if (log.isTraceEnabled()) {
                 log.trace(String.format(
                     "BlobStoreInfo rename from \"%s\" to \"%s\" successful.", oldName, newName));
             }
-        } catch (IOException ioe) {
+        } catch (IOException | GeoWebCacheException ioe) {
             // save didn't work, need to roll things back
             infos = blobStoreInfos.iterator();
             BlobStoreInfo blobStoreInfoToRevert = null;
@@ -1263,6 +1281,18 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
             return getBlobStore(name).isPresent();
         }
         return false;
+    }
+
+    @Override
+    public void addBlobStoreListener(BlobStoreConfigurationListener listener) {
+        blobStoreListeners.add(listener);
+    }
+
+    @Override
+    public void removeBlobStoreListener(BlobStoreConfigurationListener listener) {
+        if (blobStoreListeners.contains(listener)) {
+            blobStoreListeners.remove(listener);
+        }
     }
 
     /**

@@ -86,4 +86,18 @@ public interface BlobStoreConfiguration extends BaseConfiguration {
      * @return True if a {@link BlobStoreInfo} currently exists with the unique name provided, false otherwise.
      */
     boolean containsBlobStore(String name);
+
+    /**
+     * Adds a {@link BlobStoreConfigurationListener} to this configuration.
+     *
+     * @param listener
+     */
+    void addBlobStoreListener(BlobStoreConfigurationListener listener);
+
+    /**
+     * Removes a {@link BlobStoreConfigurationListener} from this configuration, if it is present.
+     *
+     * @param listener
+     */
+    void removeBlobStoreListener(BlobStoreConfigurationListener listener);
 }

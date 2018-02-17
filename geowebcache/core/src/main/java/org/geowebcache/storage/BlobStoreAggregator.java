@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.BlobStoreConfiguration;
+import org.geowebcache.config.BlobStoreConfigurationListener;
 import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.meta.ServiceInformation;
@@ -287,5 +288,29 @@ public class BlobStoreAggregator {
             }
         }
         throw new IllegalArgumentException("No configuration found containing blob store " + blobStoreName);
+    }
+
+    /**
+     * Adds a {@link BlobStoreConfigurationListener} to each {@link BlobStoreConfiguration} tracked by this
+     * aggregator
+     *
+     * @param listener the listener
+     */
+    public void addListener(BlobStoreConfigurationListener listener) {
+        for (BlobStoreConfiguration c : configs) {
+            c.addBlobStoreListener(listener);
+        }
+    }
+
+    /**
+     * Removes a {@link BlobStoreConfigurationListener} from each {@link BlobStoreConfiguration} tracked by this
+     * aggregator
+     *
+     * @param listener the listener
+     */
+    public void removeListener(BlobStoreConfigurationListener listener) {
+        for (BlobStoreConfiguration c : configs) {
+            c.removeBlobStoreListener(listener);
+        }
     }
 }
