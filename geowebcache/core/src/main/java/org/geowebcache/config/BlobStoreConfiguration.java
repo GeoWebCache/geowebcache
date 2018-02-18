@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Interface for BlobStore configuration elements.
+ * Interface for managing {@link BlobStoreInfo} configuration elements.
  */
 public interface BlobStoreConfiguration extends BaseConfiguration {
 

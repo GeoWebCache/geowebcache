@@ -207,7 +207,7 @@ public class BoundingBox implements Serializable {
     /**
      * Comparing whether the differences between the bounding boxes can be ignored.
      * 
-     * @param other
+     * @param obj
      * @return whether the boxes are equal
      */
     @Override

@@ -129,7 +129,7 @@ class GeoRSSTileRangeBuilder {
 
     /**
      * Returns the value of the most recent updated property value out of all the georss entries
-     * processed at {@link #buildTileRangeMask(GeoRSSReader)}
+     * processed at {@link #buildTileRangeMask(GeoRSSReader, String)}
      * 
      * @return the latest georss updated value, or {@code null} if none was processed
      */

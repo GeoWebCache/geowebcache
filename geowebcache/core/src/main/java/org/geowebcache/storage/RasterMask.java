@@ -41,8 +41,8 @@ public class RasterMask implements TileRangeMask {
      * Creates a RasterMask from the given parameters with default {@code noDataValue == 0}
      * 
      * @param byLevelMasks
-     * @param gridCoverages
-     * @see #RasterMask(BufferedImage[], long[][], int)
+     * @param fullCoverage
+     * @see #RasterMask(BufferedImage[], long[][], long[][], int)
      */
     public RasterMask(BufferedImage[] byLevelMasks, long[][] fullCoverage,
             final long[][] coveredBounds) {
@@ -68,7 +68,7 @@ public class RasterMask implements TileRangeMask {
      *            the full grid subsets coverage, needed to compute downsampled pixel locations
      * @param coveredBounds
      *            by level bounds enclosing the area that has pixels set in the masks
-     * @param noDatavalue
+     * @param noDataValue
      *            raster sample value to be considered as no-data (eg, tile is not set at the pixel
      *            location)
      */

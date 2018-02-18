@@ -26,9 +26,7 @@ import java.util.Set;
 public class GridSetController extends GWCController {
 
     @Autowired
-    //change to GridSetBroker after changes to gridset broker are added
     GridSetBroker broker;
-//    GridSetConfiguration broker;
     @ExceptionHandler(RestException.class)
     public ResponseEntity<?> handleRestException(RestException ex) {
         HttpHeaders headers = new HttpHeaders();

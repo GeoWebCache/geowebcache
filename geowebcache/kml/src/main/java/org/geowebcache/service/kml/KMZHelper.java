@@ -48,19 +48,23 @@ public class KMZHelper {
     
     private static Log log = 
         LogFactory.getLog(org.geowebcache.service.kml.KMZHelper.class);
-    
+
     /**
-     * Filters the given gridlocation 
-     * 
-     *  Note that this does an actual reques to the WMS backend and then
-     *  throws the result way. Some may consider this a bit wasteful ;)
+     * Filters the given gridlocation
      *
-     * @param tileLayer
-     * @param srs
-     * @param formatStr
-     * @param linkGridLocs
-     * @return
+     * Note that this does an actual request to the WMS backend and then
+     * throws the result way. Some may consider this a bit wasteful ;)
+     *
+     * @param sb The storage broker
+     * @param secDisp The security dispatcher
+     * @param tileLayer Tile layer to filter on
+     * @param gridSetId GridSet id
+     * @param mime Mime type of the WMS request (image format)
+     * @param linkGridLocs The grid location to filer
+     * @return The filtered grid location
+     * @throws GeoWebCacheException
      */
+
     public static long[][] filterGridLocs(StorageBroker sb, SecurityDispatcher secDisp, TileLayer tileLayer,
             String gridSetId, MimeType mime, long[][] linkGridLocs) 
     throws GeoWebCacheException {

@@ -137,7 +137,7 @@ public class VEConverter extends Service {
      * Convert a quadkey into the internal representation {x,y,z} of a grid
      * location
      * 
-     * @param quadKey
+     * @param strQuadKey
      * @return internal representation
      */
     public static long[] convert(String strQuadKey) {

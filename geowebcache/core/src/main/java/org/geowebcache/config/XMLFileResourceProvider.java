@@ -51,7 +51,7 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
     
     /**
      * Web app context, used to look up {@link XMLConfigurationProvider}s. Will be null if used the
-     * {@link #XMLConfiguration(File)} constructor
+     * {@link XMLConfigurationProvider(File)} constructor
      */
     private final WebApplicationContext context;
 
@@ -113,7 +113,7 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
      * 
      * @param appCtx
      *            use to lookup {@link XMLConfigurationProvider} extenions, may be {@code null}
-     * @param defaultStorage
+     * @param storageDirFinder
      * @throws ConfigurationException
      */
     public XMLFileResourceProvider(final String configFileName,
@@ -128,7 +128,7 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
      * 
      * @param appCtx
      *            use to lookup {@link XMLConfigurationProvider} extenions, may be {@code null}
-     * @param defaultStorage
+     * @param storageDirFinder
      * @throws ConfigurationException
      */
     public XMLFileResourceProvider(final String configFileName,

@@ -4,6 +4,9 @@ import org.geowebcache.GeoWebCacheExtensionPriority;
 import org.geowebcache.ReinitializingBean;
 import org.springframework.beans.factory.InitializingBean;
 
+/**
+ * Superinterface for GeoWebCache configuration beans, defining basic shared functionality
+ */
 public interface BaseConfiguration extends 
         InitializingBean, ReinitializingBean, GeoWebCacheExtensionPriority {
     
@@ -38,7 +41,6 @@ public interface BaseConfiguration extends
     
     /**
      * Priority for sorting against other priority extensions.
-     * @param clazz
      * @return
      */
     @Override

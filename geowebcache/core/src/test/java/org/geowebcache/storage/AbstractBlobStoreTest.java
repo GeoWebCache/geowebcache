@@ -62,7 +62,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
     protected boolean events = true;
     
     /**
-     * Set up the test store in {@link store}.
+     * Set up the test store in {@link #store}.
      */
     @Before
     public abstract void createTestUnit() throws Exception;

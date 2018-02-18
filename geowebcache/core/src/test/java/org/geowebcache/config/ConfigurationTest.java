@@ -473,7 +473,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     
     /**
      * Check that an info has the specified test value.
-     * @param expected
+     * @param rand
      * @return
      */
     protected abstract Matcher<I> infoEquals(final int rand);

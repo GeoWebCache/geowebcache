@@ -9,6 +9,9 @@ import java.util.stream.Collectors;
 
 import org.geowebcache.grid.GridSet;
 
+/**
+ * Simple abstract superclass for most {@link GridSetConfiguration} implementations.
+ */
 public abstract class SimpleGridSetConfiguration implements GridSetConfiguration {
     
     private Map<String, GridSet> gridSets;

@@ -28,7 +28,7 @@ public class OnlineTestRule extends ExternalResource {
      */
     public static final String SKIP_ON_FAILURE_KEY = "skip.on.failure";
     /**
-     * The default value used for {@link SKIP_ON_FAILURE_KEY} if it is not present.
+     * The default value used for {@link #SKIP_ON_FAILURE_KEY} if it is not present.
      */
     public static final String SKIP_ON_FAILURE_DEFAULT = "true";
     /**
@@ -157,7 +157,7 @@ public class OnlineTestRule extends ExternalResource {
     /**
      * Loads the test fixture for the test case.
      * <p>
-     * The fixture id is obtained via {@link #getFixtureId()}.
+     * The fixture id is obtained via {@link #fixtureId}.
      * </p>
      */
     @Override

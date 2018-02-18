@@ -31,7 +31,7 @@ public class DiscontinuousTileRange extends TileRange {
 
     /**
      * @deprecated use
-     *             {@link #DiscontinuousTileRange(String, String, int, int, RasterMask, MimeType, Map)}
+     *             {@link #DiscontinuousTileRange(String, String, int, int, TileRangeMask, MimeType, Map)}
      */
     public DiscontinuousTileRange(String layerName, String gridSetId, int zoomStart, int zoomStop,
             RasterMask rasterMask, MimeType mimeType, String parameters) {

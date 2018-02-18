@@ -133,7 +133,8 @@ public class TileRangeIterator {
     /**
      * Calculates the number of tiles covered by the meta tile for this grid location.
      * 
-     * @param gridLoc
+     * @param x
+     * @param y
      * @param levelBounds
      * @return
      */

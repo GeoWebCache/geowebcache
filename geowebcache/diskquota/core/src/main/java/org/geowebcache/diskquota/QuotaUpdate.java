@@ -19,7 +19,7 @@ public class QuotaUpdate {
      * @param size
      *            bytes to add or subtract from a quota: positive value increase quota, negative
      *            value decreases it
-     * @param tileIdex
+     * @param tileIndex
      */
     public QuotaUpdate(String layerName, String gridsetId, String blobFormat, String parametersId,
             long size, long[] tileIndex) {

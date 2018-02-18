@@ -123,6 +123,17 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
         return result;
     }
 
+    /**
+     * Return all bean names that correspond to the provided extension type. If the provided
+     * extensions type implements the {@link GeoWebCacheExtensionPriority} interface, they are
+     * returned sorted by priority
+     *
+     * We return the bean names and not the beans themselves because we cache the beans by name rather
+     * than the bean itself to avoid breaking the singleton directive.
+     *
+     * @param extensionType type of beans to return
+     * @return Array of sorted bean names
+     */
     public static <T> String[] getBeansNamesOrderedByPriority(Class<T> extensionType) {
         return getBeansNamesOrderedByPriority(extensionType, context);
     }
@@ -189,7 +200,6 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
     /**
      * Return a list of configurations in priority order.
      * @param extensionPoint The extension point of the configuration, may affect priority.
-     * @param context
      * @return
      */
     public static <T extends BaseConfiguration> List<T> configurations(Class<T> extensionPoint) {

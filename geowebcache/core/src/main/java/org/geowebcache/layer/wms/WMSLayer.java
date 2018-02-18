@@ -156,17 +156,17 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         this(layerName, wmsURL,wmsStyles, wmsLayers, mimeFormats, subSets, parameterFilters, 
                 metaWidthHeight, vendorParams, queryable, null);
     }
-    
+
     /**
      * Note XStream uses reflection, this is only used for testing and loading from getCapabilities
-     * 
+     *
      * @param layerName
-     * @param cacheFactory
      * @param wmsURL
      * @param wmsStyles
      * @param wmsLayers
      * @param mimeFormats
-     * @param grids
+     * @param subSets
+     * @param parameterFilters
      * @param metaWidthHeight
      * @param vendorParams
      * @param queryable
@@ -206,7 +206,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     }
 
     /**
-     * @see org.geowebcache.layer.TileLayer#initializeInternal(org.geowebcache.grid.GridSetBroker)
+     * @see org.geowebcache.layer.AbstractTileLayer#initializeInternal(org.geowebcache.grid.GridSetBroker)
      */
     @Override
     protected boolean initializeInternal(GridSetBroker gridSetBroker) {
@@ -272,13 +272,15 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     /**
      * The main function
      * 
-     * 1) Create cache key, test whether we can retrieve without locking 2) Get lock for metatile,
-     * monitor condition variable if not (Recheck cache after signal) 3) Create metatile request,
-     * execute 4) Get tiles and save them to cache 5) Unlock metatile, signal other threads 6) Set
-     * Cache-Control, return tile
+     * 1) Create cache key, test whether we can retrieve without locking
+     * 2) Get lock for metatile, monitor condition variable if not (Recheck cache after signal)
+     * 3) Create metatile request, execute
+     * 4) Get tiles and save them to cache
+     * 5) Unlock metatile, signal other threads
+     * 6) Set Cache-Control, return tile
      * 
-     * @param wmsparams
-     * @return
+     * @param tile The tile request
+     * @return The resulting tile request
      * @throws OutsideCoverageException
      */
     public ConveyorTile getTile(ConveyorTile tile) throws GeoWebCacheException, IOException,

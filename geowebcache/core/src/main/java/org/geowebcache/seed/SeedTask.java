@@ -260,11 +260,8 @@ class SeedTask extends GWCTask {
      * Helper method to update the members tracking thread progress.
      * 
      * @param layer
-     * @param zoomStart
-     * @param zoomStop
-     * @param level
-     * @param gridBounds
-     * @return
+     * @param tilesCount
+     * @param start_time
      */
     private void updateStatusInfo(TileLayer layer, long tilesCount, long start_time) {
 

@@ -20,12 +20,12 @@ package org.geowebcache.util;
 /**
  * Functional interface for a sleep method. Used to allow mocking during unit
  * tests.
- * @see Thread.sleep
+ * @see Thread#sleep(long)
  */
 @FunctionalInterface
 public interface Sleeper {
     /**
-     * @see Thread.sleep
+     * @see Thread#sleep(long)
      * @param millis
      * @throws InterruptedException
      */

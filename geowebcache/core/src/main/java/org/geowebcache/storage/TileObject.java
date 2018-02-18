@@ -112,7 +112,7 @@ public class TileObject extends StorageObject implements Serializable{
     }
 
     /**
-     * The BlobStore is responsible for setting this based on the value of {@link getParameters} 
+     * The BlobStore is responsible for setting this based on the value of {@link #getParameters()}
      * @param parameters_id
      */
     public void setParametersId(String parameters_id) {

@@ -188,9 +188,7 @@ public abstract class TileLayer implements Info {
      * The normal way of getting a single tile from the layer. Under the hood, this may result in
      * several tiles being requested and stored before returning.
      * 
-     * @param tileRequest
-     * @param servReq
-     * @param response
+     * @param tile
      * @return
      * @throws GeoWebCacheException
      * @throws IOException
@@ -203,8 +201,6 @@ public abstract class TileLayer implements Info {
      * Makes a non-metatiled request to backend, bypassing the cache before and after
      * 
      * @param tile
-     * @param requestTiled
-     *            whether to use tiled=true or not
      * @return
      * @throws GeoWebCacheException
      * @throws IOException
@@ -227,9 +223,7 @@ public abstract class TileLayer implements Info {
      * used in general. The method was exposed to let the KML service traverse the tree ahead of the
      * client, to avoid linking to empty tiles.
      * 
-     * @param gridLoc
-     * @param idx
-     * @param formatStr
+     * @param tile
      * @return
      * @throws GeoWebCacheException
      */
@@ -387,7 +381,7 @@ public abstract class TileLayer implements Info {
     /**
      * Whether the layer supports the given format string
      * 
-     * @param formatStr
+     * @param strFormat
      * @return
      * @throws GeoWebCacheException
      */
@@ -427,7 +421,7 @@ public abstract class TileLayer implements Info {
 
     /**
      * 
-     * @param srsIdx
+     * @param gridSetId
      * @return the resolutions (units/pixel) for the layer
      */
     public double[] getResolutions(String gridSetId) throws GeoWebCacheException {
@@ -470,8 +464,8 @@ public abstract class TileLayer implements Info {
      * Converts the given bounding box into the closest location on the grid supported by the
      * reference system.
      * 
-     * @param srsIdx
-     * @param bounds
+     * @param gridSetId
+     * @param tileBounds
      * @return
      * @throws GeoWebCacheException
      * @throws GeoWebCacheException
@@ -484,7 +478,7 @@ public abstract class TileLayer implements Info {
 
     /**
      * 
-     * @param srsIdx
+     * @param gridSetId
      * @param gridLoc
      * @return
      * @throws GeoWebCacheException

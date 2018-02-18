@@ -117,7 +117,7 @@ public class MimeType {
     /**
      * Get the MIME type object for a given MIME type string
      * 
-     * @param mimeStr
+     * @param formatStr
      * @return
      */
     public static MimeType createFromFormat(String formatStr) throws MimeException {
@@ -150,7 +150,7 @@ public class MimeType {
     /**
      * Get the MIME type object for a given file extension
      * 
-     * @param mimeStr
+     * @param fileExtension
      * @return
      */
     public static MimeType createFromExtension(String fileExtension) throws MimeException {

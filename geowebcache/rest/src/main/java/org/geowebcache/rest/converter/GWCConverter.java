@@ -38,6 +38,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Spring MVC Converter for GeoWebCache
+ *
+ * Supports conversion of {@link BlobStoreInfo}, {@link GridSet}, {@link TileLayer}, {@link ServerConfigurationPOJO},
+ * and {@link XStreamListAliasWrapper} containing lists of those classes to and from JSON and XML via XStream
+ *
+ * @param <T>
+ */
 public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
         implements HttpMessageConverter<T> {
 

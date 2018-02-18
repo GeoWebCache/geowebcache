@@ -372,7 +372,7 @@ public abstract class RasterFilter extends RequestFilter {
      * 
      * @param layer
      *            Access to the layer, to make the object simpler
-     * @param srs
+     * @param gridSetId
      * @param z
      *            (zoom level)
      * @param replace

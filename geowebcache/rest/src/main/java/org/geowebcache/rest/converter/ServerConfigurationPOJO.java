@@ -1,11 +1,9 @@
 package org.geowebcache.rest.converter;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.meta.ServiceInformation;
-import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.MemoryLockProvider;
 

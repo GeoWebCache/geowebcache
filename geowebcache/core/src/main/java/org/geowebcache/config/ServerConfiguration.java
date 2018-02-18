@@ -5,6 +5,11 @@ import org.geowebcache.locks.LockProvider;
 
 import java.io.IOException;
 
+/**
+ * Interface for managing global server configuration information.
+ *
+ * In general, a running GeoWebCache application should only include a single instance of ServerConfiguration
+ */
 public interface ServerConfiguration extends BaseConfiguration {
 
     /**

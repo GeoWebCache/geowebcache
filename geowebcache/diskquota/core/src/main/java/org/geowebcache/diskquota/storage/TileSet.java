@@ -56,7 +56,6 @@ public class TileSet implements Comparable<TileSet> {
      * @param parametersId
      *            extra tileset scope identifier, may be null, indicating the default tileset for
      *            the given layer/gridset/format
-     * @param size
      */
     public TileSet(String layerName, String gridsetId, String blobFormat, String parametersId) {
         this.layerName = layerName;

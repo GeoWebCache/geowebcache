@@ -99,8 +99,6 @@ public class ConfigLoader {
      * @param tld
      *            used only to validate the presence of a layer at {@link #loadConfig()} and ignore
      *            the layer quota definition if the {@link TileLayer} does not exist
-     * @param quotaStore
-     *            storage for layer quota information and paged tiles statistics
      * @throws IOException
      */
     public ConfigLoader(final DefaultStorageFinder storageFinder,
@@ -119,8 +117,6 @@ public class ConfigLoader {
      * @param tld
      *            used only to validate the presence of a layer at {@link #loadConfig()} and ignore
      *            the layer quota definition if the {@link TileLayer} does not exist
-     * @param quotaStore
-     *            storage for layer quota information and paged tiles statistics
      * @throws IOException
      */
     public ConfigLoader(final ConfigurationResourceProvider resourceProvider,

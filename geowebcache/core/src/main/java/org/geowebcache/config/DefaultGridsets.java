@@ -9,6 +9,11 @@ import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetFactory;
 import org.geowebcache.grid.SRS;
 
+/**
+ * {@link GridSetConfiguration} implementation bean for managing default {@link GridSet}s
+ *
+ * Includes preconfigured EPSG:4326 and EPSG:3857 (or EPSG:900913) gridsets
+ */
 public class DefaultGridsets extends SimpleGridSetConfiguration {
     private static Log log = LogFactory.getLog(DefaultGridsets.class);
 
@@ -23,7 +28,14 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
     public GridSet worldEpsg3857() {
         return new GridSet(WORLD_EPSG3857);
     }
-   
+
+    /**
+     * Construct the default gridsets bean
+     * @param useEPSG900913 Whether or not to use "EPSG:900913" as the name of the default web mercator
+     *                      instead if "EPSG:3857". Only used if useGWC11xNames is true
+     * @param useGWC11xNames Whether to use the legacy GeoWebCache 1.1.x naming scheme (EPSG codes) for the
+     *                       default gridset names. Otherwise
+     */
     public DefaultGridsets(boolean useEPSG900913, boolean useGWC11xNames) {
         
         String unprojectedName = "GlobalCRS84Geometric";

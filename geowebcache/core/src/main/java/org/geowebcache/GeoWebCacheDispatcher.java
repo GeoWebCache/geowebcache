@@ -406,7 +406,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     /**
      * Helper function for looking up the service that should handle the request.
      * 
-     * @param request full HttpServletRequest
+     * @param serviceStr name of the service
      * @return
      */
     private Service findService(String serviceStr) throws GeoWebCacheException {
@@ -549,7 +549,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     /**
      * This method appends the cache statistics to the GWC homepage if the blobstore used is an instance of the {@link MemoryBlobStore} class
      * 
-     * @param str Input {@link StringBuilder} containing the HTML for the GWC homepage
+     * @param strGlobal Input {@link StringBuilder} containing the HTML for the GWC homepage
      */
     private void appendInternalCacheStats(StringBuilder strGlobal) {
 

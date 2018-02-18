@@ -32,7 +32,7 @@ import org.apache.log4j.helpers.LogLog;
  * This class comes from GeoTools
  * 
  * Static methods to support the implementation of tests that use fixture configuration files. See
- * {@link OnlineTestCase} and {@link OnlineTestSupport} for details.
+ * {@link OnlineTestCase} and {@link OnlineTestRule} for details.
  * 
  * @author Ben Caradoc-Davies, CSIRO Earth Science and Resource Engineering
  *
@@ -121,12 +121,11 @@ public class FixtureUtilities {
      * 
      * <p>
      * 
-     * This method allows tests that cannot extend {@link OnlineTestCase} or
-     * {@link OnlineTestSupport} because they already extend another class (for example, a
-     * non-online test framework) to access fixture configuration files in the same way that those
-     * classes do. Only basic fixture configuration loading is supported. This method does not
-     * support the extra services such as fixture caching and connection testing provided by
-     * {@link OnlineTestCase} and {@link OnlineTestSupport}.
+     * This method allows tests that cannot extend {@link OnlineTestCase} because they already
+     * extend another class (for example, a non-online test framework) to access fixture configuration
+     * files in the same way that those classes do. Only basic fixture configuration loading is
+     * supported. This method does not support the extra services such as fixture caching and
+     * connection testing provided by {@link OnlineTestCase}.
      * 
      * <p>
      * 
@@ -140,7 +139,7 @@ public class FixtureUtilities {
      *            the fixture id, where dots "." are converted to subdirectories.
      * @return the fixture Properties or null
      * @see OnlineTestCase
-     * @see OnlineTestSupport
+     * @see OnlineTestRule
      */
     public static Properties loadFixture(String fixtureId) {
         File fixtureFile = getFixtureFile(getFixtureDirectory(), fixtureId);

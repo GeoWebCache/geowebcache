@@ -16,45 +16,8 @@
  */
 package org.geowebcache.config;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -63,12 +26,7 @@ import org.geowebcache.config.ContextualConfigurationProvider.Context;
 import org.geowebcache.config.legends.LegendsRawInfo;
 import org.geowebcache.config.legends.LegendsRawInfoConverter;
 import org.geowebcache.config.meta.ServiceInformation;
-import org.geowebcache.filter.parameters.CaseNormalizer;
-import org.geowebcache.filter.parameters.FloatParameterFilter;
-import org.geowebcache.filter.parameters.IntegerParameterFilter;
-import org.geowebcache.filter.parameters.ParameterFilter;
-import org.geowebcache.filter.parameters.RegexParameterFilter;
-import org.geowebcache.filter.parameters.StringParameterFilter;
+import org.geowebcache.filter.parameters.*;
 import org.geowebcache.filter.request.CircularExtentFilter;
 import org.geowebcache.filter.request.FileRasterFilter;
 import org.geowebcache.filter.request.WMSRasterFilter;
@@ -98,14 +56,47 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomReader;
+import javax.annotation.Nullable;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * XMLConfiguration class responsible for reading/writing layer configurations to and from XML file
  * <p>
- * NOTE {@link #initialize(GridSetBroker)} MUST have been called before any other method is used,
- * otherwise this configuration is in an inconsistent and unpredictable state.
+ * NOTE {@link #setGridSetBroker(GridSetBroker)} MUST have been called before any other method is used,
+ * otherwise this configuration is in an inconsistent and unpredictable state, and will throw an
+ * {@link IllegalStateException}. This is set automatically by Spring through the use of {@link Autowired}
  * </p>
  */
 public class XMLConfiguration implements TileLayerConfiguration, InitializingBean, DefaultingConfiguration, ServerConfiguration, BlobStoreConfiguration, GridSetConfiguration {
@@ -115,8 +106,7 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
     private static Log log = LogFactory.getLog(org.geowebcache.config.XMLConfiguration.class);
 
     /**
-     * Web app context, used to look up {@link XMLConfigurationProvider}s. Will be null if used the
-     * {@link #XMLConfiguration(InputStream)} constructor
+     * Web app context, used to look up {@link XMLConfigurationProvider}s.
      */
     private final WebApplicationContext context;
 
@@ -362,9 +352,6 @@ public class XMLConfiguration implements TileLayerConfiguration, InitializingBea
         return config;
     }
 
-    /**
-     * @see TileLayerConfiguration#save()
-     */
     private synchronized void save() throws IOException {
         if (!resourceProvider.hasOutput()) {
             return;

@@ -76,7 +76,7 @@ public class JDBCConfiguration implements Serializable {
      * Loads a XML configuration from the specified file. The file must adhere to the
      * {@code geowebcache-diskquota-jdbc.xsd} schema.
      * 
-     * @param sourceFile
+     * @param is InputStream to load the configuration from
      * @return
      * @throws IOException
      */

@@ -18,7 +18,7 @@ public interface QuotaStoreFactory {
      * Builds a quota store based on a provided name, or returns null if the
      * specified quota store cannot be handled
      * 
-     * @param the application context, should the store depend on other beans 
+     * @param ctx the application context, should the store depend on other beans
      * @param quotaStoreName
      * @return
      * @throws ConfigurationException 

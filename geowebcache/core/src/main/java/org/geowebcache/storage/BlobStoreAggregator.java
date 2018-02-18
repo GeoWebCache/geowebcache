@@ -18,6 +18,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+/**
+ * Serves {@link BlobStoreInfo}s from the {@link BlobStoreConfiguration}s
+ *
+ * Not to be confused with {@link CompositeBlobStore}.
+ */
 public class BlobStoreAggregator {
 
     private List<BlobStoreConfiguration> configs;

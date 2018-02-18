@@ -340,7 +340,7 @@ public class GeoWebCacheConfiguration {
      * Can be used to force WMTS service implementation to be strictly compliant with the
      * correspondent CITE tests.
      *
-     * @param wmtsCiteStrictCompliant TRUE or FALSE, activating or deactivation CITE
+     * @param wmtsCiteCompliant TRUE or FALSE, activating or deactivation CITE
      *                                strict compliance mode for WMTS
      */
     public void setWmtsCiteCompliant(boolean wmtsCiteCompliant) {

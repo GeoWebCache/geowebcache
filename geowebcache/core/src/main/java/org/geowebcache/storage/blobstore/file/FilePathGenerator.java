@@ -44,16 +44,10 @@ public class FilePathGenerator {
      * <p>
      * </p>
      * 
-     * @param layerName
-     *            name of the layer the tile belongs to
-     * @param tileIndex
-     *            the [x,y,z] index for the tile
-     * @param gridSetId
-     *            the name of the gridset for the tile inside layer
+     * @param tile
+     *            information about the tile
      * @param mimeType
      *            the storage mime type
-     * @param parameters_id
-     *            the parameters identifier
      * @return File pointer to the tile image
      */
     public File tilePath(TileObject tile, MimeType mimeType) {
@@ -117,7 +111,7 @@ public class FilePathGenerator {
      * Returns the parameters identifier for the given parameters map
      * @param parameters
      * @return
-     * @deprecated Use {@link ParametersUtils#getParametersId(Map<String, String>)} instead
+     * @deprecated Use {@link ParametersUtils#getId(Map)} instead
      */
     public static String getParametersId(Map<String, String> parameters) {
         return ParametersUtils.getId(parameters);
@@ -128,7 +122,7 @@ public class FilePathGenerator {
      * 
      * @param parameters
      * @return
-     * @deprecated Use {@link ParametersUtils#getParametersKvp(Map<String, String>)} instead
+     * @deprecated Use {@link ParametersUtils#getKvp(Map)} instead
      */
     public static String getParametersKvp(Map<String, String> parameters) {
         return ParametersUtils.getLegacyParametersKvp(parameters);

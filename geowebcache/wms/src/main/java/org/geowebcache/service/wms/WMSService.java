@@ -340,7 +340,7 @@ public class WMSService extends Service{
     /**
      * Handles a getfeatureinfo request
      * 
-     * @param conv
+     * @param tile
      */
     private void handleGetFeatureInfo(ConveyorTile tile) throws GeoWebCacheException {
         TileLayer tl = tld.getTileLayer(tile.getLayerId());

@@ -624,8 +624,8 @@ public abstract class JDBCQuotaStoreTest {
     }
 
     /**
-     * Combined test for {@link BDBQuotaStore#addToQuotaAndTileCounts(TileSet, Quota, Collection)}
-     * and {@link BDBQuotaStore#addHitsAndSetAccesTime(Collection)}
+     * Combined test for {@link JDBCQuotaStore#addToQuotaAndTileCounts(TileSet, Quota, Collection)}
+     * and {@link JDBCQuotaStore#addHitsAndSetAccesTime(Collection)}
      * 
      * @throws Exception
      */
@@ -900,7 +900,7 @@ public abstract class JDBCQuotaStoreTest {
     /**
      * Asserts the quota used by this tile set is null
      * 
-     * @param tileSet
+     * @param layerName
      * @throws InterruptedException
      */
     private void assertQuotaZero(String layerName) throws InterruptedException {

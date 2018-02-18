@@ -8,6 +8,9 @@ import java.util.stream.Collectors;
 
 import org.geowebcache.grid.GridSet;
 
+/**
+ * Interface for managing {@link GridSet} configuration elements
+ */
 public interface GridSetConfiguration extends BaseConfiguration {
     
     
@@ -65,8 +68,9 @@ public interface GridSetConfiguration extends BaseConfiguration {
     void modifyGridSet(final GridSet gridSet) throws NoSuchElementException, IllegalArgumentException, UnsupportedOperationException;
     
     /**
-     * Adds a new {@link GridSet} to the configuration
-     * @param gridSet the gridset to add
+     * Renames an existing {@link GridSet}
+     * @param oldName the name of the existing gridset
+     * @param newName the name to rename the gridset to.
      * @throws IllegalArgumentException if the new name is in use by another gridset
      * @throws NoSuchElementException the old name is not present
      * @throws UnsupportedOperationException if renaming in not supported

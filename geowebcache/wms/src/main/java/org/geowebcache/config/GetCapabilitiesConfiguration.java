@@ -621,7 +621,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
         throw new UnsupportedOperationException("renameLayer is not supported by "
                 + getClass().getSimpleName());
     }
-    
+
     /**
      * @return {@code false}
      * @see TileLayerConfiguration#canSave(org.geowebcache.layer.TileLayer)

@@ -84,7 +84,6 @@ public class ImageMime extends MimeType {
          * gwc-core does not depend on GeoTools, so we don't have an easy place to share it. On the bright side, it's small.
          *
          * @param renderedImage
-         * @param renderingHints
          * @return
          */
         boolean isBestFormatJpeg(RenderedImage renderedImage)

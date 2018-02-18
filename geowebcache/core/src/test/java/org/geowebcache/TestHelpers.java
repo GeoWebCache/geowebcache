@@ -91,7 +91,7 @@ public class TestHelpers {
     
     /**
      * Matcher for an {@link HttpServletResponse} that checks its status.
-     * @param statusMatcher
+     * @param expected
      * @return
      */
     public static Matcher<HttpServletResponse> hasStatus(HttpStatus expected) {

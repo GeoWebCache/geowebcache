@@ -74,7 +74,7 @@ public interface QuotaStore {
      * Asynchronously updates (or set if not exists) the
      * {@link PageStats#getFrequencyOfUsePerMinute()} and
      * {@link PageStats#getLastAccessTimeMinutes()} values for the stored versions of the page
-     * statistics using {@link PageStats#addHits(long)}; these values are influenced by the
+     * statistics using {@link PageStats#addHitsAndAccessTime(long, int, int)}; these values are influenced by the
      * {@code PageStats}' {@link PageStats#getFillFactor() fillFactor}.
      * 
      * @param statsUpdates

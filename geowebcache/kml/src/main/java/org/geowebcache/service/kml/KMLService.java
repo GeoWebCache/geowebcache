@@ -469,16 +469,12 @@ public class KMLService extends Service {
     /**
      * Creates an overlay element: 1) Header 2) Network links to regions where we have more data 3)
      * Overlay (link to data) 4) Footer
-     * 
-     * @param tileLayer
-     * @param urlStr
-     * @param key
-     * @param extension
-     * @param formatExtension
-     * @param isRaster
-     * @param response
-     * @return
+     *
+     * @param tile
+     * @param isPackaged
+     * @return The html for the overlay element
      * @throws ServiceException
+     * @throws GeoWebCacheException
      */
     private String createOverlay(ConveyorKMLTile tile, boolean isPackaged)
             throws ServiceException, GeoWebCacheException {
@@ -588,13 +584,14 @@ public class KMLService extends Service {
 
     /**
      * For KML features / vector data OR for the next level
-     * 
+     *
      * @param layer
-     * @param urlStr
-     * @param gridLoc
      * @param bbox
-     * @param extension
-     * @return
+     * @param gridLocUrl
+     * @param tileIdx
+     * @param maxLodPixels
+     * @param refreshTags
+     * @return The network link element html
      */
     private static String createNetworkLinkElement(TileLayer layer, BoundingBox bbox,
             String gridLocUrl, String tileIdx, int maxLodPixels, String refreshTags) {

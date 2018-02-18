@@ -42,6 +42,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+/**
+ * Exposes {@link GridSet}s from all {@link GridSetConfiguration}s
+ */
 public class GridSetBroker implements ConfigurationAggregator<GridSetConfiguration>, ApplicationContextAware, InitializingBean {
     private static Log log = LogFactory.getLog(GridSetBroker.class);
     

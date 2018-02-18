@@ -78,7 +78,7 @@ public interface BlobStore {
      * Delete the cache for the named layer and parameters id.
      * 
      * @param layerName
-     * @param parameters
+     * @param parametersId
      * @return {@literal true} if successful, {@literal false} otherwise
      * @throws StorageException
      */
@@ -115,8 +115,7 @@ public interface BlobStore {
     /**
      * Store blob. Calls getBlob() on passed object, does not modify the object.
      * 
-     * @param key
-     * @param blog
+     * @param obj
      * @throws StorageException
      */
     public void put(TileObject obj) throws StorageException;
@@ -165,7 +164,7 @@ public interface BlobStore {
      * Get the IDs of the cached parameter maps for a layer. 
      * 
      * <p>Stores that predate 1.12 should implement this to provide any parameters for which maps
-     * are not available.  Stores not using {@link ParametersUtils.getId} or which have more 
+     * are not available.  Stores not using {@link ParametersUtils#getId(Map)} or which have more
      * efficient ways to provide it should also implement it.
      * @param layerName
      * @return

@@ -828,11 +828,6 @@ public class BDBQuotaStore implements QuotaStore {
         return nextToExpire;
     }
 
-    /**
-     * @param expirationPolicyIndex
-     * @param layerNames
-     * @return
-     */
     private class FindPageToExpireByLayer implements Callable<TilePage> {
         private final SecondaryIndex<Float, Long, PageStats> expirationPolicyIndex;
 

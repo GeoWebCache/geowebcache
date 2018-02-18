@@ -166,8 +166,9 @@ public class WMSRasterFilter extends RasterFilter {
      * Generates the URL used to create the lookup raster
      * 
      * @param layer
-     * @param srs
+     * @param gridSubset
      * @param z
+     * @param widthHeight
      * @return
      */
     protected Map<String, String> wmsParams(WMSLayer layer, GridSubset gridSubset, int z,

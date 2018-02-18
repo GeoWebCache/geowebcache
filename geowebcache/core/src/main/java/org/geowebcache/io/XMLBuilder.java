@@ -265,7 +265,6 @@ public class XMLBuilder {
     
     /**
      * Add a LatLonBoundingBox element
-     * @param srs
      * @param minx
      * @param miny
      * @param maxx

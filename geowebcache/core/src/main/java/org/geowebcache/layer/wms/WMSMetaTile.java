@@ -38,9 +38,15 @@ public class WMSMetaTile extends MetaTile {
 
     /**
      * Used for requests by clients
-     * 
-     * @param profile
-     * @param initGridPosition
+     *
+     * @param layer
+     * @param gridSubset
+     * @param responseFormat
+     * @param formatModifier
+     * @param tileGridPosition
+     * @param metaX
+     * @param metaY
+     * @param fullParameters
      */
     protected WMSMetaTile(WMSLayer layer, GridSubset gridSubset, MimeType responseFormat,
             FormatModifier formatModifier, long[] tileGridPosition, int metaX, int metaY,

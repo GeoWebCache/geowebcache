@@ -141,7 +141,9 @@ public class MGMapsConverter extends Service {
      * 
      * Modified by JaakL for mgmaps zoom understanding: zoom = 17 - zoom
      * 
-     * @param quadKey
+     * @param zoomLevel
+     * @param x
+     * @param y
      * @return
      */
     public static long[] convert(long zoomLevel, long x, long y) throws ServiceException {

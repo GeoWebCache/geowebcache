@@ -147,7 +147,9 @@ public class GMapsConverter extends Service {
      * 
      * see http://code.google.com/apis/maps/documentation/overlays.html#Custom_Map_Types
      * 
-     * @param quadKey
+     * @param zoomLevel
+     * @param x
+     * @param y
      * @return
      */
     public static long[] convert(long zoomLevel, long x, long y) throws ServiceException {

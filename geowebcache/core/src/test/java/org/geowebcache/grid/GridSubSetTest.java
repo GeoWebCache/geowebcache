@@ -40,8 +40,7 @@ public class GridSubSetTest {
     
     /**
      * Creation of a PNG test Layer with a non-zero zoomStart parameter for the test.
-     * 
-     * @param format
+     *
      * @return
      */
     private static WMSLayer createWMSLayer() {

@@ -26,7 +26,7 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
 
 /**
- * Configration and factory for {@link FileBlobStore}.
+ * Configuration and factory for {@link FileBlobStore}.
  * 
  * @since 1.8
  * @see BlobStoreInfo
@@ -47,10 +47,20 @@ public class FileBlobStoreInfo extends BlobStoreInfo {
         super(id);
     }
 
+    /**
+     * Get the base directory for persisting tiles
+     *
+     * @return The file system path to the base directory
+     */
     public String getBaseDirectory() {
         return baseDirectory;
     }
 
+    /**
+     * Set the base directory for persisting tiles
+     *
+     * @param baseDirectory The file system path to the base directory
+     */
     public void setBaseDirectory(String baseDirectory) {
         this.baseDirectory = baseDirectory;
     }
@@ -75,7 +85,6 @@ public class FileBlobStoreInfo extends BlobStoreInfo {
      * Sets the block size of the file system where the {@link #getBaseDirectory() base directory}
      * resides.
      */
-
     public void setFileSystemBlockSize(int fileSystemBlockSize) {
         this.fileSystemBlockSize = fileSystemBlockSize;
     }
@@ -87,6 +96,9 @@ public class FileBlobStoreInfo extends BlobStoreInfo {
                 .append(", fileSystemBlockSize:").append(fileSystemBlockSize).append(']').toString();
     }
 
+    /**
+     * @see BlobStoreInfo#createInstance(TileLayerDispatcher, LockProvider)
+     */
     @Override
     public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider) throws StorageException {
         checkState(getName() != null, "id not set");
@@ -102,6 +114,9 @@ public class FileBlobStoreInfo extends BlobStoreInfo {
         return fileBlobStore;
     }
 
+    /**
+     * @see BlobStoreInfo#getLocation()
+     */
     @Override
     public String getLocation() {
         return getBaseDirectory();
