@@ -1,12 +1,24 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @author John Schulz (Boundless), 2018
+ *
+ */
 package org.geowebcache.rest.controller;
 
-import org.geowebcache.GeoWebCache;
-import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.GridSetConfiguration;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.rest.config.XMLConfiguration;
-import org.geowebcache.rest.controller.GWCController;
 import org.geowebcache.rest.converter.XStreamListAliasWrapper;
 import org.geowebcache.rest.exception.RestException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +29,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
 import java.util.Set;
 
 @Component

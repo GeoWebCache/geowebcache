@@ -14,6 +14,7 @@
  *
  * @author Kevin Smith, Boundless
  * @author David Vick, Boundless, 2017
+ * @author Torben Barsballe, Boundless 2018
  */
 
 package org.geowebcache.jetty;
@@ -52,11 +53,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Integration test for the REST API in a full GWC instance *
- *
- * @author Kevin Smith, Boundless
- * @author David Vick, Boundless
- * @author Torben Barsballe, Boundless
+ * Integration test for the REST API in a full GWC instance
  */
 public class RestIntegrationTest {
 

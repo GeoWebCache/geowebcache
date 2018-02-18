@@ -1,42 +1,45 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Copyright 2018
+ *
+ */
 package org.geowebcache.config;
 
-import static org.easymock.EasyMock.createNiceMock;
-import static org.easymock.EasyMock.expect;
-import static org.geowebcache.util.TestUtils.isPresent;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.junit.Assert.assertThat;
-
-import java.net.URL;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.google.common.base.Objects;
 import org.easymock.EasyMock;
-import org.geotools.data.ows.CRSEnvelope;
-import org.geotools.data.ows.Layer;
-import org.geotools.data.ows.OperationType;
-import org.geotools.data.ows.WMSCapabilities;
-import org.geotools.data.ows.WMSRequest;
+import org.geotools.data.ows.*;
 import org.geotools.data.wms.WebMapServer;
-import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
-import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.layer.wms.WMSLayer;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
-import org.opengis.filter.IncludeFilter;
 
-import com.google.common.base.Objects;
+import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+
+import static org.easymock.EasyMock.createNiceMock;
+import static org.easymock.EasyMock.expect;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetConfigurationTest {
     
