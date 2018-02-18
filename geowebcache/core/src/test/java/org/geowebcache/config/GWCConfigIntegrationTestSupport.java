@@ -4,6 +4,7 @@ import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -14,7 +15,7 @@ import java.util.List;
  */
 public abstract class GWCConfigIntegrationTestSupport {
 
-    GridSetBroker broker = new GridSetBroker(true, true);
+    GridSetBroker broker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
 
     /**
      * Resets to an empty configuration;

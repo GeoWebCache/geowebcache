@@ -501,9 +501,10 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
         LiveStore removedStore = blobStores.remove(oldName);
         try {
             if (modifiedBlobStore.isDefault()) {
-                if (oldName.equals(blobStores.get(DEFAULT_STORE_DEFAULT_ID).config.getName())) {
+                BlobStoreInfo oldConfig = blobStores.get(DEFAULT_STORE_DEFAULT_ID).config;
+                //This was already the default
+                if (oldName.equals(oldConfig.getName()) || modifiedBlobStore.equals(oldConfig)) {
                     //Make sure the BlobStoreInfo names match, loadBlobStore will handle setting the default BlobStore
-                    BlobStoreInfo oldConfig = blobStores.get(DEFAULT_STORE_DEFAULT_ID).config;
                     try {
                         blobStores.get(DEFAULT_STORE_DEFAULT_ID).config = modifiedBlobStore;
                         loadBlobStore(blobStores, modifiedBlobStore);
@@ -512,6 +513,8 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
                         throw e;
                     }
                 } else {
+                    //This should probably not happen
+                    log.warn("Changing default blobstore during rename, this should not happen");
                     loadBlobStoreOverwritingDefault(blobStores, modifiedBlobStore);
                 }
             } else {
@@ -545,8 +548,12 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
         try {
             stores.remove(DEFAULT_STORE_DEFAULT_ID);
             loadBlobStore(stores, config);
-            oldDefaultStore.config.setDefault(false);
-            blobStoreConfigs.modifyBlobStore(oldDefaultStore.config);
+            //Name will be null iff CompositeBlobStore generated its own default
+            //In this case, the default blob store is not in the aggregator and should not be saved
+            if (null != oldDefaultStore.config.getName()) {
+                oldDefaultStore.config.setDefault(false);
+                blobStoreConfigs.modifyBlobStore(oldDefaultStore.config);
+            }
         } catch (StorageException | ConfigurationException e) {
             stores.put(DEFAULT_STORE_DEFAULT_ID, oldDefaultStore);
             oldDefaultStore.config.setDefault(true);

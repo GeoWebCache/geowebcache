@@ -2,6 +2,7 @@ package org.geowebcache.config;
 
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.storage.BlobStoreAggregator;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -10,9 +11,10 @@ import org.junit.runners.Parameterized.Parameters;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
- * Base class for testing different GWC Configuration implementations
+ * Base class for integration testing different GWC Configuration implementations
  * Uses different {@link GWCConfigIntegrationTestSupport} implementations as {@link Parameters} to access the respective GWC Configurations
  * Uses {@link GWCConfigIntegrationTestData} to populate each implementation with consistent data.
  */
@@ -32,6 +34,7 @@ public abstract class GWCConfigIntegrationTest {
 
     public GridSetBroker gridSetBroker;
     public TileLayerDispatcher tileLayerDispatcher;
+    public BlobStoreAggregator blobStoreAggregator;
 
     @Before
     public void setUpTest() throws Exception {
@@ -39,6 +42,7 @@ public abstract class GWCConfigIntegrationTest {
         GWCConfigIntegrationTestData.setUpTestData(testSupport);
 
         gridSetBroker = testSupport.getGridSetBroker();
+        blobStoreAggregator = new BlobStoreAggregator(Collections.singletonList(testSupport.getBlobStoreConfiguration()));
         tileLayerDispatcher = new TileLayerDispatcher(gridSetBroker, testSupport.getTileLayerConfigurations());
     }
 }
