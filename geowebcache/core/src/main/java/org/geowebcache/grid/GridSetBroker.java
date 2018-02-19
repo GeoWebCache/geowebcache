@@ -82,11 +82,14 @@ public class GridSetBroker implements ConfigurationAggregator<GridSetConfigurati
     }
 
     protected Optional<GridSet> getGridSet(String name) {
-        return getConfigurations().stream()
-            .map(c->c.getGridSet(name))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .findFirst();
+        for (GridSetConfiguration c : getConfigurations()) {
+            Optional<GridSet> gridSet = c.getGridSet(name);
+            if (gridSet.isPresent()) {
+                GridSet set = gridSet.get();
+                return Optional.of(set);
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -204,7 +207,7 @@ public class GridSetBroker implements ConfigurationAggregator<GridSetConfigurati
                         log.warn("GridSetBroker.initialize() called without having set application context");
                         configurations = GeoWebCacheExtensions.configurations(GridSetConfiguration.class);
                     }
-                    if (!configurations.contains(defaults)) {
+                    if (defaults != null && !configurations.contains(defaults)) {
                         configurations.add(defaults);
                     }
                 }
