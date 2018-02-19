@@ -1,3 +1,17 @@
+GeoWebCache 1.11.4 (2018-02-19)
+-------------------------------
+
+Bug fix release
+
+Improvements:
++++++++++++++
+- Support parameter expansion in S3 blob store configuration (#568)
+
+Fixes:
+++++++
+- Mass truncate layer misleading 500 response when nothing is cached #587
+- #566 - ensure S3Objects are always closed
+
 GeoWebCache 1.11.3 (2017-12-18)
 -------------------------------
 
