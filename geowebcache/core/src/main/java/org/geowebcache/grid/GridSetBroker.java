@@ -194,14 +194,18 @@ public class GridSetBroker implements ConfigurationAggregator<GridSetConfigurati
     }
 
     private Collection<GridSetConfiguration> getConfigurations() {
-        if(this.configurations==null) {
+        // We set DefaultGridsets in the constructor, need to account for it.
+        if(this.configurations==null || (this.configurations.size() == 1 && this.configurations.get(0) instanceof DefaultGridsets)) {
             synchronized(this) {
-                if(this.configurations==null) {
+                if(this.configurations==null || (this.configurations.size() == 1 && this.configurations.get(0).equals(defaults))) {
                     if(Objects.nonNull(applicationContext)) {
                         configurations = GeoWebCacheExtensions.configurations(GridSetConfiguration.class, applicationContext);
                     } else {
                         log.warn("GridSetBroker.initialize() called without having set application context");
                         configurations = GeoWebCacheExtensions.configurations(GridSetConfiguration.class);
+                    }
+                    if (!configurations.contains(defaults)) {
+                        configurations.add(defaults);
                     }
                 }
             }
