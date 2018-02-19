@@ -27,6 +27,8 @@ import org.geowebcache.config.BlobStoreConfigurationListener;
 import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.meta.ServiceInformation;
+import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.util.CompositeIterable;
 import org.springframework.util.Assert;
 
@@ -45,13 +47,16 @@ public class BlobStoreAggregator {
     private List<BlobStoreConfiguration> configs;
     private static Log log = LogFactory.getLog(org.geowebcache.storage.BlobStoreAggregator.class);
     private ServiceInformation serviceInformation;
+    private TileLayerDispatcher layers;
 
     /**
      * Used to delegate calls to {@link BlobStoreConfiguration} objects
      * @param configs
+     * @param layers
      */
-    public BlobStoreAggregator(List<BlobStoreConfiguration> configs) {
+    public BlobStoreAggregator(List<BlobStoreConfiguration> configs, TileLayerDispatcher layers) {
         this.configs = configs == null ? new ArrayList<BlobStoreConfiguration>() : configs;
+        this.layers = layers;
         initialize();
     }
 
@@ -121,6 +126,7 @@ public class BlobStoreAggregator {
     public void reInit() {
         List<BlobStoreConfiguration> extensions = GeoWebCacheExtensions.extensions(BlobStoreConfiguration.class);
         this.configs = new ArrayList<BlobStoreConfiguration>(extensions);
+        this.layers = GeoWebCacheExtensions.bean(TileLayerDispatcher.class);
         initialize();
     }
     /**
@@ -269,6 +275,15 @@ public class BlobStoreAggregator {
     public synchronized void renameBlobStore(final String oldName, final String newName) throws NoSuchElementException, IllegalArgumentException {
         BlobStoreConfiguration config = getConfiguration(oldName);
         config.renameBlobStore(oldName, newName);
+
+        //update layers
+        for (TileLayer layer : layers.getLayerList()) {
+            if (oldName.equals(layer.getBlobStoreId())) {
+                layer.setBlobStoreId(newName);
+                layers.modify(layer);
+
+            }
+        }
     }
 
     /**

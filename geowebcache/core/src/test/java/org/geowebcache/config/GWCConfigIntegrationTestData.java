@@ -67,6 +67,16 @@ public class GWCConfigIntegrationTestData {
 
         gridSetConfiguration.addGridSet(epsg2163);
 
+        //Set up blobstores
+        BlobStoreConfiguration blobStoreConfiguration = testSupport.getBlobStoreConfiguration();
+
+        FileBlobStoreInfo blobStore = new FileBlobStoreInfo(BLOBSTORE_FILE_DEFAULT);
+        blobStore.setEnabled(false);
+        blobStore.setBaseDirectory("/tmp/defaultCache");
+        blobStore.setFileSystemBlockSize(4096);
+
+        blobStoreConfiguration.addBlobStore(blobStore);
+
         TileLayerConfiguration tileLayerConfiguration = testSupport.getTileLayerConfigurations().get(0);
         tileLayerConfiguration.setGridSetBroker(testSupport.getGridSetBroker());
         tileLayerConfiguration.afterPropertiesSet();
@@ -80,19 +90,11 @@ public class GWCConfigIntegrationTestData {
         parameterFilter.setDefaultValue("population");
         parameterFilter.setValues(Arrays.asList("population", "polygon", "pophatch"));
 
-        tileLayerConfiguration.addLayer(new WMSLayer(
+        WMSLayer wmsLayer = new WMSLayer(
                 LAYER_TOPP_STATES, new String[]{"http://demo.opengeo.org/geoserver/topp/wms"}, null, null,
                 Arrays.asList("image/gif", "image/jpeg", "image/png", "image/png8"),  subSets,
-                Collections.singletonList(parameterFilter), null, null, true));
-
-        //Set up blobstores
-        BlobStoreConfiguration blobStoreConfiguration = testSupport.getBlobStoreConfiguration();
-
-        FileBlobStoreInfo blobStore = new FileBlobStoreInfo(BLOBSTORE_FILE_DEFAULT);
-        blobStore.setEnabled(false);
-        blobStore.setBaseDirectory("/tmp/defaultCache");
-        blobStore.setFileSystemBlockSize(4096);
-
-        blobStoreConfiguration.addBlobStore(blobStore);
+                Collections.singletonList(parameterFilter), null, null, true);
+        wmsLayer.setBlobStoreId(blobStore.getName());
+        tileLayerConfiguration.addLayer(wmsLayer);
     }
 }
