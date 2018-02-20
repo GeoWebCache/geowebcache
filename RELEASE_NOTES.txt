@@ -1,3 +1,71 @@
+GeoWebCache 1.13-beta (2018-02-20)
+----------------------------------
+
+Beta release for the 1.13 series
+
+Improvements:
++++++++++++++
+- Configuration subsystem overhaul
+- Gridset management via REST
+- Blob Store management via REST
+- Global configuration management via REST
+- ArcGISCache backed layers management via REST
+
+
+GeoWebCache 1.12.2 (2018-01-22)
+-------------------------------
+
+Third stable release of 1.12 branch
+
+
+Fixes:
+++++++
+- Mass truncate layer misleading 500 response when nothing is cached
+- Fixes for downstream project GeoServer
+
+
+GeoWebCache 1.12.1 (2017-11-21)
+-------------------------------
+
+Second stable release of 1.12 branch
+
+Fixes:
+++++++
+- Blank page when submitting seed job
+- Error when submitting seed job with default bounds
+- Fix SeedController Post for embedded GWC
+- Fix NPE when checking security of tile fuser requests
+
+
+GeoWebCache 1.12.0 (2017-10-09)
+-------------------------------
+
+First stable release of 1.12 branch
+
+Improvements:
++++++++++++++
+- Imageio ext 1.1.18
+
+Fixes:
+++++++
+- Fixed missing OpenLayers resources on Demo page
+
+
+GeoWebCache 1.12-RC1 (2017-09-27)
+---------------------------------
+
+First candidate release for 1.12 series
+
+Improvements:
++++++++++++++
+- Update JAI-EXT to version 1.0.16
+- Improved error reporting for integration tests
+
+Fixes:
+++++++
+- Fixed bug affecting spring MVC controllers downstreeam in GeoServer.
+
+
 GeoWebCache 1.12-beta (2017-09-13)
 ----------------------------------
 
