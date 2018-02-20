@@ -33,7 +33,6 @@ public interface LockProvider {
     public interface Lock {
         /**
          * Releases the lock on the specified key
-         * @param lockKey
          */
         public void release() throws GeoWebCacheException;
     }

@@ -91,11 +91,12 @@ public class WMSHttpHelper extends WMSSourceHelper {
 
     /**
      * Loops over the different backends, tries the request
-     * 
+     *
      * @param tileRespRecv
-     * @param profile
-     * @param wmsparams
-     * @return
+     * @param layer
+     * @param wmsParams
+     * @param expectedMimeType
+     * @param target
      * @throws GeoWebCacheException
      */
     @Override
@@ -147,13 +148,14 @@ public class WMSHttpHelper extends WMSSourceHelper {
 
     /**
      * Executes the actual HTTP request, checks the response headers (status and MIME) and
-     * 
-     * @param data
-     * @param wmsparams
+     *
      * @param tileRespRecv
      * @param wmsBackendUrl
+     * @param wmsParams
+     * @param requestMimeType
+     * @param backendTimeout
+     * @param target
      * @param httpRequestMode
-     * @return
      * @throws GeoWebCacheException
      */
     private void connectAndCheckHeaders(TileResponseReceiver tileRespRecv, URL wmsBackendUrl,
@@ -278,7 +280,6 @@ public class WMSHttpHelper extends WMSSourceHelper {
      * @param url             endpoint to talk to
      * @param queryParams     parameters for the query string
      * @param backendTimeout  timeout to use in seconds
-     * @param httpRequestMode the method used to perform requests
      * @return executed GetMethod (that has to be closed after reading the response!)
      * @throws IOException
      * @deprecated Use {@link #executeRequest(URL, Map, Integer, WMSLayer.HttpRequestMode)} instead

@@ -25,7 +25,7 @@ package org.geowebcache.rest.controller;
 
 import com.google.common.base.Splitter;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.config.DefaultingConfiguration;
 import org.geowebcache.rest.exception.RestException;
 import org.geowebcache.rest.service.FormService;
 import org.geowebcache.rest.service.SeedService;
@@ -61,7 +61,7 @@ public class SeedController {
     FormService formService;
 
     @Autowired
-    protected XMLConfiguration xmlConfig;
+    protected DefaultingConfiguration xmlConfig;
 
     @ExceptionHandler(RestException.class)
     public ResponseEntity<?> handleRestException(RestException ex) {
@@ -155,7 +155,7 @@ public class SeedController {
         }
     }
 
-    public void setXmlConfig(XMLConfiguration xmlConfig) {
+    public void setXmlConfig(DefaultingConfiguration xmlConfig) {
         this.xmlConfig = xmlConfig;
     }
 

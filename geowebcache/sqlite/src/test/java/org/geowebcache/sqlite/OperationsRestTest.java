@@ -17,7 +17,7 @@
 package org.geowebcache.sqlite;
 
 import org.apache.commons.io.FileUtils;
-import org.geowebcache.config.BlobStoreConfig;
+import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.sqlite.Utils.Tuple;
 import org.geowebcache.storage.BlobStore;
@@ -145,10 +145,10 @@ public class OperationsRestTest extends TestSupport {
         OperationsRestWebConfig.ROOT_DIRECTORY.mkdirs();
         File rootDirectoryB = Files.createTempDirectory("gwc-").toFile();
         addFilesToDelete(rootDirectoryB);
-        MbtilesConfiguration configurationA = new MbtilesConfiguration();
+        MbtilesInfo configurationA = new MbtilesInfo();
         configurationA.setRootDirectory(rootDirectoryA.getPath());
         configurationA.setTemplatePath(Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
-        MbtilesConfiguration configurationB = new MbtilesConfiguration();
+        MbtilesInfo configurationB = new MbtilesInfo();
         configurationB.setRootDirectory(rootDirectoryB.getPath());
         configurationB.setTemplatePath(Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
         MbtilesBlobStore storeA = new MbtilesBlobStore(configurationA);
@@ -177,7 +177,7 @@ public class OperationsRestTest extends TestSupport {
     private void checkThatStoreContainsReplacedTiles(String relativePathA, String relativePathB) throws Exception {
         // instantiating the store
         File rootDirectory = OperationsRestWebConfig.ROOT_DIRECTORY;
-        MbtilesConfiguration configuration = new MbtilesConfiguration();
+        MbtilesInfo configuration = new MbtilesInfo();
         configuration.setRootDirectory(rootDirectory.getPath());
         configuration.setTemplatePath(Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
@@ -233,13 +233,13 @@ public class OperationsRestTest extends TestSupport {
     private void closeSqliteStoresConnections() {
         XMLConfiguration configuration = webApplicationContext.getBean(XMLConfiguration.class);
         assertThat(configuration, notNullValue());
-        List<BlobStoreConfig> blobStoresConfig = configuration.getBlobStores();
+        List<BlobStoreInfo> blobStoresConfig = configuration.getBlobStores();
         assertThat(blobStoresConfig, notNullValue());
         // let's iterate over all the available blob stores configurations
-        for (BlobStoreConfig blobStoreConfig : blobStoresConfig) {
-            if (blobStoreConfig instanceof SqliteConfiguration) {
+        for (BlobStoreInfo blobStoreConfig : blobStoresConfig) {
+            if (blobStoreConfig instanceof SqliteInfo) {
                 // we have a sqlite based blob store, let's close all the connections
-                ((MbtilesConfiguration) blobStoreConfig).getConnectionManager().reapAllConnections();
+                ((MbtilesInfo) blobStoreConfig).getConnectionManager().reapAllConnections();
             }
         }
     }

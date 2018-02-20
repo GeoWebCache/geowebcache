@@ -19,6 +19,7 @@ package org.geowebcache.rest.statistics;
 
 
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.MockConfigurationResourceProvider;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
 import org.geowebcache.grid.GridSetBroker;
@@ -55,10 +56,10 @@ public class MemoryCacheControllerTest {
     public void setup() throws GeoWebCacheException {
         GridSetBroker gridSetBroker = new GridSetBroker(false, false);
         XMLConfiguration xmlConfig = loadXMLConfig();
-        xmlConfig.initialize(gridSetBroker);
+        xmlConfig.setGridSetBroker(gridSetBroker);
+        xmlConfig.afterPropertiesSet();
 
-        mcc = new MemoryCacheController();
-        mcc.setXMLConfiguration(xmlConfig);
+        mcc = new MemoryCacheController(null);
         this.mockMvc = MockMvcBuilders.standaloneSetup(mcc).build();
     }
 
@@ -96,11 +97,11 @@ public class MemoryCacheControllerTest {
 
     private XMLConfiguration loadXMLConfig() {
 
-        InputStream is = XMLConfiguration.class
-                .getResourceAsStream(XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE);
         XMLConfiguration xmlConfig = null;
         try {
-            xmlConfig = new XMLConfiguration(is);
+            xmlConfig = new XMLConfiguration(null, new MockConfigurationResourceProvider(
+                    ()->XMLConfiguration.class.getResourceAsStream(
+                            XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE)));
         } catch (Exception e) {
             // Do nothing
         }

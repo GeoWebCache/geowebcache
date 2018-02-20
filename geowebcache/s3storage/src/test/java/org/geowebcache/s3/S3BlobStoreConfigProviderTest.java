@@ -56,8 +56,8 @@ public class S3BlobStoreConfigProviderTest {
         XStream stream = new XStream();
         stream = provider.getConfiguredXStream(stream);
         Object config = stream.fromXML(getClass().getResourceAsStream("blobstore.xml"));
-        assertTrue(config instanceof S3BlobStoreConfig);
-        S3BlobStoreConfig s3Config = (S3BlobStoreConfig) config;
+        assertTrue(config instanceof S3BlobStoreInfo);
+        S3BlobStoreInfo s3Config = (S3BlobStoreInfo) config;
         assertEquals("MYBUCKET", s3Config.getBucket());
         assertEquals(30, s3Config.getMaxConnections().intValue());
         assertEquals(true, s3Config.isEnabled());

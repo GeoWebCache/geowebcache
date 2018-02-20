@@ -69,7 +69,7 @@ public class GeoWebCacheConfiguration {
 
     private List<FormatModifier> formatModifiers;
 
-    private List<BlobStoreConfig> blobStores;
+    private List<BlobStoreInfo> blobStores;
 
     private List<XMLGridSet> gridSets;
     
@@ -137,15 +137,14 @@ public class GeoWebCacheConfiguration {
     }
 
     /**
-     * @return the backendTimeout
+     * @see ServerConfiguration#getBackendTimeout()
      */
     public Integer getBackendTimeout() {
         return backendTimeout;
     }
 
     /**
-     * @param backendTimeout
-     *            the backendTimeout to set
+     * @see ServerConfiguration#setBackendTimeout(Integer)
      */
     public void setBackendTimeout(Integer backendTimeout) {
         this.backendTimeout = backendTimeout;
@@ -227,14 +226,14 @@ public class GeoWebCacheConfiguration {
     }
 
     /**
-     * @return the serviceInformation
+     * @see ServerConfiguration#getServiceInformation()
      */
     public ServiceInformation getServiceInformation() {
         return serviceInformation;
     }
 
     /**
-     * @param serviceInformation
+     * @see ServerConfiguration#setServiceInformation(ServiceInformation)
      *            the serviceInformation to set
      */
     public void setServiceInformation(ServiceInformation serviceInformation) {
@@ -256,7 +255,7 @@ public class GeoWebCacheConfiguration {
         this.formatModifiers = formatModifiers;
     }
 
-    public List<BlobStoreConfig> getBlobStores(){
+    public List<BlobStoreInfo> getBlobStores(){
     	return blobStores;
     }
     
@@ -276,6 +275,7 @@ public class GeoWebCacheConfiguration {
     
     /**
      * Returns the chosen lock provider
+     * @see ServerConfiguration#getLockProvider()
      * @return
      */
     public LockProvider getLockProvider() {
@@ -300,8 +300,18 @@ public class GeoWebCacheConfiguration {
     }
 
     /**
+     * Set the LockProvider is present
+     * @see ServerConfiguration#setLockProvider(LockProvider)
+     * @param lockProvider to set for this configuration
+     */
+    public void setLockProvider(LockProvider lockProvider){
+        this.lockProviderInstance = lockProvider;
+    }
+
+    /**
      * Get the FullWMS value if present
-     * @return
+     * @see ServerConfiguration#isFullWMS()
+     * @return TRUE, FALSE, or NULL
      */
     public Boolean getFullWMS() {
         return fullWMS;
@@ -309,7 +319,8 @@ public class GeoWebCacheConfiguration {
 
     /**
      * Set the FullWMS value if present
-     * @return
+     * @see ServerConfiguration#setFullWMS(Boolean)
+     * @param fullWMS is true or false
      */
     public void setFullWMS(Boolean fullWMS) {
         this.fullWMS = fullWMS;
@@ -329,7 +340,7 @@ public class GeoWebCacheConfiguration {
      * Can be used to force WMTS service implementation to be strictly compliant with the
      * correspondent CITE tests.
      *
-     * @param wmtsCiteStrictCompliant TRUE or FALSE, activating or deactivation CITE
+     * @param wmtsCiteCompliant TRUE or FALSE, activating or deactivation CITE
      *                                strict compliance mode for WMTS
      */
     public void setWmtsCiteCompliant(boolean wmtsCiteCompliant) {

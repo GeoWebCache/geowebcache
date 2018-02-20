@@ -124,7 +124,7 @@ public class WMSLayerTest extends TileLayerTest {
 
         long[] gridLoc = { 0, 0, 0 };// x, y, level
         MimeType mimeType = layer.getMimeTypes().get(0);
-        GridSet gridSet = gridSetBroker.WORLD_EPSG4326;
+        GridSet gridSet = gridSetBroker.getWorldEpsg4326();
         String gridSetId = gridSet.getName();
         ConveyorTile tile = new ConveyorTile(mockStorageBroker, layerId, gridSetId, gridLoc,
                 mimeType, null, servletReq, servletResp);
@@ -222,7 +222,7 @@ public class WMSLayerTest extends TileLayerTest {
 
         long[] gridLoc = { 900, 600, 10 };// x, y, level
         MimeType mimeType = layer.getMimeTypes().get(0);
-        GridSet gridSet = gridSetBroker.WORLD_EPSG4326;
+        GridSet gridSet = gridSetBroker.getWorldEpsg4326();
         String gridSetId = gridSet.getName();
         ConveyorTile tile = new ConveyorTile(mockStorageBroker, layerId, gridSetId, gridLoc,
                 mimeType, null, servletReq, servletResp);
@@ -272,7 +272,7 @@ public class WMSLayerTest extends TileLayerTest {
 
         long[] gridLoc = { 0, 0, 0 };// x, y, level
         MimeType mimeType = layer.getMimeTypes().get(0);
-        GridSet gridSet = gridSetBroker.WORLD_EPSG4326;
+        GridSet gridSet = gridSetBroker.getWorldEpsg4326();
         String gridSetId = gridSet.getName();
         ConveyorTile tile = new ConveyorTile(mockStorageBroker, layerId, gridSetId, gridLoc,
                 mimeType, null, servletReq, servletResp);

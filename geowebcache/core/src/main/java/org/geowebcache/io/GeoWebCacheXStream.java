@@ -115,7 +115,7 @@ public class GeoWebCacheXStream extends XStream {
     /**
      * Add security permission for a type hierarchy.
      * 
-     * @param type the base type to allow
+     * @param types the base type(s) to allow
      * @since 1.4.7
      */
      public void allowTypeHierarchies(Class<?>... types){

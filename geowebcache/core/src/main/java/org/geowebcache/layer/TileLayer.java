@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.Info;
 import org.geowebcache.config.legends.LegendInfo;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -64,7 +65,7 @@ import org.geowebcache.util.ServletUtils;
  * tile
  * </p>
  */
-public abstract class TileLayer {
+public abstract class TileLayer implements Info {
 
     private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayer.class);
 
@@ -94,7 +95,10 @@ public abstract class TileLayer {
     /**
      * The unique identifier for the layer.
      * @return
+     *
+     * @deprecated use {@link #getName()}
      */
+    @Deprecated
     public abstract String getId();
     
     /**
@@ -184,9 +188,7 @@ public abstract class TileLayer {
      * The normal way of getting a single tile from the layer. Under the hood, this may result in
      * several tiles being requested and stored before returning.
      * 
-     * @param tileRequest
-     * @param servReq
-     * @param response
+     * @param tile
      * @return
      * @throws GeoWebCacheException
      * @throws IOException
@@ -199,8 +201,6 @@ public abstract class TileLayer {
      * Makes a non-metatiled request to backend, bypassing the cache before and after
      * 
      * @param tile
-     * @param requestTiled
-     *            whether to use tiled=true or not
      * @return
      * @throws GeoWebCacheException
      * @throws IOException
@@ -223,9 +223,7 @@ public abstract class TileLayer {
      * used in general. The method was exposed to let the KML service traverse the tree ahead of the
      * client, to avoid linking to empty tiles.
      * 
-     * @param gridLoc
-     * @param idx
-     * @param formatStr
+     * @param tile
      * @return
      * @throws GeoWebCacheException
      */
@@ -383,7 +381,7 @@ public abstract class TileLayer {
     /**
      * Whether the layer supports the given format string
      * 
-     * @param formatStr
+     * @param strFormat
      * @return
      * @throws GeoWebCacheException
      */
@@ -423,7 +421,7 @@ public abstract class TileLayer {
 
     /**
      * 
-     * @param srsIdx
+     * @param gridSetId
      * @return the resolutions (units/pixel) for the layer
      */
     public double[] getResolutions(String gridSetId) throws GeoWebCacheException {
@@ -466,8 +464,8 @@ public abstract class TileLayer {
      * Converts the given bounding box into the closest location on the grid supported by the
      * reference system.
      * 
-     * @param srsIdx
-     * @param bounds
+     * @param gridSetId
+     * @param tileBounds
      * @return
      * @throws GeoWebCacheException
      * @throws GeoWebCacheException
@@ -480,7 +478,7 @@ public abstract class TileLayer {
 
     /**
      * 
-     * @param srsIdx
+     * @param gridSetId
      * @param gridLoc
      * @return
      * @throws GeoWebCacheException

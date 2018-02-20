@@ -88,7 +88,7 @@ public class MGMapsConverter extends Service {
             throw new ServiceException("Unable to determine requested format, "+ strFormat);
         }
         
-        ConveyorTile ret = new ConveyorTile(sb, layerId, gsb.WORLD_EPSG3857.getName(), gridLoc, mimeType, null, request, response);
+        ConveyorTile ret = new ConveyorTile(sb, layerId, gsb.getWorldEpsg3857().getName(), gridLoc, mimeType, null, request, response);
         
         if(strCached != null && ! Boolean.parseBoolean(strCached)) {
             ret.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
@@ -141,7 +141,9 @@ public class MGMapsConverter extends Service {
      * 
      * Modified by JaakL for mgmaps zoom understanding: zoom = 17 - zoom
      * 
-     * @param quadKey
+     * @param zoomLevel
+     * @param x
+     * @param y
      * @return
      */
     public static long[] convert(long zoomLevel, long x, long y) throws ServiceException {

@@ -22,7 +22,7 @@ import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.NoOpLockProvider;
 import org.geowebcache.s3.Access;
 import org.geowebcache.s3.PropertiesLoader;
-import org.geowebcache.s3.S3BlobStoreConfig;
+import org.geowebcache.s3.S3BlobStoreInfo;
 import org.geowebcache.s3.S3BlobStoreConfigProvider;
 import org.geowebcache.s3.TemporaryS3Folder;
 import org.geowebcache.storage.StorageException;
@@ -77,19 +77,18 @@ public class S3BlobStoreConfigStoreLoadTest {
     public void testSaveLoadS3BlobStoresAccess() throws Exception {
         Assume.assumeTrue(tempFolder.isConfigured());
         setupXMLConfig();
-        S3BlobStoreConfig store1 = createConfig("1");
-        S3BlobStoreConfig store2 = createConfig("2");
+        S3BlobStoreInfo store1 = createConfig("1");
+        S3BlobStoreInfo store2 = createConfig("2");
         store2.setAccess(Access.PRIVATE);
 
         saveConfig(store1, store2);
         validateAndLoadSavedConfig();
     }
 
-    private void saveConfig(S3BlobStoreConfig store1, S3BlobStoreConfig store2) throws IOException {
-        List<BlobStoreConfig> blobStores = config.getBlobStores();
+    private void saveConfig(S3BlobStoreInfo store1, S3BlobStoreInfo store2) throws IOException {
+        List<BlobStoreInfo> blobStores = config.getBlobStores();
         blobStores.add(store1);
         blobStores.add(store2);
-        config.save();
     }
 
     private void validateAndLoadSavedConfig()
@@ -103,7 +102,8 @@ public class S3BlobStoreConfigStoreLoadTest {
             XMLConfiguration configLoad = new XMLConfiguration(context, configDir.getAbsolutePath(),
                     null);
             GridSetBroker gridSetBroker = new GridSetBroker(true, true);
-            configLoad.initialize(gridSetBroker);
+            configLoad.setGridSetBroker(gridSetBroker);
+            configLoad.afterPropertiesSet();
             createFromSavedConfig(configLoad);
         } catch (StorageException | GeoWebCacheException e) {
             log.error(e.getMessage());
@@ -111,9 +111,9 @@ public class S3BlobStoreConfigStoreLoadTest {
         }
     }
 
-    private void createFromSavedConfig(XMLConfiguration configLoad) throws StorageException {
-        List<BlobStoreConfig> blobStores2 = configLoad.getBlobStores();
-        for (BlobStoreConfig blobStoreConfig : blobStores2) {
+    private void createFromSavedConfig(BlobStoreConfiguration configLoad) throws StorageException {
+        List<BlobStoreInfo> blobStores2 = configLoad.getBlobStores();
+        for (BlobStoreInfo blobStoreConfig : blobStores2) {
             LockProvider lockProvider = new NoOpLockProvider();
             blobStoreConfig.createInstance(dispatch, lockProvider);
         }
@@ -130,8 +130,8 @@ public class S3BlobStoreConfigStoreLoadTest {
         }
     }
 
-    private S3BlobStoreConfig createConfig(String id) {
-        S3BlobStoreConfig store = new S3BlobStoreConfig(id);
+    private S3BlobStoreInfo createConfig(String id) {
+        S3BlobStoreInfo store = new S3BlobStoreInfo(id);
         store.setDefault(true);
         store.setEnabled(true);
         Properties properties = testConfigLoader.getProperties();
@@ -158,7 +158,8 @@ public class S3BlobStoreConfigStoreLoadTest {
         providers.put("S3BlobStore", provider);
         GridSetBroker gridSetBroker = new GridSetBroker(true, true);
         config = new XMLConfiguration(context, configDir.getAbsolutePath());
-        config.initialize(gridSetBroker);
+        config.setGridSetBroker(gridSetBroker);
+        config.afterPropertiesSet();
     }
 
 }

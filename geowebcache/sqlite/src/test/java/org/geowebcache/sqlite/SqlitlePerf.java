@@ -173,7 +173,7 @@ final class SqlitlePerf {
         ExecutorService executor = Executors.newFixedThreadPool(WORKERS);
         long startTime = System.currentTimeMillis();
         // mbtiles store configuration
-        MbtilesConfiguration configuration = new MbtilesConfiguration();
+        MbtilesInfo configuration = new MbtilesInfo();
         configuration.setRootDirectory(rootDirectory.getPath());
         configuration.setTemplatePath(Utils.buildPath("{grid}", "{layer}", "{format}", "mbtiles_perf_test.sqlite"));
         configuration.setUseCreateTime(false);

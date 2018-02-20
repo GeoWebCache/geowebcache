@@ -182,4 +182,36 @@ public class MockExtensionRuleTest {
         
         assertThat(GeoWebCacheExtensions.extensions(Object.class), equalTo(old));
     }
+    
+    @Test
+    public void testParallelRules() throws Throwable {
+        MockExtensionRule rule = new MockExtensionRule();
+        MockExtensionRule rule2 = new MockExtensionRule(false);
+        
+        Collection<Object> old = GeoWebCacheExtensions.extensions(Object.class);
+        
+        rule.apply(new Statement() {
+            
+            @Override
+            public void evaluate() throws Throwable {
+                String bean1 = "THISISTHEBEAN";
+                String bean2 = "THISISTHEOTHERBEAN";
+                rule.addBean("foo", bean1, String.class);
+                rule2.apply(new Statement() {
+                    
+                    @Override
+                    public void evaluate() throws Throwable {
+                        rule2.addBean("foo", bean2, String.class);
+                        assertThat(GeoWebCacheExtensions.extensions(String.class), 
+                                contains(sameInstance(bean2)));
+                    }}, Description.createSuiteDescription("MOCK"));
+                
+                assertThat(GeoWebCacheExtensions.extensions(String.class), 
+                        contains(sameInstance(bean1)));
+                
+            }}, Description.createSuiteDescription("MOCK"))
+        .evaluate();
+        
+        assertThat(GeoWebCacheExtensions.extensions(Object.class), equalTo(old));
+    }
 }

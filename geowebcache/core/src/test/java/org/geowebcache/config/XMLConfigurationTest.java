@@ -1,3 +1,20 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Copyright 2018
+ *
+ */
 package org.geowebcache.config;
 
 import static org.hamcrest.Matchers.*;
@@ -19,6 +36,8 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheExtensions;
+import org.geowebcache.MockWepAppContextRule;
 import org.geowebcache.config.legends.LegendRawInfo;
 import org.geowebcache.config.legends.LegendsRawInfo;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -32,6 +51,8 @@ import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.util.TestUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,6 +73,8 @@ public class XMLConfigurationTest {
     
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
+    @Rule // Not actually used but it protects against other tests that clutter the extension system
+    public MockWepAppContextRule contextRule = new MockWepAppContextRule();
     
     @Before
     public void setUp() throws Exception {
@@ -64,18 +87,18 @@ public class XMLConfigurationTest {
 
         gridSetBroker = new GridSetBroker(true, true);
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
-        config.initialize(gridSetBroker);
+        config.setGridSetBroker(gridSetBroker);
+        config.afterPropertiesSet();
     }
     
     @Test
     public void testAddLayer() throws Exception {
-        int count = config.getTileLayerCount();
+        int count = config.getLayerCount();
 
-        TileLayer tl = mock(WMSLayer.class);
-        when(tl.getName()).thenReturn("testLayer");
+        TileLayer tl = createTestLayer("testLayer");
         config.addLayer(tl);
-        assertEquals(count + 1, config.getTileLayerCount());
-        assertSame(tl, config.getTileLayer("testLayer"));
+        assertEquals(count + 1, config.getLayerCount());
+        assertSame(tl, config.getLayer("testLayer").get());
         try {
             config.addLayer(tl);
             fail("Expected IllegalArgumentException on duplicate layer name");
@@ -96,20 +119,18 @@ public class XMLConfigurationTest {
     @Test
     public void testModifyLayer() throws Exception {
 
-        TileLayer layer1 = mock(WMSLayer.class);
-        when(layer1.getName()).thenReturn("testLayer");
+        WMSLayer layer1 = createTestLayer("testLayer");
 
         config.addLayer(layer1);
-        int count = config.getTileLayerCount();
+        int count = config.getLayerCount();
 
-        TileLayer layer2 = mock(WMSLayer.class);
-        when(layer2.getName()).thenReturn("testLayer");
+        WMSLayer layer2 = createTestLayer("testLayer");
         config.modifyLayer(layer2);
 
-        assertEquals(count, config.getTileLayerCount());
-        assertSame(layer2, config.getTileLayer("testLayer"));
+        assertEquals(count, config.getLayerCount());
+        assertSame(layer2, config.getLayer("testLayer").get());
 
-        when(layer1.getName()).thenReturn("another");
+        layer1 = createTestLayer("another");
         try {
             config.modifyLayer(layer1);
             fail("Expected NoSuchElementException");
@@ -121,13 +142,16 @@ public class XMLConfigurationTest {
     @Test
     public void testRemoveLayer() {
 
-        assertFalse(config.removeLayer("nonExistent"));
+        try {
+            config.removeLayer("nonExistent");
+            fail("Expected exception removing nonExistant layer");
+        } catch (Exception e) { }
 
-        Set<String> tileLayerNames = config.getTileLayerNames();
+        Set<String> tileLayerNames = config.getLayerNames();
         for (String name : tileLayerNames) {
-            int count = config.getTileLayerCount();
-            assertTrue(config.removeLayer(name));
-            assertEquals(count - 1, config.getTileLayerCount());
+            int count = config.getLayerCount();
+            config.removeLayer(name);
+            assertEquals(count - 1, config.getLayerCount());
         }
     }
 
@@ -135,23 +159,29 @@ public class XMLConfigurationTest {
     public void testTemplate() throws Exception {
         assertTrue(configFile.delete());
         config.setTemplate("/geowebcache_empty.xml");
-        config.initialize(gridSetBroker);
-        assertEquals(0, config.getTileLayerCount());
+        config.setGridSetBroker(gridSetBroker);
+        config.deinitialize();
+        config.reinitialize();
+        config.getLayerCount();
+        assertEquals(0, config.getLayerCount());
 
         assertTrue(configFile.delete());
         config.setTemplate("/geowebcache.xml");
-        config.initialize(gridSetBroker);
-        assertEquals(3, config.getTileLayerCount());
+        config.setGridSetBroker(gridSetBroker);
+        config.deinitialize();
+        config.reinitialize();
+        config.getLayerCount();
+        assertEquals(3, config.getLayerCount());
         // WMTS CITE strict compliance should be deactivated
         assertThat(config.isWmtsCiteCompliant(), is(false));
     }
 
     @Test
     public void testSave() throws Exception {
-        for (String name : config.getTileLayerNames()) {
-            int count = config.getTileLayerCount();
-            assertTrue(config.removeLayer(name));
-            assertEquals(count - 1, config.getTileLayerCount());
+        for (String name : config.getLayerNames()) {
+            int count = config.getLayerCount();
+            config.removeLayer(name);
+            assertEquals(count - 1, config.getLayerCount());
         }
 
         String layerName = "testLayer";
@@ -207,7 +237,6 @@ public class XMLConfigurationTest {
         layer.setLegends(legendsRawInfo);
 
         config.addLayer(layer);
-        config.save();
 
         try {
             XMLConfiguration.validate(XMLConfiguration
@@ -218,11 +247,13 @@ public class XMLConfigurationTest {
         }
 
         XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
-        config2.initialize(gridSetBroker);
-        assertEquals(1, config2.getTileLayerCount());
-        assertNotNull(config2.getTileLayer("testLayer"));
+        config2.setGridSetBroker(gridSetBroker);
+        config2.afterPropertiesSet();
+        config2.getLayerCount();
+        assertEquals(1, config2.getLayerCount());
+        assertThat(config2.getLayer("testLayer"), TestUtils.isPresent());
 
-        WMSLayer l = (WMSLayer) config2.getTileLayer("testLayer");
+        WMSLayer l = (WMSLayer) config2.getLayer("testLayer").get();
         assertTrue(Arrays.equals(wmsURL, l.getWMSurl()));
         assertEquals(wmsStyles, l.getStyles());
         assertEquals(wmsLayers, l.getWmsLayers());
@@ -241,6 +272,61 @@ public class XMLConfigurationTest {
         assertThat(l.getLegends().getDefaultFormat(), is("image/png"));
         assertThat(l.getLegends().getLegendsRawInfo().size(), is(3));
         assertThat(l.getLegends().getLegendsRawInfo(), containsInAnyOrder(legendRawInfoA, legendRawInfoB, legendRawInfoC));
+    }
+
+    public WMSLayer createTestLayer(String layerName) {
+        String[] wmsURL = { "http://wms.example.com/1", "http://wms.example.com/2" };
+        String wmsStyles = "default,line";
+        String wmsLayers = "states,border";
+        List<String> mimeFormats = Arrays.asList("image/png", "image/jpeg");
+        Map<String, GridSubset> subSets = new HashMap<String, GridSubset>();
+        GridSubset gridSubSet = GridSubsetFactory.createGridSubSet(gridSetBroker.get("EPSG:4326"));
+        subSets.put(gridSubSet.getName(), gridSubSet);
+
+        StringParameterFilter filter = new StringParameterFilter();
+        filter.setKey("STYLES");
+        filter.setValues(Arrays.asList("polygon", "point"));
+        filter.setDefaultValue("polygon");
+
+        List<ParameterFilter> parameterFilters = new ArrayList<ParameterFilter>(
+                new ArrayList<ParameterFilter>(Arrays.asList((ParameterFilter) filter)));
+        int[] metaWidthHeight = { 9, 9 };
+        String vendorParams = "vendor=1";
+        boolean queryable = false;
+        String wmsQueryLayers = null;
+
+        WMSLayer layer = new WMSLayer(layerName, wmsURL, wmsStyles, wmsLayers, mimeFormats,
+                subSets, parameterFilters, metaWidthHeight, vendorParams, queryable, wmsQueryLayers);
+
+        // create legends information
+        LegendsRawInfo legendsRawInfo = new LegendsRawInfo();
+        legendsRawInfo.setDefaultWidth(50);
+        legendsRawInfo.setDefaultHeight(100);
+        legendsRawInfo.setDefaultFormat("image/png");
+        // legend with all values and custom url
+        LegendRawInfo legendRawInfoA = new LegendRawInfo();
+        legendRawInfoA.setStyle("polygon");
+        legendRawInfoA.setWidth(75);
+        legendRawInfoA.setHeight(125);
+        legendRawInfoA.setFormat("image/jpeg");
+        legendRawInfoA.setUrl("http://url");
+        legendRawInfoA.setMinScale(5000D);
+        legendRawInfoA.setMaxScale(10000D);
+
+        // legend with a complete url
+        LegendRawInfo legendRawInfoB = new LegendRawInfo();
+        legendRawInfoB.setStyle("point");
+        legendRawInfoB.setCompleteUrl("http://url");
+        // default style legend
+        LegendRawInfo legendRawInfoC = new LegendRawInfo();
+        legendRawInfoC.setStyle("");
+        // tie the legend information together
+        legendsRawInfo.addLegendRawInfo(legendRawInfoA);
+        legendsRawInfo.addLegendRawInfo(legendRawInfoB);
+        legendsRawInfo.addLegendRawInfo(legendRawInfoC);
+        layer.setLegends(legendsRawInfo);
+
+        return layer;
     }
 
     @Test
@@ -263,8 +349,7 @@ public class XMLConfigurationTest {
                 tileHeight, yCoordinateFirst);
         gridSet.setDescription("test description");
 
-        config.addOrReplaceGridSet(new XMLGridSet(gridSet));
-        config.save();
+        config.addGridSet(gridSet);
 
         try {
             XMLConfiguration.validate(XMLConfiguration
@@ -275,8 +360,10 @@ public class XMLConfigurationTest {
         }
 
         XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
-        GridSetBroker gridSetBroker2 = new GridSetBroker(true, false);
-        config2.initialize(gridSetBroker2);
+        GridSetBroker gridSetBroker2 = new GridSetBroker(Arrays.asList(new DefaultGridsets(true, true), (GridSetConfiguration)config2));
+        config2.setGridSetBroker(gridSetBroker2);
+        config2.afterPropertiesSet();
+        config2.getLayerCount();
 
         GridSet gridSet2 = gridSetBroker2.get(name);
         assertNotNull(gridSet2);
@@ -291,23 +378,22 @@ public class XMLConfigurationTest {
 
     @Test
     public void testSaveBlobStores() throws Exception{
-        FileBlobStoreConfig store1 = new FileBlobStoreConfig();
-        store1.setId("store1");
+        FileBlobStoreInfo store1 = new FileBlobStoreInfo();
+        store1.setName("store1");
         store1.setDefault(true);
         store1.setEnabled(true);
         store1.setFileSystemBlockSize(8096);
         store1.setBaseDirectory("/tmp/test");
         
-        FileBlobStoreConfig store2 = new FileBlobStoreConfig();
-        store2.setId("store2");
+        FileBlobStoreInfo store2 = new FileBlobStoreInfo();
+        store2.setName("store2");
         store2.setDefault(false);
         store2.setEnabled(false);
         store2.setFileSystemBlockSize(512);
         store2.setBaseDirectory("/tmp/test2");
 
-        config.getBlobStores().add(store1);
-        config.getBlobStores().add(store2);
-        config.save();
+        config.addBlobStore(store1);
+        config.addBlobStore(store2);
 
         try {
             XMLConfiguration.validate(XMLConfiguration
@@ -318,9 +404,11 @@ public class XMLConfigurationTest {
         }
 
         XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
-        config2.initialize(new GridSetBroker(true, false));
+        config2.setGridSetBroker(new GridSetBroker(true, true));
+        config2.afterPropertiesSet();
+        config2.getLayerCount();
         
-        List<BlobStoreConfig> stores = config2.getBlobStores();
+        List<BlobStoreInfo> stores = config2.getBlobStores();
         assertNotNull(stores);
         assertEquals(2, stores.size());
         assertNotSame(store1, stores.get(0));
@@ -338,21 +426,26 @@ public class XMLConfigurationTest {
         configFile = new File(configDir, "geowebcache.xml");
         FileUtils.copyURLToFile(source, configFile);
 
-        gridSetBroker = new GridSetBroker(true, false);
+        gridSetBroker = new GridSetBroker(true, true);
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
-        config.initialize(gridSetBroker);
+        config.setGridSetBroker(gridSetBroker);
+        config.afterPropertiesSet();
+        config.getLayerCount();
 
         final String previousVersion = config.getVersion();
         assertNotNull(previousVersion);
 
-        config.save();
+        // Do a modify without any changes to trigger a save;
+        config.modifyLayer(config.getLayer(config.getLayerNames().iterator().next()).get());
 
         final String currVersion = XMLConfiguration.getCurrentSchemaVersion();
         assertNotNull(currVersion);
         assertFalse(previousVersion.equals(currVersion));
 
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
-        config.initialize(gridSetBroker);
+        config.setGridSetBroker(gridSetBroker);
+        config.afterPropertiesSet();
+        config.getLayerCount();
         final String savedVersion = config.getVersion();
         assertEquals(currVersion, savedVersion);
     }
@@ -363,7 +456,10 @@ public class XMLConfigurationTest {
         assertThat(configFile.delete(), is(true));
         // instantiate a new one based with strict CITE compliance activated
         config.setTemplate("/geowebcache_cite.xml");
-        config.initialize(gridSetBroker);
+        config.setGridSetBroker(gridSetBroker);
+        config.deinitialize();
+        config.reinitialize();
+        config.getLayerCount();
         // CITE strict compliance should be activated for WMTS
         assertThat(config.isWmtsCiteCompliant(), is(true));
     }

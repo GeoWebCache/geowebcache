@@ -86,7 +86,7 @@ public class KMLSiteMap {
             Set<String> grids = tl.getGridSubsets();
             List<MimeType> mimeTypes = tl.getMimeTypes();
             
-            if( grids != null && grids.contains(gridSetBroker.WORLD_EPSG4326.getName())
+            if( grids != null && grids.contains(gridSetBroker.getWorldEpsg4326().getName())
                     && mimeTypes != null && mimeTypes.contains(XMLMime.kml) ) {
                 String smStr = "<sitemap><loc>"+urlPrefix+tl.getName()+"/sitemap.xml</loc></sitemap>";
                 os.write(smStr.getBytes());
@@ -97,7 +97,7 @@ public class KMLSiteMap {
     private void writeSiteMap() throws GeoWebCacheException, IOException {
         TileLayer layer = tile.getLayer();
         
-        GridSubset gridSubset = layer.getGridSubset(gridSetBroker.WORLD_EPSG4326.getName());
+        GridSubset gridSubset = layer.getGridSubset(gridSetBroker.getWorldEpsg4326().getName());
         
         writeSiteMapHeader();
         
@@ -152,7 +152,7 @@ public class KMLSiteMap {
         subTileList.addFirst(gridLoc);
         
         while(subTileList.peek() != null) {
-            String gridSetId = gridSetBroker.WORLD_EPSG4326.getName();
+            String gridSetId = gridSetBroker.getWorldEpsg4326().getName();
             long[] curLoc = subTileList.removeFirst();
             long[][] linkGridLocs = tileLayer.getGridSubset(gridSetId).getSubGrid(curLoc);
             linkGridLocs = KMZHelper.filterGridLocs(storageBroker, secDispatcher, tileLayer, gridSetId, XMLMime.kml, linkGridLocs);

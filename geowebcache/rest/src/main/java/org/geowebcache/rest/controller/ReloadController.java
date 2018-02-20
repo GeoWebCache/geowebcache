@@ -90,7 +90,7 @@ public class ReloadController {
 
         try {
             layerDispatcher.reInit();
-            String info = "Configuration reloaded. Read "
+            String info = "TileLayerConfiguration reloaded. Read "
                     + layerDispatcher.getLayerCount()
                     + " layers from configuration resources.";
 

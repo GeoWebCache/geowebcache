@@ -26,7 +26,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.config.BlobStoreConfig;
+import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.storage.BlobStore;
@@ -42,9 +42,9 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 /**
  * Plain old java object representing the configuration for an S3 blob store.
  */
-public class S3BlobStoreConfig extends BlobStoreConfig {
+public class S3BlobStoreInfo extends BlobStoreInfo {
 
-    static Log log = LogFactory.getLog(S3BlobStoreConfig.class);
+    static Log log = LogFactory.getLog(S3BlobStoreInfo.class);
 
     private static final long serialVersionUID = 9072751143836460389L;
 
@@ -77,11 +77,11 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
     private Boolean useGzip;
 
     
-    public S3BlobStoreConfig() {
+    public S3BlobStoreInfo() {
         super();
     }
     
-    public S3BlobStoreConfig(String id) {
+    public S3BlobStoreInfo(String id) {
         super(id);
     }
 
@@ -341,7 +341,7 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
             throws StorageException {
 
         checkNotNull(layers);
-        checkState(getId() != null);
+        checkState(getName() != null);
         checkState(isEnabled(),
                 "Can't call S3BlobStoreConfig.createInstance() is blob store is not enabled");
         return new S3BlobStore(this, layers, lockProvider);
@@ -360,7 +360,7 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
     }
 
     /**
-     * @return {@link AmazonS3Client} constructed from this {@link S3BlobStoreConfig}.
+     * @return {@link AmazonS3Client} constructed from this {@link S3BlobStoreInfo}.
      */
     public AmazonS3Client buildClient() {
         AWSCredentials awsCredentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);

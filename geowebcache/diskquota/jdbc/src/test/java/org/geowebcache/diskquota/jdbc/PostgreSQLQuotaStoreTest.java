@@ -13,15 +13,21 @@ public class PostgreSQLQuotaStoreTest extends JDBCQuotaStoreTest {
         return "postgresql";
     }
     
+    
     @Override
-    protected Properties createExampleFixture() {
-        Properties p = new Properties();
-        p.put("driver", "org.postgresql.Driver");
-        p.put("url", "jdbc:postgresql:gttest");
-        p.put("username", "cite");
-        p.put("password", "cite");
-        
-        return p;
+    protected JDBCFixtureRule makeFixtureRule() {
+        return new JDBCFixtureRule(getFixtureId()) {
+            @Override
+            protected Properties createExampleFixture() {
+                Properties p = new Properties();
+                p.put("driver", "org.postgresql.Driver");
+                p.put("url", "jdbc:postgresql:gttest");
+                p.put("username", "cite");
+                p.put("password", "cite");
+                
+                return p;
+            }
+        };
     }
 
 }

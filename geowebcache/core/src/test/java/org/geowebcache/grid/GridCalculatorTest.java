@@ -21,7 +21,7 @@ public class GridCalculatorTest extends TestCase {
     public void test1gridLevels4326() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180.0, 90.0);
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bbox, 0,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0,
                 10);
 
         long[][] solution = { { 1, 0, 1, 0, 0 }, { 2, 1, 3, 1, 1 }, { 4, 2, 7, 3, 2 },
@@ -41,7 +41,7 @@ public class GridCalculatorTest extends TestCase {
     public void test2gridLevels4326() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bbox, 0,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0,
                 10);
 
         long[][] solution = { { 1, 0, 1, 0, 0 }, { 2, 1, 3, 1, 1 }, { 4, 2, 7, 3, 2 },
@@ -61,7 +61,7 @@ public class GridCalculatorTest extends TestCase {
     public void test3gridLevels4326() throws Exception {
         BoundingBox bbox = new BoundingBox(-10.0, -10.0, 10.0, 10.0);
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bbox, 0,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0,
                 10);
 
         long[][] solution = { { 0, 0, 1, 0, 0 }, { 1, 0, 2, 1, 1 }, { 3, 1, 4, 2, 2 },
@@ -81,7 +81,7 @@ public class GridCalculatorTest extends TestCase {
     public void test4gridLevels4326() throws Exception {
         BoundingBox bbox = new BoundingBox(175.0, 87.0, 180.0, 90.0);
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bbox, 0,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0,
                 10);
 
         long[][] solution = { { 1, 0, 1, 0, 0 }, { 3, 1, 3, 1, 1 }, { 7, 3, 7, 3, 2 },
@@ -101,7 +101,7 @@ public class GridCalculatorTest extends TestCase {
     public void test1gridLevels900913() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 20037508.34, 20037508.34);
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857, bbox, 0,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg3857(), bbox, 0,
                 10);
 
         long[][] solution = { { 0, 0, 0, 0, 0 }, { 1, 1, 1, 1, 1 }, { 2, 2, 3, 3, 2 },
@@ -121,7 +121,7 @@ public class GridCalculatorTest extends TestCase {
     public void test2gridLevels900913() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 20037508.34, 20037508.34);
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857, bbox, 0,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg3857(), bbox, 0,
                 10);
 
         long[][] solution = { { 0, 0, 0, 0, 0 }, { 1, 1, 1, 1, 1 }, { 2, 2, 3, 3, 2 },
@@ -142,7 +142,7 @@ public class GridCalculatorTest extends TestCase {
     public void test3gridLevels900913() throws Exception {
         BoundingBox bbox = new BoundingBox(-500000, -500000, 500000, 500000);
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857, bbox, 0,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg3857(), bbox, 0,
                 10);
 
         long[][] solution = { { 0, 0, 0, 0, 0 }, { 0, 0, 1, 1, 1 }, { 1, 1, 2, 2, 2 },
@@ -163,7 +163,7 @@ public class GridCalculatorTest extends TestCase {
     public void test5gridBoundsLoc4326() throws Exception {
         BoundingBox bbox = new BoundingBox(-124.73, 24.96, -66.97, 49.37);
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bbox, 0,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0,
                 10);
 
         long[] bestFit = grid.getCoverageBestFit();
@@ -174,7 +174,7 @@ public class GridCalculatorTest extends TestCase {
     public void test6gridLoctoBounds4326() throws Exception {
         BoundingBox bbox = new BoundingBox(-124.73, 24.96, -66.97, 49.37);
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bbox, 0,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0,
                 10);
 
         long[] gridLoc1 = { 1, 1, 1 };
@@ -200,7 +200,7 @@ public class GridCalculatorTest extends TestCase {
     public void test5gridLevels4326() throws Exception {
         BoundingBox bbox = new BoundingBox(-124.731422, 24.955967, -66.969849, 49.371735);
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bbox, 0,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0,
                 10);
 
         long[][] solution = { { 0, 0, 0, 0, 0 }, { 0, 1, 1, 1, 1 }, { 1, 2, 2, 3, 2 },

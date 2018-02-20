@@ -47,7 +47,7 @@ public class S3BlobStoreConformanceTest extends AbstractBlobStoreTest<S3BlobStor
     @Override
     public void createTestUnit() throws Exception {
         Assume.assumeTrue(tempFolder.isConfigured());
-        S3BlobStoreConfig config = tempFolder.getConfig();
+        S3BlobStoreInfo config = tempFolder.getConfig();
         
         TileLayerDispatcher layers = createMock(TileLayerDispatcher.class);
         LockProvider lockProvider = new NoOpLockProvider();

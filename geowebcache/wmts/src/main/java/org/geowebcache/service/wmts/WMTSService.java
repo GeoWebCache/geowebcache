@@ -20,7 +20,8 @@ package org.geowebcache.service.wmts;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
-import org.geowebcache.config.Configuration;
+import org.geowebcache.config.ServerConfiguration;
+import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterException;
@@ -75,7 +76,7 @@ public class WMTSService extends Service  {
     
     private GeoWebCacheDispatcher controller = null;
 
-    private Configuration mainConfiguration;
+    private ServerConfiguration mainConfiguration;
 
     // list of this service extensions ordered by their priority
     private final List<WMTSExtension> extensions = new ArrayList<>();
@@ -407,7 +408,7 @@ public class WMTSService extends Service  {
      *
      * @param mainConfiguration GWC main configuration
      */
-    public void setMainConfiguration(Configuration mainConfiguration) {
+    public void setMainConfiguration(ServerConfiguration mainConfiguration) {
         this.mainConfiguration = mainConfiguration;
     }
 

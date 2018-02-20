@@ -1,3 +1,20 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Copyright 2018
+ *
+ */
 package org.geowebcache.config;
 
 import static org.easymock.EasyMock.anyObject;
@@ -100,9 +117,11 @@ public class XMLConfigurationConstructorsTest {
         shouldLoadFrom(cacheDir);
         
         XMLConfiguration config = new XMLConfiguration(provider, storageFinder);
-        config.initialize(broker);
+        config.setGridSetBroker(broker);
+        config.afterPropertiesSet();
+        config.getLayerCount();
         
-        assertThat(config.getTileLayer(MARKED_LAYER), notNullValue());
+        assertThat(config.getLayer(MARKED_LAYER), notNullValue());
     }
     
     @Test
@@ -113,9 +132,11 @@ public class XMLConfigurationConstructorsTest {
         gwcConfigDirProp.setValue(configDir.getCanonicalPath());
         
         XMLConfiguration config = new XMLConfiguration(provider, storageFinder);
-        config.initialize(broker);
+        config.setGridSetBroker(broker);
+        config.afterPropertiesSet();
+        config.getLayerCount();
         
-        assertThat(config.getTileLayer(MARKED_LAYER), notNullValue());
+        assertThat(config.getLayer(MARKED_LAYER), notNullValue());
     }
     
     @Test
@@ -126,9 +147,11 @@ public class XMLConfigurationConstructorsTest {
         gwcConfigDirProp.setValue(configDir.getName());
         
         XMLConfiguration config = new XMLConfiguration(provider, storageFinder);
-        config.initialize(broker);
+        config.setGridSetBroker(broker);
+        config.afterPropertiesSet();
+        config.getLayerCount();
         
-        assertThat(config.getTileLayer(MARKED_LAYER), notNullValue());
+        assertThat(config.getLayer(MARKED_LAYER), notNullValue());
     }
     
     @Test
@@ -137,15 +160,17 @@ public class XMLConfigurationConstructorsTest {
         shouldNotLoadFrom(cacheDir);
         
         XMLConfiguration config = new XMLConfiguration(provider, configDir.getCanonicalPath());
-        config.initialize(broker);
+        config.setGridSetBroker(broker);
+        config.afterPropertiesSet();
         
-        assertThat(config.getTileLayer(MARKED_LAYER), notNullValue());
+        assertThat(config.getLayer(MARKED_LAYER), notNullValue());
     }
     
     @Test
     public void testDefaultToCacheDirCreate() throws Exception {
-        XMLConfiguration config = new XMLConfiguration(provider, storageFinder);
-        config.initialize(broker);
+        ServerConfiguration config = new XMLConfiguration(provider, storageFinder);
+        ((XMLConfiguration) config).setGridSetBroker(broker);
+        config.afterPropertiesSet();
         
         assertThat(configFile(cacheDir).exists(), is(true));
         assertThat(configFile(configDir).exists(), is(false));
@@ -155,8 +180,9 @@ public class XMLConfigurationConstructorsTest {
     public void testOverrideWithPropertyCreate() throws Exception {
         gwcConfigDirProp.setValue(configDir.getCanonicalPath());
         
-        XMLConfiguration config = new XMLConfiguration(provider, storageFinder);
-        config.initialize(broker);
+        ServerConfiguration config = new XMLConfiguration(provider, storageFinder);
+        ((XMLConfiguration) config).setGridSetBroker(broker);
+        config.afterPropertiesSet();
         
         assertThat(configFile(cacheDir).exists(), is(false));
         assertThat(configFile(configDir).exists(), is(true));
@@ -164,8 +190,9 @@ public class XMLConfigurationConstructorsTest {
     
     @Test
     public void testPathAsArgumentCreate() throws Exception {
-        XMLConfiguration config = new XMLConfiguration(provider, configDir.getCanonicalPath());
-        config.initialize(broker);
+        ServerConfiguration config = new XMLConfiguration(provider, configDir.getCanonicalPath());
+        ((XMLConfiguration) config).setGridSetBroker(broker);
+        config.afterPropertiesSet();
         
         assertThat(configFile(cacheDir).exists(), is(false));
         assertThat(configFile(configDir).exists(), is(true));

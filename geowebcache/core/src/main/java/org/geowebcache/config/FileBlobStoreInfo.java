@@ -26,12 +26,12 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
 
 /**
- * Configration and factory for {@link FileBlobStore}.
+ * Configuration and factory for {@link FileBlobStore}.
  * 
  * @since 1.8
- * @see BlobStoreConfig
+ * @see BlobStoreInfo
  */
-public class FileBlobStoreConfig extends BlobStoreConfig {
+public class FileBlobStoreInfo extends BlobStoreInfo {
 
     private static final long serialVersionUID = -6470560864068854508L;
 
@@ -39,18 +39,28 @@ public class FileBlobStoreConfig extends BlobStoreConfig {
 
     private int fileSystemBlockSize;
 
-    public FileBlobStoreConfig() {
+    public FileBlobStoreInfo() {
         super();
     }
 
-    public FileBlobStoreConfig(String id) {
+    public FileBlobStoreInfo(String id) {
         super(id);
     }
 
+    /**
+     * Get the base directory for persisting tiles
+     *
+     * @return The file system path to the base directory
+     */
     public String getBaseDirectory() {
         return baseDirectory;
     }
 
+    /**
+     * Set the base directory for persisting tiles
+     *
+     * @param baseDirectory The file system path to the base directory
+     */
     public void setBaseDirectory(String baseDirectory) {
         this.baseDirectory = baseDirectory;
     }
@@ -75,21 +85,23 @@ public class FileBlobStoreConfig extends BlobStoreConfig {
      * Sets the block size of the file system where the {@link #getBaseDirectory() base directory}
      * resides.
      */
-
     public void setFileSystemBlockSize(int fileSystemBlockSize) {
         this.fileSystemBlockSize = fileSystemBlockSize;
     }
 
     @Override
     public String toString() {
-        return new StringBuilder("FileBlobStore[id:").append(getId()).append(", enabled:")
+        return new StringBuilder("FileBlobStore[id:").append(getName()).append(", enabled:")
                 .append(isEnabled()).append(", baseDirectory:").append(baseDirectory)
-                .append("fileSystemBlockSize:").append(fileSystemBlockSize).append(']').toString();
+                .append(", fileSystemBlockSize:").append(fileSystemBlockSize).append(']').toString();
     }
 
+    /**
+     * @see BlobStoreInfo#createInstance(TileLayerDispatcher, LockProvider)
+     */
     @Override
     public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider) throws StorageException {
-        checkState(getId() != null, "id not set");
+        checkState(getName() != null, "id not set");
         checkState(isEnabled(),
                 "Can't call FileBlobStoreConfig.createInstance() is blob store is not enabled");
         checkState(baseDirectory != null, "baseDirectory not provided");
@@ -102,6 +114,9 @@ public class FileBlobStoreConfig extends BlobStoreConfig {
         return fileBlobStore;
     }
 
+    /**
+     * @see BlobStoreInfo#getLocation()
+     */
     @Override
     public String getLocation() {
         return getBaseDirectory();

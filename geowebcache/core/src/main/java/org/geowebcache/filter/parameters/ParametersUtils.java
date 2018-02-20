@@ -38,7 +38,7 @@ public class ParametersUtils {
     /**
      * 
      * This should be treated as an opaque Identifier and should not be parsed, it is used to 
-     * to maintain compatibility with old caches.  For any other uses, {@link getKVP} is preferred
+     * to maintain compatibility with old caches.  For any other uses, {@link #getKvp(Map)} is preferred
      * as it uses safe escaping of values.
      * 
      * @param parameters
@@ -102,10 +102,10 @@ public class ParametersUtils {
     /**
      * Turns the a sorted KVP string into a parameter map.
      * 
-     * This should only be used for parsing strings created by {@link getSafeParametersKvp} not for 
+     * This should only be used for parsing strings created by {@link #getKvp(Map)} not for
      * parsing raw query strings
      * 
-     * @param parameters
+     * @param kvp
      * @return
      */
     public static Map<String, String> getMap(String kvp) {

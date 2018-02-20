@@ -64,7 +64,6 @@ public abstract class ParameterFilter implements Serializable, Cloneable {
     
     /**
      * @param key
-     * @param defaultValue
      */
     public ParameterFilter(String key) {
         this(key, "");

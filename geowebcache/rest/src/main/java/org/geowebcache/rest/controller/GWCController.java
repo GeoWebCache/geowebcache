@@ -33,6 +33,8 @@ public class GWCController {
         if (layerName == null || layerName.length() == 0) {
             throw new RestException("Layer not specified", HttpStatus.BAD_REQUEST );
         }
+        //GWC supports using + instead of space in layer names.
+        layerName = layerName.replace("+", " ");
 
         if (!layerDispatcher.layerExists(layerName)) {
             throw new RestException("Unknown layer: " + layerName, HttpStatus.NOT_FOUND);

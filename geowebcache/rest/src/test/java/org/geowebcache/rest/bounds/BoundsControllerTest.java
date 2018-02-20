@@ -18,7 +18,9 @@
 package org.geowebcache.rest.bounds;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.Configuration;
+import org.geowebcache.config.MockConfigurationResourceProvider;
+import org.geowebcache.config.MockGridSetConfiguration;
+import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
 import org.geowebcache.grid.*;
@@ -52,7 +54,7 @@ public class BoundsControllerTest {
 
     @Before
     public void setup() throws GeoWebCacheException {
-        GridSetBroker gridSetBroker = new GridSetBroker(false, false);
+        
         BoundingBox extent = new BoundingBox(0, 0, 10E6, 10E6);
         boolean alignTopLeft = false;
         int levels = 10;
@@ -64,11 +66,13 @@ public class BoundsControllerTest {
         GridSet gridSet = GridSetFactory.createGridSet("EPSG:3395", SRS.getSRS("EPSG:3395"),
                 extent, alignTopLeft, levels, metersPerUnit, pixelSize, tileWidth, tileHeight,
                 yCoordinateFirst);
-        gridSetBroker.put(gridSet);
-
+        GridSetBroker gridSetBroker = new GridSetBroker(
+                MockGridSetConfiguration.withDefaults(gridSet));
+        
         XMLConfiguration xmlConfig = loadXMLConfig();
-        xmlConfig.initialize(gridSetBroker);
-        LinkedList<Configuration> configList = new LinkedList<Configuration>();
+        xmlConfig.setGridSetBroker(gridSetBroker);
+        xmlConfig.afterPropertiesSet();
+        LinkedList<TileLayerConfiguration> configList = new LinkedList<TileLayerConfiguration>();
         configList.add(xmlConfig);
 
         tld = new TileLayerDispatcher(gridSetBroker, configList);
@@ -89,11 +93,11 @@ public class BoundsControllerTest {
     
     private XMLConfiguration loadXMLConfig() {
 
-        InputStream is = XMLConfiguration.class
-                .getResourceAsStream(XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE);
         XMLConfiguration xmlConfig = null;
         try {
-            xmlConfig = new XMLConfiguration(is);
+            xmlConfig = new XMLConfiguration(null, new MockConfigurationResourceProvider(
+                    ()->XMLConfiguration.class.getResourceAsStream(
+                            XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE)));
         } catch (Exception e) {
             // Do nothing
         }

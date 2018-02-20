@@ -73,7 +73,7 @@ public class FloatParameterFilter extends ParameterFilter {
 
     /**
      * @return the values the parameter can take.  Altering this list is deprecated and in future 
-     * it will be unmodifiable; use {@link setValues} instead.
+     * it will be unmodifiable; use {@link #setValues(List)} instead.
      */
     public List<Float> getValues() {
         // TODO: apply Collections.unmodifiableList(...)

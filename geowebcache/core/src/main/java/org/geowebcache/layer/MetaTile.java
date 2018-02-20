@@ -125,18 +125,18 @@ public class MetaTile implements TileResponseReceiver {
 
     /**
      * The the request format is the format used for the request to the backend.
-     * 
+     *
      * The response format is what the tiles are actually saved as. The primary example is to use
      * image/png or image/tiff for backend requests, and then save the resulting tiles to JPEG to
      * avoid loss of quality.
-     * 
-     * @param srs
+     *
+     * @param gridSubset
      * @param responseFormat
-     * @param requestFormat
+     * @param formatModifier
      * @param tileGridPosition
      * @param metaX
      * @param metaY
-     * @param gutter2
+     * @param gutter
      */
     public MetaTile(GridSubset gridSubset, MimeType responseFormat, FormatModifier formatModifier,
             long[] tileGridPosition, int metaX, int metaY, Integer gutter) {
@@ -164,9 +164,6 @@ public class MetaTile implements TileResponseReceiver {
      * But GeoServer / GeoTools, and possibly other WMS servers, can get mad if we exceed 180,90 (or
      * the equivalent for other projections), so we'lll treat those with special care.
      * </p>
-     * 
-     * @param strBuilder
-     * @param metaTileGridBounds
      */
     protected void calculateEdgeGutter() {
 
@@ -344,14 +341,12 @@ public class MetaTile implements TileResponseReceiver {
     }
 
     /**
-     * Outputs one tile from the internal array of tiles to a provided stream
+     * Outputs one tile from the internal array of tiles to a provided resource
      * 
      * @param tileIdx
      *            the index of the tile relative to the internal array
-     * @param format
-     *            the Java name for the format
-     * @param resource
-     *            the outputstream
+     * @param target
+     *            the resource
      * @return true if no error was encountered
      * @throws IOException
      */
@@ -436,8 +431,8 @@ public class MetaTile implements TileResponseReceiver {
      * 
      * It also updates metaX and metaY to the actual metatiling factors
      * 
-     * @param gridBounds
-     * @param tileGridPosition
+     * @param coverage
+     * @param tileIdx
      * @return
      */
     private long[] calculateMetaTileGridBounds(long[] coverage, long[] tileIdx) {

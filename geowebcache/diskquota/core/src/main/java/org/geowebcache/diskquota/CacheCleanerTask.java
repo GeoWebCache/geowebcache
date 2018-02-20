@@ -45,7 +45,7 @@ class CacheCleanerTask implements Runnable {
     private final Map<String, Future<?>> perLayerRunningCleanUps;
 
     /**
-     * Caches the currently running {@link GlobalQuotaEnforcementTask} so that not two are launched
+     * Caches the currently running {@link LayerQuotaEnforcementTask} so that not two are launched
      * at the same time
      */
     private Future<?> globalCleanUpTask;

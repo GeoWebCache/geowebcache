@@ -56,7 +56,7 @@ public class GridSetFactory {
      * @param srs
      * @param extent
      * @param resolutions
-     * @param scales
+     * @param scaleDenoms
      * @param tileWidth
      * @param tileHeight
      * @param pixelSize

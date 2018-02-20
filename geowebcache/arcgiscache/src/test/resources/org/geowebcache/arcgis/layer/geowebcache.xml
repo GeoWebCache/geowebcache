@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://geowebcache.org/schema/1.13.0 http://geowebcache.org/schema/1.13.0/geowebcache.xsd" xmlns="http://geowebcache.org/schema/1.13.0">
+  <version>1.13.0</version>
+  <backendTimeout>120</backendTimeout>
+  <serviceInformation>
+    <title>GeoWebCache</title>
+    <description>GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of protocols and
+      formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.
+    </description>
+    <fees>NONE</fees>
+    <accessConstraints>NONE</accessConstraints>
+  </serviceInformation>
+  <layers>
+    <arcgisLayer>
+      <name>testExisting</name>
+      <tilingScheme>TILING_SCHEME_PATH</tilingScheme>
+      <hexZoom>false</hexZoom>
+      <storageFormat>esriMapCacheStorageModeCompact</storageFormat>
+    </arcgisLayer>
+  </layers>
+</gwcConfiguration>

@@ -50,7 +50,7 @@ public class TileRangeIteratorTest extends TestCase {
     public void setUp() throws Exception {
         mimeType = MimeType.createFromFormat("image/png");
         parameters = null;
-        gridSet = new GridSetBroker(true, false).WORLD_EPSG3857;
+        gridSet = new GridSetBroker(true, false).getWorldEpsg3857();
         BoundingBox extent = new BoundingBox(0, 0, 100, 100);
         boolean alignTopLeft = false;
         int levels = 12;

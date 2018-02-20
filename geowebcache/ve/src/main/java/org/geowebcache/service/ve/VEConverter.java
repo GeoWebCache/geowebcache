@@ -88,7 +88,7 @@ public class VEConverter extends Service {
             }
         }
         
-        ConveyorTile ret = new ConveyorTile(sb, layerId, gsb.WORLD_EPSG3857.getName(), gridLoc, mimeType, null, request, response);
+        ConveyorTile ret = new ConveyorTile(sb, layerId, gsb.getWorldEpsg3857().getName(), gridLoc, mimeType, null, request, response);
         
         if(strCached != null && ! Boolean.parseBoolean(strCached)) {
             ret.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
@@ -137,7 +137,7 @@ public class VEConverter extends Service {
      * Convert a quadkey into the internal representation {x,y,z} of a grid
      * location
      * 
-     * @param quadKey
+     * @param strQuadKey
      * @return internal representation
      */
     public static long[] convert(String strQuadKey) {

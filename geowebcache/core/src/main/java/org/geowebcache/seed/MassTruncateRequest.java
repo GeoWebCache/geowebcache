@@ -15,7 +15,7 @@ public interface MassTruncateRequest {
      * Perform the requested truncation
      * 
      * @param sb The storage broker managing the cache
-     * @param config The configuration storing information about the affected layers
+     * @param breeder The tile breeder storing information about the affected layers
      * @return {@literal true} if successful, {@literal false} otherwise
      * @throws StorageException
      */

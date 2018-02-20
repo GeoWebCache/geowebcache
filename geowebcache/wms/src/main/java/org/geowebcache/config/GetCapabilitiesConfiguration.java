@@ -30,10 +30,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -51,7 +55,6 @@ import org.geotools.xml.XMLHandlerHints;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.legends.LegendRawInfo;
 import org.geowebcache.config.legends.LegendsRawInfo;
-import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.parameters.NaiveWMSDimensionFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.StringParameterFilter;
@@ -69,8 +72,12 @@ import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.meta.MetadataURL;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
-public class GetCapabilitiesConfiguration implements Configuration {
+import com.google.common.collect.Sets;
+
+public class GetCapabilitiesConfiguration implements TileLayerConfiguration, GridSetConfiguration {
 
     private static Log log = LogFactory
             .getLog(org.geowebcache.config.GetCapabilitiesConfiguration.class);
@@ -98,7 +105,9 @@ public class GetCapabilitiesConfiguration implements Configuration {
 
     private final HashMap<String, TileLayer> layers;
 
-    private XMLConfiguration primaryConfig;
+    private DefaultingConfiguration primaryConfig;
+    
+    private Map<String, GridSet> generatedGridSets = new HashMap<>();
 
     public GetCapabilitiesConfiguration(GridSetBroker gridSetBroker, String url, String mimeTypes,
             String metaTiling, String allowCacheBypass) {
@@ -143,7 +152,7 @@ public class GetCapabilitiesConfiguration implements Configuration {
     }
 
     /**
-     * Identifier for this Configuration instance
+     * Identifier for this TileLayerConfiguration instance
      * 
      * @return the URL given to the constructor
      */
@@ -157,9 +166,9 @@ public class GetCapabilitiesConfiguration implements Configuration {
      * @return the layers described at the given URL
      */
     private synchronized List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
-        List<TileLayer> layers = null;
+        final List<TileLayer> layers;
 
-        WebMapServer wms = null;
+        final WebMapServer wms;
         
         try {
             wms = getWMS();
@@ -180,10 +189,6 @@ public class GetCapabilitiesConfiguration implements Configuration {
         }
 
         return layers;
-    }
-
-    public ServiceInformation getServiceInformation() {
-        return null;
     }
 
     /**
@@ -395,10 +400,10 @@ public class GetCapabilitiesConfiguration implements Configuration {
             throws GeoWebCacheException {
 
         Hashtable<String, GridSubset> grids = new Hashtable<String, GridSubset>(2);
-        grids.put(gridSetBroker.WORLD_EPSG4326.getName(),
-                GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, bounds4326, 0, 30));
-        grids.put(gridSetBroker.WORLD_EPSG3857.getName(),
-                GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857, bounds3785, 0, 30));
+        grids.put(gridSetBroker.getWorldEpsg4326().getName(),
+                GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bounds4326, 0, 30));
+        grids.put(gridSetBroker.getWorldEpsg3857().getName(),
+                GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg3857(), bounds3785, 0, 30));
 
         if (additionalBounds != null && additionalBounds.size() > 0) {
             Iterator<CRSEnvelope> iter = additionalBounds.values().iterator();
@@ -493,20 +498,9 @@ public class GetCapabilitiesConfiguration implements Configuration {
         return 20037508.34 * Math.log(Math.tan(tmp)) / Math.PI;
     }
 
-    /**
-     * @see org.geowebcache.config.Configuration#isRuntimeStatsEnabled()
-     */
-    public boolean isRuntimeStatsEnabled() {
-        return false;
-    }
-
-    /**
-     * @see org.geowebcache.config.Configuration#initialize(org.geowebcache.grid.GridSetBroker)
-     */
-    public int initialize(GridSetBroker gridSetBroker) throws GeoWebCacheException {
-        this.gridSetBroker = gridSetBroker;
+    public void afterPropertiesSet() throws GeoWebCacheException {
         List<TileLayer> tileLayers = getTileLayers(true);
-        this.layers.clear();
+        Set<String> brokerNames = gridSetBroker.getGridSetNames();
         for (TileLayer layer : tileLayers) {
             layer.initialize(gridSetBroker);
             if(primaryConfig!=null) {
@@ -516,70 +510,104 @@ public class GetCapabilitiesConfiguration implements Configuration {
                         "values as it does not have a global configuration to delegate to.");
             }
             layers.put(layer.getName(), layer);
+            
+            Map<String, GridSet> generatedForLayer = Sets.difference(layer.getGridSubsets(), brokerNames).stream()
+                .map(layer::getGridSubset)
+                .map(GridSubset::getGridSet)
+                .collect(Collectors.toMap(GridSet::getName, UnaryOperator.identity()));
+            generatedGridSets.putAll(generatedForLayer);
         }
-        return tileLayers.size();
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getTileLayers()
+     * @see TileLayerConfiguration#getTileLayers()
      * @deprecated
      */
+    @Deprecated
     public List<TileLayer> getTileLayers() {
         return Collections.unmodifiableList(new ArrayList<TileLayer>(layers.values()));
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getLayers()
+     * @see TileLayerConfiguration#getLayers()
      */
-    public Iterable<? extends TileLayer> getLayers() {
-        return Collections.unmodifiableList(new ArrayList<TileLayer>(layers.values()));
+    public Collection<? extends TileLayer> getLayers() {
+        return Collections.unmodifiableList(new ArrayList<>(layers.values()));
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getTileLayerNames()
+     * @see TileLayerConfiguration#getLayerNames()
      */
-    public Set<String> getTileLayerNames() {
+    public Set<String> getLayerNames() {
         return new HashSet<String>(layers.keySet());
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#containsLayer(java.lang.String)
+     * @see TileLayerConfiguration#getTileLayerNames()
      */
-    public boolean containsLayer(String tileLayerId) {
-        return getTileLayerById(tileLayerId) != null;
+    @Deprecated
+    public Set<String> getTileLayerNames() {
+        return getLayerNames();
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getTileLayerById(java.lang.String)
+     * @see TileLayerConfiguration#containsLayer(java.lang.String)
      */
-    public TileLayer getTileLayerById(String layerId) {
+    public boolean containsLayer(String layerName) {
+        return getLayer(layerName) != null;
+    }
+
+    /**
+     * @see TileLayerConfiguration#getTileLayer(java.lang.String)
+     */
+    public Optional<TileLayer> getLayer(String layerName) {
+        return Optional.ofNullable(layers.get(layerName));
+    }
+
+    /**
+     * @see TileLayerConfiguration#getTileLayerById(java.lang.String)
+     */
+    @Deprecated
+    public @Nullable TileLayer getTileLayerById(String layerId) {
         // this configuration does not differentiate between layer identifier and identity
-        return getTileLayer(layerId);
+        return getLayer(layerId).orElse(null);
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getTileLayer(java.lang.String)
+     * @see TileLayerConfiguration#getTileLayer(java.lang.String)
      */
-    public TileLayer getTileLayer(String layerName) {
-        return layers.get(layerName);
+    @Deprecated
+    public @Nullable TileLayer getTileLayer(String layerName) {
+        return getLayer(layerName).orElse(null);
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#getTileLayerCount()
+     * @see TileLayerConfiguration#getLayerCount()
      */
-    public int getTileLayerCount() {
+    public int getLayerCount() {
         return layers.size();
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#removeLayer(java.lang.String)
+     * @see TileLayerConfiguration#getTileLayerCount()
      */
-    public boolean removeLayer(String layerName) {
-        return layers.remove(layerName) != null;
+    @Deprecated
+    public int getTileLayerCount() {
+        return getLayerCount();
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#modifyLayer(org.geowebcache.layer.TileLayer)
+     * @see TileLayerConfiguration#removeLayer(java.lang.String)
+     */
+    //TODO: Why doesn't this throw an IllegalArgument exception: read-only?
+    public void removeLayer(String layerName) throws NoSuchElementException  {
+        if (layers.remove(layerName) == null) {
+            throw new NoSuchElementException("Layer " + layerName + " does not exist");
+        }
+    }
+
+    /**
+     * @see TileLayerConfiguration#modifyLayer(org.geowebcache.layer.TileLayer)
      */
     public void modifyLayer(TileLayer tl) throws NoSuchElementException {
         throw new UnsupportedOperationException("modifyLayer is not supported by "
@@ -587,22 +615,23 @@ public class GetCapabilitiesConfiguration implements Configuration {
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#save()
+     * @see TileLayerConfiguration#renameLayer(String, String)
      */
-    public void save() throws IOException {
-        // silently do nothing
+    public void renameLayer(String oldName, String newName) throws NoSuchElementException, IllegalArgumentException {
+        throw new UnsupportedOperationException("renameLayer is not supported by "
+                + getClass().getSimpleName());
     }
 
     /**
      * @return {@code false}
-     * @see org.geowebcache.config.Configuration#canSave(org.geowebcache.layer.TileLayer)
+     * @see TileLayerConfiguration#canSave(org.geowebcache.layer.TileLayer)
      */
     public boolean canSave(TileLayer tl) {
         return false;
     }
 
     /**
-     * @see org.geowebcache.config.Configuration#addLayer(org.geowebcache.layer.TileLayer)
+     * @see TileLayerConfiguration#addLayer(org.geowebcache.layer.TileLayer)
      */
     public void addLayer(TileLayer tl) throws IllegalArgumentException {
         if (tl == null) {
@@ -615,15 +644,75 @@ public class GetCapabilitiesConfiguration implements Configuration {
     /**
      * Get the global configuration delegated to.
      */
-    protected XMLConfiguration getPrimaryConfig() {
+    protected DefaultingConfiguration getPrimaryConfig() {
         return primaryConfig;
     }
 
     /**
      * Set the global configuration object to delegate to.
      */
-     public void setPrimaryConfig(XMLConfiguration primaryConfig) {
+     public void setPrimaryConfig(DefaultingConfiguration primaryConfig) {
         this.primaryConfig = primaryConfig;
     }
+
+    @Override
+    public String getLocation() {
+        return this.url;
+    }
+
+    @Override
+    public void addGridSet(GridSet gridSet) throws IllegalArgumentException {
+        if (gridSet == null) {
+            throw new NullPointerException();
+        }
+        throw new UnsupportedOperationException(
+                "This is a read only configuration object, can't add gridset " + gridSet.getName());
+    }
+
+    @Override
+    public void removeGridSet(String gridSetName) {
+        throw new UnsupportedOperationException("This is a read only configuration object, can't add gridset " + gridSetName);
+    }
+
+    @Override
+    public Optional<GridSet> getGridSet(String name) throws NoSuchElementException {
+        return Optional.ofNullable(generatedGridSets.get(name))
+                .map(GridSet::new);
+    }
+
+    @Override
+    public Collection<GridSet> getGridSets() {
+        return generatedGridSets.values().stream()
+                .map(GridSet::new)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void modifyGridSet(GridSet gridSet)
+            throws NoSuchElementException, IllegalArgumentException, UnsupportedOperationException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void renameGridSet(String oldName, String newName)
+            throws NoSuchElementException, IllegalArgumentException, UnsupportedOperationException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean canSave(GridSet gridset) {
+        return false;
+    }
     
+    @Autowired
+    @Override
+    public void setGridSetBroker(@Qualifier("gwcGridSetBroker") GridSetBroker broker) {
+        this.gridSetBroker = broker;
+    }
+
+    @Override
+    public void deinitialize() throws Exception {
+        this.generatedGridSets.clear();
+        this.layers.clear();
+    }
 }

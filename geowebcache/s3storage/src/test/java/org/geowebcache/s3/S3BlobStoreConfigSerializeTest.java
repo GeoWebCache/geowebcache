@@ -21,7 +21,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import org.geowebcache.s3.S3BlobStoreConfig;
+import org.geowebcache.s3.S3BlobStoreInfo;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -36,7 +36,7 @@ public class S3BlobStoreConfigSerializeTest {
     public void testNoAccess() throws Exception {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
-        S3BlobStoreConfig config = (S3BlobStoreConfig) xs.fromXML("<S3BlobStore><id>test</id><enabled>false</enabled><useHTTPS>true</useHTTPS></S3BlobStore>");
+        S3BlobStoreInfo config = (S3BlobStoreInfo) xs.fromXML("<S3BlobStore><id>test</id><enabled>false</enabled><useHTTPS>true</useHTTPS></S3BlobStore>");
         assertThat(config, hasProperty("accessControlList", is(CannedAccessControlList.PublicRead)));
     }
     
@@ -44,7 +44,7 @@ public class S3BlobStoreConfigSerializeTest {
     public void testPublicAccess() throws Exception {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
-        S3BlobStoreConfig config = (S3BlobStoreConfig) xs.fromXML("<S3BlobStore><id>test</id><enabled>false</enabled><access>PUBLIC</access><useHTTPS>true</useHTTPS></S3BlobStore>");
+        S3BlobStoreInfo config = (S3BlobStoreInfo) xs.fromXML("<S3BlobStore><id>test</id><enabled>false</enabled><access>PUBLIC</access><useHTTPS>true</useHTTPS></S3BlobStore>");
         assertThat(config, hasProperty("accessControlList", is(CannedAccessControlList.PublicRead)));
     }
     
@@ -52,7 +52,7 @@ public class S3BlobStoreConfigSerializeTest {
     public void testPrivateAccess() throws Exception {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
-        S3BlobStoreConfig config = (S3BlobStoreConfig) xs.fromXML("<S3BlobStore><id>test</id><enabled>false</enabled><access>PRIVATE</access><useHTTPS>true</useHTTPS></S3BlobStore>");
+        S3BlobStoreInfo config = (S3BlobStoreInfo) xs.fromXML("<S3BlobStore><id>test</id><enabled>false</enabled><access>PRIVATE</access><useHTTPS>true</useHTTPS></S3BlobStore>");
         assertThat(config, hasProperty("accessControlList", is(CannedAccessControlList.BucketOwnerFullControl)));
     }
     
@@ -60,14 +60,14 @@ public class S3BlobStoreConfigSerializeTest {
     public void testPrivateAccessLowerCase() throws Exception {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
-        S3BlobStoreConfig config = (S3BlobStoreConfig) xs.fromXML("<S3BlobStore><id>test</id><enabled>false</enabled><access>private</access><useHTTPS>true</useHTTPS></S3BlobStore>");
+        S3BlobStoreInfo config = (S3BlobStoreInfo) xs.fromXML("<S3BlobStore><id>test</id><enabled>false</enabled><access>private</access><useHTTPS>true</useHTTPS></S3BlobStore>");
         assertThat(config, hasProperty("accessControlList", is(CannedAccessControlList.BucketOwnerFullControl)));
     }
     @Test
     public void testPublicAccessLowerCase() throws Exception {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
-        S3BlobStoreConfig config = (S3BlobStoreConfig) xs.fromXML("<S3BlobStore><id>test</id><enabled>false</enabled><access>public</access><useHTTPS>true</useHTTPS></S3BlobStore>");
+        S3BlobStoreInfo config = (S3BlobStoreInfo) xs.fromXML("<S3BlobStore><id>test</id><enabled>false</enabled><access>public</access><useHTTPS>true</useHTTPS></S3BlobStore>");
         assertThat(config, hasProperty("accessControlList", is(CannedAccessControlList.PublicRead)));
     }
     
@@ -79,7 +79,7 @@ public class S3BlobStoreConfigSerializeTest {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
         exception.expect(XStreamException.class);
-        S3BlobStoreConfig config = (S3BlobStoreConfig) xs.fromXML("<S3BlobStore><id>test</id><enabled>false</enabled><access>NOT_A_REAL_ACCESS_TYPE</access><useHTTPS>true</useHTTPS></S3BlobStore>");
+        S3BlobStoreInfo config = (S3BlobStoreInfo) xs.fromXML("<S3BlobStore><id>test</id><enabled>false</enabled><access>NOT_A_REAL_ACCESS_TYPE</access><useHTTPS>true</useHTTPS></S3BlobStore>");
     }
     
 }

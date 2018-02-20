@@ -92,13 +92,13 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
     // Apply GZIP compression to uncompressed vector tile formats.
     private final boolean gzipVector;
     
-    MbtilesBlobStore(MbtilesConfiguration configuration) {
+    MbtilesBlobStore(MbtilesInfo configuration) {
         // caution this constructor will create a new connection pool
         this(configuration, new SqliteConnectionManager(
                 configuration.getPoolSize(), configuration.getPoolReaperIntervalMs()));
     }
 
-    public MbtilesBlobStore(MbtilesConfiguration configuration, SqliteConnectionManager connectionManager) {
+    public MbtilesBlobStore(MbtilesInfo configuration, SqliteConnectionManager connectionManager) {
         super(configuration, connectionManager);
         metadataFile = new File(configuration.getRootDirectoryFile(), "metadata.sqlite");
         eagerDelete = configuration.eagerDelete();

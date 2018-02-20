@@ -6,11 +6,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.config.BaseConfiguration;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -37,6 +39,8 @@ import org.springframework.web.context.WebApplicationContext;
  * 
  */
 public class GeoWebCacheExtensions implements ApplicationContextAware, ApplicationListener {
+    
+    private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayerDispatcher.class);
 
     /**
      * logger
@@ -120,6 +124,21 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
     }
 
     /**
+     * Return all bean names that correspond to the provided extension type. If the provided
+     * extensions type implements the {@link GeoWebCacheExtensionPriority} interface, they are
+     * returned sorted by priority
+     *
+     * We return the bean names and not the beans themselves because we cache the beans by name rather
+     * than the bean itself to avoid breaking the singleton directive.
+     *
+     * @param extensionType type of beans to return
+     * @return Array of sorted bean names
+     */
+    public static <T> String[] getBeansNamesOrderedByPriority(Class<T> extensionType) {
+        return getBeansNamesOrderedByPriority(extensionType, context);
+    }
+
+    /**
      * We lookup all the beans names that correspond to the provided extension type. If the provided
      * extensions type implements the {@link GeoWebCacheExtensionPriority} interface we sort the beans
      * names by their priority.
@@ -166,6 +185,60 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
         return extensions(extensionPoint, context);
     }
 
+    /**
+     * Return a list of configurations in priority order.
+     * @param extensionPoint The extension point of the configuration, may affect priority.
+     * @param context
+     * @return
+     */
+    public static <T extends BaseConfiguration> List<T> configurations(Class<T> extensionPoint, ApplicationContext context) {
+        return extensions(extensionPoint, context).stream()
+            .sorted((x,y)->Integer.signum(x.getPriority(extensionPoint)-y.getPriority(extensionPoint)))
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * Return a list of configurations in priority order.
+     * @param extensionPoint The extension point of the configuration, may affect priority.
+     * @return
+     */
+    public static <T extends BaseConfiguration> List<T> configurations(Class<T> extensionPoint) {
+        return configurations(extensionPoint, context);
+    }
+    
+    /**
+     * Reinitialize all reinitializable beans in the context.
+     * @param context
+     * @throws GeoWebCacheException
+     */
+    public static void reinitialize(ApplicationContext context) {
+        List<ReinitializingBean> extensions = extensions(ReinitializingBean.class, context);
+        for (ReinitializingBean bean: extensions) {
+            try {
+                bean.deinitialize();
+            } catch (Exception e) {
+                if(bean instanceof BaseConfiguration) {
+                    log.error("Error while preparing configuration to reinitialize "+((BaseConfiguration) bean).getIdentifier()
+                        +" from "+((BaseConfiguration) bean).getLocation(), e);
+                } else {
+                    log.error("Error while preparing bean to reinitialize "+bean.toString(), e);
+                }
+            }
+        }
+        for (ReinitializingBean bean: extensions) {
+            try {
+                bean.reinitialize();
+            } catch (Exception e) {
+                if(bean instanceof BaseConfiguration) {
+                    log.error("Error while reinitializing configuration "+((BaseConfiguration) bean).getIdentifier()
+                        +" from "+((BaseConfiguration) bean).getLocation(), e);
+                } else {
+                    log.error("Error while reinitializing bean "+bean.toString(), e);
+                }
+            }
+        }
+    }
+    
     /**
      * Returns a specific bean given its name
      * 

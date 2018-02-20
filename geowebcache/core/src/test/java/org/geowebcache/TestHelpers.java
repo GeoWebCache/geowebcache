@@ -38,9 +38,9 @@ public class TestHelpers {
 
     public static byte[] createFakeSourceImage(final WMSLayer layer) throws IOException {
 
-        int tileWidth = layer.getGridSubset(gridSetBroker.WORLD_EPSG4326.getName()).getGridSet()
+        int tileWidth = layer.getGridSubset(gridSetBroker.getWorldEpsg4326().getName()).getGridSet()
                 .getTileWidth();
-        int tileHeight = layer.getGridSubset(gridSetBroker.WORLD_EPSG4326.getName()).getGridSet()
+        int tileHeight = layer.getGridSubset(gridSetBroker.getWorldEpsg4326().getName()).getGridSet()
                 .getTileHeight();
 
         int width = tileWidth * layer.getMetaTilingFactors()[0];
@@ -62,7 +62,7 @@ public class TestHelpers {
 
         Hashtable<String, GridSubset> grids = new Hashtable<String, GridSubset>();
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326,
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(),
                 new BoundingBox(-30.0, 15.0, 45.0, 30), 0, 10, minCacheLevel, maxCacheLevel);
 
         grids.put(grid.getName(), grid);
@@ -91,7 +91,7 @@ public class TestHelpers {
     
     /**
      * Matcher for an {@link HttpServletResponse} that checks its status.
-     * @param statusMatcher
+     * @param expected
      * @return
      */
     public static Matcher<HttpServletResponse> hasStatus(HttpStatus expected) {

@@ -38,7 +38,7 @@ public class BundleFileResource implements Resource {
     }
 
     /**
-     * @see org.geowebcache.io.Resource#transferTo()
+     * @see org.geowebcache.io.Resource#transferTo(WritableByteChannel)
      */
     public long transferTo(WritableByteChannel target) throws IOException {
         try (FileChannel in = new FileInputStream(new File(bundleFilePath)).getChannel()) {
@@ -53,7 +53,7 @@ public class BundleFileResource implements Resource {
     /**
      * Not supported for ArcGIS caches as they are read only.
      *
-     * @see org.geowebcache.io.Resource#transferFrom()
+     * @see org.geowebcache.io.Resource#transferFrom(ReadableByteChannel)
      */
     public long transferFrom(ReadableByteChannel channel) throws IOException {
         // unsupported

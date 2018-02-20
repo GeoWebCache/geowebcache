@@ -214,7 +214,9 @@ class PagePyramid {
     /**
      * Returns a grid subset coverage range suitable for {@link TileRange}
      * 
-     * @param page
+     * @param pageX
+     * @param pageY
+     * @param level
      * @return {@code [minTileX, minTileY, maxTileX, maxTileY, zoomlevel]}
      */
     public long[][] toGridCoverage(int pageX, int pageY, int level) {

@@ -25,19 +25,19 @@ import java.io.File;
  */
 abstract class SqliteBlobStore implements BlobStore {
 
-    private final SqliteConfiguration configuration;
+    private final SqliteInfo configuration;
 
     protected final FileManager fileManager;
     protected final SqliteConnectionManager connectionManager;
 
-    protected SqliteBlobStore(SqliteConfiguration configuration, SqliteConnectionManager connectionManager) {
+    protected SqliteBlobStore(SqliteInfo configuration, SqliteConnectionManager connectionManager) {
         this.configuration = configuration;
         this.fileManager = new FileManager(configuration.getRootDirectoryFile(), configuration.getTemplatePath(),
                 configuration.getRowRangeCount(), configuration.getColumnRangeCount());
         this.connectionManager = connectionManager;
     }
 
-    SqliteConfiguration getConfiguration() {
+    SqliteInfo getConfiguration() {
         return configuration;
     }
 

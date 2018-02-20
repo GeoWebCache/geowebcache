@@ -195,7 +195,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      * This method does nothing if {@code #isEnabled() == false}
      * </p>
      * 
-     * @see #shutDown()
+     * @see #shutDown(int)
      * @see org.springframework.beans.factory.DisposableBean#destroy()
      */
     public void destroy() throws Exception {
@@ -359,8 +359,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
     /**
      * Reloads the configuration from disk
-     * @param config
-     * @throws IOException 
+     * @throws IOException
      * @throws ConfigurationException 
      */
     public void reloadConfig() throws ConfigurationException, IOException {
@@ -524,7 +523,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      * </ul>
      * </p>
      * 
-     * @see CacheCleaner#expireByLayerNames(Set, QuotaResolver)
+     * @see CacheCleaner#expireByLayerNames(Set, QuotaResolver, QuotaStore)
      */
     public void expireByLayerNames(Set<String> layerNames, QuotaResolver quotaResolver)
             throws InterruptedException {

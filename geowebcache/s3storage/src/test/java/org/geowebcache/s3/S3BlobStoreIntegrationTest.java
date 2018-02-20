@@ -93,7 +93,7 @@ public class S3BlobStoreIntegrationTest {
     @Before
     public void before() throws Exception {
         Assume.assumeTrue(tempFolder.isConfigured());
-        S3BlobStoreConfig config = tempFolder.getConfig();
+        S3BlobStoreInfo config = tempFolder.getConfig();
 
         TileLayerDispatcher layers = mock(TileLayerDispatcher.class);
         LockProvider lockProvider = new NoOpLockProvider();
@@ -268,7 +268,7 @@ public class S3BlobStoreIntegrationTest {
         BlobStoreListener listener = mock(BlobStoreListener.class);
         blobStore.addListener(listener);
 
-        GridSet gridset = new GridSetBroker(false, false).WORLD_EPSG4326;
+        GridSet gridset = new GridSetBroker(false, false).getWorldEpsg4326();
         GridSubset gridSubSet = GridSubsetFactory.createGridSubSet(gridset);
 
         long[][] rangeBounds = {//
@@ -298,7 +298,7 @@ public class S3BlobStoreIntegrationTest {
         blobStore.addListener(listener);
 
         // use a gridset for which there're no tiles
-        GridSet gridset = new GridSetBroker(false, true).WORLD_EPSG3857;
+        GridSet gridset = new GridSetBroker(false, true).getWorldEpsg3857();
         GridSubset gridSubSet = GridSubsetFactory.createGridSubSet(gridset);
 
         long[][] rangeBounds = {//
@@ -327,7 +327,7 @@ public class S3BlobStoreIntegrationTest {
         final int zoomStop = 2;
 
         // use a gridset for which there're no tiles
-        GridSet gridset = new GridSetBroker(false, true).WORLD_EPSG3857;
+        GridSet gridset = new GridSetBroker(false, true).getWorldEpsg3857();
         GridSubset gridSubSet = GridSubsetFactory.createGridSubSet(gridset);
 
         long[][] rangeBounds = gridSubSet.getCoverages();

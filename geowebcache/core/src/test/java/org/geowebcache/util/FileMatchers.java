@@ -240,10 +240,10 @@ public class FileMatchers {
     
     /**
      * Executes the given {@link Callable} and then returns a matcher for values of 
-     * {@link System.currentTimeMillis} during the execution.
+     * {@link System#currentTimeMillis()} during the execution.
      * @param stuffToDo
      * @return
-     * @throws any exceptions thrown by stuffToDo
+     * @throws Exception
      */
     public static Matcher<Long> whileRunning(Callable<Void> stuffToDo) throws Exception {
         final long start = System.currentTimeMillis();

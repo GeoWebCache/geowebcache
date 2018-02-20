@@ -86,9 +86,9 @@ public class TemporaryS3Folder extends ExternalResource {
         return s3;
     }
 
-    public S3BlobStoreConfig getConfig() {
+    public S3BlobStoreInfo getConfig() {
         checkState(isConfigured(), "client not configured.");
-        S3BlobStoreConfig config = new S3BlobStoreConfig();
+        S3BlobStoreInfo config = new S3BlobStoreInfo();
         config.setBucket(bucket);
         config.setAwsAccessKey(accessKey);
         config.setAwsSecretKey(secretKey);

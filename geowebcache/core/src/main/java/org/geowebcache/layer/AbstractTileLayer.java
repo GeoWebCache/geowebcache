@@ -321,7 +321,7 @@ public abstract class AbstractTileLayer extends TileLayer {
 
         for (XMLGridSubset xmlGridSubset : gridSubsets) {
             GridSubset gridSubset = xmlGridSubset.getGridSubSet(gridSetBroker);
-
+            
             if (gridSubset == null) {
                 log.error(xmlGridSubset.getGridSetName()
                         + " is not known by the GridSetBroker, skipping for layer " + name);
@@ -345,10 +345,10 @@ public abstract class AbstractTileLayer extends TileLayer {
         }
 
         if (this.subSets.size() == 0) {
-            subSets.put(gridSetBroker.WORLD_EPSG4326.getName(),
-                    GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326));
-            subSets.put(gridSetBroker.WORLD_EPSG3857.getName(),
-                    GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857));
+            subSets.put(gridSetBroker.getWorldEpsg4326().getName(),
+                    GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326()));
+            subSets.put(gridSetBroker.getWorldEpsg3857().getName(),
+                    GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg3857()));
         }
 
         return initializeInternal(gridSetBroker);

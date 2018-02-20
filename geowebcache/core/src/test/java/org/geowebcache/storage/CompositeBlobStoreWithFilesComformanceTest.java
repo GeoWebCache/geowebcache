@@ -26,11 +26,10 @@ import static org.easymock.EasyMock.expect;
 import java.util.LinkedList;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.BlobStoreConfig;
+import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.storage.AbstractBlobStoreTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -43,12 +42,13 @@ public class CompositeBlobStoreWithFilesComformanceTest extends AbstractBlobStor
     public TemporaryFolder temp = new TemporaryFolder();
     
     private TileLayerDispatcher tld;
+    private BlobStoreAggregator bsa;
     private DefaultStorageFinder defaultStorageFinder;
     private XMLConfiguration configuration;
     private TileLayer defaultLayer;
     private TileLayer defaultLayer1;
     private TileLayer defaultLayer2;
-    private LinkedList<BlobStoreConfig> configs;
+    private LinkedList<BlobStoreInfo> configs;
 
     private String DEFAULT_LAYER="testLayer";
     private String DEFAULT_LAYER1="testLayer1";
@@ -57,11 +57,12 @@ public class CompositeBlobStoreWithFilesComformanceTest extends AbstractBlobStor
     @Override
     public void createTestUnit() throws Exception {
         tld = createNiceMock("tld", TileLayerDispatcher.class);
+        bsa = createNiceMock("bsa", BlobStoreAggregator.class);
         defaultStorageFinder = createNiceMock("defaultStorageFinder", DefaultStorageFinder.class);
         configuration = createNiceMock("configuration", XMLConfiguration.class);
         
         configs = new LinkedList<>();
-        expect(configuration.getBlobStores()).andStubReturn(configs);
+        expect(bsa.getBlobStores()).andStubReturn(configs);
         
         expect(defaultStorageFinder.getDefaultPath()).andStubReturn(
                 temp.getRoot().getAbsolutePath());
@@ -75,8 +76,8 @@ public class CompositeBlobStoreWithFilesComformanceTest extends AbstractBlobStor
         expect(tld.getTileLayer(not(or(eq(DEFAULT_LAYER), or(eq(DEFAULT_LAYER1), eq(DEFAULT_LAYER2)))))).andStubThrow(
                 new GeoWebCacheException("layer not found"));
         
-        EasyMock.replay(tld, defaultStorageFinder, configuration, defaultLayer, defaultLayer1, defaultLayer2);
-        store = new CompositeBlobStore(tld, defaultStorageFinder, configuration);
+        EasyMock.replay(tld, bsa, defaultStorageFinder, configuration, defaultLayer, defaultLayer1, defaultLayer2);
+        store = new CompositeBlobStore(tld, defaultStorageFinder, configuration, bsa);
     }
     
     @Before

@@ -438,7 +438,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     /**
      * Setter for the cacheProvider to use
      * 
-     * @param cacheProvider
+     * @param cache
      */
     public void setCacheProvider(CacheProvider cache) {
         blobStoreStateLock.lock();

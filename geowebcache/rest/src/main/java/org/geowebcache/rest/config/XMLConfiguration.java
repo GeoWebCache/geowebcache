@@ -19,6 +19,7 @@ package org.geowebcache.rest.config;
 import java.io.InputStream;
 
 import org.geowebcache.config.GeoWebCacheConfiguration;
+import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.rest.filter.WMSRasterFilterUpdate;
 import org.geowebcache.rest.filter.XmlFilterUpdate;
@@ -42,8 +43,8 @@ public class XMLConfiguration {
             xs.allowTypeHierarchy(org.geowebcache.layer.TileLayer.class);
             xs.allowTypeHierarchy(org.geowebcache.filter.parameters.ParameterFilter.class);
             xs.allowTypeHierarchy(org.geowebcache.filter.request.RequestFilter.class);
-            xs.allowTypeHierarchy(org.geowebcache.config.BlobStoreConfig.class);
-            xs.allowTypeHierarchy(org.geowebcache.config.Configuration.class);
+            xs.allowTypeHierarchy(org.geowebcache.config.BlobStoreInfo.class);
+            xs.allowTypeHierarchy(TileLayerConfiguration.class);
             
             // Allow anything that's part of GWC
             // TODO: replace this with a more narrow whitelist

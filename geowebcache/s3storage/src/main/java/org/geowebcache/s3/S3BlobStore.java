@@ -90,7 +90,7 @@ public class S3BlobStore implements BlobStore {
     
     private CannedAccessControlList acl;
 
-    public S3BlobStore(S3BlobStoreConfig config, TileLayerDispatcher layers,
+    public S3BlobStore(S3BlobStoreInfo config, TileLayerDispatcher layers,
             LockProvider lockProvider) throws StorageException {
         checkNotNull(config);
         checkNotNull(layers);

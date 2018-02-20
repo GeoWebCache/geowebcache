@@ -395,7 +395,6 @@ public class SQLDialect {
      * @param schema
      * @param keyParam
      * @param newfillFactorParam
-     * @param oldFillFactorParam
      * @return
      */
     public String updatePageStatsFillFactor(String schema, String keyParam,
@@ -417,8 +416,8 @@ public class SQLDialect {
      * 
      * @param schema
      * @param keyParam
-     * @param newfillFactorParam
-     * @param oldFillFactorParam
+     * @param newFrequencyParam
+     * @param oldFrequencyParam
      * @return
      */
     public String updatePageStats(String schema, String keyParam, String newHitsParam,

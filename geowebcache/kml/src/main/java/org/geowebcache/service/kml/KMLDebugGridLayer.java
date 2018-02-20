@@ -58,8 +58,8 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
 
     private KMLDebugGridLayer() {
         super.subSets = new Hashtable<String, GridSubset>();
-        subSets.put(gridSetBroker.WORLD_EPSG4326.getName(), GridSubsetFactory.createGridSubSet(
-                gridSetBroker.WORLD_EPSG4326, BoundingBox.WORLD4326, 0, 3));
+        subSets.put(gridSetBroker.getWorldEpsg4326().getName(), GridSubsetFactory.createGridSubSet(
+                gridSetBroker.getWorldEpsg4326(), BoundingBox.WORLD4326, 0, 3));
     }
 
     synchronized static public KMLDebugGridLayer getInstance() {

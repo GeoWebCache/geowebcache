@@ -107,8 +107,8 @@ public abstract class TestSupport {
         }
     }
 
-    protected MbtilesConfiguration getDefaultConfiguration() {
-        MbtilesConfiguration configuration = new MbtilesConfiguration();
+    protected MbtilesInfo getDefaultConfiguration() {
+        MbtilesInfo configuration = new MbtilesInfo();
         configuration.setPoolSize(1000);
         configuration.setRootDirectory(getRootDirectory().getPath());
         configuration.setTemplatePath(Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));

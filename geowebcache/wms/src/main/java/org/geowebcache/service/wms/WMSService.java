@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import javax.servlet.ServletOutputStream;
@@ -39,7 +38,9 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
-import org.geowebcache.config.Configuration;
+import org.geowebcache.config.BaseConfiguration;
+import org.geowebcache.config.TileLayerConfiguration;
+import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
@@ -339,7 +340,7 @@ public class WMSService extends Service{
     /**
      * Handles a getfeatureinfo request
      * 
-     * @param conv
+     * @param tile
      */
     private void handleGetFeatureInfo(ConveyorTile tile) throws GeoWebCacheException {
         TileLayer tl = tld.getTileLayer(tile.getLayerId());
@@ -420,19 +421,19 @@ public class WMSService extends Service{
 
     public void setFullWMS(String trueFalse) {
         // Selection of the configurations 
-        List<Configuration> configs = new ArrayList<Configuration>(GeoWebCacheExtensions.extensions(Configuration.class));
-        // Selection of the Configuration file associated to geowebcache.xml
-        XMLConfiguration gwcXMLconfig = null;
-        for(Configuration config : configs){
+        List<TileLayerConfiguration> configs = new ArrayList<TileLayerConfiguration>(GeoWebCacheExtensions.extensions(TileLayerConfiguration.class));
+        // Selection of the TileLayerConfiguration file associated to geowebcache.xml
+        ServerConfiguration gwcXMLconfig = null;
+        for(BaseConfiguration config : configs){
             if(config instanceof XMLConfiguration){
-                gwcXMLconfig = (XMLConfiguration) config;
+                gwcXMLconfig = (ServerConfiguration) config;
                 break;
             }
         }
         // From the configuration file the "fullWMS" parameter is searched
         Boolean wmsFull = null;
         if(gwcXMLconfig!=null){
-            wmsFull = gwcXMLconfig.getfullWMS();
+            wmsFull = gwcXMLconfig.isFullWMS();
         }                
         
         if(wmsFull!=null){

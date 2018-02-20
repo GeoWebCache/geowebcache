@@ -126,7 +126,7 @@ public class RasterMaskTest extends TestCase {
 
     /**
      * maxMaskLevel is lower then max zoom level, then downsampling needs to be applied to
-     * {@link GeometryRasterMaskBuilder#lookup(long, long, int)}
+     * {@link RasterMask#lookup(long, long, int)}
      */
     public void testTileIsPresentWithSubSampling() throws Exception {
 

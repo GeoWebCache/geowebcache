@@ -80,6 +80,12 @@
     </description>
     <constructor-arg ref="gwcGridSetBroker"/>
   </bean>
+
+  <bean id="gwcBlobStoreAggregator" class="org.geowebcache.storage.BlobStoreAggregator">
+    <description>
+      BlobStoreAggregator serves up BlobStoreInfos from the available Configurations in the application context
+    </description>
+  </bean>
   
   <bean id="gwcDefaultStorageFinder" class="org.geowebcache.storage.DefaultStorageFinder">
   	<constructor-arg ref="gwcAppCtx" />
@@ -88,6 +94,7 @@
   <bean id="gwcBlobStore" class="org.geowebcache.storage.CompositeBlobStore" destroy-method="destroy">
     <constructor-arg ref="gwcTLDispatcher"/>
     <constructor-arg ref="gwcDefaultStorageFinder" />
+    <constructor-arg ref="gwcBlobStoreAggregator"/>
     <constructor-arg ref="gwcXmlConfig"/>
   </bean>
 
@@ -113,6 +120,9 @@
   
   
   <bean id="gwcGridSetBroker" class="org.geowebcache.grid.GridSetBroker">
+  </bean>
+  
+  <bean id="gwcDefaultGridsets" class="org.geowebcache.config.DefaultGridsets">
     <!-- Should we used EPSG:900913 instead of EPSG:3857 ? -->
     <constructor-arg type="boolean" value="TRUE" />
     <!--

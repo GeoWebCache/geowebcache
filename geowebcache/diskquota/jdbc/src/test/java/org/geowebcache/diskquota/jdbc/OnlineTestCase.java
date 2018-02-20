@@ -17,16 +17,15 @@
 
 package org.geowebcache.diskquota.jdbc;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
+
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.internal.AssumptionViolatedException;
 
 import junit.framework.TestCase;
 import junit.framework.TestResult;
-
 
 /**
  * This class comes from GeoTools
@@ -77,209 +76,67 @@ import junit.framework.TestResult;
  * @author Ben Caradoc-Davies, CSIRO Earth Science and Resource Engineering
  */
 public abstract class OnlineTestCase extends TestCase {
-    /**
-     * System property set to totally disable any online tests
-     */
-    public static final String ONLINE_TEST_PROFILE = "onlineTestProfile";
     
-    /**
-     * The key in the test fixture property file used to set the behaviour of the online test if
-     * {@link #connect()} fails.
-     */
-    public static final String SKIP_ON_FAILURE_KEY = "skip.on.failure";
+    private final class CompatibilityRule extends OnlineTestRule {
+        private CompatibilityRule(String fixtureId) {
+            super(fixtureId);
+        }
 
-    /**
-     * The default value used for {@link #SKIP_ON_FAILURE_KEY} if it is not present.
-     */
-    public static final String SKIP_ON_FAILURE_DEFAULT = "true";
+        @Override
+        protected void setUpInternal() throws Exception {
+            OnlineTestCase.this.setUpInternal();
+        }
 
-    /**
-     * A static map which tracks which fixtures are offline. This prevents continually trying to 
-     * run a test when an external resource is offline.  
-     */
-    protected static Map<String,Boolean> online = new HashMap<String,Boolean>();
+        @Override
+        protected void tearDownInternal() throws Exception {
+            OnlineTestCase.this.tearDownInternal();
+        }
+
+        @Override
+        protected boolean isOnline() throws Exception {
+            return OnlineTestCase.this.isOnline();
+        }
+
+        @Override
+        protected void connect() throws Exception {
+            OnlineTestCase.this.connect();
+        }
+
+        @Override
+        protected void disconnect() throws Exception {
+            OnlineTestCase.this.disconnect();
+        }
+
+        @Override
+        protected Properties createOfflineFixture() {
+            return OnlineTestCase.this.createOfflineFixture();
+        }
+
+        @Override
+        protected Properties createExampleFixture() {
+            return OnlineTestCase.this.createExampleFixture();
+        }
+        
+        
+
+        @Override
+        void checkAvailable() {
+            Assume.assumeTrue(OnlineTestCase.this.checkAvailable());
+        }
+
+        void superCheckAvailable() {
+            super.checkAvailable();
+        }
+    }
+
+    @Rule public OnlineTestRule fixtureRule = new CompatibilityRule(getFixtureId());
     
-    /**
-     * A static map which tracks which fixture files can not be found. This prevents
-     * continually looking up the file and reporting it not found to the user.
-     */
-    protected static Map<String,Boolean> found = new HashMap<String,Boolean>();
-    /**
-     * The test fixture, {@code null} if the fixture is not available.
-     */
     protected Properties fixture;
-    /**
-     * Flag that determines effect of exceptions in connect/disconnect. If true (the default),
-     * exceptions in connect cause the the test to be disabled, and exceptions in disconnect to be
-     * ignored. If false, exceptions will be rethrown, and cause the test to fail.
-     */
-    protected boolean skipOnFailure = true;
-
-    /**
-     * Override which checks if the fixture is available. If not the test is not
-     * executed.
-     */
-    @Override
-    public void run(TestResult result) {
-        if (checkAvailable()) {
-            super.run(result);
-        }    
-    }
-
-    /**
-     * Check whether the fixture is available. This method also loads the configuration if present,
-     * and tests the connection using {@link #isOnline()}.
-     * 
-     * @return true if fixture is available for use
-     */
-    boolean checkAvailable() {
-        configureFixture();
-        if (fixture == null) {
-            return false;
-        } else {
-            String fixtureId = getFixtureId();
-            // do an online/offline check
-            Boolean available = (Boolean) online.get(fixtureId);
-            if (available == null || available.booleanValue()) {
-                // test the connection
-                try {
-                    available = isOnline();
-                } catch (Throwable t) {
-                    System.out.println("Skipping " + fixtureId
-                            + " tests, resources not available: " + t.getMessage());
-                    t.printStackTrace();
-                    available = Boolean.FALSE;
-                }
-                online.put(fixtureId, available);
-            }
-            return available;
-        }
-    }
-
-    /**
-     * Load fixture configuration. Create example if absent.
-     */
-    private void configureFixture() {
-        if (fixture == null) {
-            String fixtureId = getFixtureId();
-            if (fixtureId == null) {
-                return; // not available (turn test off)
-            }
-            try {
-                // load the fixture
-                File base = FixtureUtilities.getFixtureDirectory();
-                // look for a "profile", these can be used to group related fixtures
-                String profile = System.getProperty(ONLINE_TEST_PROFILE);
-                if (profile != null && !"".equals(profile)) {
-                    base = new File(base, profile);
-                }
-                File fixtureFile = FixtureUtilities.getFixtureFile(base, fixtureId);
-                Boolean exists = found.get(fixtureFile.getCanonicalPath());
-                if (exists == null || exists.booleanValue()) {
-                    if (fixtureFile.exists()) {
-                        fixture = FixtureUtilities.loadProperties(fixtureFile);
-                        found.put(fixtureFile.getCanonicalPath(), true);
-                    } else {
-                        // no fixture file, if no profile was specified write out a template
-                        // fixture using the offline fixture properties
-                        if (profile == null) {
-                            Properties exampleFixture = createExampleFixture();
-                            if (exampleFixture != null) {
-                                File exFixtureFile = new File(fixtureFile.getAbsolutePath()
-                                        + ".example");
-                                if (!exFixtureFile.exists()) {
-                                    createExampleFixture(exFixtureFile, exampleFixture);
-                                }
-                            }
-                        }
-                        found.put(fixtureFile.getCanonicalPath(), false);
-                    }
-                }
-                if (fixture == null) {
-                    fixture = createOfflineFixture();
-                }
-                if (fixture == null && exists == null) {
-                    // only report if exists == null since it means that this is
-                    // the first time trying to load the fixture
-                    FixtureUtilities.printSkipNotice(fixtureId, fixtureFile);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-    
-    void createExampleFixture(File exFixtureFile, Properties exampleFixture) {
-        try {
-            exFixtureFile.getParentFile().mkdirs();
-            exFixtureFile.createNewFile();
-            
-            FileOutputStream fout = new FileOutputStream(exFixtureFile);
-        
-            exampleFixture.store(fout, "This is an example fixture. Update the " +
-                "values and remove the .example suffix to enable the test"); 
-            fout.flush();
-            fout.close();
-            System.out.println("Wrote example fixture file to " + exFixtureFile);
-        }
-        catch(IOException ioe) {
-            System.out.println("Unable to write out example fixture " + exFixtureFile); 
-            ioe.printStackTrace();
-        }
-    }
-    /**
-     * Loads the test fixture for the test case.
-     * <p>
-     * The fixture id is obtained via {@link #getFixtureId()}.
-     * </p>
-     */
-    @Override
-    protected final void setUp() throws Exception {
-        super.setUp();
-        setUpInternal();
-        
-        skipOnFailure = Boolean.parseBoolean(fixture.getProperty(SKIP_ON_FAILURE_KEY,
-                SKIP_ON_FAILURE_DEFAULT));
-        // call the setUp template method
-        try {
-            connect();
-        } catch (Exception e) {
-            if (skipOnFailure) {
-                // disable the test
-                fixture = null;
-                // leave some trace of the swallowed exception
-                e.printStackTrace();
-            } else {
-                // do not swallow the exception
-                throw e;
-            }
-        }
-    }
 
     /**
      * Method for subclasses to latch onto the setup phase.
      */
     protected void setUpInternal() throws Exception {}
-    
-    /**
-     * Tear down method for test, calls through to {@link #disconnect()} if the
-     * test is active.
-     */
-    @Override
-    protected final void tearDown() throws Exception {
-        tearDownInternal();
-        if (fixture != null) {
-            try {
-                disconnect();
-            } catch (Exception e) {
-                if (skipOnFailure) {
-                    // do nothing
-                } else {
-                    throw e;
-                }
-            }
-        }
-    }
     
     /**
      * Method for subclasses to latch onto the teardown phase.
@@ -359,4 +216,18 @@ public abstract class OnlineTestCase extends TestCase {
      * @return The fixture id.
      */
     protected abstract String getFixtureId();
+    
+    @Before 
+    public void setFixture() throws Exception {
+        this.fixture = fixtureRule.getFixture();
+    }
+    
+    boolean checkAvailable() {
+        try {
+            ((CompatibilityRule)fixtureRule).superCheckAvailable();
+            return true;
+        } catch (AssumptionViolatedException ex) {
+            return false;
+        }
+    }
 }

@@ -128,7 +128,7 @@ public class Demo {
                 + "<li>RESTful interface for seeding and configuration (beta)</li>\n"
                 + "</ul>\n"
                 + "<br />\n"
-                + "<strong>Reload Configuration:</strong><br />\n"
+                + "<strong>Reload TileLayerConfiguration:</strong><br />\n"
                 + "<p>You can reload the configuration by pressing the following button. "
                 + "The username / password is configured in WEB-INF/user.properties, or the admin "
                 + " user in GeoServer if you are using the plugin.</p>\n"
@@ -136,7 +136,7 @@ public class Demo {
             .append(reloadPath)
             .append("\" method=\"post\">"
                 + "<input type=\"hidden\" name=\"reload_configuration\"  value=\"1\" />"
-                + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;\"type=\"submit\" value=\"Reload Configuration\"></span>"
+                + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;\"type=\"submit\" value=\"Reload TileLayerConfiguration\"></span>"
                 + "</form>" + "</body></html>");
 
         return buf.toString();
@@ -178,7 +178,7 @@ public class Demo {
                     
                 buf.append("]</td><td>\n");
                 
-                if (gridSubset.getName().equals(gridSetBroker.WORLD_EPSG4326.getName())) {
+                if (gridSubset.getName().equals(gridSetBroker.getWorldEpsg4326().getName())) {
                     buf.append(" &nbsp; KML: [");
                     String prefix = "";
                     

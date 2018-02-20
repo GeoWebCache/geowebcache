@@ -31,8 +31,8 @@ public class MbtilesBlobStoreConformanceTest extends AbstractBlobStoreTest<Mbtil
         this.store = new MbtilesBlobStore(getDefaultConfiguration());
     }
     
-    protected MbtilesConfiguration getDefaultConfiguration() {
-        MbtilesConfiguration configuration = new MbtilesConfiguration();
+    protected MbtilesInfo getDefaultConfiguration() {
+        MbtilesInfo configuration = new MbtilesInfo();
         configuration.setPoolSize(1000);
         configuration.setRootDirectory(temp.getRoot().getPath());
         configuration.setTemplatePath(Utils.buildPath("{grid}", "{layer}", "{params}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));

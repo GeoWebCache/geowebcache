@@ -40,7 +40,7 @@ public class MetaTileTest extends TestCase {
         int metaWidth = 1;
 
         GridSubset grid = GridSubsetFactory.createGridSubSet(
-                gridSetBroker.WORLD_EPSG4326,
+                gridSetBroker.getWorldEpsg4326(),
                 bbox,
                 0,
                 30);
@@ -68,7 +68,7 @@ public class MetaTileTest extends TestCase {
         int metaWidth = 3;
 
         GridSubset grid = GridSubsetFactory.createGridSubSet(
-                gridSetBroker.WORLD_EPSG4326,
+                gridSetBroker.getWorldEpsg4326(),
                 bbox,
                 0,
                 30);
@@ -94,7 +94,7 @@ public class MetaTileTest extends TestCase {
         int metaWidth = 1;
         
         GridSubset grid = GridSubsetFactory.createGridSubSet(
-                gridSetBroker.WORLD_EPSG3857,
+                gridSetBroker.getWorldEpsg3857(),
                 bbox,
                 0,
                 30);
@@ -121,7 +121,7 @@ public class MetaTileTest extends TestCase {
         int metaWidth = 3;
         
         GridSubset grid = GridSubsetFactory.createGridSubSet(
-                gridSetBroker.WORLD_EPSG3857,
+                gridSetBroker.getWorldEpsg3857(),
                 bbox,
                 0,
                 30);
@@ -154,7 +154,7 @@ public class MetaTileTest extends TestCase {
         WMSLayer layer = createWMSLayer(bbox);
 
         GridSubset grid = GridSubsetFactory.createGridSubSet(
-                gridSetBroker.WORLD_EPSG4326,
+                gridSetBroker.getWorldEpsg4326(),
                 bbox,
                 0,
                 30);
@@ -214,7 +214,7 @@ public class MetaTileTest extends TestCase {
         WMSLayer layer = createWMSLayer(bbox);
 
         GridSubset grid = GridSubsetFactory.createGridSubSet(
-                gridSetBroker.WORLD_EPSG4326,
+                gridSetBroker.getWorldEpsg4326(),
                 bbox,
                 0,
                 30);
@@ -249,7 +249,7 @@ public class MetaTileTest extends TestCase {
         
         Hashtable<String,GridSubset> grids = new Hashtable<String,GridSubset>();
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326);
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326());
         
         grids.put(grid.getName(), grid);
         int[] metaWidthHeight = {3,3};
@@ -285,7 +285,7 @@ public class MetaTileTest extends TestCase {
         BoundingBox boundingBox = new BoundingBox(0, 0, 180, 90);
         int metaHeight = 2;
         int metaWidth = 2;
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326, boundingBox, 0, 21);
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), boundingBox, 0, 21);
         long[] gridPos = {0, 0, 0};
         MetaTile metaTile = new MetaTile(grid, ImageMime.png, null, gridPos, metaWidth, metaHeight, null);
         metaTile.setImage(metaTileImage);

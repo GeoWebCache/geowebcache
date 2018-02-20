@@ -22,8 +22,12 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.geowebcache.config.Info;
 
-public class GridSet {
+/**
+ * A grid set configuration
+ */
+public class GridSet implements Info {
 
     private String name;
 
@@ -65,6 +69,25 @@ public class GridSet {
     protected GridSet() {
         // Blank
     }
+
+    
+    public GridSet(GridSet g) {
+        super();
+        this.name = g.name;
+        this.srs = g.srs;
+        this.tileWidth = g.tileWidth;
+        this.tileHeight = g.tileHeight;
+        this.yBaseToggle = g.yBaseToggle;
+        this.yCoordinateFirst = g.yCoordinateFirst;
+        this.scaleWarning = g.scaleWarning;
+        this.metersPerUnit = g.metersPerUnit;
+        this.pixelSize = g.pixelSize;
+        this.originalExtent = g.originalExtent;
+        this.gridLevels = g.gridLevels;
+        this.description = g.description;
+        this.resolutionsPreserved = g.resolutionsPreserved;
+    }
+
 
     /**
      * @return the originalExtent
@@ -549,19 +572,18 @@ public class GridSet {
     }
 
     /**
-     * Evaluates wheter this GridSet is different engouh from {@code another} so that if this
+     * Evaluates wheter this GridSet is different enough from {@code another} so that if this
      * GridSet were replaced by {@code another} all layers referencing this GridSet should be
      * truncated.
      * <p>
      * The rule is, if any of the following properties differ: {@link #getBounds()},
      * {@link #isTopLeftAligned()}, {@link #getTileHeight()}, {@link #getTileWidth()},
      * {@link #getSrs()}, OR none of the previously mentiond properties differ and
-     * {@link #getGrids()} are different, except if both the grids of {@code another} are a superset
+     * {@link #getGridLevels()} are different, except if both the grids of {@code another} are a superset
      * of the grids of this gridset (i.e. they are all the same but {@code another} just has more
      * zoom levels}.
      * </p>
      * 
-     * @param oldGridSet
      * @param another
      * @return {@code true} if
      */

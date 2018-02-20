@@ -1,3 +1,20 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Copyright 2018
+ *
+ */
 package org.geowebcache.config;
 
 import static org.hamcrest.Matchers.is;
@@ -30,11 +47,12 @@ import org.junit.Test;
 import com.google.common.collect.Sets;
 
 public class GetCapabilitiesConfigurationTest {
+    
     WebMapServer server;
     WMSCapabilities cap;
     WMSRequest req;
     OperationType gcOpType;
-    XMLConfiguration globalConfig;
+    DefaultingConfiguration globalConfig;
     Capture<TileLayer> layerCapture;
     GridSetBroker broker;
 
@@ -44,7 +62,7 @@ public class GetCapabilitiesConfigurationTest {
         cap = createNiceMock(WMSCapabilities.class);
         req = createNiceMock(WMSRequest.class);
         gcOpType = createNiceMock(OperationType.class);
-        globalConfig = createNiceMock(XMLConfiguration.class);
+        globalConfig = createNiceMock(DefaultingConfiguration.class);
         layerCapture = new Capture<TileLayer>();
         broker = new GridSetBroker(false, false);
 
@@ -76,9 +94,10 @@ public class GetCapabilitiesConfigurationTest {
 
         replay(server, cap, req, gcOpType, globalConfig);
         config.setPrimaryConfig(globalConfig);
-        config.initialize(broker);
+        config.setGridSetBroker(broker);
+        config.afterPropertiesSet();
 
-        WMSLayer wmsLayer = (WMSLayer) config.getTileLayers().get(0);
+        WMSLayer wmsLayer = (WMSLayer) config.getLayers().iterator().next();
         List<ParameterFilter> outputParameterFilters = wmsLayer.getParameterFilters();
 
         assertThat(outputParameterFilters, containsInAnyOrder(
@@ -106,9 +125,9 @@ public class GetCapabilitiesConfigurationTest {
 
         replay(server, cap, req, gcOpType, globalConfig);
         config.setPrimaryConfig(globalConfig);
-        config.initialize(broker);
-
-        WMSLayer wmsLayer = (WMSLayer) config.getTileLayers().get(0);
+        config.setGridSetBroker(broker);
+        config.afterPropertiesSet();
+        WMSLayer wmsLayer = (WMSLayer) config.getLayers().iterator().next();
         List<ParameterFilter> outputParameterFilters = wmsLayer.getParameterFilters();
 
         assertThat(outputParameterFilters, containsInAnyOrder(
@@ -139,9 +158,9 @@ public class GetCapabilitiesConfigurationTest {
 
         replay(server, cap, req, gcOpType, globalConfig);
         config.setPrimaryConfig(globalConfig);
-        config.initialize(broker);
-
-        WMSLayer wmsLayer = (WMSLayer) config.getTileLayers().get(0);
+        config.setGridSetBroker(broker);
+        config.afterPropertiesSet();
+        WMSLayer wmsLayer = (WMSLayer) config.getLayers().iterator().next();
         List<ParameterFilter> outputParameterFilters = wmsLayer.getParameterFilters();
 
         assertThat(outputParameterFilters, containsInAnyOrder(
@@ -150,6 +169,7 @@ public class GetCapabilitiesConfigurationTest {
 
     @Test
     public void testDelegateInitializingLayers() throws Exception {
+        GridSetBroker broker = new GridSetBroker(false, false);
         String url = "http://test/wms";
         String mimeTypes = "image/png";
         String vendorParameters = "map=/osgeo/mapserver/msautotest/world/world.map";
@@ -166,18 +186,18 @@ public class GetCapabilitiesConfigurationTest {
                     WebMapServer getWMS() {
                         return server;
                     }
-
+            
         };
-
+        
         expect(server.getCapabilities()).andStubReturn(cap);
         expect(cap.getRequest()).andStubReturn(req);
         expect(req.getGetCapabilities()).andStubReturn(gcOpType);
         expect(gcOpType.getGet()).andStubReturn(new URL("http://test/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities"));
-
+        
         expect(cap.getVersion()).andStubReturn("1.1.1");
-
+        
         List<Layer> layers = new LinkedList<Layer>();
-
+        
         Layer l = new Layer();
         l.setName("Foo");
         l.setLatLonBoundingBox(new CRSEnvelope());
@@ -189,24 +209,26 @@ public class GetCapabilitiesConfigurationTest {
         l.setStyles(Collections.singletonList(style));
         // add the test layer
         layers.add(l);
-
+        
         globalConfig.setDefaultValues(capture(layerCapture)); expectLastCall().times(layers.size());
-
+        
         expect(cap.getLayerList()).andReturn(layers);
-
+        
         replay(server, cap, req, gcOpType, globalConfig);
-
+        
         config.setPrimaryConfig(globalConfig);
-
-        config.initialize(broker);
-
+        config.setGridSetBroker(broker);
+        config.afterPropertiesSet();
+        
+        
+        
         // Check that the XMLConfiguration's setDefaultValues method has been called on each of the layers returened.
         assertThat(Sets.newHashSet(config.getLayers()), is(Sets.newHashSet(layerCapture.getValues())));
-
+        
         verify(server, cap, req, gcOpType, globalConfig);
 
         // check legends information
-        WMSLayer wmsLayer = (WMSLayer) config.getTileLayer("Foo");
+        WMSLayer wmsLayer = (WMSLayer) config.getLayer("Foo").get();
         assertThat(wmsLayer, notNullValue());
         assertThat(wmsLayer.getLegends(), notNullValue());
         // check legends default for the test layer
@@ -228,4 +250,5 @@ public class GetCapabilitiesConfigurationTest {
                 hasProperty("key", equalToIgnoringCase("angle"))));
 
     }
+    
 }
