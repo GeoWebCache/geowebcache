@@ -759,17 +759,16 @@ public class RestIntegrationTest {
 
         assertThat(doc, hasXPath("//name", equalTo("EPSG:2163")));
         assertThat(doc, hasXPath("//srs/number", equalTo("2163")));
-        assertThat(doc, hasXPath("//originalExtent/coords/double[1]", equalTo("-2495667.977678598")));
-        assertThat(doc, hasXPath("//originalExtent/coords/double[2]", equalTo("-2223677.196231552")));
-        assertThat(doc, hasXPath("//originalExtent/coords/double[3]", equalTo("3291070.6104286816")));
-        assertThat(doc, hasXPath("//originalExtent/coords/double[4]", equalTo("959189.3312465074")));
-        assertThat(doc, hasXPath("//gridLevels/grid[1]/numTilesWide", equalTo("5")));
-        assertThat(doc, hasXPath("//gridLevels/grid[1]/numTilesHigh", equalTo("3")));
-        assertThat(doc, hasXPath("//gridLevels/grid[1]/resolution", equalTo("6999.999999999999")));
-        assertThat(doc, hasXPath("//gridLevels/grid[1]/scaleDenom", equalTo("2.5E7")));
-        assertThat(doc, hasXPath("//yBaseToggle", equalTo("false")));
+        assertThat(doc, hasXPath("//extent/coords/double[1]", equalTo("-2495667.977678598")));
+        assertThat(doc, hasXPath("//extent/coords/double[2]", equalTo("-2223677.196231552")));
+        assertThat(doc, hasXPath("//extent/coords/double[3]", equalTo("3291070.6104286816")));
+        assertThat(doc, hasXPath("//extent/coords/double[4]", equalTo("959189.3312465074")));
+        assertThat(doc, hasXPath("//scaleDenominators/double[1]", equalTo("2.5E7")));
+        assertThat(doc, hasXPath("//metersPerUnit", equalTo("1.0")));
+        assertThat(doc, hasXPath("//pixelSize", equalTo("2.8E-4")));
         assertThat(doc, hasXPath("//yCoordinateFirst", equalTo("false")));
-        assertThat(doc, hasXPath("//resolutionsPreserved", equalTo("false")));
+        assertThat(doc, hasXPath("//tileWidth", equalTo("200")));
+        assertThat(doc, hasXPath("//tileHeight", equalTo("200")));
 
     }
 
@@ -782,65 +781,45 @@ public class RestIntegrationTest {
         jsonObject = jsonObject.getJSONObject("gridSet");
         assertEquals("EPSG:2163", jsonObject.get("name"));
         assertEquals("2163", jsonObject.getJSONObject("srs").getString("number"));
-        assertEquals("[-2495667.977678598,-2223677.196231552,3291070.6104286816,959189.3312465074]", jsonObject.getJSONObject("originalExtent").get("coords").toString());
-        assertEquals("false", jsonObject.get("yBaseToggle").toString());
+        assertEquals("[-2495667.977678598,-2223677.196231552,3291070.6104286816,959189.3312465074]", jsonObject.getJSONObject("extent").get("coords").toString());
+        assertEquals("false", jsonObject.get("yCoordinateFirst").toString());
     }
 
     @Test
     public void testPutGridSetCreateModifyDelete() throws Exception {
         String gridSet =
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
-                "<gridSet>\n"+
-                "  <name>testGridset</name>\n"+
-                "  <srs>\n"+
-                "    <number>4326</number>\n"+
-                "  </srs>\n"+
-                "  <tileWidth>211</tileWidth>\n"+
-                "  <tileHeight>211</tileHeight>\n"+
-                "  <yBaseToggle>false</yBaseToggle>\n"+
-                "  <yCoordinateFirst>false</yCoordinateFirst>\n"+
-                "  <scaleWarning>false</scaleWarning>\n"+
-                "  <metersPerUnit>1.0</metersPerUnit>\n"+
-                "  <pixelSize>2.8E-4</pixelSize>\n"+
-                "  <originalExtent>\n"+
-                "    <coords>\n"+
-                "      <double>-99999.99</double>/n"+
-                "      <double>-99999.99</double>/n"+
-                "      <double>99999.99</double>/n"+
-                "      <double>99999.99</double>/n"+
-                "    </coords>/n"+
-                "  </originalExtent>/n"+
-                " <gridLevels>/n"+
-                "    <grid>/n"+
-                "      <numTilesWide>1</numTilesWide>/n"+
-                "      <numTilesHigh>1</numTilesHigh>/n"+
-                "      <resolution>5000.0</resolution>/n"+
-                "      <scaleDenom>2.5E7</scaleDenom>/n"+
-                "      <name>EPSG:4326:0</name>/n"+
-                "    </grid>/n"+
-                "    <grid>/n"+
-                "      <numTilesWide>100</numTilesWide>\n"+
-                "      <numTilesHigh>100</numTilesHigh>\n"+
-                "      <resolution>250.0</resolution>\n"+
-                "      <scaleDenom>1000000.0</scaleDenom>\n"+
-                "      <name>EPSG:4326:1</name>\n"+
-                "    </grid>\n"+
-                "    <grid>\n"+
-                "      <numTilesWide>1000</numTilesWide>\n"+
-                "      <numTilesHigh>1000</numTilesHigh>\n"+
-                "      <resolution>25.0</resolution>\n"+
-                "      <scaleDenom>100000.0</scaleDenom>\n"+
-                "      <name>EPSG:4326:2</name>\n"+
-                "    </grid>\n"+
-                "    <grid>\n"+
-                "      <numTilesWide>2000</numTilesWide>\n"+
-                "      <numTilesHigh>2000</numTilesHigh>\n"+
-                "      <resolution>5.0</resolution>\n"+
-                "      <scaleDenom>25000.0</scaleDenom>\n"+
-                "      <name>EPSG:4326:3</name>\n"+
-                "    </grid>\n"+
-                "  </gridLevels>\n"+
-                "  <resolutionsPreserved>false</resolutionsPreserved>\n"+
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<gridSet>\n" +
+                "  <name>testGridset</name>\n" +
+                "  <srs>\n" +
+                "    <number>4326</number>\n" +
+                "  </srs>\n" +
+                "  <extent>\n" +
+                "    <coords>\n" +
+                "      <double>-2495667.977678598</double>\n" +
+                "      <double>-2223677.196231552</double>\n" +
+                "      <double>3291070.6104286816</double>\n" +
+                "      <double>959189.3312465074</double>\n" +
+                "    </coords>\n" +
+                "  </extent>\n" +
+                "  <alignTopLeft>false</alignTopLeft>\n" +
+                "  <scaleDenominators>\n" +
+                "    <double>2.5E7</double>\n" +
+                "    <double>1000000.0</double>\n" +
+                "    <double>100000.0</double>\n" +
+                "    <double>25000.0</double>\n" +
+                "  </scaleDenominators>\n" +
+                "  <metersPerUnit>1.0</metersPerUnit>\n" +
+                "  <pixelSize>2.8E-4</pixelSize>\n" +
+                "  <scaleNames>\n" +
+                "    <string>EPSG:4326:0</string>\n" +
+                "    <string>EPSG:4326:1</string>\n" +
+                "    <string>EPSG:4326:2</string>\n" +
+                "    <string>EPSG:4326:3</string>\n" +
+                "  </scaleNames>\n" +
+                "  <tileHeight>211</tileHeight>\n" +
+                "  <tileWidth>211</tileWidth>\n" +
+                "  <yCoordinateFirst>false</yCoordinateFirst>\n" +
                 "</gridSet>";
 
         //Make it sure doesn't exist
@@ -859,63 +838,47 @@ public class RestIntegrationTest {
 
         assertThat(doc, hasXPath("//name", equalTo("testGridset")));
         assertThat(doc, hasXPath("//srs/number", equalTo("4326")));
-        assertThat(doc, hasXPath("//originalExtent/coords/double[1]", equalTo("-99999.99")));
-        assertThat(doc, hasXPath("//resolutionsPreserved", equalTo("false")));
+        assertThat(doc, hasXPath("//scaleDenominators/double[1]", equalTo("2.5E7")));
+        assertThat(doc, hasXPath("//metersPerUnit", equalTo("1.0")));
+        assertThat(doc, hasXPath("//pixelSize", equalTo("2.8E-4")));
+        assertThat(doc, hasXPath("//yCoordinateFirst", equalTo("false")));
+        assertThat(doc, hasXPath("//tileWidth", equalTo("211")));
+        assertThat(doc, hasXPath("//tileHeight", equalTo("211")));
 
         String gridSetUpdate =
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
-                "<gridSet>\n"+
-                "  <name>testGridset</name>\n"+
-                "  <srs>\n"+
-                "    <number>2163</number>\n"+
-                "  </srs>\n"+
-                "  <tileWidth>200</tileWidth>\n"+
-                "  <tileHeight>200</tileHeight>\n"+
-                "  <yBaseToggle>false</yBaseToggle>\n"+
-                "  <yCoordinateFirst>false</yCoordinateFirst>\n"+
-                "  <scaleWarning>false</scaleWarning>\n"+
-                "  <metersPerUnit>1.0</metersPerUnit>\n"+
-                "  <pixelSize>2.8E-4</pixelSize>\n"+
-                "  <originalExtent>\n"+
-                "    <coords>\n"+
-                "      <double>-2495667.977678598</double>/n"+
-                "      <double>-2223677.196231552</double>/n"+
-                "      <double>3291070.6104286816</double>/n"+
-                "      <double>959189.3312465074</double>/n"+
-                "    </coords>/n"+
-                "  </originalExtent>/n"+
-                " <gridLevels>/n"+
-                "    <grid>/n"+
-                "      <numTilesWide>5</numTilesWide>/n"+
-                "      <numTilesHigh>3</numTilesHigh>/n"+
-                "      <resolution>6999.999999999999</resolution>/n"+
-                "      <scaleDenom>2.5E7</scaleDenom>/n"+
-                "      <name>EPSG:2163:0</name>/n"+
-                "    </grid>/n"+
-                "    <grid>/n"+
-                "      <numTilesWide>104</numTilesWide>\n"+
-                "      <numTilesHigh>57</numTilesHigh>\n"+
-                "      <resolution>280.0</resolution>\n"+
-                "      <scaleDenom>1000000.0</scaleDenom>\n"+
-                "      <name>EPSG:2163:1</name>\n"+
-                "    </grid>\n"+
-                "    <grid>\n"+
-                "      <numTilesWide>1034</numTilesWide>\n"+
-                "      <numTilesHigh>569</numTilesHigh>\n"+
-                "      <resolution>27.999999999999996</resolution>\n"+
-                "      <scaleDenom>100000.0</scaleDenom>\n"+
-                "      <name>EPSG:2163:2</name>\n"+
-                "    </grid>\n"+
-                "    <grid>\n"+
-                "      <numTilesWide>4134</numTilesWide>\n"+
-                "      <numTilesHigh>2274</numTilesHigh>\n"+
-                "      <resolution>6.999999999999999</resolution>\n"+
-                "      <scaleDenom>25000.0</scaleDenom>\n"+
-                "      <name>EPSG:2163:3</name>\n"+
-                "    </grid>\n"+
-                "  </gridLevels>\n"+
-                "  <resolutionsPreserved>false</resolutionsPreserved>\n"+
-                "</gridSet>\n";
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<gridSet>\n" +
+                "  <name>testGridset</name>\n" +
+                "  <srs>\n" +
+                "    <number>2163</number>\n" +
+                "  </srs>\n" +
+                "  <extent>\n" +
+                "    <coords>\n" +
+                "      <double>-2495667.977678598</double>\n" +
+                "      <double>-2223677.196231552</double>\n" +
+                "      <double>3291070.6104286816</double>\n" +
+                "      <double>959189.3312465074</double>\n" +
+                "    </coords>\n" +
+                "  </extent>\n" +
+                "  <alignTopLeft>false</alignTopLeft>\n" +
+                "  <scaleDenominators>\n" +
+                "    <double>2.5E7</double>\n" +
+                "    <double>1000000.0</double>\n" +
+                "    <double>100000.0</double>\n" +
+                "    <double>25000.0</double>\n" +
+                "  </scaleDenominators>\n" +
+                "  <metersPerUnit>1.0</metersPerUnit>\n" +
+                "  <pixelSize>2.8E-4</pixelSize>\n" +
+                "  <scaleNames>\n" +
+                "    <string>EPSG:2163:0</string>\n" +
+                "    <string>EPSG:2163:1</string>\n" +
+                "    <string>EPSG:2163:2</string>\n" +
+                "    <string>EPSG:2163:3</string>\n" +
+                "  </scaleNames>\n" +
+                "  <tileHeight>200</tileHeight>\n" +
+                "  <tileWidth>200</tileWidth>\n" +
+                "  <yCoordinateFirst>false</yCoordinateFirst>\n" +
+                "</gridSet>";
 
         response = handlePut(URI.create("/geowebcache/rest/gridsets/testGridset"), admin.getClient(), gridSetUpdate);
         assertEquals(200, response.getStatusLine().getStatusCode());
@@ -928,17 +891,12 @@ public class RestIntegrationTest {
 
         assertThat(doc, hasXPath("//name", equalTo("testGridset")));
         assertThat(doc, hasXPath("//srs/number", equalTo("2163")));
-        assertThat(doc, hasXPath("//originalExtent/coords/double[1]", equalTo("-2495667.977678598")));
-        assertThat(doc, hasXPath("//originalExtent/coords/double[2]", equalTo("-2223677.196231552")));
-        assertThat(doc, hasXPath("//originalExtent/coords/double[3]", equalTo("3291070.6104286816")));
-        assertThat(doc, hasXPath("//originalExtent/coords/double[4]", equalTo("959189.3312465074")));
-        assertThat(doc, hasXPath("//gridLevels/grid[1]/numTilesWide", equalTo("5")));
-        assertThat(doc, hasXPath("//gridLevels/grid[1]/numTilesHigh", equalTo("3")));
-        assertThat(doc, hasXPath("//gridLevels/grid[1]/resolution", equalTo("6999.999999999999")));
-        assertThat(doc, hasXPath("//gridLevels/grid[1]/scaleDenom", equalTo("2.5E7")));
-        assertThat(doc, hasXPath("//yBaseToggle", equalTo("false")));
+        assertThat(doc, hasXPath("//scaleDenominators/double[1]", equalTo("2.5E7")));
+        assertThat(doc, hasXPath("//metersPerUnit", equalTo("1.0")));
+        assertThat(doc, hasXPath("//pixelSize", equalTo("2.8E-4")));
         assertThat(doc, hasXPath("//yCoordinateFirst", equalTo("false")));
-        assertThat(doc, hasXPath("//resolutionsPreserved", equalTo("false")));
+        assertThat(doc, hasXPath("//tileWidth", equalTo("200")));
+        assertThat(doc, hasXPath("//tileHeight", equalTo("200")));
 
         response = handleDelete(URI.create("/geowebcache/rest/gridsets/testGridset.xml"), admin.getClient());
         assertEquals(200, response.getStatusLine().getStatusCode());
