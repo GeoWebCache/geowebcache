@@ -26,9 +26,8 @@ import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
-import org.geowebcache.config.BlobStoreInfo;
-import org.geowebcache.config.ContextualConfigurationProvider;
-import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.config.*;
+import org.geowebcache.grid.Grid;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.layer.TileLayer;
@@ -84,6 +83,8 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
      */
     private XStream configureXStream(XStream xs) {
         xs.alias("global", ServerConfigurationPOJO.class);
+        xs.alias("gridSet", GridSet.class);
+        xs.alias("grid", Grid.class);
         return xs;
     }
 

@@ -763,10 +763,10 @@ public class RestIntegrationTest {
         assertThat(doc, hasXPath("//originalExtent/coords/double[2]", equalTo("-2223677.196231552")));
         assertThat(doc, hasXPath("//originalExtent/coords/double[3]", equalTo("3291070.6104286816")));
         assertThat(doc, hasXPath("//originalExtent/coords/double[4]", equalTo("959189.3312465074")));
-        assertThat(doc, hasXPath("//gridLevels/org.geowebcache.grid.Grid[1]/numTilesWide", equalTo("5")));
-        assertThat(doc, hasXPath("//gridLevels/org.geowebcache.grid.Grid[1]/numTilesHigh", equalTo("3")));
-        assertThat(doc, hasXPath("//gridLevels/org.geowebcache.grid.Grid[1]/resolution", equalTo("6999.999999999999")));
-        assertThat(doc, hasXPath("//gridLevels/org.geowebcache.grid.Grid[1]/scaleDenom", equalTo("2.5E7")));
+        assertThat(doc, hasXPath("//gridLevels/grid[1]/numTilesWide", equalTo("5")));
+        assertThat(doc, hasXPath("//gridLevels/grid[1]/numTilesHigh", equalTo("3")));
+        assertThat(doc, hasXPath("//gridLevels/grid[1]/resolution", equalTo("6999.999999999999")));
+        assertThat(doc, hasXPath("//gridLevels/grid[1]/scaleDenom", equalTo("2.5E7")));
         assertThat(doc, hasXPath("//yBaseToggle", equalTo("false")));
         assertThat(doc, hasXPath("//yCoordinateFirst", equalTo("false")));
         assertThat(doc, hasXPath("//resolutionsPreserved", equalTo("false")));
@@ -779,7 +779,7 @@ public class RestIntegrationTest {
         assertEquals(200, response.getStatusLine().getStatusCode());
 
         JSONObject jsonObject = getResponseEntityAsJSONObject(response);
-        jsonObject = jsonObject.getJSONObject("org.geowebcache.grid.GridSet");
+        jsonObject = jsonObject.getJSONObject("gridSet");
         assertEquals("EPSG:2163", jsonObject.get("name"));
         assertEquals("2163", jsonObject.getJSONObject("srs").getString("number"));
         assertEquals("[-2495667.977678598,-2223677.196231552,3291070.6104286816,959189.3312465074]", jsonObject.getJSONObject("originalExtent").get("coords").toString());
@@ -790,7 +790,7 @@ public class RestIntegrationTest {
     public void testPutGridSetCreateModifyDelete() throws Exception {
         String gridSet =
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
-                "<org.geowebcache.grid.GridSet>\n"+
+                "<gridSet>\n"+
                 "  <name>testGridset</name>\n"+
                 "  <srs>\n"+
                 "    <number>4326</number>\n"+
@@ -811,37 +811,37 @@ public class RestIntegrationTest {
                 "    </coords>/n"+
                 "  </originalExtent>/n"+
                 " <gridLevels>/n"+
-                "    <org.geowebcache.grid.Grid>/n"+
+                "    <grid>/n"+
                 "      <numTilesWide>1</numTilesWide>/n"+
                 "      <numTilesHigh>1</numTilesHigh>/n"+
                 "      <resolution>5000.0</resolution>/n"+
                 "      <scaleDenom>2.5E7</scaleDenom>/n"+
                 "      <name>EPSG:4326:0</name>/n"+
-                "    </org.geowebcache.grid.Grid>/n"+
-                "    <org.geowebcache.grid.Grid>/n"+
+                "    </grid>/n"+
+                "    <grid>/n"+
                 "      <numTilesWide>100</numTilesWide>\n"+
                 "      <numTilesHigh>100</numTilesHigh>\n"+
                 "      <resolution>250.0</resolution>\n"+
                 "      <scaleDenom>1000000.0</scaleDenom>\n"+
                 "      <name>EPSG:4326:1</name>\n"+
-                "    </org.geowebcache.grid.Grid>\n"+
-                "    <org.geowebcache.grid.Grid>\n"+
+                "    </grid>\n"+
+                "    <grid>\n"+
                 "      <numTilesWide>1000</numTilesWide>\n"+
                 "      <numTilesHigh>1000</numTilesHigh>\n"+
                 "      <resolution>25.0</resolution>\n"+
                 "      <scaleDenom>100000.0</scaleDenom>\n"+
                 "      <name>EPSG:4326:2</name>\n"+
-                "    </org.geowebcache.grid.Grid>\n"+
-                "    <org.geowebcache.grid.Grid>\n"+
+                "    </grid>\n"+
+                "    <grid>\n"+
                 "      <numTilesWide>2000</numTilesWide>\n"+
                 "      <numTilesHigh>2000</numTilesHigh>\n"+
                 "      <resolution>5.0</resolution>\n"+
                 "      <scaleDenom>25000.0</scaleDenom>\n"+
                 "      <name>EPSG:4326:3</name>\n"+
-                "    </org.geowebcache.grid.Grid>\n"+
+                "    </grid>\n"+
                 "  </gridLevels>\n"+
                 "  <resolutionsPreserved>false</resolutionsPreserved>\n"+
-                "</org.geowebcache.grid.GridSet>";
+                "</gridSet>";
 
         //Make it sure doesn't exist
         CloseableHttpResponse response = handleGet(URI.create("/geowebcache/rest/gridsets/testGridset.xml"), admin.getClient());
@@ -864,7 +864,7 @@ public class RestIntegrationTest {
 
         String gridSetUpdate =
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
-                "<org.geowebcache.grid.GridSet>\n"+
+                "<gridSet>\n"+
                 "  <name>testGridset</name>\n"+
                 "  <srs>\n"+
                 "    <number>2163</number>\n"+
@@ -885,37 +885,37 @@ public class RestIntegrationTest {
                 "    </coords>/n"+
                 "  </originalExtent>/n"+
                 " <gridLevels>/n"+
-                "    <org.geowebcache.grid.Grid>/n"+
+                "    <grid>/n"+
                 "      <numTilesWide>5</numTilesWide>/n"+
                 "      <numTilesHigh>3</numTilesHigh>/n"+
                 "      <resolution>6999.999999999999</resolution>/n"+
                 "      <scaleDenom>2.5E7</scaleDenom>/n"+
                 "      <name>EPSG:2163:0</name>/n"+
-                "    </org.geowebcache.grid.Grid>/n"+
-                "    <org.geowebcache.grid.Grid>/n"+
+                "    </grid>/n"+
+                "    <grid>/n"+
                 "      <numTilesWide>104</numTilesWide>\n"+
                 "      <numTilesHigh>57</numTilesHigh>\n"+
                 "      <resolution>280.0</resolution>\n"+
                 "      <scaleDenom>1000000.0</scaleDenom>\n"+
                 "      <name>EPSG:2163:1</name>\n"+
-                "    </org.geowebcache.grid.Grid>\n"+
-                "    <org.geowebcache.grid.Grid>\n"+
+                "    </grid>\n"+
+                "    <grid>\n"+
                 "      <numTilesWide>1034</numTilesWide>\n"+
                 "      <numTilesHigh>569</numTilesHigh>\n"+
                 "      <resolution>27.999999999999996</resolution>\n"+
                 "      <scaleDenom>100000.0</scaleDenom>\n"+
                 "      <name>EPSG:2163:2</name>\n"+
-                "    </org.geowebcache.grid.Grid>\n"+
-                "    <org.geowebcache.grid.Grid>\n"+
+                "    </grid>\n"+
+                "    <grid>\n"+
                 "      <numTilesWide>4134</numTilesWide>\n"+
                 "      <numTilesHigh>2274</numTilesHigh>\n"+
                 "      <resolution>6.999999999999999</resolution>\n"+
                 "      <scaleDenom>25000.0</scaleDenom>\n"+
                 "      <name>EPSG:2163:3</name>\n"+
-                "    </org.geowebcache.grid.Grid>\n"+
+                "    </grid>\n"+
                 "  </gridLevels>\n"+
                 "  <resolutionsPreserved>false</resolutionsPreserved>\n"+
-                "</org.geowebcache.grid.GridSet>\n";
+                "</gridSet>\n";
 
         response = handlePut(URI.create("/geowebcache/rest/gridsets/testGridset"), admin.getClient(), gridSetUpdate);
         assertEquals(200, response.getStatusLine().getStatusCode());
@@ -932,10 +932,10 @@ public class RestIntegrationTest {
         assertThat(doc, hasXPath("//originalExtent/coords/double[2]", equalTo("-2223677.196231552")));
         assertThat(doc, hasXPath("//originalExtent/coords/double[3]", equalTo("3291070.6104286816")));
         assertThat(doc, hasXPath("//originalExtent/coords/double[4]", equalTo("959189.3312465074")));
-        assertThat(doc, hasXPath("//gridLevels/org.geowebcache.grid.Grid[1]/numTilesWide", equalTo("5")));
-        assertThat(doc, hasXPath("//gridLevels/org.geowebcache.grid.Grid[1]/numTilesHigh", equalTo("3")));
-        assertThat(doc, hasXPath("//gridLevels/org.geowebcache.grid.Grid[1]/resolution", equalTo("6999.999999999999")));
-        assertThat(doc, hasXPath("//gridLevels/org.geowebcache.grid.Grid[1]/scaleDenom", equalTo("2.5E7")));
+        assertThat(doc, hasXPath("//gridLevels/grid[1]/numTilesWide", equalTo("5")));
+        assertThat(doc, hasXPath("//gridLevels/grid[1]/numTilesHigh", equalTo("3")));
+        assertThat(doc, hasXPath("//gridLevels/grid[1]/resolution", equalTo("6999.999999999999")));
+        assertThat(doc, hasXPath("//gridLevels/grid[1]/scaleDenom", equalTo("2.5E7")));
         assertThat(doc, hasXPath("//yBaseToggle", equalTo("false")));
         assertThat(doc, hasXPath("//yCoordinateFirst", equalTo("false")));
         assertThat(doc, hasXPath("//resolutionsPreserved", equalTo("false")));
