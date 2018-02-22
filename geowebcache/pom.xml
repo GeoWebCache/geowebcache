@@ -10,7 +10,7 @@
   <url>http://geowebcache.org</url>
 
   <properties>
-    <gt.version>20-SNAPSHOT-SNAPSHOT</gt.version>
+    <gt.version>20-SNAPSHOT</gt.version>
     <jts.version>1.14.0</jts.version>
     <jaiext.version>1.0.20</jaiext.version>
     <spring.version>4.2.5.RELEASE</spring.version>
