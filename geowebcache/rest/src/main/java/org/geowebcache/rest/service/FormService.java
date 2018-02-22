@@ -115,7 +115,7 @@ public class FormService {
     }
 
     public ResponseEntity<?> handleKillThreadPost(Map<String, String> form, TileLayer tl) {
-        String id = form.get("kill_thread");
+        String id = form.get("thread_id");
 
         StringBuilder doc = new StringBuilder();
 
