@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
@@ -40,6 +41,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.hamcrest.BaseMatcher;
+import org.hamcrest.CustomMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
@@ -178,4 +180,21 @@ public class TestUtils {
         return hasProperty("present", is(true));
     }
 
+    /**
+     * Match string matching a regular expression
+     * @param regex
+     * @return
+     */
+    public static Matcher<String> matchesRegex(String regex) {
+        final Pattern p = Pattern.compile(regex);
+        return new CustomMatcher<String>("matching /"+regex+"/") {
+            
+            @Override
+            public boolean matches(Object arg0) {
+                return p.matcher((CharSequence) arg0).matches();
+            }
+            
+        };
+    }
+    
 }
