@@ -17,6 +17,8 @@
  */
 
 package org.geowebcache;
+import static org.junit.Assert.fail;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -46,22 +48,51 @@ public class MockExtensionRule extends ExternalResource {
      * same time
      */
     static Lock lock = new ReentrantLock();
+    static MockExtensionRule staticRule = null;
     
     ApplicationContext mockContext;
     ApplicationContext oldContext;
     Map<String, Object> beans = new HashMap<>();
     Map<Class<?>, Collection<String>> types = new HashMap<>();
     
+    final boolean staticContext;
+    
+    /**
+     * If true this rule will modify the static context used by GeoWebCacheExtensions by default. 
+     * Otherwise only the context produced by this rule will be affected.  Only one rule affecting 
+     * the static context can be active at one time.
+     * @param staticContext
+     */
+    public MockExtensionRule(boolean staticContext) {
+        super();
+        this.staticContext = staticContext;
+    }
+    
+    public MockExtensionRule() {
+        this(true);
+    }
+    
     @Override
     protected void before() throws Throwable {
-        mockContext = (ApplicationContext) Proxy.newProxyInstance(
+        mockContext = makeContext();
+        if (staticContext) {
+            lock.lock();
+            if(Objects.nonNull(staticRule)) {
+                fail("Only one static MockExtensionRule can be active at a time");
+            } else {
+                staticRule=this;
+            }
+            oldContext = GeoWebCacheExtensions.context;
+            GeoWebCacheExtensions.extensionsCache.clear();
+            GeoWebCacheExtensions.context = mockContext;
+        }
+    }
+
+    protected ApplicationContext makeContext() throws IllegalArgumentException {
+        return (ApplicationContext) Proxy.newProxyInstance(
                 MockExtensionRule.class.getClassLoader(),
                 new Class[] {ApplicationContext.class},
                 new ContextInvocationHandler());
-        lock.lock();
-        oldContext = GeoWebCacheExtensions.context;
-        GeoWebCacheExtensions.extensionsCache.clear();
-        GeoWebCacheExtensions.context = mockContext;
     }
     
     /**
@@ -84,9 +115,14 @@ public class MockExtensionRule extends ExternalResource {
     protected void after() {
         try {
             GeoWebCacheExtensions.extensionsCache.clear();
-            GeoWebCacheExtensions.context = oldContext;
+            if(staticContext) {
+                GeoWebCacheExtensions.context = oldContext;
+            }
         } finally {
-            lock.unlock();
+            if(staticContext) {
+                staticRule=null;
+                lock.unlock();
+            }
         }
     }
     
