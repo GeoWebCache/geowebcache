@@ -85,7 +85,6 @@
   <gridSets>
     <!-- Grid Set Example, by default EPSG:900913 and EPSG:4326 are defined -->
     <gridSet>
-      <!-- This does not have to be an EPSG code, you can also have multiple gridSet elements per SRS -->
       <name>EPSG:2163</name>
       <srs>
         <number>2163</number>
@@ -107,6 +106,27 @@
       <tileHeight>200</tileHeight>
       <tileWidth>200</tileWidth>
     </gridSet>
+    <gridSet>
+      <name>CanadaAtlasNonotree</name>
+      <srs>
+        <number>3979</number>
+      </srs>
+      <extent>
+        <coords>
+          <double>-2441613</double>
+          <double>-861451</double>
+          <double>3176326</double>
+          <double>3969977</double>
+        </coords>
+      </extent>
+      <resolutions>
+        <double>21945.0742188</double>
+        <double>7315.02473958</double>
+        <double>2438.34157986</double>
+        <double>812.78052662</double>
+        <double>270.926842207</double>
+      </resolutions>
+    </gridSet> 
   </gridSets>
 
   <layers>
@@ -150,7 +170,7 @@
         </stringParameterFilter>
       </parameterFilters>
       <wmsUrl>
-        <string>http://demo.opengeo.org/geoserver/topp/wms</string>
+        <string>https://demo.boundlessgeo.com/geoserver/topp/wms</string>
       </wmsUrl>
       <legends defaultWidth="81" defaultHeight="80" defaultFormat="image/png">
         <legend style="population"/>
@@ -170,10 +190,18 @@
         <string>image/png</string>
         <string>image/png8</string>
       </mimeFormats>
+      <gridSubsets>
+        <gridSubset>
+          <gridSetName>EPSG:4326</gridSetName>
+        </gridSubset>
+        <gridSubset>
+          <gridSetName>CanadaAtlasNonotree</gridSetName>
+        </gridSubset>
+      </gridSubsets>
       <wmsUrl>
-        <string>http://demo.opengeo.org/geoserver/wms</string>
+        <string>https://demo.boundlessgeo.com/geoserver/wms</string>
       </wmsUrl>
-      <wmsLayers>nurc:Img_Sample</wmsLayers>
+      <wmsLayers>nasa:bluemarble</wmsLayers>
       <legends defaultWidth="20" defaultHeight="20" defaultFormat="image/png">
         <legend style=""/>
       </legends>
@@ -212,7 +240,7 @@
         <expirationRule minZoom="0" expiration="500" />
       </expireClientsList>
       <wmsUrl>
-        <string>http://demo.opengeo.org/geoserver/wms</string>
+        <string>https://demo.boundlessgeo.com/geoserver/wms</string>
       </wmsUrl>
       <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
       <transparent>false</transparent>
