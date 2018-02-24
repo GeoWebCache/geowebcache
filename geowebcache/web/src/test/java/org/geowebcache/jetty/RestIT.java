@@ -271,7 +271,7 @@ public class RestIT {
                     equalTo("img states")));
                 assertThat(doc, 
                     hasXPath("/wmsLayer/wmsUrl/string", 
-                    equalTo("http://demo.opengeo.org/geoserver/wms?")));
+                    equalTo("https://demo.boundlessgeo.com/geoserver/wms?")));
                 assertThat(doc, 
                     hasXPath("/wmsLayer/wmsLayers", 
                     equalTo("nurc:Img_Sample,topp:states")));
@@ -292,7 +292,7 @@ public class RestIT {
                     assertThat(doc, 
                         not(
                         hasXPath("//wmsUrl", 
-                        containsString("demo.opengeo.org"))));
+                        containsString("demo.boundlessgeo.com"))));
                     assertThat(doc, 
                         not(
                         hasXPath("//wmsLayer", 
