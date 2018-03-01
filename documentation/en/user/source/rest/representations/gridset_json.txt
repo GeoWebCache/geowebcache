@@ -1,0 +1,34 @@
+{
+    "gridSet": {
+        "alignTopLeft": false,
+        "extent": {
+            "coords": [
+                -2495667.977678598,
+                -2223677.196231552,
+                3291070.6104286816,
+                959189.3312465074
+            ]
+        },
+        "metersPerUnit": 1,
+        "name": "EPSG:2163",
+        "pixelSize": 0.00028,
+        "scaleDenominators": [
+            25000000.0,
+            1000000,
+            100000,
+            25000
+        ],
+        "scaleNames": [
+            "EPSG:2163:0",
+            "EPSG:2163:1",
+            "EPSG:2163:2",
+            "EPSG:2163:3"
+        ],
+        "srs": {
+            "number": 2163
+        },
+        "tileHeight": 200,
+        "tileWidth": 200,
+        "yCoordinateFirst": false
+    }
+}

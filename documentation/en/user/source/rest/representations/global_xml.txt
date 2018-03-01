@@ -1,0 +1,38 @@
+<global>
+  <serviceInformation>
+    <title>GeoWebCache</title>
+    <description>GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of protocols and
+      formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</description>
+    <keywords>
+      <string>WFS</string>
+      <string>WMS</string>
+      <string>WMTS</string>
+      <string>GEOWEBCACHE</string>
+    </keywords>
+    <serviceProvider>
+      <providerName>John Smith inc.</providerName>
+      <providerSite>http://www.example.com/</providerSite>
+      <serviceContact>
+        <individualName>John Smith</individualName>
+        <positionName>Geospatial Expert</positionName>
+        <addressType>Work</addressType>
+        <addressStreet>1 Bumpy St.</addressStreet>
+        <addressCity>Hobart</addressCity>
+        <addressAdministrativeArea>TAS</addressAdministrativeArea>
+        <addressPostalCode>7005</addressPostalCode>
+        <addressCountry>Australia</addressCountry>
+        <phoneNumber>+61 3 0000 0000</phoneNumber>
+        <faxNumber>+61 3 0000 0001</faxNumber>
+        <addressEmail>john.smith@example.com</addressEmail>
+      </serviceContact>
+    </serviceProvider>
+    <fees>NONE</fees>
+    <accessConstraints>NONE</accessConstraints>
+  </serviceInformation>
+  <runtimeStatsEnabled>true</runtimeStatsEnabled>
+  <wmtsCiteCompliant>false</wmtsCiteCompliant>
+  <backendTimeout>120</backendTimeout>
+  <version>1.13.0</version>
+  <identifier>/var/opt/gwc/config</identifier>
+  <location>/var/opt/gwc/config/geowebcache.xml</location>
+</global>

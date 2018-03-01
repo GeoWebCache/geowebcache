@@ -1,0 +1,39 @@
+{
+    "global": {
+        "backendTimeout": 120,
+        "identifier": "/Users/tbarsballe/Documents/data/gwc/config",
+        "location": "/Users/tbarsballe/Documents/data/gwc/config/geowebcache.xml",
+        "runtimeStatsEnabled": true,
+        "serviceInformation": {
+            "accessConstraints": "NONE",
+            "description": "GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of protocols and\n      formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.",
+            "fees": "NONE",
+            "keywords": [
+                "WFS",
+                "WMS",
+                "WMTS",
+                "GEOWEBCACHE"
+            ],
+            "serviceProvider": {
+                "providerName": "John Smith inc.",
+                "providerSite": "http://www.example.com/",
+                "serviceContact": {
+                    "addressAdministrativeArea": "TAS",
+                    "addressCity": "Hobart",
+                    "addressCountry": "Australia",
+                    "addressEmail": "john.smith@example.com",
+                    "addressPostalCode": "7005",
+                    "addressStreet": "1 Bumpy St.",
+                    "addressType": "Work",
+                    "faxNumber": "+61 3 0000 0001",
+                    "individualName": "John Smith",
+                    "phoneNumber": "+61 3 0000 0000",
+                    "positionName": "Geospatial Expert"
+                }
+            },
+            "title": "GeoWebCache"
+        },
+        "version": "1.13.0",
+        "wmtsCiteCompliant": false
+    }
+}

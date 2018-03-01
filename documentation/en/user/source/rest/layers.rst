@@ -79,11 +79,11 @@ Layer Operations
      - 200
      - XML
    * - POST
-     - Modify the definition/configuration of a Layer
+     - Modify the definition/configuration of a Layer. DEPRECATED - use PUT instead.
      - 200
      - XML
    * - PUT
-     - Add a new Layer
+     - Add a new layer or modify the definition/configuration of a Layer.
      - 200
      - XML
    * - DELETE
@@ -173,11 +173,9 @@ Now, make some modifications to the layer definition on the `layer.xml` file:
    <wmsLayers>topp:states,nurc:Img_Sample</wmsLayers>
  </wmsLayer>
 
-And use the HTTP POST method instead:
-
 .. code-block:: xml 
 
- curl -v -u geowebcache:secured -XPOST -H "Content-type: text/xml" -d @layer.xml  "http://localhost:8080/geoserver/gwc/rest/layers/layer1.xml"
+ curl -v -u geowebcache:secured -XPUT -H "Content-type: text/xml" -d @layer.xml  "http://localhost:8080/geoserver/gwc/rest/layers/layer1.xml"
  
 Delete Layer
 ++++++++++++

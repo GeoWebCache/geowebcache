@@ -1,0 +1,32 @@
+<gridSet>
+  <name>EPSG:2163</name>
+  <srs>
+    <number>2163</number>
+  </srs>
+  <extent>
+    <coords>
+      <double>-2495667.977678598</double>
+      <double>-2223677.196231552</double>
+      <double>3291070.6104286816</double>
+      <double>959189.3312465074</double>
+    </coords>
+  </extent>
+  <alignTopLeft>false</alignTopLeft>
+  <scaleDenominators>
+    <double>2.5E7</double>
+    <double>1000000.0</double>
+    <double>100000.0</double>
+    <double>25000.0</double>
+  </scaleDenominators>
+  <metersPerUnit>1.0</metersPerUnit>
+  <pixelSize>2.8E-4</pixelSize>
+  <scaleNames>
+    <string>EPSG:2163:0</string>
+    <string>EPSG:2163:1</string>
+    <string>EPSG:2163:2</string>
+    <string>EPSG:2163:3</string>
+  </scaleNames>
+  <tileHeight>200</tileHeight>
+  <tileWidth>200</tileWidth>
+  <yCoordinateFirst>false</yCoordinateFirst>
+</gridSet>
