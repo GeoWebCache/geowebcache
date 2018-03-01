@@ -8,7 +8,10 @@ This section will discuss the GeoWebCache REST API.
 .. toctree::
    :maxdepth: 1
    
+   global.rst
    layers.rst
+   gridsets.rst
+   blobstores.rst
    seed.rst
    diskquota.rst
    masstruncate.rst

@@ -77,6 +77,7 @@ making sure to edit the path.  As usual, any changes to the servlet configuratio
     :file:`geowebcache` directory in the location specified by the ``TEMP`` system environment variable. It is **highly** recommended
     to explicitly define the location of the configuration/cache directory.
 
+.. _configuration.storage.blobstore:
 
 BlobStore configuration
 -----------------------
