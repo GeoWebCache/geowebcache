@@ -14,6 +14,7 @@
  */
 package org.geowebcache.storage.blobstore.memory.distributed;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -235,7 +236,7 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
 
     @Override
     public List<EvictionPolicy> getSupportedPolicies() {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
