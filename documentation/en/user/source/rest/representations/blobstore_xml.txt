@@ -1,0 +1,6 @@
+<FileBlobStore default="false">
+  <id>defaultCache</id>
+  <enabled>false</enabled>
+  <baseDirectory>/tmp/defaultCache</baseDirectory>
+  <fileSystemBlockSize>4096</fileSystemBlockSize>
+</FileBlobStore>

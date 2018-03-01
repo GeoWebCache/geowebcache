@@ -1,0 +1,9 @@
+{
+    "FileBlobStore": {
+        "@default": "false",
+        "baseDirectory": "/tmp/defaultCache",
+        "enabled": false,
+        "fileSystemBlockSize": 4096,
+        "id": "defaultCache"
+    }
+}
