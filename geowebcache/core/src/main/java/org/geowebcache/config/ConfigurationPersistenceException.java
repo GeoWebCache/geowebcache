@@ -17,6 +17,10 @@
  */
 package org.geowebcache.config;
 
+/**
+ * An exception which indicates there was an error persisting a {@link Info configuration object} to a
+ * {@link BaseConfiguration configuration}.
+ */
 public class ConfigurationPersistenceException extends RuntimeException {
 
     public ConfigurationPersistenceException() { }

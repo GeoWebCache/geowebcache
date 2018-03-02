@@ -798,7 +798,10 @@ public class WMSServiceTest{
         
         verify(mockTileLayer).proxyRequest(conv);
     }
-    
+
+    /**
+     * Dummy TileLayer/ProxyLayer for use in mocks
+     */
     protected static abstract class TestLayer extends TileLayer implements ProxyLayer {
     }
 }

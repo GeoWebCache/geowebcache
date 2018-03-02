@@ -21,6 +21,9 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.SimpleGridSetConfiguration;
 import org.geowebcache.grid.GridSet;
 
+/**
+ * {@link org.geowebcache.config.GridSetConfiguration} for ArcGIS cache generated gridsets
+ */
 public class ArcGISCacheGridsetConfiguration extends SimpleGridSetConfiguration {
     
     @Override
