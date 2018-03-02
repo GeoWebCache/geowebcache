@@ -19,6 +19,10 @@ package org.geowebcache.config;
 
 import org.geowebcache.GeoWebCacheException;
 
+/**
+ * An exception which indicates there was an error accessing a {@link BaseConfiguration configuration} or
+ * {@link Info configuration object}.
+ */
 public class ConfigurationException extends GeoWebCacheException {
 
     private static final long serialVersionUID = 1613753249919539845L;

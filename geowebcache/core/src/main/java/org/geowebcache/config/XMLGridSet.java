@@ -30,6 +30,8 @@ import org.geowebcache.grid.SRS;
 
 /**
  * GridSet model for XStream persistence
+ *
+ * @see GridSet
  */
 public class XMLGridSet implements Serializable {
 

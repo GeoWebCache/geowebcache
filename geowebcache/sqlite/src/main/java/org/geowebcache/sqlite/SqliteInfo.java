@@ -22,7 +22,7 @@ import java.io.File;
 import java.util.UUID;
 
 /**
- * Holder for the common properties needed to configure a aqlite based blob store.
+ * Holder for the common properties needed to configure a sqlite based blob store.
  */
 public abstract class SqliteInfo extends BlobStoreInfo {
 
