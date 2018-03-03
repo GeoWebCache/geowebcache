@@ -420,10 +420,15 @@ public class WMSGetCapabilities {
         xml.simpleElement("Format", formatStr, true);
         xml.simpleElement("Layers", layer.getName(), true);
         xml.indentElement("Styles");
-        xml.indentElement("Style");
-        xml.simpleElement("ows:Identifier", ServletUtils.URLEncode(styleName), true);
-        encodeStyleLegendGraphic(xml, legendInfo);
-        xml.endElement();
+        // let's check if a style is available
+        if (styleName != null && !styleName.trim().isEmpty()) {
+            xml.indentElement("Style");
+            // encode the style name
+            xml.simpleElement("Name", ServletUtils.URLEncode(styleName), true);
+            // encode style associated legend
+            encodeStyleLegendGraphic(xml, legendInfo);
+            xml.endElement();
+        }
 
         xml.endElement();
         xml.endElement();
