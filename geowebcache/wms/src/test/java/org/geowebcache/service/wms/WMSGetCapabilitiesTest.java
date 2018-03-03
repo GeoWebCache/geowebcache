@@ -127,15 +127,19 @@ public class WMSGetCapabilitiesTest {
         assertThat(xml, containsString("testAdv"));
         assertThat(xml, not(containsString("testNotAdv")));
 
+        // check no empty style was created
+        assertThat(document.getDocumentElement(), HasXPath.hasXPath("/WMT_MS_Capabilities/Capability/VendorSpecificCapabilities/" +
+                "TileSet[Layers='testAdv']/Styles[not(Style/Name)]"));
+
         // check for legends URL for style 1
         assertThat(document.getDocumentElement(), HasXPath.hasXPath("/WMT_MS_Capabilities/Capability/VendorSpecificCapabilities/" +
-                "TileSet/Styles/Style[Identifier='style1']/LegendURL[@width='50'][@height='100'][Format='image/png']" +
+                "TileSet/Styles/Style[Name='style1']/LegendURL[@width='50'][@height='100'][Format='image/png']" +
                 "/OnlineResource[@type='simple'][@href='htp://localhost:8080/geoserver?service=WMS&request=GetLegendGraphic&" +
                 "format=image/png&width=50&height=100&layer=testAdv&style=style1']"));
 
         // check for legends URL for style 2
         assertThat(document.getDocumentElement(), HasXPath.hasXPath("/WMT_MS_Capabilities/Capability/VendorSpecificCapabilities/" +
-                "TileSet/Styles/Style[Identifier='style2']/LegendURL[@width='50'][@height='100'][Format='image/png']" +
+                "TileSet/Styles/Style[Name='style2']/LegendURL[@width='50'][@height='100'][Format='image/png']" +
                 "/OnlineResource[@type='simple'][@href='htp://localhost:8080/geoserver?service=WMS&request=GetLegendGraphic&" +
                 "format=image/png&width=50&height=100&layer=testAdv&style=style2']"));
         
