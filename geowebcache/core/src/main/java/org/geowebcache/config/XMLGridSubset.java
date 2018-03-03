@@ -30,6 +30,11 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 
+/**
+ * GridSubSet model for XStream persistence
+ *
+ * @see GridSubset
+ */
 public class XMLGridSubset implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 2758612849329765806L;

@@ -31,6 +31,8 @@ import java.util.Hashtable;
 import java.util.List;
 
 /**
+ * {@link org.geowebcache.layer.TileLayer} implementation for ArcGIS tile layers
+ *
  * @author Gabriel Roldan
  */
 public class ArcGISCacheLayer extends AbstractTileLayer {

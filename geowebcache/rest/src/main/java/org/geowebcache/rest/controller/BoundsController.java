@@ -17,6 +17,7 @@
 
 package org.geowebcache.rest.controller;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -89,6 +90,12 @@ public class BoundsController extends GWCController {
                     HttpStatus.BAD_REQUEST);
         }
     }
+
+    /**
+     * Sets the tileLayerDispatcher, for use when constructing this controller manually (mainly in test cases)
+     * @param tileLayerDispatcher The {@link TileLayerDispatcher}
+     */
+    @VisibleForTesting
     public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {
         tld = tileLayerDispatcher;
     }
