@@ -1,3 +1,18 @@
+GeoWebCache 1.13-RC1 (2018-03-07)
+---------------------------------
+
+First release candidate for GeoWebCache 1.13
+
+Improvements:
++++++++++++++
+- Updated documentation for REST improvements
+
+Fixes:
+++++++
+- Fixed invalid Capabilities document when styles are null
+- Example configuration now uses a working WMS back end.  Thank you to Boundless for hosting it.
+
+
 GeoWebCache 1.13-beta (2018-02-20)
 ----------------------------------
 
