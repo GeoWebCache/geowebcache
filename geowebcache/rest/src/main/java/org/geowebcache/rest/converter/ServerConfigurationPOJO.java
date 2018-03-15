@@ -157,7 +157,7 @@ public class ServerConfigurationPOJO implements ServerConfiguration {
     }
 
     @Override
-    public void setFullWMS(Boolean isFullWMS) throws IOException {
+    public void setFullWMS(Boolean fullWMS) throws IOException {
         this.fullWMS = fullWMS;
     }
 
