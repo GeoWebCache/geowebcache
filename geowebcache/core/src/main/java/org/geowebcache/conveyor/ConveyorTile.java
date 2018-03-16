@@ -158,7 +158,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     }
 
     public synchronized GridSubset getGridSubset() {
-        if (gridSubset == null) {
+        if (gridSubset == null && gridSetId!= null) {
             gridSubset = tileLayer.getGridSubset(gridSetId);
         }
 
