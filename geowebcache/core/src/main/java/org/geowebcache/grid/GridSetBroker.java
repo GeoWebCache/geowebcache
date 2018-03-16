@@ -183,11 +183,33 @@ public class GridSetBroker implements ConfigurationAggregator<GridSetConfigurati
     }
     
     public GridSet getWorldEpsg4326() {
-        return getDefaults().worldEpsg4326();
+        // get the internal default. We need it's name, if nothing else.
+        final GridSet internalDefault4326GridSet = getDefaults().worldEpsg4326();
+        // get the name of the internal default as it may not always be "EPSG:4326"
+        final String internalDefault4326Name = internalDefault4326GridSet.getName();
+        // Use the highest priority EPSG:4326 gridset we have (either an overriden one, or the defaults)
+        Optional<GridSet> gridSet = getGridSet(internalDefault4326Name);
+        if (gridSet.isPresent()) {
+            return gridSet.get();
+        }
+        // probably won't ever hit this, but if 4326 isn't in the configuration at this point, just return the internal
+        // defaults.
+        return internalDefault4326GridSet;
     }
 
     public GridSet getWorldEpsg3857() {
-        return getDefaults().worldEpsg3857();
+        // get the internal default. We need it's name, if nothing else.
+        final GridSet internalDefault3857GridSet = getDefaults().worldEpsg3857();
+        // get the name of the internal default as it may not always be "EPSG:3857"
+        final String internalDefault3857Name = internalDefault3857GridSet.getName();
+        // Use the highest priority EPSG:3857 gridset we have (either an overriden one, or the defaults)
+        Optional<GridSet> gridSet = getGridSet(internalDefault3857Name);
+        if (gridSet.isPresent()) {
+            return gridSet.get();
+        }
+        // probably won't ever hit this, but if 3857 isn't in the configuration at this point, just return the internal
+        // defaults.
+        return internalDefault3857GridSet;
     }
 
     
