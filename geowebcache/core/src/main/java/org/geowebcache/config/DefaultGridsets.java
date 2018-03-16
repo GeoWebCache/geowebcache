@@ -243,7 +243,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
 
     @Override
     public int getPriority(Class<? extends BaseConfiguration> clazz) {
-        return GeoWebCacheExtensionPriority.HIGHEST;
+        return GeoWebCacheExtensionPriority.LOWEST;
     }
 
     @Override
@@ -252,7 +252,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
 
     @Override
     public int getPriority() {
-        return GeoWebCacheExtensionPriority.HIGHEST;
+        return GeoWebCacheExtensionPriority.LOWEST;
     }
     
     
