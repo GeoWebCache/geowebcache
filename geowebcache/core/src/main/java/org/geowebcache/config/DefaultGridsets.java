@@ -68,7 +68,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
 
         }
         
-        WORLD_EPSG4326 = GridSetFactory.createGridSet("EPSG:4326", SRS.getEPSG4326(),
+        WORLD_EPSG4326 = GridSetFactory.createGridSet(unprojectedName, SRS.getEPSG4326(),
                 BoundingBox.WORLD4326, false, GridSetFactory.DEFAULT_LEVELS, null,
                 GridSetFactory.DEFAULT_PIXEL_SIZE_METER, 256, 256, true);
         WORLD_EPSG4326.setDescription("A default WGS84 tile matrix set where the first zoom level "
