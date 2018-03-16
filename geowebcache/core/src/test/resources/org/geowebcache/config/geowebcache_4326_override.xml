@@ -90,7 +90,7 @@
       <tileHeight>200</tileHeight>
       <tileWidth>200</tileWidth>
     </gridSet>
-    <!-- Override EPSG:4326 default with something differen -->
+    <!-- Override EPSG:4326 default with something different -->
     <gridSet>
       <name>EPSG:4326</name>
       <description>A default WGS84 tile matrix set where the first zoom level covers the world with two tiles

@@ -400,25 +400,30 @@ public class XMLConfigurationTest {
         // get the GridSet for 4326, should be the override in the test XML file
         GridSet override4326 = gridSetBroker.get("EPSG:4326");
         assertNotNull(override4326);
-        // get the default GridSet for 4326.
-        GridSet worldEpsg4326 = defaultGridSets.worldEpsg4326();
+        // make sure GridSetBroker returns the overriden 4326 when getWorld4326() is used, so that the same 4326 is used
+        // when asking by name, or convenience method
+        GridSet worldEpsg4326 = gridSetBroker.getWorldEpsg4326();
+        assertNotNull(worldEpsg4326);
+        assertEquals(override4326, worldEpsg4326);
+        // get the internal default GridSet for 4326.
+        GridSet internal4326 = defaultGridSets.worldEpsg4326();
         // override should have a different resolution list
-        assertEquals("Unexpected number of Default EPSG:4326 reslution levels", 22, worldEpsg4326.getNumLevels());
-        assertEquals("Unexpected number of Overriden EPSG:4326 reslution levels", 14, override4326.getNumLevels());
+        assertEquals("Unexpected number of Default EPSG:4326 resolution levels", 22, internal4326.getNumLevels());
+        assertEquals("Unexpected number of Overriden EPSG:4326 resolution levels", 14, override4326.getNumLevels());
         // first level on override should be 1.40625
         final Grid overrideLevel = override4326.getGrid(0);
-        final Grid defaultLevel = worldEpsg4326.getGrid(0);
+        final Grid defaultLevel = internal4326.getGrid(0);
         assertEquals("Unexpected default resolution level 0", 0.703125, defaultLevel.getResolution(), 0d);
         assertEquals("Unexpected override resolution level 0", 1.40625, overrideLevel.getResolution(), 0d);
         // ensure descriptions are expected
         final String overrideDescription = override4326.getDescription();
-        final String defaultDescription = worldEpsg4326.getDescription();
+        final String defaultDescription = internal4326.getDescription();
         assertFalse("Default EPSG:4326 GridSet description should not contain 'OVERRIDE'", defaultDescription.contains(
             "OVERRIDE"));
         assertTrue("Overriden EPSG:4326 GridSet description should contain 'OVERRIDE'", overrideDescription.contains(
             "OVERRIDE"));
     }
-    
+
     @Test
     public void testNoBlobStores() throws Exception{
         assertNotNull(config.getBlobStores());
