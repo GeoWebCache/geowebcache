@@ -47,7 +47,7 @@ copyright = u'OpenGeo, License: Creative Commons 3.0 - Attribution Share Alike'
 # The short X.Y version.
 version = '1.13'
 # The full version, including alpha/beta/rc tags.
-release = '1.13.x'
+release = '1.13.0'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
