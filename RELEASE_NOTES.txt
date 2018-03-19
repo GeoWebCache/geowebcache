@@ -1,3 +1,18 @@
+GeoWebCache 1.13.0 (2018-03-19)
+-------------------------------
+
+First release of the 1.13.x series
+
+Improvements:
++++++++++++++
+- Allow any of the internal default GridSets to  be overridden in geowebcache.xml.
+
+Fixes:
+++++++
+- Null check gridsetId in ConveyorTile before getting grid subset. Fixes #621
+
+
+
 GeoWebCache 1.13-RC1 (2018-03-07)
 ---------------------------------
 
