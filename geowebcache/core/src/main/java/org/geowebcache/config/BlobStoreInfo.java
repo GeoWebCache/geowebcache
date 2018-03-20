@@ -96,7 +96,7 @@ public abstract class BlobStoreInfo implements Serializable, Cloneable, Info {
      * Set this BlobStoreIngo's unique name.
      * @param name The unique name to set.
      */
-    void setName(String name) {
+    public void setName(String name) {
         this.name = name;
     }
     /**
