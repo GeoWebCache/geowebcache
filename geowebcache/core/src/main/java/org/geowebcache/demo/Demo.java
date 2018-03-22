@@ -443,7 +443,7 @@ public class Demo {
 
             if (gridSubset.fullGridSetCoverage()) {
                 buf.append("      origins: [");
-                for (int i = 0; i < gridSet.getNumLevels(); i++) {
+                for (int i = 0; i < gridSubset.getResolutions().length; i++) {
                     if (i != 0) {
                         buf.append(",");
                     }
