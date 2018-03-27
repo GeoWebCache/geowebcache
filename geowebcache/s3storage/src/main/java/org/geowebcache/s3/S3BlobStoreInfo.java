@@ -302,6 +302,15 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
     public void setAccess(Access access) {
         this.access = access;
     }
+    
+    /**
+     * Gets whether access should be private or public
+     *
+     * @return whether access is private or public
+     */
+    public Access getAccess() {
+        return this.access;
+    }
 
     /**
      * Checks if gzip compression is used
