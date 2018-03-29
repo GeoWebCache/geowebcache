@@ -22,7 +22,6 @@ import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.util.TestUtils;
-import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -35,6 +34,8 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.*;
 
 public class ServerConfigurationTest {
+
+    private static final String VERSION_PATTERN = "1(\\.\\d+)+(\\-\\w+)*";
 
     ServerConfiguration config;
 
@@ -90,8 +91,7 @@ public class ServerConfigurationTest {
         backendTimeout = config.getBackendTimeout();
         assertEquals(backendTimeout, (Integer)60);
 
-        String version = config.getVersion();
-        assertThat(config, hasProperty("version", TestUtils.matchesRegex("1\\.\\d+\\.\\d+")));
+        assertThat(config, hasProperty("version", TestUtils.matchesRegex(VERSION_PATTERN)));
 
         // Initialize to reload the configuration from the XML file and test persistence
         config.afterPropertiesSet();
@@ -102,7 +102,7 @@ public class ServerConfigurationTest {
         assertTrue((config.isWmtsCiteCompliant()));
         assertTrue(config.isCacheBypassAllowed());
         assertEquals(config.getBackendTimeout(), (Integer) 60);
-        assertThat(config.getVersion(), TestUtils.matchesRegex("1\\.\\d+\\.\\d+"));
+        assertThat(config.getVersion(), TestUtils.matchesRegex(VERSION_PATTERN));
     }
 
     protected ServerConfiguration getConfig() throws Exception {
