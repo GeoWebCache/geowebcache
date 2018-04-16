@@ -377,7 +377,11 @@ public class WMTSGetCapabilities {
         xml.indentElement("ows:Operation").attribute("name", operationName);
         xml.indentElement("ows:DCP");
         xml.indentElement("ows:HTTP");
-        xml.indentElement("ows:Get").attribute("xlink:href", baseUrl+"?");
+        if (baseUrl.contains("?")) {
+            xml.indentElement("ows:Get").attribute("xlink:href", baseUrl + "&");
+        } else {
+            xml.indentElement("ows:Get").attribute("xlink:href", baseUrl + "?");
+        }
         xml.indentElement("ows:Constraint").attribute("name", "GetEncoding");
         xml.indentElement("ows:AllowedValues");
         xml.simpleElement("ows:Value", "KVP", true);
