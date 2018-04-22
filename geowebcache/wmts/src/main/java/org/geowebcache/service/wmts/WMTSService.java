@@ -182,8 +182,9 @@ public class WMTSService extends Service  {
 
         if (req.equals("gettile")) {
             if (isCitecompliant) {
+                boolean isRestRequest = isRestRequest(request);
                 // we need to make sure that a style was provided, otherwise GWC will just assume the default one
-                if (getParameterValue("Style", request) == null) {
+                if (!isRestRequest && getParameterValue("Style", request) == null) {
                     // mandatory STYLE query parameter is missing
                     throw new OWSException(400, "MissingParameterValue", "Style",
                             "Mandatory Style query parameter not provided.");
@@ -413,6 +414,15 @@ public class WMTSService extends Service  {
     }
 
     /**
+     * Return the GWC configuration used by this WMTS service instance.
+     * 
+     * @return GWC main configuration
+     */
+    ServerConfiguration getMainConfiguration() {
+        return mainConfiguration;
+    }
+
+    /**
      * Helper method that checks if WMTS implementation should be CITE strictly compliant.
      *
      * @return TRUE if GWC main configuration or at least one of the WMTS extensions forces
@@ -437,6 +447,10 @@ public class WMTSService extends Service  {
      * Helper method that performs CITE tests mandatory validations.
      */
     private static void performCiteValidation(HttpServletRequest request) throws OWSException {
+        // paths validation are not done for WMTS REST API
+        if (isRestRequest(request)) {
+            return;
+        }
         // base path should end with WMTS
         String basePath = request.getPathInfo();
         String[] paths = basePath.split("/");
@@ -447,6 +461,15 @@ public class WMTSService extends Service  {
         }
         // service query parameter is mandatory and should be equal to WMTS
         validateWmtsServiceName("wmts", request);
+    }
+
+    /**
+     * Helper method that just checks if current WMTS request is in the context
+     * of a REST API call, certain OGC validations don't make sense in that context.
+     */
+    private static boolean isRestRequest(HttpServletRequest request) {
+        // rest/wmts is always lowercase
+        return request.getPathInfo().contains("rest/wmts");
     }
 
     /**
