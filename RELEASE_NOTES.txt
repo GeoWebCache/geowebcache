@@ -1,3 +1,18 @@
+GeoWebCache 1.12.3 (2018-04-22)
+-------------------------------
+
+First maintenance release of 1.12 branch
+
+
+Fixes:
+++++++
+- S3 storage, ensure all connection/streams are closed
+- Seed task UI always tries to kill thread 1
+- Example configuration references WMS that no longer exists, use an available one instead
+- WMS capabilities contains invalid <ows:Identifier/> element
+- Null check gridsetId in ConveyorTile before getting grid subset
+- Fix resoluiton level lookup when layer extent includes gridset bbox
+
 GeoWebCache 1.12.2 (2018-01-22)
 -------------------------------
 
