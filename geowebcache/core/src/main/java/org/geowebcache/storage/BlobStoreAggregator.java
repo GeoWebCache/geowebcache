@@ -17,7 +17,6 @@
  */
 package org.geowebcache.storage;
 
-import com.google.common.base.Preconditions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -35,6 +34,7 @@ import org.springframework.util.Assert;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -73,7 +73,7 @@ public class BlobStoreAggregator {
      */
     public void addConfiguration(BlobStoreConfiguration config) {
         initialize(config);
-        List<BlobStoreConfiguration> newList = new ArrayList<BlobStoreConfiguration>(configs);
+        List<BlobStoreConfiguration> newList = new ArrayList<BlobStoreConfiguration>(getConfigs());
         newList.add(config);
         this.configs = newList;
     }
@@ -84,8 +84,7 @@ public class BlobStoreAggregator {
      * @return True if a {@link BlobStoreInfo} currently exists with the unique name provided, false otherwise.
      */
     public boolean blobStoreExists(final String blobStoreInfoName) {
-        for (int i = 0; i < configs.size(); i++) {
-            BlobStoreConfiguration configuration = configs.get(i);
+        for (BlobStoreConfiguration configuration :getConfigs()) {
             Optional<BlobStoreInfo> blob = configuration.getBlobStore(blobStoreInfoName);
             if (blob.isPresent()) {
                 return true;
@@ -101,20 +100,18 @@ public class BlobStoreAggregator {
      *             if no such blob store info exists
      */
     public BlobStoreInfo getBlobStore(final String blobStoreName) throws GeoWebCacheException {
-        Preconditions.checkNotNull(blobStoreName, "blobStoreName is null");
-
-        for (int i = 0; i < configs.size(); i++) {
-            BlobStoreConfiguration configuration = configs.get(i);
-            Optional<BlobStoreInfo> blob = configuration.getBlobStore(blobStoreName);
-            if (blob.isPresent()) {
-                return blob.get();
-            }
-        }
-        throw new GeoWebCacheException("Thread " + Thread.currentThread().getId()
-                + " Unknown blob store " + blobStoreName + ". Check the logfiles,"
-                + " it may not have loaded properly.");
+        Objects.requireNonNull(blobStoreName, "blobStoreName is null");
+        
+        return getConfigs().stream()
+            .map(c->c.getBlobStore(blobStoreName))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .findFirst()
+            .orElseThrow(()->new GeoWebCacheException("Thread " + Thread.currentThread().getId()
+                    + " Unknown blob store " + blobStoreName + ". Check the logfiles,"
+                    + " it may not have loaded properly."));
     }
-
+    
     /***
      * Reinitialization is tricky, because we can't really just lock all the blobstores, because this
      * would cause people to queue on something that we may not want to exist post reinit.
@@ -135,8 +132,7 @@ public class BlobStoreAggregator {
      */
     public int getBlobStoreCount() {
         int count = 0;
-        for (int i = 0; i < configs.size(); i++) {
-            BlobStoreConfiguration configuration = configs.get(i);
+        for (BlobStoreConfiguration configuration :getConfigs()) {
             count += configuration.getBlobStoreCount();
         }
         return count;
@@ -148,8 +144,7 @@ public class BlobStoreAggregator {
      */
     public List<String> getBlobStoreNames() {
         List<String> names = new ArrayList<>();
-        for (int i = 0; i < configs.size(); i++) {
-            BlobStoreConfiguration configuration = configs.get(i);
+        for (BlobStoreConfiguration configuration :getConfigs()) {
             names.addAll(configuration.getBlobStoreNames());
         }
         return names;
@@ -167,9 +162,9 @@ public class BlobStoreAggregator {
     @SuppressWarnings("unchecked")
     public Iterable<BlobStoreInfo> getBlobStores() {
         List<Iterable<BlobStoreInfo>> perConfigBlobStores = new ArrayList<Iterable<BlobStoreInfo>>(
-                configs.size());
+                getConfigs().size());
 
-        for (BlobStoreConfiguration config : configs) {
+        for (BlobStoreConfiguration config : getConfigs()) {
             perConfigBlobStores.add((Iterable<BlobStoreInfo>) config.getBlobStores());
         }
 
@@ -179,7 +174,7 @@ public class BlobStoreAggregator {
     private void initialize() {
         log.debug("Thread initBlobStore(), initializing");
 
-        for (BlobStoreConfiguration config : configs) {
+        for (BlobStoreConfiguration config : getConfigs()) {
             initialize(config);
         }
     }
@@ -240,7 +235,7 @@ public class BlobStoreAggregator {
      */
     public synchronized void removeBlobStore(final String blobStoreName)
             throws IllegalArgumentException {
-        for (BlobStoreConfiguration config : configs) {
+        for (BlobStoreConfiguration config : getConfigs()) {
             if (config.containsBlobStore(blobStoreName)) {
                 config.removeBlobStore(blobStoreName);
                 return;
@@ -256,7 +251,7 @@ public class BlobStoreAggregator {
      *         store aggregator.
      */
     public synchronized void addBlobStore(final BlobStoreInfo bs) throws IllegalArgumentException {
-        for (BlobStoreConfiguration c : configs) {
+        for (BlobStoreConfiguration c : getConfigs()) {
             if (c.canSave(bs)) {
                 c.addBlobStore(bs);
                 return;
@@ -319,7 +314,7 @@ public class BlobStoreAggregator {
      */
     public BlobStoreConfiguration getConfiguration(final String blobStoreName) throws IllegalArgumentException {
         Assert.notNull(blobStoreName, "blobStoreName is null");
-        for (BlobStoreConfiguration c : configs) {
+        for (BlobStoreConfiguration c : getConfigs()) {
             if (c.containsBlobStore(blobStoreName)) {
                 return c;
             }
@@ -334,7 +329,7 @@ public class BlobStoreAggregator {
      * @param listener the listener
      */
     public void addListener(BlobStoreConfigurationListener listener) {
-        for (BlobStoreConfiguration c : configs) {
+        for (BlobStoreConfiguration c : getConfigs()) {
             c.addBlobStoreListener(listener);
         }
     }
@@ -346,8 +341,16 @@ public class BlobStoreAggregator {
      * @param listener the listener
      */
     public void removeListener(BlobStoreConfigurationListener listener) {
-        for (BlobStoreConfiguration c : configs) {
+        for (BlobStoreConfiguration c : getConfigs()) {
             c.removeBlobStoreListener(listener);
         }
+    }
+
+    /**
+     * Get a list of all the configurations that are being aggregated.
+     * @return
+     */
+    protected List<BlobStoreConfiguration> getConfigs() {
+        return configs;
     }
 }
