@@ -681,6 +681,8 @@ public class WMTSGetCapabilities {
                 }
                 xml.endElement();
             }
+            xml.simpleElement("TileMatrixSetZoomStart", Integer.toString(gridSubset.getZoomStart()));
+            xml.simpleElement("TileMatrixSetZoomStop", Integer.toString(gridSubset.getZoomStop()));
             xml.endElement("TileMatrixSetLink");
          }
      }
