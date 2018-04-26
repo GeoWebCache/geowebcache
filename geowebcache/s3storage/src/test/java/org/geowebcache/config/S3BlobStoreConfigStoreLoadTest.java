@@ -86,9 +86,8 @@ public class S3BlobStoreConfigStoreLoadTest {
     }
 
     private void saveConfig(S3BlobStoreInfo store1, S3BlobStoreInfo store2) throws IOException {
-        List<BlobStoreInfo> blobStores = config.getBlobStores();
-        blobStores.add(store1);
-        blobStores.add(store2);
+        config.addBlobStore(store1);
+        config.addBlobStore(store2);
     }
 
     private void validateAndLoadSavedConfig()
