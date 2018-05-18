@@ -1,3 +1,23 @@
+GeoWebCache 1.13.1 (2018-05-18)
+-------------------------------
+
+1.13 stable branch patch release
+
+Improvements:
++++++++++++++
+- BlobStoreInfo.setName made public
+- Accessor for S3 Access level
+- Upgrading to JAI-EXT 1.0.22
+- Make BlobStoreAggregator configurations accessible to subclasses
+
+Fixes:
+++++++
+- Fix resoluiton level lookup when layer extent includes gridset bbox
+- Relax the regexp used to check version numbers in unit test so they don't break on version changes
+- Fix broken Unit test in S3 BlobStore
+- fix for AuthKey URLs
+
+
 GeoWebCache 1.13.0 (2018-03-19)
 -------------------------------
 
