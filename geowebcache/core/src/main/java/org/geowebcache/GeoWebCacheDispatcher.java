@@ -90,6 +90,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
     private StorageBroker storageBroker;
 
+    private BlobStoreAggregator blobStoreAggregator;
+
     private RuntimeStats runtimeStats;
 
     private Map<String, Service> services = null;
@@ -109,13 +111,14 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * @param gridSetBroker
      */
     public GeoWebCacheDispatcher(TileLayerDispatcher tileLayerDispatcher,
-            GridSetBroker gridSetBroker, StorageBroker storageBroker,
+            GridSetBroker gridSetBroker, StorageBroker storageBroker, BlobStoreAggregator blobStoreAggregator,
             ServerConfiguration mainConfiguration, RuntimeStats runtimeStats) {
         super();
         this.tileLayerDispatcher = tileLayerDispatcher;
         this.gridSetBroker = gridSetBroker;
         this.runtimeStats = runtimeStats;
         this.storageBroker = storageBroker;
+        this.blobStoreAggregator = blobStoreAggregator;
         this.mainConfiguration = mainConfiguration;
         
         if (mainConfiguration.isRuntimeStatsEnabled()) {
@@ -512,14 +515,14 @@ public class GeoWebCacheDispatcher extends AbstractController {
         if(storageBroker instanceof DefaultStorageBroker) {
             BlobStore bStore = ((DefaultStorageBroker) storageBroker).getBlobStore();
             if(bStore instanceof CompositeBlobStore) {
-                for(BlobStoreInfo bsConfig: config.getBlobStores()) {
+                for(BlobStoreInfo bsConfig: blobStoreAggregator.getBlobStores()) {
                     blobStoreLocations.put(bsConfig.getName(), bsConfig.getLocation());
                 }
             }
         }
         try {
             configLoc = config.getConfigLocation();
-        } catch (ConfigurationException ex) {
+        } catch (ConfigurationException | NullPointerException ex) {
             configLoc = "Error";
             log.error("Could not find config location", ex);
         }            
