@@ -493,6 +493,7 @@ public class WMSServiceTest{
         req.addParameter("version", new String[]{"1.1.1"});
         req.addParameter("request", new String[]{"GetCapabilities"});
         req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request="+"GetCapabilities");
+        req.addHeader("Host", "testhost");
         
         ConveyorTile conv = service.getConveyor(req, resp);
         
@@ -525,6 +526,7 @@ public class WMSServiceTest{
         req.addParameter("version", new String[]{"1.1.1"});
         req.addParameter("request", new String[]{"GetCapabilities"});
         req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request="+"GetCapabilities");
+        req.addHeader("Host", "testhost");
         
         ConveyorTile conv = service.getConveyor(req, resp);
         
@@ -578,6 +580,7 @@ public class WMSServiceTest{
         req.addParameter("height", "60");
         req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request=GetMap&layers="+layerName+"&format=image/png&srs="+SRS.getEPSG4326().toString()
                 +"&bbox=0,0,40,60&width=40&height=60");
+        req.addHeader("Host", "testhost");
 
         ConveyorTile conv = service.getConveyor(req, resp);
         
@@ -636,6 +639,7 @@ public class WMSServiceTest{
         req.addParameter("height", "60");
         req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request=GetMap&layers="+layerName+"&format=image/png&srs="+SRS.getEPSG4326().toString()
                 +"&bbox=0,0,40,60&width=40&height=60");
+        req.addHeader("Host", "testhost");
 
         ConveyorTile conv = service.getConveyor(req, resp);
         
@@ -688,7 +692,8 @@ public class WMSServiceTest{
         req.addParameter("info_format", XMLMime.gml.getMimeType());
         req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request=GetFeatureInfo&layers="+layerName+"&format=image/png&srs="+SRS.getEPSG4326().toString()
                 +"&bbox=0,0,40,60&width=40&height=60&x=3&y=3");
-        
+        req.addHeader("Host", "testhost");
+
         ConveyorTile conv = service.getConveyor(req, resp);
         
         when(tileLayer.getFeatureInfo(any(ConveyorTile.class), any(BoundingBox.class), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt())).thenReturn(new ByteArrayResource("TEST FEATURE INFO".getBytes()));
@@ -740,7 +745,8 @@ public class WMSServiceTest{
         req.addParameter("info_format", XMLMime.gml.getMimeType());
         req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request=GetFeatureInfo&layers="+layerName+"&format=image/png&srs="+SRS.getEPSG4326().toString()
                 +"&bbox=0,0,40,60&width=40&height=60&x=3&y=3");
-        
+        req.addHeader("Host", "testhost");
+
         ConveyorTile conv = service.getConveyor(req, resp);
         
         when(tileLayer.getFeatureInfo(any(ConveyorTile.class), any(BoundingBox.class), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt())).thenReturn(new ByteArrayResource("TEST FEATURE INFO".getBytes()));
@@ -766,6 +772,7 @@ public class WMSServiceTest{
         req.addParameter("request", new String[]{requestName});
         req.addParameter("layers", new String[]{layerName});
         req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request="+requestName+"&layers="+layerName);
+        req.addHeader("Host", "testhost");
         
         ConveyorTile conv = service.getConveyor(req, resp);
         
@@ -789,6 +796,7 @@ public class WMSServiceTest{
         req.addParameter("request", new String[]{requestName});
         req.addParameter("layers", new String[]{layerName});
         req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request="+requestName+"&layers="+layerName);
+        req.addHeader("Host", "testhost");
         
         ConveyorTile conv = service.getConveyor(req, resp);
         
