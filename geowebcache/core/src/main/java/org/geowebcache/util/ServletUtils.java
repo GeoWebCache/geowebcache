@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,6 +41,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.service.HttpErrorCodeException;
+import org.geowebcache.service.ServiceException;
 
 public class ServletUtils {
     private static Log log = LogFactory.getLog(org.geowebcache.util.ServletUtils.class);
@@ -457,9 +461,13 @@ public class ServletUtils {
      * Generate the base url of the request, minus the context path
      * @param req servlet request
      * @return Base url of request, minus the context path
+     * @throws GeoWebCacheException 
      */
     public static String getServletBaseURL(HttpServletRequest req, String servletPrefix) {
         String result;
+        if(Objects.isNull(req.getHeader("Host"))) {
+            throw new HttpErrorCodeException(400, "HTTP Host Header missing");
+        }
         result = req.getScheme() + "://" + req.getHeader("Host");
         
         if(servletPrefix!=null){
