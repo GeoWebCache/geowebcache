@@ -136,14 +136,14 @@ public class WMTSRestTest {
         BufferedImage originalImage = ImageIO.read(imgPath);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(originalImage, "png", baos);
-        mockMvc.perform(get("/rest/wmts/mockLayer/style-a/EPSG:4326/EPSG:4326:0/0/0/0/0?format=text/plain"))
+        mockMvc.perform(get("/rest/wmts/mockLayer/style-a/EPSG:4326/EPSG:4326:0/0/0/0/0?format=text/plain").header("Host", new String("localhost")))
                 .andExpect(status().isOk()).andExpect(content().contentType("text/plain"));
     }
 
     @Test
     public void testGetInfoWithoutStyle() throws Exception {
         MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        mockMvc.perform(get("/rest/wmts/mockLayer/EPSG:4326/EPSG:4326:0/0/0/0/0?format=text/plain"))
+        mockMvc.perform(get("/rest/wmts/mockLayer/EPSG:4326/EPSG:4326:0/0/0/0/0?format=text/plain").header("Host", new String("localhost")))
                 .andExpect(status().isOk()).andExpect(content().contentType("text/plain"));
     }
 
