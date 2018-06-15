@@ -941,7 +941,6 @@ public class WMTSServiceTest {
                 + "&layer="+layerName+"&format=image/png&tilematrixset=testGridset"
                 + "&tilematrix=testGridset:2&tilerow=3&tilecol=4&infoformat="
                 + XMLMime.gml.getMimeType());
-        req.addHeader("Host", "testhost");
         
         when(subset.getNumTilesHigh(2)).thenReturn(7L);
         when(subset.getGridIndex("testGridset:2")).thenReturn(2L);
@@ -1011,7 +1010,6 @@ public class WMTSServiceTest {
                 + "&layer="+layerName+"&format=image/png&tilematrixset=testGridset"
                 + "&tilematrix=testGridset:2&tilerow=3&tilecol=4&infoformat="
                 + XMLMime.gml.getMimeType());
-        req.addHeader("Host", "testhost");
         
         when(subset.getNumTilesHigh(2)).thenReturn(7L);
         when(subset.getGridIndex("testGridset:2")).thenReturn(2L);

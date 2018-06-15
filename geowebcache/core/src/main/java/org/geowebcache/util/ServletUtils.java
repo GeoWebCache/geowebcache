@@ -19,8 +19,6 @@ package org.geowebcache.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.ParseException;
@@ -33,7 +31,6 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,9 +38,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.service.HttpErrorCodeException;
-import org.geowebcache.service.ServiceException;
 
 public class ServletUtils {
     private static Log log = LogFactory.getLog(org.geowebcache.util.ServletUtils.class);
@@ -461,47 +455,38 @@ public class ServletUtils {
      * Generate the base url of the request, minus the context path
      * @param req servlet request
      * @return Base url of request, minus the context path
-     * @throws GeoWebCacheException 
      */
     public static String getServletBaseURL(HttpServletRequest req, String servletPrefix) {
         String result;
-        if(Objects.isNull(req.getHeader("Host"))) {
-            throw new HttpErrorCodeException(400, "HTTP Host Header missing");
+        if (req.getServerPort() == 80 || req.getServerPort() == 443) {
+            result = req.getScheme() + "://" + req.getServerName();
+        } else {
+            result = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
         }
-        result = req.getScheme() + "://" + req.getHeader("Host");
-        
-        if(servletPrefix!=null){
+        if(servletPrefix==null){
+            return result;
+        } else {
             // If the servlet is embeded within another, include the context path of the parent 
             // servlet in the base.
             String reqUrl = req.getContextPath();
-            result = result+reqUrl;
+            return result+reqUrl;
         }
-        
-        try {
-        	URI url = new URI(result);
-        	return url.toString();
-        } catch(URISyntaxException e) {
-        	return "";	// prevents passing invalid stuff via nasty headers
-        }
-    }    
-
+    }
+    
     /**
      * Generate the context path of the request, less the specified trailing path
      * @param req
      * @param trailingPath
      */
     public static String getServletContextPath(HttpServletRequest req, String trailingPath, String servletPrefix) {
-        URI urlTokens = null;
-        try {
-        	urlTokens = new URI(req.getRequestURL().toString());
-        } catch(URISyntaxException e) {
-        	return "";	// Prevents passing nasty things in 
+        String reqUrl = req.getRequestURL().toString();
+        String servletBase = ServletUtils.getServletBaseURL(req, servletPrefix);
+        int prefixIdx = servletBase.length();
+        int suffixIdx = reqUrl.indexOf(trailingPath);
+        String context = null;
+        if(suffixIdx > -1){
+            context = reqUrl.substring(prefixIdx, suffixIdx);
         }
-        String path = urlTokens.getPath();
-        int suffixIdx = path.indexOf(trailingPath);
-        if (suffixIdx == -1) 
-        	return "";
-        String context = path.substring(0,suffixIdx);
         return context;
     }
 
@@ -516,7 +501,7 @@ public class ServletUtils {
         String context = "";
         for (String trailingPath : trailingPaths) {
             context = getServletContextPath(req, trailingPath, servletPrefix);
-            if (context.length() > 0) {
+            if (context != null) {
                 break;
             }
         }

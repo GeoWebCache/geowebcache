@@ -233,7 +233,6 @@ public class TMSServiceTest extends TestCase {
         when(req.getServerPort()).thenReturn(8080);
         when(req.getContextPath()).thenReturn("/mycontext");
         when(req.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/mycontext/service/tms/1.0.0"));
-        when(req.getHeader("Host")).thenReturn("localhost:8080");
         List<String> gridSetNames = Arrays.asList("EPSG:4326");
         TileLayer tileLayer = mockTileLayer(tld, gridsetBroker, "mockLayer", gridSetNames, Collections.<ParameterFilter>emptyList());
         when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
@@ -277,7 +276,6 @@ public class TMSServiceTest extends TestCase {
         when(req.getScheme()).thenReturn("http");
         when(req.getServerName()).thenReturn("localhost");
         when(req.getServerPort()).thenReturn(8080);
-        when(req.getHeader("Host")).thenReturn("localhost:8080");
         when(req.getContextPath()).thenReturn("/mycontext");
         when(req.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/mycontext/service/tms/1.0.0"));
         Conveyor conv = service.getConveyor(req, resp);
@@ -310,7 +308,6 @@ public class TMSServiceTest extends TestCase {
         when(req.getScheme()).thenReturn("http");
         when(req.getServerName()).thenReturn("localhost");
         when(req.getServerPort()).thenReturn(8080);
-        when(req.getHeader("Host")).thenReturn("localhost:8080");
         when(req.getContextPath()).thenReturn("/mycontext");
         when(req.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/mycontext/service/tms/1.0.0/customLayer2@EPSG:4326@jpeg-png"));
         when(req.getPathInfo()).thenReturn("/service/tms/1.0.0/customLayer2@EPSG:4326@jpeg-png");
@@ -347,7 +344,6 @@ public class TMSServiceTest extends TestCase {
         when(req.getScheme()).thenReturn("http");
         when(req.getServerName()).thenReturn("localhost");
         when(req.getServerPort()).thenReturn(8080);
-        when(req.getHeader("Host")).thenReturn("localhost:8080");
         when(req.getContextPath()).thenReturn("/mycontext");
 
         Conveyor conv = service.getConveyor(req, resp);
