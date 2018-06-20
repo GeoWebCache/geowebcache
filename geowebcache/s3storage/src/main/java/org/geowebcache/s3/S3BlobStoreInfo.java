@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import javax.annotation.Nullable;
 
+import com.amazonaws.auth.*;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -34,8 +35,6 @@ import org.geowebcache.storage.StorageException;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 
@@ -372,7 +371,6 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
      * @return {@link AmazonS3Client} constructed from this {@link S3BlobStoreInfo}.
      */
     public AmazonS3Client buildClient() {
-        AWSCredentials awsCredentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
         ClientConfiguration clientConfig = new ClientConfiguration();
         if (null != useHTTPS) {
             clientConfig.setProtocol(useHTTPS ? Protocol.HTTPS : Protocol.HTTP);
@@ -392,7 +390,23 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
             clientConfig.setUseGzip(useGzip);
         }
         log.debug("Initializing AWS S3 connection");
-        return new AmazonS3Client(awsCredentials, clientConfig);
+        return new AmazonS3Client(getCredentialsProvider(), clientConfig);
     }
 
+    private AWSCredentialsProvider getCredentialsProvider() {
+        if (null != awsSecretKey && null != awsAccessKey) {
+            return new AWSCredentialsProvider() {
+
+                @Override
+                public AWSCredentials getCredentials() {
+                    return new BasicAWSCredentials(awsAccessKey, awsSecretKey);
+                }
+
+                @Override
+                public void refresh() {
+                }
+            };
+        }
+        return new DefaultAWSCredentialsProviderChain();
+    }
 }
