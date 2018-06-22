@@ -25,7 +25,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.storage.GeometryRasterMaskBuilder;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * Consumes a GeoRSS feed and creates a tile range filter based on the feed's geometries for the
