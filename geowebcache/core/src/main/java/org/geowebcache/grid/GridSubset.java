@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -58,6 +59,11 @@ public class GridSubset {
         this.fullGridSetCoverage = fullCoverage;
         this.minCachedZoom = minCachedZoom;
         this.maxCachedZoom = maxCachedZoom;
+    }
+    
+    public GridSubset(GridSubset subSet) {
+        this(subSet.gridSet, new TreeMap<>(subSet.gridCoverageLevels), subSet.subSetExtent, 
+                subSet.fullGridSetCoverage, subSet.minCachedZoom, subSet.maxCachedZoom);
     }
 
     public BoundingBox boundsFromIndex(long[] tileIndex) {
