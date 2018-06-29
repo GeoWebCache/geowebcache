@@ -11,7 +11,7 @@
 
   <properties>
     <gt.version>20-SNAPSHOT</gt.version>
-    <jts.version>1.15.0</jts.version>
+    <jts.version>1.15.1</jts.version>
     <jaiext.version>1.0-SNAPSHOT</jaiext.version>
     <spring.version>4.2.5.RELEASE</spring.version>
     <xstream.version>1.4.10</xstream.version>
