@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import static org.hamcrest.Matchers.*;
@@ -1067,7 +1068,7 @@ public class RestIntegrationTest {
         String doc;
         try {
             StringWriter writer = new StringWriter();
-            IOUtils.copy(response.getEntity().getContent(), writer, null);
+            IOUtils.copy(response.getEntity().getContent(), writer, Charset.defaultCharset());
             doc = writer.toString();
         } catch (IOException e) {
 
