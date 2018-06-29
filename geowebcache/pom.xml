@@ -11,8 +11,8 @@
 
   <properties>
     <gt.version>20-SNAPSHOT</gt.version>
-    <jts.version>1.14.0</jts.version>
-    <jaiext.version>1.0.23</jaiext.version>
+    <jts.version>1.15.1</jts.version>
+    <jaiext.version>1.1.0</jaiext.version>
     <spring.version>4.2.5.RELEASE</spring.version>
     <xstream.version>1.4.10</xstream.version>
     <spring.security.version>4.0.4.RELEASE</spring.security.version>
@@ -91,9 +91,9 @@
     </dependency>
 
     <dependency>
-      <groupId>com.vividsolutions</groupId>
-      <artifactId>jts</artifactId>
-      <version>1.13</version>
+      <groupId>org.locationtech.jts</groupId>
+      <artifactId>jts-core</artifactId>
+      <version>${jts.version}</version>
       <exclusions>
         <exclusion>
           <groupId>xerces</groupId>

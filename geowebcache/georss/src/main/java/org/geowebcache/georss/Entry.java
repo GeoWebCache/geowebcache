@@ -19,7 +19,7 @@ package org.geowebcache.georss;
 
 import java.net.URI;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 class Entry {
 
