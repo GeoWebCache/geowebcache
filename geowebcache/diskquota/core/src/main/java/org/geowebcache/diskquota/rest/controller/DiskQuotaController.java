@@ -42,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 
 @Component
 @RestController
@@ -78,7 +79,7 @@ public class DiskQuotaController {
         String reqData = "";
         try {
             StringWriter writer = new StringWriter();
-            IOUtils.copy(request.getInputStream(), writer, null);
+            IOUtils.copy(request.getInputStream(), writer, Charset.defaultCharset());
             reqData = writer.toString();
             if (request.getPathInfo().contains("json")) {
                 newConfig = fromJSON(reqData);

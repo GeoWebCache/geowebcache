@@ -46,6 +46,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -124,7 +125,7 @@ public class MassTruncateController extends GWCSeedingController{
 
         XStream xs = configXStream(new GeoWebCacheXStream(new DomDriver()));
         StringWriter writer = new StringWriter();
-        IOUtils.copy(req.getInputStream(), writer, null);
+        IOUtils.copy(req.getInputStream(), writer, Charset.defaultCharset());
         String reqData = writer.toString();
 
         Object obj = null;
