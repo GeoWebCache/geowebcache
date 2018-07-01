@@ -109,7 +109,7 @@ public class JettyRule extends org.junit.rules.ExternalResource {
         confInit.accept(confDir);
         cacheInit.accept(cacheDir);
         
-        final Integer port = Integer.getInteger(JETTY_PORT_PROPERTY, 8080);
+        final Integer port = Integer.getInteger(JETTY_PORT_PROPERTY, 0);
         
         jettyServer = new Server();
         try {
