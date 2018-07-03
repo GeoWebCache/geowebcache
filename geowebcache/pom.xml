@@ -12,7 +12,7 @@
   <properties>
     <gt.version>20-SNAPSHOT</gt.version>
     <jts.version>1.15.1</jts.version>
-    <jaiext.version>1.1.0</jaiext.version>
+    <jaiext.version>1.1.1</jaiext.version>
     <spring.version>4.2.5.RELEASE</spring.version>
     <xstream.version>1.4.10</xstream.version>
     <spring.security.version>4.0.4.RELEASE</spring.security.version>
@@ -22,7 +22,7 @@
     <commons-lang.version>2.4</commons-lang.version>
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-codec.version>1.10</commons-codec.version>
-    <guava.version>17.0</guava.version>
+    <guava.version>25.1-jre</guava.version>
     <jsr305.version>3.0.1</jsr305.version>
     <log4j.version>1.2.14</log4j.version>
     <h2.version>1.1.119</h2.version>
