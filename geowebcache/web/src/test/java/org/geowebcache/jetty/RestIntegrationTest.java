@@ -623,7 +623,7 @@ public class RestIntegrationTest {
         assertThat(doc, hasXPath("count(/blobStores/blobStore)", equalTo("1")));
         assertThat(doc, hasXPath("/blobStores/blobStore[1]/name", equalTo("defaultCache")));
         assertThat(doc, hasXPath("/blobStores/blobStore[1]/atom:link/@href",
-                equalTo("http://localhost:8080/geowebcache/rest/blobstores/defaultCache.xml")));
+                 equalTo(jetty.getUri() + "rest/blobstores/defaultCache.xml")));
         assertThat(doc, hasXPath("/blobStores/blobStore[1]/atom:link/@type",
                 equalTo(MediaType.TEXT_XML_VALUE)));
     }
@@ -736,7 +736,7 @@ public class RestIntegrationTest {
         assertThat(doc, hasXPath("count(/gridSets/gridSet)", equalTo("7")));
         assertThat(doc, hasXPath("/gridSets/gridSet[1]/name", equalTo("EPSG:2163")));
         assertThat(doc, hasXPath("/gridSets/gridSet[1]/atom:link/@href",
-                equalTo("http://localhost:8080/geowebcache/rest/gridsets/EPSG:2163.xml")));
+                equalTo(jetty.getUri() + "rest/gridsets/EPSG:2163.xml")));
         assertThat(doc, hasXPath("/gridSets/gridSet[1]/atom:link/@type",
                 equalTo(MediaType.TEXT_XML_VALUE)));
     }
