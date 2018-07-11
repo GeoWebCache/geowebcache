@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.*;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -59,6 +60,8 @@ import com.google.common.base.Throwables;
  * @since 1.8
  */
 public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationListener {
+
+    static final String GEOWEBCACHE_BLOBSTORE_SUITABILITY_CHECK = "GEOWEBCACHE_BLOBSTORE_SUITABILITY_CHECK";
 
     private static Log log = LogFactory.getLog(CompositeBlobStore.class);
 
@@ -91,7 +94,38 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
             this.liveInstance = store;
         }
     }
-
+    
+    public static enum StoreSuitabilityCheck {
+        /**
+         * Don't check the persistence content of new stores
+         */
+        NONE,
+        /**
+         * Require that new stores have persistence that is empty, or be existing GWC caches.
+         */
+        EXISTING,
+        /**
+         * Require that new stores have persistence that is empty
+         */
+        EMPTY
+    }
+    
+    @VisibleForTesting
+    static final ThreadLocal<StoreSuitabilityCheck> storeSuitability = 
+            ThreadLocal.withInitial(()->
+                Optional.ofNullable( GeoWebCacheExtensions
+                    .getProperty(GEOWEBCACHE_BLOBSTORE_SUITABILITY_CHECK))
+                .map(StoreSuitabilityCheck::valueOf)
+                .orElse(StoreSuitabilityCheck.EXISTING));
+    
+    /**
+     * Specifies how new blob stores should check the existing content of their persistence.
+     * @return
+     */
+    public static StoreSuitabilityCheck getStoreSuitabilityCheck() {
+        return storeSuitability.get();
+    }
+    
     /**
      * Create a composite blob store that multiplexes tile operations to configured blobstores based
      * on {@link BlobStoreInfo#getId() blobstore id} and TileLayers
@@ -119,7 +153,14 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
         this.defaultStorageFinder = defaultStorageFinder;
         this.lockProvider = serverConfiguration.getLockProvider();
         this.blobStoreConfigs = blobStoreAggregator;
-        this.blobStores = loadBlobStores(blobStoreAggregator.getBlobStores());
+        StoreSuitabilityCheck oldCheck = storeSuitability.get();
+        // Disable suitability checks when loading during startup.
+        storeSuitability.set(StoreSuitabilityCheck.NONE);
+        try {
+            this.blobStores = loadBlobStores(blobStoreAggregator.getBlobStores());
+        } finally {
+            storeSuitability.set(oldCheck);
+        }
         blobStoreAggregator.addListener(this);
     }
 

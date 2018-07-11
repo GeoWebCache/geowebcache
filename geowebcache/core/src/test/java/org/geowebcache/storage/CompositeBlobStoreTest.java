@@ -16,11 +16,13 @@
  */
 package org.geowebcache.storage;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
@@ -43,12 +45,17 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.CompositeBlobStore.LiveStore;
+import org.geowebcache.util.PropertyRule;
+import org.hamcrest.Matchers;
+import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentMatcher;
+import org.mockito.Mockito;
 
 import com.google.common.base.Throwables;
 
@@ -80,6 +87,9 @@ public class CompositeBlobStoreTest {
 
     @Rule
     public ExpectedException ex = ExpectedException.none();
+    
+    @Rule
+    public PropertyRule suitability = PropertyRule.system(CompositeBlobStore.GEOWEBCACHE_BLOBSTORE_SUITABILITY_CHECK);
 
     TileLayerDispatcher layers;
 
@@ -113,6 +123,12 @@ public class CompositeBlobStoreTest {
         when(layers.getTileLayer(eq(DEFAULT_LAYER))).thenReturn(defaultLayer);
         when(layers.getTileLayer((String) argThat(new NotEq<>(DEFAULT_LAYER)))).thenThrow(
                 new GeoWebCacheException("layer not found"));
+    }
+    
+    @After
+    @Before
+    public void cleanUpSuitability () {
+        CompositeBlobStore.storeSuitability.remove();
     }
 
     private CompositeBlobStore create() throws StorageException, ConfigurationException {
@@ -287,6 +303,89 @@ public class CompositeBlobStoreTest {
         ex.expectMessage("Attempted to use a blob store that's disabled");
         store.get(tile);
     }
+    
+    @Test
+    public void testSuitabilityOnStartup() throws Exception {
+        // Default to EXISTING
+        assertThat(CompositeBlobStore.getStoreSuitabilityCheck(), equalTo(CompositeBlobStore.StoreSuitabilityCheck.EXISTING));
+
+        final BlobStoreInfo info = mock(BlobStoreInfo.class);
+        when(info.getName()).thenReturn("testStore");
+        when(info.isEnabled()).thenReturn(true);
+        BlobStore subStore = mock(BlobStore.class);
+        when(info.createInstance(Mockito.any(), Mockito.any())).thenAnswer(invocation->{
+            // When this gets called we should be skipping suitability checks
+            assertThat(CompositeBlobStore.getStoreSuitabilityCheck(), equalTo(CompositeBlobStore.StoreSuitabilityCheck.NONE));
+            return subStore;
+        });
+        configs.add(info);
+
+        store = create();
+        
+        verify(info).createInstance(Mockito.any(), Mockito.any());
+        
+        // Should be back to default after startup.
+        assertThat(CompositeBlobStore.getStoreSuitabilityCheck(), equalTo(CompositeBlobStore.StoreSuitabilityCheck.EXISTING));
+    }
+    
+    @Test
+    public void testSuitabilityOnAdd() throws Exception {
+        final BlobStoreInfo info = mock(BlobStoreInfo.class);
+        when(info.getName()).thenReturn("testStore");
+        when(info.isEnabled()).thenReturn(true);
+        BlobStore subStore = mock(BlobStore.class);
+        when(info.createInstance(Mockito.any(), Mockito.any())).thenAnswer(invocation->{
+            assertThat(CompositeBlobStore.getStoreSuitabilityCheck(), equalTo(CompositeBlobStore.StoreSuitabilityCheck.EXISTING));
+            return subStore;
+        });
+        
+        store = create();
+        
+        store.handleAddBlobStore(info);
+        verify(info).createInstance(Mockito.any(), Mockito.any());
+    }
+    
+    @Test
+    public void testNonDefaultSuitabilityOnStartup() throws Exception {
+        suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY.name());
+        assertThat(CompositeBlobStore.getStoreSuitabilityCheck(), equalTo(CompositeBlobStore.StoreSuitabilityCheck.EMPTY));
+
+        final BlobStoreInfo info = mock(BlobStoreInfo.class);
+        when(info.getName()).thenReturn("testStore");
+        when(info.isEnabled()).thenReturn(true);
+        BlobStore subStore = mock(BlobStore.class);
+        when(info.createInstance(Mockito.any(), Mockito.any())).thenAnswer(invocation->{
+            // When this gets called we should be skipping suitability checks
+            assertThat(CompositeBlobStore.getStoreSuitabilityCheck(), equalTo(CompositeBlobStore.StoreSuitabilityCheck.NONE));
+            return subStore;
+        });
+        configs.add(info);
+
+        store = create();
+        
+        verify(info).createInstance(Mockito.any(), Mockito.any());
+        
+        // Should be back to default after startup.
+        assertThat(CompositeBlobStore.getStoreSuitabilityCheck(), equalTo(CompositeBlobStore.StoreSuitabilityCheck.EMPTY));
+    }
+    
+    @Test
+    public void testNonDefaultSuitabilityOnAdd() throws Exception {
+        suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY.name());
+        final BlobStoreInfo info = mock(BlobStoreInfo.class);
+        when(info.getName()).thenReturn("testStore");
+        when(info.isEnabled()).thenReturn(true);
+        BlobStore subStore = mock(BlobStore.class);
+        when(info.createInstance(Mockito.any(), Mockito.any())).thenAnswer(invocation->{
+            assertThat(CompositeBlobStore.getStoreSuitabilityCheck(), equalTo(CompositeBlobStore.StoreSuitabilityCheck.EMPTY));
+            return subStore;
+        });
+        
+        store = create();
+        
+        store.handleAddBlobStore(info);
+        verify(info).createInstance(Mockito.any(), Mockito.any());
+   }
 
     private FileBlobStoreInfo config(String id, boolean isDefault, boolean isEnabled,
             String baseDirectory, int fileSystemBlockSize) {
