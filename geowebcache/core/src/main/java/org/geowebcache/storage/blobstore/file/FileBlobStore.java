@@ -124,6 +124,8 @@ public class FileBlobStore implements BlobStore {
                 for (Path p: Files.newDirectoryStream(fh.toPath())) {
                     throw new StorageException("Attempted to create FileBlobStore in "+rootPath+" but it was not empty");
                 }
+            } catch (StorageException e) {
+                throw e;
             } catch (IOException e) {
                 throw new StorageException("Error while checking that "+rootPath+" is empty", e);
             }
