@@ -18,9 +18,21 @@
 package org.geowebcache.config;
 
 
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.verify;
+import static org.geowebcache.util.TestUtils.isPresent;
+import static org.geowebcache.util.TestUtils.notPresent;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertThat;
+
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+
+import org.easymock.EasyMock;
+import org.geowebcache.storage.UnsuitableStorageException;
+import org.junit.Test;
 
 public abstract class BlobStoreConfigurationTest extends ConfigurationTest<BlobStoreInfo, BlobStoreConfiguration>{
 
@@ -58,4 +70,47 @@ public abstract class BlobStoreConfigurationTest extends ConfigurationTest<BlobS
     protected void modifyInfo(BlobStoreConfiguration config, BlobStoreInfo info) throws Exception {
         config.modifyBlobStore(info);
     }
+    
+    // We may or may not want to roll back on other exceptions, but it is important to roll back on
+    // an UnsuitableStorageException and we should keep these tests even if we add more general 
+    // ones.
+    @Test
+    public void testRollBackOnUnsuitableStorageExceptionInAddHandler() throws Exception {
+        BlobStoreInfo info = getGoodInfo("test", 1);
+        BlobStoreConfigurationListener listener = createMock(BlobStoreConfigurationListener.class);
+        listener.handleAddBlobStore(info); expectLastCall()
+            .andThrow(new UnsuitableStorageException("TEST"));
+        EasyMock.replay(listener);
+        config.addBlobStoreListener(listener);
+        exception.expect(instanceOf(ConfigurationPersistenceException.class));
+        exception.expectCause(instanceOf(UnsuitableStorageException.class));
+        try {
+            config.addBlobStore(info);
+        } finally {
+            verify(listener);
+            assertThat(config.getBlobStore("test"), notPresent());
+        }
+    }
+    
+    @Test
+    public void testRollBackOnUnsuitableStorageExceptionInModifyHandler() throws Exception {
+        BlobStoreInfo info1 = getGoodInfo("test", 1);
+        BlobStoreInfo info2 = getGoodInfo("test", 2);
+        BlobStoreConfigurationListener listener = createMock(BlobStoreConfigurationListener.class);
+        listener.handleAddBlobStore(info1); expectLastCall();
+        listener.handleModifyBlobStore(info2); expectLastCall()
+            .andThrow(new UnsuitableStorageException("TEST"));
+        EasyMock.replay(listener);
+        config.addBlobStoreListener(listener);
+        config.addBlobStore(info1);
+        exception.expect(instanceOf(ConfigurationPersistenceException.class));
+        exception.expectCause(instanceOf(UnsuitableStorageException.class));
+        try {
+            config.modifyBlobStore(info2);
+        } finally {
+            verify(listener);
+            assertThat(config.getBlobStore("test"), isPresent(infoEquals(info1)));
+        }
+    }
+    
 }

@@ -67,6 +67,7 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.StorageObject.Status;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
+import org.geowebcache.storage.UnsuitableStorageException;
 import org.geowebcache.util.FileUtils;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
@@ -121,8 +122,8 @@ public class FileBlobStore implements BlobStore {
             }
         case EMPTY:
             try {
-                for (Path p: Files.newDirectoryStream(fh.toPath())) {
-                    throw new StorageException("Attempted to create FileBlobStore in "+rootPath+" but it was not empty");
+                for (@SuppressWarnings("unused") Path p: Files.newDirectoryStream(fh.toPath())) {
+                    throw new UnsuitableStorageException("Attempted to create FileBlobStore in "+rootPath+" but it was not empty");
                 }
             } catch (StorageException e) {
                 throw e;
@@ -139,7 +140,16 @@ public class FileBlobStore implements BlobStore {
         if (!tmp.exists() || !tmp.isDirectory() || !tmp.canWrite()) {
             throw new StorageException(tmp.getPath() + " is not writable directory.");
         }
-
+        
+        File metadataFile = new File(path, "metadata.properties");
+        try {
+            // TODO This is just to provide a hint that this is a GWC blobstore for now.
+            // In future it should store key value pairs.
+            metadataFile.createNewFile();
+        } catch (IOException e) {
+            log.error("Error while writing blobstore metadata file "+metadataFile.getPath(), e);
+        }
+        
         stagingArea = new File(path, "_gwc_in_progress_deletes_");
         createDeleteExecutorService();
         issuePendingDeletes();
