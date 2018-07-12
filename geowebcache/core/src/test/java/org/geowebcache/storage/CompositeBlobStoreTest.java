@@ -89,7 +89,7 @@ public class CompositeBlobStoreTest {
     public ExpectedException ex = ExpectedException.none();
     
     @Rule
-    public PropertyRule suitability = PropertyRule.system(CompositeBlobStore.GEOWEBCACHE_BLOBSTORE_SUITABILITY_CHECK);
+    public SuitabilityCheckRule suitability = SuitabilityCheckRule.system();
 
     TileLayerDispatcher layers;
 
@@ -123,12 +123,6 @@ public class CompositeBlobStoreTest {
         when(layers.getTileLayer(eq(DEFAULT_LAYER))).thenReturn(defaultLayer);
         when(layers.getTileLayer((String) argThat(new NotEq<>(DEFAULT_LAYER)))).thenThrow(
                 new GeoWebCacheException("layer not found"));
-    }
-    
-    @After
-    @Before
-    public void cleanUpSuitability () {
-        CompositeBlobStore.storeSuitability.remove();
     }
 
     private CompositeBlobStore create() throws StorageException, ConfigurationException {
@@ -347,7 +341,7 @@ public class CompositeBlobStoreTest {
     
     @Test
     public void testNonDefaultSuitabilityOnStartup() throws Exception {
-        suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY.name());
+        suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY);
         assertThat(CompositeBlobStore.getStoreSuitabilityCheck(), equalTo(CompositeBlobStore.StoreSuitabilityCheck.EMPTY));
 
         final BlobStoreInfo info = mock(BlobStoreInfo.class);
@@ -371,7 +365,7 @@ public class CompositeBlobStoreTest {
     
     @Test
     public void testNonDefaultSuitabilityOnAdd() throws Exception {
-        suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY.name());
+        suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY);
         final BlobStoreInfo info = mock(BlobStoreInfo.class);
         when(info.getName()).thenReturn("testStore");
         when(info.isEnabled()).thenReturn(true);

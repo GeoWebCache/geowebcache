@@ -61,6 +61,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.BlobStoreListenerList;
+import org.geowebcache.storage.CompositeBlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.StorageObject.Status;
@@ -111,6 +112,23 @@ public class FileBlobStore implements BlobStore {
         fh.mkdirs();
         if (!fh.exists() || !fh.isDirectory() || !fh.canWrite()) {
             throw new StorageException(path + " is not writable directory.");
+        }
+        
+        switch(CompositeBlobStore.getStoreSuitabilityCheck()) {
+        case EXISTING:
+            if (new File(fh, "metadata.properties").exists()) {
+                break;
+            }
+        case EMPTY:
+            try {
+                for (Path p: Files.newDirectoryStream(fh.toPath())) {
+                    throw new StorageException("Attempted to create FileBlobStore in "+rootPath+" but it was not empty");
+                }
+            } catch (IOException e) {
+                throw new StorageException("Error while checking that "+rootPath+" is empty", e);
+            }
+            break;
+        case NONE:
         }
 
         // and the temporary directory
