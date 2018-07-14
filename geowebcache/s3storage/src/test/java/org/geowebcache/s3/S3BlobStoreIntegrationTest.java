@@ -16,10 +16,12 @@
  */
 package org.geowebcache.s3;
 
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
@@ -55,7 +57,9 @@ import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
+import org.hamcrest.Matchers;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
@@ -128,6 +132,13 @@ public class S3BlobStoreIntegrationTest {
         assertEquals(bytes.length, resource.getSize());
     }
 
+    @Test
+    public void testCreatesStoreMetadataOnStart() {
+        String prefix = tempFolder.getConfig().getPrefix();
+        String bucket = tempFolder.getConfig().getBucket();
+        assertThat(tempFolder.getClient().getObjectMetadata(bucket, prefix+"/metadata.properties"), notNullValue());
+    }
+    
     @Test
     public void testPutGetBlobIsNotByteArrayResource() throws MimeException, IOException {
         File tileFile = File.createTempFile("tile", ".png");
