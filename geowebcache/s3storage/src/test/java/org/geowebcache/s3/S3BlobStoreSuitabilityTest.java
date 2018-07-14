@@ -18,6 +18,7 @@ package org.geowebcache.s3;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItemInArray;
+import static org.junit.Assume.assumeFalse;
 
 import java.io.InputStream;
 
@@ -33,9 +34,15 @@ import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.experimental.theories.DataPoints;
+import org.junit.experimental.theories.Theories;
+import org.junit.runner.RunWith;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.Statement;
 
 import com.amazonaws.services.s3.model.ObjectMetadata;
 
+@RunWith(S3BlobStoreSuitabilityTest.MyTheories.class)
 public class S3BlobStoreSuitabilityTest extends BlobStoreSuitabilityTest<String[]> {
     
     public PropertiesLoader testConfigLoader = new PropertiesLoader();
@@ -84,4 +91,26 @@ public class S3BlobStoreSuitabilityTest extends BlobStoreSuitabilityTest<String[
         return new S3BlobStore(info, tld, locks);
     }
     
+    // Sorry, this bit of evil makes the Theories runner gracefully ignore the 
+    // tests if S3 is unavailable.  There's probably a better way to do this.
+    public static class MyTheories extends Theories {
+        
+        public MyTheories(Class<?> klass) throws InitializationError {
+            super(klass);
+        }
+        
+        @Override
+        public Statement methodBlock(FrameworkMethod method) {
+            if(new PropertiesLoader().getProperties().containsKey("bucket")) {
+                return super.methodBlock(method);
+            } else {
+                return new Statement() {
+                    public void evaluate()
+                    {
+                        assumeFalse("S3 unavailable",true);
+                    }
+                };
+            }
+        }
+    }
 }
