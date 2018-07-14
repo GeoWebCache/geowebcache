@@ -26,39 +26,28 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assume.assumeThat;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.geowebcache.storage.BlobStore;
+import org.geowebcache.storage.BlobStoreSuitabilityTest;
 import org.geowebcache.storage.CompositeBlobStore;
-import org.geowebcache.storage.StorageException;
-import org.geowebcache.storage.SuitabilityCheckRule;
 import org.hamcrest.Matcher;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
-@RunWith(Theories.class)
-public abstract class FileBasedBlobStoreSuitabilityTest {
+public abstract class FileBasedBlobStoreSuitabilityTest extends BlobStoreSuitabilityTest<File> {
 
     @ClassRule
     public static TemporaryFolder temp = new TemporaryFolder();
 
+    @Override
     public abstract BlobStore create(File dir) throws Exception;
-
-    @Rule
-    public SuitabilityCheckRule suitability = SuitabilityCheckRule.system();
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-    
-    static final Class<? extends Exception> EXCEPTION_CLASS = StorageException.class;
 
     protected static File emptyDir() throws IOException {
         File emptyDir = temp.newFolder();
@@ -99,9 +88,11 @@ public abstract class FileBasedBlobStoreSuitabilityTest {
                 };
     }
 
-    Matcher<File> empty() {
+    @Override
+    protected Matcher<File> empty() {
         return either(directoryEmpty()).or(not(exists()));
     }
+    @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected Matcher<File> existing() {
         return directoryContaining((Matcher)hasItem(named("metadata.properties")));
@@ -111,53 +102,6 @@ public abstract class FileBasedBlobStoreSuitabilityTest {
         super();
     }
 
-    @Theory
-    public void testEmptyOk(File persistenceLocation) throws Exception {
-        suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY);
-        assumeThat(persistenceLocation, empty());
-        
-        @SuppressWarnings("unused")
-        BlobStore store = create(persistenceLocation);
-        assertThat(store, notNullValue(BlobStore.class));
-    }
 
-    @Theory
-    public void testEmptyFail(File persistenceLocation) throws Exception {
-        suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY);
-        assumeThat(persistenceLocation, not(empty()));
-        
-        exception.expect(EXCEPTION_CLASS);
-        @SuppressWarnings("unused")
-        BlobStore store = create(persistenceLocation);
-    }
-
-    @Theory
-    public void testExistingOk(File persistenceLocation) throws Exception {
-        suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EXISTING);
-        assumeThat(persistenceLocation, either(empty()).or(existing()));
-        
-        @SuppressWarnings("unused")
-        BlobStore store = create(persistenceLocation);
-        assertThat(store, notNullValue(BlobStore.class));
-    }
-
-    @Theory
-    public void testExistingFail(File persistenceLocation) throws Exception {
-        suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EXISTING);
-        assumeThat(persistenceLocation, not(either(empty()).or(existing())));
-        
-        exception.expect(EXCEPTION_CLASS);
-        @SuppressWarnings("unused")
-        BlobStore store = create(persistenceLocation);
-    }
-
-    @Theory
-    public void testNoneOk(File persistenceLocation) throws Exception {
-        suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.NONE);
-        
-        @SuppressWarnings("unused")
-        BlobStore store = create(persistenceLocation);
-        assertThat(store, notNullValue(BlobStore.class));
-    }
 
 }
