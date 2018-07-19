@@ -35,6 +35,14 @@ import org.junit.experimental.theories.Theories;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
+/**
+ * Test that a blob store that has external persistence (Such as the file system) does appropriate 
+ * checks to prevent accidentally overwriting or deleting data unrelated to GWC.
+ *  
+ * @author Kevin Smith, Boundless
+ *
+ * @param <T>
+ */
 @RunWith(Theories.class)
 public abstract class BlobStoreSuitabilityTest<T> {
     
