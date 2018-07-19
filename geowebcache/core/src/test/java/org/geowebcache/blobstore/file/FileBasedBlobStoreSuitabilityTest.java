@@ -41,6 +41,10 @@ import org.junit.experimental.theories.Theory;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
+/**
+ * Tests persistence suitability checks for BlobStores that use the file system for persistence.
+ *
+ */
 public abstract class FileBasedBlobStoreSuitabilityTest extends BlobStoreSuitabilityTest<File> {
 
     @ClassRule

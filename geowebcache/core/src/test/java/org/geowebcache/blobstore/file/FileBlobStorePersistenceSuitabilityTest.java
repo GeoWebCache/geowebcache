@@ -22,6 +22,11 @@ import java.io.File;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
 
+/**
+ * 
+ * Tests that FileBlobStore checks the provided directory for existing data before using it. 
+ *
+ */
 public class FileBlobStorePersistenceSuitabilityTest extends FileBasedBlobStoreSuitabilityTest {
 
     @Override
