@@ -18,12 +18,16 @@
 package org.geowebcache.util;
 
 import static org.hamcrest.Matchers.both;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.lessThan;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
@@ -159,7 +163,7 @@ public class FileMatchers {
             @Override
             public boolean matches(Object item) {
                 if(item instanceof File) {
-                    return ((File) item).isDirectory() && filesMatcher.matches(((File) item).listFiles());
+                    return ((File) item).isDirectory() && filesMatcher.matches(Arrays.asList(((File) item).listFiles()));
                 } else {
                     return false;
                 }
@@ -236,6 +240,16 @@ public class FileMatchers {
             }
             
         };
+    }
+    
+    /**
+     * Matcher for file with a particular name
+     * @param timeMatcher
+     * @return
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static Matcher<File> named(String name) {
+        return both(instanceOf(File.class)).and((Matcher)hasProperty("name", equalTo(name)));
     }
     
     /**

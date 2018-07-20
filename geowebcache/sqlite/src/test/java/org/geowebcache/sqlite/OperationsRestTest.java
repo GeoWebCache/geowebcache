@@ -21,9 +21,12 @@ import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.sqlite.Utils.Tuple;
 import org.geowebcache.storage.BlobStore;
+import org.geowebcache.storage.CompositeBlobStore;
+import org.geowebcache.storage.SuitabilityCheckRule;
 import org.geowebcache.storage.TileObject;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +64,11 @@ public class OperationsRestTest extends TestSupport {
 
     @Autowired
     private WebApplicationContext webApplicationContext;
-
+    
+    @Rule
+    public SuitabilityCheckRule suitability = SuitabilityCheckRule.system(
+            CompositeBlobStore.StoreSuitabilityCheck.NONE);
+    
     @After
     public void afterClass() throws Exception {
         closeSqliteStoresConnections();

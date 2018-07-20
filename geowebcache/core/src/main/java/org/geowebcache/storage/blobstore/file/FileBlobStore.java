@@ -61,6 +61,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.BlobStoreListenerList;
+import org.geowebcache.storage.CompositeBlobStore;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.StorageObject.Status;
@@ -112,6 +113,20 @@ public class FileBlobStore implements BlobStore {
         if (!fh.exists() || !fh.isDirectory() || !fh.canWrite()) {
             throw new StorageException(path + " is not writable directory.");
         }
+        final boolean exists = new File(fh, "metadata.properties").exists();
+        boolean empty = true;
+            try {
+                for (@SuppressWarnings("unused") Path p: Files.newDirectoryStream(fh.toPath())) {
+                empty=false;
+                break;
+                }
+            } catch (StorageException e) {
+                throw e;
+            } catch (IOException e) {
+                throw new StorageException("Error while checking that "+rootPath+" is empty", e);
+            }
+        
+        CompositeBlobStore.checkSuitability(rootPath, exists, empty);
 
         // and the temporary directory
         tmp = new File(path, "tmp");
@@ -119,7 +134,16 @@ public class FileBlobStore implements BlobStore {
         if (!tmp.exists() || !tmp.isDirectory() || !tmp.canWrite()) {
             throw new StorageException(tmp.getPath() + " is not writable directory.");
         }
-
+        
+        File metadataFile = new File(path, "metadata.properties");
+        try {
+            // TODO This is just to provide a hint that this is a GWC blobstore for now.
+            // In future it should store key value pairs.
+            metadataFile.createNewFile();
+        } catch (IOException e) {
+            log.error("Error while writing blobstore metadata file "+metadataFile.getPath(), e);
+        }
+        
         stagingArea = new File(path, "_gwc_in_progress_deletes_");
         createDeleteExecutorService();
         issuePendingDeletes();
