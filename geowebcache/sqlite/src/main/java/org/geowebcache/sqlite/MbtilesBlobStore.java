@@ -31,6 +31,7 @@ import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.BlobStoreListenerList;
+import org.geowebcache.storage.CompositeBlobStore;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
@@ -39,7 +40,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.util.Collection;
 import java.util.Collections;
@@ -92,20 +96,37 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
     // Apply GZIP compression to uncompressed vector tile formats.
     private final boolean gzipVector;
     
-    MbtilesBlobStore(MbtilesInfo configuration) {
+    MbtilesBlobStore(MbtilesInfo configuration) throws StorageException {
         // caution this constructor will create a new connection pool
         this(configuration, new SqliteConnectionManager(
                 configuration.getPoolSize(), configuration.getPoolReaperIntervalMs()));
     }
 
-    public MbtilesBlobStore(MbtilesInfo configuration, SqliteConnectionManager connectionManager) {
+    public MbtilesBlobStore(MbtilesInfo configuration, SqliteConnectionManager connectionManager) throws StorageException {
         super(configuration, connectionManager);
         metadataFile = new File(configuration.getRootDirectoryFile(), "metadata.sqlite");
+
+        boolean exists = metadataFile.exists();
+        boolean empty = true;
+        try {
+            for (@SuppressWarnings("unused") Path p: Files.newDirectoryStream(configuration.getRootDirectoryFile().toPath())) {
+                empty=false;
+                break;
+            }
+        } catch (StorageException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new StorageException("Error while checking that "+configuration.getRootDirectory()+" is empty", e);
+        }
+        
+        CompositeBlobStore.checkSuitability(configuration.getRootDirectory(), exists, empty);
+        
         eagerDelete = configuration.eagerDelete();
         useCreateTime = configuration.useCreateTime();
         executorService = Executors.newFixedThreadPool(configuration.getExecutorConcurrency());
         listeners = new BlobStoreListenerList();
         gzipVector = configuration.isGzipVector();
+        
         initMbtilesLayersMetadata(configuration.getMbtilesMetadataDirectory());
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format("MBTiles blob store initiated: [eagerDelete='%b', useCreateTime='%b'.", eagerDelete, useCreateTime));
