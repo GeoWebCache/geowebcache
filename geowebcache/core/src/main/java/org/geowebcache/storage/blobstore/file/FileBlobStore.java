@@ -115,16 +115,16 @@ public class FileBlobStore implements BlobStore {
         }
         final boolean exists = new File(fh, "metadata.properties").exists();
         boolean empty = true;
-        try {
-            for (@SuppressWarnings("unused") Path p: Files.newDirectoryStream(fh.toPath())) {
+            try {
+                for (@SuppressWarnings("unused") Path p: Files.newDirectoryStream(fh.toPath())) {
                 empty=false;
                 break;
+                }
+            } catch (StorageException e) {
+                throw e;
+            } catch (IOException e) {
+                throw new StorageException("Error while checking that "+rootPath+" is empty", e);
             }
-        } catch (StorageException e) {
-            throw e;
-        } catch (IOException e) {
-            throw new StorageException("Error while checking that "+rootPath+" is empty", e);
-        }
         
         CompositeBlobStore.checkSuitability(rootPath, exists, empty);
 

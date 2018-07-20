@@ -29,13 +29,20 @@ import java.net.URL;
 import org.apache.commons.io.IOUtils;
 import org.geotools.mbtiles.MBTilesFileVectorTileTest;
 import org.geowebcache.mime.ApplicationMime;
+import org.geowebcache.storage.CompositeBlobStore;
+import org.geowebcache.storage.SuitabilityCheckRule;
 import org.geowebcache.storage.TileObject;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 public class MbtilesPBFTest extends TestSupport {
     File file;
     String layer;
+    
+    @Rule
+    public SuitabilityCheckRule suitability = SuitabilityCheckRule.system(
+            CompositeBlobStore.StoreSuitabilityCheck.NONE);
     
     @Before
     public void copyData() throws Exception {

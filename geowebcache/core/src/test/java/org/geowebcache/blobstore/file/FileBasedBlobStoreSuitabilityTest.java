@@ -60,31 +60,31 @@ public abstract class FileBasedBlobStoreSuitabilityTest {
     
     static final Class<? extends Exception> EXCEPTION_CLASS = StorageException.class;
 
-    static File emptyDir() throws IOException {
+    protected static File emptyDir() throws IOException {
         File emptyDir = temp.newFolder();
         return emptyDir;
     }
 
-    static File newDir() throws IOException {
+    protected static File newDir() throws IOException {
         File newDir = new File(emptyDir(), "new");
         return newDir;
     }
 
-    static File dirWithFile() throws IOException {
+    protected static File dirWithFile() throws IOException {
         File dir = temp.newFolder();
         File someFile = new File(dir,"file");
         someFile.createNewFile();
         return dir;
     }
 
-    static File dirWithDir() throws IOException {
+    protected static File dirWithDir() throws IOException {
         File dir = temp.newFolder();
         File someDir = new File(dir,"dir");
         someDir.mkdir();
         return dir;
     }
 
-    static File withMetadata(File dir) throws IOException {
+    protected static File withMetadata(File dir) throws IOException {
         new File(dir, "metadata.properties").createNewFile();
         return dir;
     }
@@ -99,9 +99,13 @@ public abstract class FileBasedBlobStoreSuitabilityTest {
                 };
     }
 
-    Matcher<File> empty = either(directoryEmpty()).or(not(exists()));
+    Matcher<File> empty() {
+        return either(directoryEmpty()).or(not(exists()));
+    }
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    Matcher<File> existing = directoryContaining((Matcher)hasItem(named("metadata.properties")));
+    protected Matcher<File> existing() {
+        return directoryContaining((Matcher)hasItem(named("metadata.properties")));
+    }
 
     public FileBasedBlobStoreSuitabilityTest() {
         super();
@@ -110,7 +114,7 @@ public abstract class FileBasedBlobStoreSuitabilityTest {
     @Theory
     public void testEmptyOk(File persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY);
-        assumeThat(persistenceLocation, empty);
+        assumeThat(persistenceLocation, empty());
         
         @SuppressWarnings("unused")
         BlobStore store = create(persistenceLocation);
@@ -120,7 +124,7 @@ public abstract class FileBasedBlobStoreSuitabilityTest {
     @Theory
     public void testEmptyFail(File persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY);
-        assumeThat(persistenceLocation, not(empty));
+        assumeThat(persistenceLocation, not(empty()));
         
         exception.expect(EXCEPTION_CLASS);
         @SuppressWarnings("unused")
@@ -130,7 +134,7 @@ public abstract class FileBasedBlobStoreSuitabilityTest {
     @Theory
     public void testExistingOk(File persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EXISTING);
-        assumeThat(persistenceLocation, either(empty).or(existing));
+        assumeThat(persistenceLocation, either(empty()).or(existing()));
         
         @SuppressWarnings("unused")
         BlobStore store = create(persistenceLocation);
@@ -140,7 +144,7 @@ public abstract class FileBasedBlobStoreSuitabilityTest {
     @Theory
     public void testExistingFail(File persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EXISTING);
-        assumeThat(persistenceLocation, not(either(empty).or(existing)));
+        assumeThat(persistenceLocation, not(either(empty()).or(existing())));
         
         exception.expect(EXCEPTION_CLASS);
         @SuppressWarnings("unused")
