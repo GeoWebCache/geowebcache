@@ -17,6 +17,7 @@
 
 package org.geowebcache.storage;
 
+import java.util.Objects;
 import java.util.Properties;
 
 import org.geowebcache.util.PropertyRule;
@@ -27,6 +28,8 @@ import org.geowebcache.util.PropertyRule;
  *
  */
 public class SuitabilityCheckRule extends PropertyRule {
+    
+    CompositeBlobStore.StoreSuitabilityCheck initial = null;
     
     private SuitabilityCheckRule(Properties props) {
         super(props, CompositeBlobStore.GEOWEBCACHE_BLOBSTORE_SUITABILITY_CHECK);
@@ -40,6 +43,17 @@ public class SuitabilityCheckRule extends PropertyRule {
     public static SuitabilityCheckRule system() {
         return new SuitabilityCheckRule(System.getProperties());
     }
+    
+    /**
+     * Create a rule to override the system property
+     * @param name
+     * @return
+     */
+    public static SuitabilityCheckRule system(CompositeBlobStore.StoreSuitabilityCheck value) {
+        SuitabilityCheckRule rule = new SuitabilityCheckRule(System.getProperties());
+        rule.initial=value;
+        return rule;
+    }
 
     /**
      * Set the StoreSuitabilityCheck property
@@ -52,6 +66,9 @@ public class SuitabilityCheckRule extends PropertyRule {
     @Override
     protected void before() throws Throwable {
         super.before();
+        if(Objects.nonNull(initial)) {
+            setValue(initial);
+        }
         cleanUp();
     }
 

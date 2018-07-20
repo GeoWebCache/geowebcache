@@ -19,8 +19,11 @@ package org.geowebcache.sqlite;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.storage.CompositeBlobStore;
+import org.geowebcache.storage.SuitabilityCheckRule;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.File;
@@ -39,7 +42,11 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public final class MbtilesBlobStoreTest extends TestSupport {
-
+    
+    @Rule
+    public SuitabilityCheckRule suitability = SuitabilityCheckRule.system(
+            CompositeBlobStore.StoreSuitabilityCheck.NONE);
+    
     @Test
     public void testTilePutGetDeleteOperations() throws Exception {
         // instantiating the store

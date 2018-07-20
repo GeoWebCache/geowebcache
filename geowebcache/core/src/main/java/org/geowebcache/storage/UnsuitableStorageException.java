@@ -29,5 +29,20 @@ public class UnsuitableStorageException extends StorageException {
     public UnsuitableStorageException(String msg) {
         super(msg);
     }
+
+    public static void checkSuitability(String location, final boolean exists, boolean empty)
+            throws UnsuitableStorageException {
+        switch(CompositeBlobStore.getStoreSuitabilityCheck()) {
+        case EXISTING:
+            if (exists) {
+                break;
+            }
+        case EMPTY:
+            if(!empty) {
+                throw new UnsuitableStorageException("Attempted to create Blob Store in "+location+" but it was not empty");
+            }
+        case NONE:
+        }
+    }
     
 }
