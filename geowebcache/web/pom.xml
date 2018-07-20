@@ -132,6 +132,12 @@
       <artifactId>xmlunit-legacy</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.geowebcache</groupId>
+      <artifactId>gwc-core</artifactId>
+      <scope>test</scope>
+      <classifier>tests</classifier>
+    </dependency>
 
     <!--  Jetty starter dependencies -->
     <dependency>

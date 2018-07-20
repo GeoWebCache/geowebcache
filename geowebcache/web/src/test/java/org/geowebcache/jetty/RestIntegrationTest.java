@@ -27,6 +27,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.geowebcache.util.FileMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.json.JSONArray;
@@ -35,12 +36,14 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.springframework.http.MediaType;
 import org.springframework.util.xml.SimpleNamespaceContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -51,7 +54,6 @@ import java.util.Arrays;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Integration test for the REST API in a full GWC instance
@@ -70,6 +72,9 @@ public class RestIntegrationTest {
     @Rule
     public HttpClientRule notAUser = new HttpClientRule("notARealUser", "somePassword", "notAUser");
     
+    
+    @ClassRule
+    static public TemporaryFolder temp = new TemporaryFolder();
     
     private SimpleNamespaceContext nsContext;
     
@@ -1041,6 +1046,96 @@ public class RestIntegrationTest {
         CloseableHttpResponse response = handlePost(URI.create("/geowebcache/rest/seed/topp:states"),
                 admin.getClient(), killCommand);
         TestCase.assertEquals(200, response.getStatusLine().getStatusCode());
+    }
+    
+    @Test
+    public void testNewFileBlobstoreDontDeleteExistingContent() throws Exception {
+        // The directory already has stuff in it
+        File bsDir = temp.newFolder();
+        File existingFile1 = new File(bsDir, "existingFile1");
+        existingFile1.createNewFile();
+        File existingDirectory = new File(bsDir, "existingDirectory");
+        existingDirectory.mkdir();
+        File existingFile2 = new File(existingDirectory, "existingFile2");
+        existingFile2.createNewFile();
+        
+        String blobStore =
+                "<FileBlobStore>\n" +
+                "    <id>maliciousCache</id>\n" +
+                "    <enabled>true</enabled>\n" +
+                "    <baseDirectory>"+bsDir+"</baseDirectory>\n" +
+                "    <fileSystemBlockSize>4096</fileSystemBlockSize>\n" +
+                "</FileBlobStore>";
+        String layer1name = existingFile1.getName();
+        String layer1 =
+                "<wmsLayer>\n" +
+                "    <name>"+layer1name+"</name>\n" +
+                "    <blobStoreId>maliciousCache</blobStoreId>\n" +
+                "    <wmsUrl><string>http://example.com/geoserver/wms</string></wmsUrl>\n" +
+                "</wmsLayer>";
+        String layer1truncate =
+                "<truncateLayer><layerName>"+layer1name+"</layerName></truncateLayer>";
+        String layer2name = existingDirectory.getName();
+        String layer2 =
+                "<wmsLayer>\n" +
+                "    <name>"+layer2name+"</name>\n" +
+                "    <blobStoreId>maliciousCache</blobStoreId>\n" +
+                "    <wmsUrl><string>http://example.com/geoserver/wms</string></wmsUrl>\n" +
+                "</wmsLayer>";
+        String layer2truncate =
+                "<truncateLayer><layerName>"+layer2name+"</layerName></truncateLayer>";
+        
+        // Make it sure the blobstore doesn't exist already as that would invalidate the test
+        try (CloseableHttpResponse response = handleGet(URI.create("/geowebcache/rest/blobstores/maliciousCache.xml"), admin.getClient())){
+            assertThat(response, hasProperty("statusLine", hasProperty("statusCode", equalTo(404))));
+        }
+        
+        // Create a store
+        try (CloseableHttpResponse response = handlePut(URI.create("/geowebcache/rest/blobstores/maliciousCache"), admin.getClient(), blobStore)){
+        } catch (Exception e) {
+            // Ignore and keep going
+        }
+        
+        // Create layers with the names of entries in that directory
+        try (CloseableHttpResponse response = handlePut(URI.create("/geowebcache/rest/layers/"+layer1name), admin.getClient(), layer1)){
+        } catch (Exception e) {
+            // Ignore and keep going
+        }
+        try (CloseableHttpResponse response = handlePut(URI.create("/geowebcache/rest/layers/"+layer2name), admin.getClient(), layer2)){
+        } catch (Exception e) {
+            // Ignore and keep going
+        }
+        
+        // Mass Truncate those layers
+        try (CloseableHttpResponse response = handlePost(URI.create("/geowebcache/rest/masstruncate"), admin.getClient(), layer1truncate)){
+        } 
+        try (CloseableHttpResponse response = handlePost(URI.create("/geowebcache/rest/masstruncate"), admin.getClient(), layer2truncate)){
+        } catch (Exception e) {
+            // Ignore and keep going
+        }
+        
+        // Delete the layers
+        try (CloseableHttpResponse response = handleDelete(URI.create("/geowebcache/rest/layers/"+layer1name), admin.getClient())){
+        } catch (Exception e) {
+            // Ignore and keep going
+        }
+        try (CloseableHttpResponse response = handleDelete(URI.create("/geowebcache/rest/layers/"+layer2name), admin.getClient())){
+        } catch (Exception e) {
+            // Ignore and keep going
+        }
+        
+        // Delete the store
+        try (CloseableHttpResponse response = handleDelete(URI.create("/geowebcache/rest/blobstores/maliciousCache"), admin.getClient())){
+        } catch (Exception e) {
+            // Ignore and keep going
+        }
+        
+
+        // The existing data should still be present
+        assertThat(existingFile1, FileMatchers.exists());
+        assertThat(existingDirectory, FileMatchers.exists());
+        assertThat(existingFile2, FileMatchers.exists());
+        
     }
 
     /* Utility methods ***************************************************************************/

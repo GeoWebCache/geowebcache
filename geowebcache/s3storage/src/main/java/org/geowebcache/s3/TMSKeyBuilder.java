@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringUtils;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.layer.TileLayer;
@@ -61,6 +62,8 @@ final class TMSKeyBuilder {
     public static final String PARAMETERS_METADATA_OBJECT_NAME = 
             PARAMETERS_METADATA_OBJECT_PREFIX+"%s.properties";
 
+    private static final String STORE_METADATA_FORMAT = "%s/" + 
+            LAYER_METADATA_OBJECT_NAME;
     private static final String LAYER_METADATA_FORMAT = "%s/%s/" + 
             LAYER_METADATA_OBJECT_NAME;
     private static final String PARAMETERS_METADATA_FORMAT = "%s/%s/" + 
@@ -167,6 +170,9 @@ final class TMSKeyBuilder {
     public String layerMetadata(final String layerName) {
         String layerId = layerId(layerName);
         return String.format(LAYER_METADATA_FORMAT, prefix, layerId);
+    }
+    public String storeMetadata() {
+        return StringUtils.stripStart(String.format(STORE_METADATA_FORMAT, prefix), "/");
     }
     public String parametersMetadata(final String layerName, final String parametersId) {
         String layerId = layerId(layerName);

@@ -27,6 +27,7 @@ import java.nio.channels.WritableByteChannel;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -47,6 +48,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.BlobStoreListenerList;
+import org.geowebcache.storage.CompositeBlobStore;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
@@ -114,6 +116,15 @@ public class S3BlobStore implements BlobStore {
         }
 
         this.s3Ops = new S3Ops(conn, bucketName, keyBuilder, lockProvider);
+        
+        boolean empty = !s3Ops.prefixExists(prefix);
+        boolean existing = Objects.nonNull(s3Ops.getObjectMetadata(keyBuilder.storeMetadata()));
+        
+        CompositeBlobStore.checkSuitability(config.getLocation(), existing, empty);
+        
+        // TODO replace this with real metadata.  For now it's just a marker 
+        // to indicate this is a GWC cache.
+        s3Ops.putProperties(keyBuilder.storeMetadata(), new Properties());
     }
 
     @Override
