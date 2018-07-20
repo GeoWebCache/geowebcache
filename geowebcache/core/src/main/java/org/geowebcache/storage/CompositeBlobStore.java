@@ -601,4 +601,27 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
             throw e;
         }
     }
+
+    /**
+     * Throws UnsuitableStorageException if the specified storage does not meet the current
+     * suitability check level
+     * @param location Location of the storage for heuman readable error messages
+     * @param exists The storage is already a GWC cache
+     * @param empty The storage is empty
+     * @throws UnsuitableStorageException
+     */
+    public static void checkSuitability(String location, final boolean exists, boolean empty)
+            throws UnsuitableStorageException {
+        switch(getStoreSuitabilityCheck()) {
+        case EXISTING:
+            if (exists) {
+                break;
+            }
+        case EMPTY:
+            if(!empty) {
+                throw new UnsuitableStorageException("Attempted to create Blob Store in "+location+" but it was not empty");
+            }
+        case NONE:
+        }
+    }
 }

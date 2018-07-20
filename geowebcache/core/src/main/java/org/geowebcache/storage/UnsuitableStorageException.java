@@ -23,6 +23,9 @@ package org.geowebcache.storage;
  */
 public class UnsuitableStorageException extends StorageException {
     
+    /** serialVersionUID */
+    private static final long serialVersionUID = 3939772540460067187L;
+
     public UnsuitableStorageException(String msg) {
         super(msg);
     }

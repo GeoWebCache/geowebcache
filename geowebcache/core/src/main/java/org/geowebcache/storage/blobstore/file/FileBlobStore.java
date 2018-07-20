@@ -67,7 +67,6 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.StorageObject.Status;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
-import org.geowebcache.storage.UnsuitableStorageException;
 import org.geowebcache.util.FileUtils;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
@@ -114,25 +113,20 @@ public class FileBlobStore implements BlobStore {
         if (!fh.exists() || !fh.isDirectory() || !fh.canWrite()) {
             throw new StorageException(path + " is not writable directory.");
         }
-        
-        switch(CompositeBlobStore.getStoreSuitabilityCheck()) {
-        case EXISTING:
-            if (new File(fh, "metadata.properties").exists()) {
+        final boolean exists = new File(fh, "metadata.properties").exists();
+        boolean empty = true;
+        try {
+            for (@SuppressWarnings("unused") Path p: Files.newDirectoryStream(fh.toPath())) {
+                empty=false;
                 break;
             }
-        case EMPTY:
-            try {
-                for (@SuppressWarnings("unused") Path p: Files.newDirectoryStream(fh.toPath())) {
-                    throw new UnsuitableStorageException("Attempted to create FileBlobStore in "+rootPath+" but it was not empty");
-                }
-            } catch (StorageException e) {
-                throw e;
-            } catch (IOException e) {
-                throw new StorageException("Error while checking that "+rootPath+" is empty", e);
-            }
-            break;
-        case NONE:
+        } catch (StorageException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new StorageException("Error while checking that "+rootPath+" is empty", e);
         }
+        
+        CompositeBlobStore.checkSuitability(rootPath, exists, empty);
 
         // and the temporary directory
         tmp = new File(path, "tmp");
