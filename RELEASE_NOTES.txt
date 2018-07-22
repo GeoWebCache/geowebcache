@@ -1,3 +1,17 @@
+GeoWebCache 1.13.2 (2018-07-21)
+-------------------------------
+
+1.13 stable branch patch release
+
+Improvements:
++++++++++++++
+- <New feature>
+- Update to ImageIO 1.1.24, commons-io 2.6 and guava 1.0.24
+
+Fixes:
+++++++
+- Truncate blobstores with pre-existing files
+
 GeoWebCache 1.13.1 (2018-05-18)
 -------------------------------
 
