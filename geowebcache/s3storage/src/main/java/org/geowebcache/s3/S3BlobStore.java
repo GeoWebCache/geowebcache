@@ -58,6 +58,7 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AccessControlList;
+import com.amazonaws.services.s3.model.BucketPolicy;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
@@ -103,14 +104,13 @@ public class S3BlobStore implements BlobStore {
 
         conn = config.buildClient();
         acl = config.getAccessControlList();
-
+                
         try {
-            log.debug("Checking access rights to bucket " + bucketName);
-            AccessControlList bucketAcl = this.conn.getBucketAcl(bucketName);
-            List<Grant> grants = bucketAcl.getGrantsAsList();
-            log.debug("Bucket " + bucketName + " permissions: " + grants);
+            log.debug("Checking policy for bucket " + bucketName);
+            BucketPolicy bucketPol = this.conn.getBucketPolicy(bucketName);
+            log.debug("Bucket " + bucketName + " policy: " + bucketPol.getPolicyText());
         } catch (AmazonServiceException se) {
-            throw new StorageException("Server error listing buckets: " + se.getMessage(), se);
+            throw new StorageException("Server error getting bucket policy: " + se.getMessage(), se);
         } catch (AmazonClientException ce) {
             throw new StorageException("Unable to connect to AWS S3", ce);
         }

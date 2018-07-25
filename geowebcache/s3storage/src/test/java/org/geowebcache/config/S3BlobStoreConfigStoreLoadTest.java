@@ -137,6 +137,7 @@ public class S3BlobStoreConfigStoreLoadTest {
         store.setBucket(properties.getProperty("bucket"));
         store.setAwsAccessKey(properties.getProperty("accessKey"));
         store.setAwsSecretKey(properties.getProperty("secretKey"));
+        store.setEndpoint(properties.getProperty("endpoint"));
         return store;
     }
 

@@ -183,6 +183,8 @@ key structure:
 * y: the y ordinate of the tile in the gridset space.
 * extension: the file extension associated to the tile format. E.g. ``png``, ``jpeg``, etc. (Note the extension is the same for the ``png`` and ``png8`` formats, for example).
 
+Support for S3-compatible servers other than Amazon is also present.
+
 Configuration example:
 
 .. code-block:: xml
@@ -197,6 +199,7 @@ Configuration example:
       <access>private</access>
       <maxConnections>50</maxConnections>
       <useHTTPS>true</useHTTPS>
+      <endpoint>http://putYourServerEndpointHereOrLeaveOutIfUsingAmazon:9000</endpoint>
       <proxyDomain></proxyDomain>
       <proxyWorkstation></proxyWorkstation>
       <proxyHost></proxyHost>
@@ -217,6 +220,7 @@ Properties:
 * **access**: Optional.  Whether direct access in S3 will be readable by the public or only to the owner of the bucket.  Defaults to public, set to private to disable public access.  
 * **maxConnections**: Optional, default: ``50``. Maximum number of concurrent HTTP connections the S3 client may use.
 * **useHTTPS**: Optional, default: ``true``. Whether to use HTTPS when connecting to S3 or not.
+* **endpoint**: Optional. Endpoint of the server, if using an alternative S3-compatible server instead of Amazon.
 * **proxyDomain**: Optional. The Windows domain name for configuring an NTLM proxy. If you are not using a Windows NTLM proxy, you don't need to set this property.
 * **proxyWorkstation**: Optional. The Windows domain name for configuring an NTLM proxy. If you are not using a Windows NTLM proxy, you don't need to set this property.
 * **proxyHost**: Optional. The proxy host the client will connect through.
