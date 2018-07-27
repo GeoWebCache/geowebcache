@@ -45,5 +45,11 @@ public final class GeoToolsMbtilesUtils {
         public MbtilesFileExtended(Connection connection) throws Exception {
             super(new SingleConnectionDataSource(connection, false));
         }
+
+        @Override
+        public void close() {
+            super.close();
+            ((SingleConnectionDataSource) connPool).destroy();
+        }
     }
 }

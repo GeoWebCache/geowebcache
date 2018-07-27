@@ -24,10 +24,7 @@ import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.CompositeBlobStore;
 import org.geowebcache.storage.SuitabilityCheckRule;
 import org.geowebcache.storage.TileObject;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
@@ -46,7 +43,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -148,8 +149,11 @@ public class OperationsRestTest extends TestSupport {
         // instantiating the stores
         File rootDirectoryA = OperationsRestWebConfig.ROOT_DIRECTORY;
         addFilesToDelete(rootDirectoryA);
-        FileUtils.deleteQuietly(OperationsRestWebConfig.ROOT_DIRECTORY);
-        OperationsRestWebConfig.ROOT_DIRECTORY.mkdirs();
+        if (Files.exists(OperationsRestWebConfig.ROOT_DIRECTORY.toPath())) {
+            Files.delete(OperationsRestWebConfig.ROOT_DIRECTORY.toPath());
+        }
+        Files.createDirectories(OperationsRestWebConfig.ROOT_DIRECTORY.toPath());
+
         File rootDirectoryB = Files.createTempDirectory("gwc-").toFile();
         addFilesToDelete(rootDirectoryB);
         MbtilesInfo configurationA = new MbtilesInfo();

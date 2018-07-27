@@ -58,7 +58,9 @@ public abstract class TestSupport {
         }
         // deleting all the files to delete
         for (File file : filesToDelete) {
-            FileUtils.deleteQuietly(file);
+            if (file.exists()) {
+                FileUtils.forceDelete(file);
+            }
         }
     }
 
