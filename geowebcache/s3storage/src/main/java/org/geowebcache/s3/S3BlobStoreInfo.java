@@ -35,8 +35,11 @@ import org.geowebcache.storage.StorageException;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
+import com.amazonaws.auth.AnonymousAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.S3ClientOptions;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.google.common.base.Strings;
 
 /**
  * Plain old java object representing the configuration for an S3 blob store.
@@ -74,6 +77,8 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
     private String proxyPassword;
 
     private Boolean useGzip;
+    
+    private String endpoint;
 
     
     public S3BlobStoreInfo() {
@@ -96,6 +101,20 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
      */
     public void setBucket(String bucket) {
         this.bucket = bucket;
+    }
+    
+    /**
+     * @return the host of the S3-compatible server (if not AWS)
+     */
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    /**
+     * Sets the host of the S3-compatible server (if not AWS)
+     */
+    public void setEndpoint(String host) {
+        this.endpoint = host;
     }
 
     /**
@@ -390,7 +409,18 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
             clientConfig.setUseGzip(useGzip);
         }
         log.debug("Initializing AWS S3 connection");
-        return new AmazonS3Client(getCredentialsProvider(), clientConfig);
+        AmazonS3Client client = new AmazonS3Client(getCredentialsProvider(), 
+                clientConfig);
+        if (endpoint != null && !"".equals(endpoint)) {
+            S3ClientOptions s3ClientOptions = new S3ClientOptions();
+            s3ClientOptions.setPathStyleAccess(true);
+            client.setS3ClientOptions(s3ClientOptions);
+            client.setEndpoint(endpoint);
+        }
+        if(!client.doesBucketExist(bucket)) {
+            client.createBucket(bucket);
+        }
+        return client;
     }
 
     private AWSCredentialsProvider getCredentialsProvider() {
@@ -399,6 +429,9 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
 
                 @Override
                 public AWSCredentials getCredentials() {
+                    if ("".equals(awsAccessKey) && "".equals(awsSecretKey)) {
+                        return new AnonymousAWSCredentials();
+                    }
                     return new BasicAWSCredentials(awsAccessKey, awsSecretKey);
                 }
 

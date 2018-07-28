@@ -123,7 +123,12 @@
               <xs:annotation>
                 <xs:documentation xml:lang="en">Whether to use HTTPS when connecting to S3 or not</xs:documentation>
               </xs:annotation>
-            </xs:element>
+            </xs:element>            
+            <xs:element name="endpoint" type="xs:string" minOccurs="0" nillable="true">
+              <xs:annotation>
+                <xs:documentation xml:lang="en">Endpoint of the server, if using an alternative S3-compatible server instead of Amazon.</xs:documentation>
+              </xs:annotation>
+            </xs:element> 
             <xs:element name="proxyDomain" type="xs:string" minOccurs="0" nillable="true">
               <xs:annotation>
                 <xs:documentation xml:lang="en">

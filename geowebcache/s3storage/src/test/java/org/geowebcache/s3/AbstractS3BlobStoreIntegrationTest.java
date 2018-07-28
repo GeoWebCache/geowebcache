@@ -60,9 +60,7 @@ import org.geowebcache.storage.TileRange;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -74,10 +72,9 @@ import com.google.common.io.Files;
 /**
  * Integration tests for {@link S3BlobStore}.
  * <p>
- * For the tests to be run, a properties file {@code $HOME/.gwc_s3_tests.properties} must exist and
- * contain entries for {@code bucket}, {@code accessKey}, and {@code secretKey}.
+ * This is an abstract class for both online and offline integration tests.
  */
-public class S3BlobStoreIntegrationTest {
+public abstract class AbstractS3BlobStoreIntegrationTest {
 
     private static Log log = LogFactory.getLog(PropertiesLoader.class);
 
@@ -89,16 +86,14 @@ public class S3BlobStoreIntegrationTest {
 
     public PropertiesLoader testConfigLoader = new PropertiesLoader();
 
-    @Rule
-    public TemporaryS3Folder tempFolder = new TemporaryS3Folder(testConfigLoader.getProperties());
-
     private S3BlobStore blobStore;
+    
+    protected abstract S3BlobStoreInfo getConfiguration();
 
     @Before
     public void before() throws Exception {
-        Assume.assumeTrue(tempFolder.isConfigured());
-        S3BlobStoreInfo config = tempFolder.getConfig();
-
+        S3BlobStoreInfo config = getConfiguration();
+        
         TileLayerDispatcher layers = mock(TileLayerDispatcher.class);
         LockProvider lockProvider = new NoOpLockProvider();
         TileLayer layer = mock(TileLayer.class);
@@ -130,13 +125,6 @@ public class S3BlobStoreIntegrationTest {
         Resource resource = queryTile.getBlob();
         assertNotNull(resource);
         assertEquals(bytes.length, resource.getSize());
-    }
-
-    @Test
-    public void testCreatesStoreMetadataOnStart() {
-        String prefix = tempFolder.getConfig().getPrefix();
-        String bucket = tempFolder.getConfig().getBucket();
-        assertThat(tempFolder.getClient().getObjectMetadata(bucket, prefix+"/metadata.properties"), notNullValue());
     }
     
     @Test
