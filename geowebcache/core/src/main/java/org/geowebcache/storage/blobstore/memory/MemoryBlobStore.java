@@ -301,7 +301,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
             }
             executeBlobStoreTask(BlobStoreAction.DESTROY, store, "");
             // Stop the pending tasks
-            executorService.shutdownNow();
+            executorService.shutdown();
         } finally {
             blobStoreStateLock.unlock();
         }

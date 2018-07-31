@@ -20,6 +20,7 @@ package org.geowebcache.util;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -120,7 +121,17 @@ public class FileUtils {
     public static boolean renameFile(File src, File dst){
         // Renaming result initialization
         boolean renamed = false;
-        
+
+        // windows needs special treatment, we cannot rename onto an existing file
+        boolean win = System.getProperty("os.name").startsWith("Windows");
+        if (win && dst.exists()) {
+            // windows does not do atomic renames, and can not rename a file if the dest file
+            // exists
+            if (!dst.delete()) {
+                throw new RuntimeException("Could not delete: " + dst.getPath());
+            }
+        }
+
         // 1) try with Java 7 Files.move
         Path srcPath = Paths.get(src.toURI());
         Path dstPath = Paths.get(dst.toURI());
@@ -164,6 +175,37 @@ public class FileUtils {
             }
 
             return true;
+        }
+    }
+
+    /**
+     * Prints the provided file tree structure onto the returned string
+     * @param dir
+     * @return
+     */
+    public static String printFileTree(File dir) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(dir.getPath()).append("\n");
+        printFileTree_(sb, "", dir);
+        return sb.toString();
+    }
+
+    private static void printFileTree_(StringBuilder sb, String prefix, File dir) {
+        File listFile[] = dir.listFiles();
+        if (listFile != null) {
+            for (int i = 0; i < listFile.length; i++) {
+                boolean last = i == listFile.length - 1;
+                File file = listFile[i];
+                String firstChar = last ? "└" : "├";
+                sb.append(prefix)
+                        .append(firstChar)
+                        .append("──")
+                        .append(file.getName())
+                        .append("\n");
+                if (file.isDirectory()) {
+                    printFileTree_(sb, prefix + (last ? " " : "|") + "  ", file);
+                }
+            }
         }
     }
 }

@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -108,17 +109,23 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
 
         boolean exists = metadataFile.exists();
         boolean empty = true;
-        try {
-            for (@SuppressWarnings("unused") Path p: Files.newDirectoryStream(configuration.getRootDirectoryFile().toPath())) {
-                empty=false;
-                break;
+
+        if (configuration.getRootDirectoryFile().exists()) {
+            try (DirectoryStream<Path> ds = Files.newDirectoryStream(configuration.getRootDirectoryFile().toPath())) {
+                for (@SuppressWarnings("unused") Path p: ds) {
+                    LOGGER.error("Found file: " + p);
+                    empty=false;
+                    break;
+                }
+            } catch (StorageException e) {
+                throw e;
+            } catch (IOException e) {
+                throw new StorageException("Error while checking that "+configuration.getRootDirectory()+" is empty", e);
             }
-        } catch (StorageException e) {
-            throw e;
-        } catch (IOException e) {
-            throw new StorageException("Error while checking that "+configuration.getRootDirectory()+" is empty", e);
+        } else {
+            throw new StorageException("Root directory file does not exist: " + configuration.getRootDirectoryFile());
         }
-        
+
         CompositeBlobStore.checkSuitability(configuration.getRootDirectory(), exists, empty);
         
         eagerDelete = configuration.eagerDelete();
@@ -240,6 +247,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                 }
             } catch (Exception exception) {
                 throw Utils.exception(exception, "Error loading tile '%s' from MBTiles file '%s'.", tile, file);
+            } finally {
+                mbtiles.close();
             }
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(String.format("Tile '%s' not found on file '%s'.", tile, file));

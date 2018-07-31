@@ -19,6 +19,7 @@ package org.geowebcache.storage;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,12 +34,31 @@ import org.geowebcache.io.Resource;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
+import org.junit.Ignore;
 
 public class BlobStoreTest extends TestCase {
     public static final String TEST_BLOB_DIR_NAME = "gwcTestBlobs";
+    private BlobStore fbs;
+
+    @Override
+    protected void tearDown() throws Exception {
+        if (fbs != null) {
+            fbs.destroy();
+        }
+
+        File fh = new File(StorageBrokerTest.findTempDir() + File.separator + TEST_BLOB_DIR_NAME);
+
+        if (fh.exists()) {
+            FileUtils.deleteDirectory(fh);
+            if (fh.exists()) {
+                System.out.println("Unable to delete " + org.geowebcache.util.FileUtils.printFileTree(fh));
+                fail("Could not cleanup blob store directory");
+            }
+        }
+    }
 
     public void testTile() throws Exception {
-        BlobStore fbs = setup();
+        fbs = setup();
 
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
         long[] xyz = { 1L, 2L, 3L };
@@ -55,18 +75,15 @@ public class BlobStoreTest extends TestCase {
         fbs.get(to2);
 
         assertEquals(to.getBlobFormat(), to2.getBlobFormat());
-        InputStream is = to.getBlob().getInputStream();
-        InputStream is2 = to2.getBlob().getInputStream();
-        try {
+
+        try (InputStream is = to.getBlob().getInputStream();
+             InputStream is2 = to2.getBlob().getInputStream()){
             assertTrue(IOUtils.contentEquals(is, is2));
-        } finally {
-            is.close();
-            is2.close();
         }
     }
 
     public void testTileDelete() throws Exception {
-        BlobStore fbs = setup();
+        fbs = setup();
 
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("a", "x");
@@ -83,15 +100,10 @@ public class BlobStoreTest extends TestCase {
                 "image/jpeg", parameters);
         fbs.get(to2);
 
-        InputStream is = to2.getBlob().getInputStream();
-        InputStream is2 = bytes.getInputStream();
-        try {
+        try (        InputStream is = to2.getBlob().getInputStream();
+                     InputStream is2 = bytes.getInputStream()) {
             assertTrue(IOUtils.contentEquals(is, is2));
-        } finally {
-            is.close();
-            is2.close();
         }
-
         TileObject to3 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326",
                 "image/jpeg", parameters);
         fbs.delete(to3);
@@ -102,7 +114,7 @@ public class BlobStoreTest extends TestCase {
     }
 
     public void testTilRangeDelete() throws Exception {
-        BlobStore fbs = setup();
+        fbs = setup();
 
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
         Map<String, String> parameters = new HashMap<String, String>();
@@ -143,25 +155,17 @@ public class BlobStoreTest extends TestCase {
         TileObject firstTO = TileObject.createQueryTileObject(layerName, tos[0].xyz,
                 srs.toString(), mime.getFormat(), parameters);
         fbs.get(firstTO);
-        InputStream is = firstTO.getBlob().getInputStream();
-        InputStream is2 = bytes.getInputStream();
-        try {
+        try (        InputStream is = firstTO.getBlob().getInputStream();
+                     InputStream is2 = bytes.getInputStream();
+        ){
             assertTrue(IOUtils.contentEquals(is, is2));
-        } finally {
-            is.close();
-            is2.close();
         }
-
         TileObject lastTO = TileObject.createQueryTileObject(layerName, tos[tos.length - 1].xyz,
                 srs.toString(), mime.getFormat(), parameters);
         fbs.get(lastTO);
-        is = lastTO.getBlob().getInputStream();
-        is2 = bytes.getInputStream();
-        try {
+        try (InputStream is = lastTO.getBlob().getInputStream();
+        InputStream is2 = bytes.getInputStream()) {
             assertTrue(IOUtils.contentEquals(is, is2));
-        } finally {
-            is.close();
-            is2.close();
         }
 
         TileObject midTO = TileObject.createQueryTileObject(layerName,
@@ -173,7 +177,7 @@ public class BlobStoreTest extends TestCase {
     }
 
     public void testRenameLayer() throws Exception {
-        BlobStore fbs = setup();
+        fbs = setup();
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("a", "x");
@@ -220,11 +224,12 @@ public class BlobStoreTest extends TestCase {
     public BlobStore setup() throws Exception {
         File fh = new File(StorageBrokerTest.findTempDir() + File.separator + TEST_BLOB_DIR_NAME);
 
-        if (fh.exists()) {
-            FileUtils.deleteDirectory(fh);
-        }
-        if (!fh.exists() && !fh.mkdirs()) {
-            throw new StorageException("Unable to create " + fh.getAbsolutePath());
+        if (!fh.exists()) {
+            Files.createDirectory(fh.toPath());
+            if(!fh.exists()) {
+                System.out.println("Unable to create " + org.geowebcache.util.FileUtils.printFileTree(fh));
+                throw new StorageException("Unable to create " + fh.getAbsolutePath());
+            }
         }
 
         return new FileBlobStore(StorageBrokerTest.findTempDir() + File.separator
@@ -232,7 +237,7 @@ public class BlobStoreTest extends TestCase {
     }
 
     public void testLayerMetadata() throws Exception {
-        BlobStore fbs = setup();
+        fbs = setup();
 
         final String layerName = "TestLayer";
         final String key1 = "Test.Metadata.Property_1";

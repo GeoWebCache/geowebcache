@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,8 +40,7 @@ import org.geowebcache.storage.blobstore.memory.CacheProvider;
 import org.geowebcache.storage.blobstore.memory.MemoryBlobStore;
 import org.geowebcache.storage.blobstore.memory.NullBlobStore;
 import org.geowebcache.storage.blobstore.memory.guava.GuavaCacheProvider;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  * This test class is used for testing {@link MemoryBlobStore} functionality
@@ -55,10 +55,26 @@ public class MemoryBlobStoreTest {
     public static final String TEST_BLOB_DIR_NAME = "gwcTestBlobs";
 
     /** Cache object */
-    private static CacheProvider cache;
+    private CacheProvider cache;
+    private MemoryBlobStore mbs;
+    private NullBlobStore nbs;
+    private BlobStore fbs;
 
-    @BeforeClass
-    public static void initialSetup() {
+    @After
+    public void destroyBlobStores() {
+        if (mbs != null) {
+            mbs.destroy();
+        }
+        if (nbs != null) {
+            nbs.destroy();
+        }
+        if (fbs != null) {
+            fbs.destroy();
+        }
+    }
+
+    @Before
+    public void initCache() {
         // Initial cache configuration
         cache = new GuavaCacheProvider(new CacheConfiguration());
     }
@@ -66,10 +82,10 @@ public class MemoryBlobStoreTest {
     @Test
     public void testNullStore() throws Exception {
         // Add a nullblobstore to the memory blobstore
-        NullBlobStore nbs = new NullBlobStore();
+        nbs = new NullBlobStore();
         cache.clear();
 
-        MemoryBlobStore mbs = new MemoryBlobStore();
+        mbs = new MemoryBlobStore();
         mbs.setStore(nbs);
         mbs.setCacheProvider(cache);
 
@@ -113,10 +129,10 @@ public class MemoryBlobStoreTest {
     @Test
     public void testTilePut() throws Exception {
         // Add a fileblobstore to the memory blobstore
-        BlobStore fbs = setup();
+        fbs = setup();
         cache.clear();
 
-        MemoryBlobStore mbs = new MemoryBlobStore();
+        mbs = new MemoryBlobStore();
         mbs.setStore(fbs);
         mbs.setCacheProvider(cache);
 
@@ -158,10 +174,10 @@ public class MemoryBlobStoreTest {
     @Test
     public void testTileDelete() throws Exception {
         // Add a fileblobstore to the memory blobstore
-        BlobStore fbs = setup();
+        fbs = setup();
         cache.clear();
 
-        MemoryBlobStore mbs = new MemoryBlobStore();
+        mbs = new MemoryBlobStore();
         mbs.setStore(fbs);
         mbs.setCacheProvider(cache);
 
@@ -205,10 +221,10 @@ public class MemoryBlobStoreTest {
     @Test
     public void testLastModifiedFromFilesystem() throws Exception {
         // Add a fileblobstore to the memory blobstore
-        BlobStore fbs = setup();
+        fbs = setup();
         cache.clear();
 
-        MemoryBlobStore mbs = new MemoryBlobStore();
+        mbs = new MemoryBlobStore();
         mbs.setStore(fbs);
         mbs.setCacheProvider(cache);
 
@@ -229,7 +245,7 @@ public class MemoryBlobStoreTest {
                 "image/jpeg", parameters);
         mbs.get(to2);
         mbs.clear();
-        // wait a second to ensure we are not getting the same time because the machine is just that fast
+        // wait a second to ensure we are not getting the same tile because the machine is just that fast
         Thread.sleep(1000); 
         TileObject to3 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326",
                 "image/jpeg", parameters);
@@ -251,8 +267,8 @@ public class MemoryBlobStoreTest {
         if (fh.exists()) {
             FileUtils.deleteDirectory(fh);
         }
-        if (!fh.exists() && !fh.mkdirs()) {
-            throw new StorageException("Unable to create " + fh.getAbsolutePath());
+        if (!fh.exists()) {
+            Files.createDirectories(fh.toPath());
         }
 
         return new FileBlobStore(StorageBrokerTest.findTempDir() + File.separator

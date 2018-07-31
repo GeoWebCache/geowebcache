@@ -115,8 +115,8 @@ public class FileBlobStore implements BlobStore {
         }
         final boolean exists = new File(fh, "metadata.properties").exists();
         boolean empty = true;
-            try {
-                for (@SuppressWarnings("unused") Path p: Files.newDirectoryStream(fh.toPath())) {
+            try (DirectoryStream<Path> ds = Files.newDirectoryStream(fh.toPath())) {
+                for (@SuppressWarnings("unused") Path p: ds) {
                 empty=false;
                 break;
                 }
@@ -130,9 +130,10 @@ public class FileBlobStore implements BlobStore {
 
         // and the temporary directory
         tmp = new File(path, "tmp");
-        tmp.mkdirs();
-        if (!tmp.exists() || !tmp.isDirectory() || !tmp.canWrite()) {
-            throw new StorageException(tmp.getPath() + " is not writable directory.");
+        try {
+            Files.createDirectories(tmp.toPath());
+        } catch(IOException e) {
+            throw new StorageException(tmp.getPath() + " is not writable directory.", e);
         }
         
         File metadataFile = new File(path, "metadata.properties");
@@ -181,7 +182,9 @@ public class FileBlobStore implements BlobStore {
      * Destroy method for Spring
      */
     public void destroy() {
-        deleteExecutorService.shutdownNow();
+        if (deleteExecutorService != null) {
+            deleteExecutorService.shutdown();
+        }
     }
 
     private static class DefferredDirectoryDeleteTask implements Runnable {
@@ -535,31 +538,10 @@ public class FileBlobStore implements BlobStore {
 
         try {
             // Open the output stream and read the blob into the tile
-            FileOutputStream fos = null;
-            FileChannel channel = null;
-            try {
-                fos = new FileOutputStream(temp);
-
-                channel = fos.getChannel();
-                try {
+            try (FileOutputStream fos = new FileOutputStream(temp); FileChannel channel = fos.getChannel()){
                     stObj.getBlob().transferTo(channel);
-                } catch (IOException ioe) {
-                    throw new StorageException(ioe.getMessage() + " for "
-                            + target.getAbsolutePath());
-                } finally {
-                    try {
-                        if (channel != null) {
-                            channel.close();
-                        }
-                    } catch (IOException ioe) {
-                        throw new StorageException(ioe.getMessage() + " for "
-                                + target.getAbsolutePath());
-                    }
-                }
-            } catch (FileNotFoundException ioe) {
+            } catch (IOException ioe) {
                 throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
-            } finally {
-                IOUtils.closeQuietly(fos);
             }
 
             // rename to final position. This will fail if another GWC also wrote this
@@ -685,26 +667,16 @@ public class FileBlobStore implements BlobStore {
 
         final String lockObj = metadataFile.getAbsolutePath().intern();
         synchronized (lockObj) {
-            OutputStream out;
-            try {
-                if (!metadataFile.getParentFile().exists()) {
-                    metadataFile.getParentFile().mkdirs();
-                }
-                out = new FileOutputStream(metadataFile);
-            } catch (FileNotFoundException e) {
-                throw new UncheckedIOException(e);
+            if (!metadataFile.getParentFile().exists()) {
+                metadataFile.getParentFile().mkdirs();
             }
-            try {
+            try (OutputStream out = new FileOutputStream(metadataFile)) {
                 String comments = "auto generated file, do not edit by hand";
                 metadata.store(out, comments);
+            } catch (FileNotFoundException e) {
+                throw new UncheckedIOException(e);
             } catch (Exception e) {
                 throw new RuntimeException(e);
-            } finally {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    log.warn(e.getMessage(), e);
-                }
             }
         }
     }

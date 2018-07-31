@@ -169,8 +169,11 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
                 .getResource("geowebcache.xml");
             try(Stream<String> lines = Files.lines(Paths.get(source.toURI()))) {
                 List<String> replaced = lines
-                        .map(line->line.replaceAll("TILING_SCHEME_PATH",
-                            resourceAsFile("/compactcache/Conf.xml").getAbsolutePath()))
+                        .map(line -> {
+                            String tilingSchemePath = resourceAsFile("/compactcache/Conf.xml").getAbsolutePath();
+                            // no need to use replaceAll and involve regex replacement rules
+                            return line.replace("TILING_SCHEME_PATH", tilingSchemePath);
+                        })
                         .collect(Collectors.toList());
                 Files.write(configFile.toPath(), replaced);
             }

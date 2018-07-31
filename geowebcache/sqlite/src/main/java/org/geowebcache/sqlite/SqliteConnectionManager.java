@@ -21,6 +21,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -200,7 +201,7 @@ public final class SqliteConnectionManager {
         ExtendedConnection connection = pooledConnection.getExtendedConnection();
         try {
             // do the work
-            T result = work.doWork(pooledConnection.getExtendedConnection());
+            T result = work.doWork(connection);
             if (!connection.closeInvoked()) {
                 // the work didn't close the connection, this is fine unless the connection was retained for future usage
                 if (LOGGER.isDebugEnabled()) {
@@ -227,9 +228,10 @@ public final class SqliteConnectionManager {
         }
         PooledConnection currentPooledConnection = getPooledConnection(currentFile).getWriteLockOnValidConnection();
         try {
-            currentPooledConnection.closeConnection();
-            pool.remove(currentFile);
-            FileUtils.deleteQuietly(currentFile);
+            currentPooledConnection.reapConnection();
+            if (currentFile.exists()) {
+                Files.delete(currentFile.toPath());
+            }
             FileUtils.moveFile(newFile, currentFile);
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info(String.format("File '%s' replaced with file '%s'.", currentFile, newFile));
