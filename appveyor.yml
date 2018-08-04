@@ -5,6 +5,6 @@ branches:
 cache: 
   - C:\Users\appveyor\.m2\ -> geowebcache\pom.xml
 build_script:
-- cmd: >-
-  cd geowebcache
-  mvn install -T2 -Dall -fae -nsu
+  - cmd: |
+      cd geowebcache
+      mvn install -T2 -Dall -fae -nsu
