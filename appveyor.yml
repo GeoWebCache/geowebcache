@@ -7,4 +7,4 @@ cache:
 build_script:
   - cmd: |
       cd geowebcache
-      mvn install -T2 -Dall -fae -nsu
+      mvn install -T2 -Dall -fae -U
