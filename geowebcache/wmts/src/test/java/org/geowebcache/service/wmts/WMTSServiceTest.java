@@ -774,7 +774,9 @@ public class WMTSServiceTest {
         
         assertEquals("5", xpath.evaluate(
                 "count(//wmts:Contents/wmts:Layer/wmts:ResourceURL"
-                + "[contains(@template,'&elevation={elevation}&time={time}')])", doc));        
+                + "[contains(@template,'&elevation={elevation}&time={time}')])", doc));
+
+        assertEquals("2", xpath.evaluate("count(//wmts:Contents/wmts:Layer/wmts:Dimension/ows:Identifier)", doc));
     }
     
     @SuppressWarnings("unchecked")
