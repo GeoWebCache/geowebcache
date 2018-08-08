@@ -648,7 +648,7 @@ public class WMTSGetCapabilities {
          
      private void dimensionDescription(XMLBuilder xml, ParameterFilter filter, List<String> values) throws IOException {
          xml.indentElement("Dimension");
-         xml.simpleElement("Identifier", filter.getKey(), false);
+         xml.simpleElement("ows:Identifier", filter.getKey(), false);
          String defaultStr = TileLayer.encodeDimensionValue(filter.getDefaultValue());
          xml.simpleElement("Default", defaultStr, false);
          
