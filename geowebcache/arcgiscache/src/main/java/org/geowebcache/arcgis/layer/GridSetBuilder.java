@@ -1,7 +1,6 @@
 package org.geowebcache.arcgis.layer;
 
 import java.util.List;
-
 import org.geowebcache.arcgis.config.CacheInfo;
 import org.geowebcache.arcgis.config.LODInfo;
 import org.geowebcache.arcgis.config.SpatialReference;
@@ -15,22 +14,21 @@ import org.springframework.util.Assert;
 
 /**
  * Utility to crate a {@link GridSet} out of a ArcGIS tiling scheme
- * 
+ *
  * @author Gabriel Roldan
- * 
  */
 class GridSetBuilder {
 
     /**
      * Creates a {@link GridSet} out of a ArcGIS tiling scheme
-     * 
+     *
      * @param layerName
      * @param info
      * @param layerBounds
      * @return
      */
-    public GridSet buildGridset(final String layerName, final CacheInfo info,
-            final BoundingBox layerBounds) {
+    public GridSet buildGridset(
+            final String layerName, final CacheInfo info, final BoundingBox layerBounds) {
 
         Assert.notNull(layerName);
         Assert.notNull(info);
@@ -54,11 +52,10 @@ class GridSetBuilder {
         final int tileWidth = tileCacheInfo.getTileCols();
         final int tileHeight = tileCacheInfo.getTileRows();
         final boolean yCoordinateFirst = false;
-        final double pixelSize = 0.0254 / tileCacheInfo.getDPI();// see GridSubset.getDotsPerInch()
+        final double pixelSize = 0.0254 / tileCacheInfo.getDPI(); // see GridSubset.getDotsPerInch()
         {
             int epsgNumber = spatialReference.getWKID();
-            if (0 == epsgNumber) {
-            }
+            if (0 == epsgNumber) {}
             srs = SRS.getSRS(epsgNumber);
         }
         {
@@ -68,7 +65,7 @@ class GridSetBuilder {
             resolutions = resAndScales[0];
 
             double[] scales = resAndScales[1];
-            //TODO: check whether pixelSize computed above should be used instead
+            // TODO: check whether pixelSize computed above should be used instead
             metersPerUnit = (GridSetFactory.DEFAULT_PIXEL_SIZE_METER * scales[0]) / resolutions[0];
         }
         {
@@ -80,7 +77,7 @@ class GridSetBuilder {
             // at the ecuator and 360 the map units at the ecuator
             // final double xyScale = spatialReference.getXYScale();
 
-            final TileOrigin tileOrigin = tileCacheInfo.getTileOrigin();// top left coordinate
+            final TileOrigin tileOrigin = tileCacheInfo.getTileOrigin(); // top left coordinate
 
             double xmin = tileOrigin.getX();
             double ymax = tileOrigin.getY();
@@ -103,9 +100,20 @@ class GridSetBuilder {
         }
 
         String gridsetName = srs.toString() + "_" + layerName;
-        GridSet layerGridset = GridSetFactory.createGridSet(gridsetName, srs, gridSetExtent,
-                alignTopLeft, resolutions, scaleDenominators, metersPerUnit, pixelSize, scaleNames,
-                tileWidth, tileHeight, yCoordinateFirst);
+        GridSet layerGridset =
+                GridSetFactory.createGridSet(
+                        gridsetName,
+                        srs,
+                        gridSetExtent,
+                        alignTopLeft,
+                        resolutions,
+                        scaleDenominators,
+                        metersPerUnit,
+                        pixelSize,
+                        scaleNames,
+                        tileWidth,
+                        tileHeight,
+                        yCoordinateFirst);
 
         return layerGridset;
     }
@@ -121,5 +129,4 @@ class GridSetBuilder {
         }
         return resolutionsAndScales;
     }
-
 }

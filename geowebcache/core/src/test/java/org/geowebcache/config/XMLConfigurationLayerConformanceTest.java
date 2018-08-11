@@ -1,19 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2018
- *
+ * <p>Copyright 2018
  */
 package org.geowebcache.config;
 
@@ -23,11 +20,8 @@ import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.Optional;
-
 import org.apache.commons.io.FileUtils;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.MockWepAppContextRule;
@@ -45,19 +39,27 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.springframework.web.context.WebApplicationContext;
-
 
 public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest {
 
     public @Rule MockWepAppContextRule extensions = new MockWepAppContextRule();
     public @Rule MockWepAppContextRule extensions2 = new MockWepAppContextRule(false);
-    
+
     @Override
     protected TileLayer getGoodInfo(String id, int rand) {
-        WMSLayer layer = new WMSLayer(id, new String[] {"http://example.com/"}, null, 
-                Integer.toString(rand),null, null, null, null,
-                null, false, null);
+        WMSLayer layer =
+                new WMSLayer(
+                        id,
+                        new String[] {"http://example.com/"},
+                        null,
+                        Integer.toString(rand),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        false,
+                        null);
         return layer;
     }
 
@@ -65,7 +67,7 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
     protected TileLayer getBadInfo(String id, int rand) {
         return new AbstractTileLayer() {
             {
-                this.name=id;
+                this.name = id;
             }
 
             @Override
@@ -97,7 +99,7 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
             public void seedTile(ConveyorTile tile, boolean tryCache)
                     throws GeoWebCacheException, IOException {
                 // TODO Auto-generated method stub
-                
+
             }
 
             @Override
@@ -106,63 +108,66 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
                 // TODO Auto-generated method stub
                 return null;
             }
-            
         };
     }
-    
-    @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
+
+    @Rule public TemporaryFolder temp = new TemporaryFolder();
     protected File configDir;
     protected File configFile;
-    
+
     protected TileLayerConfiguration getConfig() throws Exception {
         makeConfigFile();
         return getConfig(extensions);
     }
-    
+
     protected TileLayerConfiguration getSecondConfig() throws Exception {
         return getConfig(extensions2);
     }
-    
+
     TestXMLConfigurationSource configSource = new TestXMLConfigurationSource();
-    
+
     protected TileLayerConfiguration getConfig(MockWepAppContextRule extensions) throws Exception {
         return configSource.create(extensions, configDir);
     }
 
     protected void makeConfigFile() throws Exception {
-        if(configFile==null) {
+        if (configFile == null) {
             configDir = temp.getRoot();
             configFile = temp.newFile("geowebcache.xml");
-            
-            URL source = XMLConfiguration.class
-                .getResource("geowebcache_1120.xml");
+
+            URL source = XMLConfiguration.class.getResource("geowebcache_1120.xml");
             FileUtils.copyURLToFile(source, configFile);
         }
     }
 
     @Override
     protected Matcher<TileLayer> infoEquals(TileLayer expected) {
-        return new CustomMatcher<TileLayer>("Layer matching "+expected.getId()+" with "+ ((WMSLayer)expected).getWmsLayers()){
-            
+        return new CustomMatcher<TileLayer>(
+                "Layer matching "
+                        + expected.getId()
+                        + " with "
+                        + ((WMSLayer) expected).getWmsLayers()) {
+
             @Override
             public boolean matches(Object item) {
-                return item instanceof WMSLayer && ((WMSLayer)item).getId().equals(((WMSLayer)expected).getId()) &&
-                    ((WMSLayer)item).getWmsLayers().equals(((WMSLayer)expected).getWmsLayers());
+                return item instanceof WMSLayer
+                        && ((WMSLayer) item).getId().equals(((WMSLayer) expected).getId())
+                        && ((WMSLayer) item)
+                                .getWmsLayers()
+                                .equals(((WMSLayer) expected).getWmsLayers());
             }
-            
         };
     }
+
     @Override
     protected Matcher<TileLayer> infoEquals(int expected) {
-        return new CustomMatcher<TileLayer>("Layer with value"+ expected){
-            
+        return new CustomMatcher<TileLayer>("Layer with value" + expected) {
+
             @Override
             public boolean matches(Object item) {
-                return item instanceof WMSLayer &&
-                    ((WMSLayer)item).getWmsLayers().equals(expected);
+                return item instanceof WMSLayer
+                        && ((WMSLayer) item).getWmsLayers().equals(expected);
             }
-            
         };
     }
 
@@ -189,10 +194,10 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
 
     @Override
     protected void doModifyInfo(TileLayer info, int rand) throws Exception {
-        ((WMSLayer)info).setWmsLayers(Integer.toString(rand));
+        ((WMSLayer) info).setWmsLayers(Integer.toString(rand));
     }
 
-    @Override 
+    @Override
     @Ignore // TODO Need to implement a clone/deep copy/modification proxy to make this safe.
     @Test
     public void testModifyCallRequiredToChangeInfoFromGetInfo() throws Exception {
@@ -223,9 +228,11 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
     @Test
     public void testGetExistingHasGridset() throws Exception {
         Optional<TileLayer> retrieved = getInfo(config, getExistingInfo());
-        assertThat(retrieved, isPresent(hasProperty("gridSubsets", Matchers.containsInAnyOrder("EPSG:4326", "EPSG:2163"))));
+        assertThat(
+                retrieved,
+                isPresent(
+                        hasProperty(
+                                "gridSubsets",
+                                Matchers.containsInAnyOrder("EPSG:4326", "EPSG:2163"))));
     }
-
-    
-    
 }

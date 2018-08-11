@@ -1,20 +1,17 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
-
 package org.geowebcache.layer.wms;
 
 import java.io.IOException;
@@ -25,17 +22,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.legends.LegendsRawInfo;
 import org.geowebcache.config.XMLGridSubset;
+import org.geowebcache.config.legends.LegendsRawInfo;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -59,25 +54,25 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.util.GWCVars;
 
-/**
- * A tile layer backed by a WMS server
- */
+/** A tile layer backed by a WMS server */
 public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
     private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
 
     public enum RequestType {
-        MAP, FEATUREINFO
+        MAP,
+        FEATUREINFO
     };
-    
+
     public enum HttpRequestMode {
-        Get, FormPost;
+        Get,
+        FormPost;
     }
 
     private String[] wmsUrl;
 
     private String wmsLayers;
-    
+
     private String wmsQueryLayers;
 
     protected String wmsStyles;
@@ -129,12 +124,12 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     private HttpRequestMode httpRequestMode = HttpRequestMode.Get;
 
     WMSLayer() {
-        //default constructor for XStream
+        // default constructor for XStream
     }
-    
+
     /**
      * Note XStream uses reflection, this is only used for testing and loading from getCapabilities
-     * 
+     *
      * @param layerName
      * @param wmsURL
      * @param wmsStyles
@@ -145,16 +140,32 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
      * @param metaWidthHeight
      * @param vendorParams
      * @param queryable
-     * 
      * @deprecated 1.6.0
      */
     @Deprecated
-    public WMSLayer(String layerName, String[] wmsURL, String wmsStyles, String wmsLayers,
-            List<String> mimeFormats, Map<String, GridSubset> subSets,
-            List<ParameterFilter> parameterFilters, int[] metaWidthHeight, String vendorParams,
+    public WMSLayer(
+            String layerName,
+            String[] wmsURL,
+            String wmsStyles,
+            String wmsLayers,
+            List<String> mimeFormats,
+            Map<String, GridSubset> subSets,
+            List<ParameterFilter> parameterFilters,
+            int[] metaWidthHeight,
+            String vendorParams,
             boolean queryable) {
-        this(layerName, wmsURL,wmsStyles, wmsLayers, mimeFormats, subSets, parameterFilters, 
-                metaWidthHeight, vendorParams, queryable, null);
+        this(
+                layerName,
+                wmsURL,
+                wmsStyles,
+                wmsLayers,
+                mimeFormats,
+                subSets,
+                parameterFilters,
+                metaWidthHeight,
+                vendorParams,
+                queryable,
+                null);
     }
 
     /**
@@ -172,10 +183,18 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
      * @param queryable
      * @param wmsQueryLayers
      */
-    public WMSLayer(String layerName, String[] wmsURL, String wmsStyles, String wmsLayers,
-            List<String> mimeFormats, Map<String, GridSubset> subSets,
-            List<ParameterFilter> parameterFilters, int[] metaWidthHeight, String vendorParams,
-            boolean queryable, String wmsQueryLayers) {
+    public WMSLayer(
+            String layerName,
+            String[] wmsURL,
+            String wmsStyles,
+            String wmsLayers,
+            List<String> mimeFormats,
+            Map<String, GridSubset> subSets,
+            List<ParameterFilter> parameterFilters,
+            int[] metaWidthHeight,
+            String vendorParams,
+            boolean queryable,
+            String wmsQueryLayers) {
 
         this.name = layerName;
         this.wmsUrl = wmsURL;
@@ -189,8 +208,8 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
                 gridSubsets.add(new XMLGridSubset(subset));
             }
         }
-        this.parameterFilters = parameterFilters == null ? null : new ArrayList<ParameterFilter>(
-                parameterFilters);
+        this.parameterFilters =
+                parameterFilters == null ? null : new ArrayList<ParameterFilter>(parameterFilters);
         this.metaWidthHeight = metaWidthHeight;
         this.vendorParameters = vendorParams;
         this.transparent = true;
@@ -206,7 +225,8 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     }
 
     /**
-     * @see org.geowebcache.layer.AbstractTileLayer#initializeInternal(org.geowebcache.grid.GridSetBroker)
+     * @see
+     *     org.geowebcache.layer.AbstractTileLayer#initializeInternal(org.geowebcache.grid.GridSetBroker)
      */
     @Override
     protected boolean initializeInternal(GridSetBroker gridSetBroker) {
@@ -215,8 +235,9 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         }
 
         if (null == this.sourceHelper) {
-            log.warn(this.name
-                    + " is configured without a source, which is a bug unless you're running tests that don't care.");
+            log.warn(
+                    this.name
+                            + " is configured without a source, which is a bug unless you're running tests that don't care.");
         }
 
         curWmsURL = 0;
@@ -264,27 +285,26 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     }
 
     @Override
-    public Resource getFeatureInfo(ConveyorTile convTile, BoundingBox bbox, int height, int width,
-            int x, int y) throws GeoWebCacheException {
+    public Resource getFeatureInfo(
+            ConveyorTile convTile, BoundingBox bbox, int height, int width, int x, int y)
+            throws GeoWebCacheException {
         return sourceHelper.makeFeatureInfoRequest(convTile, bbox, height, width, x, y);
     }
 
     /**
      * The main function
-     * 
-     * 1) Create cache key, test whether we can retrieve without locking
-     * 2) Get lock for metatile, monitor condition variable if not (Recheck cache after signal)
-     * 3) Create metatile request, execute
-     * 4) Get tiles and save them to cache
-     * 5) Unlock metatile, signal other threads
+     *
+     * <p>1) Create cache key, test whether we can retrieve without locking 2) Get lock for
+     * metatile, monitor condition variable if not (Recheck cache after signal) 3) Create metatile
+     * request, execute 4) Get tiles and save them to cache 5) Unlock metatile, signal other threads
      * 6) Set Cache-Control, return tile
-     * 
+     *
      * @param tile The tile request
      * @return The resulting tile request
      * @throws OutsideCoverageException
      */
-    public ConveyorTile getTile(ConveyorTile tile) throws GeoWebCacheException, IOException,
-            OutsideCoverageException {
+    public ConveyorTile getTile(ConveyorTile tile)
+            throws GeoWebCacheException, IOException, OutsideCoverageException {
         MimeType mime = tile.getMimeType();
 
         if (mime == null) {
@@ -292,8 +312,8 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         }
 
         if (!formats.contains(mime)) {
-            throw new GeoWebCacheException(mime.getFormat() + " is not a supported format for "
-                    + name);
+            throw new GeoWebCacheException(
+                    mime.getFormat() + " is not a supported format for " + name);
         }
 
         String tileGridSetId = tile.getGridSetId();
@@ -318,17 +338,15 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         } finally {
             cleanUpThreadLocals();
         }
-        
+
         sendTileRequestedEvent(returnTile);
 
         return returnTile;
     }
 
-    /**
-     * Used for seeding
-     */
-    public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException,
-            IOException {
+    /** Used for seeding */
+    public void seedTile(ConveyorTile tile, boolean tryCache)
+            throws GeoWebCacheException, IOException {
         GridSubset gridSubset = getGridSubset(tile.getGridSetId());
         if (gridSubset.shouldCacheAtZoom(tile.getTileIndex()[2])) {
             if (tile.getMimeType().supportsTiling()
@@ -342,11 +360,9 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
     /**
      * Metatiling request forwarding
-     * 
-     * @param tile
-     *            the Tile with all the information
-     * @param tryCache
-     *            whether to try the cache, or seed
+     *
+     * @param tile the Tile with all the information
+     * @param tryCache whether to try the cache, or seed
      * @throws GeoWebCacheException
      */
     private ConveyorTile getMetatilingReponse(ConveyorTile tile, boolean tryCache)
@@ -364,9 +380,16 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         if (filteringParameters.isEmpty()) {
             filteringParameters = getDefaultParameterFilters();
         }
-        WMSMetaTile metaTile = new WMSMetaTile(this, gridSubset, mimeType,
-                this.getFormatModifier(tile.getMimeType()), gridLoc, metaWidthHeight[0],
-                metaWidthHeight[1], filteringParameters);
+        WMSMetaTile metaTile =
+                new WMSMetaTile(
+                        this,
+                        gridSubset,
+                        mimeType,
+                        this.getFormatModifier(tile.getMimeType()),
+                        gridLoc,
+                        metaWidthHeight[0],
+                        metaWidthHeight[1],
+                        filteringParameters);
 
         // Leave a hint to save expiration, if necessary
         if (saveExpirationHeaders) {
@@ -383,9 +406,9 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
                 // Someone got it already, return lock and we're done
                 return finalizeTile(tile);
             }
-    
+
             tile.setCacheResult(CacheResult.MISS);
-            
+
             /*
              * This thread's byte buffer
              */
@@ -400,8 +423,8 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
             sourceHelper.makeRequest(metaTile, buffer);
 
             if (metaTile.getError()) {
-                throw new GeoWebCacheException("Empty metatile, error message: "
-                        + metaTile.getErrorMessage());
+                throw new GeoWebCacheException(
+                        "Empty metatile, error message: " + metaTile.getErrorMessage());
             }
 
             if (saveExpirationHeaders) {
@@ -415,7 +438,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
             /** ****************** Return lock and response ****** */
         } finally {
-            if(lock != null) {
+            if (lock != null) {
                 lock.release();
             }
             metaTile.dispose();
@@ -425,9 +448,9 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
     private String buildLockKey(ConveyorTile tile, WMSMetaTile metaTile) {
         StringBuilder metaKey = new StringBuilder();
-        
+
         final long[] tileIndex;
-        if(metaTile != null) {
+        if (metaTile != null) {
             tileIndex = metaTile.getMetaGridPos();
             metaKey.append("meta_");
         } else {
@@ -441,9 +464,9 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         metaKey.append(tile.getLayerId());
         metaKey.append("_").append(tile.getGridSetId());
         metaKey.append("_").append(x).append("_").append(y).append("_").append(z);
-        if(tile.getParametersId() != null) {
+        if (tile.getParametersId() != null) {
             metaKey.append("_").append(tile.getParametersId());
-        }            
+        }
         metaKey.append(".").append(tile.getMimeType().getFileExtension());
 
         return metaKey.toString();
@@ -451,11 +474,9 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
     /**
      * Non-metatiling forward to backend
-     * 
-     * @param tile
-     *            the Tile with all the information
-     * @param tryCache
-     *            whether to try the cache, or seed
+     *
+     * @param tile the Tile with all the information
+     * @param tryCache whether to try the cache, or seed
      * @throws GeoWebCacheException
      */
     private ConveyorTile getNonMetatilingReponse(ConveyorTile tile, boolean tryCache)
@@ -468,7 +489,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         try {
             /** ****************** Acquire lock ******************* */
             lock = lockProvider.getLock(lockKey);
-            
+
             /** ****************** Check cache again ************** */
             if (tryCache && tryCacheFetch(tile)) {
                 // Someone got it already, return lock and we're done
@@ -496,7 +517,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
             /** ****************** Return lock and response ****** */
         } finally {
-            if(lock != null) {
+            if (lock != null) {
                 lock.release();
             }
         }
@@ -550,8 +571,9 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
             if (getExpireCache(0) == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
                 if (backendExpire == -1) {
                     this.expireCacheList.set(0, new ExpirationRule(0, 7200));
-                    log.error("Layer profile wants MaxAge from backend,"
-                            + " but backend does not provide this. Setting to 7200 seconds.");
+                    log.error(
+                            "Layer profile wants MaxAge from backend,"
+                                    + " but backend does not provide this. Setting to 7200 seconds.");
                 } else {
                     this.expireCacheList.set(backendExpire, new ExpirationRule(0, 7200));
                 }
@@ -560,13 +582,13 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
             if (getExpireCache(0) == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
                 if (backendExpire == -1) {
                     this.expireClientsList.set(0, new ExpirationRule(0, 7200));
-                    log.error("Layer profile wants MaxAge from backend,"
-                            + " but backend does not provide this. Setting to 7200 seconds.");
+                    log.error(
+                            "Layer profile wants MaxAge from backend,"
+                                    + " but backend does not provide this. Setting to 7200 seconds.");
                 } else {
                     this.expireClientsList.set(0, new ExpirationRule(0, backendExpire));
                     log.trace("Setting expireClients to: " + expireClients);
                 }
-
             }
         } catch (Exception e) {
             // Sometimes this doesn't work (network conditions?),
@@ -672,7 +694,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
     /**
      * Get the WMS backend URL that should be used next according to the round robin.
-     * 
+     *
      * @return the next URL
      */
     protected String nextWmsURL() {
@@ -705,12 +727,13 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     public String getWmsLayers() {
         return wmsLayers;
     }
+
     public void setWmsLayers(String wmsLayers) {
         this.wmsLayers = wmsLayers;
     }
-    
+
     public String getWmsQueryLayers() {
-    	return wmsQueryLayers;
+        return wmsQueryLayers;
     }
 
     public String getHttpPassword() {
@@ -725,18 +748,16 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         return proxyUrl;
     }
 
-    /**
-     * Mandatory
-     */
+    /** Mandatory */
     public void setSourceHelper(WMSSourceHelper source) {
         log.debug("Setting sourceHelper on " + this.name);
         this.sourceHelper = source;
-        if(concurrency != null) {
+        if (concurrency != null) {
             this.sourceHelper.setConcurrency(concurrency);
         } else {
             this.sourceHelper.setConcurrency(32);
         }
-        if(backendTimeout != null) {
+        if (backendTimeout != null) {
             this.sourceHelper.setBackendTimeout(backendTimeout);
         } else {
             this.sourceHelper.setBackendTimeout(120);
@@ -835,25 +856,28 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
             } else {
                 url = new URL(serverStr + queryStr);
             }
-            
+
             WMSSourceHelper helper = getSourceHelper();
-            if(! (helper instanceof WMSHttpHelper)) {
-               throw new GeoWebCacheException("Can only proxy if WMS Layer is backed by an HTTP backend"); 
+            if (!(helper instanceof WMSHttpHelper)) {
+                throw new GeoWebCacheException(
+                        "Can only proxy if WMS Layer is backed by an HTTP backend");
             }
 
-            method = ((WMSHttpHelper) helper).executeRequest(url, null, getBackendTimeout(), getHttpRequestMode());
+            method =
+                    ((WMSHttpHelper) helper)
+                            .executeRequest(url, null, getBackendTimeout(), getHttpRequestMode());
             is = method.getResponseBodyAsStream();
 
             HttpServletResponse response = tile.servletResp;
             response.setCharacterEncoding(method.getResponseCharSet());
             Header contentType = method.getResponseHeader("Content-Type");
-            if(contentType != null) {
+            if (contentType != null) {
                 response.setContentType(contentType.getValue());
             }
-            
+
             int read = 0;
             byte[] data = new byte[1024];
-            
+
             while (read > -1) {
                 read = is.read(data);
                 if (read > -1) {
@@ -864,13 +888,12 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         } catch (IOException ioe) {
             tile.servletResp.setStatus(500);
             log.error(ioe.getMessage());
-        } finally{
+        } finally {
             if (method != null) {
                 method.releaseConnection();
             }
             IOUtils.closeQuietly(is);
         }
-        
     }
 
     public LegendsRawInfo getLegends() {
@@ -884,12 +907,15 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     @Override
     public Map<String, org.geowebcache.config.legends.LegendInfo> getLayerLegendsInfo() {
         String layerName = wmsLayers == null ? getName() : wmsLayers;
-        return legends == null ? super.getLayerLegendsInfo() :
-                legends.getLegendsInfo(layerName, wmsUrl != null && wmsUrl.length > 0 ? wmsUrl[0] : null);
+        return legends == null
+                ? super.getLayerLegendsInfo()
+                : legends.getLegendsInfo(
+                        layerName, wmsUrl != null && wmsUrl.length > 0 ? wmsUrl[0] : null);
     }
-    
+
     /**
-     * The request mode used for this layer, defaults to {@link HttpRequestMode#Get} if not set in the configuration
+     * The request mode used for this layer, defaults to {@link HttpRequestMode#Get} if not set in
+     * the configuration
      */
     public HttpRequestMode getHttpRequestMode() {
         return httpRequestMode == null ? HttpRequestMode.Get : httpRequestMode;

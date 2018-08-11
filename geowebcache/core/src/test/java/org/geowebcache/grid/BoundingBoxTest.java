@@ -1,7 +1,6 @@
 package org.geowebcache.grid;
 
 import java.util.Arrays;
-
 import junit.framework.TestCase;
 
 public class BoundingBoxTest extends TestCase {
@@ -14,9 +13,9 @@ public class BoundingBoxTest extends TestCase {
     /**
      * Verifies that this functions output remains as expected, since we communicate a lot using
      * strings.
-     * 
-     * Ff not you should figure out where it is used.
-     * 
+     *
+     * <p>Ff not you should figure out where it is used.
+     *
      * @throws Exception
      */
     public void testBBOX() throws Exception {
@@ -52,12 +51,12 @@ public class BoundingBoxTest extends TestCase {
         assertEquals(5D, intersection.getWidth());
         assertEquals(5D, intersection.getHeight());
         assertTrue(intersection.isSane());
-        assertTrue(Arrays.equals(new double[] { 5, 5, 10, 10 }, intersection.getCoords()));
+        assertTrue(Arrays.equals(new double[] {5, 5, 10, 10}, intersection.getCoords()));
     }
 
     /**
      * Two bboxes don't intersect, BoundingBox.intersection()'s result should be the empty bbox
-     * 
+     *
      * @throws Exception
      */
     public void testIntersectionNonIntersecting() throws Exception {

@@ -1,29 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.geowebcache.storage.blobstore.memory.distributed;
-
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.InputStream;
-
-import org.apache.commons.io.filefilter.NameFileFilter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.config.MapConfig;
@@ -32,24 +19,35 @@ import com.hazelcast.config.NearCacheConfig;
 import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import org.apache.commons.io.filefilter.NameFileFilter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
- * This class is used for handling configuration of the Hazelcast cluster. User can directly inject an Hazelcast instance or can setup a file called
- * hazelcast.xml and define its directory with the hazelcast.config.dir Java property. Note that the configuration must contain a map with name
- * "CacheProviderMap" with a specific size in MB, an eviction policy equal to LRU or LFU. Also if NearCache is enabled, user must be careful that the
- * max size is not bigger or equal to Integer.MAX_VALUE
- * 
+ * This class is used for handling configuration of the Hazelcast cluster. User can directly inject
+ * an Hazelcast instance or can setup a file called hazelcast.xml and define its directory with the
+ * hazelcast.config.dir Java property. Note that the configuration must contain a map with name
+ * "CacheProviderMap" with a specific size in MB, an eviction policy equal to LRU or LFU. Also if
+ * NearCache is enabled, user must be careful that the max size is not bigger or equal to
+ * Integer.MAX_VALUE
+ *
  * @author Nicola Lagomarsini Geosolutions
  */
 public class HazelcastLoader implements InitializingBean {
     /** {@link Logger} object used for logging exceptions */
-    private final static Log LOGGER = LogFactory.getLog(HazelcastLoader.class);
+    private static final Log LOGGER = LogFactory.getLog(HazelcastLoader.class);
 
     /** Property name for the Hazelcast property file */
-    public final static String HAZELCAST_CONFIG_DIR = "hazelcast.config.dir";
+    public static final String HAZELCAST_CONFIG_DIR = "hazelcast.config.dir";
 
     /** Name of the Hazelcast XML file to use */
-    public final static String HAZELCAST_NAME = "hazelcast.xml";
+    public static final String HAZELCAST_NAME = "hazelcast.xml";
 
     /** Hazelcast instance to pass to the {@link HazelcastCacheProvider} class */
     private HazelcastInstance instance;
@@ -106,7 +104,7 @@ public class HazelcastLoader implements InitializingBean {
 
     /**
      * Indicates if the Hazelcast instance has been configured
-     * 
+     *
      * @return a boolean indicating if hazelcast instance can be used or not
      */
     public boolean isConfigured() {
@@ -115,7 +113,7 @@ public class HazelcastLoader implements InitializingBean {
 
     /**
      * Setter for the Hazelcast instance
-     * 
+     *
      * @param instance
      */
     public void setInstance(HazelcastInstance instance) {
@@ -124,7 +122,7 @@ public class HazelcastLoader implements InitializingBean {
 
     /**
      * Returns the Hazelcast instance to use
-     * 
+     *
      * @return Hazelcast instance if present or null
      */
     public HazelcastInstance getInstance() {
@@ -132,25 +130,30 @@ public class HazelcastLoader implements InitializingBean {
     }
 
     /**
-     * Validation for an input {@link Config} object provided. This method ensures that the input configuration contains a map with name
-     * "CacheProviderMap", contains a size configuration in Mb and related to the used Heap size and has an eviction policy equal to LRU or LFU. If a
-     * NearCache object is defined it cannot have max size greater or equal to {@link Integer}.MAX_VALUE
+     * Validation for an input {@link Config} object provided. This method ensures that the input
+     * configuration contains a map with name "CacheProviderMap", contains a size configuration in
+     * Mb and related to the used Heap size and has an eviction policy equal to LRU or LFU. If a
+     * NearCache object is defined it cannot have max size greater or equal to {@link
+     * Integer}.MAX_VALUE
      */
-    private boolean configAccepted(Config config){
+    private boolean configAccepted(Config config) {
         boolean configAccepted = false;
         if (config != null) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Checking configuration");
             }
             // Check if the cache map is present
-            if (config.getMapConfigs().containsKey(
-                    HazelcastCacheProvider.HAZELCAST_MAP_DEFINITION)) {
-                MapConfig mapConfig = config
-                        .getMapConfig(HazelcastCacheProvider.HAZELCAST_MAP_DEFINITION);
+            if (config.getMapConfigs()
+                    .containsKey(HazelcastCacheProvider.HAZELCAST_MAP_DEFINITION)) {
+                MapConfig mapConfig =
+                        config.getMapConfig(HazelcastCacheProvider.HAZELCAST_MAP_DEFINITION);
                 // Check size policy
                 boolean sizeDefined = mapConfig.getMaxSizeConfig().getSize() > 0;
-                boolean policyExists = mapConfig.getEvictionPolicy() != MapConfig.DEFAULT_EVICTION_POLICY;
-                boolean sizeFromHeap = mapConfig.getMaxSizeConfig().getMaxSizePolicy() == MaxSizeConfig.MaxSizePolicy.USED_HEAP_SIZE;
+                boolean policyExists =
+                        mapConfig.getEvictionPolicy() != MapConfig.DEFAULT_EVICTION_POLICY;
+                boolean sizeFromHeap =
+                        mapConfig.getMaxSizeConfig().getMaxSizePolicy()
+                                == MaxSizeConfig.MaxSizePolicy.USED_HEAP_SIZE;
 
                 // Check Near Cache size
                 boolean nearCacheAccepted = true;

@@ -1,19 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Gabriel Roldan (OpenGeo) 2010
- *  
  */
 package org.geowebcache.util;
 
@@ -30,11 +27,8 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
-
 import javax.imageio.ImageIO;
-
 import junit.framework.Assert;
-
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
@@ -66,22 +60,38 @@ public class TestUtils {
         return out.toByteArray();
     }
 
-    public static WMSLayer createWMSLayer(String format, GridSetBroker gridSetBroker,
-            int metaTileFactorX, int metaTileFactorY, BoundingBox boundingBox) {
+    public static WMSLayer createWMSLayer(
+            String format,
+            GridSetBroker gridSetBroker,
+            int metaTileFactorX,
+            int metaTileFactorY,
+            BoundingBox boundingBox) {
 
-        String[] urls = { "http://localhost:38080/wms" };
+        String[] urls = {"http://localhost:38080/wms"};
         List<String> formatList = Collections.singletonList(format);
 
         Hashtable<String, GridSubset> grids = new Hashtable<String, GridSubset>();
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(),
-                boundingBox, 0, 10);
+        GridSubset grid =
+                GridSubsetFactory.createGridSubSet(
+                        gridSetBroker.getWorldEpsg4326(), boundingBox, 0, 10);
 
         grids.put(grid.getName(), grid);
-        int[] metaWidthHeight = { metaTileFactorX, metaTileFactorY };
+        int[] metaWidthHeight = {metaTileFactorX, metaTileFactorY};
 
-        WMSLayer layer = new WMSLayer("test:layer", urls, "aStyle", "test:layer", formatList,
-                grids, null, metaWidthHeight, "vendorparam=true", false, null);
+        WMSLayer layer =
+                new WMSLayer(
+                        "test:layer",
+                        urls,
+                        "aStyle",
+                        "test:layer",
+                        formatList,
+                        grids,
+                        null,
+                        metaWidthHeight,
+                        "vendorparam=true",
+                        false,
+                        null);
 
         layer.initialize(gridSetBroker);
 
@@ -131,8 +141,8 @@ public class TestUtils {
     }
 
     public static void assertEquals(long[] expected, long[] actual) {
-        String errstr = "expected: " + Arrays.toString(expected) + ", actual: "
-                + Arrays.toString(actual);
+        String errstr =
+                "expected: " + Arrays.toString(expected) + ", actual: " + Arrays.toString(actual);
         if (expected.length != actual.length) {
             Assert.fail(errstr);
         }
@@ -147,32 +157,31 @@ public class TestUtils {
 
     public static <T> Matcher<Optional<T>> isPresent(Matcher<T> valueMatcher) {
         return new BaseMatcher<Optional<T>>() {
-            
+
             @Override
             public boolean matches(Object item) {
-                if(! (item instanceof Optional)) {
+                if (!(item instanceof Optional)) {
                     return false;
                 } else {
-                    return ((Optional<?>)item).map(valueMatcher::matches).orElse(false);
+                    return ((Optional<?>) item).map(valueMatcher::matches).orElse(false);
                 }
             }
-            
+
             @Override
             public void describeTo(Description description) {
                 description.appendText("Optional with value ").appendDescriptionOf(valueMatcher);
             }
-            
+
             @Override
             public void describeMismatch(Object item, Description description) {
-                if(! (item instanceof Optional)) {
-                    description.appendText(item.toString()+" is not an Optional");
-                } else if(!((Optional<?>)item).isPresent()){
+                if (!(item instanceof Optional)) {
+                    description.appendText(item.toString() + " is not an Optional");
+                } else if (!((Optional<?>) item).isPresent()) {
                     description.appendText("Value was not present");
                 } else {
-                    valueMatcher.describeMismatch(((Optional<?>)item).get(), description);
+                    valueMatcher.describeMismatch(((Optional<?>) item).get(), description);
                 }
             }
-            
         };
     }
 
@@ -182,19 +191,18 @@ public class TestUtils {
 
     /**
      * Match string matching a regular expression
+     *
      * @param regex
      * @return
      */
     public static Matcher<String> matchesRegex(String regex) {
         final Pattern p = Pattern.compile(regex);
-        return new CustomMatcher<String>("matching /"+regex+"/") {
-            
+        return new CustomMatcher<String>("matching /" + regex + "/") {
+
             @Override
             public boolean matches(Object arg0) {
                 return p.matcher((CharSequence) arg0).matches();
             }
-            
         };
     }
-    
 }

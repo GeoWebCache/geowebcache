@@ -1,19 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2018
- *
+ * <p>Copyright 2018
  */
 package org.geowebcache.arcgis.layer;
 
@@ -31,7 +28,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.MockWepAppContextRule;
 import org.geowebcache.config.GridSetConfiguration;
@@ -46,9 +42,10 @@ import org.geowebcache.layer.TileLayer;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
+
 public class XMLConfigurationLayerConformanceWithArcGisLayersTest
         extends XMLConfigurationLayerConformanceTest {
-    
+
     @Override
     public void setUpTestUnit() throws Exception {
         super.setUpTestUnit();
@@ -58,13 +55,13 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
         URL url = getClass().getResource(resource);
         File f;
         try {
-          f = new File(url.toURI());
-        } catch(URISyntaxException e) {
-          f = new File(url.getPath());
+            f = new File(url.toURI());
+        } catch (URISyntaxException e) {
+            f = new File(url.getPath());
         }
         return f;
     }
-    
+
     @Override
     protected TileLayer getGoodInfo(String id, int rand) {
         ArcGISCacheLayer layer = new ArcGISCacheLayer(id);
@@ -78,74 +75,77 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
     protected TileLayer getBadInfo(String id, int rand) {
         return new AbstractTileLayer() {
             {
-                this.name=id;
+                this.name = id;
             }
-        
+
             @Override
             protected boolean initializeInternal(GridSetBroker gridSetBroker) {
                 // TODO Auto-generated method stub
                 return false;
             }
-        
+
             @Override
             public String getStyles() {
                 // TODO Auto-generated method stub
                 return null;
             }
-        
+
             @Override
             public ConveyorTile getTile(ConveyorTile tile)
                     throws GeoWebCacheException, IOException, OutsideCoverageException {
                 // TODO Auto-generated method stub
                 return null;
             }
-        
+
             @Override
             public ConveyorTile getNoncachedTile(ConveyorTile tile) throws GeoWebCacheException {
                 // TODO Auto-generated method stub
                 return null;
             }
-        
+
             @Override
             public void seedTile(ConveyorTile tile, boolean tryCache)
                     throws GeoWebCacheException, IOException {
                 // TODO Auto-generated method stub
-                
+
             }
-        
+
             @Override
             public ConveyorTile doNonMetatilingRequest(ConveyorTile tile)
                     throws GeoWebCacheException {
                 // TODO Auto-generated method stub
                 return null;
             }
-            
         };
     }
 
     @Override
     protected Matcher<TileLayer> infoEquals(TileLayer expected) {
-        return new CustomMatcher<TileLayer>("ArcGISCacheLayer matching "+expected.getName()+" with "+ ((ArcGISCacheLayer)expected).getBackendTimeout()){
-            
+        return new CustomMatcher<TileLayer>(
+                "ArcGISCacheLayer matching "
+                        + expected.getName()
+                        + " with "
+                        + ((ArcGISCacheLayer) expected).getBackendTimeout()) {
+
             @Override
             public boolean matches(Object item) {
-                return item instanceof ArcGISCacheLayer &&
-                    ((ArcGISCacheLayer)item).getBackendTimeout().equals(expected.getBackendTimeout());
+                return item instanceof ArcGISCacheLayer
+                        && ((ArcGISCacheLayer) item)
+                                .getBackendTimeout()
+                                .equals(expected.getBackendTimeout());
             }
-            
         };
     }
 
     @Override
     protected Matcher<TileLayer> infoEquals(int expected) {
-        return new CustomMatcher<TileLayer>("ArcGISCacheLayer with value"+ expected){
-            
+        return new CustomMatcher<TileLayer>("ArcGISCacheLayer with value" + expected) {
+
             @Override
             public boolean matches(Object item) {
-                return item instanceof ArcGISCacheLayer &&
-                    ((ArcGISCacheLayer)item).getBackendTimeout().equals(expected);
+                return item instanceof ArcGISCacheLayer
+                        && ((ArcGISCacheLayer) item).getBackendTimeout().equals(expected);
             }
-            
         };
     }
 
@@ -156,51 +156,66 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
 
     @Override
     protected void doModifyInfo(TileLayer info, int rand) throws Exception {
-        ((ArcGISCacheLayer)info).setBackendTimeout(rand);
+        ((ArcGISCacheLayer) info).setBackendTimeout(rand);
     }
-    
+
     @Override
     protected void makeConfigFile() throws Exception {
-        if(configFile==null) {
+        if (configFile == null) {
             configDir = temp.getRoot();
             configFile = temp.newFile("geowebcache.xml");
-            
-            URL source = XMLConfigurationLayerConformanceWithArcGisLayersTest.class
-                .getResource("geowebcache.xml");
-            try(Stream<String> lines = Files.lines(Paths.get(source.toURI()))) {
-                List<String> replaced = lines
-                        .map(line -> {
-                            String tilingSchemePath = resourceAsFile("/compactcache/Conf.xml").getAbsolutePath();
-                            // no need to use replaceAll and involve regex replacement rules
-                            return line.replace("TILING_SCHEME_PATH", tilingSchemePath);
-                        })
-                        .collect(Collectors.toList());
+
+            URL source =
+                    XMLConfigurationLayerConformanceWithArcGisLayersTest.class.getResource(
+                            "geowebcache.xml");
+            try (Stream<String> lines = Files.lines(Paths.get(source.toURI()))) {
+                List<String> replaced =
+                        lines.map(
+                                        line -> {
+                                            String tilingSchemePath =
+                                                    resourceAsFile("/compactcache/Conf.xml")
+                                                            .getAbsolutePath();
+                                            // no need to use replaceAll and involve regex
+                                            // replacement rules
+                                            return line.replace(
+                                                    "TILING_SCHEME_PATH", tilingSchemePath);
+                                        })
+                                .collect(Collectors.toList());
                 Files.write(configFile.toPath(), replaced);
             }
-            
         }
     }
-    
+
     @Override
     protected TileLayerConfiguration getConfig(MockWepAppContextRule extensions) throws Exception {
-        extensions.addBean("ArcGISLayerConfigProvider", 
-                new ArcGISLayerXMLConfigurationProvider(), XMLConfigurationProvider.class);
-        ArcGISCacheGridsetConfiguration arcGISCacheGridsetConfiguration = new ArcGISCacheGridsetConfiguration();
-        extensions.addBean("ArcGISLayerGridSetConfiguration", 
-                arcGISCacheGridsetConfiguration, GridSetConfiguration.class, ArcGISCacheGridsetConfiguration.class);
-        
+        extensions.addBean(
+                "ArcGISLayerConfigProvider",
+                new ArcGISLayerXMLConfigurationProvider(),
+                XMLConfigurationProvider.class);
+        ArcGISCacheGridsetConfiguration arcGISCacheGridsetConfiguration =
+                new ArcGISCacheGridsetConfiguration();
+        extensions.addBean(
+                "ArcGISLayerGridSetConfiguration",
+                arcGISCacheGridsetConfiguration,
+                GridSetConfiguration.class,
+                ArcGISCacheGridsetConfiguration.class);
+
         return super.getConfig(extensions);
     }
 
     @Override
     public void testGetExistingHasGridset() throws Exception {
         Optional<TileLayer> retrieved = getInfo(config, getExistingInfo());
-        assertThat(retrieved, isPresent(hasProperty("gridSubsets", Matchers.containsInAnyOrder("EPSG:3857_testExisting"))));
+        assertThat(
+                retrieved,
+                isPresent(
+                        hasProperty(
+                                "gridSubsets",
+                                Matchers.containsInAnyOrder("EPSG:3857_testExisting"))));
     }
 
     public void testGetExistingIsArcGisLayer() throws Exception {
         Optional<TileLayer> retrieved = getInfo(config, getExistingInfo());
         assertThat(retrieved, Matchers.instanceOf(ArcGISCacheLayer.class));
     }
-
 }

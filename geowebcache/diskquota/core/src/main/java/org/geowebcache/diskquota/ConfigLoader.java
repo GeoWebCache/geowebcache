@@ -1,22 +1,26 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Gabriel Roldan (OpenGeo) 2010
- *  
  */
 package org.geowebcache.diskquota;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.XStreamException;
+import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -32,7 +36,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheEnvironment;
@@ -52,29 +55,18 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.springframework.util.Assert;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.XStreamException;
-import com.thoughtworks.xstream.converters.Converter;
-import com.thoughtworks.xstream.converters.MarshallingContext;
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-
 /**
  * Utility class to load the disk quota configuration
- * <p>
- * An instance of this class is expected to be configured as a spring bean and then passed over as a
- * constructor parameter to {@link DiskQuotaMonitor}.
- * </p>
- * <p>
- * When {@link #loadConfig()} is called, a file named {@code geowebcache-diskquota.xml} will be
- * looked up for in the cache directory as specified by
- * {@link DefaultStorageFinder#getDefaultPath()}. The configuration file must adhere to the
- * {@code geowebcache-diskquota.xsd} schema.
- * </p>
- * 
+ *
+ * <p>An instance of this class is expected to be configured as a spring bean and then passed over
+ * as a constructor parameter to {@link DiskQuotaMonitor}.
+ *
+ * <p>When {@link #loadConfig()} is called, a file named {@code geowebcache-diskquota.xml} will be
+ * looked up for in the cache directory as specified by {@link
+ * DefaultStorageFinder#getDefaultPath()}. The configuration file must adhere to the {@code
+ * geowebcache-diskquota.xsd} schema.
+ *
  * @author Gabriel Roldan
- * 
  */
 public class ConfigLoader {
 
@@ -85,53 +77,50 @@ public class ConfigLoader {
     private final TileLayerDispatcher tileLayerDispatcher;
 
     private final ConfigurationResourceProvider resourceProvider;
-    
+
     private final DefaultStorageFinder storageFinder;
 
     /**
-     * 
-     * @param storageFinder
-     *            used to get the location of the cache directory
-     * @param contextProvider
-     *            used to look up registered instances of {@link ExpirationPolicy} and to aid in
-     *            determining the location of the {@code geowebcache-diskquota.xml} configuration
-     *            file
-     * @param tld
-     *            used only to validate the presence of a layer at {@link #loadConfig()} and ignore
-     *            the layer quota definition if the {@link TileLayer} does not exist
+     * @param storageFinder used to get the location of the cache directory
+     * @param contextProvider used to look up registered instances of {@link ExpirationPolicy} and
+     *     to aid in determining the location of the {@code geowebcache-diskquota.xml} configuration
+     *     file
+     * @param tld used only to validate the presence of a layer at {@link #loadConfig()} and ignore
+     *     the layer quota definition if the {@link TileLayer} does not exist
      * @throws IOException
      */
-    public ConfigLoader(final DefaultStorageFinder storageFinder,
-            final ApplicationContextProvider contextProvider, final TileLayerDispatcher tld)
+    public ConfigLoader(
+            final DefaultStorageFinder storageFinder,
+            final ApplicationContextProvider contextProvider,
+            final TileLayerDispatcher tld)
             throws ConfigurationException {
-        this(new XMLFileResourceProvider(CONFIGURATION_FILE_NAME,
-                contextProvider, null, storageFinder), storageFinder, tld);
+        this(
+                new XMLFileResourceProvider(
+                        CONFIGURATION_FILE_NAME, contextProvider, null, storageFinder),
+                storageFinder,
+                tld);
     }
-    
+
     /**
-     * 
-     * 
      * @param resourceProvider provides custom configuration resource
-     * @param storageFinder
-     *            used to get the location of the cache directory
-     * @param tld
-     *            used only to validate the presence of a layer at {@link #loadConfig()} and ignore
-     *            the layer quota definition if the {@link TileLayer} does not exist
+     * @param storageFinder used to get the location of the cache directory
+     * @param tld used only to validate the presence of a layer at {@link #loadConfig()} and ignore
+     *     the layer quota definition if the {@link TileLayer} does not exist
      * @throws IOException
      */
-    public ConfigLoader(final ConfigurationResourceProvider resourceProvider,
-            final DefaultStorageFinder storageFinder, final TileLayerDispatcher tld)
+    public ConfigLoader(
+            final ConfigurationResourceProvider resourceProvider,
+            final DefaultStorageFinder storageFinder,
+            final TileLayerDispatcher tld)
             throws ConfigurationException {
         this.resourceProvider = resourceProvider;
         this.storageFinder = storageFinder;
         this.tileLayerDispatcher = tld;
     }
-    
-    
 
     /**
      * Saves the configuration to the root cache directory
-     * 
+     *
      * @param config
      * @throws IOException
      * @throws ConfigurationException
@@ -141,35 +130,37 @@ public class ConfigLoader {
             log.error("Unable to save DiskQuota to resource :" + resourceProvider.getLocation());
             return;
         }
-        
+
         XStream xStream = getConfiguredXStream(new GeoWebCacheXStream());
-        
+
         log.debug("Saving disk quota config to " + resourceProvider.getLocation());
         try (OutputStream configOut = resourceProvider.out()) {
             xStream.toXML(config, new OutputStreamWriter(configOut, "UTF-8"));
         } catch (RuntimeException e) {
-            log.error("Error saving DiskQuota config to file :"
-                    + resourceProvider.getLocation());
+            log.error("Error saving DiskQuota config to file :" + resourceProvider.getLocation());
         }
     }
 
     public DiskQuotaConfig loadConfig() throws IOException, ConfigurationException {
         DiskQuotaConfig quotaConfig = null;
-        
+
         if (resourceProvider.hasInput()) {
             log.info("Quota config is: " + resourceProvider.getLocation());
-            
+
             try (InputStream configIn = resourceProvider.in()) {
                 quotaConfig = loadConfiguration(configIn);
                 if (null == quotaConfig) {
-                    throw new ConfigurationException("Couldn't parse configuration file "
-                            + resourceProvider.getLocation());
+                    throw new ConfigurationException(
+                            "Couldn't parse configuration file " + resourceProvider.getLocation());
                 }
             } catch (IOException | RuntimeException e) {
                 log.error(
                         "Error loading DiskQuota configuration from "
-                                + resourceProvider.getLocation() + ": " + e.getMessage()
-                                + ". Deferring to a default (disabled) configuration", e);
+                                + resourceProvider.getLocation()
+                                + ": "
+                                + e.getMessage()
+                                + ". Deferring to a default (disabled) configuration",
+                        e);
             }
         } else {
             log.info("DiskQuota configuration is not readable: " + resourceProvider.getLocation());
@@ -178,7 +169,7 @@ public class ConfigLoader {
         if (quotaConfig == null) {
             quotaConfig = new DiskQuotaConfig();
         }
-        
+
         // set default values
         quotaConfig.setDefaults();
 
@@ -212,8 +203,10 @@ public class ConfigLoader {
         if (null != quotaConfig.getLayerQuotas()) {
             for (LayerQuota lq : new ArrayList<LayerQuota>(quotaConfig.getLayerQuotas())) {
                 if (null == lq.getQuota()) {
-                    log.info("Configured quota for layer " + lq.getLayer()
-                            + " is null. Discarding it to be attached to the global quota");
+                    log.info(
+                            "Configured quota for layer "
+                                    + lq.getLayer()
+                                    + " is null. Discarding it to be attached to the global quota");
                     quotaConfig.remove(lq);
                     continue;
                 }
@@ -229,8 +222,11 @@ public class ConfigLoader {
         try {
             tileLayerDispatcher.getTileLayer(layer);
         } catch (GeoWebCacheException e) {
-            log.error("LayerQuota configuration error: layer " + layer
-                    + " does not exist. Removing quota from runtime configuration.", e);
+            log.error(
+                    "LayerQuota configuration error: layer "
+                            + layer
+                            + " does not exist. Removing quota from runtime configuration.",
+                    e);
             quotaConfig.remove(lq);
         }
 
@@ -239,9 +235,11 @@ public class ConfigLoader {
             // if expiration policy is not defined, then there should be no quota defined either,
             // as it means the layer is managed by the global expiration policy, if any
             if (lq.getQuota() != null) {
-                throw new ConfigurationException("Layer " + lq.getLayer()
-                        + " has no expiration policy, but does have a quota defined. "
-                        + "Either both or neither should be present");
+                throw new ConfigurationException(
+                        "Layer "
+                                + lq.getLayer()
+                                + " has no expiration policy, but does have a quota defined. "
+                                + "Either both or neither should be present");
             }
             return;
         }
@@ -250,8 +248,12 @@ public class ConfigLoader {
         try {
             validateQuota(quota);
         } catch (ConfigurationException e) {
-            log.error("LayerQuota configuration error for layer " + layer + ". Error message is: "
-                    + e.getMessage() + ". Quota removed from runtime configuration.");
+            log.error(
+                    "LayerQuota configuration error for layer "
+                            + layer
+                            + ". Error message is: "
+                            + e.getMessage()
+                            + ". Quota removed from runtime configuration.");
             quotaConfig.remove(lq);
         }
     }
@@ -284,22 +286,22 @@ public class ConfigLoader {
 
     public static DiskQuotaConfig loadConfiguration(final Reader reader, XStream xstream) {
         DiskQuotaConfig fromXML = (DiskQuotaConfig) xstream.fromXML(reader);
-        
-        final GeoWebCacheEnvironment gwcEnvironment = GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
-        
+
+        final GeoWebCacheEnvironment gwcEnvironment =
+                GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
+
         if (gwcEnvironment != null && GeoWebCacheEnvironment.ALLOW_ENV_PARAMETRIZATION) {
             fromXML.setQuotaStore((String) gwcEnvironment.resolveValue(fromXML.getQuotaStore()));
         }
-        
-        
+
         return fromXML;
     }
 
     public static XStream getConfiguredXStream(XStream xs) {
         // Allow anything that's part of GWC Diskquota
         // TODO: replace this with a more narrow whitelist
-        xs.allowTypesByWildcard(new String[]{"org.geowebcache.**"});
-        
+        xs.allowTypesByWildcard(new String[] {"org.geowebcache.**"});
+
         xs.setMode(XStream.NO_REFERENCES);
 
         xs.alias("gwcQuotaConfiguration", DiskQuotaConfig.class);
@@ -312,13 +314,14 @@ public class ConfigLoader {
 
     /**
      * Opens an output stream for a file relative to the cache storage folder
-     * 
+     *
      * @param fileNameRelPath
      * @return
      * @throws IOException
-     * @throws ConfigurationException 
+     * @throws ConfigurationException
      */
-    public OutputStream getStorageOutputStream(String... fileNameRelPath) throws IOException, ConfigurationException {
+    public OutputStream getStorageOutputStream(String... fileNameRelPath)
+            throws IOException, ConfigurationException {
         File rootCacheDir = getFileStorageDir(fileNameRelPath);
         String fileName = fileNameRelPath[fileNameRelPath.length - 1];
         File configFile = new File(rootCacheDir, fileName);
@@ -327,15 +330,14 @@ public class ConfigLoader {
 
     /**
      * Opens a stream over an existing file relative to the cache storage folder
-     * 
-     * @param fileNameRelPath
-     *            the file name relative to the cache storage folder to open
+     *
+     * @param fileNameRelPath the file name relative to the cache storage folder to open
      * @return
-     * @throws IOException
-     *             if {@code fileName} doesn't exist
-     * @throws ConfigurationException 
+     * @throws IOException if {@code fileName} doesn't exist
+     * @throws ConfigurationException
      */
-    public InputStream getStorageInputStream(String... fileNameRelPath) throws IOException, ConfigurationException {
+    public InputStream getStorageInputStream(String... fileNameRelPath)
+            throws IOException, ConfigurationException {
         File rootCacheDir = getFileStorageDir(fileNameRelPath);
         String fileName = fileNameRelPath[fileNameRelPath.length - 1];
         File configFile = new File(rootCacheDir, fileName);
@@ -343,9 +345,8 @@ public class ConfigLoader {
     }
 
     /**
-     * @param fileNameRelPath
-     *            file path relative to the cache storage directory, where the last entry is the
-     *            file name and any previous one directory names
+     * @param fileNameRelPath file path relative to the cache storage directory, where the last
+     *     entry is the file name and any previous one directory names
      * @return
      * @throws StorageException
      */
@@ -363,23 +364,21 @@ public class ConfigLoader {
     }
 
     /**
-     * Handles XStream conversion of {@link Quota}s to persist them as
-     * {@code <value>value</value><units>StorageUnit</units>} instead of plain byte count.
-     * 
+     * Handles XStream conversion of {@link Quota}s to persist them as {@code
+     * <value>value</value><units>StorageUnit</units>} instead of plain byte count.
+     *
      * @author groldan
-     * 
      */
     private static final class QuotaXSTreamConverter implements Converter {
-        /**
-         * @see com.thoughtworks.xstream.converters.ConverterMatcher#canConvert(java.lang.Class)
-         */
+        /** @see com.thoughtworks.xstream.converters.ConverterMatcher#canConvert(java.lang.Class) */
         public boolean canConvert(Class type) {
             return Quota.class.equals(type);
         }
 
         /**
-         * @see com.thoughtworks.xstream.converters.Converter#unmarshal(com.thoughtworks.xstream.io.HierarchicalStreamReader,
-         *      com.thoughtworks.xstream.converters.UnmarshallingContext)
+         * @see
+         *     com.thoughtworks.xstream.converters.Converter#unmarshal(com.thoughtworks.xstream.io.HierarchicalStreamReader,
+         *     com.thoughtworks.xstream.converters.UnmarshallingContext)
          */
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
 
@@ -407,11 +406,11 @@ public class ConfigLoader {
 
         /**
          * @see com.thoughtworks.xstream.converters.Converter#marshal(java.lang.Object,
-         *      com.thoughtworks.xstream.io.HierarchicalStreamWriter,
-         *      com.thoughtworks.xstream.converters.MarshallingContext)
+         *     com.thoughtworks.xstream.io.HierarchicalStreamWriter,
+         *     com.thoughtworks.xstream.converters.MarshallingContext)
          */
-        public void marshal(Object source, HierarchicalStreamWriter writer,
-                MarshallingContext context) {
+        public void marshal(
+                Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             Quota quota = (Quota) source;
             BigInteger bytes = quota.getBytes();
             StorageUnit unit = StorageUnit.bestFit(bytes);

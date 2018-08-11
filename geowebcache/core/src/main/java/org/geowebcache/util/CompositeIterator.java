@@ -15,9 +15,7 @@ public class CompositeIterator<T> implements Iterator<T> {
         curr = this.iterators.hasNext() ? this.iterators.next() : null;
     }
 
-    /**
-     * @see java.util.Iterator#hasNext()
-     */
+    /** @see java.util.Iterator#hasNext() */
     public boolean hasNext() {
         if (curr == null) {
             return false;
@@ -33,9 +31,7 @@ public class CompositeIterator<T> implements Iterator<T> {
         return hasNext();
     }
 
-    /**
-     * @see java.util.Iterator#next()
-     */
+    /** @see java.util.Iterator#next() */
     public T next() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -43,11 +39,8 @@ public class CompositeIterator<T> implements Iterator<T> {
         return curr.next();
     }
 
-    /**
-     * @see java.util.Iterator#remove()
-     */
+    /** @see java.util.Iterator#remove() */
     public void remove() {
         throw new UnsupportedOperationException();
     }
-
 }

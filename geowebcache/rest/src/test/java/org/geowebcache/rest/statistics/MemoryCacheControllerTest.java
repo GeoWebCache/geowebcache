@@ -1,22 +1,21 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author David Vick, Boundless, 2017
  */
-
 package org.geowebcache.rest.statistics;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.MockConfigurationResourceProvider;
@@ -37,15 +36,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.io.InputStream;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({
-        "file*:/webapp/WEB-INF/web.xml",
-        "file*:/webapp/WEB-INF/geowebcache-servlet.xml"
+    "file*:/webapp/WEB-INF/web.xml",
+    "file*:/webapp/WEB-INF/geowebcache-servlet.xml"
 })
 public class MemoryCacheControllerTest {
     private MockMvc mockMvc;
@@ -65,7 +59,7 @@ public class MemoryCacheControllerTest {
 
     @Test
     public void testStatisticsXml() throws Exception {
-        //Initialize a new MemoryBlobStore with cache
+        // Initialize a new MemoryBlobStore with cache
         CacheProvider cache = new GuavaCacheProvider(new CacheConfiguration());
         NullBlobStore nbs = new NullBlobStore();
         cache.clear();
@@ -75,13 +69,14 @@ public class MemoryCacheControllerTest {
         mcc.setBlobStore(mbs);
         mbs.setCacheProvider(cache);
 
-        this.mockMvc.perform(get("/rest/statistics.xml")
-                .contextPath("")).andExpect(status().is2xxSuccessful());
+        this.mockMvc
+                .perform(get("/rest/statistics.xml").contextPath(""))
+                .andExpect(status().is2xxSuccessful());
     }
 
     @Test
     public void testStatisticsJson() throws Exception {
-        //Initialize a new MemoryBlobStore with cache
+        // Initialize a new MemoryBlobStore with cache
         CacheProvider cache = new GuavaCacheProvider(new CacheConfiguration());
         NullBlobStore nbs = new NullBlobStore();
         cache.clear();
@@ -91,17 +86,23 @@ public class MemoryCacheControllerTest {
         mcc.setBlobStore(mbs);
         mbs.setCacheProvider(cache);
 
-        this.mockMvc.perform(get("/rest/statistics.json")
-                .contextPath("")).andExpect(status().is2xxSuccessful());
+        this.mockMvc
+                .perform(get("/rest/statistics.json").contextPath(""))
+                .andExpect(status().is2xxSuccessful());
     }
 
     private XMLConfiguration loadXMLConfig() {
 
         XMLConfiguration xmlConfig = null;
         try {
-            xmlConfig = new XMLConfiguration(null, new MockConfigurationResourceProvider(
-                    ()->XMLConfiguration.class.getResourceAsStream(
-                            XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE)));
+            xmlConfig =
+                    new XMLConfiguration(
+                            null,
+                            new MockConfigurationResourceProvider(
+                                    () ->
+                                            XMLConfiguration.class.getResourceAsStream(
+                                                    XMLConfigurationBackwardsCompatibilityTest
+                                                            .GWC_125_CONFIG_FILE)));
         } catch (Exception e) {
             // Do nothing
         }

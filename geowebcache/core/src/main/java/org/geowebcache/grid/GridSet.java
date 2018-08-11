@@ -1,32 +1,27 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, OpenGeo, Copyright 2009
  */
 package org.geowebcache.grid;
 
 import java.util.Arrays;
-
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.geowebcache.config.Info;
 
-/**
- * A grid set configuration
- */
+/** A grid set configuration */
 public class GridSet implements Info {
 
     private String name;
@@ -61,8 +56,8 @@ public class GridSet implements Info {
     private String description;
 
     /**
-     * {@code true} if the resolutions are preserved and the scaleDenominators calculated,
-     * {@code false} if the resolutions are calculated based on the sacale denominators.
+     * {@code true} if the resolutions are preserved and the scaleDenominators calculated, {@code
+     * false} if the resolutions are calculated based on the sacale denominators.
      */
     private boolean resolutionsPreserved;
 
@@ -70,7 +65,6 @@ public class GridSet implements Info {
         // Blank
     }
 
-    
     public GridSet(GridSet g) {
         super();
         this.name = g.name;
@@ -88,35 +82,28 @@ public class GridSet implements Info {
         this.resolutionsPreserved = g.resolutionsPreserved;
     }
 
-
-    /**
-     * @return the originalExtent
-     */
+    /** @return the originalExtent */
     public BoundingBox getOriginalExtent() {
         return originalExtent;
     }
 
-    /**
-     * @param originalExtent
-     *            the originalExtent to set
-     */
+    /** @param originalExtent the originalExtent to set */
     void setOriginalExtent(BoundingBox originalExtent) {
         this.originalExtent = originalExtent;
     }
 
     /**
      * @return {@code true} if the resolutions are preserved and the scaleDenominators calculated,
-     *         {@code false} if the resolutions are calculated based on the sacale denominators.
+     *     {@code false} if the resolutions are calculated based on the sacale denominators.
      */
     public boolean isResolutionsPreserved() {
         return resolutionsPreserved;
     }
 
     /**
-     * @param resolutionsPreserved
-     *            {@code true} if the resolutions are preserved and the scaleDenominators
-     *            calculated, {@code false} if the resolutions are calculated based on the sacale
-     *            denominators.
+     * @param resolutionsPreserved {@code true} if the resolutions are preserved and the
+     *     scaleDenominators calculated, {@code false} if the resolutions are calculated based on
+     *     the sacale denominators.
      */
     void setResolutionsPreserved(boolean resolutionsPreserved) {
         this.resolutionsPreserved = resolutionsPreserved;
@@ -138,15 +125,19 @@ public class GridSet implements Info {
         double height = grid.getResolution() * getTileHeight();
 
         final double[] tileOrigin = tileOrigin();
-        BoundingBox tileBounds = new BoundingBox(tileOrigin[0] + width * tileX, tileOrigin[1]
-                + height * (tileY), tileOrigin[0] + width * (tileX + 1), tileOrigin[1] + height
-                * (tileY + 1));
+        BoundingBox tileBounds =
+                new BoundingBox(
+                        tileOrigin[0] + width * tileX,
+                        tileOrigin[1] + height * (tileY),
+                        tileOrigin[0] + width * (tileX + 1),
+                        tileOrigin[1] + height * (tileY + 1));
         return tileBounds;
     }
 
     /**
      * Finds the spatial bounding box of a rectangular group of tiles.
-     * @param rectangleExtent the rectangle of tiles.  {minx, miny, maxx, maxy} in tile coordinates
+     *
+     * @param rectangleExtent the rectangle of tiles. {minx, miny, maxx, maxy} in tile coordinates
      * @return the spatial bounding box in the coordinates of the SRS used by the GridSet
      */
     protected BoundingBox boundsFromRectangle(long[] rectangleExtent) {
@@ -224,7 +215,7 @@ public class GridSet implements Info {
             posY = posY + grid.getNumTilesHigh();
         }
 
-        long[] ret = { posX, posY, level };
+        long[] ret = {posX, posY, level};
 
         return ret;
     }
@@ -243,8 +234,8 @@ public class GridSet implements Info {
             double countX = rectWidth / (grid.getResolution() * getTileWidth());
             double countY = rectHeight / (grid.getResolution() * getTileHeight());
 
-            double error = Math.abs(countX - Math.round(countX))
-                    + Math.abs(countY - Math.round(countY));
+            double error =
+                    Math.abs(countX - Math.round(countX)) + Math.abs(countY - Math.round(countY));
 
             if (error < bestError) {
                 bestError = error;
@@ -259,9 +250,11 @@ public class GridSet implements Info {
 
     /**
      * Find the rectangle of tiles that most closely covers the given rectangle
-     * @param level integer zoom level to consider tiles at 
+     *
+     * @param level integer zoom level to consider tiles at
      * @param rectangeBounds rectangle to match
-     * @return Array of long, the rectangle of tiles in tile coordinates: {minx, miny, maxx, maxy, level} 
+     * @return Array of long, the rectangle of tiles in tile coordinates: {minx, miny, maxx, maxy,
+     *     level}
      */
     protected long[] closestRectangle(int level, BoundingBox rectangeBounds) {
         Grid grid = getGridLevels()[level];
@@ -280,30 +273,29 @@ public class GridSet implements Info {
         }
 
         // We substract one, since that's the tile at that position
-        long[] ret = { minX, minY, maxX - 1, maxY - 1, level };
+        long[] ret = {minX, minY, maxX - 1, maxY - 1, level};
 
         return ret;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof GridSet))
-            return false;
+        if (!(obj instanceof GridSet)) return false;
 
         GridSet other = (GridSet) obj;
 
-        if (this == other)
-            return true;
+        if (this == other) return true;
 
-        boolean equals = ObjectUtils.equals(getSrs(), other.getSrs())
-                && ObjectUtils.equals(getName(), other.getName())
-                && ObjectUtils.equals(getDescription(), other.getDescription())
-                && ObjectUtils.equals(getTileWidth(), other.getTileWidth())
-                && ObjectUtils.equals(getTileHeight(), other.getTileHeight())
-                && ObjectUtils.equals(isTopLeftAligned(), other.isTopLeftAligned())
-                && ObjectUtils.equals(isyCoordinateFirst(), other.isyCoordinateFirst())
-                && ObjectUtils.equals(getOriginalExtent(), other.getOriginalExtent())
-                && Arrays.equals(getGridLevels(), other.getGridLevels());
+        boolean equals =
+                ObjectUtils.equals(getSrs(), other.getSrs())
+                        && ObjectUtils.equals(getName(), other.getName())
+                        && ObjectUtils.equals(getDescription(), other.getDescription())
+                        && ObjectUtils.equals(getTileWidth(), other.getTileWidth())
+                        && ObjectUtils.equals(getTileHeight(), other.getTileHeight())
+                        && ObjectUtils.equals(isTopLeftAligned(), other.isTopLeftAligned())
+                        && ObjectUtils.equals(isyCoordinateFirst(), other.isyCoordinateFirst())
+                        && ObjectUtils.equals(getOriginalExtent(), other.getOriginalExtent())
+                        && Arrays.equals(getGridLevels(), other.getGridLevels());
 
         return equals;
     }
@@ -329,7 +321,7 @@ public class GridSet implements Info {
 
         tilesWide = getGridLevels()[i].getNumTilesWide();
         tilesHigh = getGridLevels()[i].getNumTilesHigh();
-        long[] ret = { 0, 0, tilesWide - 1, tilesHigh - 1, i };
+        long[] ret = {0, 0, tilesWide - 1, tilesHigh - 1, i};
 
         return boundsFromRectangle(ret);
     }
@@ -337,9 +329,9 @@ public class GridSet implements Info {
     /**
      * Returns the top left corner of the grid in the order used by the coordinate system. (Bad
      * idea)
-     * 
-     * Used for WMTS GetCapabilities
-     * 
+     *
+     * <p>Used for WMTS GetCapabilities
+     *
      * @param gridIndex
      * @return
      */
@@ -370,7 +362,7 @@ public class GridSet implements Info {
 
         // Y coordinate first?
         if (isyCoordinateFirst()) {
-            double[] ret = { leftTop[1], leftTop[0] };
+            double[] ret = {leftTop[1], leftTop[0]};
             return ret;
         }
 
@@ -422,10 +414,7 @@ public class GridSet implements Info {
         return gridLevels[zLevel];
     }
 
-    /**
-     * @param gridLevels
-     *            the gridLevels to set
-     */
+    /** @param gridLevels the gridLevels to set */
     void setGridLevels(Grid[] gridLevels) {
         this.gridLevels = gridLevels;
     }
@@ -433,87 +422,62 @@ public class GridSet implements Info {
     /**
      * The base cordinates in x/y order, used to map tile indexes to coordinate bounding boxes.
      * These can either be top left or bottom left, so must be kept private.
-     * <p>
-     * This is a derived property of {@link #getOriginalExtent()} and {@link #isTopLeftAligned()}.
-     * </p>
+     *
+     * <p>This is a derived property of {@link #getOriginalExtent()} and {@link
+     * #isTopLeftAligned()}.
      */
     public double[] tileOrigin() {
         BoundingBox extent = getOriginalExtent();
-        double[] tileOrigin = { extent.getMinX(), yBaseToggle ? extent.getMaxY() : extent.getMinY() };
+        double[] tileOrigin = {extent.getMinX(), yBaseToggle ? extent.getMaxY() : extent.getMinY()};
         return tileOrigin;
     }
 
-    /**
-     * @return the yCoordinateFirst
-     */
+    /** @return the yCoordinateFirst */
     public boolean isyCoordinateFirst() {
         return yCoordinateFirst;
     }
 
-    /**
-     * @param yCoordinateFirst
-     *            the yCoordinateFirst to set
-     */
+    /** @param yCoordinateFirst the yCoordinateFirst to set */
     void setyCoordinateFirst(boolean yCoordinateFirst) {
         this.yCoordinateFirst = yCoordinateFirst;
     }
 
-    /**
-     * @return the scaleWarning
-     */
+    /** @return the scaleWarning */
     public boolean isScaleWarning() {
         return scaleWarning;
     }
 
-    /**
-     * @param scaleWarning
-     *            the scaleWarning to set
-     */
+    /** @param scaleWarning the scaleWarning to set */
     void setScaleWarning(boolean scaleWarning) {
         this.scaleWarning = scaleWarning;
     }
 
-    /**
-     * @return the metersPerUnit
-     */
+    /** @return the metersPerUnit */
     public double getMetersPerUnit() {
         return metersPerUnit;
     }
 
-    /**
-     * @param metersPerUnit
-     *            the metersPerUnit to set
-     */
+    /** @param metersPerUnit the metersPerUnit to set */
     void setMetersPerUnit(double metersPerUnit) {
         this.metersPerUnit = metersPerUnit;
     }
 
-    /**
-     * @return the pixelSize
-     */
+    /** @return the pixelSize */
     public double getPixelSize() {
         return pixelSize;
     }
 
-    /**
-     * @param pixelSize
-     *            the pixelSize to set
-     */
+    /** @param pixelSize the pixelSize to set */
     void setPixelSize(double pixelSize) {
         this.pixelSize = pixelSize;
     }
 
-    /**
-     * @return the name
-     */
+    /** @return the name */
     public String getName() {
         return name;
     }
 
-    /**
-     * @param name
-     *            the name to set
-     */
+    /** @param name the name to set */
     void setName(String name) {
         this.name = name;
     }
@@ -526,47 +490,32 @@ public class GridSet implements Info {
         this.description = description;
     }
 
-    /**
-     * @return the srs
-     */
+    /** @return the srs */
     public SRS getSrs() {
         return srs;
     }
 
-    /**
-     * @param srs
-     *            the srs to set
-     */
+    /** @param srs the srs to set */
     void setSrs(SRS srs) {
         this.srs = srs;
     }
 
-    /**
-     * @return the tileWidth
-     */
+    /** @return the tileWidth */
     public int getTileWidth() {
         return tileWidth;
     }
 
-    /**
-     * @param tileWidth
-     *            the tileWidth to set
-     */
+    /** @param tileWidth the tileWidth to set */
     void setTileWidth(int tileWidth) {
         this.tileWidth = tileWidth;
     }
 
-    /**
-     * @return the tileHeight
-     */
+    /** @return the tileHeight */
     public int getTileHeight() {
         return tileHeight;
     }
 
-    /**
-     * @param tileHeight
-     *            the tileHeight to set
-     */
+    /** @param tileHeight the tileHeight to set */
     void setTileHeight(int tileHeight) {
         this.tileHeight = tileHeight;
     }
@@ -575,15 +524,13 @@ public class GridSet implements Info {
      * Evaluates wheter this GridSet is different enough from {@code another} so that if this
      * GridSet were replaced by {@code another} all layers referencing this GridSet should be
      * truncated.
-     * <p>
-     * The rule is, if any of the following properties differ: {@link #getBounds()},
-     * {@link #isTopLeftAligned()}, {@link #getTileHeight()}, {@link #getTileWidth()},
-     * {@link #getSrs()}, OR none of the previously mentiond properties differ and
-     * {@link #getGridLevels()} are different, except if both the grids of {@code another} are a superset
-     * of the grids of this gridset (i.e. they are all the same but {@code another} just has more
-     * zoom levels}.
-     * </p>
-     * 
+     *
+     * <p>The rule is, if any of the following properties differ: {@link #getBounds()}, {@link
+     * #isTopLeftAligned()}, {@link #getTileHeight()}, {@link #getTileWidth()}, {@link #getSrs()},
+     * OR none of the previously mentiond properties differ and {@link #getGridLevels()} are
+     * different, except if both the grids of {@code another} are a superset of the grids of this
+     * gridset (i.e. they are all the same but {@code another} just has more zoom levels}.
+     *
      * @param another
      * @return {@code true} if
      */

@@ -1,19 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Chris Whitney
- *  
  */
 package org.geowebcache.grid;
 
@@ -21,7 +18,6 @@ import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Locale;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -30,12 +26,13 @@ public class BoundingBox implements Serializable {
     private static final long serialVersionUID = -2555598825074884627L;
 
     private static NumberFormat COORD_FORMATTER = NumberFormat.getNumberInstance(Locale.ENGLISH);
+
     static {
         COORD_FORMATTER.setMinimumFractionDigits(1);
         COORD_FORMATTER.setGroupingUsed(false);
         COORD_FORMATTER.setMaximumFractionDigits(16);
     }
-    
+
     private static Log log = LogFactory.getLog(org.geowebcache.grid.BoundingBox.class);
 
     private static String DELIMITER = ",";
@@ -44,8 +41,8 @@ public class BoundingBox implements Serializable {
 
     public static final BoundingBox WORLD4326 = new BoundingBox(-180.0, -90.0, 180.0, 90.0);
 
-    public static final BoundingBox WORLD3857 = new BoundingBox(-20037508.34, -20037508.34,
-            20037508.34, 20037508.34);
+    public static final BoundingBox WORLD3857 =
+            new BoundingBox(-20037508.34, -20037508.34, 20037508.34, 20037508.34);
 
     // minx, miny, maxx, maxy
     private double[] coords = new double[4];
@@ -118,9 +115,7 @@ public class BoundingBox implements Serializable {
         coords[3] = maxy;
     }
 
-    /**
-     * @return [minx, miny, maxx, maxy]
-     */
+    /** @return [minx, miny, maxx, maxy] */
     public double[] getCoords() {
         return coords.clone();
     }
@@ -135,7 +130,7 @@ public class BoundingBox implements Serializable {
 
     /**
      * Sets from an array of strings
-     * 
+     *
      * @param BBOX
      */
     public void setFromStringArray(String[] BBOX) {
@@ -158,7 +153,7 @@ public class BoundingBox implements Serializable {
 
     /**
      * Parses the BBOX parameters from a comma separted value list
-     * 
+     *
      * @param BBOX
      */
     public void setFromBBOXString(String BBOX, int recWatch) {
@@ -168,17 +163,21 @@ public class BoundingBox implements Serializable {
 
     /**
      * Outputs a string suitable for logging and other human-readable tasks
-     * 
+     *
      * @return a readable string
      */
     public String getReadableString() {
-        return "Min X: " + coords[0] + " Min Y: " + coords[1] + " Max X: " + coords[2] + " Max Y: "
+        return "Min X: "
+                + coords[0]
+                + " Min Y: "
+                + coords[1]
+                + " Max X: "
+                + coords[2]
+                + " Max Y: "
                 + coords[3];
     }
 
-    /**
-     * Returns a comma separated value String suitable for URL output
-     */
+    /** Returns a comma separated value String suitable for URL output */
     @Override
     public String toString() {
         StringBuilder buff = new StringBuilder(40);
@@ -193,20 +192,42 @@ public class BoundingBox implements Serializable {
     }
 
     public String toKMLLatLonBox() {
-        return "<LatLonBox>" + "<north>" + Double.toString(coords[3]) + "</north>" + "<south>"
-                + Double.toString(coords[1]) + "</south>" + "<east>" + Double.toString(coords[2])
-                + "</east>" + "<west>" + Double.toString(coords[0]) + "</west>" + "</LatLonBox>";
+        return "<LatLonBox>"
+                + "<north>"
+                + Double.toString(coords[3])
+                + "</north>"
+                + "<south>"
+                + Double.toString(coords[1])
+                + "</south>"
+                + "<east>"
+                + Double.toString(coords[2])
+                + "</east>"
+                + "<west>"
+                + Double.toString(coords[0])
+                + "</west>"
+                + "</LatLonBox>";
     }
 
     public String toKMLLatLonAltBox() {
-        return "<LatLonAltBox>" + "<north>" + Double.toString(coords[3]) + "</north>" + "<south>"
-                + Double.toString(coords[1]) + "</south>" + "<east>" + Double.toString(coords[2])
-                + "</east>" + "<west>" + Double.toString(coords[0]) + "</west>" + "</LatLonAltBox>";
+        return "<LatLonAltBox>"
+                + "<north>"
+                + Double.toString(coords[3])
+                + "</north>"
+                + "<south>"
+                + Double.toString(coords[1])
+                + "</south>"
+                + "<east>"
+                + Double.toString(coords[2])
+                + "</east>"
+                + "<west>"
+                + Double.toString(coords[0])
+                + "</west>"
+                + "</LatLonAltBox>";
     }
 
     /**
      * Comparing whether the differences between the bounding boxes can be ignored.
-     * 
+     *
      * @param obj
      * @return whether the boxes are equal
      */
@@ -228,20 +249,20 @@ public class BoundingBox implements Serializable {
 
     /**
      * Check whether this bbox contains the bbox
-     * 
+     *
      * @param other
      * @return whether other is contained by this
      */
     public boolean contains(BoundingBox other) {
         return (coords[0] - EQUALITYTHRESHOLD <= other.coords[0]
                 && coords[1] - EQUALITYTHRESHOLD <= other.coords[1]
-                && coords[2] + EQUALITYTHRESHOLD >= other.coords[2] && coords[3]
-                + EQUALITYTHRESHOLD >= other.coords[3]);
+                && coords[2] + EQUALITYTHRESHOLD >= other.coords[2]
+                && coords[3] + EQUALITYTHRESHOLD >= other.coords[3]);
     }
 
     /**
      * Minimal sanity check
-     * 
+     *
      * @return whether min x < max x, min y < max y
      */
     public boolean isSane() {
@@ -261,8 +282,10 @@ public class BoundingBox implements Serializable {
         if (isNull() || other.isNull()) {
             return false;
         }
-        return !(other.getMinX() > getMaxX() || other.getMaxX() < getMinX()
-                || other.getMinY() > getMaxY() || other.getMaxY() < getMinY());
+        return !(other.getMinX() > getMaxX()
+                || other.getMaxX() < getMinX()
+                || other.getMinY() > getMaxY()
+                || other.getMaxY() < getMinY());
     }
 
     public BoundingBox intersection(BoundingBox bboxB) {

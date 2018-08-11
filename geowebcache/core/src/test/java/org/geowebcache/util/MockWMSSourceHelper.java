@@ -13,9 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.imageio.ImageIO;
-
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSubset;
@@ -32,8 +30,12 @@ public class MockWMSSourceHelper extends WMSSourceHelper {
     private Map<List<Integer>, byte[]> images = new HashMap<List<Integer>, byte[]>();
 
     @Override
-    protected void makeRequest(TileResponseReceiver tileRespRecv, WMSLayer layer,
-            Map<String, String> wmsParams, MimeType expectedMimeType, Resource target)
+    protected void makeRequest(
+            TileResponseReceiver tileRespRecv,
+            WMSLayer layer,
+            Map<String, String> wmsParams,
+            MimeType expectedMimeType,
+            Resource target)
             throws GeoWebCacheException {
         long ts = System.currentTimeMillis();
         long[][] tiles;
@@ -110,5 +112,4 @@ public class MockWMSSourceHelper extends WMSSourceHelper {
         // ts = System.currentTimeMillis() - ts;
         // System.err.println(tiles.length + " tiles generated in " + ts + "ms");
     }
-
 }

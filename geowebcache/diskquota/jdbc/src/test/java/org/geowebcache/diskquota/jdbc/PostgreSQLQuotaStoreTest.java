@@ -7,13 +7,12 @@ public class PostgreSQLQuotaStoreTest extends JDBCQuotaStoreTest {
     protected SQLDialect getDialect() {
         return new PostgreSQLDialect();
     }
-    
+
     @Override
     protected String getFixtureId() {
         return "postgresql";
     }
-    
-    
+
     @Override
     protected JDBCFixtureRule makeFixtureRule() {
         return new JDBCFixtureRule(getFixtureId()) {
@@ -24,10 +23,9 @@ public class PostgreSQLQuotaStoreTest extends JDBCQuotaStoreTest {
                 p.put("url", "jdbc:postgresql:gttest");
                 p.put("username", "cite");
                 p.put("password", "cite");
-                
+
                 return p;
             }
         };
     }
-
 }

@@ -1,17 +1,15 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
 package org.geowebcache.service.kml;
@@ -19,9 +17,7 @@ package org.geowebcache.service.kml;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.List;
-
 import javax.servlet.http.HttpServletResponse;
-
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
@@ -32,16 +28,11 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.layer.AbstractTileLayer;
 import org.geowebcache.layer.BadTileException;
-import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 
-/**
- * 
- * Creates a grid of tiles and puts the grid index on each of them
- * 
- */
+/** Creates a grid of tiles and puts the grid index on each of them */
 public class KMLDebugGridLayer extends AbstractTileLayer {
 
     public static final String LAYERNAME = "debugGrid";
@@ -58,19 +49,20 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
 
     private KMLDebugGridLayer() {
         super.subSets = new Hashtable<String, GridSubset>();
-        subSets.put(gridSetBroker.getWorldEpsg4326().getName(), GridSubsetFactory.createGridSubSet(
-                gridSetBroker.getWorldEpsg4326(), BoundingBox.WORLD4326, 0, 3));
+        subSets.put(
+                gridSetBroker.getWorldEpsg4326().getName(),
+                GridSubsetFactory.createGridSubSet(
+                        gridSetBroker.getWorldEpsg4326(), BoundingBox.WORLD4326, 0, 3));
     }
 
-    synchronized static public KMLDebugGridLayer getInstance() {
+    public static synchronized KMLDebugGridLayer getInstance() {
         if (instance == null) {
             instance = new KMLDebugGridLayer();
         }
         return instance;
     }
 
-    public void acquireLayerLock() {
-    }
+    public void acquireLayerLock() {}
 
     public ConveyorTile doNonMetatilingRequest(ConveyorTile tile) throws GeoWebCacheException {
         return null;
@@ -97,7 +89,7 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
     }
 
     public SRS[] getProjections() {
-        SRS[] srsList = { SRS.getEPSG4326() };
+        SRS[] srsList = {SRS.getEPSG4326()};
         return srsList;
     }
 
@@ -110,51 +102,55 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
 
         BoundingBox bbox = tile.getGridSubset().boundsFromIndex(gridLoc);
 
-        String data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n" + "<Document>\n"
-                // +"<!-- Name>DocumentName</Name --->"
-                + "<Placemark id=\"PlaceMarkId\">\n"
-                // +"<styleUrl>#square</styleUrl>\n"
-                + "<name>"
-                + gridLoc[0]
-                + ","
-                + gridLoc[1]
-                + ","
-                + gridLoc[2]
-                + "</name>"
-                + "<Style id=\"square\">\n"
-                + "<PolyStyle><color>7fffffff</color><colorMode>random</colorMode>\n"
-                + "</PolyStyle>\n"
-                + "<IconStyle><Icon><href>http://icons.opengeo.org/dynamic/circle/aaffaa_aaffaa_2.png</href></Icon></IconStyle>\n"
-                + "<LabelStyle id=\"name\"><color>ffffffff</color><colorMode>normal</colorMode><scale>1.0</scale></LabelStyle>\n"
-                + "</Style>\n"
-                + "<MultiGeometry>\n"
-                + "<Point><coordinates>"
-                + ((bbox.getMinX() + bbox.getMaxX()) / 2)
-                + ","
-                + ((bbox.getMinY() + bbox.getMaxY()) / 2)
-                + ",0</coordinates></Point>\n"
-                + "<Polygon><outerBoundaryIs><LinearRing>\n"
-                + "<coordinates decimal=\".\" cs=\",\" ts=\" \">\n"
-                + bbox.getMinX()
-                + ","
-                + bbox.getMinY()
-                + " "
-                + bbox.getMaxX()
-                + ","
-                + bbox.getMinY()
-                + " "
-                + bbox.getMaxX()
-                + ","
-                + bbox.getMaxY()
-                + " "
-                + bbox.getMinX()
-                + ","
-                + bbox.getMaxY()
-                + "</coordinates>\n"
-                + "</LinearRing></outerBoundaryIs></Polygon>\n"
-                + "</MultiGeometry>\n"
-                + "</Placemark>\n" + "</Document>\n" + "</kml>";
+        String data =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                        + "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"
+                        + "<Document>\n"
+                        // +"<!-- Name>DocumentName</Name --->"
+                        + "<Placemark id=\"PlaceMarkId\">\n"
+                        // +"<styleUrl>#square</styleUrl>\n"
+                        + "<name>"
+                        + gridLoc[0]
+                        + ","
+                        + gridLoc[1]
+                        + ","
+                        + gridLoc[2]
+                        + "</name>"
+                        + "<Style id=\"square\">\n"
+                        + "<PolyStyle><color>7fffffff</color><colorMode>random</colorMode>\n"
+                        + "</PolyStyle>\n"
+                        + "<IconStyle><Icon><href>http://icons.opengeo.org/dynamic/circle/aaffaa_aaffaa_2.png</href></Icon></IconStyle>\n"
+                        + "<LabelStyle id=\"name\"><color>ffffffff</color><colorMode>normal</colorMode><scale>1.0</scale></LabelStyle>\n"
+                        + "</Style>\n"
+                        + "<MultiGeometry>\n"
+                        + "<Point><coordinates>"
+                        + ((bbox.getMinX() + bbox.getMaxX()) / 2)
+                        + ","
+                        + ((bbox.getMinY() + bbox.getMaxY()) / 2)
+                        + ",0</coordinates></Point>\n"
+                        + "<Polygon><outerBoundaryIs><LinearRing>\n"
+                        + "<coordinates decimal=\".\" cs=\",\" ts=\" \">\n"
+                        + bbox.getMinX()
+                        + ","
+                        + bbox.getMinY()
+                        + " "
+                        + bbox.getMaxX()
+                        + ","
+                        + bbox.getMinY()
+                        + " "
+                        + bbox.getMaxX()
+                        + ","
+                        + bbox.getMaxY()
+                        + " "
+                        + bbox.getMinX()
+                        + ","
+                        + bbox.getMaxY()
+                        + "</coordinates>\n"
+                        + "</LinearRing></outerBoundaryIs></Polygon>\n"
+                        + "</MultiGeometry>\n"
+                        + "</Placemark>\n"
+                        + "</Document>\n"
+                        + "</kml>";
 
         tile.setBlob(new ByteArrayResource(data.getBytes()));
         tile.setStatus(200);
@@ -203,11 +199,9 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
         return true;
     }
 
-    public void releaseLayerLock() {
-    }
+    public void releaseLayerLock() {}
 
-    public void setExpirationHeader(HttpServletResponse response, int zoomLevel) {
-    }
+    public void setExpirationHeader(HttpServletResponse response, int zoomLevel) {}
 
     public String supportsBbox(SRS srs, BoundingBox bounds) throws GeoWebCacheException {
         return null;
@@ -221,9 +215,7 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
         return false;
     }
 
-    public void setApplicationContext(ApplicationContext arg0) throws BeansException {
-
-    }
+    public void setApplicationContext(ApplicationContext arg0) throws BeansException {}
 
     //
     // public Object createKey(Tile tile) {
@@ -246,16 +238,17 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
         return 0;
     }
 
-    public void init() {
-
-    }
+    public void init() {}
 
     public BoundingBox getBboxForGridLoc(SRS srs, int[] gridLoc) {
         double tileWidth = 180.0 / Math.pow(2, gridLoc[2]);
 
-        BoundingBox bbox = new BoundingBox(-180.0 + tileWidth * gridLoc[0], -90.0 + tileWidth
-                * gridLoc[1], -180.0 + tileWidth * (gridLoc[0] + 1), -90.0 + tileWidth
-                * (gridLoc[1] + 1));
+        BoundingBox bbox =
+                new BoundingBox(
+                        -180.0 + tileWidth * gridLoc[0],
+                        -90.0 + tileWidth * gridLoc[1],
+                        -180.0 + tileWidth * (gridLoc[0] + 1),
+                        -90.0 + tileWidth * (gridLoc[1] + 1));
 
         return bbox;
     }
@@ -276,7 +269,6 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
         zoomedOutGridLoc[2] = -1;
 
         return zoomedOutGridLoc;
-
     }
 
     @Override
@@ -298,8 +290,8 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
     }
 
     @Override
-    public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException,
-            IOException {
+    public void seedTile(ConveyorTile tile, boolean tryCache)
+            throws GeoWebCacheException, IOException {
         // TODO Auto-generated method stub
 
     }
@@ -324,6 +316,6 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
     @Override
     public void setEnabled(boolean enabled) {
         // TODO Auto-generated method stub
-        
+
     }
 }

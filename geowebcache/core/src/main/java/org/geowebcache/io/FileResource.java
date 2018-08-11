@@ -19,16 +19,12 @@ public class FileResource implements Resource {
         this.file = file;
     }
 
-    /**
-     * @see org.geowebcache.io.Resource#getLastModified()
-     */
+    /** @see org.geowebcache.io.Resource#getLastModified() */
     public long getLastModified() {
         return file.lastModified();
     }
 
-    /**
-     * @see org.geowebcache.io.Resource#getSize()
-     */
+    /** @see org.geowebcache.io.Resource#getSize() */
     public long getSize() {
         // avoid a (relatively expensive) call to File.exists(), file.length() returns 0 if the file
         // doesn't exist anyway
@@ -41,8 +37,7 @@ public class FileResource implements Resource {
         try (FileChannel in = new FileInputStream(file).getChannel()) {
             final long size = in.size();
             long written = 0;
-            while ((written += in.transferTo(written, size, target)) < size) {
-                ;
+            while ((written += in.transferTo(written, size, target)) < size) {;
             }
             return size;
         }

@@ -1,17 +1,15 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, OpenGeo, Copyright 2009
  */
 package org.geowebcache.config.meta;
@@ -20,7 +18,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServiceInformation implements Serializable{
+public class ServiceInformation implements Serializable {
 
     private static final long serialVersionUID = -4466383328619274445L;
 
@@ -43,114 +41,77 @@ public class ServiceInformation implements Serializable{
     // if TRUE the implementation of this service should strictly comply with CITE tests
     private boolean citeCompliant;
 
-    /**
-     * @return the title
-     */
+    /** @return the title */
     public String getTitle() {
         return title;
     }
 
-    /**
-     * @param title
-     *            the title to set
-     */
+    /** @param title the title to set */
     public void setTitle(String title) {
         this.title = title;
     }
 
-    /**
-     * @return the description
-     */
+    /** @return the description */
     public String getDescription() {
         return description;
     }
 
-    /**
-     * @param description
-     *            the description to set
-     */
+    /** @param description the description to set */
     public void setDescription(String description) {
         this.description = description;
     }
 
-    /**
-     * @return the keywords
-     */
+    /** @return the keywords */
     public List<String> getKeywords() {
         return keywords;
     }
 
-    /**
-     * @return the fees
-     */
+    /** @return the fees */
     public String getFees() {
         return fees;
     }
 
-    /**
-     * @param fees
-     *            the fees to set
-     */
+    /** @param fees the fees to set */
     public void setFees(String fees) {
         this.fees = fees;
     }
 
-    /**
-     * @return the accessConstraints
-     */
+    /** @return the accessConstraints */
     public String getAccessConstraints() {
         return accessConstraints;
     }
 
-    /**
-     * @param accessConstraints
-     *            the accessConstraints to set
-     */
+    /** @param accessConstraints the accessConstraints to set */
     public void setAccessConstraints(String accessConstraints) {
         this.accessConstraints = accessConstraints;
     }
 
-    /**
-     * @return the providerName
-     */
+    /** @return the providerName */
     public String getProviderName() {
         return providerName;
     }
 
-    /**
-     * @param providerName
-     *            the providerName to set
-     */
+    /** @param providerName the providerName to set */
     public void setProviderName(String providerName) {
         this.providerName = providerName;
     }
 
-    /**
-     * @return the providerSite
-     */
+    /** @return the providerSite */
     public String getProviderSite() {
         return providerSite;
     }
 
-    /**
-     * @param providerSite
-     *            the providerSite to set
-     */
+    /** @param providerSite the providerSite to set */
     public void setProviderSite(String providerSite) {
         this.providerSite = providerSite;
     }
 
-    /**
-     * @return the serviceProvider
-     */
+    /** @return the serviceProvider */
     public ServiceProvider getServiceProvider() {
         return serviceProvider;
     }
 
-    /**
-     * @param serviceProvider
-     *            the serviceProvider to set
-     */
+    /** @param serviceProvider the serviceProvider to set */
     public void setServiceProvider(ServiceProvider serviceProvider) {
         this.serviceProvider = serviceProvider;
     }

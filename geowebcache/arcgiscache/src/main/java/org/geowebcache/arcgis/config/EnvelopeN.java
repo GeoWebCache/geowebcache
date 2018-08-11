@@ -31,5 +31,4 @@ public class EnvelopeN {
     public SpatialReference getSpatialReference() {
         return spatialReference;
     }
-
 }

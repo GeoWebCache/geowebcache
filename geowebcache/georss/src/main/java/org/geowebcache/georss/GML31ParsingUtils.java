@@ -24,11 +24,9 @@ import static org.geowebcache.georss.GeoRSSParsingUtils.text;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -40,13 +38,12 @@ import org.locationtech.jts.geom.Polygon;
 
 /**
  * Utility class to parse GML 3.1 geometries out of an {@link XMLStreamReader}
- * <p>
- * Dislaimer: the code on this class was adapted from LGPL licensed GeoTools WFS module's
- * {@code XmlSimpleFeatureParser} class available <a href=
+ *
+ * <p>Dislaimer: the code on this class was adapted from LGPL licensed GeoTools WFS module's {@code
+ * XmlSimpleFeatureParser} class available <a href=
  * "http://svn.osgeo.org/geotools/trunk/modules/unsupported/wfs/src/main/java/org/geotools/data/wfs/v1_1_0/parsers/XmlSimpleFeatureParser.java"
  * >here</a>
- * </p>
- * 
+ *
  * @author Gabriel Roldan (TOPP)
  * @version $Id$
  */
@@ -94,7 +91,6 @@ class GML31ParsingUtils {
         public static final QName pos = new QName(GML_NS_URI, "pos");
 
         public static final QName posList = new QName(GML_NS_URI, "posList");
-
     }
 
     public GML31ParsingUtils() {
@@ -106,14 +102,11 @@ class GML31ParsingUtils {
     }
 
     /**
-     * <p>
      * Precondition: reader cursor positioned on a geometry property (ej, {@code gml:Point}, etc)
-     * </p>
-     * <p>
-     * Postcondition: reader gets positioned at the end tag of the element it started parsing the
+     *
+     * <p>Postcondition: reader gets positioned at the end tag of the element it started parsing the
      * geometry at
-     * </p>
-     * 
+     *
      * @return
      * @throws XMLStreamException
      */
@@ -140,11 +133,13 @@ class GML31ParsingUtils {
         } else if (GML.MultiPolygon.equals(startingGeometryTagName)) {
             geom = parseMultiPolygon(reader, dimension);
         } else {
-            throw new IllegalStateException("Unrecognized geometry element "
-                    + startingGeometryTagName);
+            throw new IllegalStateException(
+                    "Unrecognized geometry element " + startingGeometryTagName);
         }
 
-        reader.require(END_ELEMENT, startingGeometryTagName.getNamespaceURI(),
+        reader.require(
+                END_ELEMENT,
+                startingGeometryTagName.getNamespaceURI(),
                 startingGeometryTagName.getLocalPart());
 
         return geom;
@@ -152,14 +147,12 @@ class GML31ParsingUtils {
 
     /**
      * Parses a MultiPoint.
-     * <p>
-     * Precondition: reader positioned at a {@link GML#MultiPoint MultiPoint} start tag
-     * </p>
-     * <p>
-     * Postcondition: reader positioned at the {@link GML#MultiPoint MultiPoint} end tag of the
+     *
+     * <p>Precondition: reader positioned at a {@link GML#MultiPoint MultiPoint} start tag
+     *
+     * <p>Postcondition: reader positioned at the {@link GML#MultiPoint MultiPoint} end tag of the
      * starting tag
-     * </p>
-     * 
+     *
      * @throws XMLStreamException
      */
     private Geometry parseMultiPoint(XMLStreamReader reader, int dimension)
@@ -190,7 +183,8 @@ class GML31ParsingUtils {
                 nextTag(reader);
                 reader.require(END_ELEMENT, GML.GML_NS_URI, GML.pointMember.getLocalPart());
                 nextTag(reader);
-                if (END_ELEMENT == reader.getEventType() && GML.MultiPoint.equals(reader.getName())) {
+                if (END_ELEMENT == reader.getEventType()
+                        && GML.MultiPoint.equals(reader.getName())) {
                     // we're done
                     break;
                 }
@@ -204,14 +198,12 @@ class GML31ParsingUtils {
 
     /**
      * Parses a MultiLineString.
-     * <p>
-     * Precondition: reader positioned at a {@link GML#MultiLineString MultiLineString} start tag
-     * </p>
-     * <p>
-     * Postcondition: reader positioned at the {@link GML#MultiLineString MultiLineString} end tag
-     * of the starting tag
-     * </p>
-     * 
+     *
+     * <p>Precondition: reader positioned at a {@link GML#MultiLineString MultiLineString} start tag
+     *
+     * <p>Postcondition: reader positioned at the {@link GML#MultiLineString MultiLineString} end
+     * tag of the starting tag
+     *
      * @throws XMLStreamException
      */
     private MultiLineString parseMultiLineString(XMLStreamReader reader, int dimension)
@@ -248,14 +240,12 @@ class GML31ParsingUtils {
     /**
      * Parses a MultiPolygon out of a MultiSurface element (because our geometry model only supports
      * MultiPolygon).
-     * <p>
-     * Precondition: reader positioned at a {@link GML#MultiSurface MultiSurface} start tag
-     * </p>
-     * <p>
-     * Postcondition: reader positioned at the {@link GML#MultiSurface MultiSurface} end tag of the
-     * starting tag
-     * </p>
-     * 
+     *
+     * <p>Precondition: reader positioned at a {@link GML#MultiSurface MultiSurface} start tag
+     *
+     * <p>Postcondition: reader positioned at the {@link GML#MultiSurface MultiSurface} end tag of
+     * the starting tag
+     *
      * @param reader
      */
     private Geometry parseMultiSurface(XMLStreamReader reader, int dimension)
@@ -326,16 +316,13 @@ class GML31ParsingUtils {
 
     /**
      * Parses a polygon.
-     * <p>
-     * Precondition: reader positioned at a {@link GML#Polygon Polygon} start tag
-     * </p>
-     * <p>
-     * Postcondition: reader positioned at the {@link GML#Polygon Polygon} end tag of the starting
-     * tag
-     * </p>
-     * 
+     *
+     * <p>Precondition: reader positioned at a {@link GML#Polygon Polygon} start tag
+     *
+     * <p>Postcondition: reader positioned at the {@link GML#Polygon Polygon} end tag of the
+     * starting tag
+     *
      * @param reader
-     * 
      * @param dimension
      * @return
      * @throws XMLStreamException
@@ -410,7 +397,8 @@ class GML31ParsingUtils {
             shellCoords = parseCoordListContent(reader, dimension);
             nextTag(reader);
         } else {
-            throw new IllegalStateException("Expected posList or pos inside LinearRing: " + tagName);
+            throw new IllegalStateException(
+                    "Expected posList or pos inside LinearRing: " + tagName);
         }
         reader.require(END_ELEMENT, GML.GML_NS_URI, GML.LinearRing.getLocalPart());
         LinearRing linearRing = geomFac.createLinearRing(shellCoords);
@@ -478,8 +466,11 @@ class GML31ParsingUtils {
         String[] split = rawTextValue.trim().split(" +");
         final int ordinatesLength = split.length;
         if (ordinatesLength % dimension != 0) {
-            throw new IllegalArgumentException("Number of ordinates (" + ordinatesLength
-                    + ") does not match crs dimension: " + dimension);
+            throw new IllegalArgumentException(
+                    "Number of ordinates ("
+                            + ordinatesLength
+                            + ") does not match crs dimension: "
+                            + dimension);
         }
         final int nCoords = ordinatesLength / dimension;
         Coordinate[] coords = new Coordinate[nCoords];
@@ -500,5 +491,4 @@ class GML31ParsingUtils {
         }
         return coords;
     }
-
 }

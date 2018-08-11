@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.util.Map;
-
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -32,11 +30,14 @@ public class WMTSGetFeatureInfo {
 
     protected WMTSGetFeatureInfo(ConveyorTile convTile) throws OWSException {
 
-        String[] keys = { "i", "j" };
+        String[] keys = {"i", "j"};
 
         Map<String, String> values;
-        values = ServletUtils.selectedStringsFromMap(convTile.getRequestParameters(),
-                convTile.servletReq.getCharacterEncoding(), keys);
+        values =
+                ServletUtils.selectedStringsFromMap(
+                        convTile.getRequestParameters(),
+                        convTile.servletReq.getCharacterEncoding(),
+                        keys);
 
         try {
             i = Integer.parseInt(values.get("i"));
@@ -58,20 +59,32 @@ public class WMTSGetFeatureInfo {
 
         GridSet gridSet = convTile.getGridSubset().getGridSet();
         if (gridSet.getTileHeight() < j || j < 0) {
-            throw new OWSException(400, "PointIJOutOfRange", "J", "J was " + j
-                    + ", must be between 0 and " + gridSet.getTileHeight());
+            throw new OWSException(
+                    400,
+                    "PointIJOutOfRange",
+                    "J",
+                    "J was " + j + ", must be between 0 and " + gridSet.getTileHeight());
         }
 
         if (gridSet.getTileWidth() < i || i < 0) {
-            throw new OWSException(400, "PointIJOutOfRange", "I", "I was " + i
-                    + ", must be between 0 and " + gridSet.getTileWidth());
+            throw new OWSException(
+                    400,
+                    "PointIJOutOfRange",
+                    "I",
+                    "I was " + i + ", must be between 0 and " + gridSet.getTileWidth());
         }
 
         Resource data = null;
         try {
             BoundingBox bbox = convTile.getGridSubset().boundsFromIndex(convTile.getTileIndex());
-            data = layer.getFeatureInfo(convTile, bbox, convTile.getGridSubset().getTileHeight(),
-                    convTile.getGridSubset().getTileWidth(), i, j);
+            data =
+                    layer.getFeatureInfo(
+                            convTile,
+                            bbox,
+                            convTile.getGridSubset().getTileHeight(),
+                            convTile.getGridSubset().getTileWidth(),
+                            i,
+                            j);
         } catch (GeoWebCacheException e) {
             throw new OWSException(500, "NoApplicableCode", "", e.getMessage());
         }
@@ -90,6 +103,5 @@ public class WMTSGetFeatureInfo {
         } catch (IOException ioe) {
             log.debug("Caught IOException" + ioe.getMessage());
         }
-
     }
 }

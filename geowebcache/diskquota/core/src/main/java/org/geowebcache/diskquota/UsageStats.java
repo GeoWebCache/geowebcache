@@ -1,7 +1,6 @@
 package org.geowebcache.diskquota;
 
 import java.util.Arrays;
-
 import org.geowebcache.diskquota.storage.TileSet;
 
 public class UsageStats {
@@ -25,7 +24,11 @@ public class UsageStats {
 
     @Override
     public String toString() {
-        return new StringBuilder("[").append(tileSet.toString()).append(", ")
-                .append(Arrays.toString(tileIndex)).append("]").toString();
+        return new StringBuilder("[")
+                .append(tileSet.toString())
+                .append(", ")
+                .append(Arrays.toString(tileIndex))
+                .append("]")
+                .toString();
     }
 }

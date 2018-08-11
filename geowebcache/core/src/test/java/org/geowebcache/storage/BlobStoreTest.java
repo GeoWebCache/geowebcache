@@ -1,19 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp / The Open Planning Project 2009
- *  
  */
 package org.geowebcache.storage;
 
@@ -22,9 +19,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
-
 import junit.framework.TestCase;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.easymock.EasyMock;
@@ -34,7 +29,6 @@ import org.geowebcache.io.Resource;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
-import org.junit.Ignore;
 
 public class BlobStoreTest extends TestCase {
     public static final String TEST_BLOB_DIR_NAME = "gwcTestBlobs";
@@ -51,7 +45,8 @@ public class BlobStoreTest extends TestCase {
         if (fh.exists()) {
             FileUtils.deleteDirectory(fh);
             if (fh.exists()) {
-                System.out.println("Unable to delete " + org.geowebcache.util.FileUtils.printFileTree(fh));
+                System.out.println(
+                        "Unable to delete " + org.geowebcache.util.FileUtils.printFileTree(fh));
                 fail("Could not cleanup blob store directory");
             }
         }
@@ -61,23 +56,25 @@ public class BlobStoreTest extends TestCase {
         fbs = setup();
 
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
-        long[] xyz = { 1L, 2L, 3L };
+        long[] xyz = {1L, 2L, 3L};
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("a", "x");
         parameters.put("b", "ø");
-        TileObject to = TileObject.createCompleteTileObject("test:123123 112", xyz, "EPSG:4326",
-                "image/jpeg", parameters, bytes);
+        TileObject to =
+                TileObject.createCompleteTileObject(
+                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
 
         fbs.put(to);
 
-        TileObject to2 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326",
-                "image/jpeg", parameters);
+        TileObject to2 =
+                TileObject.createQueryTileObject(
+                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         fbs.get(to2);
 
         assertEquals(to.getBlobFormat(), to2.getBlobFormat());
 
         try (InputStream is = to.getBlob().getInputStream();
-             InputStream is2 = to2.getBlob().getInputStream()){
+                InputStream is2 = to2.getBlob().getInputStream()) {
             assertTrue(IOUtils.contentEquals(is, is2));
         }
     }
@@ -90,26 +87,30 @@ public class BlobStoreTest extends TestCase {
         parameters.put("b", "ø");
 
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
-        long[] xyz = { 5L, 6L, 7L };
-        TileObject to = TileObject.createCompleteTileObject("test:123123 112", xyz, "EPSG:4326",
-                "image/jpeg", parameters, bytes);
+        long[] xyz = {5L, 6L, 7L};
+        TileObject to =
+                TileObject.createCompleteTileObject(
+                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
 
         fbs.put(to);
 
-        TileObject to2 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326",
-                "image/jpeg", parameters);
+        TileObject to2 =
+                TileObject.createQueryTileObject(
+                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         fbs.get(to2);
 
-        try (        InputStream is = to2.getBlob().getInputStream();
-                     InputStream is2 = bytes.getInputStream()) {
+        try (InputStream is = to2.getBlob().getInputStream();
+                InputStream is2 = bytes.getInputStream()) {
             assertTrue(IOUtils.contentEquals(is, is2));
         }
-        TileObject to3 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326",
-                "image/jpeg", parameters);
+        TileObject to3 =
+                TileObject.createQueryTileObject(
+                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         fbs.delete(to3);
 
-        TileObject to4 = TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326",
-                "image/jpeg", parameters);
+        TileObject to4 =
+                TileObject.createQueryTileObject(
+                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         assertFalse(fbs.get(to4));
     }
 
@@ -133,9 +134,10 @@ public class BlobStoreTest extends TestCase {
         TileObject[] tos = new TileObject[6];
 
         for (int i = 0; i < tos.length; i++) {
-            long[] xyz = { x + i - 1, y, zoomLevel };
-            tos[i] = TileObject.createCompleteTileObject(layerName, xyz, srs.toString(),
-                    mime.getFormat(), parameters, bytes);
+            long[] xyz = {x + i - 1, y, zoomLevel};
+            tos[i] =
+                    TileObject.createCompleteTileObject(
+                            layerName, xyz, srs.toString(), mime.getFormat(), parameters, bytes);
             fbs.put(tos[i]);
         }
 
@@ -143,33 +145,50 @@ public class BlobStoreTest extends TestCase {
         int zoomStart = zoomLevel - 1;
         int zoomStop = zoomLevel + 1;
 
-        long[] range = { x, y, x + tos.length - 3, y, zoomLevel};
+        long[] range = {x, y, x + tos.length - 3, y, zoomLevel};
         rangeBounds[zoomLevel] = range;
 
-        TileRange trObj = new TileRange(layerName, srs.toString(), zoomStart, zoomStop,
-                rangeBounds, mime, parameters);
+        TileRange trObj =
+                new TileRange(
+                        layerName,
+                        srs.toString(),
+                        zoomStart,
+                        zoomStop,
+                        rangeBounds,
+                        mime,
+                        parameters);
 
         fbs.delete(trObj);
 
         // starting x and x + tos.length should have data, the remaining should not
-        TileObject firstTO = TileObject.createQueryTileObject(layerName, tos[0].xyz,
-                srs.toString(), mime.getFormat(), parameters);
+        TileObject firstTO =
+                TileObject.createQueryTileObject(
+                        layerName, tos[0].xyz, srs.toString(), mime.getFormat(), parameters);
         fbs.get(firstTO);
-        try (        InputStream is = firstTO.getBlob().getInputStream();
-                     InputStream is2 = bytes.getInputStream();
-        ){
+        try (InputStream is = firstTO.getBlob().getInputStream();
+                InputStream is2 = bytes.getInputStream(); ) {
             assertTrue(IOUtils.contentEquals(is, is2));
         }
-        TileObject lastTO = TileObject.createQueryTileObject(layerName, tos[tos.length - 1].xyz,
-                srs.toString(), mime.getFormat(), parameters);
+        TileObject lastTO =
+                TileObject.createQueryTileObject(
+                        layerName,
+                        tos[tos.length - 1].xyz,
+                        srs.toString(),
+                        mime.getFormat(),
+                        parameters);
         fbs.get(lastTO);
         try (InputStream is = lastTO.getBlob().getInputStream();
-        InputStream is2 = bytes.getInputStream()) {
+                InputStream is2 = bytes.getInputStream()) {
             assertTrue(IOUtils.contentEquals(is, is2));
         }
 
-        TileObject midTO = TileObject.createQueryTileObject(layerName,
-                tos[(tos.length - 1) / 2].xyz, srs.toString(), mime.getFormat(), parameters);
+        TileObject midTO =
+                TileObject.createQueryTileObject(
+                        layerName,
+                        tos[(tos.length - 1) / 2].xyz,
+                        srs.toString(),
+                        mime.getFormat(),
+                        parameters);
         fbs.get(midTO);
         Resource res = midTO.getBlob();
 
@@ -195,9 +214,10 @@ public class BlobStoreTest extends TestCase {
         TileObject[] tos = new TileObject[6];
 
         for (int i = 0; i < tos.length; i++) {
-            long[] xyz = { x + i - 1, y, zoomLevel };
-            tos[i] = TileObject.createCompleteTileObject(layerName, xyz, srs.toString(),
-                    mime.getFormat(), parameters, bytes);
+            long[] xyz = {x + i - 1, y, zoomLevel};
+            tos[i] =
+                    TileObject.createCompleteTileObject(
+                            layerName, xyz, srs.toString(), mime.getFormat(), parameters, bytes);
             fbs.put(tos[i]);
         }
 
@@ -226,14 +246,15 @@ public class BlobStoreTest extends TestCase {
 
         if (!fh.exists()) {
             Files.createDirectory(fh.toPath());
-            if(!fh.exists()) {
-                System.out.println("Unable to create " + org.geowebcache.util.FileUtils.printFileTree(fh));
+            if (!fh.exists()) {
+                System.out.println(
+                        "Unable to create " + org.geowebcache.util.FileUtils.printFileTree(fh));
                 throw new StorageException("Unable to create " + fh.getAbsolutePath());
             }
         }
 
-        return new FileBlobStore(StorageBrokerTest.findTempDir() + File.separator
-                + TEST_BLOB_DIR_NAME);
+        return new FileBlobStore(
+                StorageBrokerTest.findTempDir() + File.separator + TEST_BLOB_DIR_NAME);
     }
 
     public void testLayerMetadata() throws Exception {

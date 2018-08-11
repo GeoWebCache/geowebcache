@@ -1,54 +1,60 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2018
- *
+ * <p>Copyright 2018
  */
 package org.geowebcache.config;
 
+import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertNull;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Set;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
-import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Set;
-
-import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertNull;
 public class DefaultingConfigurationTest {
 
     DefaultingConfiguration config = getConfig();
-    TileLayer tl = new WMSLayer("test", new String[] {"http://example.com/"}, null,
-            Integer.toString(1),null, null, null, null,
-            null, false, null);
+    TileLayer tl =
+            new WMSLayer(
+                    "test",
+                    new String[] {"http://example.com/"},
+                    null,
+                    Integer.toString(1),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    false,
+                    null);
     GeoWebCacheConfiguration gwcConfig = new GeoWebCacheConfiguration();
-    GridSetBroker gridSetBroker =  new GridSetBroker(true, true);
+    GridSetBroker gridSetBroker = new GridSetBroker(true, true);
 
     @Test
-    public void testUnsetConfigs(){
+    public void testUnsetConfigs() {
         assertNull(tl.isCacheBypassAllowed());
         assertNull(tl.getBackendTimeout());
         assertNull(tl.getFormatModifiers());
     }
+
     @Test
-    public void testSetDefault(){
+    public void testSetDefault() {
         config.setDefaultValues(tl);
         boolean cacheBypass = tl.isCacheBypassAllowed();
         int timeout = tl.getBackendTimeout();
@@ -58,7 +64,7 @@ public class DefaultingConfigurationTest {
     }
 
     @Test
-    public void initializationTest(){
+    public void initializationTest() {
         initialize(tl);
         Set<String> subsets = tl.getGridSubsets();
         assertEquals(subsets.size(), 2);
@@ -70,7 +76,7 @@ public class DefaultingConfigurationTest {
         return this.gwcConfig;
     }
 
-    DefaultingConfiguration getConfig(){
+    DefaultingConfiguration getConfig() {
         return new DefaultingConfiguration() {
             @Override
             public void setDefaultValues(TileLayer layer) {
@@ -112,11 +118,15 @@ public class DefaultingConfigurationTest {
                     final WMSHttpHelper sourceHelper;
 
                     if (wl.getHttpUsername() != null) {
-                        sourceHelper = new WMSHttpHelper(wl.getHttpUsername(), wl.getHttpPassword(),
-                                proxyUrl);
+                        sourceHelper =
+                                new WMSHttpHelper(
+                                        wl.getHttpUsername(), wl.getHttpPassword(), proxyUrl);
                     } else if (getGwcConfig().getHttpUsername() != null) {
-                        sourceHelper = new WMSHttpHelper(getGwcConfig().getHttpUsername(),
-                                getGwcConfig().getHttpPassword(), proxyUrl);
+                        sourceHelper =
+                                new WMSHttpHelper(
+                                        getGwcConfig().getHttpUsername(),
+                                        getGwcConfig().getHttpPassword(),
+                                        proxyUrl);
                     } else {
                         sourceHelper = new WMSHttpHelper(null, null, proxyUrl);
                     }
@@ -145,7 +155,6 @@ public class DefaultingConfigurationTest {
             public void deinitialize() throws Exception {
                 return;
             }
-
         };
     }
 

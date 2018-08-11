@@ -1,28 +1,23 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author David Vick / Boundless 2017
- *
- * Original files
- * MemoryCacheStatsFinder.java
- * MemoryCacheStatsResource.java
+ *     <p>Original files MemoryCacheStatsFinder.java MemoryCacheStatsResource.java
  */
-
 package org.geowebcache.rest.controller;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.ContextualConfigurationProvider.Context;
@@ -45,18 +40,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.http.HttpServletRequest;
-
 @Component
 @RestController
-@RequestMapping(path="${gwc.context.suffix:}/rest")
+@RequestMapping(path = "${gwc.context.suffix:}/rest")
 public class MemoryCacheController {
     /** {@link Log} used for logging the exceptions */
     public static Log LOG = LogFactory.getLog(MemoryCacheController.class);
 
     /** Store associated to the StorageBroker to use */
-    @Autowired
-    StorageBroker broker;
+    @Autowired StorageBroker broker;
 
     private WebApplicationContext context;
 
@@ -118,11 +110,13 @@ public class MemoryCacheController {
                 entity = getXmlRepresentation(statistics);
             }
         } else {
-            entity = new ResponseEntity<Object>("No statistics available for the current BlobStore: " +
-                    store.getClass(), HttpStatus.NOT_FOUND);
+            entity =
+                    new ResponseEntity<Object>(
+                            "No statistics available for the current BlobStore: "
+                                    + store.getClass(),
+                            HttpStatus.NOT_FOUND);
         }
         return entity;
-
     }
 
     /**
@@ -135,8 +129,11 @@ public class MemoryCacheController {
     private ResponseEntity<?> getJsonRepresentation(CacheStatistics stats) throws JSONException {
         JSONObject rep = null;
         try {
-            XStream xs = XMLConfiguration.getConfiguredXStreamWithContext(new GeoWebCacheXStream(
-                    new JsonHierarchicalStreamDriver()), context, Context.REST);
+            XStream xs =
+                    XMLConfiguration.getConfiguredXStreamWithContext(
+                            new GeoWebCacheXStream(new JsonHierarchicalStreamDriver()),
+                            context,
+                            Context.REST);
             JSONObject obj = new JSONObject(xs.toXML(stats));
             rep = obj;
         } catch (JSONException jse) {

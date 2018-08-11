@@ -2,21 +2,17 @@ package org.geowebcache.service;
 
 /**
  * An exception thrown by a service to report back an http error code.
- * <p>
- * Instances of this exception are recognized by the dispatcher. The {@link #getErrorCode()} is used
- * to set
- * </p>
- * 
+ *
+ * <p>Instances of this exception are recognized by the dispatcher. The {@link #getErrorCode()} is
+ * used to set
+ *
  * @author Justin Deoliveira, The Open Planning Project
- * 
  */
 public class HttpErrorCodeException extends RuntimeException {
 
     private static final long serialVersionUID = -1900532970945396474L;
 
-    /**
-     * the error code
-     */
+    /** the error code */
     final int errorCode;
 
     public HttpErrorCodeException(int errorCode) {

@@ -1,19 +1,13 @@
 package org.geowebcache;
 
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.createMock;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.TreeSet;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.geowebcache.demo.Demo;
-import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -22,13 +16,9 @@ import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 /**
  * Simple test class for testing advertised and unadvertised Layers in the Demo Page
- * 
+ *
  * @author Nicola Lagomarsini
  */
 public class DemoTest {
@@ -43,12 +33,24 @@ public class DemoTest {
 
         // Creating an advertised Layer and an unadvertised one
         HashMap<String, GridSubset> subSets = new HashMap<String, GridSubset>();
-        TileLayer advertisedLayer = new WMSLayer("testAdv", null, null, null, null, subSets, null,
-                null, null, false, null);
+        TileLayer advertisedLayer =
+                new WMSLayer(
+                        "testAdv", null, null, null, null, subSets, null, null, null, false, null);
         advertisedLayer.setEnabled(true);
         advertisedLayer.setAdvertised(true);
-        TileLayer unAdvertisedLayer = new WMSLayer("testNotAdv", null, null, null, null, subSets,
-                null, null, null, false, null);
+        TileLayer unAdvertisedLayer =
+                new WMSLayer(
+                        "testNotAdv",
+                        null,
+                        null,
+                        null,
+                        null,
+                        subSets,
+                        null,
+                        null,
+                        null,
+                        false,
+                        null);
         unAdvertisedLayer.setEnabled(true);
         unAdvertisedLayer.setAdvertised(false);
 
@@ -71,5 +73,4 @@ public class DemoTest {
         assertTrue(result.contains("testAdv"));
         assertFalse(result.contains("testNotAdv"));
     }
-
 }

@@ -1,27 +1,33 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, OpenGeo, Copyright 2009
- * 
  */
 package org.geowebcache.service.wmts;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.ServerConfiguration;
-import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterException;
@@ -41,25 +47,18 @@ import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-public class WMTSService extends Service  {
+public class WMTSService extends Service {
 
     public static final String SERVICE_WMTS = "wmts";
-    public static final String SERVICE_PATH = "/"+GeoWebCacheDispatcher.TYPE_SERVICE+"/"+SERVICE_WMTS;
-    public static final String REST_PATH = "/"+GeoWebCacheDispatcher.TYPE_REST+"/"+SERVICE_WMTS;
+    public static final String SERVICE_PATH =
+            "/" + GeoWebCacheDispatcher.TYPE_SERVICE + "/" + SERVICE_WMTS;
+    public static final String REST_PATH =
+            "/" + GeoWebCacheDispatcher.TYPE_REST + "/" + SERVICE_WMTS;
 
     enum RequestType {
-        TILE, CAPABILITIES, FEATUREINFO
+        TILE,
+        CAPABILITIES,
+        FEATUREINFO
     };
 
     // private static Log log = LogFactory.getLog(org.geowebcache.service.wmts.WMTSService.class);
@@ -71,28 +70,26 @@ public class WMTSService extends Service  {
     private GridSetBroker gsb;
 
     private RuntimeStats stats;
-    
+
     private URLMangler urlMangler = new NullURLMangler();
-    
+
     private GeoWebCacheDispatcher controller = null;
 
     private ServerConfiguration mainConfiguration;
 
     // list of this service extensions ordered by their priority
     private final List<WMTSExtension> extensions = new ArrayList<>();
-    
+
     private SecurityDispatcher securityDispatcher;
 
-    /**
-     * Protected no-argument constructor to allow run-time instrumentation
-     */
-    protected WMTSService(){
+    /** Protected no-argument constructor to allow run-time instrumentation */
+    protected WMTSService() {
         super(SERVICE_WMTS);
         extensions.addAll(GeoWebCacheExtensions.extensions(WMTSExtension.class));
     }
-    
-    public WMTSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb,
-            RuntimeStats stats) {
+
+    public WMTSService(
+            StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb, RuntimeStats stats) {
         super(SERVICE_WMTS);
 
         this.sb = sb;
@@ -101,9 +98,14 @@ public class WMTSService extends Service  {
         this.stats = stats;
         extensions.addAll(GeoWebCacheExtensions.extensions(WMTSExtension.class));
     }
-    
-    public WMTSService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb,
-            RuntimeStats stats, URLMangler urlMangler, GeoWebCacheDispatcher controller) {
+
+    public WMTSService(
+            StorageBroker sb,
+            TileLayerDispatcher tld,
+            GridSetBroker gsb,
+            RuntimeStats stats,
+            URLMangler urlMangler,
+            GeoWebCacheDispatcher controller) {
         super(SERVICE_WMTS);
 
         this.sb = sb;
@@ -118,29 +120,41 @@ public class WMTSService extends Service  {
     @Override
     public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response)
             throws GeoWebCacheException, OWSException {
-        
+
         // let's see if we have any extension that wants to provide a conveyor for this request
-        for(WMTSExtension extension : extensions) {
+        for (WMTSExtension extension : extensions) {
             Conveyor conveyor = extension.getConveyor(request, response, sb);
             if (conveyor != null) {
                 // this extension provides a conveyor for this request, we are done
                 return conveyor;
             }
         }
-        
+
         String encoding = request.getCharacterEncoding();
-        String[] keys = { "layer", "request", "style", "format", "infoformat", "tilematrixset", "tilematrix",
-                "tilerow", "tilecol", "i", "j" };
-        Map<String, String> values = ServletUtils.selectedStringsFromMap(request.getParameterMap(),
-                encoding, keys);
+        String[] keys = {
+            "layer",
+            "request",
+            "style",
+            "format",
+            "infoformat",
+            "tilematrixset",
+            "tilematrix",
+            "tilerow",
+            "tilecol",
+            "i",
+            "j"
+        };
+        Map<String, String> values =
+                ServletUtils.selectedStringsFromMap(request.getParameterMap(), encoding, keys);
         return getConveyor(request, response, values);
     }
-    
-    public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response, Map<String, String> values)
+
+    public Conveyor getConveyor(
+            HttpServletRequest request, HttpServletResponse response, Map<String, String> values)
             throws GeoWebCacheException, OWSException {
 
         // let's see if we have any extension that wants to provide a conveyor for this request
-        for(WMTSExtension extension : extensions) {
+        for (WMTSExtension extension : extensions) {
             Conveyor conveyor = extension.getConveyor(request, response, sb);
             if (conveyor != null) {
                 // this extension provides a conveyor for this request, we are done
@@ -153,12 +167,12 @@ public class WMTSService extends Service  {
         if (isCitecompliant) {
             performCiteValidation(request);
         }
-        
+
         String req = values.get("request");
         if (req == null) {
             // OWSException(httpCode, exceptionCode, locator, exceptionText);
-            throw new OWSException(400, "MissingParameterValue", "request",
-                    "Missing Request parameter");
+            throw new OWSException(
+                    400, "MissingParameterValue", "request", "Missing Request parameter");
         } else {
             req = req.toLowerCase();
         }
@@ -172,21 +186,27 @@ public class WMTSService extends Service  {
                 int foundIndex = Arrays.binarySearch(versions, "1.0.0");
                 if (foundIndex < 0) {
                     // no supported version is accepted
-                    throw new OWSException(400, "VersionNegotiationFailed", null,
-                            "List of versions in AcceptVersions parameter value, in GetCapabilities " +
-                                    "operation request, did not include any version supported by this server.");
+                    throw new OWSException(
+                            400,
+                            "VersionNegotiationFailed",
+                            null,
+                            "List of versions in AcceptVersions parameter value, in GetCapabilities "
+                                    + "operation request, did not include any version supported by this server.");
                 }
-
             }
         }
 
         if (req.equals("gettile")) {
             if (isCitecompliant) {
                 boolean isRestRequest = isRestRequest(request);
-                // we need to make sure that a style was provided, otherwise GWC will just assume the default one
+                // we need to make sure that a style was provided, otherwise GWC will just assume
+                // the default one
                 if (!isRestRequest && getParameterValue("Style", request) == null) {
                     // mandatory STYLE query parameter is missing
-                    throw new OWSException(400, "MissingParameterValue", "Style",
+                    throw new OWSException(
+                            400,
+                            "MissingParameterValue",
+                            "Style",
                             "Mandatory Style query parameter not provided.");
                 }
             }
@@ -203,19 +223,28 @@ public class WMTSService extends Service  {
             tile.setRequestHandler(Conveyor.RequestHandler.SERVICE);
             return tile;
         } else {
-            // we implement all WMTS supported request, this means that the provided request name is invalid
-            throw new OWSException(400, "InvalidParameterValue", "request", String.format(
-                    "Invalid request name '%s'.", req));
+            // we implement all WMTS supported request, this means that the provided request name is
+            // invalid
+            throw new OWSException(
+                    400,
+                    "InvalidParameterValue",
+                    "request",
+                    String.format("Invalid request name '%s'.", req));
         }
     }
 
-    private ConveyorTile getTile(Map<String, String> values, HttpServletRequest request,
-            HttpServletResponse response, RequestType reqType) throws OWSException {
+    private ConveyorTile getTile(
+            Map<String, String> values,
+            HttpServletRequest request,
+            HttpServletResponse response,
+            RequestType reqType)
+            throws OWSException {
         String encoding = request.getCharacterEncoding();
 
         String layer = values.get("layer");
         if (layer == null) {
-            throw new OWSException(400, "MissingParameterValue", "LAYER", "Missing LAYER parameter");
+            throw new OWSException(
+                    400, "MissingParameterValue", "LAYER", "Missing LAYER parameter");
         }
 
         TileLayer tileLayer = null;
@@ -223,24 +252,24 @@ public class WMTSService extends Service  {
         try {
             tileLayer = tld.getTileLayer(layer);
         } catch (GeoWebCacheException e) {
-            throw new OWSException(400, "InvalidParameterValue", "LAYER", "LAYER " + layer
-                    + " is not known.");
+            throw new OWSException(
+                    400, "InvalidParameterValue", "LAYER", "LAYER " + layer + " is not known.");
         }
 
         Map<String, String[]> rawParameters = new HashMap<>(request.getParameterMap());
         Map<String, String> filteringParameters;
         try {
-      
+
             /*
              * Merge values with request parameter
              */
             for (Entry<String, String> e : values.entrySet()) {
-                rawParameters.put(e.getKey(), new String[] { e.getValue() });
+                rawParameters.put(e.getKey(), new String[] {e.getValue()});
             }
-            
+
             // WMTS uses the "STYLE" instead of "STYLES"
-            for(Entry<String, String[]> e:rawParameters.entrySet()){
-                if(e.getKey().equalsIgnoreCase("STYLE")) {
+            for (Entry<String, String[]> e : rawParameters.entrySet()) {
+                if (e.getKey().equalsIgnoreCase("STYLE")) {
                     rawParameters.put("STYLES", e.getValue());
                     break;
                 }
@@ -248,63 +277,83 @@ public class WMTSService extends Service  {
             filteringParameters = tileLayer.getModifiableParameters(rawParameters, encoding);
 
         } catch (ParameterException e) {
-            throw new OWSException(e.getHttpCode(), e.getExceptionCode(), e.getLocator(), e.getMessage());
+            throw new OWSException(
+                    e.getHttpCode(), e.getExceptionCode(), e.getLocator(), e.getMessage());
         } catch (GeoWebCacheException e) {
-            throw new OWSException(500, "NoApplicableCode", "", e.getMessage()
-                    + " while fetching modifiable parameters for LAYER " + layer);
+            throw new OWSException(
+                    500,
+                    "NoApplicableCode",
+                    "",
+                    e.getMessage() + " while fetching modifiable parameters for LAYER " + layer);
         }
 
         MimeType mimeType = null;
         if (reqType == RequestType.TILE) {
             String format = values.get("format");
             if (format == null) {
-                throw new OWSException(400, "MissingParameterValue", "FORMAT",
+                throw new OWSException(
+                        400,
+                        "MissingParameterValue",
+                        "FORMAT",
                         "Unable to determine requested FORMAT, " + format);
             }
             try {
                 mimeType = MimeType.createFromFormat(format);
             } catch (MimeException me) {
-                throw new OWSException(400, "InvalidParameterValue", "FORMAT",
+                throw new OWSException(
+                        400,
+                        "InvalidParameterValue",
+                        "FORMAT",
                         "Unable to determine requested FORMAT, " + format);
             }
         } else {
             String infoFormat = values.get("infoformat");
-            
+
             if (infoFormat == null) {
-                throw new OWSException(400, "MissingParameterValue", "INFOFORMAT",
+                throw new OWSException(
+                        400,
+                        "MissingParameterValue",
+                        "INFOFORMAT",
                         "Parameter INFOFORMAT was not provided");
             }
             try {
                 mimeType = MimeType.createFromFormat(infoFormat);
             } catch (MimeException me) {
-                throw new OWSException(400, "InvalidParameterValue", "INFOFORMAT",
+                throw new OWSException(
+                        400,
+                        "InvalidParameterValue",
+                        "INFOFORMAT",
                         "Unable to determine requested INFOFORMAT, " + infoFormat);
             }
         }
 
         final String tilematrixset = values.get("tilematrixset");
         if (tilematrixset == null) {
-            throw new OWSException(400, "MissingParameterValue", "TILEMATRIXSET",
-                    "No TILEMATRIXSET specified");
+            throw new OWSException(
+                    400, "MissingParameterValue", "TILEMATRIXSET", "No TILEMATRIXSET specified");
         }
 
         GridSubset gridSubset = tileLayer.getGridSubset(tilematrixset);
         if (gridSubset == null) {
-            throw new OWSException(400, "InvalidParameterValue", "TILEMATRIXSET",
-                    "Unable to match requested TILEMATRIXSET " + tilematrixset
+            throw new OWSException(
+                    400,
+                    "InvalidParameterValue",
+                    "TILEMATRIXSET",
+                    "Unable to match requested TILEMATRIXSET "
+                            + tilematrixset
                             + " to those supported by layer");
         }
 
         final String tileMatrix = values.get("tilematrix");
         if (tileMatrix == null) {
-            throw new OWSException(400, "MissingParameterValue", "TILEMATRIX",
-                    "No TILEMATRIX specified");
+            throw new OWSException(
+                    400, "MissingParameterValue", "TILEMATRIX", "No TILEMATRIX specified");
         }
         long z = gridSubset.getGridIndex(tileMatrix);
 
         if (z < 0) {
-            throw new OWSException(400, "InvalidParameterValue", "TILEMATRIX",
-                    "Unknown TILEMATRIX " + tileMatrix);
+            throw new OWSException(
+                    400, "InvalidParameterValue", "TILEMATRIX", "Unknown TILEMATRIX " + tileMatrix);
         }
 
         // WMTS has 0 in the top left corner -> flip y value
@@ -312,34 +361,39 @@ public class WMTSService extends Service  {
         if (tileRow == null) {
             throw new OWSException(400, "MissingParameterValue", "TILEROW", "No TILEROW specified");
         }
-        
+
         final long tilesHigh = gridSubset.getNumTilesHigh((int) z);
 
         long y = tilesHigh - Long.parseLong(tileRow) - 1;
 
         String tileCol = values.get("tilecol");
         if (tileCol == null) {
-            throw new OWSException(400, "MissingParameterValue", "TILECOL",
-                    "No TILECOL specified");
+            throw new OWSException(400, "MissingParameterValue", "TILECOL", "No TILECOL specified");
         }
         long x = Long.parseLong(tileCol);
 
         long[] gridCov = gridSubset.getCoverage((int) z);
 
         if (x < gridCov[0] || x > gridCov[2]) {
-            throw new OWSException(400, "TileOutOfRange", "TILECOLUMN", "Column " + x
-                    + " is out of range, min: " + gridCov[0] + " max:" + gridCov[2]);
+            throw new OWSException(
+                    400,
+                    "TileOutOfRange",
+                    "TILECOLUMN",
+                    "Column " + x + " is out of range, min: " + gridCov[0] + " max:" + gridCov[2]);
         }
 
         if (y < gridCov[1] || y > gridCov[3]) {
             long minRow = tilesHigh - gridCov[3] - 1;
             long maxRow = tilesHigh - gridCov[1] - 1;
 
-            throw new OWSException(400, "TileOutOfRange", "TILEROW", "Row " + tileRow
-                    + " is out of range, min: " + minRow + " max:" + maxRow);
+            throw new OWSException(
+                    400,
+                    "TileOutOfRange",
+                    "TILEROW",
+                    "Row " + tileRow + " is out of range, min: " + minRow + " max:" + maxRow);
         }
 
-        long[] tileIndex = { x, y, z };
+        long[] tileIndex = {x, y, z};
 
         try {
             gridSubset.checkCoverage(tileIndex);
@@ -347,8 +401,17 @@ public class WMTSService extends Service  {
 
         }
 
-        ConveyorTile convTile = new ConveyorTile(sb, layer, gridSubset.getName(), tileIndex,
-                mimeType, rawParameters, filteringParameters, request, response);
+        ConveyorTile convTile =
+                new ConveyorTile(
+                        sb,
+                        layer,
+                        gridSubset.getName(),
+                        tileIndex,
+                        mimeType,
+                        rawParameters,
+                        filteringParameters,
+                        request,
+                        response);
 
         convTile.setTileLayer(tileLayer);
 
@@ -367,16 +430,26 @@ public class WMTSService extends Service  {
 
         // no extension wants to handle this request, so let's proceed with a normal execution
         ConveyorTile tile = (ConveyorTile) conv;
-        
-        String servletPrefix=null;
-        if (controller!=null) servletPrefix=controller.getServletPrefix();
-        
+
+        String servletPrefix = null;
+        if (controller != null) servletPrefix = controller.getServletPrefix();
+
         String servletBase = ServletUtils.getServletBaseURL(conv.servletReq, servletPrefix);
-        String context = ServletUtils.getServletContextPath(conv.servletReq, new String[]{SERVICE_PATH, REST_PATH}, servletPrefix);
+        String context =
+                ServletUtils.getServletContextPath(
+                        conv.servletReq, new String[] {SERVICE_PATH, REST_PATH}, servletPrefix);
 
         if (tile.getHint() != null) {
             if (tile.getHint().equals("getcapabilities")) {
-                WMTSGetCapabilities wmsGC = new WMTSGetCapabilities(tld, gsb, tile.servletReq, servletBase, context, urlMangler, extensions);
+                WMTSGetCapabilities wmsGC =
+                        new WMTSGetCapabilities(
+                                tld,
+                                gsb,
+                                tile.servletReq,
+                                servletBase,
+                                context,
+                                urlMangler,
+                                extensions);
                 wmsGC.writeResponse(tile.servletResp, stats);
 
             } else if (tile.getHint().equals("getfeatureinfo")) {
@@ -399,7 +472,7 @@ public class WMTSService extends Service  {
     public void setSecurityDispatcher(SecurityDispatcher secDisp) {
         this.securityDispatcher = secDisp;
     }
-    
+
     protected SecurityDispatcher getSecurityDispatcher() {
         return securityDispatcher;
     }
@@ -415,7 +488,7 @@ public class WMTSService extends Service  {
 
     /**
      * Return the GWC configuration used by this WMTS service instance.
-     * 
+     *
      * @return GWC main configuration
      */
     ServerConfiguration getMainConfiguration() {
@@ -425,8 +498,8 @@ public class WMTSService extends Service  {
     /**
      * Helper method that checks if WMTS implementation should be CITE strictly compliant.
      *
-     * @return TRUE if GWC main configuration or at least one of the WMTS extensions forces
-     *         CITE compliance
+     * @return TRUE if GWC main configuration or at least one of the WMTS extensions forces CITE
+     *     compliance
      */
     private boolean isCiteCompliant() {
         // let's see if main GWC configuration forces WMTS implementation to be CITE compliant
@@ -435,7 +508,8 @@ public class WMTSService extends Service  {
         }
         // let's see if at least one of the extensions forces CITE compliant mode
         for (WMTSExtension extension : extensions) {
-            if (extension.getServiceInformation() != null && extension.getServiceInformation().isCiteCompliant()) {
+            if (extension.getServiceInformation() != null
+                    && extension.getServiceInformation().isCiteCompliant()) {
                 return true;
             }
         }
@@ -443,9 +517,7 @@ public class WMTSService extends Service  {
         return false;
     }
 
-    /**
-     * Helper method that performs CITE tests mandatory validations.
-     */
+    /** Helper method that performs CITE tests mandatory validations. */
     private static void performCiteValidation(HttpServletRequest request) throws OWSException {
         // paths validation are not done for WMTS REST API
         if (isRestRequest(request)) {
@@ -457,15 +529,16 @@ public class WMTSService extends Service  {
         String lastPath = paths[paths.length - 1];
         if (!lastPath.equalsIgnoreCase("WMTS")) {
             // invalid base path, not found should be returned
-            throw new OWSException(404, "NoApplicableCode", "request", "Service or request not found");
+            throw new OWSException(
+                    404, "NoApplicableCode", "request", "Service or request not found");
         }
         // service query parameter is mandatory and should be equal to WMTS
         validateWmtsServiceName("wmts", request);
     }
 
     /**
-     * Helper method that just checks if current WMTS request is in the context
-     * of a REST API call, certain OGC validations don't make sense in that context.
+     * Helper method that just checks if current WMTS request is in the context of a REST API call,
+     * certain OGC validations don't make sense in that context.
      */
     private static boolean isRestRequest(HttpServletRequest request) {
         // rest/wmts is always lowercase
@@ -473,16 +546,19 @@ public class WMTSService extends Service  {
     }
 
     /**
-     * Checks if the URL base path extracted service name matches the HTTP request SERVICE query parameter value.
-     * If the HTTP request doesn't contains any SERVICE query parameter an OWS exception will be returned.
+     * Checks if the URL base path extracted service name matches the HTTP request SERVICE query
+     * parameter value. If the HTTP request doesn't contains any SERVICE query parameter an OWS
+     * exception will be returned.
      *
-     * This validation only happens for WMTS service and if CITE strict compliance is activated.
+     * <p>This validation only happens for WMTS service and if CITE strict compliance is activated.
      *
      * @param pathServiceName service name extracted from the URL base path
-     * @param request         the original HTTP request
-     * @throws OWSException if the URL path extracted service name and the HTTP request service name don't match
+     * @param request the original HTTP request
+     * @throws OWSException if the URL path extracted service name and the HTTP request service name
+     *     don't match
      */
-    private static void validateWmtsServiceName(String pathServiceName, HttpServletRequest request) throws OWSException {
+    private static void validateWmtsServiceName(String pathServiceName, HttpServletRequest request)
+            throws OWSException {
         if (pathServiceName == null || !pathServiceName.equalsIgnoreCase("WMTS")) {
             // not an OGC service, so nothing to do
             return;
@@ -491,20 +567,27 @@ public class WMTSService extends Service  {
         String requestedServiceName = getParameterValue("SERVICE", request);
         if (requestedServiceName == null) {
             // mandatory service query parameter not provided
-            throw new OWSException(400, "MissingParameterValue", "service",
+            throw new OWSException(
+                    400,
+                    "MissingParameterValue",
+                    "service",
                     "Mandatory SERVICE query parameter not provided.");
         }
         if (!pathServiceName.equalsIgnoreCase(requestedServiceName)) {
             // bad request, the URL path service and the requested service don't match
-            throw new OWSException(400, "InvalidParameterValue", "service",
-                    String.format("URL path service '%s' don't match the requested service '%s'.",
+            throw new OWSException(
+                    400,
+                    "InvalidParameterValue",
+                    "service",
+                    String.format(
+                            "URL path service '%s' don't match the requested service '%s'.",
                             pathServiceName, requestedServiceName));
         }
     }
 
     /**
-     * Search in a non case sensitive way for a query parameter in the provided HTTP request.
-     * If the query parameter is found is first value is returned otherwise NULL is returned.
+     * Search in a non case sensitive way for a query parameter in the provided HTTP request. If the
+     * query parameter is found is first value is returned otherwise NULL is returned.
      *
      * @param parameterName query parameter name to search
      * @param request HTTP request

@@ -17,11 +17,11 @@ public class ByteUtilsTest extends TestCase {
         basicConversion(300);
         basicConversion(1025);
     }
-    
+
     private void basicConversion(int number) throws Exception {
         byte[] testB = ByteUtils.uIntLongToByteWord((long) number);
         long testL = ByteUtils.bytesToUIntLong(testB, 0);
-        
+
         assertEquals((long) number, testL);
     }
 }

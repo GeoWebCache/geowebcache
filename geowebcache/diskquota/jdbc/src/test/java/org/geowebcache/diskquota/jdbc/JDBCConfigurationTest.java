@@ -3,23 +3,20 @@ package org.geowebcache.diskquota.jdbc;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-
+import junit.framework.TestCase;
 import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.diskquota.jdbc.JDBCConfiguration.ConnectionPoolConfiguration;
 import org.springframework.context.ApplicationContext;
 
-import junit.framework.TestCase;
-
 public class JDBCConfigurationTest extends TestCase {
 
     ApplicationContext appContext = createMock(ApplicationContext.class);
-    
+
     protected void setUp() throws Exception {
         super.setUp();
         System.setProperty("TEST_JDBC_DRIVER", "org.postgresql.Driver");
@@ -32,15 +29,16 @@ public class JDBCConfigurationTest extends TestCase {
         GeoWebCacheEnvironment genv = new GeoWebCacheEnvironment();
         gse.setApplicationContext(appContext);
 
-        expect(appContext.getBeanNamesForType(GeoWebCacheEnvironment.class)).andReturn(
-                new String[] { "environment" });
+        expect(appContext.getBeanNamesForType(GeoWebCacheEnvironment.class))
+                .andReturn(new String[] {"environment"});
         expect(appContext.getBean("environment")).andReturn(genv);
         Map<String, GeoWebCacheEnvironment> genvMap = new HashMap<>();
         genvMap.put("environment", genv);
         expect(appContext.getBeansOfType(GeoWebCacheEnvironment.class))
-                .andReturn(genvMap).anyTimes();
+                .andReturn(genvMap)
+                .anyTimes();
         expect(appContext.getBean("environment")).andReturn(genv).anyTimes();
-        
+
         replay(appContext);
     }
 
@@ -52,22 +50,22 @@ public class JDBCConfigurationTest extends TestCase {
         System.setProperty("TEST_JDBC_PASSWORD", "");
         System.setProperty("ALLOW_ENV_PARAMETRIZATION", "");
     }
-    
+
     public void testRoundTripJNDI() throws Exception {
         JDBCConfiguration config = new JDBCConfiguration();
         config.setDialect("Oracle");
         config.setJNDISource("java:comp/env/jdbc/oralocal");
         File file = new File("./target/jndi-jdbc.xml");
-        if(file.exists()) {
+        if (file.exists()) {
             assertTrue(file.delete());
         }
-        
+
         // do a round trip and check it's the same
         config.store(config, file);
         JDBCConfiguration config2 = config.load(file);
         assertEquals(config2, config);
     }
-    
+
     public void testRoundTripConnectionPool() throws Exception {
         JDBCConfiguration config = new JDBCConfiguration();
         config.setDialect("PostgreSQL");
@@ -81,19 +79,19 @@ public class JDBCConfigurationTest extends TestCase {
         cp.setValidationQuery("select 1");
         cp.setMaxOpenPreparedStatements(50);
         config.setConnectionPool(cp);
-        
+
         File file = new File("./target/dbcp-jdbc.xml");
-        if(file.exists()) {
+        if (file.exists()) {
             assertTrue(file.delete());
         }
-        
+
         // do a round trip and check it's the same
         config.store(config, file);
         JDBCConfiguration config2 = config.load(file);
         assertEquals(config2, config);
     }
-    
-    public void testRoundTripParametrizedConnectionPool() throws Exception {        
+
+    public void testRoundTripParametrizedConnectionPool() throws Exception {
         JDBCConfiguration config = new JDBCConfiguration();
         config.setDialect("PostgreSQL");
         ConnectionPoolConfiguration cp = new ConnectionPoolConfiguration();
@@ -106,14 +104,14 @@ public class JDBCConfigurationTest extends TestCase {
         cp.setValidationQuery("select 1");
         cp.setMaxOpenPreparedStatements(50);
         config.setConnectionPool(cp);
-        
+
         File file1 = new File("./target/dbcp-jdbc1.xml");
-        if(file1.exists()) {
+        if (file1.exists()) {
             assertTrue(file1.delete());
         }
 
         File file2 = new File("./target/dbcp-jdbc2.xml");
-        if(file2.exists()) {
+        if (file2.exists()) {
             assertTrue(file2.delete());
         }
 
@@ -127,4 +125,3 @@ public class JDBCConfigurationTest extends TestCase {
         assertEquals(config2, config);
     }
 }
-

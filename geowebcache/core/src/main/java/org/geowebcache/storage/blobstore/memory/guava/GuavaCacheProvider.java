@@ -1,19 +1,23 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.geowebcache.storage.blobstore.memory.guava;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheStats;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
+import com.google.common.cache.Weigher;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +33,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
@@ -39,43 +42,39 @@ import org.geowebcache.storage.blobstore.memory.CacheConfiguration.EvictionPolic
 import org.geowebcache.storage.blobstore.memory.CacheProvider;
 import org.geowebcache.storage.blobstore.memory.CacheStatistics;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheStats;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
-import com.google.common.cache.Weigher;
-
 /**
- * This class is an implementation of the {@link CacheProvider} interface using a backing Guava {@link Cache} object. This implementation requires to
- * be configured with the configure() method.
- * 
+ * This class is an implementation of the {@link CacheProvider} interface using a backing Guava
+ * {@link Cache} object. This implementation requires to be configured with the configure() method.
+ *
  * @author Nicola Lagomarsini Geosolutions
  */
 public class GuavaCacheProvider implements CacheProvider {
 
     /** {@link Logger} object used for logging exceptions */
-    private final static Log LOGGER = LogFactory.getLog(GuavaCacheProvider.class);
+    private static final Log LOGGER = LogFactory.getLog(GuavaCacheProvider.class);
 
     /** Separator char used for creating Cache keys */
-    public final static String SEPARATOR = "_";
+    public static final String SEPARATOR = "_";
 
     /** Constant for multiplying bytes to MB */
-    public final static long BYTES_TO_MB = 1048576;
+    public static final long BYTES_TO_MB = 1048576;
 
     /** Size of the scheduled thread pool */
     public static final int CORE_POOL_SIZE = 1;
-    
+
     private static final String GUAVA_NAME = "Guava Cache";
 
     /** Array containing the supported Policies */
-    public final static List<EvictionPolicy> POLICIES = Collections.unmodifiableList(Arrays.asList(
-            EvictionPolicy.NULL, EvictionPolicy.EXPIRE_AFTER_ACCESS,
-            EvictionPolicy.EXPIRE_AFTER_WRITE));
+    public static final List<EvictionPolicy> POLICIES =
+            Collections.unmodifiableList(
+                    Arrays.asList(
+                            EvictionPolicy.NULL,
+                            EvictionPolicy.EXPIRE_AFTER_ACCESS,
+                            EvictionPolicy.EXPIRE_AFTER_WRITE));
 
     /**
      * This class handles the {@link CacheStats} object returned by the guava cache.
-     * 
+     *
      * @author Nicola Lagomarsini Geosolutions
      */
     public static class GuavaCacheStatistics extends CacheStatistics {
@@ -83,8 +82,8 @@ public class GuavaCacheProvider implements CacheProvider {
         /** serialVersionUID */
         private static final long serialVersionUID = 1L;
 
-        public GuavaCacheStatistics(CacheStats stats, double currentSpace, long actualSize,
-                long totalSize) {
+        public GuavaCacheStatistics(
+                CacheStats stats, double currentSpace, long actualSize, long totalSize) {
             this.setEvictionCount(stats.evictionCount());
             this.setHitCount(stats.hitCount());
             this.setMissCount(stats.missCount());
@@ -106,7 +105,10 @@ public class GuavaCacheProvider implements CacheProvider {
     /** {@link AtomicBoolean} used for ensuring that the Cache has already been configured */
     private AtomicBoolean configured;
 
-    /** {@link AtomicLong} used for checking the number of active operations to wait when resetting the cache */
+    /**
+     * {@link AtomicLong} used for checking the number of active operations to wait when resetting
+     * the cache
+     */
     private AtomicLong actualOperations;
 
     /** Internal concurrent Set used for saving the names of the Layers that must not be cached */
@@ -130,7 +132,7 @@ public class GuavaCacheProvider implements CacheProvider {
 
     /**
      * This method is used for creating a new cache object, from the defined configuration.
-     * 
+     *
      * @param configuration
      */
     private void initCache(CacheConfiguration configuration) {
@@ -150,35 +152,48 @@ public class GuavaCacheProvider implements CacheProvider {
         // Create the CacheBuilder
         CacheBuilder<Object, Object> builder = CacheBuilder.newBuilder();
         // Add weigher
-        Weigher<String, TileObject> weigher = new Weigher<String, TileObject>() {
-
-            @Override
-            public int weigh(String key, TileObject value) {
-                currentSize.addAndGet(value.getBlobSize());
-                return value.getBlobSize();
-            }
-        };
-        // Create the builder
-        CacheBuilder<String, TileObject> newBuilder = builder.maximumWeight(maxMemory)
-                .recordStats().weigher(weigher).concurrencyLevel(concurrency)
-                .removalListener(new RemovalListener<String, TileObject>() {
+        Weigher<String, TileObject> weigher =
+                new Weigher<String, TileObject>() {
 
                     @Override
-                    public void onRemoval(RemovalNotification<String, TileObject> notification) {
-                        // TODO This operation is not atomic
-                        TileObject obj = notification.getValue();
-                        // Update the current size
-                        currentSize.addAndGet(-obj.getBlobSize());
-                        final String tileKey = generateTileKey(obj);
-                        final String layerName = obj.getLayerName();
-                        multimap.removeTile(layerName, tileKey);
-                        if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("Removed tile " + tileKey + " for layer " + layerName
-                                    + " due to reason:" + notification.getCause().toString());
-                            LOGGER.debug("Removed tile was evicted? " + notification.wasEvicted());
-                        }
+                    public int weigh(String key, TileObject value) {
+                        currentSize.addAndGet(value.getBlobSize());
+                        return value.getBlobSize();
                     }
-                });
+                };
+        // Create the builder
+        CacheBuilder<String, TileObject> newBuilder =
+                builder.maximumWeight(maxMemory)
+                        .recordStats()
+                        .weigher(weigher)
+                        .concurrencyLevel(concurrency)
+                        .removalListener(
+                                new RemovalListener<String, TileObject>() {
+
+                                    @Override
+                                    public void onRemoval(
+                                            RemovalNotification<String, TileObject> notification) {
+                                        // TODO This operation is not atomic
+                                        TileObject obj = notification.getValue();
+                                        // Update the current size
+                                        currentSize.addAndGet(-obj.getBlobSize());
+                                        final String tileKey = generateTileKey(obj);
+                                        final String layerName = obj.getLayerName();
+                                        multimap.removeTile(layerName, tileKey);
+                                        if (LOGGER.isDebugEnabled()) {
+                                            LOGGER.debug(
+                                                    "Removed tile "
+                                                            + tileKey
+                                                            + " for layer "
+                                                            + layerName
+                                                            + " due to reason:"
+                                                            + notification.getCause().toString());
+                                            LOGGER.debug(
+                                                    "Removed tile was evicted? "
+                                                            + notification.wasEvicted());
+                                        }
+                                    }
+                                });
         // Handle eviction policy
         boolean configuredPolicy = false;
         if (policy != null && evictionTime > 0) {
@@ -208,25 +223,26 @@ public class GuavaCacheProvider implements CacheProvider {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Configuring Scheduled Task for cache eviction");
             }
-            Runnable command = new Runnable() {
+            Runnable command =
+                    new Runnable() {
 
-                @Override
-                public void run() {
-                    if (configured.get()) {
-                        // Increment the number of current operations
-                        // This behavior is used in order to wait
-                        // the end of all the operations after setting
-                        // the configured parameter to false
-                        actualOperations.incrementAndGet();
-                        try {
-                            cache.cleanUp();
-                        } finally {
-                            // Decrement the number of current operations.
-                            actualOperations.decrementAndGet();
+                        @Override
+                        public void run() {
+                            if (configured.get()) {
+                                // Increment the number of current operations
+                                // This behavior is used in order to wait
+                                // the end of all the operations after setting
+                                // the configured parameter to false
+                                actualOperations.incrementAndGet();
+                                try {
+                                    cache.cleanUp();
+                                } finally {
+                                    // Decrement the number of current operations.
+                                    actualOperations.decrementAndGet();
+                                }
+                            }
                         }
-                    }
-                }
-            };
+                    };
             // Initialization of the internal Scheduler task for scheduling cache cleanup
             scheduledPool = Executors.newScheduledThreadPool(CORE_POOL_SIZE);
             scheduledPool.scheduleAtFixedRate(command, 10, evictionTime + 1, TimeUnit.SECONDS);
@@ -243,7 +259,8 @@ public class GuavaCacheProvider implements CacheProvider {
 
     @Override
     public synchronized void configure(CacheConfiguration configuration) {
-        // NOTE that if the cache has already been configured, the user must always call resetCache() before
+        // NOTE that if the cache has already been configured, the user must always call
+        // resetCache() before
         // setting the new configuration
         reset();
         // Configure a new cache
@@ -411,12 +428,12 @@ public class GuavaCacheProvider implements CacheProvider {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Reset Cache internally");
             }
-            // Avoid to call the While cycle before having started an operation with configured == false
+            // Avoid to call the While cycle before having started an operation with configured ==
+            // false
             actualOperations.incrementAndGet();
             actualOperations.decrementAndGet();
             // Wait until all the operations are finished
-            while (actualOperations.get() > 0) {
-            }
+            while (actualOperations.get() > 0) {}
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Flushing cache");
             }
@@ -463,9 +480,14 @@ public class GuavaCacheProvider implements CacheProvider {
             actualOperations.incrementAndGet();
             try {
                 // Get cache statistics
-                long actualSize = currentSize
-                        .get();
-                long currentSpace = (long) (100L - (1L) * (100 * ((1.0d) * (maxMemory - actualSize)) / maxMemory));
+                long actualSize = currentSize.get();
+                long currentSpace =
+                        (long)
+                                (100L
+                                        - (1L)
+                                                * (100
+                                                        * ((1.0d) * (maxMemory - actualSize))
+                                                        / maxMemory));
                 if (currentSpace < 0) {
                     currentSpace = 0;
                 }
@@ -484,27 +506,31 @@ public class GuavaCacheProvider implements CacheProvider {
         }
     }
 
-    /***
-     * Static method for generating the {@link TileObject} cache key to use for caching.
-     * 
+    /**
+     * * Static method for generating the {@link TileObject} cache key to use for caching.
+     *
      * @param obj
-     * 
      * @return {@link TileObject} key
      */
     public static String generateTileKey(TileObject obj) {
         Map<String, String> parameters = obj.getParameters();
-        
-        StringBuilder builder = new StringBuilder(obj.getLayerName()).append(SEPARATOR).append(obj.getGridSetId())
-                .append(SEPARATOR).append(Arrays.toString(obj.getXYZ())).append(SEPARATOR)
-                .append(obj.getBlobFormat());
-        
+
+        StringBuilder builder =
+                new StringBuilder(obj.getLayerName())
+                        .append(SEPARATOR)
+                        .append(obj.getGridSetId())
+                        .append(SEPARATOR)
+                        .append(Arrays.toString(obj.getXYZ()))
+                        .append(SEPARATOR)
+                        .append(obj.getBlobFormat());
+
         // If parameters are present they must be handled
-        if(parameters != null && !parameters.isEmpty()){
-            for(String key : parameters.keySet()){
+        if (parameters != null && !parameters.isEmpty()) {
+            for (String key : parameters.keySet()) {
                 builder.append(SEPARATOR).append(key).append(SEPARATOR).append(parameters.get(key));
             }
         }
-        
+
         return builder.toString();
     }
 
@@ -592,12 +618,12 @@ public class GuavaCacheProvider implements CacheProvider {
     }
 
     /**
-     * Internal class representing a concurrent multimap which associates to each Layer name the related {@link TileObject} cache keys. This map is
-     * useful when trying to remove a Layer, because it returns quicly all the cached keys of the selected layer, without having to cycle on the cache
-     * and checking if each TileObject belongs to the selected Layer.
-     * 
+     * Internal class representing a concurrent multimap which associates to each Layer name the
+     * related {@link TileObject} cache keys. This map is useful when trying to remove a Layer,
+     * because it returns quicly all the cached keys of the selected layer, without having to cycle
+     * on the cache and checking if each TileObject belongs to the selected Layer.
+     *
      * @author Nicola Lagomarsini, GeoSolutions
-     * 
      */
     static class LayerMap {
 
@@ -611,7 +637,8 @@ public class GuavaCacheProvider implements CacheProvider {
         private final ReadLock readLock;
 
         /** MultiMap containing the {@link TileObject} keys for the Layers */
-        private final ConcurrentHashMap<String, Set<String>> layerMap = new ConcurrentHashMap<String, Set<String>>();
+        private final ConcurrentHashMap<String, Set<String>> layerMap =
+                new ConcurrentHashMap<String, Set<String>>();
 
         public LayerMap() {
             // Lock initialization
@@ -622,7 +649,7 @@ public class GuavaCacheProvider implements CacheProvider {
 
         /**
          * Insertion of a {@link TileObject} key in the map for the associated Layer.
-         * 
+         *
          * @param layer
          * @param id
          */
@@ -645,7 +672,8 @@ public class GuavaCacheProvider implements CacheProvider {
                         if (LOGGER.isDebugEnabled()) {
                             LOGGER.debug("Creating new KeySet for Layer: " + layer);
                         }
-                        // If no key is present then a new KeySet is created and then added to the multimap
+                        // If no key is present then a new KeySet is created and then added to the
+                        // multimap
                         tileKeys = new ConcurrentSkipListSet<String>();
                         layerMap.put(layer, tileKeys);
                     }
@@ -669,7 +697,7 @@ public class GuavaCacheProvider implements CacheProvider {
 
         /**
          * Removal of a {@link TileObject} key in the map for the associated Layer.
-         * 
+         *
          * @param layer
          * @param id
          */
@@ -708,9 +736,8 @@ public class GuavaCacheProvider implements CacheProvider {
 
         /**
          * Removes a layer {@link Set} and returns it to the cache.
-         * 
+         *
          * @param layer
-         * 
          * @return the keys associated to the Layer
          */
         public Set<String> removeLayer(String layer) {

@@ -1,23 +1,27 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.geowebcache.storage.blobstore.memory.distributed;
 
+import com.hazelcast.core.IMap;
+import com.hazelcast.map.EntryBackupProcessor;
+import com.hazelcast.map.EntryProcessor;
+import com.hazelcast.monitor.LocalMapStats;
+import com.hazelcast.query.EntryObject;
+import com.hazelcast.query.Predicate;
+import com.hazelcast.query.PredicateBuilder;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
@@ -29,28 +33,23 @@ import org.geowebcache.storage.blobstore.memory.CacheStatistics;
 import org.geowebcache.storage.blobstore.memory.guava.GuavaCacheProvider;
 import org.springframework.beans.factory.DisposableBean;
 
-import com.hazelcast.core.IMap;
-import com.hazelcast.map.EntryBackupProcessor;
-import com.hazelcast.map.EntryProcessor;
-import com.hazelcast.monitor.LocalMapStats;
-import com.hazelcast.query.EntryObject;
-import com.hazelcast.query.Predicate;
-import com.hazelcast.query.PredicateBuilder;
-
 /**
- * This class is an implementation of the {@link CacheProvider} interface for a distributed configuration using Hazelcast. This class requires a
- * configuration at the GWC startup. The Hazelcast instance used is returned by the {@link HazelcastLoader} object which internally handles the
- * configuration for the cache. Note that this cache does not provide access to all the local statistics parameters so some of them will return -1 as
- * result. There could happen that the number cache HITS is bigger than the number of total operations. This is caused by the fact that HITS number
- * indicates the number of hits on the local entries considering also the requests made by other cluster instances while the total operation count
- * indicates only the number of GET operations requested on the local cluster instance.
- * 
+ * This class is an implementation of the {@link CacheProvider} interface for a distributed
+ * configuration using Hazelcast. This class requires a configuration at the GWC startup. The
+ * Hazelcast instance used is returned by the {@link HazelcastLoader} object which internally
+ * handles the configuration for the cache. Note that this cache does not provide access to all the
+ * local statistics parameters so some of them will return -1 as result. There could happen that the
+ * number cache HITS is bigger than the number of total operations. This is caused by the fact that
+ * HITS number indicates the number of hits on the local entries considering also the requests made
+ * by other cluster instances while the total operation count indicates only the number of GET
+ * operations requested on the local cluster instance.
+ *
  * @author Nicola Lagomarsini Geosolutions
  */
 public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
 
     /** {@link Logger} object used for logging operations */
-    private final static Log LOGGER = LogFactory.getLog(HazelcastCacheProvider.class);
+    private static final Log LOGGER = LogFactory.getLog(HazelcastCacheProvider.class);
 
     /** Fixed name for the Hazelcast map */
     public static final String HAZELCAST_MAP_DEFINITION = "CacheProviderMap";
@@ -76,9 +75,13 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
         // cacheProvider parameters are defined
         if (configured) {
             map = loader.getInstance().getMap(HAZELCAST_MAP_DEFINITION);
-            totalSize = loader.getInstance().getConfig().getMapConfig(HAZELCAST_MAP_DEFINITION)
-                    .getMaxSizeConfig().getSize()
-                    * MB_TO_BYTES;
+            totalSize =
+                    loader.getInstance()
+                                    .getConfig()
+                                    .getMapConfig(HAZELCAST_MAP_DEFINITION)
+                                    .getMaxSizeConfig()
+                                    .getSize()
+                            * MB_TO_BYTES;
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Configured Hazelcast Cache");
             }
@@ -218,16 +221,13 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
     }
 
     @Override
-    public void configure(CacheConfiguration configuration) {
-    }
+    public void configure(CacheConfiguration configuration) {}
 
     @Override
-    public void addUncachedLayer(String layername) {
-    }
+    public void addUncachedLayer(String layername) {}
 
     @Override
-    public void removeUncachedLayer(String layername) {
-    }
+    public void removeUncachedLayer(String layername) {}
 
     @Override
     public boolean containsUncachedLayer(String layername) {
@@ -256,7 +256,7 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
 
     /**
      * {@link CacheStatistics} extensions used for handling local map statistics
-     * 
+     *
      * @author Nicola Lagomarsini Geosolutions
      */
     static class HazelcastCacheStatistics extends CacheStatistics {
@@ -282,7 +282,8 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
             long actualSize = localMapStats.getOwnedEntryMemoryCost();
             setActualSize(actualSize);
             // Calculation of the memory occupation
-            int currentMemoryOccupation = (int) (100L - (1L) * (100 * ((1.0d) * (totalSize - actualSize)) / totalSize));
+            int currentMemoryOccupation =
+                    (int) (100L - (1L) * (100 * ((1.0d) * (totalSize - actualSize)) / totalSize));
             if (currentMemoryOccupation < 0) {
                 currentMemoryOccupation = 0;
             }
@@ -294,7 +295,7 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
 
     /**
      * {@link EntryProcessor} implementation used for removing defined entries
-     * 
+     *
      * @author Nicola Lagomarsini Geosolutions
      */
     static class CacheEntryProcessor implements EntryProcessor<String, TileObject> {
@@ -304,7 +305,6 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
             // By setting the entry value to null the entry is evicted
             entry.setValue(null);
             return null;
-
         }
 
         @Override

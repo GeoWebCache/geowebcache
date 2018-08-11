@@ -1,17 +1,15 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Andrea Aime - GeoSolutions
  */
 package org.geowebcache.diskquota.jdbc;
@@ -34,9 +32,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
 import javax.sql.DataSource;
-
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -62,56 +58,38 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * An abstract quota store based on a JDBC reachable database, and configurable via a dialect class
- * 
+ *
  * @author Andrea Aime - GeoSolutions
  */
 public class JDBCQuotaStore implements QuotaStore {
 
     private static final Log log = LogFactory.getLog(JDBCQuotaStore.class);
 
-    /**
-     * The constant identifying the global quota tile set key
-     */
+    /** The constant identifying the global quota tile set key */
     public static final String GLOBAL_QUOTA_NAME = "___GLOBAL_QUOTA___";
 
-    /**
-     * The dialect accounting for database specific differences
-     */
+    /** The dialect accounting for database specific differences */
     SQLDialect dialect;
 
-    /**
-     * The template used to execute commands
-     */
+    /** The template used to execute commands */
     SimpleJdbcTemplate jt;
 
-    /**
-     * The template used to run transactions
-     */
+    /** The template used to run transactions */
     TransactionTemplate tt;
 
-    /**
-     * The database schema (optional)
-     */
+    /** The database schema (optional) */
     String schema;
 
-    /**
-     * The storage finder, used to locate the data directory
-     */
+    /** The storage finder, used to locate the data directory */
     DefaultStorageFinder finder;
 
-    /**
-     * The tile page calculator, serving as the source or layers, tile sets, tile pages
-     */
+    /** The tile page calculator, serving as the source or layers, tile sets, tile pages */
     TilePageCalculator calculator;
 
-    /**
-     * Max number of attempts we do to insert/update page stats in race-free mode
-     */
+    /** Max number of attempts we do to insert/update page stats in race-free mode */
     int maxLoops = 100;
 
-    /**
-     * The executor used for asynch requests
-     */
+    /** The executor used for asynch requests */
     ExecutorService executor;
 
     private DataSource dataSource;
@@ -124,7 +102,7 @@ public class JDBCQuotaStore implements QuotaStore {
 
     /**
      * Gets the SQL dialect used by this quota store
-     * 
+     *
      * @return
      */
     public SQLDialect getDialect() {
@@ -133,7 +111,7 @@ public class JDBCQuotaStore implements QuotaStore {
 
     /**
      * Returns the SQL dialect used by this quota store
-     * 
+     *
      * @return
      */
     public void setDialect(SQLDialect dialect) {
@@ -142,7 +120,7 @@ public class JDBCQuotaStore implements QuotaStore {
 
     /**
      * Returns he database schema used by this store
-     * 
+     *
      * @return
      */
     public String getSchema() {
@@ -151,70 +129,71 @@ public class JDBCQuotaStore implements QuotaStore {
 
     /**
      * Sets the database schema used by this store
-     * 
+     *
      * @param schema
      */
     public void setSchema(String schema) {
         this.schema = schema;
     }
 
-    /**
-     * Sets the connection pool provider and initializes the tables in the dbms if missing
-     */
+    /** Sets the connection pool provider and initializes the tables in the dbms if missing */
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
-        DataSourceTransactionManager dsTransactionManager = new DataSourceTransactionManager(
-                dataSource);
+        DataSourceTransactionManager dsTransactionManager =
+                new DataSourceTransactionManager(dataSource);
         this.tt = new TransactionTemplate(dsTransactionManager);
         this.jt = new SimpleJdbcTemplate(dsTransactionManager.getDataSource());
     }
 
-    /**
-     * Called to initialize the database structure and the layers
-     */
+    /** Called to initialize the database structure and the layers */
     public void initialize() {
         if (dialect == null || jt == null || tt == null) {
-            throw new IllegalStateException("Please provide both the sql dialect and the data "
-                    + "source before calling inizialize");
+            throw new IllegalStateException(
+                    "Please provide both the sql dialect and the data "
+                            + "source before calling inizialize");
         }
-        tt.execute(new TransactionCallbackWithoutResult() {
+        tt.execute(
+                new TransactionCallbackWithoutResult() {
 
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                // setup the tables if necessary
-                dialect.initializeTables(schema, jt);
+                    @Override
+                    protected void doInTransactionWithoutResult(TransactionStatus status) {
+                        // setup the tables if necessary
+                        dialect.initializeTables(schema, jt);
 
-                // get the existing table names
-                List<String> existingLayers = jt.query(dialect.getAllLayersQuery(schema),
-                        new RowMapper<String>() {
+                        // get the existing table names
+                        List<String> existingLayers =
+                                jt.query(
+                                        dialect.getAllLayersQuery(schema),
+                                        new RowMapper<String>() {
 
-                            public String mapRow(ResultSet rs, int rowNum) throws SQLException {
-                                return rs.getString(1);
-                            }
-                        });
+                                            public String mapRow(ResultSet rs, int rowNum)
+                                                    throws SQLException {
+                                                return rs.getString(1);
+                                            }
+                                        });
 
-                // compare with the ones available in the config
-                final Set<String> layerNames = calculator.getLayerNames();
-                final Set<String> layersToDelete = new HashSet<String>(existingLayers);
-                layersToDelete.removeAll(layerNames);
+                        // compare with the ones available in the config
+                        final Set<String> layerNames = calculator.getLayerNames();
+                        final Set<String> layersToDelete = new HashSet<String>(existingLayers);
+                        layersToDelete.removeAll(layerNames);
 
-                // remove all the layers we don't need
-                for (String layerName : layersToDelete) {
-                    deleteLayer(layerName);
-                }
+                        // remove all the layers we don't need
+                        for (String layerName : layersToDelete) {
+                            deleteLayer(layerName);
+                        }
 
-                // add any missing tileset
-                for (String layerName : layerNames) {
-                    createLayerInternal(layerName);
-                }
+                        // add any missing tileset
+                        for (String layerName : layerNames) {
+                            createLayerInternal(layerName);
+                        }
 
-                // create the global quota if necessary
-                Quota global = getUsedQuotaByTileSetIdInternal(GLOBAL_QUOTA_NAME);
-                if (global == null) {
-                    createLayerInternal(GLOBAL_QUOTA_NAME);
-                }
-            }
-        });
+                        // create the global quota if necessary
+                        Quota global = getUsedQuotaByTileSetIdInternal(GLOBAL_QUOTA_NAME);
+                        if (global == null) {
+                            createLayerInternal(GLOBAL_QUOTA_NAME);
+                        }
+                    }
+                });
     }
 
     public void createLayer(String layerName) throws InterruptedException {
@@ -222,24 +201,24 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     private void createLayerInternal(final String layerName) {
-        tt.execute(new TransactionCallbackWithoutResult() {
+        tt.execute(
+                new TransactionCallbackWithoutResult() {
 
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                Set<TileSet> layerTileSets;
-                if (!GLOBAL_QUOTA_NAME.equals(layerName)) {
-                    layerTileSets = calculator.getTileSetsFor(layerName);
-                } else {
-                    layerTileSets = Collections.singleton(new TileSet(GLOBAL_QUOTA_NAME));
-                }
-                for (TileSet tset : layerTileSets) {
-                    // other nodes in the cluster might be trying to create the same layer,
-                    // so use getOrCreate
-                    getOrCreateTileSet(tset);
-                }
-
-            }
-        });
+                    @Override
+                    protected void doInTransactionWithoutResult(TransactionStatus status) {
+                        Set<TileSet> layerTileSets;
+                        if (!GLOBAL_QUOTA_NAME.equals(layerName)) {
+                            layerTileSets = calculator.getTileSetsFor(layerName);
+                        } else {
+                            layerTileSets = Collections.singleton(new TileSet(GLOBAL_QUOTA_NAME));
+                        }
+                        for (TileSet tset : layerTileSets) {
+                            // other nodes in the cluster might be trying to create the same layer,
+                            // so use getOrCreate
+                            getOrCreateTileSet(tset);
+                        }
+                    }
+                });
     }
 
     public Quota getGloballyUsedQuota() throws InterruptedException {
@@ -252,18 +231,23 @@ public class JDBCQuotaStore implements QuotaStore {
 
     public Quota getUsedQuotaByLayerName(String layerName) {
         String sql = dialect.getUsedQuotaByLayerName(schema, "layerName");
-        return nonNullQuota(jt.queryForOptionalObject(sql, new DiskQuotaMapper(), Collections.singletonMap("layerName", layerName)));
-
+        return nonNullQuota(
+                jt.queryForOptionalObject(
+                        sql,
+                        new DiskQuotaMapper(),
+                        Collections.singletonMap("layerName", layerName)));
     }
-    
+
     public Quota getUsedQuotaByGridsetid(String gridsetId) {
         String sql = dialect.getUsedQuotaByGridSetId(schema, "gridSetId");
-        return nonNullQuota(jt.queryForOptionalObject(sql, new DiskQuotaMapper(), Collections.singletonMap("gridSetId", gridsetId)));
+        return nonNullQuota(
+                jt.queryForOptionalObject(
+                        sql,
+                        new DiskQuotaMapper(),
+                        Collections.singletonMap("gridSetId", gridsetId)));
     }
 
-    /**
-     * Utility method that retrieves the disk quota used by a layer gridset.
-     */
+    /** Utility method that retrieves the disk quota used by a layer gridset. */
     public Quota getUsedQuotaByLayerGridset(String layerName, String gridsetId) {
         // getting the sql query for the current database
         String sql = dialect.getUsedQuotaByLayerGridset(schema, "layerName", "gridSetId");
@@ -274,33 +258,40 @@ public class JDBCQuotaStore implements QuotaStore {
         // execute the sql query
         return nonNullQuota(jt.queryForOptionalObject(sql, new DiskQuotaMapper(), parameters));
     }
-    
+
     public Quota getUsedQuotaByParametersId(String parametersId) {
         String sql = dialect.getUsedQuotaByParametersId(schema, "parametersId");
-        return nonNullQuota(jt.queryForOptionalObject(sql, new DiskQuotaMapper(), Collections.singletonMap("parametersId", parametersId)));
-
+        return nonNullQuota(
+                jt.queryForOptionalObject(
+                        sql,
+                        new DiskQuotaMapper(),
+                        Collections.singletonMap("parametersId", parametersId)));
     }
 
     protected Quota getUsedQuotaByTileSetIdInternal(final String tileSetId) {
         String sql = dialect.getUsedQuotaByTileSetId(schema, "key");
-        return jt.queryForOptionalObject(sql, new RowMapper<Quota>() {
+        return jt.queryForOptionalObject(
+                sql,
+                new RowMapper<Quota>() {
 
-            public Quota mapRow(ResultSet rs, int rowNum) throws SQLException {
-                BigDecimal bytes = rs.getBigDecimal(1);
-                Quota quota = new Quota(bytes.toBigInteger());
-                quota.setTileSetId(tileSetId);
-                return quota;
-            }
-        }, Collections.singletonMap("key", tileSetId));
+                    public Quota mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        BigDecimal bytes = rs.getBigDecimal(1);
+                        Quota quota = new Quota(bytes.toBigInteger());
+                        quota.setTileSetId(tileSetId);
+                        return quota;
+                    }
+                },
+                Collections.singletonMap("key", tileSetId));
     }
-    
+
     /**
      * Return a empty quota object in case a null value is passed, otherwise return the passed value
+     *
      * @param optionalQuota
      * @return
      */
     private Quota nonNullQuota(Quota optionalQuota) {
-        if(optionalQuota == null) {
+        if (optionalQuota == null) {
             return new Quota();
         } else {
             return optionalQuota;
@@ -308,77 +299,85 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     public void deleteLayer(final String layerName) {
-        tt.execute(new TransactionCallbackWithoutResult() {
+        tt.execute(
+                new TransactionCallbackWithoutResult() {
 
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                deleteLayerInternal(layerName);
-            }
-        });
+                    @Override
+                    protected void doInTransactionWithoutResult(TransactionStatus status) {
+                        deleteLayerInternal(layerName);
+                    }
+                });
     }
 
     public void deleteGridSubset(final String layerName, final String gridSetId) {
-        tt.execute(new TransactionCallbackWithoutResult() {
+        tt.execute(
+                new TransactionCallbackWithoutResult() {
 
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                // get the disk quota used by the layer gridset
-                Quota quota = getUsedQuotaByLayerGridset(layerName, gridSetId);
-                // we will subtracting the current disk quota value
-                quota.setBytes(quota.getBytes().negate());
-                // update the global disk quota by subtracting the value above
-                String updateQuota = dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
-                Map<String, Object> params = new HashMap<>();
-                params.put("tileSetId", GLOBAL_QUOTA_NAME);
-                params.put("bytes", new BigDecimal(quota.getBytes()));
-                jt.update(updateQuota, params);
-                // delete layer gridset
-                String statement = dialect.getLayerGridDeletionStatement(schema, "layerName", "gridSetId");
-                params = new HashMap<String, Object>();
-                params.put("layerName", layerName);
-                params.put("gridSetId", gridSetId);
-                jt.update(statement, params);
-            }
-        });
+                    @Override
+                    protected void doInTransactionWithoutResult(TransactionStatus status) {
+                        // get the disk quota used by the layer gridset
+                        Quota quota = getUsedQuotaByLayerGridset(layerName, gridSetId);
+                        // we will subtracting the current disk quota value
+                        quota.setBytes(quota.getBytes().negate());
+                        // update the global disk quota by subtracting the value above
+                        String updateQuota =
+                                dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
+                        Map<String, Object> params = new HashMap<>();
+                        params.put("tileSetId", GLOBAL_QUOTA_NAME);
+                        params.put("bytes", new BigDecimal(quota.getBytes()));
+                        jt.update(updateQuota, params);
+                        // delete layer gridset
+                        String statement =
+                                dialect.getLayerGridDeletionStatement(
+                                        schema, "layerName", "gridSetId");
+                        params = new HashMap<String, Object>();
+                        params.put("layerName", layerName);
+                        params.put("gridSetId", gridSetId);
+                        jt.update(statement, params);
+                    }
+                });
     }
 
     public void deleteLayerInternal(final String layerName) {
         getUsedQuotaByLayerName(layerName);
-        tt.execute(new TransactionCallbackWithoutResult() {
-            
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus arg0) {
-                // update the global quota
-                Quota quota = getUsedQuotaByLayerName(layerName);
-                quota.setBytes(quota.getBytes().negate());
-                String updateQuota = dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
-                Map<String, Object> params = new HashMap<String, Object>();
-                params.put("tileSetId", GLOBAL_QUOTA_NAME);
-                params.put("bytes", new BigDecimal(quota.getBytes()));
-                jt.update(updateQuota, params);
+        tt.execute(
+                new TransactionCallbackWithoutResult() {
 
-                // delete the layer
-                log.info("Deleting disk quota information for layer '" + layerName + "'");
-                String statement = dialect.getLayerDeletionStatement(schema, "layerName");
-                jt.update(statement, Collections.singletonMap("layerName", layerName));
-            }
-        });
+                    @Override
+                    protected void doInTransactionWithoutResult(TransactionStatus arg0) {
+                        // update the global quota
+                        Quota quota = getUsedQuotaByLayerName(layerName);
+                        quota.setBytes(quota.getBytes().negate());
+                        String updateQuota =
+                                dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
+                        Map<String, Object> params = new HashMap<String, Object>();
+                        params.put("tileSetId", GLOBAL_QUOTA_NAME);
+                        params.put("bytes", new BigDecimal(quota.getBytes()));
+                        jt.update(updateQuota, params);
+
+                        // delete the layer
+                        log.info("Deleting disk quota information for layer '" + layerName + "'");
+                        String statement = dialect.getLayerDeletionStatement(schema, "layerName");
+                        jt.update(statement, Collections.singletonMap("layerName", layerName));
+                    }
+                });
     }
 
     public void renameLayer(final String oldLayerName, final String newLayerName)
             throws InterruptedException {
-        tt.execute(new TransactionCallbackWithoutResult() {
+        tt.execute(
+                new TransactionCallbackWithoutResult() {
 
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                String sql = dialect.getRenameLayerStatement(schema, "oldName", "newName");
-                Map<String, Object> params = new HashMap<String, Object>();
-                params.put("oldName", oldLayerName);
-                params.put("newName", newLayerName);
-                int updated = jt.update(sql, params);
-                log.info("Updated " + updated + " tile sets after layer rename");
-            }
-        });
+                    @Override
+                    protected void doInTransactionWithoutResult(TransactionStatus status) {
+                        String sql = dialect.getRenameLayerStatement(schema, "oldName", "newName");
+                        Map<String, Object> params = new HashMap<String, Object>();
+                        params.put("oldName", oldLayerName);
+                        params.put("newName", newLayerName);
+                        int updated = jt.update(sql, params);
+                        log.info("Updated " + updated + " tile sets after layer rename");
+                    }
+                });
     }
 
     public Set<TileSet> getTileSets() {
@@ -398,15 +397,17 @@ public class JDBCQuotaStore implements QuotaStore {
     public void accept(final TileSetVisitor visitor) {
         String getTileSet = dialect.getTileSetsQuery(schema);
         final TileSetRowMapper tileSetMapper = new TileSetRowMapper();
-        jt.query(getTileSet, new RowCallbackHandler() {
+        jt.query(
+                getTileSet,
+                new RowCallbackHandler() {
 
-            public void processRow(ResultSet rs) throws SQLException {
-                TileSet tileSet = tileSetMapper.mapRow(rs, 0);
-                if (!GLOBAL_QUOTA_NAME.equals(tileSet.getId())) {
-                    visitor.visit(tileSet, JDBCQuotaStore.this);
-                }
-            }
-        });
+                    public void processRow(ResultSet rs) throws SQLException {
+                        TileSet tileSet = tileSetMapper.mapRow(rs, 0);
+                        if (!GLOBAL_QUOTA_NAME.equals(tileSet.getId())) {
+                            visitor.visit(tileSet, JDBCQuotaStore.this);
+                        }
+                    }
+                });
     }
 
     public TileSet getTileSetById(String tileSetId) throws InterruptedException {
@@ -423,8 +424,8 @@ public class JDBCQuotaStore implements QuotaStore {
     private TileSet getTileSetByIdInternal(String tileSetId) {
         String getTileSet = dialect.getTileSetQuery(schema, "key");
         final TileSetRowMapper tileSetMapper = new TileSetRowMapper();
-        return jt.queryForOptionalObject(getTileSet, tileSetMapper,
-                Collections.singletonMap("key", tileSetId));
+        return jt.queryForOptionalObject(
+                getTileSet, tileSetMapper, Collections.singletonMap("key", tileSetId));
     }
 
     private boolean createTileSet(TileSet tset) {
@@ -433,8 +434,9 @@ public class JDBCQuotaStore implements QuotaStore {
             log.debug("Creating tileset " + tset);
         }
 
-        String createTileSet = dialect.getCreateTileSetQuery(schema, "key", "layerName",
-                "gridSetId", "blobFormat", "parametersId");
+        String createTileSet =
+                dialect.getCreateTileSetQuery(
+                        schema, "key", "layerName", "gridSetId", "blobFormat", "parametersId");
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("key", tset.getId());
         params.put("layerName", tset.getLayerName());
@@ -464,131 +466,162 @@ public class JDBCQuotaStore implements QuotaStore {
             }
         }
 
-        throw new ConcurrencyFailureException("Failed to create or locate tileset " + tileSet
-                + " after " + maxLoops + " attempts", lastException);
+        throw new ConcurrencyFailureException(
+                "Failed to create or locate tileset "
+                        + tileSet
+                        + " after "
+                        + maxLoops
+                        + " attempts",
+                lastException);
     }
 
     public TilePageCalculator getTilePageCalculator() {
         return calculator;
     }
 
-    public void addToQuotaAndTileCounts(final TileSet tileSet, final Quota quotaDiff,
-            final Collection<PageStatsPayload> tileCountDiffs) throws InterruptedException {
-        tt.execute(new TransactionCallbackWithoutResult() {
+    public void addToQuotaAndTileCounts(
+            final TileSet tileSet,
+            final Quota quotaDiff,
+            final Collection<PageStatsPayload> tileCountDiffs)
+            throws InterruptedException {
+        tt.execute(
+                new TransactionCallbackWithoutResult() {
 
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                getOrCreateTileSet(tileSet);
-                updateQuotas(tileSet, quotaDiff);
+                    @Override
+                    protected void doInTransactionWithoutResult(TransactionStatus status) {
+                        getOrCreateTileSet(tileSet);
+                        updateQuotas(tileSet, quotaDiff);
 
-                if (tileCountDiffs != null) {
-                    // sort the payloads by page id as a deadlock avoidance measure, out
-                    // of order updates may result in deadlock with the addHitsAndSetAccessTime method
-                    List<PageStatsPayload> sorted = sortPayloads(tileCountDiffs);
-                    for (PageStatsPayload payload : sorted) {
-                        upsertTilePageFillFactor(payload);
-                    }
-                }
-            }
-
-            private void updateQuotas(final TileSet tileSet, final Quota quotaDiff) {
-                if (log.isDebugEnabled()) {
-                    log.info("Applying quota diff " + quotaDiff.getBytes() + " on tileset "
-                            + tileSet);
-                }
-
-                String updateQuota = dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
-                Map<String, Object> params = new HashMap<String, Object>();
-                params.put("tileSetId", tileSet.getId());
-                params.put("bytes", new BigDecimal(quotaDiff.getBytes()));
-                jt.update(updateQuota, params);
-                params.put("tileSetId", GLOBAL_QUOTA_NAME);
-                jt.update(updateQuota, params);
-            }
-
-            private void upsertTilePageFillFactor(PageStatsPayload payload) {
-                if (log.isDebugEnabled()) {
-                    log.info("Applying page stats payload " + payload);
-                }
-
-                // see http://en.wikipedia.org/wiki/Merge_(SQL)
-                // Even the Merge command that some databases support is prone to race conditions
-                // under concurrent load, but we don't want to lose data and it's difficult to
-                // tell apart the race conditions from other failures, so we use tolerant commands
-                // and loop over them.
-                // Loop conditions: we find the page stats, but they are deleted before we can
-                // update
-                // them, we don't find the page stats, but they are inserted before we can do so, in
-                // both cases we re-start from zero
-                TilePage page = payload.getPage();
-                final byte level = page.getZoomLevel();
-                final BigInteger tilesPerPage = calculator.getTilesPerPage(tileSet, level);
-
-                int modified = 0;
-                int count = 0;
-                while (modified == 0 && count < maxLoops) {
-                    try {
-                        count++;
-                        PageStats stats = getPageStats(page.getKey());
-                        if (stats != null) {
-                            float oldFillFactor = stats.getFillFactor();
-                            stats.addTiles(payload.getNumTiles(), tilesPerPage);
-                            // if no change, bail out early
-                            if (oldFillFactor == stats.getFillFactor()) {
-                                return;
+                        if (tileCountDiffs != null) {
+                            // sort the payloads by page id as a deadlock avoidance measure, out
+                            // of order updates may result in deadlock with the
+                            // addHitsAndSetAccessTime method
+                            List<PageStatsPayload> sorted = sortPayloads(tileCountDiffs);
+                            for (PageStatsPayload payload : sorted) {
+                                upsertTilePageFillFactor(payload);
                             }
-    
-                            // update the record in the db
-                            modified = updatePageFillFactor(page, stats, oldFillFactor);
-                        } else {
-                            // create the stats and update the fill factor
-                            stats = new PageStats(0);
-                            stats.addTiles(payload.getNumTiles(), tilesPerPage);
-    
-                            modified = createNewPageStats(stats, page);
-                        }
-                    } catch(DeadlockLoserDataAccessException e) {
-                        if(log.isDebugEnabled()) {
-                            log.debug("Deadlock while updating page stats, will retry", e);
                         }
                     }
-                }
 
-                if (modified == 0) {
-                    throw new ConcurrencyFailureException(
-                            "Failed to create or update page stats for page " + payload.getPage()
-                                    + " after " + count + " attempts");
-                }
-            }
+                    private void updateQuotas(final TileSet tileSet, final Quota quotaDiff) {
+                        if (log.isDebugEnabled()) {
+                            log.info(
+                                    "Applying quota diff "
+                                            + quotaDiff.getBytes()
+                                            + " on tileset "
+                                            + tileSet);
+                        }
 
-        });
+                        String updateQuota =
+                                dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
+                        Map<String, Object> params = new HashMap<String, Object>();
+                        params.put("tileSetId", tileSet.getId());
+                        params.put("bytes", new BigDecimal(quotaDiff.getBytes()));
+                        jt.update(updateQuota, params);
+                        params.put("tileSetId", GLOBAL_QUOTA_NAME);
+                        jt.update(updateQuota, params);
+                    }
+
+                    private void upsertTilePageFillFactor(PageStatsPayload payload) {
+                        if (log.isDebugEnabled()) {
+                            log.info("Applying page stats payload " + payload);
+                        }
+
+                        // see http://en.wikipedia.org/wiki/Merge_(SQL)
+                        // Even the Merge command that some databases support is prone to race
+                        // conditions
+                        // under concurrent load, but we don't want to lose data and it's difficult
+                        // to
+                        // tell apart the race conditions from other failures, so we use tolerant
+                        // commands
+                        // and loop over them.
+                        // Loop conditions: we find the page stats, but they are deleted before we
+                        // can
+                        // update
+                        // them, we don't find the page stats, but they are inserted before we can
+                        // do so, in
+                        // both cases we re-start from zero
+                        TilePage page = payload.getPage();
+                        final byte level = page.getZoomLevel();
+                        final BigInteger tilesPerPage = calculator.getTilesPerPage(tileSet, level);
+
+                        int modified = 0;
+                        int count = 0;
+                        while (modified == 0 && count < maxLoops) {
+                            try {
+                                count++;
+                                PageStats stats = getPageStats(page.getKey());
+                                if (stats != null) {
+                                    float oldFillFactor = stats.getFillFactor();
+                                    stats.addTiles(payload.getNumTiles(), tilesPerPage);
+                                    // if no change, bail out early
+                                    if (oldFillFactor == stats.getFillFactor()) {
+                                        return;
+                                    }
+
+                                    // update the record in the db
+                                    modified = updatePageFillFactor(page, stats, oldFillFactor);
+                                } else {
+                                    // create the stats and update the fill factor
+                                    stats = new PageStats(0);
+                                    stats.addTiles(payload.getNumTiles(), tilesPerPage);
+
+                                    modified = createNewPageStats(stats, page);
+                                }
+                            } catch (DeadlockLoserDataAccessException e) {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Deadlock while updating page stats, will retry", e);
+                                }
+                            }
+                        }
+
+                        if (modified == 0) {
+                            throw new ConcurrencyFailureException(
+                                    "Failed to create or update page stats for page "
+                                            + payload.getPage()
+                                            + " after "
+                                            + count
+                                            + " attempts");
+                        }
+                    }
+                });
     }
 
     /**
      * Sorts the payloads by page key
+     *
      * @param tileCountDiffs
      * @return
      */
     protected List<PageStatsPayload> sortPayloads(Collection<PageStatsPayload> tileCountDiffs) {
         List<PageStatsPayload> result = new ArrayList<PageStatsPayload>(tileCountDiffs);
-        Collections.sort(result, new Comparator<PageStatsPayload>() {
+        Collections.sort(
+                result,
+                new Comparator<PageStatsPayload>() {
 
-            public int compare(PageStatsPayload pl1, PageStatsPayload pl2) {
-                TilePage p1 = pl1.getPage();
-                TilePage p2 = pl2.getPage();
-                return p1.getKey().compareTo(p2.getKey());
-            }});
+                    public int compare(PageStatsPayload pl1, PageStatsPayload pl2) {
+                        TilePage p1 = pl1.getPage();
+                        TilePage p2 = pl2.getPage();
+                        return p1.getKey().compareTo(p2.getKey());
+                    }
+                });
         return result;
     }
 
     private int updatePageFillFactor(TilePage page, PageStats stats, float oldFillFactor) {
         if (log.isDebugEnabled()) {
-            log.info("Updating page " + page + " fill factor from  " + oldFillFactor + " to "
-                    + stats.getFillFactor());
+            log.info(
+                    "Updating page "
+                            + page
+                            + " fill factor from  "
+                            + oldFillFactor
+                            + " to "
+                            + stats.getFillFactor());
         }
 
-        String update = dialect.conditionalUpdatePageStatsFillFactor(schema, "key", "fillFactor",
-                "oldFillFactor");
+        String update =
+                dialect.conditionalUpdatePageStatsFillFactor(
+                        schema, "key", "fillFactor", "oldFillFactor");
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("key", page.getKey());
         params.put("fillFactor", stats.getFillFactor());
@@ -614,9 +647,19 @@ public class JDBCQuotaStore implements QuotaStore {
         }
 
         // for the moment we don't have the page in the db, we have to create it
-        String insert = dialect.contionalTilePageInsertStatement(schema, "key", "tileSetId",
-                "pageZ", "pageX", "pageY", "creationTime", "frequencyOfUse", "lastAccessTime",
-                "fillFactor", "numHits");
+        String insert =
+                dialect.contionalTilePageInsertStatement(
+                        schema,
+                        "key",
+                        "tileSetId",
+                        "pageZ",
+                        "pageX",
+                        "pageY",
+                        "creationTime",
+                        "frequencyOfUse",
+                        "lastAccessTime",
+                        "fillFactor",
+                        "numHits");
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("key", page.getKey());
         params.put("tileSetId", page.getTileSetId());
@@ -636,127 +679,194 @@ public class JDBCQuotaStore implements QuotaStore {
 
     private PageStats getPageStats(String pageStatsKey) {
         String getPageStats = dialect.getPageStats(schema, "key");
-        return jt.queryForOptionalObject(getPageStats, new RowMapper<PageStats>() {
+        return jt.queryForOptionalObject(
+                getPageStats,
+                new RowMapper<PageStats>() {
 
-            public PageStats mapRow(ResultSet rs, int rowNum) throws SQLException {
-                PageStats ps = new PageStats(0);
-                // FREQUENCY_OF_USE, LAST_ACCESS_TIME, FILL_FACTOR, NUM_HITS FROM
-                ps.setFrequencyOfUsePerMinute(rs.getFloat(1));
-                ps.setLastAccessMinutes(rs.getInt(2));
-                ps.setFillFactor(rs.getFloat(3));
-                ps.setNumHits(rs.getBigDecimal(4).toBigInteger());
+                    public PageStats mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        PageStats ps = new PageStats(0);
+                        // FREQUENCY_OF_USE, LAST_ACCESS_TIME, FILL_FACTOR, NUM_HITS FROM
+                        ps.setFrequencyOfUsePerMinute(rs.getFloat(1));
+                        ps.setLastAccessMinutes(rs.getInt(2));
+                        ps.setFillFactor(rs.getFloat(3));
+                        ps.setNumHits(rs.getBigDecimal(4).toBigInteger());
 
-                return ps;
-            }
-        }, Collections.singletonMap("key", pageStatsKey));
+                        return ps;
+                    }
+                },
+                Collections.singletonMap("key", pageStatsKey));
     }
 
     @SuppressWarnings("unchecked")
     public Future<List<PageStats>> addHitsAndSetAccesTime(
             final Collection<PageStatsPayload> statsUpdates) {
-        return executor.submit(new Callable<List<PageStats>>() {
+        return executor.submit(
+                new Callable<List<PageStats>>() {
 
-            public List<PageStats> call() throws Exception {
-                return (List<PageStats>) tt.execute(new TransactionCallback<Object>() {
+                    public List<PageStats> call() throws Exception {
+                        return (List<PageStats>)
+                                tt.execute(
+                                        new TransactionCallback<Object>() {
 
-                    public Object doInTransaction(TransactionStatus status) {
-                        List<PageStats> result = new ArrayList<PageStats>();
-                        if (statsUpdates != null) {
-                            // sort the payloads by page id as a deadlock avoidance measure, out
-                            // of order updates may result in deadlock with the addHitsAndSetAccessTime method
-                            List<PageStatsPayload> sorted = sortPayloads(statsUpdates);
-                            for (PageStatsPayload payload : sorted) {
-                                // verify the stats are referring to an existing tile set id
-                                TileSet tset = payload.getTileSet();
-                                if (tset == null) {
-                                    String tileSetId = payload.getPage().getTileSetId();
-                                    tset = getTileSetByIdInternal(tileSetId);
-                                    if (tset == null) {
-                                        log.warn("Could not locate tileset with id " + tileSetId
-                                                + ", skipping page stats update: " + payload);
-                                    }
-                                } else {
-                                    getOrCreateTileSet(tset);
-                                }
+                                            public Object doInTransaction(
+                                                    TransactionStatus status) {
+                                                List<PageStats> result = new ArrayList<PageStats>();
+                                                if (statsUpdates != null) {
+                                                    // sort the payloads by page id as a deadlock
+                                                    // avoidance measure, out
+                                                    // of order updates may result in deadlock with
+                                                    // the addHitsAndSetAccessTime method
+                                                    List<PageStatsPayload> sorted =
+                                                            sortPayloads(statsUpdates);
+                                                    for (PageStatsPayload payload : sorted) {
+                                                        // verify the stats are referring to an
+                                                        // existing tile set id
+                                                        TileSet tset = payload.getTileSet();
+                                                        if (tset == null) {
+                                                            String tileSetId =
+                                                                    payload.getPage()
+                                                                            .getTileSetId();
+                                                            tset =
+                                                                    getTileSetByIdInternal(
+                                                                            tileSetId);
+                                                            if (tset == null) {
+                                                                log.warn(
+                                                                        "Could not locate tileset with id "
+                                                                                + tileSetId
+                                                                                + ", skipping page stats update: "
+                                                                                + payload);
+                                                            }
+                                                        } else {
+                                                            getOrCreateTileSet(tset);
+                                                        }
 
-                                // update the stats
-                                PageStats stats = upsertTilePageHitAccessTime(payload);
-                                result.add(stats);
-                            }
-                        }
+                                                        // update the stats
+                                                        PageStats stats =
+                                                                upsertTilePageHitAccessTime(
+                                                                        payload);
+                                                        result.add(stats);
+                                                    }
+                                                }
 
-                        return result;
+                                                return result;
+                                            }
+
+                                            private PageStats upsertTilePageHitAccessTime(
+                                                    PageStatsPayload payload) {
+                                                TilePage page = payload.getPage();
+
+                                                if (log.isDebugEnabled()) {
+                                                    log.info(
+                                                            "Updating page "
+                                                                    + page
+                                                                    + " with payload "
+                                                                    + payload);
+                                                }
+
+                                                int modified = 0;
+                                                int count = 0;
+                                                PageStats stats = null;
+                                                while (modified == 0 && count < maxLoops) {
+                                                    try {
+                                                        count++;
+                                                        stats = getPageStats(page.getKey());
+                                                        if (stats != null) {
+                                                            // gather the old values, we'll use them
+                                                            // for the optimistic locking
+                                                            final BigInteger oldHits =
+                                                                    stats.getNumHits();
+                                                            final float oldFrequency =
+                                                                    stats
+                                                                            .getFrequencyOfUsePerMinute();
+                                                            final int oldAccessTime =
+                                                                    stats
+                                                                            .getLastAccessTimeMinutes();
+                                                            // update the page so that it computes
+                                                            // the new stats
+                                                            updatePageStats(payload, page, stats);
+
+                                                            // update the record in the db
+                                                            String update =
+                                                                    dialect.updatePageStats(
+                                                                            schema,
+                                                                            "key",
+                                                                            "newHits",
+                                                                            "oldHits",
+                                                                            "newFrequency",
+                                                                            "oldFrequency",
+                                                                            "newAccessTime",
+                                                                            "oldAccessTime");
+                                                            Map<String, Object> params =
+                                                                    new HashMap<String, Object>();
+                                                            params.put("key", page.getKey());
+                                                            params.put(
+                                                                    "newHits",
+                                                                    new BigDecimal(
+                                                                            stats.getNumHits()));
+                                                            params.put(
+                                                                    "oldHits",
+                                                                    new BigDecimal(oldHits));
+                                                            params.put(
+                                                                    "newFrequency",
+                                                                    stats
+                                                                            .getFrequencyOfUsePerMinute());
+                                                            params.put(
+                                                                    "oldFrequency", oldFrequency);
+                                                            params.put(
+                                                                    "newAccessTime",
+                                                                    stats
+                                                                            .getLastAccessTimeMinutes());
+                                                            params.put(
+                                                                    "oldAccessTime", oldAccessTime);
+                                                            modified = jt.update(update, params);
+                                                        } else {
+                                                            // create the new stats and insert it
+                                                            stats = new PageStats(0);
+                                                            updatePageStats(payload, page, stats);
+                                                            modified =
+                                                                    createNewPageStats(stats, page);
+                                                        }
+                                                    } catch (DeadlockLoserDataAccessException e) {
+                                                        if (log.isDebugEnabled()) {
+                                                            log.debug(
+                                                                    "Deadlock while updating page stats, will retry",
+                                                                    e);
+                                                        }
+                                                    }
+                                                }
+
+                                                if (modified == 0) {
+                                                    throw new ConcurrencyFailureException(
+                                                            "Failed to create or update page stats for page "
+                                                                    + payload.getPage()
+                                                                    + " after "
+                                                                    + count
+                                                                    + " attempts");
+                                                }
+
+                                                return stats;
+                                            }
+
+                                            private void updatePageStats(
+                                                    PageStatsPayload payload,
+                                                    TilePage page,
+                                                    PageStats stats) {
+                                                final int addedHits = payload.getNumHits();
+                                                final int lastAccessTimeMinutes =
+                                                        (int)
+                                                                (payload.getLastAccessTime()
+                                                                        / 1000
+                                                                        / 60);
+                                                final int creationTimeMinutes =
+                                                        page.getCreationTimeMinutes();
+                                                stats.addHitsAndAccessTime(
+                                                        addedHits,
+                                                        lastAccessTimeMinutes,
+                                                        creationTimeMinutes);
+                                            }
+                                        });
                     }
-
-                    private PageStats upsertTilePageHitAccessTime(PageStatsPayload payload) {
-                        TilePage page = payload.getPage();
-
-                        if (log.isDebugEnabled()) {
-                            log.info("Updating page " + page + " with payload " + payload);
-                        }
-
-                        int modified = 0;
-                        int count = 0;
-                        PageStats stats = null;
-                        while (modified == 0 && count < maxLoops) {
-                            try {
-                                count++;
-                                stats = getPageStats(page.getKey());
-                                if (stats != null) {
-                                    // gather the old values, we'll use them for the optimistic locking
-                                    final BigInteger oldHits = stats.getNumHits();
-                                    final float oldFrequency = stats.getFrequencyOfUsePerMinute();
-                                    final int oldAccessTime = stats.getLastAccessTimeMinutes();
-                                    // update the page so that it computes the new stats
-                                    updatePageStats(payload, page, stats);
-    
-                                    // update the record in the db
-                                    String update = dialect.updatePageStats(schema, "key", "newHits",
-                                            "oldHits", "newFrequency", "oldFrequency", "newAccessTime",
-                                            "oldAccessTime");
-                                    Map<String, Object> params = new HashMap<String, Object>();
-                                    params.put("key", page.getKey());
-                                    params.put("newHits", new BigDecimal(stats.getNumHits()));
-                                    params.put("oldHits", new BigDecimal(oldHits));
-                                    params.put("newFrequency", stats.getFrequencyOfUsePerMinute());
-                                    params.put("oldFrequency", oldFrequency);
-                                    params.put("newAccessTime", stats.getLastAccessTimeMinutes());
-                                    params.put("oldAccessTime", oldAccessTime);
-                                    modified = jt.update(update, params);
-                                } else {
-                                    // create the new stats and insert it
-                                    stats = new PageStats(0);
-                                    updatePageStats(payload, page, stats);
-                                    modified = createNewPageStats(stats, page);
-                                }
-                            } catch(DeadlockLoserDataAccessException e) {
-                                if(log.isDebugEnabled()) {
-                                    log.debug("Deadlock while updating page stats, will retry", e);
-                                }
-                            }
-                        }
-
-                        if (modified == 0) {
-                            throw new ConcurrencyFailureException(
-                                    "Failed to create or update page stats for page "
-                                            + payload.getPage() + " after " + count + " attempts");
-                        }
-
-                        return stats;
-                    }
-
-                    private void updatePageStats(PageStatsPayload payload, TilePage page,
-                            PageStats stats) {
-                        final int addedHits = payload.getNumHits();
-                        final int lastAccessTimeMinutes = (int) (payload.getLastAccessTime() / 1000 / 60);
-                        final int creationTimeMinutes = page.getCreationTimeMinutes();
-                        stats.addHitsAndAccessTime(addedHits, lastAccessTimeMinutes,
-                                creationTimeMinutes);
-                    }
-
                 });
-            }
-        });
     }
 
     public long[][] getTilesForPage(TilePage page) throws InterruptedException {
@@ -794,28 +904,31 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     public PageStats setTruncated(final TilePage page) throws InterruptedException {
-        return (PageStats) tt.execute(new TransactionCallback<Object>() {
+        return (PageStats)
+                tt.execute(
+                        new TransactionCallback<Object>() {
 
-            public Object doInTransaction(TransactionStatus status) {
-                if (log.isDebugEnabled()) {
-                    log.info("Truncating page " + page);
-                }
+                            public Object doInTransaction(TransactionStatus status) {
+                                if (log.isDebugEnabled()) {
+                                    log.info("Truncating page " + page);
+                                }
 
-                PageStats stats = getPageStats(page.getKey());
-                if (stats != null) {
-                    stats.setFillFactor(0);
+                                PageStats stats = getPageStats(page.getKey());
+                                if (stats != null) {
+                                    stats.setFillFactor(0);
 
-                    // update the record in the db
-                    int modified = setPageFillFactor(page, stats);
-                    // if no record updated the page has been deleted by another instance
-                    if (modified == 0) {
-                        return null;
-                    }
-                }
+                                    // update the record in the db
+                                    int modified = setPageFillFactor(page, stats);
+                                    // if no record updated the page has been deleted by another
+                                    // instance
+                                    if (modified == 0) {
+                                        return null;
+                                    }
+                                }
 
-                return stats;
-            }
-        });
+                                return stats;
+                            }
+                        });
     }
 
     public void close() throws Exception {
@@ -832,12 +945,11 @@ public class JDBCQuotaStore implements QuotaStore {
         tt = null;
         jt = null;
     }
-    
+
     /**
      * Maps a BigDecimal column into a Quota object
-     * 
-     * @author Andrea Aime - GeoSolutions
      *
+     * @author Andrea Aime - GeoSolutions
      */
     static class DiskQuotaMapper implements RowMapper<Quota> {
         public Quota mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -851,9 +963,8 @@ public class JDBCQuotaStore implements QuotaStore {
 
     /**
      * Maps a result set into {@link TileSet} objects
-     * 
+     *
      * @author Andrea Aime - GeoSolutions
-     * 
      */
     static class TileSetRowMapper implements RowMapper<TileSet> {
 
@@ -873,9 +984,8 @@ public class JDBCQuotaStore implements QuotaStore {
 
     /**
      * Maps a result set into {@link TilePage} objects
-     * 
+     *
      * @author Andrea Aime - GeoSolutions
-     * 
      */
     static class TilePageRowMapper implements RowMapper<TilePage> {
 
@@ -892,27 +1002,31 @@ public class JDBCQuotaStore implements QuotaStore {
 
     @Override
     public void deleteParameters(final String layerName, final String parametersId) {
-        tt.execute(new TransactionCallbackWithoutResult() {
+        tt.execute(
+                new TransactionCallbackWithoutResult() {
 
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                // first gather the disk quota used by the gridset, and update the global quota
-                Quota quota = getUsedQuotaByParametersId(parametersId);
-                quota.setBytes(quota.getBytes().negate());
-                String updateQuota = dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
-                Map<String, Object> params = new HashMap<String, Object>();
-                params.put("tileSetId", GLOBAL_QUOTA_NAME);
-                params.put("bytes", new BigDecimal(quota.getBytes()));
-                jt.update(updateQuota, params);
-                
-                // then delete all the gridsets with the specified id
-                String statement = dialect.getLayerParametersDeletionStatement(schema, "layerName",
-                        "parametersId");
-                params = new HashMap<String, Object>();
-                params.put("layerName", layerName);
-                params.put("parametersId", parametersId);
-                jt.update(statement, params);
-            }
-        });
+                    @Override
+                    protected void doInTransactionWithoutResult(TransactionStatus status) {
+                        // first gather the disk quota used by the gridset, and update the global
+                        // quota
+                        Quota quota = getUsedQuotaByParametersId(parametersId);
+                        quota.setBytes(quota.getBytes().negate());
+                        String updateQuota =
+                                dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
+                        Map<String, Object> params = new HashMap<String, Object>();
+                        params.put("tileSetId", GLOBAL_QUOTA_NAME);
+                        params.put("bytes", new BigDecimal(quota.getBytes()));
+                        jt.update(updateQuota, params);
+
+                        // then delete all the gridsets with the specified id
+                        String statement =
+                                dialect.getLayerParametersDeletionStatement(
+                                        schema, "layerName", "parametersId");
+                        params = new HashMap<String, Object>();
+                        params.put("layerName", layerName);
+                        params.put("parametersId", parametersId);
+                        jt.update(statement, params);
+                    }
+                });
     }
 }

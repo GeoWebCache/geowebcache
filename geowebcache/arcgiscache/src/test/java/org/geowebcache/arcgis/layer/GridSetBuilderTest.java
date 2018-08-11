@@ -5,9 +5,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.util.List;
-
 import junit.framework.TestCase;
-
 import org.geowebcache.arcgis.config.CacheInfo;
 import org.geowebcache.arcgis.config.CacheInfoPersister;
 import org.geowebcache.arcgis.config.LODInfo;
@@ -18,9 +16,8 @@ import org.geowebcache.grid.GridSubsetFactory;
 
 /**
  * Unit test suite for the {@link GridSetBuilder} utility class
- * 
+ *
  * @author Gabriel Roldan
- * 
  */
 public class GridSetBuilderTest extends TestCase {
 
@@ -67,7 +64,8 @@ public class GridSetBuilderTest extends TestCase {
         for (int i = 0; i < resolutions.length; i++) {
             LODInfo lodInfo = lodInfos.get(i);
             assertEquals(lodInfo.getResolution(), resolutions[i]);
-            assertEquals(lodInfo.getScale(), gridset.getGridLevels()[i].getScaleDenominator(), 1e-6);
+            assertEquals(
+                    lodInfo.getScale(), gridset.getGridLevels()[i].getScaleDenominator(), 1e-6);
         }
     }
 }

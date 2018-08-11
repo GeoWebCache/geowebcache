@@ -1,31 +1,29 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Gabriel Roldan, OpenGeo, Copyright 2010
  */
 package org.geowebcache.seed;
 
 import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.capture;
+import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.expectLastCall;
-import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.geowebcache.TestHelpers.createFakeSourceImage;
-import static org.geowebcache.TestHelpers.createWMSLayer;
 import static org.geowebcache.TestHelpers.createRequest;
+import static org.geowebcache.TestHelpers.createWMSLayer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -37,9 +35,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
 import junit.framework.TestCase;
-
 import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.geowebcache.GeoWebCacheException;
@@ -60,7 +56,7 @@ import org.geowebcache.util.Sleeper;
 
 /**
  * Unit test suite for {@link SeedTask}
- * 
+ *
  * @author Gabriel Roldan (OpenGeo)
  * @version $Id$
  */
@@ -77,7 +73,7 @@ public class SeedTaskTest extends TestCase {
     /**
      * For a metatiled seed request over a given zoom level, make sure the correct wms calls are
      * issued
-     * 
+     *
      * @throws Exception
      */
     @SuppressWarnings("serial")
@@ -91,31 +87,31 @@ public class SeedTaskTest extends TestCase {
         WMSSourceHelper mockSourceHelper = EasyMock.createMock(WMSSourceHelper.class);
 
         final AtomicInteger wmsRequestsCounter = new AtomicInteger();
-        Capture<WMSMetaTile> wmsRequestsCapturer = new Capture<WMSMetaTile>() {
-            /**
-             * Override because setValue with anyTimes() resets the list of values
-             */
-            @Override
-            public void setValue(WMSMetaTile o) {
-                wmsRequestsCounter.incrementAndGet();
-            }
-        };
-        Capture<Resource> resourceCapturer = new Capture<Resource>() {
-            @Override
-            public void setValue(Resource target) {
-                try {
-                    target.transferFrom(Channels.newChannel(new ByteArrayInputStream(
-                            fakeWMSResponse)));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        };
+        Capture<WMSMetaTile> wmsRequestsCapturer =
+                new Capture<WMSMetaTile>() {
+                    /** Override because setValue with anyTimes() resets the list of values */
+                    @Override
+                    public void setValue(WMSMetaTile o) {
+                        wmsRequestsCounter.incrementAndGet();
+                    }
+                };
+        Capture<Resource> resourceCapturer =
+                new Capture<Resource>() {
+                    @Override
+                    public void setValue(Resource target) {
+                        try {
+                            target.transferFrom(
+                                    Channels.newChannel(new ByteArrayInputStream(fakeWMSResponse)));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                };
         mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
         mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
         mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
         mockSourceHelper.setConcurrency(32);
-        mockSourceHelper.setBackendTimeout(120);    
+        mockSourceHelper.setBackendTimeout(120);
         replay(mockSourceHelper);
 
         tl.setSourceHelper(mockSourceHelper);
@@ -142,7 +138,7 @@ public class SeedTaskTest extends TestCase {
         // Should not be called
         replay(sleeper);
         seedTask.sleeper = sleeper;
-        
+
         /*
          * HACK: avoid SeedTask.getCurrentThreadArrayIndex failure.
          */
@@ -162,7 +158,7 @@ public class SeedTaskTest extends TestCase {
     /**
      * For a metatiled seed request over a given zoom level, make sure the correct wms calls are
      * issued
-     * 
+     *
      * @throws Exception
      */
     public void testSeedRetries() throws Exception {
@@ -174,33 +170,39 @@ public class SeedTaskTest extends TestCase {
         // WMSSourceHelper that on makeRequest() returns always the saqme fake image
         // WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper();///
         // EasyMock.createMock(WMSSourceHelper.class);
-        WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper() {
-            private int numCalls;
+        WMSSourceHelper mockSourceHelper =
+                new MockWMSSourceHelper() {
+                    private int numCalls;
 
-            @Override
-            protected void makeRequest(TileResponseReceiver tileRespRecv, WMSLayer layer,
-                    Map<String, String> wmsParams, MimeType expectedMimeType, Resource target)
-                    throws GeoWebCacheException {
-                numCalls++;
-                switch (numCalls) {
-                case 1:
-                    throw new GeoWebCacheException("test exception");
-                case 2:
-                    throw new RuntimeException("test unexpected exception");
-                case 3:
-                    throw new GeoWebCacheException("second test exception");
-                case 4:
-                    throw new RuntimeException("second test unexpected exception");
-                default:
-                    try {
-                        target.transferFrom(Channels.newChannel(new ByteArrayInputStream(
-                                fakeWMSResponse)));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                    @Override
+                    protected void makeRequest(
+                            TileResponseReceiver tileRespRecv,
+                            WMSLayer layer,
+                            Map<String, String> wmsParams,
+                            MimeType expectedMimeType,
+                            Resource target)
+                            throws GeoWebCacheException {
+                        numCalls++;
+                        switch (numCalls) {
+                            case 1:
+                                throw new GeoWebCacheException("test exception");
+                            case 2:
+                                throw new RuntimeException("test unexpected exception");
+                            case 3:
+                                throw new GeoWebCacheException("second test exception");
+                            case 4:
+                                throw new RuntimeException("second test unexpected exception");
+                            default:
+                                try {
+                                    target.transferFrom(
+                                            Channels.newChannel(
+                                                    new ByteArrayInputStream(fakeWMSResponse)));
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                        }
                     }
-                }
-            }
-        };
+                };
 
         tl.setSourceHelper(mockSourceHelper);
 
@@ -221,7 +223,7 @@ public class SeedTaskTest extends TestCase {
         long tileFailureRetryWaitTime = 10;
         int tileFailureRetryCount = 1;
         long totalFailuresBeforeAborting = 4;
-        
+
         boolean reseed = false;
         SeedTask seedTask = new SeedTask(mockStorageBroker, trIter, tl, reseed, false);
         seedTask.setTaskId(1L);
@@ -229,13 +231,17 @@ public class SeedTaskTest extends TestCase {
         Sleeper sleeper = createMock(Sleeper.class);
         // It's only sleeping on checked exceptions, not sure if this is right or wrong.
         // I added this to test a fix for the duration being incorrect.
-        sleeper.sleep(tileFailureRetryWaitTime);expectLastCall().times(2); 
+        sleeper.sleep(tileFailureRetryWaitTime);
+        expectLastCall().times(2);
         replay(sleeper);
         seedTask.sleeper = sleeper;
-        
+
         AtomicLong sharedFailureCounter = new AtomicLong();
-        seedTask.setFailurePolicy(tileFailureRetryCount, tileFailureRetryWaitTime,
-                totalFailuresBeforeAborting, sharedFailureCounter);
+        seedTask.setFailurePolicy(
+                tileFailureRetryCount,
+                tileFailureRetryWaitTime,
+                totalFailuresBeforeAborting,
+                sharedFailureCounter);
         /*
          * HACK: avoid SeedTask.getCurrentThreadArrayIndex failure.
          */
@@ -250,9 +256,9 @@ public class SeedTaskTest extends TestCase {
     }
 
     /**
-     * Make sure when seeding a given zoom level, the correct tiles are sent to the
-     * {@link StorageBroker}
-     * 
+     * Make sure when seeding a given zoom level, the correct tiles are sent to the {@link
+     * StorageBroker}
+     *
      * @throws Exception
      */
     @SuppressWarnings("serial")
@@ -263,7 +269,8 @@ public class SeedTaskTest extends TestCase {
         // create an image to be returned by the mock WMSSourceHelper
         // / final byte[] fakeWMSResponse = createFakeSourceImage(tl);
         // WMSSourceHelper that on makeRequest() returns always the saqme fake image
-        WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper();// EasyMock.createMock(WMSSourceHelper.class);
+        WMSSourceHelper mockSourceHelper =
+                new MockWMSSourceHelper(); // EasyMock.createMock(WMSSourceHelper.class);
         // expect(mockSourceHelper.makeRequest((WMSMetaTile)
         // anyObject())).andReturn(fakeWMSResponse)
         // .anyTimes();
@@ -279,15 +286,14 @@ public class SeedTaskTest extends TestCase {
          * the TileObject the seeder requests it to store for further test validation
          */
         final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
-        Capture<TileObject> storedObjects = new Capture<TileObject>() {
-            /**
-             * Override because setValue with anyTimes() resets the list of values
-             */
-            @Override
-            public void setValue(TileObject o) {
-                super.getValues().add(o);
-            }
-        };
+        Capture<TileObject> storedObjects =
+                new Capture<TileObject>() {
+                    /** Override because setValue with anyTimes() resets the list of values */
+                    @Override
+                    public void setValue(TileObject o) {
+                        super.getValues().add(o);
+                    }
+                };
         expect(mockStorageBroker.put(capture(storedObjects))).andReturn(true).anyTimes();
         expect(mockStorageBroker.get((TileObject) anyObject())).andReturn(false).anyTimes();
         replay(mockStorageBroker);
@@ -327,8 +333,8 @@ public class SeedTaskTest extends TestCase {
         long starty = coveredGridLevels[1];
         long startx = coveredGridLevels[0];
 
-        expectedSavedTileCount = (coveredGridLevels[2] - startx + 1)
-                * (coveredGridLevels[3] - starty + 1);
+        expectedSavedTileCount =
+                (coveredGridLevels[2] - startx + 1) * (coveredGridLevels[3] - starty + 1);
 
         List<TileObject> storedTiles = storedObjects.getValues();
         final int seededTileCount = storedTiles.size();
@@ -398,5 +404,4 @@ public class SeedTaskTest extends TestCase {
             return 17 * Arrays.hashCode(members);
         }
     }
-
 }

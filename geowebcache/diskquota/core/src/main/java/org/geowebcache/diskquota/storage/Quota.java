@@ -1,19 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Gabriel Roldan (OpenGeo) 2010
- *  
  */
 package org.geowebcache.diskquota.storage;
 
@@ -25,18 +22,17 @@ import java.text.NumberFormat;
 /**
  * A <b>Mutable</b> representation of the disk usage of a given cache tile set, given by a value and
  * a {@link StorageUnit storage unit}.
- * <p>
- * Instances of this class are <b>not</b> thread safe.
- * </p>
- * 
+ *
+ * <p>Instances of this class are <b>not</b> thread safe.
+ *
  * @author groldan
- * 
  */
 public class Quota implements Cloneable, Comparable<Quota>, Serializable {
 
     private static final long serialVersionUID = -3817255124248938529L;
 
     private static final NumberFormat NICE_FORMATTER = NumberFormat.getNumberInstance();
+
     static {
         NICE_FORMATTER.setMinimumFractionDigits(1);
         NICE_FORMATTER.setMaximumFractionDigits(2);
@@ -96,7 +92,7 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
 
     /**
      * Supports initialization of instance variables during XStream deserialization
-     * 
+     *
      * @return
      */
     private Object readResolve() {
@@ -111,66 +107,57 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
     public String toString() {
         StorageUnit bestFit = StorageUnit.bestFit(bytes);
         BigDecimal value = StorageUnit.B.convertTo(new BigDecimal(bytes), bestFit);
-        return new StringBuilder(NICE_FORMATTER.format(value)).append(bestFit.toString())
+        return new StringBuilder(NICE_FORMATTER.format(value))
+                .append(bestFit.toString())
                 .toString();
     }
 
     /**
      * Adds {@code bytes} bytes to this quota
-     * 
+     *
      * @param bytes
      */
     public void add(BigInteger bytes) {
         this.bytes = this.bytes.add(bytes);
     }
 
-    /**
-     * Shorthand for {@link #add(BigInteger) add(BigInteger.valueOf(bytes))}
-     */
+    /** Shorthand for {@link #add(BigInteger) add(BigInteger.valueOf(bytes))} */
     public void addBytes(long bytes) {
         this.bytes = this.bytes.add(BigInteger.valueOf(bytes));
     }
 
-    /**
-     * Shorthand for {@link #add(BigInteger) add(units.toBytes(amount))}
-     */
+    /** Shorthand for {@link #add(BigInteger) add(units.toBytes(amount))} */
     public void add(double amount, StorageUnit units) {
         this.bytes = this.bytes.add(units.toBytes(amount));
     }
 
-    /**
-     * Shorthand for {@link #add(BigInteger) add(quota.getBytes())}
-     */
+    /** Shorthand for {@link #add(BigInteger) add(quota.getBytes())} */
     public void add(final Quota quota) {
         this.bytes = this.bytes.add(quota.getBytes());
     }
 
     /**
      * Subtracts {@code bytes} bytes from this quota
-     * 
+     *
      * @param bytes
      */
     public void subtract(final BigInteger bytes) {
         this.bytes = this.bytes.subtract(bytes);
     }
 
-    /**
-     * Shorthand for {@link #subtract(BigInteger) subtract(quota.getBytes())}
-     */
+    /** Shorthand for {@link #subtract(BigInteger) subtract(quota.getBytes())} */
     public void subtract(final Quota quota) {
         subtract(quota.getBytes());
     }
 
-    /**
-     * Shorthand for {@link #subtract(BigInteger) subtract(units.toBytes(amount))}
-     */
+    /** Shorthand for {@link #subtract(BigInteger) subtract(units.toBytes(amount))} */
     public void subtract(final double amount, final StorageUnit units) {
         subtract(units.toBytes(amount));
     }
 
     /**
      * Returns the difference between this quota and the argument one, in this quota's units
-     * 
+     *
      * @param quota
      * @return
      */
@@ -181,19 +168,20 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
 
     /**
      * Returns a more user friendly string representation of this quota, like in 1.1GB, 0.75MB, etc.
-     * 
+     *
      * @return
      */
     public String toNiceString() {
         StorageUnit bestFit = StorageUnit.bestFit(bytes);
         BigDecimal value = StorageUnit.B.convertTo(new BigDecimal(bytes), bestFit);
-        return new StringBuilder(NICE_FORMATTER.format(value)).append(' ')
-                .append(bestFit.toNiceString()).toString();
+        return new StringBuilder(NICE_FORMATTER.format(value))
+                .append(' ')
+                .append(bestFit.toNiceString())
+                .toString();
     }
 
     /**
-     * @param quota
-     *            quota to be compared against this one
+     * @param quota quota to be compared against this one
      * @return {@code this} or {@code quota}, the one that represents a lower amount
      */
     public Quota min(Quota quota) {
@@ -201,9 +189,7 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
         return this.bytes.equals(min) ? this : quota;
     }
 
-    /**
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
+    /** @see java.lang.Comparable#compareTo(java.lang.Object) */
     public int compareTo(Quota o) {
         if (o == null) {
             throw new NullPointerException("Can't compare against null");
@@ -213,7 +199,7 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
 
     /**
      * Shorthand for {@code setBytes(unit.convertTo(value, StorageUnit.B).toBigInteger())}
-     * 
+     *
      * @param value
      * @param unit
      */
@@ -228,6 +214,6 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
 
     public void setId(int id) {
         // TODO Auto-generated method stub
-        
+
     }
 }

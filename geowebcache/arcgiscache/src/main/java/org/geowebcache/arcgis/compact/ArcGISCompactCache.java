@@ -1,19 +1,17 @@
 package org.geowebcache.arcgis.compact;
 
-import org.geowebcache.io.Resource;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import org.geowebcache.io.Resource;
 
 /**
  * Abstract base class for ArcGIS compact caches.
  *
  * @author Bjoern Saxe
  */
-
 public abstract class ArcGISCompactCache {
     protected static final String BUNDLX_EXT = ".bundlx";
 
@@ -27,8 +25,8 @@ public abstract class ArcGISCompactCache {
      * Get Resource object for tile.
      *
      * @param zoom Zoom level.
-     * @param row  Row of tile.
-     * @param col  Column of tile.
+     * @param row Row of tile.
+     * @param col Column of tile.
      * @return Resource object associated with tile image data if tile exists; null otherwise.
      */
     public abstract Resource getBundleFileResource(int zoom, int row, int col);
@@ -37,10 +35,10 @@ public abstract class ArcGISCompactCache {
      * Build path to a bundle from zoom, col, and row without file extension.
      *
      * @param zoom Zoom levl
-     * @param row  Row
-     * @param col  Column
-     * @return String containing complete path without file extension in the form
-     * of .../Lzz/RrrrrCcccc with the number of c and r at least 4.
+     * @param row Row
+     * @param col Column
+     * @return String containing complete path without file extension in the form of
+     *     .../Lzz/RrrrrCcccc with the number of c and r at least 4.
      */
     protected String buildBundleFilePath(int zoom, int row, int col) {
         StringBuilder bundlePath = new StringBuilder(pathToCacheRoot);
@@ -49,8 +47,7 @@ public abstract class ArcGISCompactCache {
         int baseCol = (col / BUNDLX_MAXIDX) * BUNDLX_MAXIDX;
 
         String zoomStr = Integer.toString(zoom);
-        if (zoomStr.length() < 2)
-            zoomStr = "0" + zoomStr;
+        if (zoomStr.length() < 2) zoomStr = "0" + zoomStr;
 
         StringBuilder rowStr = new StringBuilder(Integer.toHexString(baseRow));
         StringBuilder colStr = new StringBuilder(Integer.toHexString(baseCol));
@@ -58,14 +55,18 @@ public abstract class ArcGISCompactCache {
         // column and rows are at least 4 characters long
         final int padding = 4;
 
-        while (colStr.length() < padding)
-            colStr.insert(0, "0");
+        while (colStr.length() < padding) colStr.insert(0, "0");
 
-        while (rowStr.length() < padding)
-            rowStr.insert(0, "0");
+        while (rowStr.length() < padding) rowStr.insert(0, "0");
 
-        bundlePath.append("L").append(zoomStr).append(File.separatorChar).append("R").append(rowStr)
-            .append("C").append(colStr);
+        bundlePath
+                .append("L")
+                .append(zoomStr)
+                .append(File.separatorChar)
+                .append("R")
+                .append(rowStr)
+                .append("C")
+                .append(colStr);
 
         return bundlePath.toString();
     }
@@ -74,11 +75,11 @@ public abstract class ArcGISCompactCache {
      * Read from a file that uses little endian byte order.
      *
      * @param filePath Path to file
-     * @param offset   Read at offset
-     * @param length   Read length bytes
-     * @return ByteBuffer that contains read bytes and has byte order set to little endian.
-     * The length of the byte buffer is multiple of 4, so getInt() and getLong() can be used
-     * even when fewer bytes are read.
+     * @param offset Read at offset
+     * @param length Read length bytes
+     * @return ByteBuffer that contains read bytes and has byte order set to little endian. The
+     *     length of the byte buffer is multiple of 4, so getInt() and getLong() can be used even
+     *     when fewer bytes are read.
      */
     protected ByteBuffer readFromLittleEndianFile(String filePath, long offset, int length) {
         ByteBuffer result = null;

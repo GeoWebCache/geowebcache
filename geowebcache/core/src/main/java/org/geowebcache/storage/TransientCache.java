@@ -1,36 +1,32 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.geowebcache.storage;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Ticker;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Ticker;
-
 /**
  * Non-thread safe Resource cache. Currently in-memory only.
- * 
+ *
  * @author Ian Schneider <ischneider@opengeo.org>
  * @author Kevin Smith, Boundless
  */
@@ -40,10 +36,10 @@ public class TransientCache {
 
     private final int maxStorage;
 
-    private final long expireDelay; 
+    private final long expireDelay;
 
     private long currentStorage;
-    
+
     private Ticker ticker = Ticker.systemTicker();
 
     /**
@@ -52,27 +48,24 @@ public class TransientCache {
      */
     private static FilePathGenerator keyGenerator = new FilePathGenerator("");
 
-    private Map<String, CachedResource> cache = new LinkedHashMap<String, CachedResource>() {
+    private Map<String, CachedResource> cache =
+            new LinkedHashMap<String, CachedResource>() {
 
-        /** serialVersionUID */
-        private static final long serialVersionUID = -4106644240603796847L;
+                /** serialVersionUID */
+                private static final long serialVersionUID = -4106644240603796847L;
 
-        @Override
-        protected boolean removeEldestEntry(Entry<String, CachedResource> eldest) {
-            return removeEntries(eldest);
-        }
+                @Override
+                protected boolean removeEldestEntry(Entry<String, CachedResource> eldest) {
+                    return removeEntries(eldest);
+                }
+            };
 
-    };
-
-    /**
-     * @deprecated Use {@link #TransientCache(int,int,long)} instead
-     */
+    /** @deprecated Use {@link #TransientCache(int,int,long)} instead */
     public TransientCache(int maxTiles, int maxStorageKB) {
         this(maxTiles, maxStorageKB, 2000);
     }
 
     /**
-     * 
      * @param maxTiles Maximum number of tiles in cache
      * @param maxStorageKB Maximum size of cached data in KiB
      * @param expireDelay Duration for which the cached resource is valid in ms
@@ -84,7 +77,8 @@ public class TransientCache {
     }
 
     /**
-     * Count of cached resources.  May include expired resources not yet cleared.
+     * Count of cached resources. May include expired resources not yet cleared.
+     *
      * @return
      */
     public int size() {
@@ -92,7 +86,8 @@ public class TransientCache {
     }
 
     /**
-     * The currently used storage.  May include expired resources not yet cleared.
+     * The currently used storage. May include expired resources not yet cleared.
+     *
      * @return
      */
     public long storageSize() {
@@ -101,6 +96,7 @@ public class TransientCache {
 
     /**
      * Store a resource
+     *
      * @param key key to store the resource under
      * @param r the resource to cache
      */
@@ -115,9 +111,10 @@ public class TransientCache {
         currentStorage += r.getSize();
         cache.put(key, blob);
     }
-    
+
     /**
      * Retrieve a resource
+     *
      * @param key
      * @return The resource cached under the given key, or null if no resource is cached.
      */
@@ -126,8 +123,8 @@ public class TransientCache {
         if (cached != null) {
             cache.remove(key);
             currentStorage -= cached.content.getSize();
-            
-            if( cached.time+expireDelay < currentTime() ) {
+
+            if (cached.time + expireDelay < currentTime()) {
                 return null;
             } else {
                 return cached.content;
@@ -135,28 +132,29 @@ public class TransientCache {
         }
         return null;
     }
-    
+
     /**
      * A timestamp in milliseconds
+     *
      * @return
      */
     protected long currentTime() {
-        return ticker.read()/1000;
+        return ticker.read() / 1000;
     }
-    
+
     // Gets called by overridden LinkedHashMap.removeEldestEntry
     private boolean removeEntries(Entry<String, CachedResource> eldest) {
         // iterator returns items in order added so oldest items are first
         Iterator<CachedResource> items = cache.values().iterator();
-        while (items.hasNext() && (currentStorage>maxStorage || cache.size()>maxTiles)) {
+        while (items.hasNext() && (currentStorage > maxStorage || cache.size() > maxTiles)) {
             CachedResource r = items.next();
             currentStorage -= r.content.getSize();
             items.remove();
         }
-        assert currentStorage<=maxStorage;
-        assert currentStorage>=0;
-        assert cache.size()<=maxStorage;
-        
+        assert currentStorage <= maxStorage;
+        assert currentStorage >= 0;
+        assert cache.size() <= maxStorage;
+
         return false;
     }
 
@@ -172,24 +170,25 @@ public class TransientCache {
     private class CachedResource {
         Resource content;
         long time;
-        
+
         public CachedResource(Resource content, long time) {
             super();
             this.content = content;
             this.time = time;
         }
-        
+
         public CachedResource(Resource content) {
             this(content, currentTime());
         }
     }
-    
+
     /**
      * Set a time source for computing expiry.
+     *
      * @param ticker
      */
     public void setTicker(Ticker ticker) {
         Preconditions.checkNotNull(ticker);
-        this.ticker=ticker;
+        this.ticker = ticker;
     }
 }

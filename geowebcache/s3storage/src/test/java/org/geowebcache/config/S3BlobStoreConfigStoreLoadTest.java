@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,8 +21,8 @@ import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.NoOpLockProvider;
 import org.geowebcache.s3.Access;
 import org.geowebcache.s3.PropertiesLoader;
-import org.geowebcache.s3.S3BlobStoreInfo;
 import org.geowebcache.s3.S3BlobStoreConfigProvider;
+import org.geowebcache.s3.S3BlobStoreInfo;
 import org.geowebcache.s3.TemporaryS3Folder;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.ApplicationContextProvider;
@@ -50,21 +49,17 @@ public class S3BlobStoreConfigStoreLoadTest {
     @Rule
     public TemporaryS3Folder tempFolder = new TemporaryS3Folder(testConfigLoader.getProperties());
 
-    @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
+    @Rule public TemporaryFolder temp = new TemporaryFolder();
 
-    @Mock
-    ApplicationContextProvider context;
+    @Mock ApplicationContextProvider context;
 
-    @Mock
-    TileLayerDispatcher dispatch;
+    @Mock TileLayerDispatcher dispatch;
 
     private File configDir;
 
     private File configFile;
 
-    @Mock
-    private WebApplicationContext webCtx;
+    @Mock private WebApplicationContext webCtx;
 
     private Map<String, XMLConfigurationProvider> providers;
 
@@ -98,8 +93,8 @@ public class S3BlobStoreConfigStoreLoadTest {
 
     private void loadSavedConfig() {
         try {
-            XMLConfiguration configLoad = new XMLConfiguration(context, configDir.getAbsolutePath(),
-                    null);
+            XMLConfiguration configLoad =
+                    new XMLConfiguration(context, configDir.getAbsolutePath(), null);
             GridSetBroker gridSetBroker = new GridSetBroker(true, true);
             configLoad.setGridSetBroker(gridSetBroker);
             configLoad.afterPropertiesSet();
@@ -121,8 +116,8 @@ public class S3BlobStoreConfigStoreLoadTest {
     private void validateSavedConfig()
             throws SAXException, IOException, ConfigurationException, FileNotFoundException {
         try {
-            XMLConfiguration
-                    .validate(XMLConfiguration.loadDocument(new FileInputStream(configFile)));
+            XMLConfiguration.validate(
+                    XMLConfiguration.loadDocument(new FileInputStream(configFile)));
         } catch (SAXParseException e) {
             log.error(e.getMessage());
             fail("Error validating from " + configFile + " " + e.getMessage());
@@ -145,14 +140,15 @@ public class S3BlobStoreConfigStoreLoadTest {
         configDir = temp.getRoot();
         configFile = temp.newFile("geowebcache.xml");
 
-        URL source = XMLConfiguration.class
-                .getResource(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
+        URL source =
+                XMLConfiguration.class.getResource(
+                        XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
         FileUtils.copyURLToFile(source, configFile);
 
         providers = new HashMap<String, XMLConfigurationProvider>();
         Mockito.when(context.getApplicationContext()).thenReturn(webCtx, webCtx, webCtx, webCtx);
-        Mockito.when(webCtx.getBeansOfType(XMLConfigurationProvider.class)).thenReturn(providers,
-                providers);
+        Mockito.when(webCtx.getBeansOfType(XMLConfigurationProvider.class))
+                .thenReturn(providers, providers);
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         Mockito.when(webCtx.getBean("S3BlobStore")).thenReturn(provider, provider);
         providers.put("S3BlobStore", provider);
@@ -161,5 +157,4 @@ public class S3BlobStoreConfigStoreLoadTest {
         config.setGridSetBroker(gridSetBroker);
         config.afterPropertiesSet();
     }
-
 }

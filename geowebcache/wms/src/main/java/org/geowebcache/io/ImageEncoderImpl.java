@@ -1,26 +1,24 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Nicola Lagomarsini, GeoSolutions S.A.S., Copyright 2014
- * 
  */
 package org.geowebcache.io;
 
+import com.sun.imageio.plugins.png.PNGImageWriter;
+import com.sun.media.imageioimpl.plugins.clib.CLibImageWriter;
 import it.geosolutions.imageio.stream.output.ImageOutputStreamAdapter;
 import it.geosolutions.jaiext.colorindexer.ColorIndexer;
 import it.geosolutions.jaiext.colorindexer.Quantizer;
-
 import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -28,7 +26,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import javax.imageio.IIOImage;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
@@ -37,50 +34,52 @@ import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
-
 import org.apache.log4j.Logger;
 import org.geotools.image.ImageWorker;
 import org.geotools.image.ImageWorker.PNGImageWriteParam;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 
-import com.sun.imageio.plugins.png.PNGImageWriter;
-import com.sun.media.imageioimpl.plugins.clib.CLibImageWriter;
-
 /**
- * Class implementing the ImageEncoder interface, the user should only create a new bean for instantiating a new encoder object.
+ * Class implementing the ImageEncoder interface, the user should only create a new bean for
+ * instantiating a new encoder object.
  */
 public class ImageEncoderImpl implements ImageEncoder {
 
-    /**
-     * Logger used
-     */
+    /** Logger used */
     private static final Logger LOGGER = Logger.getLogger(ImageEncoderImpl.class);
 
-    /**
-     * Default string used for exceptions
-     */
+    /** Default string used for exceptions */
     public static final String OPERATION_NOT_SUPPORTED = "Operation not supported";
 
-    /**Boolean indicating is aggressive outputstream is supported*/
+    /** Boolean indicating is aggressive outputstream is supported */
     private final boolean isAggressiveOutputStreamSupported;
-    /**Supported Mimetypes*/
+    /** Supported Mimetypes */
     private final List<String> supportedMimeTypes;
-    /**ImageReaderSpi object used*/
+    /** ImageReaderSpi object used */
     private ImageWriterSpi spi;
-    /** Map containing the input parameters used by the WriteHelper object*/
+    /** Map containing the input parameters used by the WriteHelper object */
     private Map<String, String> inputParams;
-    /**Helper object used for preparing Image and ImageWriteParam for writing the image*/
+    /** Helper object used for preparing Image and ImageWriteParam for writing the image */
     private WriteHelper helper;
 
     /**
-     * This enum is used for preparing the image to write (prepareImage()) and the related ImageWriteParam(prepareParams()).
+     * This enum is used for preparing the image to write (prepareImage()) and the related
+     * ImageWriteParam(prepareParams()).
      */
     public enum WriteHelper {
-        PNG("image/png", "image/png8", "image/png; mode=8bit", "image/png24",
-                "image/png; mode=24bit", "image/png;%20mode=24bit") {
-            public ImageWriteParam prepareParameters(ImageWriter writer, String compression,
-                    boolean compressUsed, float compressionRate) {
+        PNG(
+                "image/png",
+                "image/png8",
+                "image/png; mode=8bit",
+                "image/png24",
+                "image/png; mode=24bit",
+                "image/png;%20mode=24bit") {
+            public ImageWriteParam prepareParameters(
+                    ImageWriter writer,
+                    String compression,
+                    boolean compressUsed,
+                    float compressionRate) {
                 ImageWriteParam params = null;
 
                 if (writer instanceof CLibImageWriter) {
@@ -112,8 +111,11 @@ public class ImageEncoderImpl implements ImageEncoder {
             }
         },
         JPEG("image/jpeg") {
-            protected ImageWriteParam prepareParameters(ImageWriter writer, String compression,
-                    boolean compressUsed, float compressionRate) {
+            protected ImageWriteParam prepareParameters(
+                    ImageWriter writer,
+                    String compression,
+                    boolean compressUsed,
+                    float compressionRate) {
                 ImageWriteParam params = writer.getDefaultWriteParam();
                 params.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                 if (compressUsed) {
@@ -140,12 +142,13 @@ public class ImageEncoderImpl implements ImageEncoder {
                 return params;
             }
         },
-        GIF("image/gif"){
+        GIF("image/gif") {
             public RenderedImage prepareImage(RenderedImage image, MimeType type) {
                 return applyPalette(image);
             }
-            
-        }, TIFF("image/tiff"), BMP("image/bmp");
+        },
+        TIFF("image/tiff"),
+        BMP("image/bmp");
 
         private String[] formatNames;
 
@@ -157,8 +160,10 @@ public class ImageEncoderImpl implements ImageEncoder {
             // Selection of the compression type
             String compression = inputParams.get("COMPRESSION");
             // Boolean indicating if compression is present
-            boolean compressUsed = compression != null && !compression.isEmpty()
-                    && !compression.equalsIgnoreCase("null");
+            boolean compressUsed =
+                    compression != null
+                            && !compression.isEmpty()
+                            && !compression.equalsIgnoreCase("null");
             // Selection of the compression rate
             String compressionRateValue = inputParams.get("COMPRESSION_RATE");
             // Initial value for the compression rate
@@ -172,14 +177,17 @@ public class ImageEncoderImpl implements ImageEncoder {
                 }
             }
             // Creation of the ImageWriteParams
-            ImageWriteParam params = prepareParameters(writer, compression, compressUsed,
-                    compressionRate);
+            ImageWriteParam params =
+                    prepareParameters(writer, compression, compressUsed, compressionRate);
 
             return params;
         }
 
-        protected ImageWriteParam prepareParameters(ImageWriter writer, String compression,
-                boolean compressUsed, float compressionRate) {
+        protected ImageWriteParam prepareParameters(
+                ImageWriter writer,
+                String compression,
+                boolean compressUsed,
+                float compressionRate) {
             // Parameters creation
             ImageWriteParam params = writer.getDefaultWriteParam();
             params.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
@@ -228,15 +236,22 @@ public class ImageEncoderImpl implements ImageEncoder {
     }
 
     /**
-     * Encodes the selected image with the defined output object. The user can set the aggressive outputStream if supported.
-     * 
+     * Encodes the selected image with the defined output object. The user can set the aggressive
+     * outputStream if supported.
+     *
      * @param image Image to write.
      * @param destination Destination object where the image is written.
-     * @param aggressiveOutputStreamOptimization Parameter used if aggressive outputStream optimization must be used.
+     * @param aggressiveOutputStreamOptimization Parameter used if aggressive outputStream
+     *     optimization must be used.
      * @throws IOException
      */
-    public void encode(RenderedImage image, Object destination,
-            boolean aggressiveOutputStreamOptimization, MimeType type, Map<String, ?> map)  throws Exception{
+    public void encode(
+            RenderedImage image,
+            Object destination,
+            boolean aggressiveOutputStreamOptimization,
+            MimeType type,
+            Map<String, ?> map)
+            throws Exception {
 
         if (!isAggressiveOutputStreamSupported() && aggressiveOutputStreamOptimization) {
             throw new UnsupportedOperationException(OPERATION_NOT_SUPPORTED);
@@ -274,7 +289,7 @@ public class ImageEncoderImpl implements ImageEncoder {
                 } else {
                     throw new IllegalArgumentException("Wrong output object");
                 }
-            } catch (Exception e) {                
+            } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);
                 throw e;
             } finally {
@@ -297,7 +312,7 @@ public class ImageEncoderImpl implements ImageEncoder {
 
     /**
      * Returns the ImageSpiWriter associated to
-     * 
+     *
      * @return
      */
     ImageWriterSpi getWriterSpi() {
@@ -306,7 +321,7 @@ public class ImageEncoderImpl implements ImageEncoder {
 
     /**
      * Returns all the supported MimeTypes
-     * 
+     *
      * @return supportedMimeTypes List of all the supported Mime Types
      */
     public List<String> getSupportedMimeTypes() {
@@ -315,22 +330,28 @@ public class ImageEncoderImpl implements ImageEncoder {
 
     /**
      * Indicates if optimization on OutputStream can be used
-     * 
-     * @return isAggressiveOutputStreamSupported Boolean indicating if the selected encoder supports an aggressive output stream optimization
+     *
+     * @return isAggressiveOutputStreamSupported Boolean indicating if the selected encoder supports
+     *     an aggressive output stream optimization
      */
     public boolean isAggressiveOutputStreamSupported() {
         return isAggressiveOutputStreamSupported;
     }
 
     /**
-     * Creates a new Instance of ImageEncoder supporting or not OutputStream optimization, with the defined MimeTypes and Spi classes.
-     * 
+     * Creates a new Instance of ImageEncoder supporting or not OutputStream optimization, with the
+     * defined MimeTypes and Spi classes.
+     *
      * @param aggressiveOutputStreamOptimization
      * @param supportedMimeTypes
      * @param writerSpi
      */
-    public ImageEncoderImpl(boolean aggressiveOutputStreamOptimization,
-            List<String> supportedMimeTypes, List<String> writerSpi, Map<String, String> inputParams,ImageIOInitializer initializer) {
+    public ImageEncoderImpl(
+            boolean aggressiveOutputStreamOptimization,
+            List<String> supportedMimeTypes,
+            List<String> writerSpi,
+            Map<String, String> inputParams,
+            ImageIOInitializer initializer) {
         this.isAggressiveOutputStreamSupported = aggressiveOutputStreamOptimization;
         this.supportedMimeTypes = new ArrayList<String>(supportedMimeTypes);
         this.inputParams = inputParams;
@@ -341,8 +362,8 @@ public class ImageEncoderImpl implements ImageEncoder {
             try {
 
                 Class<?> clazz = Class.forName(spi);
-                ImageWriterSpi writer = (ImageWriterSpi) theRegistry
-                        .getServiceProviderByClass(clazz);
+                ImageWriterSpi writer =
+                        (ImageWriterSpi) theRegistry.getServiceProviderByClass(clazz);
                 if (writer != null) {
                     this.spi = writer;
                     break;
@@ -350,17 +371,13 @@ public class ImageEncoderImpl implements ImageEncoder {
             } catch (ClassNotFoundException e) {
                 LOGGER.error(e.getMessage(), e);
             }
-
         }
 
         // Selection of the helper object associated to the following format
         helper = WriteHelper.getWriteHelperForName(supportedMimeTypes.get(0));
-
     }
 
-    /**
-     * Returns the WriteHelper object used
-     */
+    /** Returns the WriteHelper object used */
     protected WriteHelper getHelper() {
         return helper;
     }
@@ -369,8 +386,8 @@ public class ImageEncoderImpl implements ImageEncoder {
         if (!(canvas.getColorModel() instanceof IndexColorModel)) {
             // try to force a RGBA setup
             ImageWorker imageWorker = new ImageWorker(canvas);
-            RenderedImage image = imageWorker.rescaleToBytes().forceComponentColorModel()
-                    .getRenderedImage();
+            RenderedImage image =
+                    imageWorker.rescaleToBytes().forceComponentColorModel().getRenderedImage();
             ColorIndexer indexer = new Quantizer(256).subsample().buildColorIndexer(image);
 
             // if we have an indexer transform the image
@@ -380,6 +397,5 @@ public class ImageEncoderImpl implements ImageEncoder {
             return image;
         }
         return canvas;
-
     }
 }

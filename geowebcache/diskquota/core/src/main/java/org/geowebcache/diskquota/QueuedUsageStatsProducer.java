@@ -1,7 +1,6 @@
 package org.geowebcache.diskquota;
 
 import java.util.concurrent.BlockingQueue;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.conveyor.ConveyorTile;
@@ -11,13 +10,10 @@ import org.geowebcache.layer.TileLayerListener;
 import org.springframework.util.Assert;
 
 /**
- * 
- * <p>
  * This {@link TileLayerListener} is thread safe and can be called by any thread requesting a tile
  * from a {@link TileLayer}
- * 
+ *
  * @author groldan
- * 
  */
 public class QueuedUsageStatsProducer implements TileLayerListener {
 
@@ -32,9 +28,7 @@ public class QueuedUsageStatsProducer implements TileLayerListener {
         this.usageStatsQueue = usageStatsQueue;
     }
 
-    /**
-     * @see org.geowebcache.layer.TileLayerListener#tileRequested
-     */
+    /** @see org.geowebcache.layer.TileLayerListener#tileRequested */
     public void tileRequested(TileLayer layer, ConveyorTile tile) {
         String layerName = layer.getName();
         if (cancelled(layerName)) {
@@ -52,8 +46,11 @@ public class QueuedUsageStatsProducer implements TileLayerListener {
             if (cancelled(layerName)) {
                 return;
             }
-            log.info("Quota usage stats gathering for " + layerName
-                    + " abruptly interrupted on thread " + Thread.currentThread().getName());
+            log.info(
+                    "Quota usage stats gathering for "
+                            + layerName
+                            + " abruptly interrupted on thread "
+                            + Thread.currentThread().getName());
         }
     }
 
@@ -63,10 +60,11 @@ public class QueuedUsageStatsProducer implements TileLayerListener {
 
     private boolean cancelled(String layerName) {
         if (cancelled) {
-            log.debug("Quota usage stats listener cancelled. Avoiding adding update for layer "
-                    + layerName + " to tile page store");
+            log.debug(
+                    "Quota usage stats listener cancelled. Avoiding adding update for layer "
+                            + layerName
+                            + " to tile page store");
         }
         return cancelled;
     }
-
 }

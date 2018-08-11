@@ -1,19 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Nicola Lagomarsini (Geosolutions) 2014
- *  
  */
 package org.geowebcache.util;
 
@@ -21,7 +18,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-
 import org.apache.log4j.Appender;
 import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
@@ -43,8 +39,12 @@ public class FileUtilsTest {
     public void testFileRenaming() throws Exception {
         // Creation of a temporary file in the temporary directory directory
         File source = File.createTempFile("source", ".txt");
-        File destination = new File(source.getParent(), "dest" + System.currentTimeMillis()
-                + ".txt");// File.createTempFile("destination", ".txt");
+        File destination =
+                new File(
+                        source.getParent(),
+                        "dest"
+                                + System.currentTimeMillis()
+                                + ".txt"); // File.createTempFile("destination", ".txt");
 
         // File rename
         boolean renameFile = FileUtils.renameFile(source, destination);
@@ -92,10 +92,9 @@ public class FileUtilsTest {
     }
 
     /**
-     * Mock class for {@link Appender} interface used for keeping track of the message logged by the {@link FileUtils} class when an Exception has
-     * been thrown.
-     * 
-     * 
+     * Mock class for {@link Appender} interface used for keeping track of the message logged by the
+     * {@link FileUtils} class when an Exception has been thrown.
+     *
      * @author Nicola Lagomarsini Geosolutions
      */
     static class MockAppender implements Appender {
@@ -105,7 +104,7 @@ public class FileUtilsTest {
 
         /**
          * Method indicating if the Info Message has been logged
-         * 
+         *
          * @return a boolean indicating that the message has been logged
          */
         public boolean isMessageLogged() {
@@ -113,8 +112,7 @@ public class FileUtilsTest {
         }
 
         @Override
-        public void addFilter(Filter newFilter) {
-        }
+        public void addFilter(Filter newFilter) {}
 
         @Override
         public Filter getFilter() {
@@ -122,12 +120,10 @@ public class FileUtilsTest {
         }
 
         @Override
-        public void clearFilters() {
-        }
+        public void clearFilters() {}
 
         @Override
-        public void close() {
-        }
+        public void close() {}
 
         @Override
         public void doAppend(LoggingEvent event) {
@@ -142,8 +138,7 @@ public class FileUtilsTest {
         }
 
         @Override
-        public void setErrorHandler(ErrorHandler errorHandler) {
-        }
+        public void setErrorHandler(ErrorHandler errorHandler) {}
 
         @Override
         public ErrorHandler getErrorHandler() {
@@ -151,8 +146,7 @@ public class FileUtilsTest {
         }
 
         @Override
-        public void setLayout(Layout layout) {
-        }
+        public void setLayout(Layout layout) {}
 
         @Override
         public Layout getLayout() {
@@ -160,8 +154,7 @@ public class FileUtilsTest {
         }
 
         @Override
-        public void setName(String name) {
-        }
+        public void setName(String name) {}
 
         @Override
         public boolean requiresLayout() {

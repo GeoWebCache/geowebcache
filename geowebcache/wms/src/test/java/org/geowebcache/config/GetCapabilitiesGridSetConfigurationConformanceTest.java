@@ -1,23 +1,29 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2018
- *
+ * <p>Copyright 2018
  */
 package org.geowebcache.config;
 
+import static org.easymock.EasyMock.createNiceMock;
+import static org.easymock.EasyMock.expect;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+
 import com.google.common.base.Objects;
+import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 import org.easymock.EasyMock;
 import org.geotools.data.ows.*;
 import org.geotools.data.wms.WebMapServer;
@@ -31,27 +37,17 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.net.URL;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-
-import static org.easymock.EasyMock.createNiceMock;
-import static org.easymock.EasyMock.expect;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-
 public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetConfigurationTest {
-    
+
     private GridSetBroker broker;
-    
+
     @Before
     public void setupBroker() {
-        if( broker==null) {
+        if (broker == null) {
             broker = new GridSetBroker(false, false);
         }
     }
-    
+
     @Override
     protected void doModifyInfo(GridSet info, int rand) throws Exception {
         info.setDescription(Integer.toString(rand));
@@ -75,10 +71,10 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
         gcOpType = createNiceMock(OperationType.class);
         globalConfig = createNiceMock(DefaultingConfiguration.class);
         setupBroker();
-        
+
         Layer l = new Layer();
         l.setName("testExisting");
-        l.setBoundingBoxes(new CRSEnvelope("EPSG:3978", -2259049,347711, -1994160,827919));
+        l.setBoundingBoxes(new CRSEnvelope("EPSG:3978", -2259049, 347711, -1994160, 827919));
         l.setLatLonBoundingBox(new CRSEnvelope());
         List<Layer> layers = new LinkedList<Layer>();
         layers.add(l);
@@ -87,37 +83,40 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
         expect(server.getCapabilities()).andStubReturn(cap);
         expect(cap.getRequest()).andStubReturn(req);
         expect(req.getGetCapabilities()).andStubReturn(gcOpType);
-        expect(gcOpType.getGet()).andStubReturn(new URL("http://test/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities"));
+        expect(gcOpType.getGet())
+                .andStubReturn(
+                        new URL(
+                                "http://test/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities"));
         expect(cap.getVersion()).andStubReturn("1.1.1");
         EasyMock.replay(server, cap, req, gcOpType, globalConfig);
-        
+
         GetCapabilitiesConfiguration config =
-                new GetCapabilitiesConfiguration(broker,  "http://test/wms", "image/png", "3x3", "", null, "false"){
+                new GetCapabilitiesConfiguration(
+                        broker, "http://test/wms", "image/png", "3x3", "", null, "false") {
 
                     @Override
                     WebMapServer getWMS() {
                         return server;
                     }
-
                 };
         config.setGridSetBroker(broker);
         config.afterPropertiesSet();
-        
+
         return config;
     }
-    
+
     @Override
     protected GridSetConfiguration getSecondConfig() throws Exception {
         Assume.assumeTrue("This configuration does not have persistance", false);
         return null;
     }
 
-    
     @Test
     public void testLayerGridsets() throws Exception {
-        Optional<TileLayer> layer = ((GetCapabilitiesConfiguration)config).getLayer("testExisting");
+        Optional<TileLayer> layer =
+                ((GetCapabilitiesConfiguration) config).getLayer("testExisting");
         Optional<GridSet> gridset = config.getGridSet("testExisting:EPSG:3978");
-        
+
         TileLayer tileLayer = layer.get();
         GridSubset gridSubset = tileLayer.getGridSubset("testExisting:EPSG:3978");
         GridSet gridSet2 = gridSubset.getGridSet();
@@ -126,29 +125,33 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
 
     @Override
     protected Matcher<GridSet> infoEquals(GridSet expected) {
-        return new CustomMatcher<GridSet>("GridSet matching "+expected.getName()+" with " + expected.getDescription()){
-            
+        return new CustomMatcher<GridSet>(
+                "GridSet matching " + expected.getName() + " with " + expected.getDescription()) {
+
             @Override
             public boolean matches(Object item) {
-                return item instanceof GridSet && ((GridSet)item).getName().equals(((GridSet)expected).getName()) &&
-                    ((GridSet)item).getDescription().equals(((GridSet)expected).getDescription());
+                return item instanceof GridSet
+                        && ((GridSet) item).getName().equals(((GridSet) expected).getName())
+                        && ((GridSet) item)
+                                .getDescription()
+                                .equals(((GridSet) expected).getDescription());
             }
-            
         };
     }
-    
+
     @Override
     protected Matcher<GridSet> infoEquals(int expected) {
-        return new CustomMatcher<GridSet>("GridSet with value " + expected){
-            
+        return new CustomMatcher<GridSet>("GridSet with value " + expected) {
+
             @Override
             public boolean matches(Object item) {
-                return item instanceof GridSet && Objects.equal(((GridSet)item).getDescription(),Integer.toString(expected));
+                return item instanceof GridSet
+                        && Objects.equal(
+                                ((GridSet) item).getDescription(), Integer.toString(expected));
             }
-            
         };
     }
-    
+
     @Override
     public void failNextRead() {
         Assume.assumeFalse(true);

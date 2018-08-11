@@ -2,10 +2,8 @@ package org.geowebcache.arcgis.config;
 
 /**
  * Represents an {@code SpatialReference} element in a cache config file.
- * <p>
- * XML structure:
- * 
- * <code>
+ *
+ * <p>XML structure: <code>
  * <pre>
  * &lt;SpatialReference xsi:type='typens:ProjectedCoordinateSystem'&gt;
  *       &lt;WKT&gt;PROJCS[&quot;NZGD_2000_New_Zealand_Transverse_Mercator&quot;,GEOGCS[&quot;GCS_NZGD_2000&quot;,DATUM[&quot;D_NZGD_2000&quot;,SPHEROID[&quot;GRS_1980&quot;,6378137.0,298.257222101]],PRIMEM[&quot;Greenwich&quot;,0.0],UNIT[&quot;Degree&quot;,0.0174532925199433]],PROJECTION[&quot;Transverse_Mercator&quot;],PARAMETER[&quot;False_Easting&quot;,1600000.0],PARAMETER[&quot;False_Northing&quot;,10000000.0],PARAMETER[&quot;Central_Meridian&quot;,173.0],PARAMETER[&quot;Scale_Factor&quot;,0.9996],PARAMETER[&quot;Latitude_Of_Origin&quot;,0.0],UNIT[&quot;Meter&quot;,1.0],AUTHORITY[&quot;EPSG&quot;,2193]]&lt;/WKT&gt;
@@ -25,11 +23,8 @@ package org.geowebcache.arcgis.config;
  * &lt;/SpatialReference&gt;
  * </pre>
  * </code>
- * 
- * </p>
- * 
+ *
  * @author Gabriel Roldan
- * 
  */
 public class SpatialReference {
 
@@ -117,6 +112,7 @@ public class SpatialReference {
 
     /**
      * New in ArcGIS 10.1+
+     *
      * @return
      */
     public int getLatestWKID() {
@@ -125,11 +121,10 @@ public class SpatialReference {
 
     /**
      * Seems to be in ArcGIS 9.2 format only?
-     * 
+     *
      * @return
      */
     public double getLeftLongitude() {
         return LeftLongitude;
     }
-
 }

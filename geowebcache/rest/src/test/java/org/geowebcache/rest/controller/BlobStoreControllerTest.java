@@ -1,4 +1,3 @@
 package org.geowebcache.rest.controller;
 
-public class BlobStoreControllerTest {
-}
+public class BlobStoreControllerTest {}

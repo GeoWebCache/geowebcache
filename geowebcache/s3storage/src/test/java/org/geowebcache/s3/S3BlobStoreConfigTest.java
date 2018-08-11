@@ -2,9 +2,8 @@ package org.geowebcache.s3;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
-
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import org.junit.Test;
 
 public class S3BlobStoreConfigTest {
 
@@ -14,7 +13,7 @@ public class S3BlobStoreConfigTest {
         config.setAccess(Access.PUBLIC);
         assertEquals(CannedAccessControlList.PublicRead, config.getAccessControlList());
     }
-    
+
     @Test
     public void testACLPrivate() {
         S3BlobStoreInfo config = new S3BlobStoreInfo();

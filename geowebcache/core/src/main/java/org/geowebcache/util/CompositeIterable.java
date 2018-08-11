@@ -27,5 +27,4 @@ public class CompositeIterable<T> implements Iterable<T> {
         }
         return new CompositeIterator<T>(iterators);
     }
-
 }

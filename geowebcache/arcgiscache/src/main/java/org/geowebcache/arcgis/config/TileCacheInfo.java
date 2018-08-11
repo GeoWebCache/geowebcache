@@ -4,9 +4,9 @@ import java.util.List;
 
 /**
  * Represents a {@code TileCacheInfo} element in an ArcGIS cache config file.
- * <p>
- * XML Structure:
- * 
+ *
+ * <p>XML Structure:
+ *
  * <pre>
  * <code>
  *   &lt;TileCacheInfo xsi:type='typens:TileCacheInfo'&gt;
@@ -32,11 +32,8 @@ import java.util.List;
  *   &lt;/TileCacheInfo&gt;
  * </code>
  * </pre>
- * 
- * </p>
- * 
+ *
  * @author Gabriel Roldan
- * 
  */
 public class TileCacheInfo {
 
@@ -76,6 +73,7 @@ public class TileCacheInfo {
 
     /**
      * New in ArcGIS 10.1+
+     *
      * @return
      */
     public int getPreciseDPI() {
@@ -85,5 +83,4 @@ public class TileCacheInfo {
     public List<LODInfo> getLodInfos() {
         return lodInfos;
     }
-
 }
