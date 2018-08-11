@@ -1,19 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2018
- *
+ * <p>Copyright 2018
  */
 package org.geowebcache.config;
 
@@ -26,8 +23,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-
 import org.easymock.EasyMock;
 import org.geotools.data.ows.CRSEnvelope;
 import org.geotools.data.ows.Layer;
@@ -36,7 +31,6 @@ import org.geotools.data.ows.WMSCapabilities;
 import org.geotools.data.ows.WMSRequest;
 import org.geotools.data.wms.WebMapServer;
 import org.geowebcache.filter.parameters.ParameterFilter;
-import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
@@ -46,36 +40,44 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Assume;
 import org.junit.Before;
-import org.opengis.filter.IncludeFilter;
 
 public class GetCapabilitiesLayerConfigurationConformanceTest extends LayerConfigurationTest {
-    
+
     private GridSetBroker broker;
-    
+
     @Before
     public void setupBroker() {
-        if( broker==null) {
+        if (broker == null) {
             broker = new GridSetBroker(false, false);
         }
     }
-    
+
     @Override
     protected void doModifyInfo(TileLayer info, int rand) throws Exception {
-        ((WMSLayer)info).setWmsLayers(Integer.toString(rand));
+        ((WMSLayer) info).setWmsLayers(Integer.toString(rand));
     }
 
     @Override
     protected TileLayer getGoodInfo(String id, int rand) throws Exception {
-        return new WMSLayer(id, new String[] {"http://foo"}, "style", Integer.toString(rand),
-                Collections.<String>emptyList(), Collections.<String,GridSubset>singletonMap("EPSG:4326", GridSubsetFactory.createGridSubSet(broker.getWorldEpsg4326())),
-                Collections.<ParameterFilter>emptyList(), new int[] {3,3}, "",
-                false, null);
+        return new WMSLayer(
+                id,
+                new String[] {"http://foo"},
+                "style",
+                Integer.toString(rand),
+                Collections.<String>emptyList(),
+                Collections.<String, GridSubset>singletonMap(
+                        "EPSG:4326", GridSubsetFactory.createGridSubSet(broker.getWorldEpsg4326())),
+                Collections.<ParameterFilter>emptyList(),
+                new int[] {3, 3},
+                "",
+                false,
+                null);
     }
     /*(String layerName, String[] wmsURL, String wmsStyles, String wmsLayers,
-            List<String> mimeFormats, Map<String, GridSubset> subSets,
-            List<ParameterFilter> parameterFilters, int[] metaWidthHeight, String vendorParams,
-            boolean queryable, String wmsQueryLayers)*/
-    
+    List<String> mimeFormats, Map<String, GridSubset> subSets,
+    List<ParameterFilter> parameterFilters, int[] metaWidthHeight, String vendorParams,
+    boolean queryable, String wmsQueryLayers)*/
+
     @Override
     protected TileLayer getBadInfo(String id, int rand) throws Exception {
         Assume.assumeFalse(true);
@@ -100,7 +102,7 @@ public class GetCapabilitiesLayerConfigurationConformanceTest extends LayerConfi
         gcOpType = createNiceMock(OperationType.class);
         globalConfig = createNiceMock(DefaultingConfiguration.class);
         setupBroker();
-        
+
         Layer l = new Layer();
         l.setName("testExisting");
         l.setLatLonBoundingBox(new CRSEnvelope());
@@ -111,38 +113,41 @@ public class GetCapabilitiesLayerConfigurationConformanceTest extends LayerConfi
         expect(server.getCapabilities()).andStubReturn(cap);
         expect(cap.getRequest()).andStubReturn(req);
         expect(req.getGetCapabilities()).andStubReturn(gcOpType);
-        expect(gcOpType.getGet()).andStubReturn(new URL("http://test/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities"));
+        expect(gcOpType.getGet())
+                .andStubReturn(
+                        new URL(
+                                "http://test/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities"));
         expect(cap.getVersion()).andStubReturn("1.1.1");
         EasyMock.replay(server, cap, req, gcOpType, globalConfig);
-        
+
         GetCapabilitiesConfiguration config =
-                new GetCapabilitiesConfiguration(broker,  "http://test/wms", "image/png", "3x3", "", null, "false"){
+                new GetCapabilitiesConfiguration(
+                        broker, "http://test/wms", "image/png", "3x3", "", null, "false") {
 
                     @Override
                     WebMapServer getWMS() {
                         return server;
                     }
-
                 };
         config.setGridSetBroker(broker);
         config.afterPropertiesSet();
-        
+
         return config;
     }
-    
+
     @Override
     protected TileLayerConfiguration getSecondConfig() throws Exception {
         Assume.assumeTrue("This configuration does not have persistance", false);
         return null;
     }
-    
+
     @Override
     protected Matcher<TileLayer> infoEquals(TileLayer expected) {
         return Matchers.allOf(
                 Matchers.hasProperty("name", equalTo(expected.getName())),
-                Matchers.hasProperty("wmsLayers", equalTo(((WMSLayer) expected).getWmsLayers()))
-                );
+                Matchers.hasProperty("wmsLayers", equalTo(((WMSLayer) expected).getWmsLayers())));
     }
+
     @Override
     protected Matcher<TileLayer> infoEquals(int expected) {
         return Matchers.hasProperty("wmsLayers", equalTo(expected));

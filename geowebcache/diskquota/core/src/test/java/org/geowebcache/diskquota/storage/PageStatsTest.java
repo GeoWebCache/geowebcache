@@ -1,7 +1,6 @@
 package org.geowebcache.diskquota.storage;
 
 import java.math.BigInteger;
-
 import junit.framework.TestCase;
 
 public class PageStatsTest extends TestCase {
@@ -91,5 +90,4 @@ public class PageStatsTest extends TestCase {
         stats.addTiles(500, maxTiles);
         assertEquals(1f, stats.getFillFactor(), 1e-6f);
     }
-
 }

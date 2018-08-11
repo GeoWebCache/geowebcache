@@ -1,7 +1,7 @@
 package org.geowebcache.service.wms;
 
-import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
@@ -13,12 +13,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.easymock.EasyMock;
 import org.geowebcache.config.legends.LegendRawInfo;
 import org.geowebcache.config.legends.LegendsRawInfo;
@@ -38,7 +36,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
 public class WMSGetCapabilitiesTest {
-    
 
     @Test
     public void testEscapeXMLChars() throws Exception {
@@ -49,18 +46,20 @@ public class WMSGetCapabilitiesTest {
         String contextPath = "service/";
         URLMangler urlMangler = new NullURLMangler();
         ServiceInformation servInfo = createMock(ServiceInformation.class);
-        
+
         Map<String, String[]> parameterMap = new HashMap<>();
-        parameterMap.put("SERVICE", new String[]{"WMS"});
-        parameterMap.put("VERSION", new String[]{"1.1.1"});
-        parameterMap.put("REQUEST", new String[]{"getcapabilities"});
-        parameterMap.put("TILED", new String[]{"true"});
-        
+        parameterMap.put("SERVICE", new String[] {"WMS"});
+        parameterMap.put("VERSION", new String[] {"1.1.1"});
+        parameterMap.put("REQUEST", new String[] {"getcapabilities"});
+        parameterMap.put("TILED", new String[] {"true"});
+
         expect(servReq.getParameterMap()).andStubReturn(Collections.unmodifiableMap(parameterMap));
         expect(servReq.getCharacterEncoding()).andStubReturn("UTF-8");
-        
+
         expect(servInfo.getTitle()).andStubReturn("Title & \"stuff\"");
-        expect(servInfo.getDescription()).andStubReturn("This \"description\" contains <characters> which & should be \'escaped\'.");
+        expect(servInfo.getDescription())
+                .andStubReturn(
+                        "This \"description\" contains <characters> which & should be \'escaped\'.");
         expect(servInfo.getKeywords()).andStubReturn(null);
         expect(servInfo.getServiceProvider()).andStubReturn(null);
         expect(servInfo.getFees()).andStubReturn("NONE");
@@ -73,11 +72,23 @@ public class WMSGetCapabilitiesTest {
         stylesParameterFilter.setValues(Arrays.asList("style1", "style2"));
         // create grid sets for this layer
         Map<String, GridSubset> subSets = new HashMap<>();
-        GridSubset gridSubSet = GridSubsetFactory.createGridSubSet(new GridSetBroker(true, true).get("EPSG:4326"));
+        GridSubset gridSubSet =
+                GridSubsetFactory.createGridSubSet(new GridSetBroker(true, true).get("EPSG:4326"));
         subSets.put(gridSubSet.getName(), gridSubSet);
         // create the layer
-        WMSLayer advertisedLayer = new WMSLayer("testAdv", null, "style,style2", null,
-                null, subSets, Collections.singletonList(stylesParameterFilter), null, null, false, null);
+        WMSLayer advertisedLayer =
+                new WMSLayer(
+                        "testAdv",
+                        null,
+                        "style,style2",
+                        null,
+                        null,
+                        subSets,
+                        Collections.singletonList(stylesParameterFilter),
+                        null,
+                        null,
+                        false,
+                        null);
         advertisedLayer.setEnabled(true);
         advertisedLayer.setAdvertised(true);
         // add legends info to the advertised layer
@@ -96,17 +107,29 @@ public class WMSGetCapabilitiesTest {
         legendsRawInfo.addLegendRawInfo(legendRawInfo2);
         advertisedLayer.setLegends(legendsRawInfo);
 
-        TileLayer unAdvertisedLayer = new WMSLayer("testNotAdv", null, null, null,
-                null, subSets, null, null, null, false, null); 
+        TileLayer unAdvertisedLayer =
+                new WMSLayer(
+                        "testNotAdv",
+                        null,
+                        null,
+                        null,
+                        null,
+                        subSets,
+                        null,
+                        null,
+                        null,
+                        false,
+                        null);
         unAdvertisedLayer.setEnabled(true);
         unAdvertisedLayer.setAdvertised(false);
-        
+
         expect(tld.getLayerList()).andStubReturn(Arrays.asList(advertisedLayer, unAdvertisedLayer));
 
         replay(tld, servReq, response, servInfo);
-        
-        WMSGetCapabilities capabilities = new WMSGetCapabilities(tld, servReq, baseUrl, contextPath, urlMangler);
-        
+
+        WMSGetCapabilities capabilities =
+                new WMSGetCapabilities(tld, servReq, baseUrl, contextPath, urlMangler);
+
         String xml = capabilities.generateGetCapabilities(StandardCharsets.UTF_8);
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -115,39 +138,59 @@ public class WMSGetCapabilitiesTest {
         is.setCharacterStream(new StringReader(xml));
         Document document = builder.parse(is);
 
-        assertThat(document.getDocumentElement(), HasXPath.hasXPath("/WMT_MS_Capabilities/Service/Title[text()='Title & \"stuff\"']"));
-        assertThat(document.getDocumentElement(), HasXPath.hasXPath("/WMT_MS_Capabilities/Service/Abstract[text()="+xpathString("This \"description\" contains <characters> which & should be \'escaped\'.")+"]"));
-        
+        assertThat(
+                document.getDocumentElement(),
+                HasXPath.hasXPath(
+                        "/WMT_MS_Capabilities/Service/Title[text()='Title & \"stuff\"']"));
+        assertThat(
+                document.getDocumentElement(),
+                HasXPath.hasXPath(
+                        "/WMT_MS_Capabilities/Service/Abstract[text()="
+                                + xpathString(
+                                        "This \"description\" contains <characters> which & should be \'escaped\'.")
+                                + "]"));
+
         // Be extra strict
         assertThat(xml, not(containsString("& ")));
         assertThat(xml, not(containsString("<characters>")));
         assertThat(xml, not(containsString("'escaped'")));
         assertThat(xml, not(containsString("\"description\"")));
-        
+
         assertThat(xml, containsString("testAdv"));
         assertThat(xml, not(containsString("testNotAdv")));
 
         // check no empty style was created
-        assertThat(document.getDocumentElement(), HasXPath.hasXPath("/WMT_MS_Capabilities/Capability/VendorSpecificCapabilities/" +
-                "TileSet[Layers='testAdv']/Styles[not(Style/Name)]"));
+        assertThat(
+                document.getDocumentElement(),
+                HasXPath.hasXPath(
+                        "/WMT_MS_Capabilities/Capability/VendorSpecificCapabilities/"
+                                + "TileSet[Layers='testAdv']/Styles[not(Style/Name)]"));
 
         // check for legends URL for style 1
-        assertThat(document.getDocumentElement(), HasXPath.hasXPath("/WMT_MS_Capabilities/Capability/VendorSpecificCapabilities/" +
-                "TileSet/Styles/Style[Name='style1']/LegendURL[@width='50'][@height='100'][Format='image/png']" +
-                "/OnlineResource[@type='simple'][@href='htp://localhost:8080/geoserver?service=WMS&request=GetLegendGraphic&" +
-                "format=image/png&width=50&height=100&layer=testAdv&style=style1']"));
+        assertThat(
+                document.getDocumentElement(),
+                HasXPath.hasXPath(
+                        "/WMT_MS_Capabilities/Capability/VendorSpecificCapabilities/"
+                                + "TileSet/Styles/Style[Name='style1']/LegendURL[@width='50'][@height='100'][Format='image/png']"
+                                + "/OnlineResource[@type='simple'][@href='htp://localhost:8080/geoserver?service=WMS&request=GetLegendGraphic&"
+                                + "format=image/png&width=50&height=100&layer=testAdv&style=style1']"));
 
         // check for legends URL for style 2
-        assertThat(document.getDocumentElement(), HasXPath.hasXPath("/WMT_MS_Capabilities/Capability/VendorSpecificCapabilities/" +
-                "TileSet/Styles/Style[Name='style2']/LegendURL[@width='50'][@height='100'][Format='image/png']" +
-                "/OnlineResource[@type='simple'][@href='htp://localhost:8080/geoserver?service=WMS&request=GetLegendGraphic&" +
-                "format=image/png&width=50&height=100&layer=testAdv&style=style2']"));
-        
+        assertThat(
+                document.getDocumentElement(),
+                HasXPath.hasXPath(
+                        "/WMT_MS_Capabilities/Capability/VendorSpecificCapabilities/"
+                                + "TileSet/Styles/Style[Name='style2']/LegendURL[@width='50'][@height='100'][Format='image/png']"
+                                + "/OnlineResource[@type='simple'][@href='htp://localhost:8080/geoserver?service=WMS&request=GetLegendGraphic&"
+                                + "format=image/png&width=50&height=100&layer=testAdv&style=style2']"));
+
         EasyMock.verify(tld, servReq, response, servInfo);
     }
 
     /**
-     * Returns an XPath expression equivalent to the given string which can safely include both " and ' characters.
+     * Returns an XPath expression equivalent to the given string which can safely include both "
+     * and ' characters.
+     *
      * @param s
      * @return
      */
@@ -155,9 +198,9 @@ public class WMSGetCapabilitiesTest {
         StringBuilder b = new StringBuilder();
         int len = s.length();
         b.append("concat('");
-        for(int i = 0; i<len; i++) {
+        for (int i = 0; i < len; i++) {
             char c = s.charAt(i);
-            if(c=='\'') {
+            if (c == '\'') {
                 b.append("',\"'\",'");
             } else {
                 b.append(c);

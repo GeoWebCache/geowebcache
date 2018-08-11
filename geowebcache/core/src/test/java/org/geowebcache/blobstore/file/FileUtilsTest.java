@@ -1,11 +1,10 @@
 package org.geowebcache.blobstore.file;
 
+import junit.framework.TestCase;
 import org.geowebcache.storage.blobstore.file.FilePathUtils;
 
-import junit.framework.TestCase;
-
 public class FileUtilsTest extends TestCase {
-    
+
     public void testPadder() throws Exception {
         String actual = FilePathUtils.zeroPadder(0, 1);
         assertEquals("0", actual);
@@ -48,6 +47,8 @@ public class FileUtilsTest extends TestCase {
         assertEquals(5, FilePathUtils.findZoomLevel("nyc", "nyc_05_01"));
         assertEquals(9, FilePathUtils.findZoomLevel("EPSG_4326", "EPSG_4326_09"));
         assertEquals(9, FilePathUtils.findZoomLevel("EPSG_4326", "EPSG_4326_09_21"));
-        assertEquals(7, FilePathUtils.findZoomLevel("My_Weird_Gridset_Name", "My_Weird_Gridset_Name_0007"));
+        assertEquals(
+                7,
+                FilePathUtils.findZoomLevel("My_Weird_Gridset_Name", "My_Weird_Gridset_Name_0007"));
     }
 }

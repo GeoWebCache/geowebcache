@@ -1,24 +1,22 @@
 package org.geowebcache.io;
 
 import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Test class ensuring that the GWC beans are correctly loaded from a test application context.
- * 
+ *
  * @author Nicola Lagomarsini geosolutions
- * 
  */
 public class TestSpring {
 
     @Test
     public void testBeanSelection() {
         // Selection of the Test Application Context
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-                "appContextTest2.xml");
+        ClassPathXmlApplicationContext context =
+                new ClassPathXmlApplicationContext("appContextTest2.xml");
         // Check that the initializer is present
         Object obj = context.getBean("ioInitializer");
         Assert.assertNotNull(obj);

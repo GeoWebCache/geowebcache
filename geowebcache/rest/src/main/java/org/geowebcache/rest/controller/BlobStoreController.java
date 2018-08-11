@@ -1,25 +1,22 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Torben Barsballe (Boundless), 2018
- *
  */
 package org.geowebcache.rest.controller;
 
+import java.util.List;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.BlobStoreInfo;
-import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.rest.converter.XStreamListAliasWrapper;
 import org.geowebcache.rest.exception.RestException;
 import org.geowebcache.storage.BlobStoreAggregator;
@@ -31,17 +28,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 @Component
 @RestController
-@RequestMapping(path="${gwc.context.suffix:}/rest/blobstores")
+@RequestMapping(path = "${gwc.context.suffix:}/rest/blobstores")
 public class BlobStoreController extends GWCController {
 
-    @Autowired
-    private BlobStoreAggregator blobStores;
+    @Autowired private BlobStoreAggregator blobStores;
 
     @ExceptionHandler(RestException.class)
     public ResponseEntity<?> handleRestException(RestException ex) {
@@ -50,27 +42,52 @@ public class BlobStoreController extends GWCController {
         return new ResponseEntity<Object>(ex.toString(), headers, ex.getStatus());
     }
 
-    @RequestMapping(method = RequestMethod.GET,
-            produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_XML_VALUE})
+    @RequestMapping(
+        method = RequestMethod.GET,
+        produces = {
+            MediaType.APPLICATION_XML_VALUE,
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.TEXT_XML_VALUE
+        }
+    )
     public XStreamListAliasWrapper blobStoresGet() {
-        return new XStreamListAliasWrapper(blobStores.getBlobStoreNames(), "blobStore", List.class, this.getClass());
+        return new XStreamListAliasWrapper(
+                blobStores.getBlobStoreNames(), "blobStore", List.class, this.getClass());
     }
 
-    @RequestMapping(path = "/{blobStoreName}", method = RequestMethod.GET,
-            produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_XML_VALUE})
+    @RequestMapping(
+        path = "/{blobStoreName}",
+        method = RequestMethod.GET,
+        produces = {
+            MediaType.APPLICATION_XML_VALUE,
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.TEXT_XML_VALUE
+        }
+    )
     public BlobStoreInfo blobStoreGet(@PathVariable String blobStoreName) {
         try {
             return blobStores.getBlobStore(blobStoreName);
         } catch (GeoWebCacheException e) {
-            throw new RestException(String.format(
-                    "Failed to get BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.", blobStoreName),
-                    HttpStatus.NOT_FOUND, e);
+            throw new RestException(
+                    String.format(
+                            "Failed to get BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.",
+                            blobStoreName),
+                    HttpStatus.NOT_FOUND,
+                    e);
         }
     }
 
-    @RequestMapping(path = "/{blobStoreName}", method = RequestMethod.PUT,
-            consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_XML_VALUE})
-    public ResponseEntity<?> blobStorePut(@PathVariable String blobStoreName, @RequestBody BlobStoreInfo blobStore) {
+    @RequestMapping(
+        path = "/{blobStoreName}",
+        method = RequestMethod.PUT,
+        consumes = {
+            MediaType.APPLICATION_XML_VALUE,
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.TEXT_XML_VALUE
+        }
+    )
+    public ResponseEntity<?> blobStorePut(
+            @PathVariable String blobStoreName, @RequestBody BlobStoreInfo blobStore) {
 
         if (blobStores.blobStoreExists(blobStoreName)) {
             blobStores.modifyBlobStore(blobStore);
@@ -86,8 +103,10 @@ public class BlobStoreController extends GWCController {
         if (blobStores.blobStoreExists(blobStoreName)) {
             blobStores.removeBlobStore(blobStoreName);
         } else {
-            throw new RestException(String.format(
-                    "Failed to remove BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.", blobStoreName),
+            throw new RestException(
+                    String.format(
+                            "Failed to remove BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.",
+                            blobStoreName),
                     HttpStatus.NOT_FOUND);
         }
     }

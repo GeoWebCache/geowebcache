@@ -132,5 +132,4 @@ public class XMLMimeTest {
     public void testUnknownFormat() throws MimeException {
         MimeType result = MimeType.createFromFormat("xxx/xxx");
     }
-
 }

@@ -2,9 +2,9 @@ package org.geowebcache.arcgis.config;
 
 /**
  * Represents a {@code LODInfo} (Level Of Detail Info) element in an ArcGIS tile cache config file.
- * <p>
- * XML representation:
- * 
+ *
+ * <p>XML representation:
+ *
  * <pre>
  * <code>
  *       &lt;LODInfo xsi:type='typens:LODInfo'&gt;
@@ -14,11 +14,8 @@ package org.geowebcache.arcgis.config;
  *       &lt;/LODInfo&gt;
  * </code>
  * </pre>
- * 
- * </p>
- * 
+ *
  * @author Gabriel Roldan
- * 
  */
 public class LODInfo {
 

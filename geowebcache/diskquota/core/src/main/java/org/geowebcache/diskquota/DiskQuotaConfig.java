@@ -1,19 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Gabriel Roldan (OpenGeo) 2010
- *  
  */
 package org.geowebcache.diskquota;
 
@@ -25,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import org.geowebcache.diskquota.storage.LayerQuota;
 import org.geowebcache.diskquota.storage.Quota;
 import org.geowebcache.diskquota.storage.StorageUnit;
@@ -34,16 +30,14 @@ import org.springframework.util.Assert;
 /**
  * Holds the quota configuration for all the registered layers as well as the instance wide settings
  * such as cache disk block size, maximum number of concurrent cache clean ups, etc.
- * 
+ *
  * @author groldan
- * 
  */
 public class DiskQuotaConfig implements Cloneable, Serializable {
 
     private static final long serialVersionUID = 4376471696761297546L;
 
-    @Deprecated
-    static final int DEFAULT_DISK_BLOCK_SIZE = 4096;
+    @Deprecated static final int DEFAULT_DISK_BLOCK_SIZE = 4096;
 
     static final int DEFAULT_CLEANUP_FREQUENCY = 10;
 
@@ -52,11 +46,10 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
     static final int DEFAULT_MAX_CONCURRENT_CLEANUPS = 2;
 
     static ExpirationPolicy DEFAULT_GLOBAL_POLICY_NAME = ExpirationPolicy.LFU;
-    
+
     private Boolean enabled;
 
-    @Deprecated
-    private transient Integer diskBlockSize;
+    @Deprecated private transient Integer diskBlockSize;
 
     private Integer cacheCleanUpFrequency;
 
@@ -71,9 +64,9 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
     private transient Date lastCleanUpTime;
 
     private List<LayerQuota> layerQuotas;
-    
+
     private String quotaStore;
-    
+
     public void setDefaults() {
         if (enabled == null) {
             enabled = Boolean.FALSE;
@@ -106,8 +99,8 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
         this.enabled = other.enabled;
         this.globalExpirationPolicyName = other.globalExpirationPolicyName;
         this.globalQuota = other.globalQuota;
-        this.layerQuotas = other.layerQuotas == null ? null : new ArrayList<LayerQuota>(
-                other.layerQuotas);
+        this.layerQuotas =
+                other.layerQuotas == null ? null : new ArrayList<LayerQuota>(other.layerQuotas);
         this.maxConcurrentCleanUps = other.maxConcurrentCleanUps;
         this.quotaStore = other.quotaStore;
     }
@@ -155,9 +148,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
         this.cacheCleanUpUnits = cacheCleanUpUnit;
     }
 
-    /**
-     * @return the configured layer quotas, or {@code null} if not set
-     */
+    /** @return the configured layer quotas, or {@code null} if not set */
     public List<LayerQuota> getLayerQuotas() {
         return layerQuotas == null ? null : new ArrayList<LayerQuota>(layerQuotas);
     }
@@ -177,7 +168,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
 
     /**
      * @return The layer quota for the given layer or {@code null} if no quota is being tracked for
-     *         that layer
+     *     that layer
      */
     public LayerQuota layerQuota(final String layerName) {
         if (layerQuotas != null) {
@@ -193,7 +184,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
 
     public void remove(final LayerQuota lq) {
         if (layerQuotas != null) {
-            for (Iterator<LayerQuota> it = layerQuotas.iterator(); it.hasNext();) {
+            for (Iterator<LayerQuota> it = layerQuotas.iterator(); it.hasNext(); ) {
                 if (it.next().getLayer().equals(lq.getLayer())) {
                     it.remove();
                 }
@@ -226,17 +217,12 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
         this.maxConcurrentCleanUps = nThreads;
     }
 
-    /**
-     * @return the global quota, or {@code null} if not set
-     */
+    /** @return the global quota, or {@code null} if not set */
     public Quota getGlobalQuota() {
         return this.globalQuota;
     }
 
-    /**
-     * @param newQuota
-     *            the new global quota, or {@code null} to unset
-     */
+    /** @param newQuota the new global quota, or {@code null} to unset */
     public void setGlobalQuota(final Quota newQuota) {
         if (newQuota == null) {
             this.globalQuota = null;
@@ -287,6 +273,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
 
     /**
      * Returns the quota store name
+     *
      * @return
      */
     public String getQuotaStore() {
@@ -295,6 +282,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
 
     /**
      * Sets the quota store name
+     *
      * @param quotaStore
      */
     public void setQuotaStore(String quotaStore) {

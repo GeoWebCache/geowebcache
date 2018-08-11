@@ -1,17 +1,15 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, OpenGeo, Copyright 2009
  */
 package org.geowebcache.filter.request;
@@ -23,9 +21,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.imageio.ImageIO;
-
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,44 +46,32 @@ public class WMSRasterFilter extends RasterFilter {
 
     private Integer backendTimeout;
 
-    /**
-     * @return the wmsLayers
-     */
+    /** @return the wmsLayers */
     public String getWmsLayers() {
         return wmsLayers;
     }
 
-    /**
-     * @param wmsLayers the wmsLayers to set
-     */
+    /** @param wmsLayers the wmsLayers to set */
     public void setWmsLayers(String wmsLayers) {
         this.wmsLayers = wmsLayers;
     }
 
-    /**
-     * @return the wmsStyles
-     */
+    /** @return the wmsStyles */
     public String getWmsStyles() {
         return wmsStyles;
     }
 
-    /**
-     * @param wmsStyles the wmsStyles to set
-     */
+    /** @param wmsStyles the wmsStyles to set */
     public void setWmsStyles(String wmsStyles) {
         this.wmsStyles = wmsStyles;
     }
 
-    /**
-     * @return the backendTimeout
-     */
+    /** @return the backendTimeout */
     public Integer getBackendTimeout() {
         return backendTimeout;
     }
 
-    /**
-     * @param backendTimeout the backendTimeout to set
-     */
+    /** @param backendTimeout the backendTimeout to set */
     public void setBackendTimeout(Integer backendTimeout) {
         this.backendTimeout = backendTimeout;
     }
@@ -114,8 +98,15 @@ public class WMSRasterFilter extends RasterFilter {
         String urlStr = layer.getWMSurl()[0];
         Map<String, String> requestParams = wmsParams(layer, gridSet, z, widthHeight);
 
-        log.info("Updated WMS raster filter, zoom level " + z + " for " + getName() + " ("
-                + layer.getName() + ") , " + urlStr);
+        log.info(
+                "Updated WMS raster filter, zoom level "
+                        + z
+                        + " for "
+                        + getName()
+                        + " ("
+                        + layer.getName()
+                        + ") , "
+                        + urlStr);
 
         URL wmsUrl = new URL(urlStr);
 
@@ -130,14 +121,17 @@ public class WMSRasterFilter extends RasterFilter {
             getMethod = srcHelper.executeRequest(wmsUrl, requestParams, backendTimeout);
 
             if (getMethod.getStatusCode() != 200) {
-                throw new GeoWebCacheException("Received response code "
-                        + getMethod.getStatusCode() + "\n");
+                throw new GeoWebCacheException(
+                        "Received response code " + getMethod.getStatusCode() + "\n");
             }
 
             if (!getMethod.getResponseHeader("Content-Type").getValue().startsWith("image/")) {
-                throw new GeoWebCacheException("Unexpected response content type "
-                        + getMethod.getResponseHeader("Content-Type").getValue()
-                        + " , request was " + urlStr + "\n");
+                throw new GeoWebCacheException(
+                        "Unexpected response content type "
+                                + getMethod.getResponseHeader("Content-Type").getValue()
+                                + " , request was "
+                                + urlStr
+                                + "\n");
             }
 
             byte[] ret = ServletUtils.readStream(getMethod.getResponseBodyAsStream(), 16384, 2048);
@@ -153,9 +147,16 @@ public class WMSRasterFilter extends RasterFilter {
         }
 
         if (img.getWidth() != widthHeight[0] || img.getHeight() != widthHeight[1]) {
-            String msg = "WMS raster filter has dimensions " + img.getWidth() + ","
-                    + img.getHeight() + ", expected " + widthHeight[0] + "," + widthHeight[1]
-                    + "\n";
+            String msg =
+                    "WMS raster filter has dimensions "
+                            + img.getWidth()
+                            + ","
+                            + img.getHeight()
+                            + ", expected "
+                            + widthHeight[0]
+                            + ","
+                            + widthHeight[1]
+                            + "\n";
             throw new GeoWebCacheException(msg);
         }
 
@@ -164,15 +165,16 @@ public class WMSRasterFilter extends RasterFilter {
 
     /**
      * Generates the URL used to create the lookup raster
-     * 
+     *
      * @param layer
      * @param gridSubset
      * @param z
      * @param widthHeight
      * @return
      */
-    protected Map<String, String> wmsParams(WMSLayer layer, GridSubset gridSubset, int z,
-            int[] widthHeight) throws GeoWebCacheException {
+    protected Map<String, String> wmsParams(
+            WMSLayer layer, GridSubset gridSubset, int z, int[] widthHeight)
+            throws GeoWebCacheException {
         BoundingBox bbox = gridSubset.getCoverageBounds(z);
 
         Map<String, String> params = new HashMap<String, String>();

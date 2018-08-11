@@ -1,7 +1,7 @@
 /*
  *    GeoTools - The Open Source Java GIS Toolkit
  *    http://geotools.org
- * 
+ *
  *    (C) 2005-2010, Open Source Geospatial Foundation (OSGeo)
  *
  *    This library is free software; you can redistribute it and/or
@@ -18,18 +18,15 @@
 package org.geowebcache.diskquota.jdbc;
 
 import java.util.Properties;
-
+import junit.framework.TestCase;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.internal.AssumptionViolatedException;
 
-import junit.framework.TestCase;
-import junit.framework.TestResult;
-
 /**
  * This class comes from GeoTools
- * 
+ *
  * Test support for test cases that require an "online" resource, such as an
  * external server or database.
  * <p>
@@ -60,7 +57,7 @@ import junit.framework.TestResult;
  * outages of online resources, but also means that local software failures in {@link #connect()} or
  * {@link #disconnect()} will be silent.
  * </p>
- * 
+ *
  * <p>
  * To have exceptions thrown by {@link #connect()} and {@link #disconnect()} cause tests to fail,
  * set <code>skip.on.failure=false</code> in the fixture property file. This restores the
@@ -76,7 +73,7 @@ import junit.framework.TestResult;
  * @author Ben Caradoc-Davies, CSIRO Earth Science and Resource Engineering
  */
 public abstract class OnlineTestCase extends TestCase {
-    
+
     private final class CompatibilityRule extends OnlineTestRule {
         private CompatibilityRule(String fixtureId) {
             super(fixtureId);
@@ -116,8 +113,6 @@ public abstract class OnlineTestCase extends TestCase {
         protected Properties createExampleFixture() {
             return OnlineTestCase.this.createExampleFixture();
         }
-        
-        
 
         @Override
         void checkAvailable() {
@@ -130,101 +125,87 @@ public abstract class OnlineTestCase extends TestCase {
     }
 
     @Rule public OnlineTestRule fixtureRule = new CompatibilityRule(getFixtureId());
-    
+
     protected Properties fixture;
 
-    /**
-     * Method for subclasses to latch onto the setup phase.
-     */
+    /** Method for subclasses to latch onto the setup phase. */
     protected void setUpInternal() throws Exception {}
-    
-    /**
-     * Method for subclasses to latch onto the teardown phase.
-     */
+
+    /** Method for subclasses to latch onto the teardown phase. */
     protected void tearDownInternal() throws Exception {}
 
     /**
      * Tests if external resources needed to run the tests are online.
-     * <p>
-     * This method can return false to indicate the online resources are not up, or can simply
-     * throw an exception. 
-     * </p>
+     *
+     * <p>This method can return false to indicate the online resources are not up, or can simply
+     * throw an exception.
+     *
      * @return True if external resources are online, otherwise false.
      * @throws Exception Any errors that occur determining if online resources are available.
      */
     protected boolean isOnline() throws Exception {
         return true;
     }
-    
+
     /**
      * Connection method, called from {@link #setUp()}.
-     * <p>
-     * Subclasses should do all initialization / connection here. In the event
-     * of a connection not being available, this method should throw an
-     * exception to abort the test case.
-     * </p>
-     * 
+     *
+     * <p>Subclasses should do all initialization / connection here. In the event of a connection
+     * not being available, this method should throw an exception to abort the test case.
+     *
      * @throws Exception if the connection failed.
      */
-    protected void connect() throws Exception {
-    }
+    protected void connect() throws Exception {}
 
     /**
      * Disconnection method, called from {@link #tearDown()}.
-     * <p>
-     * Subclasses should do all cleanup here.
-     * </p>
-     * 
+     *
+     * <p>Subclasses should do all cleanup here.
+     *
      * @throws Exception if the disconnection failed.
      */
-    protected void disconnect() throws Exception {
-    }
+    protected void disconnect() throws Exception {}
 
     /**
-     * Allows tests to create an offline fixture in cases where the user has not
-     * specified an explicit fixture for the test.
-     * <p>
-     * Note, that this should method should on be implemented if the test case
-     * is created of creating a fixture which relies soley on embedded or offline
-     * resources. It should not reference any external or online resources as it
-     * prevents the user from running offline. 
-     * </p>
+     * Allows tests to create an offline fixture in cases where the user has not specified an
+     * explicit fixture for the test.
+     *
+     * <p>Note, that this should method should on be implemented if the test case is created of
+     * creating a fixture which relies soley on embedded or offline resources. It should not
+     * reference any external or online resources as it prevents the user from running offline.
      */
     protected Properties createOfflineFixture() {
         return null;
     }
-    
+
     /**
-     * Allows test to create a sample fixture for users. 
-     * <p>
-     * If this method returns a value the first time a fixture is looked up and not 
-     * found this method will be called to create a fixture file with teh same id, but 
-     * suffixed with .template.
-     * </p>
+     * Allows test to create a sample fixture for users.
+     *
+     * <p>If this method returns a value the first time a fixture is looked up and not found this
+     * method will be called to create a fixture file with teh same id, but suffixed with .template.
      */
     protected Properties createExampleFixture() {
         return null;
     }
-    
+
     /**
      * The fixture id for the test case.
-     * <p>
-     * This name is hierarchical, similar to a java package name. Example:
-     * {@code "postgis.demo_bc"}.
-     * </p>
-     * 
+     *
+     * <p>This name is hierarchical, similar to a java package name. Example: {@code
+     * "postgis.demo_bc"}.
+     *
      * @return The fixture id.
      */
     protected abstract String getFixtureId();
-    
-    @Before 
+
+    @Before
     public void setFixture() throws Exception {
         this.fixture = fixtureRule.getFixture();
     }
-    
+
     boolean checkAvailable() {
         try {
-            ((CompatibilityRule)fixtureRule).superCheckAvailable();
+            ((CompatibilityRule) fixtureRule).superCheckAvailable();
             return true;
         } catch (AssumptionViolatedException ex) {
             return false;

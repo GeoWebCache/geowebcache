@@ -1,58 +1,21 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Gabriel Roldan, Boundless Spatial Inc, Copyright 2015
  */
 package org.geowebcache.s3;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.isNull;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.filter.parameters.ParametersUtils;
-import org.geowebcache.io.ByteArrayResource;
-import org.geowebcache.io.Resource;
-import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.locks.LockProvider;
-import org.geowebcache.mime.MimeException;
-import org.geowebcache.mime.MimeType;
-import org.geowebcache.storage.BlobStore;
-import org.geowebcache.storage.BlobStoreListener;
-import org.geowebcache.storage.BlobStoreListenerList;
-import org.geowebcache.storage.CompositeBlobStore;
-import org.geowebcache.storage.StorageException;
-import org.geowebcache.storage.TileObject;
-import org.geowebcache.storage.TileRange;
-import org.geowebcache.storage.TileRangeIterator;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -73,6 +36,38 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.filter.parameters.ParametersUtils;
+import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.io.Resource;
+import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.locks.LockProvider;
+import org.geowebcache.mime.MimeException;
+import org.geowebcache.mime.MimeType;
+import org.geowebcache.storage.BlobStore;
+import org.geowebcache.storage.BlobStoreListener;
+import org.geowebcache.storage.BlobStoreListenerList;
+import org.geowebcache.storage.CompositeBlobStore;
+import org.geowebcache.storage.StorageException;
+import org.geowebcache.storage.TileObject;
+import org.geowebcache.storage.TileRange;
+import org.geowebcache.storage.TileRangeIterator;
 
 public class S3BlobStore implements BlobStore {
 
@@ -89,11 +84,12 @@ public class S3BlobStore implements BlobStore {
     private volatile boolean shutDown;
 
     private final S3Ops s3Ops;
-    
+
     private CannedAccessControlList acl;
 
-    public S3BlobStore(S3BlobStoreInfo config, TileLayerDispatcher layers,
-            LockProvider lockProvider) throws StorageException {
+    public S3BlobStore(
+            S3BlobStoreInfo config, TileLayerDispatcher layers, LockProvider lockProvider)
+            throws StorageException {
         checkNotNull(config);
         checkNotNull(layers);
         checkNotNull(config.getAwsAccessKey(), "Access key not provided");
@@ -118,13 +114,13 @@ public class S3BlobStore implements BlobStore {
         }
 
         this.s3Ops = new S3Ops(conn, bucketName, keyBuilder, lockProvider);
-        
+
         boolean empty = !s3Ops.prefixExists(prefix);
         boolean existing = Objects.nonNull(s3Ops.getObjectMetadata(keyBuilder.storeMetadata()));
-        
+
         CompositeBlobStore.checkSuitability(config.getLocation(), existing, empty);
-        
-        // TODO replace this with real metadata.  For now it's just a marker 
+
+        // TODO replace this with real metadata.  For now it's just a marker
         // to indicate this is a GWC cache.
         s3Ops.putProperties(keyBuilder.storeMetadata(), new Properties());
     }
@@ -181,14 +177,14 @@ public class S3BlobStore implements BlobStore {
         }
 
         final ByteArrayInputStream input = toByteArray(blob);
-        PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, input,
-                objectMetadata).withCannedAcl(acl);
+        PutObjectRequest putObjectRequest =
+                new PutObjectRequest(bucketName, key, input, objectMetadata).withCannedAcl(acl);
 
         log.trace(log.isTraceEnabled() ? ("Storing " + key) : "");
         s3Ops.putObject(putObjectRequest);
-        
+
         putParametersMetadata(obj.getLayerName(), obj.getParametersId(), obj.getParameters());
-        
+
         /*
          * This is important because listeners may be tracking tile existence
          */
@@ -258,7 +254,6 @@ public class S3BlobStore implements BlobStore {
             sb.append(z).append('/').append(x).append('/').append(y).append('.').append(extension);
             return new KeyVersion(sb.toString());
         }
-
     }
 
     @Override
@@ -269,17 +264,19 @@ public class S3BlobStore implements BlobStore {
             return false;
         }
 
-        final Iterator<long[]> tileLocations = new AbstractIterator<long[]>() {
+        final Iterator<long[]> tileLocations =
+                new AbstractIterator<long[]>() {
 
-            // TileRange iterator with 1x1 meta tiling factor
-            private TileRangeIterator trIter = new TileRangeIterator(tileRange, new int[] { 1, 1 });
+                    // TileRange iterator with 1x1 meta tiling factor
+                    private TileRangeIterator trIter =
+                            new TileRangeIterator(tileRange, new int[] {1, 1});
 
-            @Override
-            protected long[] computeNext() {
-                long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
-                return gridLoc == null ? endOfData() : gridLoc;
-            }
-        };
+                    @Override
+                    protected long[] computeNext() {
+                        long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
+                        return gridLoc == null ? endOfData() : gridLoc;
+                    }
+                };
 
         if (listeners.isEmpty()) {
             // if there are no listeners, don't bother requesting every tile
@@ -306,8 +303,9 @@ public class S3BlobStore implements BlobStore {
 
             while (tileLocations.hasNext()) {
                 xyz = tileLocations.next();
-                TileObject tile = TileObject.createQueryTileObject(layerName, xyz, gridSetId,
-                        format, parameters);
+                TileObject tile =
+                        TileObject.createQueryTileObject(
+                                layerName, xyz, gridSetId, format, parameters);
                 tile.setParametersId(tileRange.getParametersId());
                 delete(tile);
             }
@@ -417,10 +415,11 @@ public class S3BlobStore implements BlobStore {
         String key = keyBuilder.layerMetadata(layerName);
         return s3Ops.getProperties(key);
     }
-    
-    private void putParametersMetadata(String layerName, String parametersId, Map<String, String> parameters) {
-        assert(isNull(parametersId)==isNull(parameters));
-        if(isNull(parametersId)) {
+
+    private void putParametersMetadata(
+            String layerName, String parametersId, Map<String, String> parameters) {
+        assert (isNull(parametersId) == isNull(parameters));
+        if (isNull(parametersId)) {
             return;
         }
         Properties properties = new Properties();
@@ -439,23 +438,28 @@ public class S3BlobStore implements BlobStore {
         boolean layerExists = s3Ops.prefixExists(coordsPrefix);
         return layerExists;
     }
-    
+
     @Override
     public boolean deleteByParametersId(String layerName, String parametersId)
             throws StorageException {
         checkNotNull(layerName, "layerName");
         checkNotNull(parametersId, "parametersId");
-        
-        boolean prefixExists = keyBuilder.forParameters(layerName, parametersId).stream()
-            .map(prefix->{
-                try {
-                    return s3Ops.scheduleAsyncDelete(prefix);
-                } catch (RuntimeException|GeoWebCacheException e) {
-                    throw Throwables.propagate(e);
-                }
-            })
-            .reduce(Boolean::logicalOr) // Don't use Stream.anyMatch as it would short circuit
-            .orElse(false);
+
+        boolean prefixExists =
+                keyBuilder
+                        .forParameters(layerName, parametersId)
+                        .stream()
+                        .map(
+                                prefix -> {
+                                    try {
+                                        return s3Ops.scheduleAsyncDelete(prefix);
+                                    } catch (RuntimeException | GeoWebCacheException e) {
+                                        throw Throwables.propagate(e);
+                                    }
+                                })
+                        .reduce(Boolean::logicalOr) // Don't use Stream.anyMatch as it would short
+                        // circuit
+                        .orElse(false);
         if (prefixExists) {
             listeners.sendParametersDeleted(layerName, parametersId);
         }
@@ -466,18 +470,18 @@ public class S3BlobStore implements BlobStore {
     @Override
     public Set<Map<String, String>> getParameters(String layerName) {
         return s3Ops.objectStream(keyBuilder.parametersMetadataPrefix(layerName))
-            .map(S3ObjectSummary::getKey)
-            .map(s3Ops::getProperties)
-            .map(props->(Map<String,String>)(Map<?,?>)props)
-            .collect(Collectors.toSet());
+                .map(S3ObjectSummary::getKey)
+                .map(s3Ops::getProperties)
+                .map(props -> (Map<String, String>) (Map<?, ?>) props)
+                .collect(Collectors.toSet());
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String,Optional<Map<String, String>>> getParametersMapping(String layerName) {
+    public Map<String, Optional<Map<String, String>>> getParametersMapping(String layerName) {
         return s3Ops.objectStream(keyBuilder.parametersMetadataPrefix(layerName))
-            .map(S3ObjectSummary::getKey)
-            .map(s3Ops::getProperties)
-            .map(props->(Map<String,String>)(Map<?,?>)props)
-            .collect(Collectors.toMap(ParametersUtils::getId, Optional::of));
+                .map(S3ObjectSummary::getKey)
+                .map(s3Ops::getProperties)
+                .map(props -> (Map<String, String>) (Map<?, ?>) props)
+                .collect(Collectors.toMap(ParametersUtils::getId, Optional::of));
     }
 }

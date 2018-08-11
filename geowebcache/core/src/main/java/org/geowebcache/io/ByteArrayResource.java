@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-
 import org.springframework.util.Assert;
 
 public class ByteArrayResource implements Resource, Serializable {
@@ -21,16 +20,15 @@ public class ByteArrayResource implements Resource, Serializable {
 
     private long lastModified = System.currentTimeMillis();
 
-    /**
-     * Create a new empty ByteArrayResource
-     */
+    /** Create a new empty ByteArrayResource */
     public ByteArrayResource() {
         this(null);
     }
 
     /**
      * Create a new ByteArrayResource from the given byte array.
-     * @param data The array of bytes.  It will be retained by the Resource for storage.
+     *
+     * @param data The array of bytes. It will be retained by the Resource for storage.
      */
     public ByteArrayResource(byte[] data) {
         this.data = data;
@@ -40,7 +38,8 @@ public class ByteArrayResource implements Resource, Serializable {
 
     /**
      * Create a new ByteArrayResource from the given byte array.
-     * @param data the array of bytes.  It will be retained by the Resource for storage.
+     *
+     * @param data the array of bytes. It will be retained by the Resource for storage.
      * @param offset the beginning of the portion of the array to use as content
      * @param length the length of the portion of the array to use as content
      */
@@ -59,44 +58,33 @@ public class ByteArrayResource implements Resource, Serializable {
         }
     }
 
-    /**
-     * Create a new empty ByteArrayResource with a particular initial capacity.
-     */
+    /** Create a new empty ByteArrayResource with a particular initial capacity. */
     public ByteArrayResource(final int initialCapacity) {
         this(new byte[initialCapacity], 0, 0);
     }
 
-    /**
-     * @see org.geowebcache.io.Resource#getLastModified()
-     */
+    /** @see org.geowebcache.io.Resource#getLastModified() */
     public long getLastModified() {
         return lastModified;
     }
 
-    /**
-     * @see org.geowebcache.io.Resource#getSize()
-     */
+    /** @see org.geowebcache.io.Resource#getSize() */
     public long getSize() {
         return length;
     }
 
-    /**
-     * @see org.geowebcache.io.Resource#transferTo(java.nio.channels.WritableByteChannel)
-     */
+    /** @see org.geowebcache.io.Resource#transferTo(java.nio.channels.WritableByteChannel) */
     public long transferTo(WritableByteChannel channel) throws IOException {
         if (length > 0) {
             ByteBuffer buffer = ByteBuffer.wrap(data, offset, length);
             long written = 0;
-            while ((written += channel.write(buffer)) < length) {
-                ;
+            while ((written += channel.write(buffer)) < length) {;
             }
         }
         return length;
     }
 
-    /**
-     * @see org.geowebcache.io.Resource#transferFrom(java.nio.channels.ReadableByteChannel)
-     */
+    /** @see org.geowebcache.io.Resource#transferFrom(java.nio.channels.ReadableByteChannel) */
     public long transferFrom(ReadableByteChannel channel) throws IOException {
         if (channel instanceof FileChannel) {
             FileChannel fc = (FileChannel) channel;
@@ -107,8 +95,7 @@ public class ByteArrayResource implements Resource, Serializable {
             }
             ByteBuffer buffer = ByteBuffer.wrap(data);
             int read = 0;
-            while ((read += channel.read(buffer)) < length) {
-                ;
+            while ((read += channel.read(buffer)) < length) {;
             }
         } else {
             offset = 0;
@@ -131,9 +118,7 @@ public class ByteArrayResource implements Resource, Serializable {
         return length;
     }
 
-    /**
-     * @see org.geowebcache.io.Resource#getInputStream()
-     */
+    /** @see org.geowebcache.io.Resource#getInputStream() */
     public SeekableInputStream getInputStream() throws IOException {
         if (data == null) {
             throw new IOException("no data");
@@ -143,6 +128,7 @@ public class ByteArrayResource implements Resource, Serializable {
 
     /**
      * Get the contents of the resource.
+     *
      * @return
      */
     public byte[] getContents() {
@@ -157,9 +143,7 @@ public class ByteArrayResource implements Resource, Serializable {
         return buff;
     }
 
-    /**
-     * Discard the contents.
-     */
+    /** Discard the contents. */
     public void truncate() {
         offset = 0;
         length = 0;
@@ -169,9 +153,7 @@ public class ByteArrayResource implements Resource, Serializable {
         this.lastModified = lastModified;
     }
 
-    /**
-     * @see org.geowebcache.io.Resource#getOutputStream()
-     */
+    /** @see org.geowebcache.io.Resource#getOutputStream() */
     public OutputStream getOutputStream() throws IOException {
         return new SeekableOutputStream(this);
     }
@@ -199,8 +181,8 @@ public class ByteArrayResource implements Resource, Serializable {
 
         public void seek(long pos) throws IOException {
             if (pos < 0 || pos > super.count) {
-                throw new IOException("Can't seek to pos " + pos + ". buffer is 0.."
-                        + (super.count - 1));
+                throw new IOException(
+                        "Can't seek to pos " + pos + ". buffer is 0.." + (super.count - 1));
             }
             super.pos = (int) (lower + pos);
         }
@@ -244,5 +226,4 @@ public class ByteArrayResource implements Resource, Serializable {
             remaining -= len;
         }
     }
-
 }

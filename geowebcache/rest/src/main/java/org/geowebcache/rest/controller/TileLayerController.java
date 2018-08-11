@@ -1,94 +1,56 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Marius Suta / The Open Planning Project 2008
  * @author Arne Kepp / The Open Planning Project 2009
  * @author David Vick, Boundless, Copyright 2017
- *
- * Original file
- * TileLayerRestlet.java
- *
+ *     <p>Original file TileLayerRestlet.java
  */
-
 package org.geowebcache.rest.controller;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.converters.ConversionException;
-import com.thoughtworks.xstream.converters.Converter;
-import com.thoughtworks.xstream.converters.MarshallingContext;
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
-import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-import com.thoughtworks.xstream.io.copy.HierarchicalStreamCopier;
-import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
-import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
-import com.thoughtworks.xstream.io.xml.DomDriver;
-import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
+import java.io.IOException;
+import java.util.Set;
+import javax.servlet.http.HttpServletRequest;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.config.BaseConfiguration;
-import org.geowebcache.config.ContextualConfigurationProvider.Context;
-import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.filter.parameters.ParameterFilter;
-import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.converter.XStreamListAliasWrapper;
 import org.geowebcache.rest.exception.RestException;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
-import org.geowebcache.util.ApplicationContextProvider;
 import org.geowebcache.util.NullURLMangler;
-import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.WebApplicationContext;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 @Component
 @RestController
-@RequestMapping(path="${gwc.context.suffix:}/rest")
+@RequestMapping(path = "${gwc.context.suffix:}/rest")
 public class TileLayerController extends GWCController {
 
-    @Autowired
-    TileLayerDispatcher layerDispatcher;
+    @Autowired TileLayerDispatcher layerDispatcher;
 
     private URLMangler urlMangler = new NullURLMangler();
 
     private GeoWebCacheDispatcher controller = null;
 
-    @Autowired
-    private StorageBroker storageBroker;
+    @Autowired private StorageBroker storageBroker;
 
     @ExceptionHandler(RestException.class)
     public ResponseEntity<?> handleRestException(RestException ex) {
@@ -118,16 +80,19 @@ public class TileLayerController extends GWCController {
 
     /**
      * Get List of layers as xml
+     *
      * @param request
      * @return
      */
     @RequestMapping(value = "/layers", method = RequestMethod.GET)
-    public  XStreamListAliasWrapper layersGet(HttpServletRequest request) {
-        return new XStreamListAliasWrapper(layerDispatcher.getLayerNames(), "layer", Set.class, this.getClass());
+    public XStreamListAliasWrapper layersGet(HttpServletRequest request) {
+        return new XStreamListAliasWrapper(
+                layerDispatcher.getLayerNames(), "layer", Set.class, this.getClass());
     }
 
     /**
      * Get layer by name and requested output {xml, json}
+     *
      * @param layer
      * @return
      */
@@ -141,18 +106,20 @@ public class TileLayerController extends GWCController {
      */
     @Deprecated
     @RequestMapping(value = "/layers/{layerName}", method = RequestMethod.POST)
-    public ResponseEntity<?> layerPost(@RequestBody TileLayer tl,
-                                    @PathVariable String layerName) throws GeoWebCacheException,
-            RestException, IOException {
+    public ResponseEntity<?> layerPost(@RequestBody TileLayer tl, @PathVariable String layerName)
+            throws GeoWebCacheException, RestException, IOException {
         tl = checkLayer(layerName, tl);
 
         try {
             layerDispatcher.modify(tl);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<Object>("Layer " + tl.getName()
-                    + " is not known by the configuration."
-                    + "Maybe it was loaded from another source, or you're trying to add a new "
-                    + "layer and need to do an HTTP PUT ?", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<Object>(
+                    "Layer "
+                            + tl.getName()
+                            + " is not known by the configuration."
+                            + "Maybe it was loaded from another source, or you're trying to add a new "
+                            + "layer and need to do an HTTP PUT ?",
+                    HttpStatus.BAD_REQUEST);
         }
         HttpHeaders headers = new HttpHeaders();
         headers.add("Warning", "299: Deprecated API. Use PUT instead.");
@@ -163,9 +130,8 @@ public class TileLayerController extends GWCController {
     DO PUT
      */
     @RequestMapping(value = "/layers/{layerName}", method = RequestMethod.PUT)
-    public ResponseEntity<?> layerPut(@RequestBody TileLayer tl,
-                                   @PathVariable String layerName) throws GeoWebCacheException,
-            RestException, IOException {
+    public ResponseEntity<?> layerPut(@RequestBody TileLayer tl, @PathVariable String layerName)
+            throws GeoWebCacheException, RestException, IOException {
         tl = checkLayer(layerName, tl);
 
         TileLayer testtl = null;
@@ -187,9 +153,8 @@ public class TileLayerController extends GWCController {
     DO DELETE
      */
     @RequestMapping(value = "/layers/{layer}", method = RequestMethod.DELETE)
-    public ResponseEntity<?> doDelete(HttpServletRequest req,
-                                      @PathVariable String layer) throws GeoWebCacheException,
-            RestException, IOException {
+    public ResponseEntity<?> doDelete(HttpServletRequest req, @PathVariable String layer)
+            throws GeoWebCacheException, RestException, IOException {
         String layerName = layer;
         findTileLayer(layerName, layerDispatcher);
         // TODO: refactor storage management to use a comprehensive event system;
@@ -216,34 +181,40 @@ public class TileLayerController extends GWCController {
         if (storageBrokerDeleteException != null) {
             // layer removal worked, so report failure to delete cached tiles
             throw new RestException(
-                    "Removal of layer " + layerName
+                    "Removal of layer "
+                            + layerName
                             + " was successful but deletion of cached tiles failed: "
                             + storageBrokerDeleteException.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR, storageBrokerDeleteException);
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    storageBrokerDeleteException);
         }
         return new ResponseEntity<Object>(layerName + " deleted", HttpStatus.OK);
     }
 
-    protected TileLayer checkLayer(String layerName, TileLayer newLayer) throws RestException, IOException {
+    protected TileLayer checkLayer(String layerName, TileLayer newLayer)
+            throws RestException, IOException {
         if (!newLayer.getName().equals(layerName)) {
-            throw new RestException("There is a mismatch between the name of the "
-                    + " layer in the submission and the URL you specified.",
+            throw new RestException(
+                    "There is a mismatch between the name of the "
+                            + " layer in the submission and the URL you specified.",
                     HttpStatus.BAD_REQUEST);
         }
 
         // Check that the parameter filters deserialized correctly
-        if(newLayer.getParameterFilters()!=null) {
+        if (newLayer.getParameterFilters() != null) {
             try {
-                for(@SuppressWarnings("unused")
-                        ParameterFilter filter: newLayer.getParameterFilters()){
+                for (@SuppressWarnings("unused")
+                ParameterFilter filter : newLayer.getParameterFilters()) {
                     // Don't actually need to do anything here.  Just iterate over the elements
                     // casting them into ParameterFilter
                 }
             } catch (ClassCastException ex) {
                 // By this point it has already been turned into a POJO, so the XML is no longer
                 // available.  Otherwise it would be helpful to include in the error message.
-                throw new RestException("parameterFilters contains an element that is not "+
-                        "a known ParameterFilter", HttpStatus.BAD_REQUEST);
+                throw new RestException(
+                        "parameterFilters contains an element that is not "
+                                + "a known ParameterFilter",
+                        HttpStatus.BAD_REQUEST);
             }
         }
         return newLayer;

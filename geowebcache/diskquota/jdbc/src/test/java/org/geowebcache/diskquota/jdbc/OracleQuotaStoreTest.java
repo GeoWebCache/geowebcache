@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
-
 import org.apache.commons.dbcp.BasicDataSource;
 import org.junit.Assume;
 
@@ -27,7 +26,7 @@ public class OracleQuotaStoreTest extends JDBCQuotaStoreTest {
                 }
                 super.checkAvailable();
             }
-            
+
             @Override
             protected Properties createExampleFixture() {
                 Properties p = new Properties();
@@ -35,7 +34,7 @@ public class OracleQuotaStoreTest extends JDBCQuotaStoreTest {
                 p.put("url", "jdbc:oracle:thin:@localhost:1521:xe");
                 p.put("username", "geoserver");
                 p.put("password", "postgis");
-                
+
                 return p;
             }
         };
@@ -74,7 +73,4 @@ public class OracleQuotaStoreTest extends JDBCQuotaStoreTest {
     protected String getFixtureId() {
         return "oracle";
     }
-
-
-
 }

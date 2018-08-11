@@ -5,11 +5,9 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
 import java.util.Date;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-
 import org.geotools.feature.type.DateUtil;
 
 class GeoRSSParsingUtils {
@@ -21,7 +19,7 @@ class GeoRSSParsingUtils {
 
     /**
      * Being at a start element tag, returns its coalesced text value
-     * 
+     *
      * @param reader
      * @return
      * @throws XMLStreamException
@@ -44,7 +42,7 @@ class GeoRSSParsingUtils {
     /**
      * Consumes the current element (given by tagName) until it's end element is fount (assuming
      * there's no nested element called the same)
-     * 
+     *
      * @param reader
      * @param tagName
      * @throws XMLStreamException
@@ -52,7 +50,7 @@ class GeoRSSParsingUtils {
     public static void consume(XMLStreamReader reader, QName tagName) throws XMLStreamException {
 
         if (reader.getEventType() == END_ELEMENT && tagName.equals(reader.getName())) {
-            return;// already consumed
+            return; // already consumed
         }
 
         while (reader.next() != END_DOCUMENT) {
@@ -65,7 +63,7 @@ class GeoRSSParsingUtils {
     /**
      * Safely advances until the next tag element (either start or end element) and returns its
      * name, or {@code null} in case the end of document is reached before any tag
-     * 
+     *
      * @param reader
      * @return
      * @throws XMLStreamException

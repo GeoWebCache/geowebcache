@@ -7,18 +7,17 @@ public class H2QuotaStoreTest extends JDBCQuotaStoreTest {
     protected SQLDialect getDialect() {
         return new H2Dialect();
     }
-    
-    
+
     @Override
     protected JDBCFixtureRule makeFixtureRule() {
         return new JDBCFixtureRule(getFixtureId()) {
             @Override
             protected Properties createOfflineFixture() {
                 Properties fixture = new Properties();
-                fixture.put( "driver","org.h2.Driver");
-                fixture.put( "url","jdbc:h2:./target/quota-h2");
-                fixture.put( "username","sa");
-                fixture.put( "password","");
+                fixture.put("driver", "org.h2.Driver");
+                fixture.put("url", "jdbc:h2:./target/quota-h2");
+                fixture.put("username", "sa");
+                fixture.put("password", "");
                 return fixture;
             }
         };
@@ -28,5 +27,4 @@ public class H2QuotaStoreTest extends JDBCQuotaStoreTest {
     protected String getFixtureId() {
         return "h2";
     }
-
 }

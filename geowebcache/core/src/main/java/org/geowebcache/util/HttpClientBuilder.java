@@ -1,22 +1,24 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Lennart Juette, PTV AG (http://www.ptvag.com)
- *
  */
 package org.geowebcache.util;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpConnectionManager;
@@ -27,16 +29,7 @@ import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-
-/**
- * Builder class for HttpClients
- * 
- */
+/** Builder class for HttpClients */
 public class HttpClientBuilder {
 
     static final Log log = LogFactory.getLog(HttpClientBuilder.class);
@@ -60,23 +53,28 @@ public class HttpClientBuilder {
     }
 
     /**
-     * Instantiates a new http client builder 
-     * @param url The server url, or null if no authentication is required or if the client is going to be
-     *            used against a single server only 
+     * Instantiates a new http client builder
+     *
+     * @param url The server url, or null if no authentication is required or if the client is going
+     *     to be used against a single server only
      * @param backendTimeout
      * @param httpUsername
      * @param httpPassword
      * @param proxyUrl
      * @param concurrency
      */
-    public HttpClientBuilder(URL url, Integer backendTimeout, String httpUsername,
-            String httpPassword, URL proxyUrl, int concurrency) {
-        if(url != null) {
-            this.setHttpCredentials(httpUsername, httpPassword,
-                new AuthScope(url.getHost(), url.getPort()));
+    public HttpClientBuilder(
+            URL url,
+            Integer backendTimeout,
+            String httpUsername,
+            String httpPassword,
+            URL proxyUrl,
+            int concurrency) {
+        if (url != null) {
+            this.setHttpCredentials(
+                    httpUsername, httpPassword, new AuthScope(url.getHost(), url.getPort()));
         } else {
-            this.setHttpCredentials(httpUsername, httpPassword,
-                    AuthScope.ANY);
+            this.setHttpCredentials(httpUsername, httpPassword, AuthScope.ANY);
         }
 
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
@@ -103,8 +101,7 @@ public class HttpClientBuilder {
 
     private String extractVMArg(String arg) {
         String[] proxyArg = arg.split("=");
-        if (proxyArg.length == 2 && proxyArg[1].length() > 0)
-            return proxyArg[1];
+        if (proxyArg.length == 2 && proxyArg[1].length() > 0) return proxyArg[1];
         return null;
     }
 
@@ -123,13 +120,12 @@ public class HttpClientBuilder {
             this.httpcredentials = null;
             this.doAuthentication = false;
         }
-
     }
 
     /**
      * parses a proxyUrl parameter and configures (if possible) the builder to set a proxy when
      * generating a httpClient and (if possible) proxy authentication.
-     * 
+     *
      * @param proxyUrl
      */
     public void setProxy(URL proxyUrl) {
@@ -140,16 +136,14 @@ public class HttpClientBuilder {
         }
     }
 
-    /**
-     * @param backendTimeout timeout in seconds
-     */
+    /** @param backendTimeout timeout in seconds */
     public void setBackendTimeout(final int backendTimeout) {
         this.backendTimeoutMillis = backendTimeout * 1000;
     }
 
     /**
      * uses the configuration of this builder to generate a HttpClient
-     * 
+     *
      * @return the generated HttpClient
      */
     public HttpClient buildClient() {
@@ -160,14 +154,13 @@ public class HttpClientBuilder {
         params.setConnectionTimeout(backendTimeoutMillis);
         if (concurrency > 0) {
             params.setMaxTotalConnections(concurrency);
-            params.setMaxConnectionsPerHost(
-                    HostConfiguration.ANY_HOST_CONFIGURATION, concurrency);
+            params.setMaxConnectionsPerHost(HostConfiguration.ANY_HOST_CONFIGURATION, concurrency);
         }
-        
+
         connectionManager.setParams(params);
 
         HttpClient httpClient = new HttpClient(connectionManager);
-        
+
         if (authscope != null && httpcredentials != null) {
             httpClient.getState().setCredentials(authscope, httpcredentials);
             httpClient.getParams().setAuthenticationPreemptive(true);
@@ -176,8 +169,11 @@ public class HttpClientBuilder {
         if (proxyUrl != null) {
             httpClient.getHostConfiguration().setProxy(proxyUrl.getHost(), proxyUrl.getPort());
             if (proxycredentials != null) {
-                httpClient.getState().setProxyCredentials(
-                        new AuthScope(proxyUrl.getHost(), proxyUrl.getPort()), proxycredentials);
+                httpClient
+                        .getState()
+                        .setProxyCredentials(
+                                new AuthScope(proxyUrl.getHost(), proxyUrl.getPort()),
+                                proxycredentials);
             }
         }
         return httpClient;
@@ -186,7 +182,7 @@ public class HttpClientBuilder {
     /**
      * returns true if this builder was configured to pass HTTP credentials to the generated
      * HttpClient.
-     * 
+     *
      * @return
      */
     public boolean isDoAuthentication() {

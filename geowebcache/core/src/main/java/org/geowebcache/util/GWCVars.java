@@ -1,7 +1,6 @@
 package org.geowebcache.util;
 
 import javax.servlet.ServletContext;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.storage.DefaultStorageFinder;
@@ -28,8 +27,11 @@ public class GWCVars {
             serlvCtx = ((WebApplicationContext) context).getServletContext();
         }
 
-        final String[] typeStrs = { "Java environment variable ", "servlet context parameter ",
-                "system environment variable " };
+        final String[] typeStrs = {
+            "Java environment variable ",
+            "servlet context parameter ",
+            "system environment variable "
+        };
 
         String value = null;
 
@@ -37,17 +39,17 @@ public class GWCVars {
             String typeStr = typeStrs[j];
 
             switch (j) {
-            case 0:
-                value = System.getProperty(varStr);
-                break;
-            case 1:
-                if (serlvCtx != null) {
-                    value = serlvCtx.getInitParameter(varStr);
-                }
-                break;
-            case 2:
-                value = System.getenv(varStr);
-                break;
+                case 0:
+                    value = System.getProperty(varStr);
+                    break;
+                case 1:
+                    if (serlvCtx != null) {
+                        value = serlvCtx.getInitParameter(varStr);
+                    }
+                    break;
+                case 2:
+                    value = System.getenv(varStr);
+                    break;
             }
 
             if (value != null) {

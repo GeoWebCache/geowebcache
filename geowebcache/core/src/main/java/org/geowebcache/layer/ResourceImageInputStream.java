@@ -1,9 +1,7 @@
 package org.geowebcache.layer;
 
 import java.io.IOException;
-
 import javax.imageio.stream.ImageInputStreamImpl;
-
 import org.geowebcache.io.ByteArrayResource.SeekableInputStream;
 
 public class ResourceImageInputStream extends ImageInputStreamImpl {

@@ -1,35 +1,28 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
- *  
  */
 package org.geowebcache.storage.blobstore.file;
 
 import static org.geowebcache.storage.blobstore.file.FilePathUtils.*;
 
+import com.google.common.base.Preconditions;
 import java.io.File;
 import java.io.FilenameFilter;
-
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileRange;
 
-import com.google.common.base.Preconditions;
-
-/**
- * Filter for identifying files that represent tiles within a particular range
- */
+/** Filter for identifying files that represent tiles within a particular range */
 public class FilePathFilter implements FilenameFilter {
 
     private final String gridSetPrefix;
@@ -42,6 +35,7 @@ public class FilePathFilter implements FilenameFilter {
 
     /**
      * Create a filter for stored tiles that are within a particular range.
+     *
      * @param trObj the range to find
      * @throws StorageException
      */
@@ -53,7 +47,7 @@ public class FilePathFilter implements FilenameFilter {
         }
         String layerName = tr.getLayerName();
         Preconditions.checkNotNull(layerName);
-        this.layerPrefix =  filteredLayerName(layerName);
+        this.layerPrefix = filteredLayerName(layerName);
 
         gridSetPrefix = filteredGridSetId(tr.getGridSetId());
 
@@ -61,11 +55,11 @@ public class FilePathFilter implements FilenameFilter {
             mimeExtension = tr.getMimeType().getFileExtension();
         }
     }
-    
+
     /**
      * Assumes it will get fed something like path: name: *EPSG_2163_01/0_0 01_01.png *EPSG_2163_01/
      * 0_0 * EPSG_2163_01
-     * 
+     *
      * @see java.io.FilenameFilter#accept(java.io.File, java.lang.String)
      */
     public boolean accept(File parent, String fileName) {
@@ -76,7 +70,7 @@ public class FilePathFilter implements FilenameFilter {
         } else if (fileName.contains(".")) {
             // filename
             ret = acceptFileName(parent, fileName);
-        } else if(!parent.getName().equals(layerPrefix)){
+        } else if (!parent.getName().equals(layerPrefix)) {
             // not a sibling of the gridset prefix (e.g. another gridset), so an intermediate
             ret = acceptIntermediateDir(fileName);
         }
@@ -86,8 +80,8 @@ public class FilePathFilter implements FilenameFilter {
     }
 
     /**
-     * Example: nyc_01, nyc_05_1,EPSG_2163_01, EPSG_2163_01_7 (i.e.
-     * {@code <gridsetPrefix>_<zLevel>[_<parametersId>]})
+     * Example: nyc_01, nyc_05_1,EPSG_2163_01, EPSG_2163_01_7 (i.e. {@code
+     * <gridsetPrefix>_<zLevel>[_<parametersId>]})
      */
     private boolean acceptZoomLevelDir(String name) {
         if (!name.startsWith(gridSetPrefix)) {
@@ -103,9 +97,9 @@ public class FilePathFilter implements FilenameFilter {
                 return false;
             }
         }
-        
+
         String parameter = findParameter(gridSetPrefix, name);
-        if(tr.getParametersId() == null) {
+        if (tr.getParametersId() == null) {
             return parameter == null;
         } else {
             return tr.getParametersId().equals(parameter);
@@ -134,8 +128,7 @@ public class FilePathFilter implements FilenameFilter {
         // Check coordinates
         String[] coords = parts[0].split("_");
 
-        int zoomLevel = findZoomLevel(gridSetPrefix, parent.getParentFile()
-                .getName());
+        int zoomLevel = findZoomLevel(gridSetPrefix, parent.getParentFile().getName());
         long x = Long.parseLong(coords[0]);
         long y = Long.parseLong(coords[1]);
 

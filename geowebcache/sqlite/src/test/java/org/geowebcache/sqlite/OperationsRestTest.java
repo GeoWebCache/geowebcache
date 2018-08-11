@@ -1,31 +1,42 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Nuno Oliveira, GeoSolutions S.A.S., Copyright 2016
  */
 package org.geowebcache.sqlite;
 
+import static org.geowebcache.sqlite.Utils.Tuple.tuple;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.sqlite.Utils.Tuple;
-import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.CompositeBlobStore;
 import org.geowebcache.storage.SuitabilityCheckRule;
 import org.geowebcache.storage.TileObject;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,35 +51,18 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import static org.geowebcache.sqlite.Utils.Tuple.tuple;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @WebAppConfiguration
 @ContextConfiguration(classes = OperationsRestWebConfig.class)
 @RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles("test")
 public class OperationsRestTest extends TestSupport {
 
-    @Autowired
-    private WebApplicationContext webApplicationContext;
-    
+    @Autowired private WebApplicationContext webApplicationContext;
+
     @Rule
-    public SuitabilityCheckRule suitability = SuitabilityCheckRule.system(
-            CompositeBlobStore.StoreSuitabilityCheck.NONE);
-    
+    public SuitabilityCheckRule suitability =
+            SuitabilityCheckRule.system(CompositeBlobStore.StoreSuitabilityCheck.NONE);
+
     @After
     public void afterClass() throws Exception {
         closeSqliteStoresConnections();
@@ -81,23 +75,27 @@ public class OperationsRestTest extends TestSupport {
         // creates some database files for the tests
         Tuple<File, Tuple<String, String>> testFiles = createTestFiles();
         File rootDirectory = testFiles.first;
-        try (FileInputStream fileA = new FileInputStream(new File(rootDirectory, testFiles.second.first));
-        FileInputStream fileB = new FileInputStream(new File(rootDirectory, testFiles.second.second))) {
+        try (FileInputStream fileA =
+                        new FileInputStream(new File(rootDirectory, testFiles.second.first));
+                FileInputStream fileB =
+                        new FileInputStream(new File(rootDirectory, testFiles.second.second))) {
             // perform the rest request
             MockMultipartFile fileUploadA = new MockMultipartFile("file", fileA);
             MockMultipartFile fileUploadB = new MockMultipartFile("file", fileB);
             MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
             // first request
-            mockMvc.perform(MockMvcRequestBuilders.fileUpload("/sqlite/replace")
-                    .file(fileUploadA)
-                    .param("layer", "europe")
-                    .param("destination", testFiles.second.first))
+            mockMvc.perform(
+                            MockMvcRequestBuilders.fileUpload("/sqlite/replace")
+                                    .file(fileUploadA)
+                                    .param("layer", "europe")
+                                    .param("destination", testFiles.second.first))
                     .andExpect(status().is(200));
             // second request
-            mockMvc.perform(MockMvcRequestBuilders.fileUpload("/sqlite/replace")
-                    .file(fileUploadB)
-                    .param("layer", "europe")
-                    .param("destination", testFiles.second.second))
+            mockMvc.perform(
+                            MockMvcRequestBuilders.fileUpload("/sqlite/replace")
+                                    .file(fileUploadB)
+                                    .param("layer", "europe")
+                                    .param("destination", testFiles.second.second))
                     .andExpect(status().is(200));
             // check that files were replaced
             checkThatStoreContainsReplacedTiles(testFiles.second.first, testFiles.second.second);
@@ -119,9 +117,10 @@ public class OperationsRestTest extends TestSupport {
             MockMultipartFile zipUpload = new MockMultipartFile("file", zipFileInputStream);
             MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
             // execute request
-            mockMvc.perform(MockMvcRequestBuilders.fileUpload("/sqlite/replace")
-                    .file(zipUpload)
-                    .param("layer", "europe"))
+            mockMvc.perform(
+                            MockMvcRequestBuilders.fileUpload("/sqlite/replace")
+                                    .file(zipUpload)
+                                    .param("layer", "europe"))
                     .andExpect(status().is(200));
             // check that files were replaced
             checkThatStoreContainsReplacedTiles(testFiles.second.first, testFiles.second.second);
@@ -136,9 +135,10 @@ public class OperationsRestTest extends TestSupport {
         // perform the rest request
         MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         // execute request
-        mockMvc.perform(MockMvcRequestBuilders.fileUpload("/sqlite/replace")
-                .param("layer", "europe")
-                .param("source", rootDirectory.getPath()))
+        mockMvc.perform(
+                        MockMvcRequestBuilders.fileUpload("/sqlite/replace")
+                                .param("layer", "europe")
+                                .param("source", rootDirectory.getPath()))
                 .andExpect(status().is(200));
         // check that files were replaced
         checkThatStoreContainsReplacedTiles(testFiles.second.first, testFiles.second.second);
@@ -154,20 +154,40 @@ public class OperationsRestTest extends TestSupport {
         addFilesToDelete(rootDirectoryB);
         MbtilesInfo configurationA = new MbtilesInfo();
         configurationA.setRootDirectory(rootDirectoryA.getPath());
-        configurationA.setTemplatePath(Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
+        configurationA.setTemplatePath(
+                Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
         MbtilesInfo configurationB = new MbtilesInfo();
         configurationB.setRootDirectory(rootDirectoryB.getPath());
-        configurationB.setTemplatePath(Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
+        configurationB.setTemplatePath(
+                Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
         MbtilesBlobStore storeA = new MbtilesBlobStore(configurationA);
         MbtilesBlobStore storeB = new MbtilesBlobStore(configurationB);
         addStoresToClean(storeA, storeB);
         // create the tiles that will be stored
-        TileObject putTileA = TileObject.createCompleteTileObject("africa",
-                new long[]{10, 50, 5}, "EPSG:4326", "image/png", null, TestSupport.stringToResource("IMAGE-10-50-5-A"));
-        TileObject putTileB = TileObject.createCompleteTileObject("africa",
-                new long[]{10, 50, 5}, "EPSG:4326", "image/png", null, TestSupport.stringToResource("IMAGE-10-50-5-B"));
-        TileObject putTileC = TileObject.createCompleteTileObject("africa",
-                new long[]{10, 5050, 15}, "EPSG:4326", "image/png", null, TestSupport.stringToResource("IMAGE-15-5050-5-B"));
+        TileObject putTileA =
+                TileObject.createCompleteTileObject(
+                        "africa",
+                        new long[] {10, 50, 5},
+                        "EPSG:4326",
+                        "image/png",
+                        null,
+                        TestSupport.stringToResource("IMAGE-10-50-5-A"));
+        TileObject putTileB =
+                TileObject.createCompleteTileObject(
+                        "africa",
+                        new long[] {10, 50, 5},
+                        "EPSG:4326",
+                        "image/png",
+                        null,
+                        TestSupport.stringToResource("IMAGE-10-50-5-B"));
+        TileObject putTileC =
+                TileObject.createCompleteTileObject(
+                        "africa",
+                        new long[] {10, 5050, 15},
+                        "EPSG:4326",
+                        "image/png",
+                        null,
+                        TestSupport.stringToResource("IMAGE-15-5050-5-B"));
         // storing the tile
         storeA.put(putTileA);
         storeB.put(putTileB);
@@ -176,17 +196,21 @@ public class OperationsRestTest extends TestSupport {
         storeA.clear();
         storeB.clear();
         // return relative paths
-        String relativePathA = Utils.buildPath("EPSG_4326", "africa", "image_png", "5", "tiles-0-0.sqlite");
-        String relativePathB = Utils.buildPath("EPSG_4326", "africa", "image_png", "15", "tiles-0-5000.sqlite");
+        String relativePathA =
+                Utils.buildPath("EPSG_4326", "africa", "image_png", "5", "tiles-0-0.sqlite");
+        String relativePathB =
+                Utils.buildPath("EPSG_4326", "africa", "image_png", "15", "tiles-0-5000.sqlite");
         return tuple(rootDirectoryB, tuple(relativePathA, relativePathB));
     }
 
-    private void checkThatStoreContainsReplacedTiles(String relativePathA, String relativePathB) throws Exception {
+    private void checkThatStoreContainsReplacedTiles(String relativePathA, String relativePathB)
+            throws Exception {
         // instantiating the store
         File rootDirectory = OperationsRestWebConfig.ROOT_DIRECTORY;
         MbtilesInfo configuration = new MbtilesInfo();
         configuration.setRootDirectory(rootDirectory.getPath());
-        configuration.setTemplatePath(Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
+        configuration.setTemplatePath(
+                Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
         addStoresToClean(store);
         // checking that all the files are present
@@ -195,14 +219,16 @@ public class OperationsRestTest extends TestSupport {
         assertThat(fileA.exists(), is(true));
         assertThat(fileB.exists(), is(true));
         // let's query the store to see if we get the replaced tiles
-        TileObject getTile = TileObject.createQueryTileObject("africa",
-                new long[]{10, 50, 5}, "EPSG:4326", "image/png", null);
+        TileObject getTile =
+                TileObject.createQueryTileObject(
+                        "africa", new long[] {10, 50, 5}, "EPSG:4326", "image/png", null);
         assertThat(store.get(getTile), is(true));
         assertThat(getTile.getBlob(), notNullValue());
         assertThat(TestSupport.resourceToString(getTile.getBlob()), is("IMAGE-10-50-5-B"));
         // let's query the second tile
-        getTile = TileObject.createQueryTileObject("africa",
-                new long[]{10, 5050, 15}, "EPSG:4326", "image/png", null);
+        getTile =
+                TileObject.createQueryTileObject(
+                        "africa", new long[] {10, 5050, 15}, "EPSG:4326", "image/png", null);
         assertThat(store.get(getTile), is(true));
         assertThat(getTile.getBlob(), notNullValue());
         assertThat(TestSupport.resourceToString(getTile.getBlob()), is("IMAGE-15-5050-5-B"));
@@ -210,32 +236,39 @@ public class OperationsRestTest extends TestSupport {
 
     private void zipDirectory(Path directoryToZip, File outputZipFile) throws IOException {
         try (FileOutputStream fileOutputStream = new FileOutputStream(outputZipFile);
-             ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
-            Files.walkFileTree(directoryToZip, new SimpleFileVisitor<Path>() {
+                ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
+            Files.walkFileTree(
+                    directoryToZip,
+                    new SimpleFileVisitor<Path>() {
 
-                public FileVisitResult visitFile(Path file, BasicFileAttributes fileAttributes) throws IOException {
-                    zipOutputStream.putNextEntry(new ZipEntry(directoryToZip.relativize(file).toString()));
-                    Files.copy(file, zipOutputStream);
-                    zipOutputStream.closeEntry();
-                    return FileVisitResult.CONTINUE;
-                }
+                        public FileVisitResult visitFile(
+                                Path file, BasicFileAttributes fileAttributes) throws IOException {
+                            zipOutputStream.putNextEntry(
+                                    new ZipEntry(directoryToZip.relativize(file).toString()));
+                            Files.copy(file, zipOutputStream);
+                            zipOutputStream.closeEntry();
+                            return FileVisitResult.CONTINUE;
+                        }
 
-                public FileVisitResult preVisitDirectory(Path directory, BasicFileAttributes attrs) throws IOException {
-                    if (directory.equals(directoryToZip)) {
-                        return FileVisitResult.CONTINUE;
-                    }
-                    // the zip structure is not tied the OS file separator
-                    zipOutputStream.putNextEntry(new ZipEntry(directoryToZip.relativize(directory).toString() + "/"));
-                    zipOutputStream.closeEntry();
-                    return FileVisitResult.CONTINUE;
-                }
-            });
+                        public FileVisitResult preVisitDirectory(
+                                Path directory, BasicFileAttributes attrs) throws IOException {
+                            if (directory.equals(directoryToZip)) {
+                                return FileVisitResult.CONTINUE;
+                            }
+                            // the zip structure is not tied the OS file separator
+                            zipOutputStream.putNextEntry(
+                                    new ZipEntry(
+                                            directoryToZip.relativize(directory).toString() + "/"));
+                            zipOutputStream.closeEntry();
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
         }
     }
 
     /**
-     * Helper method that simply makes sure that all the connections to the sqlite databases
-     * are closed allowing file operations to be performed on the databases files.
+     * Helper method that simply makes sure that all the connections to the sqlite databases are
+     * closed allowing file operations to be performed on the databases files.
      */
     private void closeSqliteStoresConnections() {
         XMLConfiguration configuration = webApplicationContext.getBean(XMLConfiguration.class);

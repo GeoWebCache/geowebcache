@@ -1,22 +1,24 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2018
- *
+ * <p>Copyright 2018
  */
 package org.geowebcache.config;
 
+import static org.hamcrest.Matchers.hasProperty;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.net.URL;
 import org.apache.commons.io.FileUtils;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.grid.GridSetBroker;
@@ -27,24 +29,16 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.io.File;
-import java.net.URL;
-
-import static org.hamcrest.Matchers.hasProperty;
-import static org.junit.Assert.*;
-
 public class ServerConfigurationTest {
 
     private static final String VERSION_PATTERN = "1(\\.\\d+)+(\\-\\w+)*";
 
     ServerConfiguration config;
 
-     @Rule
-     public TemporaryFolder temp = new TemporaryFolder();
-     private File configDir;
-     private File configFile;
-     private GridSetBroker gridSetBroker;
-
+    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    private File configDir;
+    private File configFile;
+    private GridSetBroker gridSetBroker;
 
     @Test
     public void serverConfigTest() throws Exception {
@@ -89,7 +83,7 @@ public class ServerConfigurationTest {
         assertEquals(backendTimeout, (Integer) 120);
         config.setBackendTimeout(60);
         backendTimeout = config.getBackendTimeout();
-        assertEquals(backendTimeout, (Integer)60);
+        assertEquals(backendTimeout, (Integer) 60);
 
         assertThat(config, hasProperty("version", TestUtils.matchesRegex(VERSION_PATTERN)));
 
@@ -106,22 +100,25 @@ public class ServerConfigurationTest {
     }
 
     protected ServerConfiguration getConfig() throws Exception {
-         if(configFile==null) {
-             // create a temp XML config
-             configDir = temp.getRoot();
-             configFile = temp.newFile(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME);
-             // copy the example XML to the temp config file
-             URL source = XMLConfiguration.class.getResource("geowebcache_190.xml");
-             FileUtils.copyURLToFile(source, configFile);
-             }
-             // initialize the config with an XMLFileResourceProvider that uses the temp config file
+        if (configFile == null) {
+            // create a temp XML config
+            configDir = temp.getRoot();
+            configFile = temp.newFile(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME);
+            // copy the example XML to the temp config file
+            URL source = XMLConfiguration.class.getResource("geowebcache_190.xml");
+            FileUtils.copyURLToFile(source, configFile);
+        }
+        // initialize the config with an XMLFileResourceProvider that uses the temp config file
         gridSetBroker = new GridSetBroker(true, true);
-         ConfigurationResourceProvider configProvider =
-             new XMLFileResourceProvider(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
-                 (WebApplicationContext)null, configDir.getAbsolutePath(), null);
-         config = new XMLConfiguration(null, configProvider);
-         ((XMLConfiguration) config).setGridSetBroker(gridSetBroker);
-         config.afterPropertiesSet();
-         return config;
+        ConfigurationResourceProvider configProvider =
+                new XMLFileResourceProvider(
+                        XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
+                        (WebApplicationContext) null,
+                        configDir.getAbsolutePath(),
+                        null);
+        config = new XMLConfiguration(null, configProvider);
+        ((XMLConfiguration) config).setGridSetBroker(gridSetBroker);
+        config.afterPropertiesSet();
+        return config;
     }
 }

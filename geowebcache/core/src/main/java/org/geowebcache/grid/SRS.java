@@ -1,17 +1,15 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, OpenGeo, Copyright 2009
  */
 package org.geowebcache.grid;
@@ -22,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.geowebcache.GeoWebCacheException;
 
 public class SRS implements Comparable<SRS> {
@@ -36,16 +33,16 @@ public class SRS implements Comparable<SRS> {
      * EPSG:102113 or EPSG:102100 identifies web mercator. The "community" first defined it as
      * EPSG:900913.
      */
-    private static final SRS EPSG3857 = new SRS(3857, new ArrayList<Integer>(asList(900913, 102113,
-            102100)));
+    private static final SRS EPSG3857 =
+            new SRS(3857, new ArrayList<Integer>(asList(900913, 102113, 102100)));
 
     /**
      * The EPSG says EPSG:3857 is the identifier for web mercator. ArcGIS 10 says either of
      * EPSG:102113 or EPSG:102100 identifies web mercator. The "community" first defined it as
      * EPSG:900913.
      */
-    private static final SRS EPSG900913 = new SRS(900913, new ArrayList<Integer>(asList(3857,
-            102113, 102100)));
+    private static final SRS EPSG900913 =
+            new SRS(900913, new ArrayList<Integer>(asList(3857, 102113, 102100)));
 
     private int number;
 
@@ -54,7 +51,7 @@ public class SRS implements Comparable<SRS> {
     private SRS() {
         // default constructor for XStream
     }
-    
+
     private SRS(int epsgNumber) {
         this(epsgNumber, null);
     }
@@ -75,11 +72,12 @@ public class SRS implements Comparable<SRS> {
 
     /**
      * Returns an SRS object for the given epsg code.
-     * <p>
-     * If an SRS for this code already exists, it's returned. Otherwise a registered SRS is looked
-     * up that has an alias defined for the given code, and if found the alias is returned. If no
-     * SRS is registered nor an alias is found, a new SRS for this code is registered and returned.
-     * 
+     *
+     * <p>If an SRS for this code already exists, it's returned. Otherwise a registered SRS is
+     * looked up that has an alias defined for the given code, and if found the alias is returned.
+     * If no SRS is registered nor an alias is found, a new SRS for this code is registered and
+     * returned.
+     *
      * @param epsgCode
      * @return
      */
@@ -112,7 +110,7 @@ public class SRS implements Comparable<SRS> {
 
     /**
      * Two SRS are equal if they have the same code or any of them have the other one as an alias.
-     * 
+     *
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -130,9 +128,7 @@ public class SRS implements Comparable<SRS> {
         return equivalent;
     }
 
-    /**
-     * @deprecated just use {@link #equals}
-     */
+    /** @deprecated just use {@link #equals} */
     public boolean equalsIncludingAlias(Object o) {
         return equals(o);
     }
@@ -162,9 +158,7 @@ public class SRS implements Comparable<SRS> {
         return EPSG900913;
     }
 
-    /**
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
+    /** @see java.lang.Comparable#compareTo(java.lang.Object) */
     public int compareTo(SRS other) {
         return number - other.number;
     }

@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
-
 import org.geowebcache.diskquota.storage.PageStats;
 import org.geowebcache.diskquota.storage.PageStatsPayload;
 import org.geowebcache.diskquota.storage.Quota;
@@ -18,7 +17,8 @@ public interface QuotaStore {
     public abstract void createLayer(final String layerName) throws InterruptedException;
 
     /**
-     * Returns the globally used quota 
+     * Returns the globally used quota
+     *
      * @return A Quota object (may be null)
      * @throws InterruptedException
      */
@@ -26,6 +26,7 @@ public interface QuotaStore {
 
     /**
      * Returns the quota used by the specified tileSetId
+     *
      * @param tileSetId
      * @return A Quota object (never null)
      * @throws InterruptedException
@@ -39,10 +40,9 @@ public interface QuotaStore {
             throws InterruptedException;
 
     /**
-     * 
      * @param layerName
      * @return the used quota for the given layer, may need to create a new one before returning if
-     *         no quota usage information for that layer already exists
+     *     no quota usage information for that layer already exists
      * @throws InterruptedException
      */
     public abstract Quota getUsedQuotaByLayerName(final String layerName)
@@ -61,22 +61,24 @@ public interface QuotaStore {
     /**
      * Adds the {@link TilePage#getNumPresentTilesInPage() number of tiles} present in each of the
      * argument pages
-     * 
+     *
      * @param quotaDiff
-     * 
      * @param tileCountDiffs
      * @throws InterruptedException
      */
-    public abstract void addToQuotaAndTileCounts(final TileSet tileSet, final Quota quotaDiff,
-            final Collection<PageStatsPayload> tileCountDiffs) throws InterruptedException;
+    public abstract void addToQuotaAndTileCounts(
+            final TileSet tileSet,
+            final Quota quotaDiff,
+            final Collection<PageStatsPayload> tileCountDiffs)
+            throws InterruptedException;
 
     /**
-     * Asynchronously updates (or set if not exists) the
-     * {@link PageStats#getFrequencyOfUsePerMinute()} and
-     * {@link PageStats#getLastAccessTimeMinutes()} values for the stored versions of the page
-     * statistics using {@link PageStats#addHitsAndAccessTime(long, int, int)}; these values are influenced by the
-     * {@code PageStats}' {@link PageStats#getFillFactor() fillFactor}.
-     * 
+     * Asynchronously updates (or set if not exists) the {@link
+     * PageStats#getFrequencyOfUsePerMinute()} and {@link PageStats#getLastAccessTimeMinutes()}
+     * values for the stored versions of the page statistics using {@link
+     * PageStats#addHitsAndAccessTime(long, int, int)}; these values are influenced by the {@code
+     * PageStats}' {@link PageStats#getFillFactor() fillFactor}.
+     *
      * @param statsUpdates
      * @return
      */
@@ -102,13 +104,13 @@ public interface QuotaStore {
     public abstract PageStats setTruncated(final TilePage tilePage) throws InterruptedException;
 
     public abstract void deleteGridSubset(String layerName, String gridSetId);
-    
+
     public abstract void deleteParameters(String layerName, String parametersId);
 
     /**
      * Closes the quota store, releasing any resources the store might be depending onto
-     * @throws Exception 
+     *
+     * @throws Exception
      */
     public abstract void close() throws Exception;
-
 }
