@@ -1,20 +1,21 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author David Vick, Boundless, 2017
  */
 package org.geowebcache.rest.reload;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.*;
@@ -29,13 +30,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({
-        "file*:/webapp/WEB-INF/web.xml",
-        "file*:/webapp/WEB-INF/geowebcache-servlet.xml"
+    "file*:/webapp/WEB-INF/web.xml",
+    "file*:/webapp/WEB-INF/geowebcache-servlet.xml"
 })
 public class ReloadTest {
     private MockMvc mockMvc;
@@ -55,9 +53,18 @@ public class ReloadTest {
         int tileWidth = 256;
         int tileHeight = 256;
         boolean yCoordinateFirst = false;
-        GridSet gridSet = GridSetFactory.createGridSet("EPSG:3395", SRS.getSRS("EPSG:3395"),
-                extent, alignTopLeft, levels, metersPerUnit, pixelSize, tileWidth, tileHeight,
-                yCoordinateFirst);
+        GridSet gridSet =
+                GridSetFactory.createGridSet(
+                        "EPSG:3395",
+                        SRS.getSRS("EPSG:3395"),
+                        extent,
+                        alignTopLeft,
+                        levels,
+                        metersPerUnit,
+                        pixelSize,
+                        tileWidth,
+                        tileHeight,
+                        yCoordinateFirst);
         gridSetBroker.put(gridSet);
 
         tld = new TileLayerDispatcher(gridSetBroker);
@@ -70,9 +77,12 @@ public class ReloadTest {
     @Test
     public void testReloadConfiguration() throws Exception {
         String content = "reload_configuration=1";
-        this.mockMvc.perform(post("/rest/reload")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .content(content)
-                .contextPath("")).andExpect(status().is2xxSuccessful());
+        this.mockMvc
+                .perform(
+                        post("/rest/reload")
+                                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                                .content(content)
+                                .contextPath(""))
+                .andExpect(status().is2xxSuccessful());
     }
 }

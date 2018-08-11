@@ -2,7 +2,6 @@ package org.geowebcache.conveyor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageBroker;
 
@@ -11,15 +10,17 @@ import org.geowebcache.storage.StorageBroker;
  */
 public abstract class Conveyor {
 
-    /**
-     * Should the request represented by this conveyor be handled by the service or the layer
-     */
+    /** Should the request represented by this conveyor be handled by the service or the layer */
     public static enum RequestHandler {
-        LAYER, SERVICE
+        LAYER,
+        SERVICE
     };
 
     public static enum CacheResult {
-        HIT, MISS, WMS, OTHER
+        HIT,
+        MISS,
+        WMS,
+        OTHER
     };
 
     private String layerId = null;
@@ -51,8 +52,8 @@ public abstract class Conveyor {
 
     protected CacheResult cacheResult;
 
-    protected Conveyor(String layerId, StorageBroker sb, HttpServletRequest srq,
-            HttpServletResponse srp) {
+    protected Conveyor(
+            String layerId, StorageBroker sb, HttpServletRequest srq, HttpServletResponse srp) {
         this.layerId = layerId;
         storageBroker = sb;
         servletReq = srq;

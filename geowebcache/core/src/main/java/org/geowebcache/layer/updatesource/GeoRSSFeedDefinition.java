@@ -1,17 +1,15 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, OpenGeo, Copyright 2010
  */
 package org.geowebcache.layer.updatesource;
@@ -21,17 +19,17 @@ import org.geowebcache.seed.GWCTask;
 public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
 
     private String feedUrl;
-    
+
     private String httpUsername;
-    
+
     private String httpPassword;
-    
+
     private String gridSetId;
 
     private Integer pollInterval;
 
     private String operation;
-    
+
     private String format;
 
     private Integer seedingThreads;
@@ -41,7 +39,7 @@ public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
     /**
      * The maximum zoom level which to create a backing tile mask for to track the tiles affected by
      * the feed geometries; defaults to {@code 10}
-     * 
+     *
      * @return
      */
     public int getMaxMaskLevel() {
@@ -53,11 +51,11 @@ public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
     }
 
     public GWCTask.TYPE getOperation() {
-        if(operation == null || operation.equalsIgnoreCase("truncate")) {
+        if (operation == null || operation.equalsIgnoreCase("truncate")) {
             return GWCTask.TYPE.TRUNCATE;
-        } else if(operation.equalsIgnoreCase("reseed")) {
+        } else if (operation.equalsIgnoreCase("reseed")) {
             return GWCTask.TYPE.RESEED;
-        } else if(operation.equalsIgnoreCase("seed")) {
+        } else if (operation.equalsIgnoreCase("seed")) {
             return GWCTask.TYPE.SEED;
         }
         // Whatever...
@@ -65,9 +63,9 @@ public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
     }
 
     /**
-     * Number of threads to spawn to seed based on the results of the GeoRSS feed; default to
-     * {@code 1} if not set
-     * 
+     * Number of threads to spawn to seed based on the results of the GeoRSS feed; default to {@code
+     * 1} if not set
+     *
      * @return
      */
     public int getSeedingThreads() {
@@ -78,48 +76,39 @@ public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
      * The URL to the feed. I think we should use templating for parameters, so in the initial
      * implementation we search the string for {lastEntryId} and replace any occurrences with the
      * actual last entry id.
-     * 
+     *
      * @return
      */
     public String getFeedUrl() {
         return feedUrl;
     }
-    
-    
+
     /**
-     * The format for which to truncate / reseed. If you omit this parameter all supported
-     * formats will be truncated / reseeded.
-     * 
+     * The format for which to truncate / reseed. If you omit this parameter all supported formats
+     * will be truncated / reseeded.
+     *
      * @return
      */
     public String getFormat() {
-       return format; 
+        return format;
     }
 
-    /**
-     * Grid set for which this feed is valid
-     */
+    /** Grid set for which this feed is valid */
     public String getGridSetId() {
         return gridSetId;
     }
-    
-    /**
-     * @return Optional password to use for HTTP authentication
-     */
+
+    /** @return Optional password to use for HTTP authentication */
     public String getHttpPassword() {
         return httpPassword;
     }
-    
-    /**
-     * @return Optional username to use for HTTP authentication
-     */
+
+    /** @return Optional username to use for HTTP authentication */
     public String getHttpUsername() {
         return httpUsername;
     }
 
-    /**
-     * @return the polling interval in seconds, or {@code -1} to mean polling is disabled
-     */
+    /** @return the polling interval in seconds, or {@code -1} to mean polling is disabled */
     public int getPollInterval() {
         if (pollInterval == null) {
             return -1;
@@ -139,9 +128,7 @@ public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
         return sb.append("]").toString();
     }
 
-    /**
-     * @return human friendly representation of the poll interval
-     */
+    /** @return human friendly representation of the poll interval */
     public String getPollIntervalStr() {
         return getPollIntervalStr(pollInterval);
     }

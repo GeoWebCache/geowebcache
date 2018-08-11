@@ -1,19 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Gabriel Roldan (OpenGeo) 2010
- *  
  */
 package org.geowebcache.georss;
 
@@ -22,7 +19,6 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.grid.GridSubset;
@@ -33,7 +29,6 @@ import org.geowebcache.seed.TileBreeder;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 /**
- * 
  * @author groldan
  * @version $Id$
  */
@@ -54,10 +49,9 @@ public class GeoRSSPoller {
      * periodically (at least every each layer's {@link GeoRSSFeedDefinition#getPollInterval() poll
      * interval} polls the layers feed for change sets and if changes are found spawns a reseed
      * process on the tiles affected by the change set.
-     * 
+     *
      * @param seeder
-     * @param startUpDelaySecs
-     *            seconds to wait before start polling the layers
+     * @param startUpDelaySecs seconds to wait before start polling the layers
      */
     public GeoRSSPoller(final TileBreeder seeder, final int startUpDelaySecs) {
 
@@ -71,37 +65,46 @@ public class GeoRSSPoller {
         tf.setThreadPriority(Thread.MIN_PRIORITY + 1);
         schedulingPollExecutorService = Executors.newScheduledThreadPool(corePoolSize, tf);
 
-        schedulingPollExecutorService.submit(new Runnable() {
+        schedulingPollExecutorService.submit(
+                new Runnable() {
 
-            public void run() {
-                logger.info("Initializing GeoRSS poller in a background job...");
+                    public void run() {
+                        logger.info("Initializing GeoRSS poller in a background job...");
 
-                findEnabledPolls();
+                        findEnabledPolls();
 
-                if (pollCount() > 0) {
+                        if (pollCount() > 0) {
 
-                    final TimeUnit seconds = TimeUnit.SECONDS;
-                    for (PollDef poll : scheduledPolls) {
-                        GeoRSSPollTask command = new GeoRSSPollTask(poll, seeder);
-                        GeoRSSFeedDefinition pollDef = poll.getPollDef();
-                        long period = pollDef.getPollInterval();
+                            final TimeUnit seconds = TimeUnit.SECONDS;
+                            for (PollDef poll : scheduledPolls) {
+                                GeoRSSPollTask command = new GeoRSSPollTask(poll, seeder);
+                                GeoRSSFeedDefinition pollDef = poll.getPollDef();
+                                long period = pollDef.getPollInterval();
 
-                        logger.info("Scheduling layer " + poll.getLayer().getName()
-                                + " to poll the GeoRSS feed " + pollDef.getFeedUrl() + " every "
-                                + pollDef.getPollIntervalStr());
+                                logger.info(
+                                        "Scheduling layer "
+                                                + poll.getLayer().getName()
+                                                + " to poll the GeoRSS feed "
+                                                + pollDef.getFeedUrl()
+                                                + " every "
+                                                + pollDef.getPollIntervalStr());
 
-                        schedulingPollExecutorService.scheduleAtFixedRate(command,
-                                startUpDelaySecs, period, seconds);
+                                schedulingPollExecutorService.scheduleAtFixedRate(
+                                        command, startUpDelaySecs, period, seconds);
 
-                        scheduledTasks.add(command);
+                                scheduledTasks.add(command);
+                            }
+                            logger.info(
+                                    "Will wait "
+                                            + startUpDelaySecs
+                                            + " seconds before launching the "
+                                            + pollCount()
+                                            + " GeoRSS polls found");
+                        } else {
+                            logger.info("No enabled GeoRSS feeds found, poller will not run.");
+                        }
                     }
-                    logger.info("Will wait " + startUpDelaySecs + " seconds before launching the "
-                            + pollCount() + " GeoRSS polls found");
-                } else {
-                    logger.info("No enabled GeoRSS feeds found, poller will not run.");
-                }
-            }
-        });
+                });
     }
 
     private void findEnabledPolls() {
@@ -111,8 +114,10 @@ public class GeoRSSPoller {
                 continue;
             }
             if (!layer.isEnabled()) {
-                logger.info("Ignoring polling GeoRSS update sources for layer '" + layer.getName()
-                        + "' as the layer is disabled");
+                logger.info(
+                        "Ignoring polling GeoRSS update sources for layer '"
+                                + layer.getName()
+                                + "' as the layer is disabled");
             }
             for (UpdateSourceDefinition usd : layer.getUpdateSources()) {
                 if (usd instanceof GeoRSSFeedDefinition) {
@@ -121,34 +126,40 @@ public class GeoRSSPoller {
                     final String gridSetId = georssDef.getGridSetId();
                     final GridSubset gridSubset = layer.getGridSubset(gridSetId);
                     if (gridSubset == null) {
-                        throw new IllegalStateException("Layer " + layer.getName()
-                                + " has no grid subset " + gridSetId
-                                + " as configured by its GeoRSS seeding feed " + georssDef);
+                        throw new IllegalStateException(
+                                "Layer "
+                                        + layer.getName()
+                                        + " has no grid subset "
+                                        + gridSetId
+                                        + " as configured by its GeoRSS seeding feed "
+                                        + georssDef);
                     }
 
                     if (georssDef.getPollInterval() > 0) {
-                        logger.info("Scheduling GeoRSS feed for layer " + layer.getName() + ":"
-                                + georssDef);
+                        logger.info(
+                                "Scheduling GeoRSS feed for layer "
+                                        + layer.getName()
+                                        + ":"
+                                        + georssDef);
                         scheduledPolls.add(new PollDef(layer, georssDef));
                     } else {
-                        logger.info("Feed disabled for layer " + layer.getName() + ", ignoring: "
-                                + georssDef);
+                        logger.info(
+                                "Feed disabled for layer "
+                                        + layer.getName()
+                                        + ", ignoring: "
+                                        + georssDef);
                     }
                 }
             }
         }
     }
 
-    /**
-     * @return number of scheduled polls
-     */
+    /** @return number of scheduled polls */
     public int pollCount() {
         return scheduledPolls.size();
     }
 
-    /**
-     * Destroy method for Spring
-     */
+    /** Destroy method for Spring */
     public void destroy() {
         logger.info("destroy() invoked");
         if (schedulingPollExecutorService != null) {
@@ -160,5 +171,4 @@ public class GeoRSSPoller {
         }
         // And that's all we can do...
     }
-
 }

@@ -1,26 +1,24 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.geowebcache.storage.blobstore.memory;
 
 import java.io.Serializable;
 
 /**
- * This class is a container of all the Statistics of the {@link CacheProvider} object used by the {@link MemoryBlobStore}.
- * 
+ * This class is a container of all the Statistics of the {@link CacheProvider} object used by the
+ * {@link MemoryBlobStore}.
+ *
  * @author Nicola Lagomarsini, GeoSolutions
- * 
  */
 public class CacheStatistics implements Serializable {
 
@@ -54,8 +52,7 @@ public class CacheStatistics implements Serializable {
     /** Cache actual size */
     private long actualSize = 0;
 
-    public CacheStatistics() {
-    }
+    public CacheStatistics() {}
 
     // Copy Constructor
     public CacheStatistics(CacheStatistics stats) {
@@ -70,144 +67,126 @@ public class CacheStatistics implements Serializable {
         this.setTotalSize(stats.getTotalSize());
     }
 
-    /**
-     * @return the cache hit count
-     */
+    /** @return the cache hit count */
     public long getHitCount() {
         return hitCount;
     }
 
     /**
      * Setter for cache hit count
-     * 
+     *
      * @param hitCount
      */
     public void setHitCount(long hitCount) {
         this.hitCount = hitCount;
     }
 
-    /**
-     * @return the cache miss count
-     */
+    /** @return the cache miss count */
     public long getMissCount() {
         return missCount;
     }
 
     /**
      * Setter for cache miss count
-     * 
+     *
      * @param missCount
      */
     public void setMissCount(long missCount) {
         this.missCount = missCount;
     }
 
-    /**
-     * @return the cache eviction count
-     */
+    /** @return the cache eviction count */
     public long getEvictionCount() {
         return evictionCount;
     }
 
     /**
      * Setter for cache eviction count
-     * 
+     *
      * @param evictionCount
      */
     public void setEvictionCount(long evictionCount) {
         this.evictionCount = evictionCount;
     }
 
-    /**
-     * @return the cache total request count
-     */
+    /** @return the cache total request count */
     public long getRequestCount() {
         return totalCount;
     }
 
     /**
      * Setter for cache total count
-     * 
+     *
      * @param totalCount
      */
     public void setTotalCount(long totalCount) {
         this.totalCount = totalCount;
     }
 
-    /**
-     * @return the cache hit rate
-     */
+    /** @return the cache hit rate */
     public double getHitRate() {
         return hitRate;
     }
 
     /**
      * Setter for cache hit rate
-     * 
+     *
      * @param hitRate
      */
     public void setHitRate(double hitRate) {
         this.hitRate = hitRate;
     }
 
-    /**
-     * @return the cache miss rate
-     */
+    /** @return the cache miss rate */
     public double getMissRate() {
         return missRate;
     }
 
     /**
      * Setter for cache miss rate
-     * 
+     *
      * @param missRate
      */
     public void setMissRate(double missRate) {
         this.missRate = missRate;
     }
 
-    /**
-     * @return the cache current memory occupation
-     */
+    /** @return the cache current memory occupation */
     public double getCurrentMemoryOccupation() {
         return currentMemoryOccupation;
     }
 
     /**
      * Setter for cache memory occupation
-     * 
+     *
      * @param currentMemoryOccupation
      */
     public void setCurrentMemoryOccupation(double currentMemoryOccupation) {
         this.currentMemoryOccupation = currentMemoryOccupation;
     }
 
-    /**
-     * @return the cache current total size
-     */
+    /** @return the cache current total size */
     public long getTotalSize() {
         return totalSize;
     }
 
     /**
      * Setter for cache total size
-     * 
+     *
      * @param totalSize
      */
     public void setTotalSize(long totalSize) {
         this.totalSize = totalSize;
     }
 
-    /**
-     * @return the cache current actual size
-     */
+    /** @return the cache current actual size */
     public long getActualSize() {
         return actualSize;
     }
 
     /**
      * Setter for cache actual size
-     * 
+     *
      * @param actualSize
      */
     public void setActualSize(long actualSize) {

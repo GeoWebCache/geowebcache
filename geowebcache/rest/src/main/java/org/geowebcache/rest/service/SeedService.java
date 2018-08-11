@@ -1,24 +1,20 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Marius Suta / The Open Planning Project 2008
  * @author Arne Kepp / The Open Planning Project 2009
  * @author David Vick / Boundless 2017
- *
- * Original file
- *
- * SeedRestlet.java
+ *     <p>Original file
+ *     <p>SeedRestlet.java
  */
 package org.geowebcache.rest.service;
 
@@ -31,6 +27,14 @@ import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.io.IOUtils;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ContextualConfigurationProvider;
@@ -48,25 +52,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 @Service
 public class SeedService {
-    @Autowired
-    TileBreeder seeder;
+    @Autowired TileBreeder seeder;
 
-    @Autowired
-    protected XMLConfiguration xmlConfig;
+    @Autowired protected XMLConfiguration xmlConfig;
 
     /**
      * GET method for querying running GWC tasks
+     *
      * @param request
      * @return
      */
@@ -85,6 +79,7 @@ public class SeedService {
 
     /**
      * GET method for querying running tasks for the provided layer
+     *
      * @param request
      * @param layer
      * @return
@@ -114,6 +109,7 @@ public class SeedService {
 
     /**
      * Method to kill running tasks for all of GWC or just the provided layer.
+     *
      * @param request
      * @param layer
      * @return
@@ -149,8 +145,11 @@ public class SeedService {
                 } else if ("all".equalsIgnoreCase(killCode)) {
                     tasks = seeder.getRunningAndPendingTasks();
                 } else {
-                    throw new RestException("Unknown kill_all code: '" + killCode
-                            + "'. One of all|running|pending is expected.", HttpStatus.BAD_REQUEST);
+                    throw new RestException(
+                            "Unknown kill_all code: '"
+                                    + killCode
+                                    + "'. One of all|running|pending is expected.",
+                            HttpStatus.BAD_REQUEST);
                 }
                 List<GWCTask> terminatedTasks = new LinkedList<GWCTask>();
                 List<GWCTask> nonTerminatedTasks = new LinkedList<GWCTask>();
@@ -190,24 +189,27 @@ public class SeedService {
 
     /**
      * Method to do the seeding and truncating.
+     *
      * @param request
      * @param extension
      * @param layer
      * @return
      */
-    public ResponseEntity<?> doSeeding(HttpServletRequest request, String layer, String extension, String body) {
+    public ResponseEntity<?> doSeeding(
+            HttpServletRequest request, String layer, String extension, String body) {
         XStream xs = configXStream(new GeoWebCacheXStream(new DomDriver()));
 
         Object obj = null;
 
         try {
-            if (extension==null || extension.equalsIgnoreCase("xml")) {
+            if (extension == null || extension.equalsIgnoreCase("xml")) {
                 obj = xs.fromXML(body);
             } else if (extension.equalsIgnoreCase("json")) {
                 obj = xs.fromXML(convertJson(body));
             } else {
-                throw new RestException("Format extension unknown or not specified: "
-                        + extension, HttpStatus.BAD_REQUEST);
+                throw new RestException(
+                        "Format extension unknown or not specified: " + extension,
+                        HttpStatus.BAD_REQUEST);
             }
             handleRequest(layer, obj);
             return new ResponseEntity<Object>(HttpStatus.OK);
@@ -218,6 +220,7 @@ public class SeedService {
 
     /**
      * METHOD that handles the seeding/truncating task from the POST method.
+     *
      * @param layerName
      * @param obj
      */
@@ -233,13 +236,14 @@ public class SeedService {
     }
 
     protected XStream configXStream(XStream xs) {
-        return xmlConfig.getConfiguredXStreamWithContext(xs, ContextualConfigurationProvider.Context.REST);
+        return xmlConfig.getConfiguredXStreamWithContext(
+                xs, ContextualConfigurationProvider.Context.REST);
     }
 
     private Map<String, String> splitToMap(String data) {
         if (data.contains("&")) {
             return Splitter.on("&").withKeyValueSeparator("=").split(data);
-        }else {
+        } else {
             return Splitter.on(" ").withKeyValueSeparator("=").split(data);
         }
     }
@@ -247,14 +251,14 @@ public class SeedService {
     /**
      * Deserializing a json string is more complicated.
      *
-     * XStream does not natively support it. Rather, it uses a JettisonMappedXmlDriver to convert to
-     * intermediate xml and then deserializes that into the desired object. At this time, there is a
-     * known issue with the Jettison driver involving elements that come after an array in the json
-     * string.
+     * <p>XStream does not natively support it. Rather, it uses a JettisonMappedXmlDriver to convert
+     * to intermediate xml and then deserializes that into the desired object. At this time, there
+     * is a known issue with the Jettison driver involving elements that come after an array in the
+     * json string.
      *
-     * http://jira.codehaus.org/browse/JETTISON-48
+     * <p>http://jira.codehaus.org/browse/JETTISON-48
      *
-     * The code below is a hack: it treats the json string as text, then converts it to the
+     * <p>The code below is a hack: it treats the json string as text, then converts it to the
      * intermediate xml and then deserializes that into the SeedRequest object.
      */
     protected String convertJson(String entityText) throws IOException {
@@ -266,6 +270,4 @@ public class SeedService {
         writer.close();
         return writer.toString();
     }
-
-
 }

@@ -2,9 +2,9 @@ package org.geowebcache.arcgis.config;
 
 /**
  * Represents an ArcGIS tile cache configuration file.
- * <p>
- * XML structure:
- * 
+ *
+ * <p>XML structure:
+ *
  * <pre>
  * <code>
  * &lt;CacheInfo xsi:type='typens:CacheInfo' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xs='http://www.w3.org/2001/XMLSchema'
@@ -26,9 +26,9 @@ package org.geowebcache.arcgis.config;
  *         &lt;Scale&gt;8000000&lt;/Scale&gt;
  *         &lt;Resolution&gt;2116.670900008467&lt;/Resolution&gt;
  *       &lt;/LODInfo&gt;
- *       
+ *
  *       ....
- *       
+ *
  *     &lt;/LODInfos&gt;
  *   &lt;/TileCacheInfo&gt;
  *   &lt;TileImageInfo xsi:type='typens:TileImageInfo'&gt;
@@ -44,9 +44,7 @@ package org.geowebcache.arcgis.config;
  * &lt;/CacheInfo&gt;
  * </code>
  * </pre>
- * 
- * </p>
- * 
+ *
  * @author Gabriel Roldan
  * @see TileCacheInfo
  * @see SpatialReference
@@ -80,5 +78,4 @@ public class CacheInfo {
     public CacheStorageInfo getCacheStorageInfo() {
         return cacheStorageInfo;
     }
-
 }

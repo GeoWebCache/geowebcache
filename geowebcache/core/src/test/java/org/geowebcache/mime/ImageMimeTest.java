@@ -1,24 +1,22 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * (c) 2016 Open Source Geospatial Foundation - all rights reserved 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * <p>(c) 2016 Open Source Geospatial Foundation - all rights reserved
  */
 package org.geowebcache.mime;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.awt.Color;
@@ -30,18 +28,16 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
-
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.junit.Before;
 import org.junit.Test;
 
 public class ImageMimeTest {
-    
+
     private BufferedImage indexed;
     private BufferedImage gray;
     private BufferedImage rgb;
@@ -78,7 +74,7 @@ public class ImageMimeTest {
         assertNotNull(MimeType.createFromFormat("image/vnd.jpeg-png"));
         assertNotNull(MimeType.createFromExtension("jpeg-png"));
     }
-    
+
     @Test
     public void testJpegPngImageWriter() {
         assertExpectedWriter(indexed, ImageMime.png);
@@ -88,7 +84,7 @@ public class ImageMimeTest {
         assertExpectedWriter(rgba_opaque, ImageMime.jpeg);
         assertExpectedWriter(rgba_partial, ImageMime.png);
     }
-    
+
     @Test
     public void testJpegPngMime() throws IOException {
         Resource pngImage = getAsResource(indexed, ImageMime.png);
@@ -117,8 +113,9 @@ public class ImageMimeTest {
     @Test
     public void testIsCompatileFailsOnXMLMime() {
         MimeType pngMimeType = ImageMime.jpeg;
-        assertFalse("PNG mime type should not be compatible with XML error.",
-            pngMimeType.isCompatible("application/vnd.ogc.se_xml"));
+        assertFalse(
+                "PNG mime type should not be compatible with XML error.",
+                pngMimeType.isCompatible("application/vnd.ogc.se_xml"));
     }
 
     @Test
@@ -126,11 +123,11 @@ public class ImageMimeTest {
         URL url = this.getClass().getResource("/images/4bit.png");
         RenderedImage tile = ImageIO.read(new File(url.toURI()));
         ImageWriter writer = ImageMime.png8.getImageWriter(tile);
-        //Not a great test, but make sure our writer is the pure java one, not the native version
-        //since the native version can't handle 4bit pngs.
+        // Not a great test, but make sure our writer is the pure java one, not the native version
+        // since the native version can't handle 4bit pngs.
         assertNotEquals(
-            "Writer for this image should not be the native version.",
-            writer.getClass().getName(),
-            ImageMime.NATIVE_PNG_WRITER_CLASS_NAME);
+                "Writer for this image should not be the native version.",
+                writer.getClass().getName(),
+                ImageMime.NATIVE_PNG_WRITER_CLASS_NAME);
     }
 }

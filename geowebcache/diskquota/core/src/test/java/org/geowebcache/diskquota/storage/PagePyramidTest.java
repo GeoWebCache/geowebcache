@@ -1,19 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Gabriel Roldan (OpenGeo) 2010
- *  
  */
 package org.geowebcache.diskquota.storage;
 
@@ -23,9 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-
 import junit.framework.TestCase;
-
 import org.geowebcache.diskquota.storage.PagePyramid.PageLevelInfo;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -44,14 +39,14 @@ public class PagePyramidTest extends TestCase {
     private PagePyramid pyramid;
 
     public void setUp() {
-        coverages = new long[][] {//
-        { 0, 0, 1, 1, 0 },// 2x2 tiles
-                { 3, 3, 10, 10, 1 },// 11x11 tiles
-                { 0, 0, 101, 101, 2 },// 102x102 tiles
-                { 1000, 1000, 3000, 3000, 3 } // 2001x2001 tiles
-        };
+        coverages =
+                new long[][] { //
+                    {0, 0, 1, 1, 0}, // 2x2 tiles
+                    {3, 3, 10, 10, 1}, // 11x11 tiles
+                    {0, 0, 101, 101, 2}, // 102x102 tiles
+                    {1000, 1000, 3000, 3000, 3} // 2001x2001 tiles
+                };
         pyramid = new PagePyramid(coverages, 0, 3);
-
     }
 
     public void testCalculatePageInfo() {
@@ -80,9 +75,15 @@ public class PagePyramidTest extends TestCase {
             totalPages += levelPages;
             totalTiles = totalTiles.add(tilesPerPage.multiply(BigInteger.valueOf(levelPages)));
 
-            System.out.println(FilePathUtils.zeroPadder(z, 2) + ": (total pages ="
-                    + nf.format(totalPages) + ") " + pageInfo.toString() + "(level tiles = "
-                    + nf.format(tilesPerPage.multiply(BigInteger.valueOf(levelPages))) + ") ");
+            System.out.println(
+                    FilePathUtils.zeroPadder(z, 2)
+                            + ": (total pages ="
+                            + nf.format(totalPages)
+                            + ") "
+                            + pageInfo.toString()
+                            + "(level tiles = "
+                            + nf.format(tilesPerPage.multiply(BigInteger.valueOf(levelPages)))
+                            + ") ");
         }
         System.out.println("Total pages: " + totalPages);
     }
@@ -130,11 +131,13 @@ public class PagePyramidTest extends TestCase {
         gridCoverage = pyramid.toGridCoverage(pageX, pageY, pageZ);
         int tilesPerPageX = pyramid.getTilesPerPageX(level);
         int tilesPerPageY = pyramid.getTilesPerPageY(level);
-        long[] expected = { coverages[level][0] + tilesPerPageX * pageX,//
-                coverages[level][1] + tilesPerPageY * pageY, //
-                coverages[level][0] + tilesPerPageX * pageX + tilesPerPageX - 1,//
-                coverages[level][0] + tilesPerPageY * pageY + tilesPerPageY - 1,//
-                pageZ };
+        long[] expected = {
+            coverages[level][0] + tilesPerPageX * pageX, //
+            coverages[level][1] + tilesPerPageY * pageY, //
+            coverages[level][0] + tilesPerPageX * pageX + tilesPerPageX - 1, //
+            coverages[level][0] + tilesPerPageY * pageY + tilesPerPageY - 1, //
+            pageZ
+        };
         assertEquals(asList(expected), asList(gridCoverage[1]));
     }
 
@@ -156,36 +159,36 @@ public class PagePyramidTest extends TestCase {
 
         // grid coverages:
         // { 0, 0, 1, 1, 0 },// 1x1 tiles
-        int[] pageIndexTarget = { Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE };
-        int[] expected = { 0, 0, 0 };
+        int[] pageIndexTarget = {Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE};
+        int[] expected = {0, 0, 0};
         pyramid.pageIndexForTile(0, 0, 0, pageIndexTarget);
         assertTrue(Arrays.toString(pageIndexTarget), Arrays.equals(expected, pageIndexTarget));
 
-        expected = new int[] { 1, 1, 0 };
+        expected = new int[] {1, 1, 0};
         pyramid.pageIndexForTile(1, 1, 0, pageIndexTarget);
         assertTrue(Arrays.toString(pageIndexTarget), Arrays.equals(expected, pageIndexTarget));
 
         // grid coverages:
         // { 3, 3, 10, 10, 1 },// 1x1 tiles
-        expected = new int[] { 0, 0, 1 };
+        expected = new int[] {0, 0, 1};
         pyramid.pageIndexForTile(3, 3, 1, pageIndexTarget);
         assertTrue(Arrays.toString(pageIndexTarget), Arrays.equals(expected, pageIndexTarget));
 
-        expected = new int[] { 1, 1, 1 };
+        expected = new int[] {1, 1, 1};
         pyramid.pageIndexForTile(4, 4, 1, pageIndexTarget);
         assertTrue(Arrays.toString(pageIndexTarget), Arrays.equals(expected, pageIndexTarget));
 
-        expected = new int[] { 7, 7, 1 };
+        expected = new int[] {7, 7, 1};
         pyramid.pageIndexForTile(10, 10, 1, pageIndexTarget);
         assertTrue(Arrays.toString(pageIndexTarget), Arrays.equals(expected, pageIndexTarget));
 
         // grid coverages:
         // { 1000, 1000, 3000, 3000, 3 } // 77x77 pages, 26x26 tiles
-        expected = new int[] { 0, 0, 3 };
+        expected = new int[] {0, 0, 3};
         pyramid.pageIndexForTile(1000, 1000, 3, pageIndexTarget);
         assertTrue(Arrays.toString(pageIndexTarget), Arrays.equals(expected, pageIndexTarget));
 
-        expected = new int[] { 1, 1, 3 };
+        expected = new int[] {1, 1, 3};
         pyramid.pageIndexForTile(1026, 1026, 3, pageIndexTarget);
         assertTrue(Arrays.toString(pageIndexTarget), Arrays.equals(expected, pageIndexTarget));
     }
@@ -197,5 +200,4 @@ public class PagePyramidTest extends TestCase {
         }
         return list;
     }
-
 }

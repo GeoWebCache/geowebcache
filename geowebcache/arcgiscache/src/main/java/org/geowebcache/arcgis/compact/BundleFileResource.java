@@ -8,15 +8,9 @@ import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-
 import org.geowebcache.io.Resource;
 
-/**
- *
- * @author Bjoern Saxe
- *
- */
-
+/** @author Bjoern Saxe */
 public class BundleFileResource implements Resource {
     private final String bundleFilePath;
 
@@ -30,22 +24,17 @@ public class BundleFileResource implements Resource {
         this.tileSize = tileSize;
     }
 
-    /**
-     * @see org.geowebcache.io.Resource#getSize()
-     */
+    /** @see org.geowebcache.io.Resource#getSize() */
     public long getSize() {
         return tileSize;
     }
 
-    /**
-     * @see org.geowebcache.io.Resource#transferTo()
-     */
+    /** @see org.geowebcache.io.Resource#transferTo() */
     public long transferTo(WritableByteChannel target) throws IOException {
         try (FileChannel in = new FileInputStream(new File(bundleFilePath)).getChannel()) {
             final long size = tileSize;
             long written = 0;
-            while ((written += in.transferTo(tileOffset + written, size, target)) < size)
-                ;
+            while ((written += in.transferTo(tileOffset + written, size, target)) < size) ;
             return size;
         }
     }
@@ -60,9 +49,7 @@ public class BundleFileResource implements Resource {
         return 0;
     }
 
-    /**
-     * @see org.geowebcache.io.Resource#getInputStream()
-     */
+    /** @see org.geowebcache.io.Resource#getInputStream() */
     public InputStream getInputStream() throws IOException {
         FileInputStream fis = new FileInputStream(bundleFilePath);
         fis.skip(tileOffset);
@@ -80,13 +67,10 @@ public class BundleFileResource implements Resource {
         return null;
     }
 
-    /**
-     * @see org.geowebcache.io.Resource#getLastModified()
-     */
+    /** @see org.geowebcache.io.Resource#getLastModified() */
     public long getLastModified() {
         File f = new File(bundleFilePath);
 
         return f.lastModified();
     }
-
 }

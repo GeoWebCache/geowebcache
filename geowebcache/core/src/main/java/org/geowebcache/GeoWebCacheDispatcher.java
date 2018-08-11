@@ -1,20 +1,17 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
-
 package org.geowebcache;
 
 import java.io.File;
@@ -31,11 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.httpclient.util.DateParseException;
 import org.apache.commons.httpclient.util.DateUtil;
 import org.apache.commons.logging.Log;
@@ -75,9 +69,7 @@ import org.geowebcache.util.ServletUtils;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
 
-/**
- * This is the main router for requests of all types.
- */
+/** This is the main router for requests of all types. */
 public class GeoWebCacheDispatcher extends AbstractController {
     private static Log log = LogFactory.getLog(org.geowebcache.GeoWebCacheDispatcher.class);
 
@@ -104,25 +96,28 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private String servletPrefix = null;
 
     private Configuration mainConfiguration;
-    
+
     private SecurityDispatcher securityDispatcher;
-    
+
     /**
      * Should be invoked through Spring
-     * 
+     *
      * @param tileLayerDispatcher
      * @param gridSetBroker
      */
-    public GeoWebCacheDispatcher(TileLayerDispatcher tileLayerDispatcher,
-            GridSetBroker gridSetBroker, StorageBroker storageBroker,
-            Configuration mainConfiguration, RuntimeStats runtimeStats) {
+    public GeoWebCacheDispatcher(
+            TileLayerDispatcher tileLayerDispatcher,
+            GridSetBroker gridSetBroker,
+            StorageBroker storageBroker,
+            Configuration mainConfiguration,
+            RuntimeStats runtimeStats) {
         super();
         this.tileLayerDispatcher = tileLayerDispatcher;
         this.gridSetBroker = gridSetBroker;
         this.runtimeStats = runtimeStats;
         this.storageBroker = storageBroker;
         this.mainConfiguration = mainConfiguration;
-        
+
         if (mainConfiguration.isRuntimeStatsEnabled()) {
             this.runtimeStats.start();
         } else {
@@ -142,7 +137,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     /**
      * GeoServer and other solutions that embedded this dispatcher will prepend a path, this is used
      * to remove it.
-     * 
+     *
      * @param servletPrefix
      */
     public void setServletPrefix(String servletPrefix) {
@@ -165,10 +160,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
     /**
      * Services convert HTTP requests into the internal grid representation and specify what layer
      * the response should come from.
-     * 
-     * The application context is scanned for objects extending Service, thereby making it easy to
-     * add new services.
-     * 
+     *
+     * <p>The application context is scanned for objects extending Service, thereby making it easy
+     * to add new services.
+     *
      * @return
      */
     private Map<String, Service> loadServices() {
@@ -180,14 +175,15 @@ public class GeoWebCacheDispatcher extends AbstractController {
         for (Service aService : plugins) {
             services.put(aService.getPathName(), aService);
         }
-        log.info("Done loading GWC Service extensions. Found : "
-                + new ArrayList<String>(services.keySet()));
+        log.info(
+                "Done loading GWC Service extensions. Found : "
+                        + new ArrayList<String>(services.keySet()));
         return services;
     }
 
     private void loadBlankTile() {
-        String blankTilePath = defaultStorageFinder
-                .findEnvVar(DefaultStorageFinder.GWC_BLANK_TILE_PATH);
+        String blankTilePath =
+                defaultStorageFinder.findEnvVar(DefaultStorageFinder.GWC_BLANK_TILE_PATH);
 
         if (blankTilePath != null) {
             File fh = new File(blankTilePath);
@@ -238,23 +234,25 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
     /**
      * Spring function for MVC, this is the entry point for the application.
-     * 
-     * If a tile is requested the request will be handed off to handleServiceRequest.
-     * 
+     *
+     * <p>If a tile is requested the request will be handed off to handleServiceRequest.
      */
     @Override
-    protected ModelAndView handleRequestInternal(HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
+    protected ModelAndView handleRequestInternal(
+            HttpServletRequest request, HttpServletResponse response) throws Exception {
 
         // Break the request into components, {type, service name}
         String[] requestComps = null;
         try {
-            String normalizedURI = request.getRequestURI().replaceFirst(request.getContextPath(),
-                    "");
+            String normalizedURI =
+                    request.getRequestURI().replaceFirst(request.getContextPath(), "");
 
             if (servletPrefix != null) {
-                normalizedURI = normalizedURI.replaceFirst(servletPrefix, ""); // getRequestURI().replaceFirst(request.getContextPath()+,
-                                                                               // "");
+                normalizedURI =
+                        normalizedURI.replaceFirst(
+                                servletPrefix,
+                                ""); // getRequestURI().replaceFirst(request.getContextPath()+,
+                // "");
             }
             requestComps = parseRequest(normalizedURI);
             // requestComps = parseRequest(request.getRequestURI());
@@ -275,22 +273,38 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 writeError(response, 404, "Unknown path: " + requestComps[0]);
             }
         } catch (HttpErrorCodeException e) {
-            writeFixedResponse(response, e.getErrorCode(), "text/plain", new ByteArrayResource(e
-                    .getMessage().getBytes()), CacheResult.OTHER);
+            writeFixedResponse(
+                    response,
+                    e.getErrorCode(),
+                    "text/plain",
+                    new ByteArrayResource(e.getMessage().getBytes()),
+                    CacheResult.OTHER);
         } catch (RequestFilterException e) {
 
             RequestFilterException reqE = (RequestFilterException) e;
             reqE.setHttpInfoHeader(response);
 
-            writeFixedResponse(response, reqE.getResponseCode(), reqE.getContentType(),
-                    reqE.getResponse(), CacheResult.OTHER);
+            writeFixedResponse(
+                    response,
+                    reqE.getResponseCode(),
+                    reqE.getContentType(),
+                    reqE.getResponse(),
+                    CacheResult.OTHER);
         } catch (OWSException e) {
             OWSException owsE = (OWSException) e;
-            writeFixedResponse(response, owsE.getResponseCode(), owsE.getContentType(),
-                    owsE.getResponse(), CacheResult.OTHER);
+            writeFixedResponse(
+                    response,
+                    owsE.getResponseCode(),
+                    owsE.getContentType(),
+                    owsE.getResponse(),
+                    CacheResult.OTHER);
         } catch (SecurityException e) {
-            writeFixedResponse(response, 403, "text/plain",
-                    new ByteArrayResource("Not Authorized".getBytes()), CacheResult.OTHER);
+            writeFixedResponse(
+                    response,
+                    403,
+                    "text/plain",
+                    new ByteArrayResource("Not Authorized".getBytes()),
+                    CacheResult.OTHER);
             log.warn(e.getMessage());
         } catch (Exception e) {
             if (!(e instanceof BadTileException) || log.isDebugEnabled()) {
@@ -316,7 +330,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
     /**
      * Essentially this slices away the prefix, leaving type and request
-     * 
+     *
      * @param servletPath
      * @return {type, service}ervletPrefix
      */
@@ -337,13 +351,14 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
     /**
      * This is the main method for handling service requests. See comments in the code.
-     * 
+     *
      * @param request
      * @param response
      * @throws Exception
      */
-    private void handleServiceRequest(String serviceStr, HttpServletRequest request,
-            HttpServletResponse response) throws Exception {
+    private void handleServiceRequest(
+            String serviceStr, HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
 
         Conveyor conv = null;
 
@@ -353,21 +368,23 @@ public class GeoWebCacheDispatcher extends AbstractController {
         // 2) Find out what layer will be used and how
         conv = service.getConveyor(request, response);
         final String layerName = conv.getLayerId();
-        
+
         final TileLayer layer;
-        if(Objects.nonNull(layerName)) {
+        if (Objects.nonNull(layerName)) {
             layer = tileLayerDispatcher.getTileLayer(layerName);
-            if(!layer.isEnabled()) {
-                throw new OWSException(400, "InvalidParameterValue", "LAYERS", "Layer '" + layerName
-                        + "' is disabled");
+            if (!layer.isEnabled()) {
+                throw new OWSException(
+                        400,
+                        "InvalidParameterValue",
+                        "LAYERS",
+                        "Layer '" + layerName + "' is disabled");
             }
-            if(conv instanceof ConveyorTile) {
+            if (conv instanceof ConveyorTile) {
                 ((ConveyorTile) conv).setTileLayer(layer);
             }
         } else {
             layer = null;
         }
-        
 
         // Check where this should be dispatched
         if (conv.reqHandler == Conveyor.RequestHandler.SERVICE) {
@@ -379,10 +396,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
             // Apply the filters
             layer.applyRequestFilters(convTile);
-            
+
             // Throw an exception if not authorized
             getSecurityDispatcher().checkSecurity(convTile);
-            
+
             // Keep the URI
             // tile.requestURI = request.getRequestURI();
 
@@ -400,14 +417,15 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
     }
 
-    private void handleDemoRequest(String action, HttpServletRequest request,
-            HttpServletResponse response) throws GeoWebCacheException {
+    private void handleDemoRequest(
+            String action, HttpServletRequest request, HttpServletResponse response)
+            throws GeoWebCacheException {
         Demo.makeMap(tileLayerDispatcher, gridSetBroker, action, request, response);
     }
 
     /**
      * Helper function for looking up the service that should handle the request.
-     * 
+     *
      * @param request full HttpServletRequest
      * @return
      */
@@ -432,7 +450,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
     /**
      * Create a minimalistic frontpage
-     * 
+     *
      * @param request
      * @param response
      */
@@ -459,36 +477,52 @@ public class GeoWebCacheDispatcher extends AbstractController {
             commitId = "{NO BUILD INFO IN MANIFEST}";
         }
 
-        str.append("<html>\n" + ServletUtils.gwcHtmlHeader(baseUrl,"GWC Home") + "<body>\n"
-                + ServletUtils.gwcHtmlLogoLink(baseUrl));
-        str.append("<h3>Welcome to GeoWebCache version " + version + ", build " + commitId + "</h3>\n");
-        str.append("<p><a href=\"http://geowebcache.org\">GeoWebCache</a> is an advanced tile cache for WMS servers.");
-        str.append("It supports a large variety of protocols and formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</p>");
+        str.append(
+                "<html>\n"
+                        + ServletUtils.gwcHtmlHeader(baseUrl, "GWC Home")
+                        + "<body>\n"
+                        + ServletUtils.gwcHtmlLogoLink(baseUrl));
+        str.append(
+                "<h3>Welcome to GeoWebCache version "
+                        + version
+                        + ", build "
+                        + commitId
+                        + "</h3>\n");
+        str.append(
+                "<p><a href=\"http://geowebcache.org\">GeoWebCache</a> is an advanced tile cache for WMS servers.");
+        str.append(
+                "It supports a large variety of protocols and formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</p>");
         str.append("<h3>Automatically Generated Demos:</h3>\n");
-        str.append("<ul><li><a href=\"" + baseUrl
-                + "demo\">A list of all the layers and automatic demos</a></li></ul>\n");
+        str.append(
+                "<ul><li><a href=\""
+                        + baseUrl
+                        + "demo\">A list of all the layers and automatic demos</a></li></ul>\n");
         str.append("<h3>GetCapabilities:</h3>\n");
-        str.append("<ul><li><a href=\""
-                + baseUrl
-                + "service/wmts?REQUEST=getcapabilities\">WMTS 1.0.0 GetCapabilities document</a></li>");
-        str.append("<li><a href=\""
-                + baseUrl
-                + "service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities&TILED=true\">WMS 1.1.1 GetCapabilities document</a></li>");
+        str.append(
+                "<ul><li><a href=\""
+                        + baseUrl
+                        + "service/wmts?REQUEST=getcapabilities\">WMTS 1.0.0 GetCapabilities document</a></li>");
+        str.append(
+                "<li><a href=\""
+                        + baseUrl
+                        + "service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities&TILED=true\">WMS 1.1.1 GetCapabilities document</a></li>");
         str.append("<li><a href=\"" + baseUrl + "service/tms/1.0.0\">TMS 1.0.0 document</a></li>");
         str.append("<li>Note that the latter will only work with clients that are ");
-        str.append("<a href=\"http://wiki.osgeo.org/wiki/WMS_Tiling_Client_Recommendation\">WMS-C capable</a>.</li>\n");
-        str.append("<li>Omitting tiled=true from the URL will omit the TileSet elements.</li></ul>\n");
+        str.append(
+                "<a href=\"http://wiki.osgeo.org/wiki/WMS_Tiling_Client_Recommendation\">WMS-C capable</a>.</li>\n");
+        str.append(
+                "<li>Omitting tiled=true from the URL will omit the TileSet elements.</li></ul>\n");
         if (runtimeStats != null) {
             str.append("<h3>Runtime Statistics</h3>\n");
             str.append(runtimeStats.getHTMLStats());
             str.append("</table>\n");
         }
-        if(!Boolean.parseBoolean(GeoWebCacheExtensions.getProperty("GEOWEBCACHE_HIDE_STORAGE_LOCATIONS")))
-        {
+        if (!Boolean.parseBoolean(
+                GeoWebCacheExtensions.getProperty("GEOWEBCACHE_HIDE_STORAGE_LOCATIONS"))) {
             appendStorageLocations(str);
         }
-        
-        if(storageBroker != null){
+
+        if (storageBroker != null) {
             appendInternalCacheStats(str);
         }
         str.append("</body></html>\n");
@@ -501,7 +535,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         str.append("<table class=\"stats\">\n");
         str.append("<tbody>");
         XMLConfiguration config;
-        if(mainConfiguration instanceof XMLConfiguration) {
+        if (mainConfiguration instanceof XMLConfiguration) {
             config = (XMLConfiguration) mainConfiguration;
         } else {
             config = GeoWebCacheExtensions.bean(XMLConfiguration.class);
@@ -510,10 +544,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
         String localStorageLoc;
         // TODO: Disk Quota location
         Map<String, String> blobStoreLocations = new HashMap<>();
-        if(storageBroker instanceof DefaultStorageBroker) {
+        if (storageBroker instanceof DefaultStorageBroker) {
             BlobStore bStore = ((DefaultStorageBroker) storageBroker).getBlobStore();
-            if(bStore instanceof CompositeBlobStore) {
-                for(BlobStoreConfig bsConfig: config.getBlobStores()) {
+            if (bStore instanceof CompositeBlobStore) {
+                for (BlobStoreConfig bsConfig : config.getBlobStores()) {
                     blobStoreLocations.put(bsConfig.getId(), bsConfig.getLocation());
                 }
             }
@@ -523,33 +557,40 @@ public class GeoWebCacheDispatcher extends AbstractController {
         } catch (ConfigurationException ex) {
             configLoc = "Error";
             log.error("Could not find config location", ex);
-        }            
+        }
         try {
             localStorageLoc = defaultStorageFinder.getDefaultPath();
         } catch (ConfigurationException ex) {
             localStorageLoc = "Error";
             log.error("Could not find local cache location", ex);
         }
-        str.append("<tr><th scope=\"row\">Config file:</th><td><tt>").append(configLoc).append("</tt></td></tr>");
-        str.append("<tr><th scope=\"row\">Local Storage:</th><td><tt>").append(localStorageLoc).append("</tt></td></tr>");
+        str.append("<tr><th scope=\"row\">Config file:</th><td><tt>")
+                .append(configLoc)
+                .append("</tt></td></tr>");
+        str.append("<tr><th scope=\"row\">Local Storage:</th><td><tt>")
+                .append(localStorageLoc)
+                .append("</tt></td></tr>");
         str.append("</tbody>");
-        if(!blobStoreLocations.isEmpty()){
+        if (!blobStoreLocations.isEmpty()) {
             str.append("<tbody>");
             str.append("<tr><th scope=\"rowgroup\" colspan=\"2\">Blob Stores</th></tr>");
-            for(Map.Entry<String, String> e : blobStoreLocations.entrySet())
-            {
-                str.append("<tr><th scope=\"row\">").append(e.getKey()).append(":</th><td><tt>").append(e.getValue()).append("</tt></td></tr>");
+            for (Map.Entry<String, String> e : blobStoreLocations.entrySet()) {
+                str.append("<tr><th scope=\"row\">")
+                        .append(e.getKey())
+                        .append(":</th><td><tt>")
+                        .append(e.getValue())
+                        .append("</tt></td></tr>");
             }
             str.append("</tbody>");
         }
-        
+
         str.append("</tbody>");
         str.append("</table>\n");
     }
 
     /**
      * Wrapper method for writing an error back to the client, and logging it at the same time.
-     * 
+     *
      * @param response where to write to
      * @param httpCode the HTTP code to provide
      * @param errorMsg the actual error message, human readable
@@ -557,9 +598,17 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private void writeError(HttpServletResponse response, int httpCode, String errorMsg) {
         log.debug(errorMsg);
 
-        errorMsg = "<html>\n" + ServletUtils.gwcHtmlHeader("../", "GWC Error") + "<body>\n"
-                + ServletUtils.gwcHtmlLogoLink("../") + "<h4>" + httpCode + ": "
-                + ServletUtils.disableHTMLTags(errorMsg) + "</h4>" + "</body></html>\n";
+        errorMsg =
+                "<html>\n"
+                        + ServletUtils.gwcHtmlHeader("../", "GWC Error")
+                        + "<body>\n"
+                        + ServletUtils.gwcHtmlLogoLink("../")
+                        + "<h4>"
+                        + httpCode
+                        + ": "
+                        + ServletUtils.disableHTMLTags(errorMsg)
+                        + "</h4>"
+                        + "</body></html>\n";
         writePage(response, httpCode, errorMsg);
     }
 
@@ -568,9 +617,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         writeFixedResponse(response, httpCode, "text/html", res, CacheResult.OTHER);
     }
 
-    /**
-     * Happy ending, sets the headers and writes the response back to the client.
-     */
+    /** Happy ending, sets the headers and writes the response back to the client. */
     private void writeData(ConveyorTile tile) throws IOException {
         HttpServletResponse servletResp = tile.servletResp;
         final HttpServletRequest servletReq = tile.servletReq;
@@ -597,8 +644,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
         // (e.g. 'Sun, 06 Nov 1994 08:49:37 GMT'). See
         // http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3.1
 
-        final String lastModified = org.apache.commons.httpclient.util.DateUtil
-                .formatDate(new Date(tileTimeStamp));
+        final String lastModified =
+                org.apache.commons.httpclient.util.DateUtil.formatDate(new Date(tileTimeStamp));
         servletResp.setHeader("Last-Modified", lastModified);
 
         final Date ifModifiedSince;
@@ -614,8 +661,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 }
             } catch (DateParseException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Can't parse client's If-Modified-Since header: '" + ifModSinceHeader
-                            + "'");
+                    log.debug(
+                            "Can't parse client's If-Modified-Since header: '"
+                                    + ifModSinceHeader
+                                    + "'");
                 }
             }
         }
@@ -660,19 +709,32 @@ public class GeoWebCacheDispatcher extends AbstractController {
             }
         }
 
-        writeFixedResponse(tile.servletResp, 200, ImageMime.png.getMimeType(), this.blankTile,
+        writeFixedResponse(
+                tile.servletResp,
+                200,
+                ImageMime.png.getMimeType(),
+                this.blankTile,
                 CacheResult.OTHER);
     }
 
-    private void writeFixedResponse(HttpServletResponse response, int httpCode, String contentType,
-            Resource resource, CacheResult cacheRes) {
+    private void writeFixedResponse(
+            HttpServletResponse response,
+            int httpCode,
+            String contentType,
+            Resource resource,
+            CacheResult cacheRes) {
 
         int contentLength = (int) (resource == null ? -1 : resource.getSize());
         writeFixedResponse(response, httpCode, contentType, resource, cacheRes, contentLength);
     }
 
-    private void writeFixedResponse(HttpServletResponse response, int httpCode, String contentType,
-            Resource resource, CacheResult cacheRes, int contentLength) {
+    private void writeFixedResponse(
+            HttpServletResponse response,
+            int httpCode,
+            String contentType,
+            Resource resource,
+            CacheResult cacheRes,
+            int contentLength) {
 
         response.setStatus(httpCode);
         response.setContentType(contentType);
@@ -692,8 +754,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
     }
 
     /**
-     * This method appends the cache statistics to the GWC homepage if the blobstore used is an instance of the {@link MemoryBlobStore} class
-     * 
+     * This method appends the cache statistics to the GWC homepage if the blobstore used is an
+     * instance of the {@link MemoryBlobStore} class
+     *
      * @param str Input {@link StringBuilder} containing the HTML for the GWC homepage
      */
     private void appendInternalCacheStats(StringBuilder strGlobal) {
@@ -756,44 +819,50 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
         str.append("<table border=\"0\" cellspacing=\"5\">");
 
-        str.append("<tr><td colspan=\"2\">Total number of requests:</td><td colspan=\"3\">"
-                +  (requestCount >= 0 ?  requestCount + "" : "Unavailable"));
+        str.append(
+                "<tr><td colspan=\"2\">Total number of requests:</td><td colspan=\"3\">"
+                        + (requestCount >= 0 ? requestCount + "" : "Unavailable"));
         str.append("</td></tr>\n");
 
         str.append("<tr><td colspan=\"5\"> </td></tr>");
 
         str.append("<tr><td colspan=\"2\">Internal Cache hit count:</td><td colspan=\"3\">");
-        str.append(hitCount >= 0 ?  hitCount + "" : "Unavailable");
+        str.append(hitCount >= 0 ? hitCount + "" : "Unavailable");
         str.append("</td></tr>\n");
 
         str.append("<tr><td colspan=\"2\">Internal Cache miss count:</td><td colspan=\"3\">");
-        str.append(missCount >= 0 ?  missCount + "" : "Unavailable");
+        str.append(missCount >= 0 ? missCount + "" : "Unavailable");
         str.append("</td></tr>\n");
 
         str.append("<tr><td colspan=\"2\">Internal Cache hit ratio:</td><td colspan=\"3\">");
-        str.append(hitRate >= 0 ?  hitRate + " %" : "Unavailable");
+        str.append(hitRate >= 0 ? hitRate + " %" : "Unavailable");
         str.append("</td></tr>\n");
 
         str.append("<tr><td colspan=\"2\">Internal Cache miss ratio:</td><td colspan=\"3\">");
-        str.append(missRate >= 0 ?  missRate + " %" : "Unavailable");
+        str.append(missRate >= 0 ? missRate + " %" : "Unavailable");
         str.append("</td></tr>\n");
 
         str.append("<tr><td colspan=\"5\"> </td></tr>");
 
-        str.append("<tr><td colspan=\"2\">Total number of evicted tiles:</td><td colspan=\"3\">"
-                + (evictionCount >= 0 ?  evictionCount + "" : "Unavailable"));
+        str.append(
+                "<tr><td colspan=\"2\">Total number of evicted tiles:</td><td colspan=\"3\">"
+                        + (evictionCount >= 0 ? evictionCount + "" : "Unavailable"));
         str.append("</td></tr>\n");
 
         str.append("<tr><td colspan=\"5\"> </td></tr>");
-        
-        str.append("<tr><td colspan=\"2\">Cache Memory occupation:</td><td colspan=\"3\">"
-                + (currentMemory >= 0 ?  currentMemory + " %" : "Unavailable"));
+
+        str.append(
+                "<tr><td colspan=\"2\">Cache Memory occupation:</td><td colspan=\"3\">"
+                        + (currentMemory >= 0 ? currentMemory + " %" : "Unavailable"));
         str.append("</td></tr>\n");
 
         str.append("<tr><td colspan=\"5\"> </td></tr>");
-        
-        str.append("<tr><td colspan=\"2\">Cache Actual Size/ Total Size :</td><td colspan=\"3\">"
-                + (totalSize >= 0 && actualSize >= 0?  actualSize + " / " + totalSize + " Mb" : "Unavailable") );
+
+        str.append(
+                "<tr><td colspan=\"2\">Cache Actual Size/ Total Size :</td><td colspan=\"3\">"
+                        + (totalSize >= 0 && actualSize >= 0
+                                ? actualSize + " / " + totalSize + " Mb"
+                                : "Unavailable"));
         str.append("</td></tr>\n");
 
         str.append("<tr><td colspan=\"5\"> </td></tr>");
@@ -807,14 +876,13 @@ public class GeoWebCacheDispatcher extends AbstractController {
     protected SecurityDispatcher getSecurityDispatcher() {
         return securityDispatcher;
     }
-    
+
     /**
      * Set the security dispatcher to use to test service requests.
+     *
      * @param secDispatcher
      */
     public void setSecurityDispatcher(SecurityDispatcher secDispatcher) {
         this.securityDispatcher = secDispatcher;
     }
-    
-    
 }

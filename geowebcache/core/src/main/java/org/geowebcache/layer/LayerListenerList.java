@@ -2,14 +2,12 @@ package org.geowebcache.layer;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-
 import org.geowebcache.conveyor.ConveyorTile;
 
 /**
  * Helper class for a {@link TileLayer} to maintain and dispatch events
- * 
+ *
  * @author groldan
- * 
  */
 public class LayerListenerList {
 

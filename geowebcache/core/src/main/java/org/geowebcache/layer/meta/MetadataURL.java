@@ -26,4 +26,3 @@ public class MetadataURL {
         return url;
     }
 }
-

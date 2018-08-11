@@ -1,27 +1,23 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Gabriel Roldan (OpenGeo) 2010
- *  
  */
 package org.geowebcache.diskquota.storage;
 
 /**
  * Identifiers a group of tiles uniform by layer, gridset, format and eventual request parameters.
- * 
- * @author Andrea Aime - GeoSolutions
  *
+ * @author Andrea Aime - GeoSolutions
  */
 public class TileSet implements Comparable<TileSet> {
 
@@ -46,16 +42,11 @@ public class TileSet implements Comparable<TileSet> {
     }
 
     /**
-     * 
-     * @param layerName
-     *            layer name, non null
-     * @param gridsetId
-     *            gridset id, non null
-     * @param blobFormat
-     *            blob format, non null
-     * @param parametersId
-     *            extra tileset scope identifier, may be null, indicating the default tileset for
-     *            the given layer/gridset/format
+     * @param layerName layer name, non null
+     * @param gridsetId gridset id, non null
+     * @param blobFormat blob format, non null
+     * @param parametersId extra tileset scope identifier, may be null, indicating the default
+     *     tileset for the given layer/gridset/format
      * @param size
      */
     public TileSet(String layerName, String gridsetId, String blobFormat, String parametersId) {
@@ -68,14 +59,18 @@ public class TileSet implements Comparable<TileSet> {
         this.key = sb.toString();
     }
 
-    public static void computeId(String layerName, String gridsetId, String blobFormat,
-            String parametersId, StringBuilder idTarget) {
+    public static void computeId(
+            String layerName,
+            String gridsetId,
+            String blobFormat,
+            String parametersId,
+            StringBuilder idTarget) {
         idTarget.append(layerName).append('#').append(gridsetId).append('#').append(blobFormat);
         if (parametersId != null) {
             idTarget.append('#').append(parametersId);
         }
     }
-    
+
     /**
      * Initializes the other fields of the tileset from an id with the
      * layer#gridset#format[#paramId] structure
@@ -83,8 +78,9 @@ public class TileSet implements Comparable<TileSet> {
     public void initFromId() {
         String[] splitted = key.split("#");
         if (splitted.length < 3 || splitted.length > 4) {
-            throw new IllegalArgumentException("Invalid key for standard tile set, "
-                    + "it should have the layer#gridset#format[#paramId]");
+            throw new IllegalArgumentException(
+                    "Invalid key for standard tile set, "
+                            + "it should have the layer#gridset#format[#paramId]");
         }
 
         this.layerName = splitted[0];
@@ -134,9 +130,7 @@ public class TileSet implements Comparable<TileSet> {
         return cachedHashCode;
     }
 
-    /**
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
+    /** @see java.lang.Comparable#compareTo(java.lang.Object) */
     public int compareTo(TileSet o) {
         int val = layerName.compareTo(o.layerName);
         if (val != 0) {
@@ -150,10 +144,10 @@ public class TileSet implements Comparable<TileSet> {
         if (val != 0) {
             return val;
         }
-        
-        if(parametersId == null) {
+
+        if (parametersId == null) {
             return o.parametersId == null ? 0 : -1;
-        } else if(o.parametersId == null) {
+        } else if (o.parametersId == null) {
             return 1;
         } else {
             return parametersId.compareTo(o.parametersId);
@@ -162,8 +156,10 @@ public class TileSet implements Comparable<TileSet> {
 
     @Override
     public String toString() {
-        return new StringBuilder(getClass().getSimpleName()).append("[").append(key).append("]")
+        return new StringBuilder(getClass().getSimpleName())
+                .append("[")
+                .append(key)
+                .append("]")
                 .toString();
     }
-
 }

@@ -1,24 +1,20 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
- *  
  */
 package org.geowebcache.layer.wms;
 
 import java.util.Map;
-
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
@@ -40,8 +36,12 @@ public abstract class WMSSourceHelper {
     private int concurrency = 32;
     private int backendTimetout;
 
-    abstract protected void makeRequest(TileResponseReceiver tileRespRecv, WMSLayer layer,
-            Map<String, String> wmsParams, MimeType expectedMime, Resource target)
+    protected abstract void makeRequest(
+            TileResponseReceiver tileRespRecv,
+            WMSLayer layer,
+            Map<String, String> wmsParams,
+            MimeType expectedMime,
+            Resource target)
             throws GeoWebCacheException;
 
     public void makeRequest(WMSMetaTile metaTile, Resource target) throws GeoWebCacheException {
@@ -58,8 +58,8 @@ public abstract class WMSSourceHelper {
 
         GridSubset gridSubset = layer.getGridSubset(tile.getGridSetId());
 
-        Map<String, String> wmsParams = layer.getWMSRequestTemplate(tile.getMimeType(),
-                WMSLayer.RequestType.MAP);
+        Map<String, String> wmsParams =
+                layer.getWMSRequestTemplate(tile.getMimeType(), WMSLayer.RequestType.MAP);
 
         wmsParams.put("FORMAT", tile.getMimeType().getFormat());
         wmsParams.put("SRS", layer.backendSRSOverride(gridSubset.getSRS()));
@@ -88,14 +88,15 @@ public abstract class WMSSourceHelper {
         makeRequest(tile, layer, wmsParams, mimeType, target);
     }
 
-    public Resource makeFeatureInfoRequest(ConveyorTile tile, BoundingBox bbox, int height,
-            int width, int x, int y) throws GeoWebCacheException {
+    public Resource makeFeatureInfoRequest(
+            ConveyorTile tile, BoundingBox bbox, int height, int width, int x, int y)
+            throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
 
         GridSubset gridSubset = tile.getGridSubset();
 
-        Map<String, String> wmsParams = layer.getWMSRequestTemplate(tile.getMimeType(),
-                WMSLayer.RequestType.FEATUREINFO);
+        Map<String, String> wmsParams =
+                layer.getWMSRequestTemplate(tile.getMimeType(), WMSLayer.RequestType.FEATUREINFO);
 
         wmsParams.put("INFO_FORMAT", tile.getMimeType().getFormat());
         wmsParams.put("FORMAT", layer.getDefaultMimeType().getMimeType());
@@ -113,17 +114,20 @@ public abstract class WMSSourceHelper {
 
         wmsParams.put("X", String.valueOf(x));
         wmsParams.put("Y", String.valueOf(y));
-        
+
         String featureCount;
         {
-            Map<String, String> values = ServletUtils.selectedStringsFromMap(
-                tile.servletReq.getParameterMap(), tile.servletReq.getCharacterEncoding(), "feature_count");
+            Map<String, String> values =
+                    ServletUtils.selectedStringsFromMap(
+                            tile.servletReq.getParameterMap(),
+                            tile.servletReq.getCharacterEncoding(),
+                            "feature_count");
             featureCount = values.get("feature_count");
         }
-        if(featureCount != null){
+        if (featureCount != null) {
             wmsParams.put("FEATURE_COUNT", featureCount);
         }
-        
+
         MimeType mimeType = tile.getMimeType();
         Resource target = new ByteArrayResource(2048);
         makeRequest(tile, layer, wmsParams, mimeType, target);
@@ -132,6 +136,7 @@ public abstract class WMSSourceHelper {
 
     /**
      * The levels of concurrent requests this source helper is allowing
+     *
      * @return
      */
     public int getConcurrency() {
@@ -140,6 +145,7 @@ public abstract class WMSSourceHelper {
 
     /**
      * Sets the maximum amount of concurrent requests this source helper will issue
+     *
      * @param concurrency
      */
     public void setConcurrency(int concurrency) {
@@ -148,15 +154,14 @@ public abstract class WMSSourceHelper {
 
     /**
      * Sets the backend timeout for HTTP calls
+     *
      * @param backendTimeout
      */
     public void setBackendTimeout(int backendTimeout) {
         this.backendTimetout = backendTimeout;
     }
-    
-    /**
-     * Returns the backend timeout for HTTP calls
-     */
+
+    /** Returns the backend timeout for HTTP calls */
     public int getBackendTimeout() {
         return this.backendTimetout;
     }

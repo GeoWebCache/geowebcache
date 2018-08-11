@@ -8,27 +8,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
-
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
-
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.wms.WMSLayer;
-import org.geowebcache.locks.LockProvider;
 import org.geowebcache.seed.GWCTask;
 import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.util.MockLockProvider;
-import org.springframework.http.HttpStatus;
-
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.springframework.http.HttpStatus;
 
 /**
  * Some common utility test functions.
+ *
  * @author Ian Schneider <ischneider@opengeo.org>
  */
 public class TestHelpers {
@@ -38,10 +35,14 @@ public class TestHelpers {
 
     public static byte[] createFakeSourceImage(final WMSLayer layer) throws IOException {
 
-        int tileWidth = layer.getGridSubset(gridSetBroker.WORLD_EPSG4326.getName()).getGridSet()
-                .getTileWidth();
-        int tileHeight = layer.getGridSubset(gridSetBroker.WORLD_EPSG4326.getName()).getGridSet()
-                .getTileHeight();
+        int tileWidth =
+                layer.getGridSubset(gridSetBroker.WORLD_EPSG4326.getName())
+                        .getGridSet()
+                        .getTileWidth();
+        int tileHeight =
+                layer.getGridSubset(gridSetBroker.WORLD_EPSG4326.getName())
+                        .getGridSet()
+                        .getTileHeight();
 
         int width = tileWidth * layer.getMetaTilingFactors()[0];
         int height = tileHeight * layer.getMetaTilingFactors()[1];
@@ -56,79 +57,107 @@ public class TestHelpers {
         return createWMSLayer(format, null, null);
     }
 
-    public static WMSLayer createWMSLayer(final String format, Integer minCacheLevel, Integer maxCacheLevel) {
-        String[] urls = { "http://localhost:38080/wms" };
+    public static WMSLayer createWMSLayer(
+            final String format, Integer minCacheLevel, Integer maxCacheLevel) {
+        String[] urls = {"http://localhost:38080/wms"};
         List<String> formatList = Collections.singletonList(format);
 
         Hashtable<String, GridSubset> grids = new Hashtable<String, GridSubset>();
 
-        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326,
-                new BoundingBox(-30.0, 15.0, 45.0, 30), 0, 10, minCacheLevel, maxCacheLevel);
+        GridSubset grid =
+                GridSubsetFactory.createGridSubSet(
+                        gridSetBroker.WORLD_EPSG4326,
+                        new BoundingBox(-30.0, 15.0, 45.0, 30),
+                        0,
+                        10,
+                        minCacheLevel,
+                        maxCacheLevel);
 
         grids.put(grid.getName(), grid);
-        int[] metaWidthHeight = { 3, 3 };
+        int[] metaWidthHeight = {3, 3};
 
-        WMSLayer layer = new WMSLayer("test:layer", urls, "aStyle", "test:layer", formatList,
-                grids, new ArrayList<>(), metaWidthHeight, "vendorparam=true", false, null);
+        WMSLayer layer =
+                new WMSLayer(
+                        "test:layer",
+                        urls,
+                        "aStyle",
+                        "test:layer",
+                        formatList,
+                        grids,
+                        new ArrayList<>(),
+                        metaWidthHeight,
+                        "vendorparam=true",
+                        false,
+                        null);
 
         layer.initialize(gridSetBroker);
         layer.setLockProvider(new MockLockProvider());
 
         return layer;
     }
-    
-    public static SeedRequest createRequest(WMSLayer tl, GWCTask.TYPE type, int zoomStart,
-            int zoomStop) {
+
+    public static SeedRequest createRequest(
+            WMSLayer tl, GWCTask.TYPE type, int zoomStart, int zoomStop) {
         String gridSet = tl.getGridSubsets().iterator().next();
         BoundingBox bounds = null;
         int threadCount = 1;
         String format = tl.getMimeTypes().get(0).getFormat();
-        SeedRequest req = new SeedRequest(tl.getName(), bounds, gridSet, threadCount, zoomStart,
-                zoomStop, format, type, null);
+        SeedRequest req =
+                new SeedRequest(
+                        tl.getName(),
+                        bounds,
+                        gridSet,
+                        threadCount,
+                        zoomStart,
+                        zoomStop,
+                        format,
+                        type,
+                        null);
         return req;
-
     }
-    
+
     /**
      * Matcher for an {@link HttpServletResponse} that checks its status.
+     *
      * @param statusMatcher
      * @return
      */
     public static Matcher<HttpServletResponse> hasStatus(HttpStatus expected) {
         return new BaseMatcher<HttpServletResponse>() {
-            
+
             @Override
             public boolean matches(Object item) {
-                if(item instanceof HttpServletResponse) {
+                if (item instanceof HttpServletResponse) {
                     return expected.equals(
                             HttpStatus.valueOf(((HttpServletResponse) item).getStatus()));
                 }
                 return false;
             }
-            
+
             @Override
             public void describeTo(Description description) {
-                description
-                    .appendText("Http response with status ");
+                description.appendText("Http response with status ");
                 describeStatus(expected, description);
             }
 
             protected void describeStatus(HttpStatus status, Description description) {
-                description.appendValue(status.value()).appendText(" ").appendValue(status.getReasonPhrase());
+                description
+                        .appendValue(status.value())
+                        .appendText(" ")
+                        .appendValue(status.getReasonPhrase());
             }
 
             @Override
             public void describeMismatch(Object item, Description description) {
-                if(item instanceof HttpServletResponse) {
-                    HttpStatus status = HttpStatus.valueOf(((HttpServletResponse) item).getStatus());
+                if (item instanceof HttpServletResponse) {
+                    HttpStatus status =
+                            HttpStatus.valueOf(((HttpServletResponse) item).getStatus());
                     description.appendText("status was ");
                     describeStatus(status, description);
                 } else {
                     description.appendText("was not an HttpServletResponse");
                 }
             }
-            
         };
-        
     }
 }

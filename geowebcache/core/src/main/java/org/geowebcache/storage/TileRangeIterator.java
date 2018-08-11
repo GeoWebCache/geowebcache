@@ -1,33 +1,30 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne OpenGeo 2010
  */
-
 package org.geowebcache.storage;
 
 import java.util.concurrent.atomic.AtomicLong;
 
 public class TileRangeIterator {
 
-    final private TileRange tr;
+    private final TileRange tr;
 
-    final private DiscontinuousTileRange dtr;
+    private final DiscontinuousTileRange dtr;
 
-    final private int metaX;
+    private final int metaX;
 
-    final private int metaY;
+    private final int metaY;
 
     private AtomicLong tilesSkippedCount = new AtomicLong();
 
@@ -38,7 +35,7 @@ public class TileRangeIterator {
     /**
      * Note that the bounds of the tile range must already be expanded to the meta tile factors for
      * this to work.
-     * 
+     *
      * @param tr
      * @param metaTilingFactors
      */
@@ -56,7 +53,7 @@ public class TileRangeIterator {
 
     /**
      * Returns the underlying tile range
-     * 
+     *
      * @return
      */
     public TileRange getTileRange() {
@@ -66,16 +63,15 @@ public class TileRangeIterator {
     /**
      * This loops over all the possible metatile locations and returns a tile location within each
      * metatile.
-     * 
-     * If the TileRange object provided is a DiscontinuousTileRange implementation, each location is
-     * checked against the filter of that class.
-     * 
-     * @param gridLoc as an optimization, re-use the previous gridLoc.  It will be changed and used
-     * as the return value.  The values passed in will not impact the result.  For the first call, 
-     * use a new 3 element array.
-     * 
+     *
+     * <p>If the TileRange object provided is a DiscontinuousTileRange implementation, each location
+     * is checked against the filter of that class.
+     *
+     * @param gridLoc as an optimization, re-use the previous gridLoc. It will be changed and used
+     *     as the return value. The values passed in will not impact the result. For the first call,
+     *     use a new 3 element array.
      * @return {@code null} if there're no more tiles to return, the next grid location in the
-     *         iterator otherwise. The array has three elements: {x,y,z}
+     *     iterator otherwise. The array has three elements: {x,y,z}
      */
     public synchronized long[] nextMetaGridLocation(final long[] gridLoc) {
         long[] levelBounds;
@@ -120,7 +116,7 @@ public class TileRangeIterator {
             }
 
             // Get ready for the next level
-            if (z < tr.getZoomStop()) {// but be careful not to go out of index
+            if (z < tr.getZoomStop()) { // but be careful not to go out of index
                 levelBounds = tr.rangeBounds(z + 1);
                 x = levelBounds[0];
                 y = levelBounds[1];
@@ -132,7 +128,7 @@ public class TileRangeIterator {
 
     /**
      * Calculates the number of tiles covered by the meta tile for this grid location.
-     * 
+     *
      * @param gridLoc
      * @param levelBounds
      * @return
@@ -151,7 +147,7 @@ public class TileRangeIterator {
     /**
      * Checks whether this grid location, or any on the same meta tile, should be included according
      * to the DiscontinuousTileRange
-     * 
+     *
      * @param gridLoc
      * @return
      */

@@ -1,19 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Gabriel Roldan (OpenGeo) 2010
- *  
  */
 package org.geowebcache.diskquota;
 
@@ -25,7 +22,6 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -47,16 +43,13 @@ import org.springframework.util.Assert;
 /**
  * Monitors the layers cache size given each one's assigned {@link Quota} and call's the exceeded
  * layer's {@link ExpirationPolicy expiration policy} for cache clean up.
- * <p>
- * This monitor only cares about checking layers do not exceed their configured cache disk quota.
- * </p>
- * <p>
- * When a layer exceeds its quota, the {@link ExpirationPolicy} it is attached to is called to
+ *
+ * <p>This monitor only cares about checking layers do not exceed their configured cache disk quota.
+ *
+ * <p>When a layer exceeds its quota, the {@link ExpirationPolicy} it is attached to is called to
  * {@link ExpirationPolicy#expireTiles(String) whip out} storage space.
- * </p>
- * 
+ *
  * @author Gabriel Roldan
- * 
  */
 public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
@@ -75,14 +68,10 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
     private final CacheCleaner cacheCleaner;
 
-    /**
-     * Loads and saves quota limits and quota usage status for configured layers
-     */
+    /** Loads and saves quota limits and quota usage status for configured layers */
     private final ConfigLoader configLoader;
 
-    /**
-     * Disk quota config object loaded and saved by {@link #configLoader}
-     */
+    /** Disk quota config object loaded and saved by {@link #configLoader} */
     private DiskQuotaConfig quotaConfig;
 
     private LayerCacheInfoBuilder cacheInfoBuilder;
@@ -91,7 +80,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
     /**
      * Executor service for the periodic clean up of layers caches that exceed its quota
-     * 
+     *
      * @see #setUpScheduledCleanUp()
      * @see #destroy()
      */
@@ -110,28 +99,30 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
     private QuotaStoreProvider quotaStoreProvider;
 
     /**
-     * 
-     * @param configLoader
-     *            loads and saves the layers quota config and usage status
-     * @param tld
-     *            provides access to the layers configured for disk quota insurance
-     *            quota usage
+     * @param configLoader loads and saves the layers quota config and usage status
+     * @param tld provides access to the layers configured for disk quota insurance quota usage
      * @throws IOException
      * @throws ConfigurationException
      */
-    public DiskQuotaMonitor(final DefaultStorageFinder storageFinder,
-            final ConfigLoader configLoader, final TileLayerDispatcher tld, final StorageBroker sb,
-            QuotaStoreProvider quotaStoreProvider, final CacheCleaner cacheCleaner) throws IOException,
-            ConfigurationException {
+    public DiskQuotaMonitor(
+            final DefaultStorageFinder storageFinder,
+            final ConfigLoader configLoader,
+            final TileLayerDispatcher tld,
+            final StorageBroker sb,
+            QuotaStoreProvider quotaStoreProvider,
+            final CacheCleaner cacheCleaner)
+            throws IOException, ConfigurationException {
 
-        boolean disabled = Boolean.valueOf(storageFinder.findEnvVar(GWC_DISKQUOTA_DISABLED))
-                .booleanValue();
+        boolean disabled =
+                Boolean.valueOf(storageFinder.findEnvVar(GWC_DISKQUOTA_DISABLED)).booleanValue();
         if (disabled) {
-            log.warn(" -- Found environment variable " + GWC_DISKQUOTA_DISABLED
-                    + " set to true. DiskQuotaMonitor is disabled.");
+            log.warn(
+                    " -- Found environment variable "
+                            + GWC_DISKQUOTA_DISABLED
+                            + " set to true. DiskQuotaMonitor is disabled.");
         }
         this.diskQuotaEnabled = !disabled;
-        
+
         this.storageFinder = storageFinder;
         this.configLoader = configLoader;
         this.storageBroker = sb;
@@ -139,17 +130,18 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         this.quotaStoreProvider = quotaStoreProvider;
         this.cacheCleaner = cacheCleaner;
     }
-    
+
     /**
-     * Returns the quota store provider used by this class (used in {@link #startUp()}) to
-     * get the {@link QuotaStore} instance.
+     * Returns the quota store provider used by this class (used in {@link #startUp()}) to get the
+     * {@link QuotaStore} instance.
      */
     public QuotaStoreProvider getQuotaStoreProvider() {
         return quotaStoreProvider;
     }
-    
+
     /**
      * Returns the quota store monitored by this class
+     *
      * @return
      */
     public QuotaStore getQuotaStore() {
@@ -158,10 +150,9 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
     /**
      * Returns whether the DiskQuotaMonitor is enabled.
-     * <p>
-     * It is always enabled at least the {@link #GWC_DISKQUOTA_DISABLED} environment variable has
+     *
+     * <p>It is always enabled at least the {@link #GWC_DISKQUOTA_DISABLED} environment variable has
      * been set to {@code true}
-     * </p>
      */
     public boolean isEnabled() {
         return diskQuotaEnabled;
@@ -173,10 +164,9 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
     /**
      * Called when the framework calls this bean for initialization
-     * <p>
-     * Defers to {@link #startUp()}, or does nothing if {@code isEnabled() == false}
-     * </p>
-     * 
+     *
+     * <p>Defers to {@link #startUp()}, or does nothing if {@code isEnabled() == false}
+     *
      * @see #isEnabled()
      * @see #startUp()
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
@@ -191,10 +181,9 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
     /**
      * Called when the framework destroys this bean (e.g. due to web app shutdown), stops any
      * running scheduled clean up and gracefuly shuts down.
-     * <p>
-     * This method does nothing if {@code #isEnabled() == false}
-     * </p>
-     * 
+     *
+     * <p>This method does nothing if {@code #isEnabled() == false}
+     *
      * @see #shutDown()
      * @see org.springframework.beans.factory.DisposableBean#destroy()
      */
@@ -207,19 +196,20 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
     /**
      * Starts up the tile usage and disk usage monitors
-     * <p>
-     * <b>Preconditions:</b>
+     *
+     * <p><b>Preconditions:</b>
+     *
      * <ul>
-     * <li> {@link #isEnabled() == true}
-     * <li> {@link #isRunning() == false}
+     *   <li>{@link #isEnabled() == true}
+     *   <li>{@link #isRunning() == false}
      * </ul>
-     * </p>
+     *
      * <b>Postconditions:</b>
+     *
      * <ul>
-     * <li> {@link #isRunning() == true}
+     *   <li>{@link #isRunning() == true}
      * </ul>
-     * </p>
-     * 
+     *
      * @throws ConfigurationException
      * @see {@link #shutDown(int)}
      */
@@ -235,13 +225,14 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         }
     }
 
-    private void startUpInternal() throws InterruptedException, ConfigurationException, IOException {
+    private void startUpInternal()
+            throws InterruptedException, ConfigurationException, IOException {
         try {
             this.quotaConfig = configLoader.loadConfig();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        
+
         quotaStore = quotaStoreProvider.getQuotaStore();
 
         quotaUsageMonitor = new QuotaUpdatesMonitor(quotaConfig, storageBroker, quotaStore);
@@ -266,7 +257,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
         // the startup might be called more than once (happens in GeoServer after disk quota
         // re-configuration for example), in this case shut down the old cache info builder
-        if(this.cacheInfoBuilder != null) {
+        if (this.cacheInfoBuilder != null) {
             cacheInfoBuilder.shutDown();
         }
         this.cacheInfoBuilder = launchCacheInfoGatheringThreads();
@@ -274,20 +265,18 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
     /**
      * Shuts down the tile and disk space usage monitors.
-     * <p>
-     * <b>Preconditions</b>:
+     *
+     * <p><b>Preconditions</b>:
+     *
      * <ul>
-     * <li> {@link #isEnabled() == true}
-     * <li> {@code timeOutSecs > 0}
+     *   <li>{@link #isEnabled() == true}
+     *   <li>{@code timeOutSecs > 0}
      * </ul>
-     * </p>
-     * 
-     * @param timeOutSecs
-     *            time out in seconds to wait for the related services to shut down, must be a
-     *            positive integer > 0
-     * @throws InterruptedException
-     *             if some service failed to gracefully shut down within a reasonable amount of
-     *             time, upon which it is safe to call this method again for a retry
+     *
+     * @param timeOutSecs time out in seconds to wait for the related services to shut down, must be
+     *     a positive integer > 0
+     * @throws InterruptedException if some service failed to gracefully shut down within a
+     *     reasonable amount of time, upon which it is safe to call this method again for a retry
      * @see #startUp()
      */
     public void shutDown(final int timeOutSecs) throws InterruptedException {
@@ -318,13 +307,12 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
     }
 
     /**
-     * <p>
      * <b>Preconditions:</b>
+     *
      * <ul>
-     * <li> {@link #isEnabled() == true}
+     *   <li>{@link #isEnabled() == true}
      * </ul>
-     * </p>
-     * 
+     *
      * @return the current configuration
      */
     public DiskQuotaConfig getConfig() {
@@ -334,13 +322,13 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
     /**
      * Saves and set the given configuration.
-     * <p>
-     * <b>Preconditions:</b>
+     *
+     * <p><b>Preconditions:</b>
+     *
      * <ul>
-     * <li> {@link #isEnabled() == true}
+     *   <li>{@link #isEnabled() == true}
      * </ul>
-     * </p>
-     * 
+     *
      * @param config
      */
     public void saveConfig(DiskQuotaConfig config) {
@@ -359,18 +347,17 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
     /**
      * Reloads the configuration from disk
+     *
      * @param config
-     * @throws IOException 
-     * @throws ConfigurationException 
+     * @throws IOException
+     * @throws ConfigurationException
      */
     public void reloadConfig() throws ConfigurationException, IOException {
         DiskQuotaConfig config = configLoader.loadConfig();
         this.quotaConfig.setFrom(config);
     }
 
-    /**
-     * @see #saveConfig(DiskQuotaConfig)
-     */
+    /** @see #saveConfig(DiskQuotaConfig) */
     public void saveConfig() {
         saveConfig(quotaConfig);
     }
@@ -378,7 +365,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
     /**
      * Launches a background task to traverse the cache and compute the disk usage of each layer
      * that has no {@link LayerQuota#getUsedQuota() used quota} already loaded.
-     * 
+     *
      * @return
      * @throws InterruptedException
      */
@@ -391,18 +378,23 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         } catch (ConfigurationException e) {
             throw new RuntimeException(e);
         }
-        cacheInfoBuilder = new LayerCacheInfoBuilder(cacheRoot, cleanUpExecutorService,
-                quotaUsageMonitor);
+        cacheInfoBuilder =
+                new LayerCacheInfoBuilder(cacheRoot, cleanUpExecutorService, quotaUsageMonitor);
 
         for (String layerName : tileLayerDispatcher.getLayerNames()) {
 
             Quota usedQuota = quotaStore.getUsedQuotaByLayerName(layerName);
             if (usedQuota.getBytes().compareTo(BigInteger.ZERO) > 0) {
-                log.debug("Using saved quota information for layer " + layerName + ": "
-                        + usedQuota.toNiceString());
+                log.debug(
+                        "Using saved quota information for layer "
+                                + layerName
+                                + ": "
+                                + usedQuota.toNiceString());
             } else {
-                log.debug(layerName + " has no saved used quota information,"
-                        + "traversing layer cache to compute its disk usage.");
+                log.debug(
+                        layerName
+                                + " has no saved used quota information,"
+                                + "traversing layer cache to compute its disk usage.");
                 TileLayer tileLayer;
                 try {
                     tileLayer = tileLayerDispatcher.getTileLayer(layerName);
@@ -420,12 +412,12 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
         final int numCleaningThreads = quotaConfig.getMaxConcurrentCleanUps();
         log.info("Setting up disk quota periodic enforcement task");
-        CustomizableThreadFactory tf = new CustomizableThreadFactory(
-                "GWC DiskQuota clean up thread-");
+        CustomizableThreadFactory tf =
+                new CustomizableThreadFactory("GWC DiskQuota clean up thread-");
         tf.setThreadPriority(1 + (Thread.MAX_PRIORITY - Thread.MIN_PRIORITY) / 5);
 
-        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(
-                numCleaningThreads, tf);
+        ScheduledExecutorService executorService =
+                Executors.newScheduledThreadPool(numCleaningThreads, tf);
 
         return executorService;
     }
@@ -446,7 +438,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      * Sets the {@link LayerQuota#setExpirationPolicy(ExpirationPolicy) expiration policy} to all
      * the configured layer quotas based on their {@link LayerQuota#getExpirationPolicyName()
      * declared expiration policy name}
-     * 
+     *
      * @throws ConfigurationException
      */
     private void attachConfiguredLayers() throws ConfigurationException {
@@ -465,18 +457,24 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
                 if (policyName != null) {
                     final Quota quota = layerQuota.getQuota();
                     explicitConfigs++;
-                    log.trace("Attaching layer " + layerName + " to quota " + quota
-                            + " with expiration policy " + policyName);
+                    log.trace(
+                            "Attaching layer "
+                                    + layerName
+                                    + " to quota "
+                                    + quota
+                                    + " with expiration policy "
+                                    + policyName);
                 }
             }
         }
         log.info(explicitConfigs + " layers configured with their own quotas. ");
         if (globalExpirationPolicy != null) {
             int globallyConfigured = tileLayerDispatcher.getLayerCount() - explicitConfigs;
-            log.info(globallyConfigured + " layers attached to global quota "
-                    + globalQuota.toNiceString());
+            log.info(
+                    globallyConfigured
+                            + " layers attached to global quota "
+                            + globalQuota.toNiceString());
         }
-
     }
 
     public QuotaResolver newLayerQuotaResolver(final String layerName) {
@@ -488,42 +486,33 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         return new GlobalQuotaResolver(quotaConfig, quotaStore);
     }
 
-    /**
-     * @see TileLayerDispatcher#getLayerNames()
-     */
+    /** @see TileLayerDispatcher#getLayerNames() */
     public Set<String> getLayerNames() {
         return tileLayerDispatcher.getLayerNames();
     }
 
-    /**
-     * @see LayerCacheInfoBuilder#isRunning(String)
-     */
+    /** @see LayerCacheInfoBuilder#isRunning(String) */
     public boolean isCacheInfoBuilderRunning(String layerName) {
         return cacheInfoBuilder != null && cacheInfoBuilder.isRunning(layerName);
     }
 
-    /**
-     * @see QuotaStore#getUsedQuotaByLayerName(String)
-     */
+    /** @see QuotaStore#getUsedQuotaByLayerName(String) */
     public Quota getUsedQuotaByLayerName(String layerName) throws InterruptedException {
         return quotaStore.getUsedQuotaByLayerName(layerName);
     }
 
-    /**
-     * @see QuotaStore#getGloballyUsedQuota()
-     */
+    /** @see QuotaStore#getGloballyUsedQuota() */
     public Quota getGloballyUsedQuota() throws InterruptedException {
         return quotaStore.getGloballyUsedQuota();
     }
 
     /**
-     * <p>
      * <b>Preconditions</b>:
+     *
      * <ul>
-     * <li> {@link #isRunning() == true}
+     *   <li>{@link #isRunning() == true}
      * </ul>
-     * </p>
-     * 
+     *
      * @see CacheCleaner#expireByLayerNames(Set, QuotaResolver)
      */
     public void expireByLayerNames(Set<String> layerNames, QuotaResolver quotaResolver)

@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
-
 import org.apache.commons.dbcp.BasicDataSource;
 
 public class OracleQuotaStoreTest extends JDBCQuotaStoreTest {
@@ -19,8 +18,10 @@ public class OracleQuotaStoreTest extends JDBCQuotaStoreTest {
         try {
             Class.forName("oracle.jdbc.driver.OracleDriver");
         } catch (Exception e) {
-            System.out.println("Skipping " + OracleQuotaStoreTest.class
-                    + " tests, Oracle driver not available");
+            System.out.println(
+                    "Skipping "
+                            + OracleQuotaStoreTest.class
+                            + " tests, Oracle driver not available");
             return false;
         }
         return super.checkAvailable();
@@ -70,5 +71,4 @@ public class OracleQuotaStoreTest extends JDBCQuotaStoreTest {
 
         return p;
     }
-
 }

@@ -14,9 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-
 import javax.servlet.http.HttpServletRequest;
-
+import junit.framework.TestCase;
 import org.apache.commons.lang.StringUtils;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
@@ -38,8 +37,6 @@ import org.geowebcache.util.URLMangler;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.w3c.dom.Document;
 
-import junit.framework.TestCase;
-
 public class TMSServiceTest extends TestCase {
 
     private TMSService service;
@@ -60,37 +57,57 @@ public class TMSServiceTest extends TestCase {
         tld = mock(TileLayerDispatcher.class);
         customTld = mock(TileLayerDispatcher.class);
         gridsetBroker = new GridSetBroker(true, true);
-        httpsUrlMangler = new URLMangler() {
+        httpsUrlMangler =
+                new URLMangler() {
 
-            final Pattern PATTERN = Pattern.compile("http");
+                    final Pattern PATTERN = Pattern.compile("http");
 
-            @Override
-            public String buildURL(String baseURL, String contextPath, String path) {
-                String url = StringUtils.strip(baseURL, "/") + "/" + StringUtils.strip(contextPath, "/") + "/"
-                        + StringUtils.stripStart(path, "/");
-                    url = url.startsWith("https") ? url : PATTERN.matcher(url).replaceFirst("https");
+                    @Override
+                    public String buildURL(String baseURL, String contextPath, String path) {
+                        String url =
+                                StringUtils.strip(baseURL, "/")
+                                        + "/"
+                                        + StringUtils.strip(contextPath, "/")
+                                        + "/"
+                                        + StringUtils.stripStart(path, "/");
+                        url =
+                                url.startsWith("https")
+                                        ? url
+                                        : PATTERN.matcher(url).replaceFirst("https");
 
-                return url;
-            }
-        };
-        customFactory = new TMSCustomFactoryTest(customTld, gridsetBroker, httpsUrlMangler, TMSCustomFactoryTest.getCatalogInstance());
+                        return url;
+                    }
+                };
+        customFactory =
+                new TMSCustomFactoryTest(
+                        customTld,
+                        gridsetBroker,
+                        httpsUrlMangler,
+                        TMSCustomFactoryTest.getCatalogInstance());
     }
 
-    private static TileLayer mockTileLayer(TileLayerDispatcher tld, GridSetBroker gridsetBroker, String layerName, List<String> gridSetNames,
-            List<ParameterFilter> parameterFilters) throws Exception {
+    private static TileLayer mockTileLayer(
+            TileLayerDispatcher tld,
+            GridSetBroker gridsetBroker,
+            String layerName,
+            List<String> gridSetNames,
+            List<ParameterFilter> parameterFilters)
+            throws Exception {
         return mockTileLayer(tld, gridsetBroker, layerName, gridSetNames, parameterFilters, true);
     }
 
     private static class TMSCustomFactoryTest extends TMSDocumentFactory {
 
-        // Custom layer implementation simulating an external source of information to be used 
+        // Custom layer implementation simulating an external source of information to be used
         // to populate the tile map metadata document
         static class CustomLayerImplementation {
             private String name;
             private String title;
             private boolean isAuthorized;
             private List<String> formats;
-            public CustomLayerImplementation(String name, String title, boolean isAuthorized, List<String> formats) {
+
+            public CustomLayerImplementation(
+                    String name, String title, boolean isAuthorized, List<String> formats) {
                 this.name = name;
                 this.title = title;
                 this.isAuthorized = isAuthorized;
@@ -98,7 +115,7 @@ public class TMSServiceTest extends TestCase {
             }
         }
 
-        private final static List<CustomLayerImplementation> CATALOG_INSTANCE;
+        private static final List<CustomLayerImplementation> CATALOG_INSTANCE;
 
         public static List<CustomLayerImplementation> getCatalogInstance() {
             return CATALOG_INSTANCE;
@@ -106,36 +123,50 @@ public class TMSServiceTest extends TestCase {
 
         static {
             CATALOG_INSTANCE = new ArrayList<CustomLayerImplementation>(2);
-            CATALOG_INSTANCE.add(new CustomLayerImplementation("customLayer1","Custom Layer1", false, null));
-            CATALOG_INSTANCE.add(new CustomLayerImplementation("customLayer2","Custom Layer2", true, Arrays.asList("jpeg-png")));
+            CATALOG_INSTANCE.add(
+                    new CustomLayerImplementation("customLayer1", "Custom Layer1", false, null));
+            CATALOG_INSTANCE.add(
+                    new CustomLayerImplementation(
+                            "customLayer2", "Custom Layer2", true, Arrays.asList("jpeg-png")));
         }
 
         private List<CustomLayerImplementation> customCatalogLayers;
 
-        protected TMSCustomFactoryTest(TileLayerDispatcher tld, GridSetBroker gsb, URLMangler urlMangler,
-                List<CustomLayerImplementation> customCatalogLayers) throws Exception {
+        protected TMSCustomFactoryTest(
+                TileLayerDispatcher tld,
+                GridSetBroker gsb,
+                URLMangler urlMangler,
+                List<CustomLayerImplementation> customCatalogLayers)
+                throws Exception {
             super(tld, gsb, urlMangler, "tilemapservice", StandardCharsets.UTF_8);
             List<String> gridSetNames = Arrays.asList("EPSG:4326");
-            TileLayer tileLayer = mockTileLayer(tld, gsb, "customLayer2", gridSetNames, Collections.<ParameterFilter>emptyList());
+            TileLayer tileLayer =
+                    mockTileLayer(
+                            tld,
+                            gsb,
+                            "customLayer2",
+                            gridSetNames,
+                            Collections.<ParameterFilter>emptyList());
             when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
             this.customCatalogLayers = customCatalogLayers;
-
         }
 
         @Override
         protected String getTileMapServiceDoc(String baseUrl, String contextPath) {
             StringBuilder str = new StringBuilder();
             str.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-            str.append("<TileMapService version=\"1.0.0\" services=\"" +
-                urlMangler.buildURL(baseUrl, contextPath, "") + "\">\n");
+            str.append(
+                    "<TileMapService version=\"1.0.0\" services=\""
+                            + urlMangler.buildURL(baseUrl, contextPath, "")
+                            + "\">\n");
             str.append("  <Title>Custom Tile Map Service</Title>\n");
             str.append("  <Abstract>A Custom Tile Map Service served by GeoWebCache</Abstract>\n");
             str.append("  <TileMaps>\n");
 
             // Custom tileMapService document being populated on top of the
             // custom external catalog source.
-            for (CustomLayerImplementation layer: customCatalogLayers) {
-               if (layer.isAuthorized) {
+            for (CustomLayerImplementation layer : customCatalogLayers) {
+                if (layer.isAuthorized) {
                     for (String format : layer.formats) {
                         tileMapsForLayer(str, layer, format, baseUrl, contextPath);
                     }
@@ -146,8 +177,12 @@ public class TMSServiceTest extends TestCase {
             return str.toString();
         }
 
-        protected void tileMapsForLayer(StringBuilder str, CustomLayerImplementation layer, String format,
-            String baseUrl, String contextPath) {
+        protected void tileMapsForLayer(
+                StringBuilder str,
+                CustomLayerImplementation layer,
+                String format,
+                String baseUrl,
+                String contextPath) {
             str.append("    <TileMap\n");
             str.append("      title=\"").append(layer.title).append("\"\n");
             str.append("      srs=\"").append("4326").append("\"\n");
@@ -156,13 +191,23 @@ public class TMSServiceTest extends TestCase {
             str.append("      href=\"");
 
             String tileMapName = layer.name + "@EPSG:4326" + "@" + format;
-            String url= urlMangler.buildURL(baseUrl, contextPath, TMSDocumentFactory.SERVICE_PATH + "/" + tileMapName);
+            String url =
+                    urlMangler.buildURL(
+                            baseUrl,
+                            contextPath,
+                            TMSDocumentFactory.SERVICE_PATH + "/" + tileMapName);
             str.append(url).append("\" />\n");
-
         }
     }
 
-    private static TileLayer mockTileLayer(TileLayerDispatcher tld, GridSetBroker gridsetBroker, String layerName, List<String> gridSetNames, List<ParameterFilter> parameterFilters, boolean advertised) throws Exception {
+    private static TileLayer mockTileLayer(
+            TileLayerDispatcher tld,
+            GridSetBroker gridsetBroker,
+            String layerName,
+            List<String> gridSetNames,
+            List<ParameterFilter> parameterFilters,
+            boolean advertised)
+            throws Exception {
 
         TileLayer tileLayer = mock(TileLayer.class);
         when(tld.getTileLayer(eq(layerName))).thenReturn(tileLayer);
@@ -195,13 +240,11 @@ public class TMSServiceTest extends TestCase {
             list.add(gridSubSet);
 
             when(tileLayer.getGridSubset(eq(gsetName))).thenReturn(gridSubSet);
-
         }
 
         for (SRS srs : bySrs.keySet()) {
             List<GridSubset> list = bySrs.get(srs);
             when(tileLayer.getGridSubsetsForSRS(eq(srs))).thenReturn(list);
-
         }
         when(tileLayer.getGridSubsets()).thenReturn(subsets.keySet());
 
@@ -221,7 +264,7 @@ public class TMSServiceTest extends TestCase {
         GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
         when(gwcd.getServletPrefix()).thenReturn(null);
 
-        service = new TMSService(sb, tld, gridsetBroker , mock(RuntimeStats.class));
+        service = new TMSService(sb, tld, gridsetBroker, mock(RuntimeStats.class));
 
         HttpServletRequest req = mock(HttpServletRequest.class);
         MockHttpServletResponse resp = new MockHttpServletResponse();
@@ -232,9 +275,16 @@ public class TMSServiceTest extends TestCase {
         when(req.getServerName()).thenReturn("localhost");
         when(req.getServerPort()).thenReturn(8080);
         when(req.getContextPath()).thenReturn("/mycontext");
-        when(req.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/mycontext/service/tms/1.0.0"));
+        when(req.getRequestURL())
+                .thenReturn(new StringBuffer("http://localhost:8080/mycontext/service/tms/1.0.0"));
         List<String> gridSetNames = Arrays.asList("EPSG:4326");
-        TileLayer tileLayer = mockTileLayer(tld, gridsetBroker, "mockLayer", gridSetNames, Collections.<ParameterFilter>emptyList());
+        TileLayer tileLayer =
+                mockTileLayer(
+                        tld,
+                        gridsetBroker,
+                        "mockLayer",
+                        gridSetNames,
+                        Collections.<ParameterFilter>emptyList());
         when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
 
         Conveyor conv = service.getConveyor(req, resp);
@@ -243,7 +293,7 @@ public class TMSServiceTest extends TestCase {
         final String layerName = conv.getLayerId();
         assertNull(layerName);
 
-        assertEquals(Conveyor.RequestHandler.SERVICE,conv.reqHandler);
+        assertEquals(Conveyor.RequestHandler.SERVICE, conv.reqHandler);
         service.handleRequest(conv);
 
         String result = resp.getContentAsString();
@@ -254,19 +304,32 @@ public class TMSServiceTest extends TestCase {
         Document doc = XMLUnit.buildTestDocument(result);
         XpathEngine xpath = XMLUnit.newXpathEngine();
 
-        assertEquals("1", xpath.evaluate("count(//TileMapService[contains(@services,'http://localhost:8080/mycontext/')])", doc));
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        "count(//TileMapService[contains(@services,'http://localhost:8080/mycontext/')])",
+                        doc));
         assertEquals("2", xpath.evaluate("count(//TileMap[@title='mockLayer'])", doc));
-        assertEquals("2", xpath.evaluate("count(//TileMap[@title='mockLayer'][@srs='EPSG:4326'])", doc));
-        assertEquals("1", xpath.evaluate("count(//TileMap[@title='mockLayer'][contains(@href,'jpeg')])", doc));
-        assertEquals("1", xpath.evaluate("count(//TileMap[@title='mockLayer'][contains(@href,'png')])", doc));
-        assertEquals("0", xpath.evaluate("count(//TileMap[@title='mockLayer'][contains(@href,'jpeg-png')])", doc));
+        assertEquals(
+                "2", xpath.evaluate("count(//TileMap[@title='mockLayer'][@srs='EPSG:4326'])", doc));
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        "count(//TileMap[@title='mockLayer'][contains(@href,'jpeg')])", doc));
+        assertEquals(
+                "1",
+                xpath.evaluate("count(//TileMap[@title='mockLayer'][contains(@href,'png')])", doc));
+        assertEquals(
+                "0",
+                xpath.evaluate(
+                        "count(//TileMap[@title='mockLayer'][contains(@href,'jpeg-png')])", doc));
     }
 
     public void testTMSDocumentsWithCustomFactory() throws Exception {
 
         GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
         service = new TMSService(sb, mock(RuntimeStats.class), gwcd, customFactory);
-        
+
         @SuppressWarnings("unchecked")
         HttpServletRequest req = mock(HttpServletRequest.class);
         MockHttpServletResponse resp = new MockHttpServletResponse();
@@ -277,14 +340,15 @@ public class TMSServiceTest extends TestCase {
         when(req.getServerName()).thenReturn("localhost");
         when(req.getServerPort()).thenReturn(8080);
         when(req.getContextPath()).thenReturn("/mycontext");
-        when(req.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/mycontext/service/tms/1.0.0"));
+        when(req.getRequestURL())
+                .thenReturn(new StringBuffer("http://localhost:8080/mycontext/service/tms/1.0.0"));
         Conveyor conv = service.getConveyor(req, resp);
         assertNotNull(conv);
 
         final String layerName = conv.getLayerId();
         assertNull(layerName);
 
-        assertEquals(Conveyor.RequestHandler.SERVICE,conv.reqHandler);
+        assertEquals(Conveyor.RequestHandler.SERVICE, conv.reqHandler);
         service.handleRequest(conv);
 
         String result = resp.getContentAsString();
@@ -296,10 +360,18 @@ public class TMSServiceTest extends TestCase {
         Document doc = XMLUnit.buildTestDocument(result);
         XpathEngine xpath = XMLUnit.newXpathEngine();
 
-        //Note the https being added by the custom URLMangler
-        assertEquals("1", xpath.evaluate("count(//TileMapService[contains(@services,'https://localhost:8080/mycontext/')])", doc));
+        // Note the https being added by the custom URLMangler
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        "count(//TileMapService[contains(@services,'https://localhost:8080/mycontext/')])",
+                        doc));
         assertEquals("1", xpath.evaluate("count(//TileMap[@title='Custom Layer2'])", doc));
-        assertEquals("1", xpath.evaluate("count(//TileMap[@title='Custom Layer2'][contains(@href,'jpeg-png')])", doc));
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        "count(//TileMap[@title='Custom Layer2'][contains(@href,'jpeg-png')])",
+                        doc));
         assertEquals("0", xpath.evaluate("count(//TileMap[@title='Custom Layer1'])", doc));
 
         req = mock(HttpServletRequest.class);
@@ -309,9 +381,13 @@ public class TMSServiceTest extends TestCase {
         when(req.getServerName()).thenReturn("localhost");
         when(req.getServerPort()).thenReturn(8080);
         when(req.getContextPath()).thenReturn("/mycontext");
-        when(req.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/mycontext/service/tms/1.0.0/customLayer2@EPSG:4326@jpeg-png"));
+        when(req.getRequestURL())
+                .thenReturn(
+                        new StringBuffer(
+                                "http://localhost:8080/mycontext/service/tms/1.0.0/customLayer2@EPSG:4326@jpeg-png"));
         when(req.getPathInfo()).thenReturn("/service/tms/1.0.0/customLayer2@EPSG:4326@jpeg-png");
-        when(req.getRequestURI()).thenReturn("/mycontext/service/tms/1.0.0/customLayer2@EPSG:4326@jpeg-png");
+        when(req.getRequestURI())
+                .thenReturn("/mycontext/service/tms/1.0.0/customLayer2@EPSG:4326@jpeg-png");
         conv = service.getConveyor(req, resp);
         service.handleRequest(conv);
         result = resp.getContentAsString().replace("\n\n", "\n");
@@ -319,7 +395,6 @@ public class TMSServiceTest extends TestCase {
         xpath = XMLUnit.newXpathEngine();
 
         assertEquals("22", xpath.evaluate("count(//TileSet[contains(@href,'customLayer2')])", doc));
-
     }
 
     public void testGetTile() throws Exception {
@@ -332,14 +407,26 @@ public class TMSServiceTest extends TestCase {
         MockHttpServletResponse resp = new MockHttpServletResponse();
         {
             List<String> gridSetNames = Arrays.asList("EPSG:4326");
-            TileLayer tileLayer = mockTileLayer(customFactory.tld, customFactory.gsb, "customLayer2", gridSetNames, null);
+            TileLayer tileLayer =
+                    mockTileLayer(
+                            customFactory.tld,
+                            customFactory.gsb,
+                            "customLayer2",
+                            gridSetNames,
+                            null);
             when(customFactory.tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
         }
 
         // Sending a Tile request
-        when(req.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/mycontext/service/tms/1.0.0/customLayer2@EPSG%3A4326@jpeg-png/2/1/1.jpeg-png"));
-        when(req.getPathInfo()).thenReturn("/service/tms/1.0.0/customLayer2@EPSG%3A4326@png/2/1/1.jpeg-png");
-        when(req.getRequestURI()).thenReturn("/mycontext/service/tms/1.0.0/customLayer2@EPSG%3A4326@png/2/1/1.jpeg-png");
+        when(req.getRequestURL())
+                .thenReturn(
+                        new StringBuffer(
+                                "http://localhost:8080/mycontext/service/tms/1.0.0/customLayer2@EPSG%3A4326@jpeg-png/2/1/1.jpeg-png"));
+        when(req.getPathInfo())
+                .thenReturn("/service/tms/1.0.0/customLayer2@EPSG%3A4326@png/2/1/1.jpeg-png");
+        when(req.getRequestURI())
+                .thenReturn(
+                        "/mycontext/service/tms/1.0.0/customLayer2@EPSG%3A4326@png/2/1/1.jpeg-png");
         when(req.getCharacterEncoding()).thenReturn("UTF-8");
         when(req.getScheme()).thenReturn("http");
         when(req.getServerName()).thenReturn("localhost");

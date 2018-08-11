@@ -1,19 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Gabriel Roldan (OpenGeo) 2010
- *  
  */
 package org.geowebcache.diskquota;
 
@@ -29,7 +26,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,7 +42,7 @@ import org.geowebcache.util.FileUtils;
 
 /**
  * Gathers information about the cache of a layer, such as its size and available {@link TilePage}s.
- * 
+ *
  * @author groldan
  */
 final class LayerCacheInfoBuilder {
@@ -63,7 +59,9 @@ final class LayerCacheInfoBuilder {
 
     private boolean closed = false;
 
-    public LayerCacheInfoBuilder(final File rootCacheDir, final ExecutorService threadPool,
+    public LayerCacheInfoBuilder(
+            final File rootCacheDir,
+            final ExecutorService threadPool,
             QuotaUpdatesMonitor quotaUsageMonitor) {
         this.rootCacheDir = rootCacheDir;
         this.threadPool = threadPool;
@@ -74,24 +72,21 @@ final class LayerCacheInfoBuilder {
     /**
      * Asynchronously collects cache usage information for the given {@code tileLayer} into the
      * given {@code layerQuota} by using the provided {@link ExecutorService} at construction time.
-     * <p>
-     * This method discards any {@link LayerQuota#getUsedQuota() used quota} information available
-     * for {@code layerQuota} and updates it by collecting the usage information for the layer.
-     * </p>
-     * <p>
-     * In addition to collecting the cache usage information for the layer, the {@code layerQuota}'s
-     * {@link ExpirationPolicy expiration policy} will be given the opportunity to gather any
-     * additional information by calling the
-     * {@link ExpirationPolicy#createInfoFor(LayerQuota, String, long[], File)
-     * createInforFor(layerQuota, gridSetId, tileXYZ, file)} method for each available tile on the
-     * layer's cache.
-     * </p>
-     * <p>
-     * Note the cache information gathering is performed asynchronously and hence this method
+     *
+     * <p>This method discards any {@link LayerQuota#getUsedQuota() used quota} information
+     * available for {@code layerQuota} and updates it by collecting the usage information for the
+     * layer.
+     *
+     * <p>In addition to collecting the cache usage information for the layer, the {@code
+     * layerQuota}'s {@link ExpirationPolicy expiration policy} will be given the opportunity to
+     * gather any additional information by calling the {@link
+     * ExpirationPolicy#createInfoFor(LayerQuota, String, long[], File) createInforFor(layerQuota,
+     * gridSetId, tileXYZ, file)} method for each available tile on the layer's cache.
+     *
+     * <p>Note the cache information gathering is performed asynchronously and hence this method
      * returns immediately. To check whether the information collect for a given layer has finished
      * use the {@link #isRunning(String) isRunning(layerName)} method.
-     * </p>
-     * 
+     *
      * @param tileLayer
      */
     public void buildCacheInfo(final TileLayer tileLayer) {
@@ -119,8 +114,8 @@ final class LayerCacheInfoBuilder {
 
             for (int zoomLevel = zoomStart; zoomLevel <= zoomStop && !closed; zoomLevel++) {
                 String gridsetZLevelParamsDirName;
-                gridsetZLevelParamsDirName = FilePathUtils.gridsetZoomLevelDir(gridSetId,
-                        zoomLevel);
+                gridsetZLevelParamsDirName =
+                        FilePathUtils.gridsetZoomLevelDir(gridSetId, zoomLevel);
                 if (parametersId != null) {
                     gridsetZLevelParamsDirName += "_" + parametersId;
                 }
@@ -128,15 +123,26 @@ final class LayerCacheInfoBuilder {
 
                 if (gridsetZLevelDir.exists()) {
                     ZoomLevelVisitor cacheInfoBuilder;
-                    cacheInfoBuilder = new ZoomLevelVisitor(layerName, gridsetZLevelDir, gridSetId,
-                            zoomLevel, parametersId, quotaUsageMonitor);
+                    cacheInfoBuilder =
+                            new ZoomLevelVisitor(
+                                    layerName,
+                                    gridsetZLevelDir,
+                                    gridSetId,
+                                    zoomLevel,
+                                    parametersId,
+                                    quotaUsageMonitor);
 
                     Future<ZoomLevelVisitor.Stats> cacheTask;
                     cacheTask = threadPool.submit(cacheInfoBuilder);
 
                     perLayerRunningTasks.get(layerName).add(cacheTask);
-                    log.debug("Submitted background task to gather cache info for '" + layerName
-                            + "'/" + gridSetId + "/" + zoomLevel);
+                    log.debug(
+                            "Submitted background task to gather cache info for '"
+                                    + layerName
+                                    + "'/"
+                                    + gridSetId
+                                    + "/"
+                                    + zoomLevel);
                 }
             }
         }
@@ -149,14 +155,15 @@ final class LayerCacheInfoBuilder {
         Set<TileSet> foundTileSets = new HashSet<TileSet>();
         for (String gridSetName : griSetNames) {
             final String gridSetDirPrefix = FilePathUtils.filteredGridSetId(gridSetName);
-            FileFilter prefixFilter = new FileFilter() {
-                public boolean accept(File pathname) {
-                    if (!pathname.isDirectory()) {
-                        return false;
-                    }
-                    return pathname.getName().startsWith(gridSetDirPrefix + "_");
-                }
-            };
+            FileFilter prefixFilter =
+                    new FileFilter() {
+                        public boolean accept(File pathname) {
+                            if (!pathname.isDirectory()) {
+                                return false;
+                            }
+                            return pathname.getName().startsWith(gridSetDirPrefix + "_");
+                        }
+                    };
             File[] thisGridSetDirs = layerDir.listFiles(prefixFilter);
             for (File directory : thisGridSetDirs) {
                 // <Filtered gridset id><_zoom level>[_<parametersId>]
@@ -180,12 +187,10 @@ final class LayerCacheInfoBuilder {
 
     /**
      * Builds the cache information for a single layer/gridsetId/parametersId/zoomLevel combo
-     * 
+     *
      * @author groldan
-     * 
      */
-    private final class ZoomLevelVisitor implements FileFilter,
-            Callable<ZoomLevelVisitor.Stats> {
+    private final class ZoomLevelVisitor implements FileFilter, Callable<ZoomLevelVisitor.Stats> {
 
         private final String gridSetId;
 
@@ -209,8 +214,12 @@ final class LayerCacheInfoBuilder {
             Quota collectedQuota = new Quota();
         }
 
-        public ZoomLevelVisitor(final String layerName, final File zoomLevelPath,
-                final String gridsetId, final int zoomLevel, String parametersId,
+        public ZoomLevelVisitor(
+                final String layerName,
+                final File zoomLevelPath,
+                final String gridsetId,
+                final int zoomLevel,
+                String parametersId,
                 final QuotaUpdatesMonitor quotaUsageMonitor) {
             this.layerName = layerName;
             this.zoomLevelPath = zoomLevelPath;
@@ -221,12 +230,16 @@ final class LayerCacheInfoBuilder {
             this.stats = new Stats();
         }
 
-        /**
-         * @see java.util.concurrent.Callable#call()
-         */
+        /** @see java.util.concurrent.Callable#call() */
         public Stats call() throws Exception {
-            final String zLevelKey = layerName + "'/" + gridSetId + "/paramId:"
-                    + (parametersId == null ? "default" : parametersId) + "/zlevel:" + tileZ;
+            final String zLevelKey =
+                    layerName
+                            + "'/"
+                            + gridSetId
+                            + "/paramId:"
+                            + (parametersId == null ? "default" : parametersId)
+                            + "/zlevel:"
+                            + tileZ;
             try {
                 log.debug("Gathering cache information for '" + zLevelKey);
                 stats.numTiles = 0L;
@@ -242,17 +255,21 @@ final class LayerCacheInfoBuilder {
                 e.printStackTrace();
                 throw (e);
             }
-            log.debug("Cache information for " + zLevelKey + " collected in " + stats.runTimeMillis
-                    / 1000D + "s. Counted " + stats.numTiles + " tiles for a storage space of "
-                    + stats.collectedQuota.toNiceString());
+            log.debug(
+                    "Cache information for "
+                            + zLevelKey
+                            + " collected in "
+                            + stats.runTimeMillis / 1000D
+                            + "s. Counted "
+                            + stats.numTiles
+                            + " tiles for a storage space of "
+                            + stats.collectedQuota.toNiceString());
             return stats;
         }
 
-        /**
-         * @see java.io.FileFilter#accept(java.io.File)
-         */
+        /** @see java.io.FileFilter#accept(java.io.File) */
         public boolean accept(final File file) {
-            if(closed) {
+            if (closed) {
                 throw new TraversalCanceledException();
             }
             if (file.isDirectory()) {
@@ -278,8 +295,8 @@ final class LayerCacheInfoBuilder {
             final long x = Long.valueOf(path.substring(fileNameIdx, coordSepIdx));
             final long y = Long.valueOf(path.substring(1 + coordSepIdx, dotIdx));
 
-            this.quotaUsageMonitor.tileStored(layerName, gridSetId, blobFormat, parametersId, x, y,
-                    (int) tileZ, length);
+            this.quotaUsageMonitor.tileStored(
+                    layerName, gridSetId, blobFormat, parametersId, x, y, (int) tileZ, length);
             stats.numTiles++;
             stats.collectedQuota.addBytes(length);
             return true;
@@ -288,9 +305,8 @@ final class LayerCacheInfoBuilder {
         /**
          * Used to brute-force cancel a cache inspection (as InterruptedException is checked and
          * hence can't use it in accept(File) above
-         * 
+         *
          * @author groldan
-         * 
          */
         private class TraversalCanceledException extends RuntimeException {
             private static final long serialVersionUID = 1L;
@@ -299,9 +315,9 @@ final class LayerCacheInfoBuilder {
     }
 
     /**
-     * Returns whether cache information is still being gathered for the layer named after
-     * {@code layerName}.
-     * 
+     * Returns whether cache information is still being gathered for the layer named after {@code
+     * layerName}.
+     *
      * @param layerName
      * @return {@code true} if the cache information gathering for {@code layerName} is not finished
      */
@@ -314,7 +330,8 @@ final class LayerCacheInfoBuilder {
 
             int numRunning = 0;
             Future<ZoomLevelVisitor.Stats> future;
-            for (Iterator<Future<ZoomLevelVisitor.Stats>> it = layerTasks.iterator(); it.hasNext();) {
+            for (Iterator<Future<ZoomLevelVisitor.Stats>> it = layerTasks.iterator();
+                    it.hasNext(); ) {
                 future = it.next();
                 if (future.isDone()) {
                     it.remove();
@@ -330,7 +347,7 @@ final class LayerCacheInfoBuilder {
     }
 
     public void shutDown() {
-        this.closed  = true;
+        this.closed = true;
         this.threadPool.shutdownNow();
     }
 }

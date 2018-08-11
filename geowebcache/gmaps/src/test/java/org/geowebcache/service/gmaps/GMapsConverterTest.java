@@ -2,16 +2,12 @@ package org.geowebcache.service.gmaps;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
 import javax.servlet.http.HttpServletResponse;
-
 import junit.framework.TestCase;
-
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -33,7 +29,7 @@ public class GMapsConverterTest extends TestCase {
 
     /**
      * see http://code.google.com/apis/maps/documentation/overlays.html# Custom_Map_Types
-     * 
+     *
      * @throws Exception
      */
     public void testGMapsConverter() throws Exception {
@@ -42,7 +38,7 @@ public class GMapsConverterTest extends TestCase {
         int y = 0;
         int z = 0;
         long[] gridLoc = GMapsConverter.convert(z, x, y);
-        long[] solution = { 0, 0, 0 };
+        long[] solution = {0, 0, 0};
         assert (Arrays.equals(gridLoc, solution));
 
         /* Check zoomlevel */
@@ -105,8 +101,19 @@ public class GMapsConverterTest extends TestCase {
         parameterFilter.setRegex("value='.*'");
         filters.add(parameterFilter);
 
-        WMSLayer wmsLayer = new WMSLayer(TEST_LAYER_NAME, null, null, null, null, null, filters,
-                null, null, true, null);
+        WMSLayer wmsLayer =
+                new WMSLayer(
+                        TEST_LAYER_NAME,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        filters,
+                        null,
+                        null,
+                        true,
+                        null);
 
         TileLayerDispatcher tld = new TileLayerDispatcherMock(wmsLayer);
 
@@ -118,7 +125,7 @@ public class GMapsConverterTest extends TestCase {
         HttpServletResponse response = null;
 
         request.addParameter(CQL_FILTER_PARAMETER_NAME, CQL_FILTER_PARAMETER_VALUE);
-        request.addParameter("layers", new String[] { TEST_LAYER_NAME });
+        request.addParameter("layers", new String[] {TEST_LAYER_NAME});
         request.addParameter("zoom", "12");
         request.addParameter("x", "0");
         request.addParameter("y", "0");
@@ -130,7 +137,8 @@ public class GMapsConverterTest extends TestCase {
             Map<String, String> parameters = conveyorTile.getParameters();
             assertNotNull(parameters);
             // assertTrue(parameters.contains(URLEncoder.encode(CQL_FILTER_PARAMETER_VALUE,"UTF8")));
-            assertEquals(CQL_FILTER_PARAMETER_VALUE,
+            assertEquals(
+                    CQL_FILTER_PARAMETER_VALUE,
                     URLDecoder.decode(parameters.get(CQL_FILTER_PARAMETER_NAME), "UTF8"));
         } catch (ServiceException e) {
             fail();
@@ -139,6 +147,5 @@ public class GMapsConverterTest extends TestCase {
         } catch (UnsupportedEncodingException e) {
             fail();
         }
-
     }
 }

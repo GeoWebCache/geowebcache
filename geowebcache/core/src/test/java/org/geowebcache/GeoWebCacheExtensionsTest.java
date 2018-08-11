@@ -7,22 +7,17 @@ import static org.easymock.EasyMock.verify;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.servlet.ServletContext;
-
 import junit.framework.TestCase;
-
 import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.springframework.context.ApplicationContext;
 
 /**
  * Unit test suite for {@link GeoWebCacheExtensions}
- * 
+ *
  * @author Gabriel Roldan (TOPP)
  * @version $Id$
  */
@@ -44,8 +39,8 @@ public class GeoWebCacheExtensionsTest extends TestCase {
 
         GeoWebCacheExtensions gse = new GeoWebCacheExtensions();
         gse.setApplicationContext(appContext1);
-        GeoWebCacheExtensions.extensionsCache.put(GeoWebCacheExtensionsTest.class,
-                new String[] { "fake" });
+        GeoWebCacheExtensions.extensionsCache.put(
+                GeoWebCacheExtensionsTest.class, new String[] {"fake"});
 
         assertSame(appContext1, GeoWebCacheExtensions.context);
 
@@ -73,18 +68,19 @@ public class GeoWebCacheExtensionsTest extends TestCase {
         expect(appContext.getBean("fakeKey")).andReturn(null);
         replay(appContext);
 
-        List<GeoWebCacheExtensionsTest> extensions = GeoWebCacheExtensions
-                .extensions(GeoWebCacheExtensionsTest.class);
+        List<GeoWebCacheExtensionsTest> extensions =
+                GeoWebCacheExtensions.extensions(GeoWebCacheExtensionsTest.class);
         assertNotNull(extensions);
         assertEquals(2, extensions.size());
         assertTrue(extensions.contains(this));
         assertTrue(extensions.contains(null));
 
         assertEquals(1, GeoWebCacheExtensions.extensionsCache.size());
-        assertTrue(GeoWebCacheExtensions.extensionsCache
-                .containsKey(GeoWebCacheExtensionsTest.class));
+        assertTrue(
+                GeoWebCacheExtensions.extensionsCache.containsKey(GeoWebCacheExtensionsTest.class));
         assertNotNull(GeoWebCacheExtensions.extensionsCache.get(GeoWebCacheExtensionsTest.class));
-        assertEquals(2,
+        assertEquals(
+                2,
                 GeoWebCacheExtensions.extensionsCache.get(GeoWebCacheExtensionsTest.class).length);
 
         verify(appContext);
@@ -113,8 +109,8 @@ public class GeoWebCacheExtensionsTest extends TestCase {
         replay(customAppContext);
         replay(appContext);
 
-        List<GeoWebCacheExtensionsTest> extensions = GeoWebCacheExtensions.extensions(
-                GeoWebCacheExtensionsTest.class, customAppContext);
+        List<GeoWebCacheExtensionsTest> extensions =
+                GeoWebCacheExtensions.extensions(GeoWebCacheExtensionsTest.class, customAppContext);
 
         assertNotNull(extensions);
         assertEquals(1, extensions.size());
@@ -148,10 +144,11 @@ public class GeoWebCacheExtensionsTest extends TestCase {
 
     public void testSystemProperty() {
         // check for a property we did set up in the setUp
-        assertEquals("ABC",
+        assertEquals(
+                "ABC",
                 GeoWebCacheExtensions.getProperty("TEST_PROPERTY", (ApplicationContext) null));
-        assertEquals("ABC",
-                GeoWebCacheExtensions.getProperty("TEST_PROPERTY", (ServletContext) null));
+        assertEquals(
+                "ABC", GeoWebCacheExtensions.getProperty("TEST_PROPERTY", (ServletContext) null));
     }
 
     public void testWebProperty() {
@@ -186,15 +183,14 @@ public class GeoWebCacheExtensionsTest extends TestCase {
         // the cache should be empty
         assertThat(GeoWebCacheExtensions.extensionsCache.size(), is(0));
         // we should get beans ordered by their priority
-        List<BeanWithPriority> extensions = GeoWebCacheExtensions.extensions(BeanWithPriority.class);
+        List<BeanWithPriority> extensions =
+                GeoWebCacheExtensions.extensions(BeanWithPriority.class);
         assertThat(extensions.size(), is(3));
         assertThat(extensions, Matchers.contains(beanB, beanA, beanC));
         verify(appContext);
     }
 
-    /**
-     * Helper to test extensions points priorities.
-     */
+    /** Helper to test extensions points priorities. */
     private static final class BeanWithPriority implements GeoWebCacheExtensionPriority {
 
         final int priority;

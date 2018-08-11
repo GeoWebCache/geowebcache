@@ -1,17 +1,15 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
 package org.geowebcache.util;
@@ -32,9 +30,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
-
 import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,17 +39,17 @@ public class ServletUtils {
     private static Log log = LogFactory.getLog(org.geowebcache.util.ServletUtils.class);
 
     // Calendar objects are unfortunately expensive and not thread safe :(
-    static private Calendar calendar = new GregorianCalendar();
+    private static Calendar calendar = new GregorianCalendar();
 
-    static private TimeZone timeZone = TimeZone.getTimeZone("GMT");
+    private static TimeZone timeZone = TimeZone.getTimeZone("GMT");
 
-    static private SimpleDateFormat format = null;
+    private static SimpleDateFormat format = null;
 
-    static private long localOffset = TimeZone.getDefault().getRawOffset();
+    private static long localOffset = TimeZone.getDefault().getRawOffset();
 
     /**
      * Case insensitive lookup
-     * 
+     *
      * @param map
      * @param key
      * @return all matchings string
@@ -78,7 +74,7 @@ public class ServletUtils {
 
     /**
      * Case insensitive lookup
-     * 
+     *
      * @param map
      * @param key
      * @return
@@ -89,18 +85,17 @@ public class ServletUtils {
             return strArray[0];
         }
         return null;
-
     }
 
     /**
      * Case insensitive lookup for a couple of strings, drops everything else
-     * 
+     *
      * @param map
      * @param keys
      * @return
      */
-    public static String[][] selectedStringArraysFromMap(Map<String, String[]> map,
-            String encoding, String[] keys) {
+    public static String[][] selectedStringArraysFromMap(
+            Map<String, String[]> map, String encoding, String[] keys) {
         String[][] retAr = new String[keys.length][];
 
         Iterator<Entry<String, String[]>> iter = map.entrySet().iterator();
@@ -121,23 +116,23 @@ public class ServletUtils {
 
     /**
      * Case insensitive lookup for a couple of strings, drops everything else
-     * 
+     *
      * @param map
      * @param keys
      * @return map subset containing (URL decoded) values for {@code keys}, with keys normalized to
-     *         upper case
+     *     upper case
      */
     @SuppressWarnings("unchecked")
-    public static Map<String, String> selectedStringsFromMap(Map<String, ?> map, String encoding,
-            String... keys) {
+    public static Map<String, String> selectedStringsFromMap(
+            Map<String, ?> map, String encoding, String... keys) {
 
         map = new CaseInsensitiveMap(map);
         Map<String, String> selected = new CaseInsensitiveMap();
         for (String key : keys) {
             Object value = map.get(key);
             if (value != null) {
-                String sValue = value instanceof String[] ? ((String[]) value)[0] : String
-                        .valueOf(value);
+                String sValue =
+                        value instanceof String[] ? ((String[]) value)[0] : String.valueOf(value);
                 selected.put(key.toUpperCase(), URLDecode(sValue, encoding));
             }
         }
@@ -146,7 +141,7 @@ public class ServletUtils {
 
     /**
      * Extracts the cache control header
-     * 
+     *
      * @param cacheControlHeader
      * @return Long representing expiration time in seconds
      */
@@ -171,14 +166,10 @@ public class ServletUtils {
 
     /**
      * Reads an inputstream and stores all the information in a buffer.
-     * 
-     * @param is
-     *            the inputstream
-     * @param bufferHint
-     *            hint for the total buffer, -1 = 10240
-     * @param tmpBufferSize
-     *            how many bytes to read at a time, -1 = 1024
-     * 
+     *
+     * @param is the inputstream
+     * @param bufferHint hint for the total buffer, -1 = 10240
+     * @param tmpBufferSize how many bytes to read at a time, -1 = 1024
      * @return a compacted buffer with all the data
      * @throws IOException
      */
@@ -187,8 +178,8 @@ public class ServletUtils {
         return readStream(is, bufferHint, tmpBufferSize, true);
     }
 
-    public static byte[] readStream(InputStream is, int bufferHint, int tmpBufferSize, boolean close)
-            throws IOException {
+    public static byte[] readStream(
+            InputStream is, int bufferHint, int tmpBufferSize, boolean close) throws IOException {
         byte[] buffer = null;
         if (bufferHint > 0) {
             buffer = new byte[bufferHint];
@@ -212,8 +203,7 @@ public class ServletUtils {
                 // Expand buffer if needed
                 if (totalCount >= buffer.length) {
                     int newLength = buffer.length * 2;
-                    if (newLength < totalCount)
-                        newLength = totalCount;
+                    if (newLength < totalCount) newLength = totalCount;
 
                     byte[] newBuffer = new byte[newLength];
                     System.arraycopy(buffer, 0, newBuffer, 0, buffer.length);
@@ -225,8 +215,7 @@ public class ServletUtils {
             c = is.read(tmpBuffer);
         }
 
-        if (close)
-            is.close();
+        if (close) is.close();
 
         // Compact buffer
         byte[] newBuffer = new byte[totalCount];
@@ -237,9 +226,9 @@ public class ServletUtils {
 
     /**
      * Makes HTTP Expire header value
-     * 
-     * Has to be synchronized due to the shared Calendar objects
-     * 
+     *
+     * <p>Has to be synchronized due to the shared Calendar objects
+     *
      * @param seconds
      * @return
      */
@@ -251,7 +240,8 @@ public class ServletUtils {
         String ret;
         synchronized (calendar) {
             if (ServletUtils.format == null) {
-                ServletUtils.format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+                ServletUtils.format =
+                        new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
                 ServletUtils.format.setTimeZone(ServletUtils.timeZone);
             }
 
@@ -263,7 +253,7 @@ public class ServletUtils {
 
     /**
      * Returns the expiration time in milliseconds from now
-     * 
+     *
      * @param expiresHeader
      * @return
      */
@@ -276,9 +266,9 @@ public class ServletUtils {
 
         synchronized (calendar) {
             if (ServletUtils.format == null) {
-                ServletUtils.format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+                ServletUtils.format =
+                        new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
                 ServletUtils.format.setTimeZone(ServletUtils.timeZone);
-
             }
 
             try {
@@ -305,7 +295,7 @@ public class ServletUtils {
 
     /**
      * Converts a byte to a hex String
-     * 
+     *
      * @param aByte
      * @return
      */
@@ -325,24 +315,24 @@ public class ServletUtils {
 
             if (temp > 9) {
                 switch (temp) {
-                case 10:
-                    str[i] = 'A';
-                    break;
-                case 11:
-                    str[i] = 'B';
-                    break;
-                case 12:
-                    str[i] = 'C';
-                    break;
-                case 13:
-                    str[i] = 'D';
-                    break;
-                case 14:
-                    str[i] = 'E';
-                    break;
-                case 15:
-                    str[i] = 'F';
-                    break;
+                    case 10:
+                        str[i] = 'A';
+                        break;
+                    case 11:
+                        str[i] = 'B';
+                        break;
+                    case 12:
+                        str[i] = 'C';
+                        break;
+                    case 13:
+                        str[i] = 'D';
+                        break;
+                    case 14:
+                        str[i] = 'E';
+                        break;
+                    case 15:
+                        str[i] = 'F';
+                        break;
                 }
             } else {
                 str[i] = (char) temp;
@@ -397,7 +387,9 @@ public class ServletUtils {
         StringBuilder builder = new StringBuilder();
         builder.append("<head>\n");
         builder.append("<title>").append(pageTitle).append("</title>\n");
-        builder.append("<link rel=\"stylesheet\" href=\"").append(relBasePath).append("rest/web/gwc.css\" type=\"text/css\"/>\n");
+        builder.append("<link rel=\"stylesheet\" href=\"")
+                .append(relBasePath)
+                .append("rest/web/gwc.css\" type=\"text/css\"/>\n");
         builder.append("</head>\n");
         return builder.toString();
     }
@@ -406,7 +398,9 @@ public class ServletUtils {
         StringBuilder builder = new StringBuilder();
         builder.append("<div id=\"pageHeader\">");
         builder.append("<a id=\"logo\" href=\"").append(relBasePath).append("\">");
-        builder.append("<img src=\"").append(relBasePath).append("rest/web/geowebcache_logo.png\"/>");
+        builder.append("<img src=\"")
+                .append(relBasePath)
+                .append("rest/web/geowebcache_logo.png\"/>");
         builder.append("</a>");
         builder.append("</div>\n");
         return builder.toString();
@@ -423,11 +417,10 @@ public class ServletUtils {
 
     /**
      * Replaces occurrences of &gt; and &lt; with HTML equivalents
-     * 
+     *
      * @param str
      * @return
      */
-
     public static String disableHTMLTags(String str) {
         if (str == null) {
             return "null";
@@ -453,6 +446,7 @@ public class ServletUtils {
 
     /**
      * Generate the base url of the request, minus the context path
+     *
      * @param req servlet request
      * @return Base url of request, minus the context path
      */
@@ -463,22 +457,24 @@ public class ServletUtils {
         } else {
             result = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
         }
-        if(servletPrefix==null){
+        if (servletPrefix == null) {
             return result;
         } else {
-            // If the servlet is embeded within another, include the context path of the parent 
+            // If the servlet is embeded within another, include the context path of the parent
             // servlet in the base.
             String reqUrl = req.getContextPath();
-            return result+reqUrl;
+            return result + reqUrl;
         }
     }
-    
+
     /**
      * Generate the context path of the request, less the specified trailing path
+     *
      * @param req
      * @param trailingPath
      */
-    public static String getServletContextPath(HttpServletRequest req, String trailingPath, String servletPrefix) {
+    public static String getServletContextPath(
+            HttpServletRequest req, String trailingPath, String servletPrefix) {
         String reqUrl = req.getRequestURL().toString();
         String servletBase = ServletUtils.getServletBaseURL(req, servletPrefix);
         int prefixIdx = servletBase.length();

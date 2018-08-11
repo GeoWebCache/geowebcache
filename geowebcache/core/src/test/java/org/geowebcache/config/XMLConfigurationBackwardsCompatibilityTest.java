@@ -7,13 +7,11 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.util.Iterator;
 import java.util.List;
-
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.request.RequestFilter;
@@ -147,8 +145,11 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         assertNotNull(serviceInfo.getServiceProvider().getProviderName());
         assertNotNull(serviceInfo.getServiceProvider().getProviderSite());
         assertNotNull(serviceInfo.getServiceProvider().getServiceContact());
-        assertNotNull(serviceInfo.getServiceProvider().getServiceContact()
-                .getAddressAdministrativeArea());
+        assertNotNull(
+                serviceInfo
+                        .getServiceProvider()
+                        .getServiceContact()
+                        .getAddressAdministrativeArea());
         assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getAddressCity());
         assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getAddressCountry());
         assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getAddressEmail());
@@ -179,8 +180,8 @@ public class XMLConfigurationBackwardsCompatibilityTest {
             }
         }
 
-        throw new GeoWebCacheException("Layer " + layerName + " not found, set has "
-                + layers.size() + " layers.");
+        throw new GeoWebCacheException(
+                "Layer " + layerName + " not found, set has " + layers.size() + " layers.");
     }
 
     private List<TileLayer> loadResource(String fileName) throws Exception {
@@ -218,9 +219,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         return xmlConfig;
     }
 
-    /**
-     * Utility method to print out a dom.
-     */
+    /** Utility method to print out a dom. */
     protected void print(Document dom) throws Exception {
         TransformerFactory txFactory = TransformerFactory.newInstance();
         try {
@@ -233,7 +232,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         tx.setOutputProperty(OutputKeys.METHOD, "xml");
         tx.setOutputProperty(OutputKeys.INDENT, "yes");
 
-        tx.transform(new DOMSource(dom), new StreamResult(new OutputStreamWriter(System.out,
-                "utf-8")));
+        tx.transform(
+                new DOMSource(dom), new StreamResult(new OutputStreamWriter(System.out, "utf-8")));
     }
 }

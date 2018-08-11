@@ -1,26 +1,22 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
 package org.geowebcache.service.ve;
 
 import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -35,24 +31,19 @@ import org.geowebcache.service.ServiceException;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
 
-/**
- * Class to convert from Virtual Earth quad keys to the internal representation
- * of a tile.
- */
+/** Class to convert from Virtual Earth quad keys to the internal representation of a tile. */
 public class VEConverter extends Service {
     public static final String SERVICE_VE = "ve";
 
     private static Log log = LogFactory.getLog(org.geowebcache.service.ve.VEConverter.class);
 
     private StorageBroker sb;
-    
+
     private TileLayerDispatcher tld;
-    
+
     private GridSetBroker gsb;
-    
-    /**
-     * Protected no-argument constructor to allow run-time instrumentation
-     */
+
+    /** Protected no-argument constructor to allow run-time instrumentation */
     protected VEConverter() {
         super(SERVICE_VE);
     }
@@ -64,53 +55,59 @@ public class VEConverter extends Service {
         this.gsb = gsb;
     }
 
-    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response)  
-    throws ServiceException  {
-        Map<String,String[]> params = request.getParameterMap();
-        
+    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response)
+            throws ServiceException {
+        Map<String, String[]> params = request.getParameterMap();
+
         String layerId = super.getLayersParameter(request);
-        
+
         String encoding = request.getCharacterEncoding();
-        
+
         String strQuadKey = ServletUtils.stringFromMap(params, encoding, "quadkey");
         String strFormat = ServletUtils.stringFromMap(params, encoding, "format");
         String strCached = ServletUtils.stringFromMap(params, encoding, "cached");
         String strMetaTiled = ServletUtils.stringFromMap(params, encoding, "metatiled");
-        
+
         long[] gridLoc = VEConverter.convert(strQuadKey);
-        
+
         MimeType mimeType = null;
-        if(strFormat != null) {
+        if (strFormat != null) {
             try {
                 mimeType = MimeType.createFromFormat(strFormat);
             } catch (MimeException me) {
                 throw new ServiceException("Unable to determined requested format, " + strFormat);
             }
         }
-        
-        ConveyorTile ret = new ConveyorTile(sb, layerId, gsb.WORLD_EPSG3857.getName(), gridLoc, mimeType, null, request, response);
-        
-        if(strCached != null && ! Boolean.parseBoolean(strCached)) {
+
+        ConveyorTile ret =
+                new ConveyorTile(
+                        sb,
+                        layerId,
+                        gsb.WORLD_EPSG3857.getName(),
+                        gridLoc,
+                        mimeType,
+                        null,
+                        request,
+                        response);
+
+        if (strCached != null && !Boolean.parseBoolean(strCached)) {
             ret.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
-            if(strMetaTiled != null && ! Boolean.parseBoolean(strMetaTiled)) {
+            if (strMetaTiled != null && !Boolean.parseBoolean(strMetaTiled)) {
                 ret.setHint("not_cached,not_metatiled");
             } else {
                 ret.setHint("not_cached");
             }
         }
-        
+
         return ret;
     }
-    
-    /** 
-     * NB The following code is shared across Google Maps, Mobile Google Maps and Virtual Earth
-     */
-    public void handleRequest(ConveyorTile tile)
-            throws GeoWebCacheException {
+
+    /** NB The following code is shared across Google Maps, Mobile Google Maps and Virtual Earth */
+    public void handleRequest(ConveyorTile tile) throws GeoWebCacheException {
         if (tile.getHint() != null) {
-            //boolean requestTiled = true;
+            // boolean requestTiled = true;
             if (tile.getHint().equals("not_cached,not_metatiled")) {
-                //requestTiled = false;
+                // requestTiled = false;
             } else if (!tile.getHint().equals("not_cached")) {
                 throw new GeoWebCacheException("Hint " + tile.getHint() + " is not known.");
             }
@@ -120,23 +117,24 @@ public class VEConverter extends Service {
             if (tl == null) {
                 throw new GeoWebCacheException("Unknown layer " + tile.getLayerId());
             }
-            
-            if(! tl.isCacheBypassAllowed().booleanValue()) {
-                throw new GeoWebCacheException("Layer " + tile.getLayerId() 
-                        + " is not configured to allow bypassing the cache.");
+
+            if (!tl.isCacheBypassAllowed().booleanValue()) {
+                throw new GeoWebCacheException(
+                        "Layer "
+                                + tile.getLayerId()
+                                + " is not configured to allow bypassing the cache.");
             }
 
             tile.setTileLayer(tl);
             tl.getNoncachedTile(tile);
-            
+
             Service.writeTileResponse(tile, false);
         }
     }
 
     /**
-     * Convert a quadkey into the internal representation {x,y,z} of a grid
-     * location
-     * 
+     * Convert a quadkey into the internal representation {x,y,z} of a grid location
+     *
      * @param quadKey
      * @return internal representation
      */
@@ -180,7 +178,7 @@ public class VEConverter extends Service {
             }
         }
 
-        long[] gridLoc = { xPos, yPos, zoomLevel };
+        long[] gridLoc = {xPos, yPos, zoomLevel};
 
         return gridLoc;
     }

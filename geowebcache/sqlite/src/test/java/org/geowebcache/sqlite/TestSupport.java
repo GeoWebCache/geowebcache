@@ -1,36 +1,31 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Nuno Oliveira, GeoSolutions S.A.S., Copyright 2016
  */
 package org.geowebcache.sqlite;
-
-import org.apache.commons.io.FileUtils;
-import org.geowebcache.io.ByteArrayResource;
-import org.geowebcache.io.Resource;
-import org.junit.After;
-import org.junit.Before;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.io.FileUtils;
+import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.io.Resource;
+import org.junit.After;
+import org.junit.Before;
 
-/**
- * Helper class with some utilities methods for using during the tests.
- */
+/** Helper class with some utilities methods for using during the tests. */
 public abstract class TestSupport {
 
     private File rootDirectory;
@@ -49,7 +44,7 @@ public abstract class TestSupport {
     @After
     public void afterTest() throws Exception {
         // let's first make sure all the stores connection were removed
-        for (MbtilesBlobStore store: storesToClean) {
+        for (MbtilesBlobStore store : storesToClean) {
             try {
                 store.destroy();
             } catch (Exception exception) {
@@ -103,7 +98,8 @@ public abstract class TestSupport {
             writer.flush();
             writer.close();
         } catch (Exception exception) {
-            throw Utils.exception(exception, "Error creating or writing content to file '%s'.", file);
+            throw Utils.exception(
+                    exception, "Error creating or writing content to file '%s'.", file);
         }
     }
 
@@ -111,7 +107,8 @@ public abstract class TestSupport {
         MbtilesConfiguration configuration = new MbtilesConfiguration();
         configuration.setPoolSize(1000);
         configuration.setRootDirectory(getRootDirectory().getPath());
-        configuration.setTemplatePath(Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
+        configuration.setTemplatePath(
+                Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
         configuration.setRowRangeCount(500);
         configuration.setColumnRangeCount(500);
         return configuration;
@@ -125,13 +122,13 @@ public abstract class TestSupport {
         return new String(Utils.resourceToByteArray(resource));
     }
 
-    protected void addStoresToClean(MbtilesBlobStore ... stores) {
+    protected void addStoresToClean(MbtilesBlobStore... stores) {
         for (MbtilesBlobStore store : stores) {
             storesToClean.add(store);
         }
     }
 
-    protected void addFilesToDelete(File ... files) {
+    protected void addFilesToDelete(File... files) {
         for (File file : files) {
             filesToDelete.add(file);
         }

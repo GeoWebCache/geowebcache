@@ -1,7 +1,6 @@
 package org.geowebcache.service.mgmaps;
 
 import java.util.Arrays;
-
 import junit.framework.TestCase;
 
 public class MGMapsConverterTest extends TestCase {
@@ -13,7 +12,7 @@ public class MGMapsConverterTest extends TestCase {
 
     /**
      * see Modified for MGMaps API
-     * 
+     *
      * @throws Exception
      */
     public void testMGMapsConverter() throws Exception {
@@ -22,7 +21,7 @@ public class MGMapsConverterTest extends TestCase {
         int y = 0;
         int z = 17;
         long[] gridLoc = MGMapsConverter.convert(z, x, y);
-        long[] solution = { 0, 0, 0 };
+        long[] solution = {0, 0, 0};
 
         assert (Arrays.equals(gridLoc, solution));
 
@@ -66,7 +65,7 @@ public class MGMapsConverterTest extends TestCase {
         gridLoc = MGMapsConverter.convert(z, x, y);
         assert (Arrays.equals(gridLoc, solution));
 
-        //System.out.println(Arrays.toString(solution));
-        //System.out.println(Arrays.toString(gridLoc));
+        // System.out.println(Arrays.toString(solution));
+        // System.out.println(Arrays.toString(gridLoc));
     }
 }

@@ -1,21 +1,24 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Nuno Oliveira, GeoSolutions S.A.S., Copyright 2016
  */
 package org.geowebcache.service.wmts;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensionPriority;
 import org.geowebcache.config.meta.ServiceInformation;
@@ -25,15 +28,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.service.OWSException;
 import org.geowebcache.storage.StorageBroker;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-
-/**
- * Default implementation of a WMTSExtension that does nothing.
- */
+/** Default implementation of a WMTSExtension that does nothing. */
 public class WMTSExtensionImpl implements WMTSExtension {
 
     protected int priority = GeoWebCacheExtensionPriority.LOWEST;
@@ -44,12 +39,10 @@ public class WMTSExtensionImpl implements WMTSExtension {
     }
 
     @Override
-    public void registerNamespaces(XMLBuilder xmlBuilder) throws IOException {
-    }
+    public void registerNamespaces(XMLBuilder xmlBuilder) throws IOException {}
 
     @Override
-    public void encodedOperationsMetadata(XMLBuilder xmlBuilder) throws IOException {
-    }
+    public void encodedOperationsMetadata(XMLBuilder xmlBuilder) throws IOException {}
 
     @Override
     public List<OperationMetadata> getExtraOperationsMetadata() throws IOException {
@@ -67,7 +60,9 @@ public class WMTSExtensionImpl implements WMTSExtension {
     }
 
     @Override
-    public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response, StorageBroker storageBroker) throws GeoWebCacheException, OWSException {
+    public Conveyor getConveyor(
+            HttpServletRequest request, HttpServletResponse response, StorageBroker storageBroker)
+            throws GeoWebCacheException, OWSException {
         return null;
     }
 
@@ -77,8 +72,7 @@ public class WMTSExtensionImpl implements WMTSExtension {
     }
 
     @Override
-    public void encodeLayer(XMLBuilder xmlBuilder, TileLayer tileLayer) throws IOException {
-    }
+    public void encodeLayer(XMLBuilder xmlBuilder, TileLayer tileLayer) throws IOException {}
 
     public void setPriority(int priority) {
         this.priority = priority;

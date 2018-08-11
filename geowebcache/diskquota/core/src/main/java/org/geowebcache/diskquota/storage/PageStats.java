@@ -1,19 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Gabriel Roldan (OpenGeo) 2010
- *  
  */
 package org.geowebcache.diskquota.storage;
 
@@ -23,10 +20,10 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 
 /**
- * Collects statistics about a tile page, including its frequency of use, the last access time,
- * the amount of tiles present in the page expressed as a fill factor, and the total number of hits.
- * <p>
- * The information provided by this class drives the expiration policies of the disk quota module 
+ * Collects statistics about a tile page, including its frequency of use, the last access time, the
+ * amount of tiles present in the page expressed as a fill factor, and the total number of hits.
+ *
+ * <p>The information provided by this class drives the expiration policies of the disk quota module
  */
 public class PageStats implements Serializable {
 
@@ -37,10 +34,10 @@ public class PageStats implements Serializable {
     private long pageId;
 
     /**
-     * Approximate average frequency of use of this page per minute, computed each time page
-     * {@link #addHitsAndAccessTime hits } are added based on the previous frequency of use, the
-     * time elapsed since the last use ({@link #lastAccessTimeMinutes}), and the new number of hits
-     * added in that period of time.
+     * Approximate average frequency of use of this page per minute, computed each time page {@link
+     * #addHitsAndAccessTime hits } are added based on the previous frequency of use, the time
+     * elapsed since the last use ({@link #lastAccessTimeMinutes}), and the new number of hits added
+     * in that period of time.
      */
     private float frequencyOfUse;
 
@@ -66,8 +63,8 @@ public class PageStats implements Serializable {
         this(page.getId());
     }
 
-    public void addHitsAndAccessTime(final long addedHits, int lastAccessTimeMinutes,
-            final int creationTimeMinutes) {
+    public void addHitsAndAccessTime(
+            final long addedHits, int lastAccessTimeMinutes, final int creationTimeMinutes) {
 
         if (lastAccessTimeMinutes < creationTimeMinutes) {
             lastAccessTimeMinutes = creationTimeMinutes;
@@ -82,8 +79,11 @@ public class PageStats implements Serializable {
         this.numHits = this.numHits.add(BigInteger.valueOf(addedHits));
         BigDecimal age = new BigDecimal(1 + lastAccessTimeMinutes - creationTimeMinutes);
 
-        this.frequencyOfUse = new BigDecimal(this.numHits).divide(age, 7, RoundingMode.CEILING)
-                .multiply(new BigDecimal(fillFactor)).floatValue();
+        this.frequencyOfUse =
+                new BigDecimal(this.numHits)
+                        .divide(age, 7, RoundingMode.CEILING)
+                        .multiply(new BigDecimal(fillFactor))
+                        .floatValue();
 
         this.lastAccessTimeMinutes = lastAccessTimeMinutes;
     }
@@ -98,8 +98,8 @@ public class PageStats implements Serializable {
         // trading some computational overhead by storage savings here...
         BigDecimal currFillFactor = new BigDecimal(fillFactor);
         BigDecimal addedTiles = new BigDecimal(numTiles);
-        BigDecimal addedFillFactor = addedTiles.divide(new BigDecimal(maxTiles), 7,
-                RoundingMode.CEILING);
+        BigDecimal addedFillFactor =
+                addedTiles.divide(new BigDecimal(maxTiles), 7, RoundingMode.CEILING);
         currFillFactor = currFillFactor.add(addedFillFactor);
         this.fillFactor = currFillFactor.floatValue();
         if (fillFactor > 1f) {

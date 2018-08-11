@@ -1,21 +1,20 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
 package org.geowebcache.layer;
 
+import it.geosolutions.jaiext.BufferedImageAdapter;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -28,7 +27,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Vector;
-
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
@@ -41,7 +39,6 @@ import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.CropDescriptor;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -55,8 +52,6 @@ import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.springframework.util.Assert;
 
-import it.geosolutions.jaiext.BufferedImageAdapter;
-
 public class MetaTile implements TileResponseReceiver {
 
     private static Log log = LogFactory.getLog(MetaTile.class);
@@ -64,6 +59,7 @@ public class MetaTile implements TileResponseReceiver {
     protected static final RenderingHints NO_CACHE = new RenderingHints(JAI.KEY_TILE_CACHE, null);
 
     private static final boolean NATIVE_JAI_AVAILABLE;
+
     static {
         // we directly access the Mlib Image class, if in the classpath it will tell us if
         // the native extensions are available, if not, an Error will be thrown
@@ -76,7 +72,8 @@ public class MetaTile implements TileResponseReceiver {
         }
         NATIVE_JAI_AVAILABLE = nativeJAIAvailable;
         if (!NATIVE_JAI_AVAILABLE) {
-            log.warn("********* Native JAI is not installed, meta tile cropping may be slow ********");
+            log.warn(
+                    "********* Native JAI is not installed, meta tile cropping may be slow ********");
         }
     }
 
@@ -125,11 +122,11 @@ public class MetaTile implements TileResponseReceiver {
 
     /**
      * The the request format is the format used for the request to the backend.
-     * 
-     * The response format is what the tiles are actually saved as. The primary example is to use
+     *
+     * <p>The response format is what the tiles are actually saved as. The primary example is to use
      * image/png or image/tiff for backend requests, and then save the resulting tiles to JPEG to
      * avoid loss of quality.
-     * 
+     *
      * @param srs
      * @param responseFormat
      * @param requestFormat
@@ -138,8 +135,14 @@ public class MetaTile implements TileResponseReceiver {
      * @param metaY
      * @param gutter2
      */
-    public MetaTile(GridSubset gridSubset, MimeType responseFormat, FormatModifier formatModifier,
-            long[] tileGridPosition, int metaX, int metaY, Integer gutter) {
+    public MetaTile(
+            GridSubset gridSubset,
+            MimeType responseFormat,
+            FormatModifier formatModifier,
+            long[] tileGridPosition,
+            int metaX,
+            int metaY,
+            Integer gutter) {
         this.gridSubset = gridSubset;
         this.responseFormat = responseFormat;
         this.formatModifier = formatModifier;
@@ -147,8 +150,9 @@ public class MetaTile implements TileResponseReceiver {
         this.metaY = metaY;
         this.gutterConfig = responseFormat.isVector() || gutter == null ? 0 : gutter.intValue();
 
-        metaGridCov = calculateMetaTileGridBounds(
-                gridSubset.getCoverage((int) tileGridPosition[2]), tileGridPosition);
+        metaGridCov =
+                calculateMetaTileGridBounds(
+                        gridSubset.getCoverage((int) tileGridPosition[2]), tileGridPosition);
         tilesGridPositions = calculateTilesGridPositions();
         calculateEdgeGutter();
         int tileHeight = gridSubset.getTileHeight();
@@ -156,15 +160,14 @@ public class MetaTile implements TileResponseReceiver {
         this.tiles = createTiles(tileHeight, tileWidth);
     }
 
-    /***
-     * Calculates final meta tile width, height and bounding box
-     * <p>
-     * Adding a gutter should be really easy, just add to all sides, right ?
-     * 
-     * But GeoServer / GeoTools, and possibly other WMS servers, can get mad if we exceed 180,90 (or
-     * the equivalent for other projections), so we'lll treat those with special care.
-     * </p>
-     * 
+    /**
+     * * Calculates final meta tile width, height and bounding box
+     *
+     * <p>Adding a gutter should be really easy, just add to all sides, right ?
+     *
+     * <p>But GeoServer / GeoTools, and possibly other WMS servers, can get mad if we exceed 180,90
+     * (or the equivalent for other projections), so we'lll treat those with special care.
+     *
      * @param strBuilder
      * @param metaTileGridBounds
      */
@@ -261,11 +264,15 @@ public class MetaTile implements TileResponseReceiver {
         try {
             ImageInputStream imgStream;
             imgStream = new ResourceImageInputStream(((ByteArrayResource) buffer).getInputStream());
-            RenderedImage metaTiledImage = ImageIO.read(imgStream);// read closes the stream for us
+            RenderedImage metaTiledImage = ImageIO.read(imgStream); // read closes the stream for us
             setImage(metaTiledImage);
         } catch (IOException ioe) {
-            throw new GeoWebCacheException("WMSMetaTile.setImageBytes() "
-                    + "failed on ImageIO.read(byte[" + buffer.getSize() + "])", ioe);
+            throw new GeoWebCacheException(
+                    "WMSMetaTile.setImageBytes() "
+                            + "failed on ImageIO.read(byte["
+                            + buffer.getSize()
+                            + "])",
+                    ioe);
         }
         if (metaTileImage == null) {
             throw new GeoWebCacheException(
@@ -280,11 +287,9 @@ public class MetaTile implements TileResponseReceiver {
     /**
      * Cuts the metaTile into the specified number of tiles, the actual number of tiles is
      * determined by metaX and metaY, not the width and height provided here.
-     * 
-     * @param tileWidth
-     *            width of each tile
-     * @param tileHeight
-     *            height of each tile
+     *
+     * @param tileWidth width of each tile
+     * @param tileHeight height of each tile
      * @return
      */
     private Rectangle[] createTiles(int tileHeight, int tileWidth) {
@@ -305,30 +310,33 @@ public class MetaTile implements TileResponseReceiver {
 
     /**
      * Extracts a single tile from the metatile.
-     * 
-     * @param minX
-     *            left pixel index to crop the meta tile at
-     * @param minY
-     *            top pixel index to crop the meta tile at
-     * @param tileWidth
-     *            width of the tile
-     * @param tileHeight
-     *            height of the tile
+     *
+     * @param minX left pixel index to crop the meta tile at
+     * @param minY top pixel index to crop the meta tile at
+     * @param tileWidth width of the tile
+     * @param tileHeight height of the tile
      * @return a rendered image of the specified meta tile region
      */
-    public RenderedImage createTile(final int minX, final int minY, final int tileWidth,
-            final int tileHeight) {
+    public RenderedImage createTile(
+            final int minX, final int minY, final int tileWidth, final int tileHeight) {
 
         // optimize if we get a bufferedimage
-        if(metaTileImage instanceof BufferedImage){
-            BufferedImage subimage = ((BufferedImage) metaTileImage).getSubimage(minX, minY, tileWidth, tileHeight);
+        if (metaTileImage instanceof BufferedImage) {
+            BufferedImage subimage =
+                    ((BufferedImage) metaTileImage).getSubimage(minX, minY, tileWidth, tileHeight);
             return new BufferedImageAdapter(subimage);
         }
-        
+
         // do a crop, and then turn it into a buffered image so that we can release
         // the image chain
-        PlanarImage cropped = CropDescriptor.create(metaTileImage, Float.valueOf(minX),
-                Float.valueOf(minY), Float.valueOf(tileWidth), Float.valueOf(tileHeight), NO_CACHE);
+        PlanarImage cropped =
+                CropDescriptor.create(
+                        metaTileImage,
+                        Float.valueOf(minX),
+                        Float.valueOf(minY),
+                        Float.valueOf(tileWidth),
+                        Float.valueOf(tileHeight),
+                        NO_CACHE);
         if (nativeAccelAvailable()) {
             log.trace("created cropped tile");
             return cropped;
@@ -345,13 +353,10 @@ public class MetaTile implements TileResponseReceiver {
 
     /**
      * Outputs one tile from the internal array of tiles to a provided stream
-     * 
-     * @param tileIdx
-     *            the index of the tile relative to the internal array
-     * @param format
-     *            the Java name for the format
-     * @param resource
-     *            the outputstream
+     *
+     * @param tileIdx the index of the tile relative to the internal array
+     * @param format the Java name for the format
+     * @param resource the outputstream
      * @return true if no error was encountered
      * @throws IOException
      */
@@ -359,17 +364,16 @@ public class MetaTile implements TileResponseReceiver {
         if (tiles == null) {
             return false;
         }
-        
 
         if (log.isDebugEnabled()) {
             log.debug("Thread: " + Thread.currentThread().getName() + " writing: " + tileIdx);
         }
-        
+
         Rectangle tileRegion = tiles[tileIdx];
-        RenderedImage tile = createTile(tileRegion.x, tileRegion.y, tileRegion.width,
-                tileRegion.height);
+        RenderedImage tile =
+                createTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height);
         disposeLater(tile);
-        
+
         // TODO should we recycle the writers ?
         // GR: it'd be only a 2% perf gain according to profile
         ImageWriter writer = ((ImageMime) responseFormat).getImageWriter(tile);
@@ -394,7 +398,9 @@ public class MetaTile implements TileResponseReceiver {
     }
 
     private RenderedImage preprocessForWriter(RenderedImage ri, ImageWriter writer) {
-        if(ri.getColorModel().hasAlpha() && ri.getSampleModel().getNumBands() == 4 && isJpegWriter(writer)) {
+        if (ri.getColorModel().hasAlpha()
+                && ri.getSampleModel().getNumBands() == 4
+                && isJpegWriter(writer)) {
             final int[] bands = new int[3];
             for (int i = 0; i < bands.length; i++) {
                 bands[i] = i;
@@ -403,7 +409,8 @@ public class MetaTile implements TileResponseReceiver {
             ParameterBlock pb = new ParameterBlock();
             pb.setSource(ri, 0);
             pb.set(bands, 0);
-            final RenderingHints hints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, new ImageLayout(ri));
+            final RenderingHints hints =
+                    new RenderingHints(JAI.KEY_IMAGE_LAYOUT, new ImageLayout(ri));
             ri = JAI.create("BandSelect", pb, hints);
         }
         return ri;
@@ -411,7 +418,7 @@ public class MetaTile implements TileResponseReceiver {
 
     private boolean isJpegWriter(ImageWriter writer) {
         for (String format : writer.getOriginatingProvider().getFormatNames()) {
-            if(format.equalsIgnoreCase("jpeg")) {
+            if (format.equalsIgnoreCase("jpeg")) {
                 return true;
             }
         }
@@ -426,16 +433,20 @@ public class MetaTile implements TileResponseReceiver {
     }
 
     public String debugString() {
-        return " metaX: " + metaX + " metaY: " + metaY + " metaGridCov: "
+        return " metaX: "
+                + metaX
+                + " metaY: "
+                + metaY
+                + " metaGridCov: "
                 + Arrays.toString(metaGridCov);
     }
 
     /**
      * Figures out the bounds of the metatile, in terms of the gridposition of all contained tiles.
      * To get the BBOX you need to add one tilewidth to the top and right.
-     * 
-     * It also updates metaX and metaY to the actual metatiling factors
-     * 
+     *
+     * <p>It also updates metaX and metaY to the actual metatiling factors
+     *
      * @param gridBounds
      * @param tileGridPosition
      * @return
@@ -455,9 +466,7 @@ public class MetaTile implements TileResponseReceiver {
         return metaGridCov;
     }
 
-    /**
-     * Creates an array with all the grid positions, used for cache keys
-     */
+    /** Creates an array with all the grid positions, used for cache keys */
     private long[][] calculateTilesGridPositions() {
         if (metaX < 0 || metaY < 0) {
             return null;
@@ -479,17 +488,17 @@ public class MetaTile implements TileResponseReceiver {
 
     /**
      * The bottom left grid position and zoomlevel for this metatile, used for locking.
-     * 
+     *
      * @return
      */
     public long[] getMetaGridPos() {
-        long[] gridPos = { metaGridCov[0], metaGridCov[1], metaGridCov[4] };
+        long[] gridPos = {metaGridCov[0], metaGridCov[1], metaGridCov[4]};
         return gridPos;
     }
 
     /**
      * The bounds for the metatile
-     * 
+     *
      * @return
      */
     public long[] getMetaTileGridBounds() {

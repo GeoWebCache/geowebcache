@@ -1,25 +1,21 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, OpenGeo, Copyright 2009
- *  
  */
 package org.geowebcache.storage;
 
 import java.util.Map;
 import java.util.TreeMap;
-
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.ServletUtils;
@@ -46,22 +42,52 @@ public class TileRange {
 
     private String parametersId;
 
-    /**
-     * @deprecated use {@link #TileRange(String, String, int, int, long[][], MimeType, Map)}
-     */
-    public TileRange(String layerName, String gridSetId, int zoomStart, int zoomStop,
-            long[][] rangeBounds, MimeType mimeType, String parameters) {
-        this(layerName, gridSetId, zoomStart, zoomStop, rangeBounds, mimeType, ServletUtils
-                .queryStringToMap(parameters));
+    /** @deprecated use {@link #TileRange(String, String, int, int, long[][], MimeType, Map)} */
+    public TileRange(
+            String layerName,
+            String gridSetId,
+            int zoomStart,
+            int zoomStop,
+            long[][] rangeBounds,
+            MimeType mimeType,
+            String parameters) {
+        this(
+                layerName,
+                gridSetId,
+                zoomStart,
+                zoomStop,
+                rangeBounds,
+                mimeType,
+                ServletUtils.queryStringToMap(parameters));
     }
 
-    public TileRange(String layerName, String gridSetId, int zoomStart, int zoomStop,
-            long[][] rangeBounds, MimeType mimeType, Map<String, String> parameters) {
-        this(layerName, gridSetId, zoomStart, zoomStop, rangeBounds, mimeType, parameters, ParametersUtils.getId(parameters));
+    public TileRange(
+            String layerName,
+            String gridSetId,
+            int zoomStart,
+            int zoomStop,
+            long[][] rangeBounds,
+            MimeType mimeType,
+            Map<String, String> parameters) {
+        this(
+                layerName,
+                gridSetId,
+                zoomStart,
+                zoomStop,
+                rangeBounds,
+                mimeType,
+                parameters,
+                ParametersUtils.getId(parameters));
     }
 
-    public TileRange(String layerName, String gridSetId, int zoomStart, int zoomStop,
-            long[][] rangeBounds, MimeType mimeType, Map<String, String> parameters,
+    public TileRange(
+            String layerName,
+            String gridSetId,
+            int zoomStart,
+            int zoomStop,
+            long[][] rangeBounds,
+            MimeType mimeType,
+            Map<String, String> parameters,
             String parametersId) {
         this.layerName = layerName;
         this.gridSetId = gridSetId;
@@ -108,51 +134,37 @@ public class TileRange {
         this.parametersId = parametersId;
     }
 
-    /**
-     * @return the parameters id, or {@code null} if unset
-     */
+    /** @return the parameters id, or {@code null} if unset */
     public String getParametersId() {
         return parametersId;
     }
 
-    /**
-     * @return the zoomStart
-     */
+    /** @return the zoomStart */
     public int getZoomStart() {
         return zoomStart;
     }
 
-    /**
-     * @return the zoomStop
-     */
+    /** @return the zoomStop */
     public int getZoomStop() {
         return zoomStop;
     }
 
-    /**
-     * @return the layerName
-     */
+    /** @return the layerName */
     public String getLayerName() {
         return layerName;
     }
 
-    /**
-     * @return the gridSetId
-     */
+    /** @return the gridSetId */
     public String getGridSetId() {
         return gridSetId;
     }
 
-    /**
-     * @return the mimeType
-     */
+    /** @return the mimeType */
     public MimeType getMimeType() {
         return mimeType;
     }
 
-    /**
-     * @return the parameters
-     */
+    /** @return the parameters */
     public Map<String, String> getParameters() {
         return parameters;
     }
@@ -166,8 +178,8 @@ public class TileRange {
         }
         long[] zlevelBounds = rangeBounds.get(Integer.valueOf(zoomLevel));
         if (zlevelBounds == null) {
-            throw new IllegalStateException("Found no range bounds for z level " + zoomLevel + ": "
-                    + rangeBounds);
+            throw new IllegalStateException(
+                    "Found no range bounds for z level " + zoomLevel + ": " + rangeBounds);
         }
         return zlevelBounds;
     }

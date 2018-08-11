@@ -1,19 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
- *  
  */
 package org.geowebcache.storage.blobstore.file;
 
@@ -21,7 +18,6 @@ import static org.geowebcache.storage.blobstore.file.FilePathUtils.*;
 
 import java.io.File;
 import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.filter.parameters.ParametersUtils;
@@ -29,31 +25,26 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.TileObject;
 
 public class FilePathGenerator {
-    
+
     @SuppressWarnings("unused")
     private static Log log = LogFactory.getLog(FilePathGenerator.class);
-    
+
     String cacheRoot;
 
     public FilePathGenerator(String cacheRoot) {
         this.cacheRoot = cacheRoot;
     }
-    
+
     /**
      * Builds the storage path for a tile and returns it as a File reference
+     *
      * <p>
-     * </p>
-     * 
-     * @param layerName
-     *            name of the layer the tile belongs to
-     * @param tileIndex
-     *            the [x,y,z] index for the tile
-     * @param gridSetId
-     *            the name of the gridset for the tile inside layer
-     * @param mimeType
-     *            the storage mime type
-     * @param parameters_id
-     *            the parameters identifier
+     *
+     * @param layerName name of the layer the tile belongs to
+     * @param tileIndex the [x,y,z] index for the tile
+     * @param gridSetId the name of the gridset for the tile inside layer
+     * @param mimeType the storage mime type
+     * @param parameters_id the parameters identifier
      * @return File pointer to the tile image
      */
     public File tilePath(TileObject tile, MimeType mimeType) {
@@ -86,7 +77,7 @@ public class FilePathGenerator {
             parametersId = ParametersUtils.getId(parameters);
             tile.setParametersId(parametersId);
         }
-        if(parametersId != null) {
+        if (parametersId != null) {
             path.append('_');
             path.append(parametersId);
         }
@@ -106,15 +97,14 @@ public class FilePathGenerator {
         return tileFile;
     }
 
-    /**
-     * @deprecated Use {@link ParametersUtils#buildKey(String)} instead
-     */
+    /** @deprecated Use {@link ParametersUtils#buildKey(String)} instead */
     public static String buildKey(String parametersKvp) {
         return ParametersUtils.buildKey(parametersKvp);
     }
-    
+
     /**
      * Returns the parameters identifier for the given parameters map
+     *
      * @param parameters
      * @return
      * @deprecated Use {@link ParametersUtils#getParametersId(Map<String, String>)} instead
@@ -125,7 +115,7 @@ public class FilePathGenerator {
 
     /**
      * Turns the parameter list into a sorted KVP string
-     * 
+     *
      * @param parameters
      * @return
      * @deprecated Use {@link ParametersUtils#getParametersKvp(Map<String, String>)} instead
@@ -133,7 +123,4 @@ public class FilePathGenerator {
     public static String getParametersKvp(Map<String, String> parameters) {
         return ParametersUtils.getLegacyParametersKvp(parameters);
     }
-
-
-   
 }

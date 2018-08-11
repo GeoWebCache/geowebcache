@@ -1,19 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, The Open Planning Project, Copyright 2009
- *  
  */
 package org.geowebcache.conveyor;
 
@@ -22,10 +19,8 @@ import java.io.IOException;
 import java.nio.channels.Channels;
 import java.util.Collections;
 import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -39,9 +34,7 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 
-/**
- * Represents a request for a tile and carries the information needed to complete it.
- */
+/** Represents a request for a tile and carries the information needed to complete it. */
 public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     private static Log log = LogFactory.getLog(org.geowebcache.conveyor.ConveyorTile.class);
 
@@ -57,35 +50,48 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
 
     TileObject stObj = null;
 
-    private Map<String, String> fullParameters; // TODO: why is this "full"?  It seems to only relate to filtering
+    private Map<String, String>
+            fullParameters; // TODO: why is this "full"?  It seems to only relate to filtering
 
     private boolean isMetaTileCacheOnly;
 
-    public ConveyorTile(StorageBroker sb, String layerId, HttpServletRequest servletReq,
+    public ConveyorTile(
+            StorageBroker sb,
+            String layerId,
+            HttpServletRequest servletReq,
             HttpServletResponse servletResp) {
         super(layerId, sb, servletReq, servletResp);
     }
 
     /**
-     * @deprecated as of 1.2.5, use
-     *             {@link #ConveyorTile(StorageBroker, String, String, long[], MimeType, Map, HttpServletRequest, HttpServletResponse)}
-     *             instead. This method just calls it with the provided {@code fullParameters} and
-     *             will be removed soon
+     * @deprecated as of 1.2.5, use {@link #ConveyorTile(StorageBroker, String, String, long[],
+     *     MimeType, Map, HttpServletRequest, HttpServletResponse)} instead. This method just calls
+     *     it with the provided {@code fullParameters} and will be removed soon
      */
     @Deprecated
-    public ConveyorTile(StorageBroker sb, String layerId, String gridSetId, long[] tileIndex,
-            MimeType mimeType, Map<String, String> fullParameters,
-            Map<String, String> modifiedParameters, HttpServletRequest servletReq,
+    public ConveyorTile(
+            StorageBroker sb,
+            String layerId,
+            String gridSetId,
+            long[] tileIndex,
+            MimeType mimeType,
+            Map<String, String> fullParameters,
+            Map<String, String> modifiedParameters,
+            HttpServletRequest servletReq,
             HttpServletResponse servletResp) {
         this(sb, layerId, gridSetId, tileIndex, mimeType, fullParameters, servletReq, servletResp);
     }
 
-    /**
-     * This constructor is used for an incoming request, the data is then added by the cache
-     */
-    public ConveyorTile(StorageBroker sb, String layerId, String gridSetId, long[] tileIndex,
-            MimeType mimeType, Map<String, String> filteringParameters,
-            HttpServletRequest servletReq, HttpServletResponse servletResp) {
+    /** This constructor is used for an incoming request, the data is then added by the cache */
+    public ConveyorTile(
+            StorageBroker sb,
+            String layerId,
+            String gridSetId,
+            long[] tileIndex,
+            MimeType mimeType,
+            Map<String, String> filteringParameters,
+            HttpServletRequest servletReq,
+            HttpServletResponse servletResp) {
 
         super(layerId, sb, servletReq, servletResp);
         this.gridSetId = gridSetId;
@@ -102,8 +108,9 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
 
         this.fullParameters = filteringParameters;
 
-        stObj = TileObject.createQueryTileObject(layerId, idx, gridSetId, mimeType.getFormat(),
-                filteringParameters);
+        stObj =
+                TileObject.createQueryTileObject(
+                        layerId, idx, gridSetId, mimeType.getFormat(), filteringParameters);
     }
 
     public Map<String, String> getFullParameters() {
@@ -127,6 +134,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
 
     /**
      * The time that the stored tile resource was created
+     *
      * @return
      */
     public long getTSCreated() {
@@ -158,7 +166,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     }
 
     public synchronized GridSubset getGridSubset() {
-        if (gridSubset == null && gridSetId!= null) {
+        if (gridSubset == null && gridSetId != null) {
             gridSubset = tileLayer.getGridSubset(gridSetId);
         }
 
@@ -175,8 +183,8 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
 
     /**
      * @deprecated as of 1.2.4a, use {@link #getBlob()}, keeping it for backwards compatibility as
-     *             there are geoserver builds pegged at a given geoserver revision but building gwc
-     *             from trunk. Ok to remove at 1.2.5
+     *     there are geoserver builds pegged at a given geoserver revision but building gwc from
+     *     trunk. Ok to remove at 1.2.5
      */
     @Deprecated
     public byte[] getContent() {
@@ -199,8 +207,8 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
 
     /**
      * @deprecated as of 1.2.4a, use {@link #setBlob(Resource)}, keeping it for backwards
-     *             compatibility as there are geoserver builds pegged at a given geoserver revision
-     *             but building gwc from trunk. Ok to remove at 1.2.5
+     *     compatibility as there are geoserver builds pegged at a given geoserver revision but
+     *     building gwc from trunk. Ok to remove at 1.2.5
      */
     @Deprecated
     public void setContent(byte[] payload) {

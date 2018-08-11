@@ -1,37 +1,42 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, OpenGeo, Copyright 2009
  */
 package org.geowebcache.grid;
 
 import java.util.Arrays;
-
 import org.geowebcache.GeoWebCacheException;
 
 public class OutsideCoverageException extends GeoWebCacheException {
-    /**
-     * 
-     */
+    /** */
     private static final long serialVersionUID = -2465389680194367974L;
 
     public OutsideCoverageException(long[] index, long firstLevel, long lastLevel) {
-        super("Zoom level was " + index[2] + ", but value has to be in ["+firstLevel+","+lastLevel+ "]");
+        super(
+                "Zoom level was "
+                        + index[2]
+                        + ", but value has to be in ["
+                        + firstLevel
+                        + ","
+                        + lastLevel
+                        + "]");
     }
 
     public OutsideCoverageException(long[] index, long[] coverage) {
-        super("Coverage [minx,miny,maxx,maxy] is " + Arrays.toString(coverage) + ", index [x,y,z] is " + Arrays.toString(index));
+        super(
+                "Coverage [minx,miny,maxx,maxy] is "
+                        + Arrays.toString(coverage)
+                        + ", index [x,y,z] is "
+                        + Arrays.toString(index));
     }
-
 }

@@ -1,17 +1,15 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Gabriel Roldan, Boundless Spatial Inc, Copyright 2015
  */
 package org.geowebcache.s3;
@@ -19,8 +17,13 @@ package org.geowebcache.s3;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.Protocol;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import javax.annotation.Nullable;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -32,16 +35,7 @@ import org.geowebcache.locks.LockProvider;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.StorageException;
 
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.Protocol;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-
-/**
- * Plain old java object representing the configuration for an S3 blob store.
- */
+/** Plain old java object representing the configuration for an S3 blob store. */
 public class S3BlobStoreConfig extends BlobStoreConfig {
 
     static Log log = LogFactory.getLog(S3BlobStoreConfig.class);
@@ -76,25 +70,20 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
 
     private Boolean useGzip;
 
-    
     public S3BlobStoreConfig() {
         super();
     }
-    
+
     public S3BlobStoreConfig(String id) {
         super(id);
     }
 
-    /**
-     * @return the name of the AWS S3 bucket where to store tiles
-     */
+    /** @return the name of the AWS S3 bucket where to store tiles */
     public String getBucket() {
         return bucket;
     }
 
-    /**
-     * Sets the name of the AWS S3 bucket where to store tiles
-     */
+    /** Sets the name of the AWS S3 bucket where to store tiles */
     public void setBucket(String bucket) {
         this.bucket = bucket;
     }
@@ -102,7 +91,7 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
     /**
      * Returns the base prefix, which is a prefix path to use as the root to store tiles under the
      * bucket.
-     * 
+     *
      * @return optional string for a "base prefix"
      */
     @Nullable
@@ -130,38 +119,30 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
         this.awsSecretKey = awsSecretKey;
     }
 
-    /**
-     * @return The maximum number of allowed open HTTP connections.
-     */
+    /** @return The maximum number of allowed open HTTP connections. */
     public Integer getMaxConnections() {
         return maxConnections;
     }
 
-    /**
-     * Sets the maximum number of allowed open HTTP connections.
-     */
+    /** Sets the maximum number of allowed open HTTP connections. */
     public void setMaxConnections(Integer maxConnections) {
         this.maxConnections = maxConnections;
     }
 
-    /**
-     * @return whether to use HTTPS (true) or HTTP (false) when talking to S3 (defaults to true)
-     */
+    /** @return whether to use HTTPS (true) or HTTP (false) when talking to S3 (defaults to true) */
     public Boolean isUseHTTPS() {
         return useHTTPS;
     }
 
-    /**
-     * @param useHTTPS whether to use HTTPS (true) or HTTP (false) when talking to S3
-     */
+    /** @param useHTTPS whether to use HTTPS (true) or HTTP (false) when talking to S3 */
     public void setUseHTTPS(Boolean useHTTPS) {
         this.useHTTPS = useHTTPS;
     }
 
     /**
      * Returns the optional Windows domain name for configuring an NTLM proxy.
-     * <p>
-     * If you aren't using a Windows NTLM proxy, you do not need to set this field.
+     *
+     * <p>If you aren't using a Windows NTLM proxy, you do not need to set this field.
      *
      * @return The optional Windows domain name for configuring an NTLM proxy.
      */
@@ -172,8 +153,8 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
 
     /**
      * Sets the optional Windows domain name for configuration an NTLM proxy.
-     * <p>
-     * If you aren't using a Windows NTLM proxy, you do not need to set this field.
+     *
+     * <p>If you aren't using a Windows NTLM proxy, you do not need to set this field.
      *
      * @param proxyDomain The optional Windows domain name for configuring an NTLM proxy.
      */
@@ -197,7 +178,7 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
      * using a Windows NTLM proxy, you do not need to set this field.
      *
      * @param proxyWorkstation The optional Windows workstation name for configuring NTLM proxy
-     *        support.
+     *     support.
      */
     public void setProxyWorkstation(String proxyWorkstation) {
         this.proxyWorkstation = proxyWorkstation;
@@ -244,7 +225,7 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
      * Returns the optional proxy user name to use if connecting through a proxy.
      *
      * @return The optional proxy user name the configured client will use if connecting through a
-     *         proxy.
+     *     proxy.
      */
     @Nullable
     public String getProxyUsername() {
@@ -278,7 +259,7 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
     public void setProxyPassword(String proxyPassword) {
         this.proxyPassword = proxyPassword;
     }
-    
+
     /**
      * Checks access type
      *
@@ -286,7 +267,7 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
      */
     public CannedAccessControlList getAccessControlList() {
         CannedAccessControlList accessControlList;
-        if(access==Access.PRIVATE) {
+        if (access == Access.PRIVATE) {
             accessControlList = CannedAccessControlList.BucketOwnerFullControl;
         } else {
             accessControlList = CannedAccessControlList.PublicRead;
@@ -342,7 +323,8 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
 
         checkNotNull(layers);
         checkState(getId() != null);
-        checkState(isEnabled(),
+        checkState(
+                isEnabled(),
                 "Can't call S3BlobStoreConfig.createInstance() is blob store is not enabled");
         return new S3BlobStore(this, layers, lockProvider);
     }
@@ -351,17 +333,14 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
     public String getLocation() {
         String bucket = this.getBucket();
         String prefix = this.getPrefix();
-        if(prefix==null){
+        if (prefix == null) {
             return String.format("bucket: %s", bucket);
         } else {
             return String.format("bucket: %s prefix: %s", bucket, prefix);
         }
-        
     }
 
-    /**
-     * @return {@link AmazonS3Client} constructed from this {@link S3BlobStoreConfig}.
-     */
+    /** @return {@link AmazonS3Client} constructed from this {@link S3BlobStoreConfig}. */
     public AmazonS3Client buildClient() {
         AWSCredentials awsCredentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
         ClientConfiguration clientConfig = new ClientConfiguration();
@@ -385,5 +364,4 @@ public class S3BlobStoreConfig extends BlobStoreConfig {
         log.debug("Initializing AWS S3 connection");
         return new AmazonS3Client(awsCredentials, clientConfig);
     }
-
 }

@@ -2,9 +2,9 @@ package org.geowebcache.arcgis.config;
 
 /**
  * Represents a {@code TileImageInfo} element in an ArcGIS tile cache config file.
- * <p>
- * XML representation:
- * 
+ *
+ * <p>XML representation:
+ *
  * <pre>
  * <code>
  *   &lt;TileImageInfo xsi:type='typens:TileImageInfo'&gt;
@@ -14,11 +14,8 @@ package org.geowebcache.arcgis.config;
  *   &lt;/TileImageInfo&gt;
  * </code>
  * </pre>
- * 
- * </p>
- * 
+ *
  * @author Gabriel Roldan
- * 
  */
 public class TileImageInfo {
 
@@ -34,9 +31,8 @@ public class TileImageInfo {
 
     /**
      * One of {@code PNG8, PNG24, PNG32, JPEG, Mixed}
-     * <p>
-     * {@code Mixed} uses mostly JPEG, but 32 on the borders of the cache
-     * </p>
+     *
+     * <p>{@code Mixed} uses mostly JPEG, but 32 on the borders of the cache
      */
     public String getCacheTileFormat() {
         return cacheTileFormat;

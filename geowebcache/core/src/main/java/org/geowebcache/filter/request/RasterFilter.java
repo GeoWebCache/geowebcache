@@ -1,26 +1,22 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, OpenGeo, Copyright 2009
  */
-
 package org.geowebcache.filter.request;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Hashtable;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -33,10 +29,11 @@ import org.geowebcache.layer.TileLayer;
  * A raster filter allows to optimize data loading by avoiding the generation of requests and the
  * caching of empty tiles for tiles that are inside the definition area of the layer but that are
  * known (via external information) to contain no data
- * 
- * To conserve memory, the layer bounds are used.
- * 
- * The raster must match the dimensions of the zoomlevel and use 0x000000 for tiles that are valid.
+ *
+ * <p>To conserve memory, the layer bounds are used.
+ *
+ * <p>The raster must match the dimensions of the zoomlevel and use 0x000000 for tiles that are
+ * valid.
  */
 public abstract class RasterFilter extends RequestFilter {
 
@@ -56,81 +53,54 @@ public abstract class RasterFilter extends RequestFilter {
 
     public transient Hashtable<String, BufferedImage[]> matrices;
 
-    public RasterFilter() {
+    public RasterFilter() {}
 
-    }
-
-    /**
-     * @return the zoomStart
-     */
+    /** @return the zoomStart */
     public Integer getZoomStart() {
         return zoomStart;
     }
 
-    /**
-     * @param zoomStart
-     *            the zoomStart to set
-     */
+    /** @param zoomStart the zoomStart to set */
     public void setZoomStart(Integer zoomStart) {
         this.zoomStart = zoomStart;
     }
 
-    /**
-     * @return the zoomStop
-     */
+    /** @return the zoomStop */
     public Integer getZoomStop() {
         return zoomStop;
     }
 
-    /**
-     * @param zoomStop
-     *            the zoomStop to set
-     */
+    /** @param zoomStop the zoomStop to set */
     public void setZoomStop(Integer zoomStop) {
         this.zoomStop = zoomStop;
     }
 
-    /**
-     * @return the resample
-     */
+    /** @return the resample */
     public Boolean getResample() {
         return resample;
     }
 
-    /**
-     * @param resample
-     *            the resample to set
-     */
+    /** @param resample the resample to set */
     public void setResample(Boolean resample) {
         this.resample = resample;
     }
 
-    /**
-     * @return the preload
-     */
+    /** @return the preload */
     public Boolean getPreload() {
         return preload;
     }
 
-    /**
-     * @param preload
-     *            the preload to set
-     */
+    /** @param preload the preload to set */
     public void setPreload(Boolean preload) {
         this.preload = preload;
     }
 
-    /**
-     * @return the debug
-     */
+    /** @return the debug */
     public Boolean getDebug() {
         return debug;
     }
 
-    /**
-     * @param debug
-     *            the debug to set
-     */
+    /** @param debug the debug to set */
     public void setDebug(Boolean debug) {
         this.debug = debug;
     }
@@ -176,15 +146,26 @@ public abstract class RasterFilter extends RequestFilter {
             idx[2] = zoomStop;
         }
 
-        if (matrices == null || matrices.get(gridSetId) == null
+        if (matrices == null
+                || matrices.get(gridSetId) == null
                 || matrices.get(gridSetId)[(int) idx[2]] == null) {
             try {
                 setMatrix(convTile.getLayer(), gridSetId, (int) idx[2], false);
             } catch (Exception e) {
-                log.error("Failed to load matrix for " + this.getName() + ", " + gridSetId + ", "
-                        + idx[2] + " : " + e.getMessage());
-                throw new RequestFilterException(this, 500,
-                        "Failed while trying to load filter for " + idx[2]
+                log.error(
+                        "Failed to load matrix for "
+                                + this.getName()
+                                + ", "
+                                + gridSetId
+                                + ", "
+                                + idx[2]
+                                + " : "
+                                + e.getMessage());
+                throw new RequestFilterException(
+                        this,
+                        500,
+                        "Failed while trying to load filter for "
+                                + idx[2]
                                 + ", please check the logs");
             }
         }
@@ -216,9 +197,7 @@ public abstract class RasterFilter extends RequestFilter {
         }
     }
 
-    /**
-     * Loops over all the zoom levels and initializes the lookup images.
-     */
+    /** Loops over all the zoom levels and initializes the lookup images. */
     public void initialize(TileLayer layer) throws GeoWebCacheException {
         if (preload != null && preload) {
             for (String gridSetId : layer.getGridSubsets()) {
@@ -228,8 +207,15 @@ public abstract class RasterFilter extends RequestFilter {
                     try {
                         setMatrix(layer, grid.getName(), i, false);
                     } catch (Exception e) {
-                        log.error("Failed to load matrix for " + this.getName() + ", "
-                                + grid.getName() + ", " + i + " : " + e.getMessage());
+                        log.error(
+                                "Failed to load matrix for "
+                                        + this.getName()
+                                        + ", "
+                                        + grid.getName()
+                                        + ", "
+                                        + i
+                                        + " : "
+                                        + e.getMessage());
                     }
                 }
             }
@@ -238,7 +224,7 @@ public abstract class RasterFilter extends RequestFilter {
 
     /**
      * Performs a lookup against an internal raster.
-     * 
+     *
      * @param grid
      * @param idx
      * @return
@@ -258,7 +244,7 @@ public abstract class RasterFilter extends RequestFilter {
     /**
      * Performs a lookup against an internal raster. The sampling is actually done against 4 pixels,
      * idx should already have been modified to use one level higher than strictly necessary.
-     * 
+     *
      * @param grid
      * @param idx
      * @return
@@ -282,8 +268,8 @@ public abstract class RasterFilter extends RequestFilter {
         boolean hasData = false;
 
         // BL, BR, TL, TR
-        int[] xOffsets = { 0, 1, 0, 1 };
-        int[] yOffsets = { 0, 0, 1, 1 };
+        int[] xOffsets = {0, 1, 0, 1};
+        int[] yOffsets = {0, 0, 1, 1};
 
         // Lock, in case someone wants to replace the matrix
         synchronized (mat) {
@@ -299,8 +285,16 @@ public abstract class RasterFilter extends RequestFilter {
                     }
                 }
             } catch (ArrayIndexOutOfBoundsException aioob) {
-                log.error("x:" + x + "  y:" + y + " (" + mat.getWidth() + " " + mat.getHeight()
-                        + ")");
+                log.error(
+                        "x:"
+                                + x
+                                + "  y:"
+                                + y
+                                + " ("
+                                + mat.getWidth()
+                                + " "
+                                + mat.getHeight()
+                                + ")");
             }
         }
 
@@ -359,8 +353,16 @@ public abstract class RasterFilter extends RequestFilter {
                     y = startY;
                 }
             } catch (ArrayIndexOutOfBoundsException aioob) {
-                log.error("x:" + x + "  y:" + y + " (" + mat.getWidth() + " " + mat.getHeight()
-                        + ")");
+                log.error(
+                        "x:"
+                                + x
+                                + "  y:"
+                                + y
+                                + " ("
+                                + mat.getWidth()
+                                + " "
+                                + mat.getHeight()
+                                + ")");
             }
         }
 
@@ -369,14 +371,11 @@ public abstract class RasterFilter extends RequestFilter {
 
     /**
      * This function will load the matrix from the appropriate source.
-     * 
-     * @param layer
-     *            Access to the layer, to make the object simpler
+     *
+     * @param layer Access to the layer, to make the object simpler
      * @param srs
-     * @param z
-     *            (zoom level)
-     * @param replace
-     *            Whether to update if a matrix exists
+     * @param z (zoom level)
+     * @param replace Whether to update if a matrix exists
      */
     public synchronized void setMatrix(TileLayer layer, String gridSetId, int z, boolean replace)
             throws IOException, GeoWebCacheException {
@@ -408,7 +407,7 @@ public abstract class RasterFilter extends RequestFilter {
 
     /**
      * Helper function for calculating width and height
-     * 
+     *
      * @param grid
      * @param z
      * @return

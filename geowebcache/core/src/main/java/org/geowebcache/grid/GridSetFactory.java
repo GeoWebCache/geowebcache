@@ -1,17 +1,15 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, OpenGeo, Copyright 2009
  */
 package org.geowebcache.grid;
@@ -25,16 +23,16 @@ public class GridSetFactory {
 
     /**
      * Default pixel size in meters, producing a default of 90.7 DPI
-     * 
+     *
      * @see GridSubset#getDotsPerInch()
      */
     public static final double DEFAULT_PIXEL_SIZE_METER = 0.00028;
 
     public static int DEFAULT_LEVELS = 22;
 
-    public final static double EPSG4326_TO_METERS = 6378137.0 * 2.0 * Math.PI / 360.0;
+    public static final double EPSG4326_TO_METERS = 6378137.0 * 2.0 * Math.PI / 360.0;
 
-    public final static double EPSG3857_TO_METERS = 1;
+    public static final double EPSG3857_TO_METERS = 1;
 
     private static GridSet baseGridSet(String name, SRS srs, int tileWidth, int tileHeight) {
         GridSet gridSet = new GridSet();
@@ -51,7 +49,7 @@ public class GridSetFactory {
     /**
      * Note that you should provide EITHER resolutions or scales. Providing both will cause a
      * precondition violation exception.
-     * 
+     *
      * @param name
      * @param srs
      * @param extent
@@ -63,9 +61,18 @@ public class GridSetFactory {
      * @param yCoordinateFirst
      * @return
      */
-    public static GridSet createGridSet(final String name, final SRS srs, final BoundingBox extent,
-            boolean alignTopLeft, double[] resolutions, double[] scaleDenoms, Double metersPerUnit,
-            double pixelSize, String[] scaleNames, int tileWidth, int tileHeight,
+    public static GridSet createGridSet(
+            final String name,
+            final SRS srs,
+            final BoundingBox extent,
+            boolean alignTopLeft,
+            double[] resolutions,
+            double[] scaleDenoms,
+            Double metersPerUnit,
+            double pixelSize,
+            String[] scaleNames,
+            int tileWidth,
+            int tileHeight,
             boolean yCoordinateFirst) {
 
         Assert.notNull(name, "name is null");
@@ -73,24 +80,37 @@ public class GridSetFactory {
         Assert.notNull(extent, "extent is null");
         Assert.isTrue(!extent.isNull() && extent.isSane(), "Extent is invalid: " + extent);
         Assert.isTrue(resolutions != null || scaleDenoms != null);
-        Assert.isTrue(resolutions == null || scaleDenoms == null,
+        Assert.isTrue(
+                resolutions == null || scaleDenoms == null,
                 "Only one of resolutions or scaleDenoms should be provided, not both");
 
         for (int i = 1; resolutions != null && i < resolutions.length; i++) {
             if (resolutions[i] >= resolutions[i - 1]) {
                 throw new IllegalArgumentException(
-                        "Each resolution should be lower than it's prior one. Res[" + i + "] == "
-                                + resolutions[i] + ", Res[" + (i - 1) + "] == "
-                                + resolutions[i - 1] + ".");
+                        "Each resolution should be lower than it's prior one. Res["
+                                + i
+                                + "] == "
+                                + resolutions[i]
+                                + ", Res["
+                                + (i - 1)
+                                + "] == "
+                                + resolutions[i - 1]
+                                + ".");
             }
         }
 
         for (int i = 1; scaleDenoms != null && i < scaleDenoms.length; i++) {
             if (scaleDenoms[i] >= scaleDenoms[i - 1]) {
                 throw new IllegalArgumentException(
-                        "Each scale denominator should be lower than it's prior one. Scale[" + i
-                                + "] == " + scaleDenoms[i] + ", Scale[" + (i - 1) + "] == "
-                                + scaleDenoms[i - 1] + ".");
+                        "Each scale denominator should be lower than it's prior one. Scale["
+                                + i
+                                + "] == "
+                                + scaleDenoms[i]
+                                + ", Scale["
+                                + (i - 1)
+                                + "] == "
+                                + scaleDenoms[i - 1]
+                                + ".");
             }
         }
 
@@ -112,12 +132,17 @@ public class GridSetFactory {
                 gridSet.setMetersPerUnit(EPSG3857_TO_METERS);
             } else {
                 if (resolutions == null) {
-                    log.warn("GridSet " + name
-                            + " was defined without metersPerUnit, assuming 1m/unit."
-                            + " All scales will be off if this is incorrect.");
+                    log.warn(
+                            "GridSet "
+                                    + name
+                                    + " was defined without metersPerUnit, assuming 1m/unit."
+                                    + " All scales will be off if this is incorrect.");
                 } else {
-                    log.warn("GridSet " + name + " was defined without metersPerUnit. "
-                            + "Assuming 1m per SRS unit for WMTS scale output.");
+                    log.warn(
+                            "GridSet "
+                                    + name
+                                    + " was defined without metersPerUnit. "
+                                    + "Assuming 1m per SRS unit for WMTS scale output.");
 
                     gridSet.setScaleWarning(true);
                 }
@@ -141,17 +166,17 @@ public class GridSetFactory {
                 curGrid.setResolution(pixelSize * (scaleDenoms[i] / gridSet.getMetersPerUnit()));
             } else {
                 curGrid.setResolution(resolutions[i]);
-                curGrid.setScaleDenominator((resolutions[i] * gridSet.getMetersPerUnit())
-                        / DEFAULT_PIXEL_SIZE_METER);
+                curGrid.setScaleDenominator(
+                        (resolutions[i] * gridSet.getMetersPerUnit()) / DEFAULT_PIXEL_SIZE_METER);
             }
 
             final double mapUnitWidth = tileWidth * curGrid.getResolution();
             final double mapUnitHeight = tileHeight * curGrid.getResolution();
 
-            final long tilesWide = (long) Math.ceil((extent.getWidth() - mapUnitWidth * 0.01)
-                    / mapUnitWidth);
-            final long tilesHigh = (long) Math.ceil((extent.getHeight() - mapUnitHeight * 0.01)
-                    / mapUnitHeight);
+            final long tilesWide =
+                    (long) Math.ceil((extent.getWidth() - mapUnitWidth * 0.01) / mapUnitWidth);
+            final long tilesHigh =
+                    (long) Math.ceil((extent.getHeight() - mapUnitHeight * 0.01) / mapUnitHeight);
 
             curGrid.setNumTilesWide(tilesWide);
             curGrid.setNumTilesHigh(tilesHigh);
@@ -168,9 +193,16 @@ public class GridSetFactory {
         return gridSet;
     }
 
-    public static GridSet createGridSet(final String name, final SRS srs, final BoundingBox extent,
-            final boolean alignTopLeft, final int levels, final Double metersPerUnit,
-            final double pixelSize, final int tileWidth, final int tileHeight,
+    public static GridSet createGridSet(
+            final String name,
+            final SRS srs,
+            final BoundingBox extent,
+            final boolean alignTopLeft,
+            final int levels,
+            final Double metersPerUnit,
+            final double pixelSize,
+            final int tileWidth,
+            final int tileHeight,
             final boolean yCoordinateFirst) {
 
         final double extentWidth = extent.getWidth();
@@ -218,7 +250,18 @@ public class GridSetFactory {
             resolutions[i] = resolutions[i - 1] / 2;
         }
 
-        return createGridSet(name, srs, adjExtent, alignTopLeft, resolutions, null, metersPerUnit,
-                pixelSize, null, tileWidth, tileHeight, yCoordinateFirst);
+        return createGridSet(
+                name,
+                srs,
+                adjExtent,
+                alignTopLeft,
+                resolutions,
+                null,
+                metersPerUnit,
+                pixelSize,
+                null,
+                tileWidth,
+                tileHeight,
+                yCoordinateFirst);
     }
 }

@@ -1,29 +1,24 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * <p/>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * <p/>
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Nuno Oliveira, GeoSolutions S.A.S., Copyright 2016
  */
 package org.geowebcache.sqlite;
 
-import org.geowebcache.config.BlobStoreConfig;
-
 import java.io.File;
 import java.util.UUID;
+import org.geowebcache.config.BlobStoreConfig;
 
-/**
- * Holder for the common properties needed to configure a aqlite based blob store.
- */
+/** Holder for the common properties needed to configure a aqlite based blob store. */
 public abstract class SqliteConfiguration extends BlobStoreConfig {
 
     public SqliteConfiguration() {
@@ -38,7 +33,8 @@ public abstract class SqliteConfiguration extends BlobStoreConfig {
 
     private String rootDirectory;
 
-    private String templatePath = Utils.buildPath("{layer}", "{grid}{format}{params}", "{z}_{x}_{y}.sqlite");
+    private String templatePath =
+            Utils.buildPath("{layer}", "{grid}{format}{params}", "{z}_{x}_{y}.sqlite");
 
     private long poolSize = 1000;
 

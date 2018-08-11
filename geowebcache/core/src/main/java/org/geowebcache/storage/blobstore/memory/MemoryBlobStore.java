@@ -1,16 +1,14 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.geowebcache.storage.blobstore.memory;
 
@@ -29,7 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,17 +43,19 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 /**
- * This class is an implementation of the {@link BlobStore} interface wrapping another {@link BlobStore} implementation and supporting in memory
- * caching. Caching is provided by an input {@link CacheProvider} object. It must be pointed out that this Blobstore has an asynchronous relation
- * with the underlying wrapped {@link BlobStore}. In fact, each operation on the wrapped {@link BlobStore} is scheduled in a queue and will be done
- * by an executor thread. Operations that require a boolean value will have to wait until previous tasks are completed. 
- * 
+ * This class is an implementation of the {@link BlobStore} interface wrapping another {@link
+ * BlobStore} implementation and supporting in memory caching. Caching is provided by an input
+ * {@link CacheProvider} object. It must be pointed out that this Blobstore has an asynchronous
+ * relation with the underlying wrapped {@link BlobStore}. In fact, each operation on the wrapped
+ * {@link BlobStore} is scheduled in a queue and will be done by an executor thread. Operations that
+ * require a boolean value will have to wait until previous tasks are completed.
+ *
  * @author Nicola Lagomarsini Geosolutions
  */
 public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
 
     /** {@link Log} object used for logging exceptions */
-    private final static Log LOG = LogFactory.getLog(MemoryBlobStore.class);
+    private static final Log LOG = LogFactory.getLog(MemoryBlobStore.class);
 
     /** {@link BlobStore} to use when no element is found */
     private BlobStore store;
@@ -67,21 +66,28 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     /** Executor service used for scheduling cacheProvider store operations like put,delete,... */
     private final ExecutorService executorService;
 
-    /** Optional name used for searching the bean related to the CacheProvider to set in the ApplicationContext */
+    /**
+     * Optional name used for searching the bean related to the CacheProvider to set in the
+     * ApplicationContext
+     */
     private String cacheBeanName;
 
     /** Boolean used for Application Context initialization */
     private AtomicBoolean cacheAlreadySet;
 
-    /** {@link ReentrantReadWriteLock} used for handling concurrency when accessing the cacheProvider. */
+    /**
+     * {@link ReentrantReadWriteLock} used for handling concurrency when accessing the
+     * cacheProvider.
+     */
     private final ReentrantReadWriteLock lock;
 
     /** {@link WriteLock} used for scheduling the access to the {@link MemoryBlobStore} state */
     private final WriteLock blobStoreStateLock;
 
     /**
-     * {@link ReadLock} used for granting access to operations which does not change the {@link MemoryBlobStore} state, but can change the state of
-     * its components like {@link CacheProvider} and {@link BlobStore}
+     * {@link ReadLock} used for granting access to operations which does not change the {@link
+     * MemoryBlobStore} state, but can change the state of its components like {@link CacheProvider}
+     * and {@link BlobStore}
      */
     private final ReadLock componentsStateLock;
 
@@ -92,22 +98,23 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         blobStoreStateLock = lock.writeLock();
         componentsStateLock = lock.readLock();
         cacheAlreadySet = new AtomicBoolean(false);
-        // Initialization of the cacheProvider and store. Must be overridden, this uses default and caches in memory
+        // Initialization of the cacheProvider and store. Must be overridden, this uses default and
+        // caches in memory
         setStore(new NullBlobStore());
         GuavaCacheProvider startingCache = new GuavaCacheProvider(new CacheConfiguration());
         this.cacheProvider = startingCache;
     }
-    
+
     @Override
-	public boolean layerExists(String layerName) {
+    public boolean layerExists(String layerName) {
         componentsStateLock.lock();
         try {
             return store.layerExists(layerName);
         } finally {
             componentsStateLock.unlock();
         }
-	}
-    
+    }
+
     @Override
     public boolean delete(String layerName) throws StorageException {
         componentsStateLock.lock();
@@ -146,8 +153,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
                 LOG.debug("Scheduling GridSet: " + gridSetId + " removal for Layer: " + layerName);
             }
             // Remove selected gridsets
-            executorService.submit(new BlobStoreTask(store, BlobStoreAction.DELETE_GRIDSET,
-                    layerName, gridSetId));
+            executorService.submit(
+                    new BlobStoreTask(store, BlobStoreAction.DELETE_GRIDSET, layerName, gridSetId));
             return true;
         } finally {
             componentsStateLock.unlock();
@@ -179,17 +186,31 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         componentsStateLock.lock();
         try {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Removing TileObjects for Layer: " + obj.getLayerName()
-                        + ", min/max levels: " + "[" + obj.getZoomStart() + ", "
-                        + obj.getZoomStop() + "], Gridset: " + obj.getGridSetId());
+                LOG.debug(
+                        "Removing TileObjects for Layer: "
+                                + obj.getLayerName()
+                                + ", min/max levels: "
+                                + "["
+                                + obj.getZoomStart()
+                                + ", "
+                                + obj.getZoomStop()
+                                + "], Gridset: "
+                                + obj.getGridSetId());
             }
             // Remove layer for the cacheProvider
             cacheProvider.removeLayer(obj.getLayerName());
             // Remove selected TileObject
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Scheduling removal of TileObjects for Layer: " + obj.getLayerName()
-                        + ", min/max levels: " + "[" + obj.getZoomStart() + ", "
-                        + obj.getZoomStop() + "], Gridset: " + obj.getGridSetId());
+                LOG.debug(
+                        "Scheduling removal of TileObjects for Layer: "
+                                + obj.getLayerName()
+                                + ", min/max levels: "
+                                + "["
+                                + obj.getZoomStart()
+                                + ", "
+                                + obj.getZoomStop()
+                                + "], Gridset: "
+                                + obj.getGridSetId());
             }
             // Remove selected TileRange
             executorService.submit(new BlobStoreTask(store, BlobStoreAction.DELETE_RANGE, obj));
@@ -210,8 +231,10 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
             boolean found = false;
             if (cached == null) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("TileObject:" + obj
-                            + " not found. Try to get it from the wrapped blobstore");
+                    LOG.debug(
+                            "TileObject:"
+                                    + obj
+                                    + " not found. Try to get it from the wrapped blobstore");
                 }
                 // Try if it can be found in the system. Wait other scheduled tasks
                 found = executeBlobStoreTask(BlobStoreAction.GET, store, obj);
@@ -349,8 +372,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
                 LOG.debug("Executing Layer rename task");
             }
             // Variable containing the execution result
-            boolean executed = executeBlobStoreTask(BlobStoreAction.RENAME, store, oldLayerName,
-                    newLayerName);
+            boolean executed =
+                    executeBlobStoreTask(BlobStoreAction.RENAME, store, oldLayerName, newLayerName);
             return executed;
         } finally {
             componentsStateLock.unlock();
@@ -385,9 +408,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         }
     }
 
-    /**
-     * @return a {@link CacheStatistics} object containing the {@link CacheProvider} statistics
-     */
+    /** @return a {@link CacheStatistics} object containing the {@link CacheProvider} statistics */
     public CacheStatistics getCacheStatistics() {
         componentsStateLock.lock();
         try {
@@ -402,7 +423,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
 
     /**
      * Setter for the store to wrap
-     * 
+     *
      * @param store
      */
     public void setStore(BlobStore store) {
@@ -420,9 +441,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         }
     }
 
-    /**
-     * @return The wrapped {@link BlobStore} implementation
-     */
+    /** @return The wrapped {@link BlobStore} implementation */
     public BlobStore getStore() {
         componentsStateLock.lock();
         try {
@@ -437,7 +456,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
 
     /**
      * Setter for the cacheProvider to use
-     * 
+     *
      * @param cacheProvider
      */
     public void setCacheProvider(CacheProvider cache) {
@@ -456,9 +475,10 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         }
     }
 
-    /***
-     * This method is used for converting a {@link TileObject} {@link Resource} into a {@link ByteArrayResource}.
-     * 
+    /**
+     * * This method is used for converting a {@link TileObject} {@link Resource} into a {@link
+     * ByteArrayResource}.
+     *
      * @param obj
      * @return a TileObject with resource stored in a Byte Array
      * @throws StorageException
@@ -486,21 +506,26 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
                 blob.transferTo(wChannel);
             } catch (IOException e) {
                 throw new StorageException(e.getLocalizedMessage(), e);
-
             }
             finalBlob = new ByteArrayResource(bOut.toByteArray());
         }
         finalBlob.setLastModified(blob.getLastModified());
         // Creation of a new Resource
-        TileObject cached = TileObject.createCompleteTileObject(obj.getLayerName(), obj.getXYZ(),
-                obj.getGridSetId(), obj.getBlobFormat(), obj.getParameters(), finalBlob);
+        TileObject cached =
+                TileObject.createCompleteTileObject(
+                        obj.getLayerName(),
+                        obj.getXYZ(),
+                        obj.getGridSetId(),
+                        obj.getBlobFormat(),
+                        obj.getParameters(),
+                        finalBlob);
         return cached;
     }
 
     /**
-     * Setter for the Cache Provider name, note that this cannot be used in combination with the setCacheProvider method in the application Context
-     * initialization
-     * 
+     * Setter for the Cache Provider name, note that this cannot be used in combination with the
+     * setCacheProvider method in the application Context initialization
+     *
      * @param cacheBeanName
      */
     public void setCacheBeanName(String cacheBeanName) {
@@ -528,8 +553,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
                 if (cacheBeanName != null && !cacheBeanName.isEmpty()) {
                     for (String beanDef : beans) {
                         if (cacheBeanName.equalsIgnoreCase(beanDef)) {
-                            CacheProvider bean = applicationContext.getBean(beanDef,
-                                    CacheProvider.class);
+                            CacheProvider bean =
+                                    applicationContext.getBean(beanDef, CacheProvider.class);
                             if (bean.isAvailable()) {
                                 setCacheProvider(bean);
                                 configured = true;
@@ -549,8 +574,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
                 // If two are present and at least one of them is not guava, then it is used
                 if (!configured && beanSize == 2) {
                     for (String beanDef : beans) {
-                        CacheProvider bean = applicationContext.getBean(beanDef,
-                                CacheProvider.class);
+                        CacheProvider bean =
+                                applicationContext.getBean(beanDef, CacheProvider.class);
                         if (!(bean instanceof GuavaCacheProvider) && bean.isAvailable()) {
                             setCacheProvider(bean);
                             configured = true;
@@ -560,8 +585,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
                     // Try again and search if at least a GuavaCacheProvider is present
                     if (!configured) {
                         for (String beanDef : beans) {
-                            CacheProvider bean = applicationContext.getBean(beanDef,
-                                    CacheProvider.class);
+                            CacheProvider bean =
+                                    applicationContext.getBean(beanDef, CacheProvider.class);
                             if (bean.isAvailable()) {
                                 setCacheProvider(bean);
                                 configured = true;
@@ -602,8 +627,9 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     }
 
     /**
-     * {@link Callable} implementation used for creating various tasks to submit to the {@link MemoryBlobStore} executor service.
-     * 
+     * {@link Callable} implementation used for creating various tasks to submit to the {@link
+     * MemoryBlobStore} executor service.
+     *
      * @author Nicola Lagomarsini GeoSolutions
      */
     static class BlobStoreTask implements Callable<Boolean> {
@@ -639,9 +665,9 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     }
 
     /**
-     * Enum containing all the possible operations that can be executed by a {@link BlobStoreTask}. Each operation must implement the
-     * "executeOperation" method.
-     * 
+     * Enum containing all the possible operations that can be executed by a {@link BlobStoreTask}.
+     * Each operation must implement the "executeOperation" method.
+     *
      * @author Nicola Lagomarsini GeoSolutions
      */
     public enum BlobStoreAction {
@@ -690,7 +716,9 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
             @Override
             public boolean executeOperation(BlobStore store, Object... objs)
                     throws StorageException {
-                if (objs == null || objs.length < 2 || !(objs[0] instanceof String)
+                if (objs == null
+                        || objs.length < 2
+                        || !(objs[0] instanceof String)
                         || !(objs[1] instanceof String)) {
                     return false;
                 }
@@ -701,7 +729,9 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
             @Override
             public boolean executeOperation(BlobStore store, Object... objs)
                     throws StorageException {
-                if (objs == null || objs.length < 2 || !(objs[0] instanceof String)
+                if (objs == null
+                        || objs.length < 2
+                        || !(objs[0] instanceof String)
                         || !(objs[1] instanceof String)) {
                     return false;
                 }
@@ -738,7 +768,9 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
             @Override
             public boolean executeOperation(BlobStore store, Object... objs)
                     throws StorageException {
-                if (objs == null || objs.length < 2 || !(objs[0] instanceof String)
+                if (objs == null
+                        || objs.length < 2
+                        || !(objs[0] instanceof String)
                         || !(objs[1] instanceof String)) {
                     return false;
                 }
@@ -748,7 +780,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
 
         /**
          * Executes an operation defined by the Enum.
-         * 
+         *
          * @param store
          * @param objs
          * @return operation result
@@ -769,11 +801,16 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
             // Remove the layer from the cacheProvider
             cacheProvider.removeLayer(layerName);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Scheduling Parameters: " + parametersId + " removal for Layer: " + layerName);
+                LOG.debug(
+                        "Scheduling Parameters: "
+                                + parametersId
+                                + " removal for Layer: "
+                                + layerName);
             }
             // Remove selected parameters
-            executorService.submit(new BlobStoreTask(store, BlobStoreAction.DELETE_PARAMS_ID,
-                    layerName, parametersId));
+            executorService.submit(
+                    new BlobStoreTask(
+                            store, BlobStoreAction.DELETE_PARAMS_ID, layerName, parametersId));
             return true;
         } finally {
             componentsStateLock.unlock();
@@ -793,7 +830,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         }
     }
 
-    public Map<String,Optional<Map<String, String>>> getParametersMapping(String layerName) {
+    public Map<String, Optional<Map<String, String>>> getParametersMapping(String layerName) {
         componentsStateLock.lock();
         try {
             if (LOG.isDebugEnabled()) {

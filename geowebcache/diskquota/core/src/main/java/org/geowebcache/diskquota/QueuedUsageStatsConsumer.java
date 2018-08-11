@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.diskquota.storage.PageStatsPayload;
@@ -17,11 +16,7 @@ import org.geowebcache.diskquota.storage.TilePageCalculator;
 import org.geowebcache.diskquota.storage.TileSet;
 import org.springframework.util.Assert;
 
-/**
- * 
- * @author groldan
- * 
- */
+/** @author groldan */
 public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
 
     private static final Log log = LogFactory.getLog(QueuedUsageStatsConsumer.class);
@@ -47,25 +42,15 @@ public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
 
     private final TimedUsageUpdate aggregatedPendingUpdates;
 
-    /**
-     * 
-     * @author groldan
-     * 
-     */
+    /** @author groldan */
     private static class TimedUsageUpdate {
-        /**
-         * Tracks aggregated usage stats per {@link TilePage#getId() pageId} until committed
-         */
+        /** Tracks aggregated usage stats per {@link TilePage#getId() pageId} until committed */
         private final Map<String, PageStatsPayload> pages;
 
-        /**
-         * tracks the last time the aggregated updates for a given tile set were committed
-         */
+        /** tracks the last time the aggregated updates for a given tile set were committed */
         private long lastCommitTime;
 
-        /**
-         * tracks how many requests for the same tile page this aggregated stats is made of
-         */
+        /** tracks how many requests for the same tile page this aggregated stats is made of */
         private int numAggregations;
 
         public TimedUsageUpdate() {
@@ -76,12 +61,13 @@ public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
     }
 
     /**
-     * 
      * @param quotaStore
      * @param queue
      */
-    public QueuedUsageStatsConsumer(final QuotaStore quotaStore,
-            final BlockingQueue<UsageStats> queue, final TilePageCalculator tilePageCalculator) {
+    public QueuedUsageStatsConsumer(
+            final QuotaStore quotaStore,
+            final BlockingQueue<UsageStats> queue,
+            final TilePageCalculator tilePageCalculator) {
 
         Assert.notNull(quotaStore, "quotaStore can't be null");
         Assert.notNull(queue, "queue can't be null");
@@ -93,18 +79,18 @@ public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
         aggregatedPendingUpdates = new TimedUsageUpdate();
     }
 
-    /**
-     * @see java.util.concurrent.Callable#call()
-     */
+    /** @see java.util.concurrent.Callable#call() */
     public Long call() {
         while (true) {
             if (Thread.interrupted()) {
-                log.debug("Job " + getClass().getSimpleName()
-                        + " finished due to interrupted thread.");
+                log.debug(
+                        "Job "
+                                + getClass().getSimpleName()
+                                + " finished due to interrupted thread.");
                 break;
             }
-            
-            if(terminate) {
+
+            if (terminate) {
                 log.debug("Exiting on explicit termination request: " + getClass().getSimpleName());
                 break;
             }
@@ -140,7 +126,6 @@ public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
                 e.printStackTrace();
                 // throw e;
             }
-
         }
 
         return null;
@@ -153,10 +138,8 @@ public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
     private boolean terminate = false;
 
     /**
-     * 
-     * @param requestedTile
-     *            represents a single tile that was requested and for which its tile page needs to
-     *            be looked up and updated
+     * @param requestedTile represents a single tile that was requested and for which its tile page
+     *     needs to be looked up and updated
      * @throws InterruptedException
      */
     private void performAggregatedUpdate(final UsageStats requestedTile)
@@ -214,11 +197,13 @@ public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
 
         if (timeout || tooManyPendingCommits) {
             if (log.isTraceEnabled()) {
-                log.trace("Committing "
-                        + numAggregations
-                        + " aggregated usage stats to quota store due to "
-                        + (tooManyPendingCommits ? "too many pending commits"
-                                : "max wait time reached"));
+                log.trace(
+                        "Committing "
+                                + numAggregations
+                                + " aggregated usage stats to quota store due to "
+                                + (tooManyPendingCommits
+                                        ? "too many pending commits"
+                                        : "max wait time reached"));
             }
             commit();
         }
@@ -232,7 +217,7 @@ public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
         aggregatedPendingUpdates.numAggregations = 0;
         aggregatedPendingUpdates.pages.clear();
     }
-    
+
     public void shutdown() {
         this.terminate = true;
     }

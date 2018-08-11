@@ -1,19 +1,16 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Gabriel Roldan (OpenGeo) 2010
- *  
  */
 package org.geowebcache.diskquota;
 
@@ -30,11 +27,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 import javax.servlet.ServletContext;
-
 import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.diskquota.storage.LayerQuota;
@@ -63,16 +57,16 @@ public class ConfigLoaderTest extends TestCase {
     protected void setUp() throws Exception {
         cacheDir = new File("target" + File.separator + getClass().getSimpleName());
         if (!cacheDir.getParentFile().exists()) {
-            throw new IllegalStateException(cacheDir.getParentFile().getAbsolutePath()
-                    + " does not exist");
+            throw new IllegalStateException(
+                    cacheDir.getParentFile().getAbsolutePath() + " does not exist");
         }
         FileUtils.rmFileCacheDir(cacheDir, null);
         cacheDir.mkdirs();
         // copy configuration file to cache directory
         {
             InputStream in = getClass().getResourceAsStream("/geowebcache-diskquota.xml");
-            FileOutputStream out = new FileOutputStream(new File(cacheDir,
-                    "geowebcache-diskquota.xml"));
+            FileOutputStream out =
+                    new FileOutputStream(new File(cacheDir, "geowebcache-diskquota.xml"));
             int c;
             while ((c = in.read()) != -1) {
                 out.write(c);
@@ -81,7 +75,8 @@ public class ConfigLoaderTest extends TestCase {
             out.close();
         }
         storageFinder = EasyMock.createMock(DefaultStorageFinder.class);
-        EasyMock.expect(storageFinder.getDefaultPath()).andReturn(cacheDir.getAbsolutePath())
+        EasyMock.expect(storageFinder.getDefaultPath())
+                .andReturn(cacheDir.getAbsolutePath())
                 .anyTimes();
         EasyMock.replay(storageFinder);
 
@@ -100,9 +95,11 @@ public class ConfigLoaderTest extends TestCase {
         tld = EasyMock.createMock(TileLayerDispatcher.class);
         TileLayer toppStates = createMockLayer("topp:states");
         TileLayer raster = createMockLayer("raster test layer");
-        EasyMock.expect(tld.getTileLayer(EasyMock.eq("topp:states"))).andReturn(toppStates)
+        EasyMock.expect(tld.getTileLayer(EasyMock.eq("topp:states")))
+                .andReturn(toppStates)
                 .anyTimes();
-        EasyMock.expect(tld.getTileLayer(EasyMock.eq("raster test layer"))).andReturn(raster)
+        EasyMock.expect(tld.getTileLayer(EasyMock.eq("raster test layer")))
+                .andReturn(raster)
                 .anyTimes();
 
         List<TileLayer> tileLayers = new ArrayList<TileLayer>();
@@ -141,8 +138,8 @@ public class ConfigLoaderTest extends TestCase {
         assertNotNull(config.getGlobalExpirationPolicyName());
 
         assertNotNull(config.getGlobalQuota());
-        assertEquals(GiB.convertTo(200, B).longValue(), config.getGlobalQuota().getBytes()
-                .longValue());
+        assertEquals(
+                GiB.convertTo(200, B).longValue(), config.getGlobalQuota().getBytes().longValue());
 
         assertNotNull(config.getLayerQuotas());
         assertEquals(2, config.getLayerQuotas().size());
@@ -178,5 +175,4 @@ public class ConfigLoaderTest extends TestCase {
     public void testGetRootCacheDir() throws Exception {
         assertEquals(cacheDir.getAbsolutePath(), loader.getRootCacheDir().getAbsolutePath());
     }
-
 }

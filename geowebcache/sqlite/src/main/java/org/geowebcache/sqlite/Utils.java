@@ -1,21 +1,23 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * <p/>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * <p/>
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Nuno Oliveira, GeoSolutions S.A.S., Copyright 2016
  */
 package org.geowebcache.sqlite;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -23,26 +25,16 @@ import org.apache.commons.logging.LogFactory;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
-
-/**
- * Some utilities objects and functions used internally.
- */
+/** Some utilities objects and functions used internally. */
 final class Utils {
 
     private static Log LOGGER = LogFactory.getLog(Utils.class);
 
     // if we get the windows path separator we need to escape it for regex use
-    static final String REGEX_FILE_SEPARATOR = File.separator.equals("\\") ? "\\\\" : File.separator;
+    static final String REGEX_FILE_SEPARATOR =
+            File.separator.equals("\\") ? "\\\\" : File.separator;
 
-    private Utils() {
-    }
+    private Utils() {}
 
     static final class Tuple<T, U> {
 
@@ -63,8 +55,7 @@ final class Utils {
             if (this == object) return true;
             if (object == null || getClass() != object.getClass()) return false;
             Tuple<?, ?> tuple = (Tuple<?, ?>) object;
-            return Objects.equals(first, tuple.first) &&
-                    Objects.equals(second, tuple.second);
+            return Objects.equals(first, tuple.first) && Objects.equals(second, tuple.second);
         }
 
         @Override

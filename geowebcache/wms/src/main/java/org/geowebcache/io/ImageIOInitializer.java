@@ -1,26 +1,25 @@
 package org.geowebcache.io;
 
+import com.sun.media.imageioimpl.plugins.gif.GIFImageWriterSpi;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.imageio.ImageIO;
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageReaderWriterSpi;
 import javax.imageio.spi.ImageWriterSpi;
 
-import com.sun.media.imageioimpl.plugins.gif.GIFImageWriterSpi;
-
 /**
- * This class is used for handling the registration of the various {@link ImageReaderWriterSpi} instances inside GWC. This class must be instantiated
- * before the creation of the various {@link ImageDecoder} and {@link ImageDecoder} implementations in order to check if the installed plugins are
- * registered. If they are not already registered, it scans for all the plugins and register each of them. Optionally, after the registration the
- * {@link ImageIOInitializer} is able to deregister the reader/writer plugins as defined by the user inside the application context contained in the
- * file geowebcache-wmsservice-context.xml .
- * 
+ * This class is used for handling the registration of the various {@link ImageReaderWriterSpi}
+ * instances inside GWC. This class must be instantiated before the creation of the various {@link
+ * ImageDecoder} and {@link ImageDecoder} implementations in order to check if the installed plugins
+ * are registered. If they are not already registered, it scans for all the plugins and register
+ * each of them. Optionally, after the registration the {@link ImageIOInitializer} is able to
+ * deregister the reader/writer plugins as defined by the user inside the application context
+ * contained in the file geowebcache-wmsservice-context.xml .
+ *
  * @author Nicola Lagomarsini geosolutions
- * 
  */
 public class ImageIOInitializer {
     /** Logger used for logging the exceptions inside the ImageIOInitializer class */
@@ -29,7 +28,10 @@ public class ImageIOInitializer {
     /** {@link IIORegistry} instance used for registering/deregistering ImageIO plugins */
     private IIORegistry registry;
 
-    /** List of the Service Provider Interfaces (SPIs) objects associated to the plugin readers/writers */
+    /**
+     * List of the Service Provider Interfaces (SPIs) objects associated to the plugin
+     * readers/writers
+     */
     private List<String> excludedSpis;
 
     /** SIngleton instance of the {@link ImageIOInitializer} class */
@@ -37,7 +39,7 @@ public class ImageIOInitializer {
 
     /**
      * Static initializer for the {@link ImageIOInitializer} class.
-     * 
+     *
      * @param excludedSpis List of the Spis to exclude.
      * @return
      */
@@ -64,9 +66,7 @@ public class ImageIOInitializer {
         }
     }
 
-    /**
-     * Private method for deregistering the Spi class defined by the user
-     */
+    /** Private method for deregistering the Spi class defined by the user */
     private void removeSpis() {
         // Cycle on the defined SPIs for deregistering them
         if (excludedSpis != null && !excludedSpis.isEmpty()) {
@@ -91,26 +91,22 @@ public class ImageIOInitializer {
         }
     }
 
-    /**
-     * @return the {@link IIORegistry} instance used by the initializer
-     */
+    /** @return the {@link IIORegistry} instance used by the initializer */
     public synchronized IIORegistry getRegistry() {
-        if(registry == null){
+        if (registry == null) {
             registry = IIORegistry.getDefaultInstance();
         }
         return registry;
     }
 
-    /**
-     * @return The list of the SPI names to deregister
-     */
+    /** @return The list of the SPI names to deregister */
     public List<String> getExcludedSpis() {
         return excludedSpis;
     }
 
     /**
      * Sets the list of the SPI names to deregister
-     * 
+     *
      * @param excludedSpis
      */
     public void setExcludedSpis(List<String> excludedSpis) {

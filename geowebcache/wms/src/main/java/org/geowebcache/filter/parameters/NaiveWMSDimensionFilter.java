@@ -1,36 +1,31 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Björn Hartell, Copyright 2010
- * 
  */
 package org.geowebcache.filter.parameters;
 
+import com.google.common.base.Preconditions;
 import java.util.List;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.geotools.data.wms.xml.Dimension;
 import org.geotools.data.wms.xml.Extent;
 
-import com.google.common.base.Preconditions;
-
 /**
  * This class is used to forward information about WMS 1.1.x dimensions from the getcapabilities
  * configuration to GWC clients.
- * 
- * It is naive in the sense that it does not really parse or understand the values it is dealing
+ *
+ * <p>It is naive in the sense that it does not really parse or understand the values it is dealing
  * with, anything is accepted.
  */
 public class NaiveWMSDimensionFilter extends ParameterFilter implements WMSDimensionProvider {
@@ -59,7 +54,7 @@ public class NaiveWMSDimensionFilter extends ParameterFilter implements WMSDimen
     }
 
     public String apply(String str) throws ParameterException {
-        if(str==null || str.isEmpty()) return getDefaultValue();
+        if (str == null || str.isEmpty()) return getDefaultValue();
         return str;
     }
 

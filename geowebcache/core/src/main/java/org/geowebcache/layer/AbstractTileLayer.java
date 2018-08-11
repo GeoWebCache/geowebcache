@@ -1,17 +1,15 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
 package org.geowebcache.layer;
@@ -24,9 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nullable;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -46,20 +42,17 @@ import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.GWCVars;
 
-/**
- * Default statefull base class for {@link TileLayer} implementations
- */
+/** Default statefull base class for {@link TileLayer} implementations */
 public abstract class AbstractTileLayer extends TileLayer {
 
     private static Log log = LogFactory.getLog(org.geowebcache.layer.AbstractTileLayer.class);
 
-    private static final int[] DEFAULT_METATILING_FACTORS = { 1, 1 };
+    private static final int[] DEFAULT_METATILING_FACTORS = {1, 1};
 
-    @Nullable
-    protected String blobStoreId;
-    
+    @Nullable protected String blobStoreId;
+
     protected Boolean enabled;
-    
+
     protected Boolean advertised;
 
     protected Boolean transientLayer;
@@ -71,7 +64,7 @@ public abstract class AbstractTileLayer extends TileLayer {
     protected List<MetadataURL> metadataURLs;
 
     protected List<String> mimeFormats;
-    
+
     protected List<String> infoMimeFormats;
 
     protected List<FormatModifier> formatModifiers;
@@ -108,7 +101,7 @@ public abstract class AbstractTileLayer extends TileLayer {
     protected transient boolean saveExpirationHeaders;
 
     protected transient List<MimeType> formats;
-    
+
     protected transient List<MimeType> infoFormats;
 
     protected transient Map<String, GridSubset> subSets;
@@ -126,7 +119,7 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     /**
      * Registers a layer listener to be notified of layer events
-     * 
+     *
      * @see #getTile(ConveyorTile)
      * @see #seedTile(ConveyorTile, boolean)
      */
@@ -140,7 +133,7 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     /**
      * Removes a layer listener from this layer's set of listeners
-     * 
+     *
      * @param listener
      * @return
      */
@@ -156,7 +149,7 @@ public abstract class AbstractTileLayer extends TileLayer {
     }
 
     @Override
-    public String getId(){
+    public String getId() {
         return getName();
     }
 
@@ -167,13 +160,13 @@ public abstract class AbstractTileLayer extends TileLayer {
     }
 
     @Override
-    public void setBlobStoreId(@Nullable String blobStoreId){
+    public void setBlobStoreId(@Nullable String blobStoreId) {
         this.blobStoreId = blobStoreId;
     }
-    
+
     /**
      * Then name of the layer
-     * 
+     *
      * @return
      */
     @Override
@@ -192,28 +185,28 @@ public abstract class AbstractTileLayer extends TileLayer {
     }
 
     @Override
-    public boolean isAdvertised(){
+    public boolean isAdvertised() {
         return advertised == null ? true : advertised.booleanValue();
     }
 
     @Override
-    public void setAdvertised(boolean advertised){
+    public void setAdvertised(boolean advertised) {
         this.advertised = advertised;
     }
 
     @Override
-    public boolean isTransientLayer(){
+    public boolean isTransientLayer() {
         return transientLayer == null ? false : transientLayer.booleanValue();
     }
 
     @Override
-    public void setTransientLayer(boolean transientLayer){
+    public void setTransientLayer(boolean transientLayer) {
         this.transientLayer = transientLayer;
     }
 
     /**
      * Layer meta information
-     * 
+     *
      * @return
      */
     @Override
@@ -228,7 +221,7 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     /**
      * Retrieves a list of Grids for this layer
-     * 
+     *
      * @return
      */
     @Override
@@ -239,9 +232,8 @@ public abstract class AbstractTileLayer extends TileLayer {
     /**
      * Initializes the layer, creating internal structures for calculating grid location and so
      * forth.
-     * <p>
-     * Subclasses shall implement {@link #initializeInternal(GridSetBroker)} for anything else
-     * </p>
+     *
+     * <p>Subclasses shall implement {@link #initializeInternal(GridSetBroker)} for anything else
      */
     @Override
     public final boolean initialize(GridSetBroker gridSetBroker) {
@@ -300,19 +292,19 @@ public abstract class AbstractTileLayer extends TileLayer {
             this.infoFormats = new ArrayList<MimeType>();
             if (infoMimeFormats != null) {
                 for (String fmt : infoMimeFormats) {
-                	infoFormats.add(MimeType.createFromFormat(fmt));
+                    infoFormats.add(MimeType.createFromFormat(fmt));
                 }
             }
             if (infoFormats.size() == 0) {
-            	infoFormats.add(MimeType.createFromFormat("text/plain"));
-            	infoFormats.add(MimeType.createFromFormat("text/html"));
-            	infoFormats.add(MimeType.createFromFormat("application/vnd.ogc.gml"));
+                infoFormats.add(MimeType.createFromFormat("text/plain"));
+                infoFormats.add(MimeType.createFromFormat("text/html"));
+                infoFormats.add(MimeType.createFromFormat("application/vnd.ogc.gml"));
             }
         } catch (GeoWebCacheException gwce) {
             log.error(gwce.getMessage());
             gwce.printStackTrace();
         }
-        
+
         if (subSets == null) {
             subSets = new HashMap<String, GridSubset>();
         }
@@ -325,12 +317,13 @@ public abstract class AbstractTileLayer extends TileLayer {
             GridSubset gridSubset = xmlGridSubset.getGridSubSet(gridSetBroker);
 
             if (gridSubset == null) {
-                log.error(xmlGridSubset.getGridSetName()
-                        + " is not known by the GridSetBroker, skipping for layer " + name);
+                log.error(
+                        xmlGridSubset.getGridSetName()
+                                + " is not known by the GridSetBroker, skipping for layer "
+                                + name);
             } else {
                 subSets.put(gridSubset.getName(), gridSubset);
             }
-
         }
 
         // Convert version 1.1.x and 1.0.x grid objects
@@ -347,9 +340,11 @@ public abstract class AbstractTileLayer extends TileLayer {
         }
 
         if (this.subSets.size() == 0) {
-            subSets.put(gridSetBroker.WORLD_EPSG4326.getName(),
+            subSets.put(
+                    gridSetBroker.WORLD_EPSG4326.getName(),
                     GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG4326));
-            subSets.put(gridSetBroker.WORLD_EPSG3857.getName(),
+            subSets.put(
+                    gridSetBroker.WORLD_EPSG3857.getName(),
                     GridSubsetFactory.createGridSubSet(gridSetBroker.WORLD_EPSG3857));
         }
 
@@ -358,9 +353,7 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     protected abstract boolean initializeInternal(GridSetBroker gridSetBroker);
 
-    /**
-     * @return possibly empty list of update sources for this layer
-     */
+    /** @return possibly empty list of update sources for this layer */
     @Override
     public List<UpdateSourceDefinition> getUpdateSources() {
         List<UpdateSourceDefinition> sources;
@@ -374,7 +367,7 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     /**
      * Whether to use ETags for this layer
-     * 
+     *
      * @return
      */
     @Override
@@ -392,25 +385,17 @@ public abstract class AbstractTileLayer extends TileLayer {
         this.formatModifiers = formatModifiers;
     }
 
-    /**
-     * 
-     * @return the styles configured for the layer, may be null
-     */
+    /** @return the styles configured for the layer, may be null */
     @Override
     public abstract String getStyles();
 
-    /**
-     * 
-     * @return the {x,y} metatiling factors
-     */
+    /** @return the {x,y} metatiling factors */
     @Override
     public int[] getMetaTilingFactors() {
         return metaWidthHeight == null ? DEFAULT_METATILING_FACTORS : metaWidthHeight;
     }
 
-    /**
-     * Whether clients may specify cache=false and go straight to source
-     */
+    /** Whether clients may specify cache=false and go straight to source */
     @Override
     public Boolean isCacheBypassAllowed() {
         return cacheBypassAllowed;
@@ -443,11 +428,8 @@ public abstract class AbstractTileLayer extends TileLayer {
     public List<String> getMimeFormats() {
         return mimeFormats == null ? null : new ArrayList<String>(mimeFormats);
     }
-    
-    /**
-     * 
-     * @return array with supported MIME types
-     */
+
+    /** @return array with supported MIME types */
     @Override
     public List<MimeType> getMimeTypes() {
         return formats;
@@ -457,15 +439,12 @@ public abstract class AbstractTileLayer extends TileLayer {
         return infoMimeFormats == null ? null : new ArrayList<String>(infoMimeFormats);
     }
 
-    /**
-     * 
-     * @return array with supported MIME types for information
-     */
+    /** @return array with supported MIME types for information */
     @Override
     public List<MimeType> getInfoMimeTypes() {
         return infoFormats;
     }
-    
+
     @Override
     public int getExpireClients(int zoomLevel) {
         return getExpiration(this.expireClientsList, zoomLevel);
@@ -484,7 +463,7 @@ public abstract class AbstractTileLayer extends TileLayer {
             retVal = list.get(0).getExpiration();
         } else {
             int i;
-            for (i = 1; i < length;) {
+            for (i = 1; i < length; ) {
                 if (list.get(i).getMinZoom() > zoomLevel) {
                     break;
                 }
@@ -515,7 +494,7 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     @Override
     public synchronized GridSubset removeGridSubset(String gridSetId) {
-        for (Iterator<XMLGridSubset> it = gridSubsets.iterator(); it.hasNext();) {
+        for (Iterator<XMLGridSubset> it = gridSubsets.iterator(); it.hasNext(); ) {
             XMLGridSubset configSubset = it.next();
             if (gridSetId.equals(configSubset.getGridSetName())) {
                 it.remove();
@@ -531,5 +510,4 @@ public abstract class AbstractTileLayer extends TileLayer {
         gridSubsets.add(new XMLGridSubset(gridSubset));
         subSets.put(gridSubset.getName(), gridSubset);
     }
-
 }

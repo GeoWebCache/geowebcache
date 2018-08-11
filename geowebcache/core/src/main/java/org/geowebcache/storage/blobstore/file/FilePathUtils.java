@@ -19,7 +19,7 @@ public class FilePathUtils {
     /**
      * Silly way to pad numbers with leading zeros, since I don't know a fast way of doing this in
      * Java.
-     * 
+     *
      * @param number
      * @param order
      * @return
@@ -43,7 +43,7 @@ public class FilePathUtils {
                 padding.append('0');
                 diffOrder--;
             }
-            padding.append(number);// toString() + Long.toString(number);
+            padding.append(number); // toString() + Long.toString(number);
         } else {
             padding.append(number);
         }
@@ -70,7 +70,7 @@ public class FilePathUtils {
 
     /**
      * Extracts the zoomLevel from {@code <gridsetPrefix>_<zLevel>[_<parametersId>]})
-     * 
+     *
      * @precondition {@code dirName.startsWith(gridsetPrefix + "_")}
      */
     public static int findZoomLevel(final String gridsetPrefix, final String dirName) {
@@ -80,14 +80,14 @@ public class FilePathUtils {
         try {
             return Integer.parseInt(zlevel);
         } catch (NumberFormatException e) {
-            throw new RuntimeException(String.format("unable to find zoom level in '%s'",
-                    gridsetPrefix), e);
+            throw new RuntimeException(
+                    String.format("unable to find zoom level in '%s'", gridsetPrefix), e);
         }
     }
 
     /**
      * Extracts the parametersId from {@code <gridsetPrefix>_<zLevel>[_<parametersId>]})
-     * 
+     *
      * @precondition {@code dirName.startsWith(gridsetPrefix + "_")}
      */
     public static String findParameter(final String gridsetPrefix, final String dirName) {
@@ -100,13 +100,10 @@ public class FilePathUtils {
         }
     }
 
-    /**
-     * Adds the gridset and zoom level fors the standard file system layout path
-     */
+    /** Adds the gridset and zoom level fors the standard file system layout path */
     public static void appendGridsetZoomLevelDir(String gridSetId, long z, StringBuilder path) {
         appendFiltered(gridSetId, path);
         path.append('_');
         zeroPadder(z, 2, path);
     }
-
 }

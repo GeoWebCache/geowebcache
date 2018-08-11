@@ -1,21 +1,27 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * <p>
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * <p>
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Nuno Oliveira, GeoSolutions S.A.S., Copyright 2016
  */
 package org.geowebcache.sqlite;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,34 +38,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.nio.file.Files;
-import java.util.UUID;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 @Controller
 @RequestMapping("**/sqlite")
 public class OperationsRest {
 
     private static Log LOGGER = LogFactory.getLog(OperationsRest.class);
 
-    @Autowired
-    private TileLayerDispatcher tileLayerDispatcher;
+    @Autowired private TileLayerDispatcher tileLayerDispatcher;
 
-    @Autowired
-    private XMLConfiguration gwcConfiguration;
+    @Autowired private XMLConfiguration gwcConfiguration;
 
     @RequestMapping(value = "/replace", method = RequestMethod.POST)
-    public
-    @ResponseBody
-    ResponseEntity<String> replace(@RequestParam(value = "layer") String layer,
-                                   @RequestParam(value = "destination", required = false) String destination,
-                                   @RequestParam(value = "source", required = false) String source,
-                                   @RequestParam(value = "file", required = false) MultipartFile uploadedFile) {
+    public @ResponseBody ResponseEntity<String> replace(
+            @RequestParam(value = "layer") String layer,
+            @RequestParam(value = "destination", required = false) String destination,
+            @RequestParam(value = "source", required = false) String source,
+            @RequestParam(value = "file", required = false) MultipartFile uploadedFile) {
         // we need to close this resources at the end
         File workingDirectory = null;
         File file = null;
@@ -69,7 +63,8 @@ public class OperationsRest {
             // finding the blobstore associated t our layer
             SqliteBlobStore blobStore = getBlobStoreForLayer(layer);
             if (blobStore == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No SQLite store could be associated with provided layer.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("No SQLite store could be associated with provided layer.");
             }
             // finding the file or the directory that will be used to replace
             if (uploadedFile != null && !uploadedFile.isEmpty()) {
@@ -78,10 +73,10 @@ public class OperationsRest {
             } else if (source != null) {
                 // the file is already present
                 file = new File(source);
-
             }
             if (file == null || !file.exists()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Provided file is NULL or doesn't exists.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Provided file is NULL or doesn't exists.");
             }
             // if we have a zip file we need to unzip it
             file = unzipFileIfNeeded(file, workingDirectory);
@@ -90,7 +85,8 @@ public class OperationsRest {
                 blobStore.replace(file);
             } else {
                 if (destination == null) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Destination is required for single files.");
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Destination is required for single files.");
                 }
                 // we replace the single file
                 blobStore.replace(file, destination);
@@ -99,7 +95,8 @@ public class OperationsRest {
             if (LOGGER.isErrorEnabled()) {
                 LOGGER.error("Error executing the replace operation.", exception);
             }
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(exception.getMessage());
         } finally {
             // cleaning everything
             FileUtils.deleteQuietly(workingDirectory);
@@ -107,14 +104,16 @@ public class OperationsRest {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-    private File handleFileUpload(MultipartFile uploadedFile, File workingDirectory) throws Exception {
+    private File handleFileUpload(MultipartFile uploadedFile, File workingDirectory)
+            throws Exception {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Handling file upload.");
         }
         // getting the uploaded file content
         File outputFile = new File(workingDirectory, UUID.randomUUID().toString());
         byte[] bytes = uploadedFile.getBytes();
-        try (BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(outputFile))) {
+        try (BufferedOutputStream stream =
+                new BufferedOutputStream(new FileOutputStream(outputFile))) {
             stream.write(bytes);
         }
         return outputFile;
@@ -126,7 +125,7 @@ public class OperationsRest {
             return file;
         }
         try (FileInputStream fileInput = new FileInputStream(file);
-             ZipInputStream zipInput = new ZipInputStream(fileInput)) {
+                ZipInputStream zipInput = new ZipInputStream(fileInput)) {
             ZipEntry zipEntry = zipInput.getNextEntry();
             if (zipEntry == null) {
                 // is not a zip file nothing to do
@@ -137,7 +136,8 @@ public class OperationsRest {
         }
     }
 
-    private File unzip(ZipInputStream zipInputStream, ZipEntry zipEntry, File workingDirectory) throws Exception {
+    private File unzip(ZipInputStream zipInputStream, ZipEntry zipEntry, File workingDirectory)
+            throws Exception {
         // output directory for our zip file content
         File outputDirectory = new File(workingDirectory, UUID.randomUUID().toString());
         outputDirectory.mkdir();
@@ -192,6 +192,8 @@ public class OperationsRest {
             return null;
         }
         // returning an instance of found store
-        return (SqliteBlobStore) blobStoreConfig.createInstance(tileLayerDispatcher, gwcConfiguration.getLockProvider());
+        return (SqliteBlobStore)
+                blobStoreConfig.createInstance(
+                        tileLayerDispatcher, gwcConfiguration.getLockProvider());
     }
 }

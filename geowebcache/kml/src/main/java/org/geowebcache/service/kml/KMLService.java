@@ -1,17 +1,15 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
 package org.geowebcache.service.kml;
@@ -20,10 +18,8 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Objects;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -48,8 +44,8 @@ import org.geowebcache.storage.StorageBroker;
 
 /**
  * The flow through this service is roughly as follows:
- * 
- * 1) getTile() - inital parsing 2a) Tile completed by layer (raster) 2b) handleRequest(), Tile
+ *
+ * <p>1) getTile() - inital parsing 2a) Tile completed by layer (raster) 2b) handleRequest(), Tile
  * completed by service 3a) SuperOverlay -> handleSuperOverlay(); -> generates required KML 3b)
  * Overlay (possibly KMZ with packaged data) -> handleOverlay() -> check cache, or call
  * createOverlay and package
@@ -72,18 +68,16 @@ public class KMLService extends Service {
     private GridSetBroker gsb;
 
     private RuntimeStats stats;
-    
+
     private SecurityDispatcher secDispatcher;
 
-    /**
-     * Protected no-argument constructor to allow run-time instrumentation
-     */
+    /** Protected no-argument constructor to allow run-time instrumentation */
     protected KMLService() {
         super(SERVICE_KML);
     }
-    
-    public KMLService(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb,
-            RuntimeStats stats) {
+
+    public KMLService(
+            StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb, RuntimeStats stats) {
         super(SERVICE_KML);
 
         this.sb = sb;
@@ -95,11 +89,11 @@ public class KMLService extends Service {
     /**
      * Parses the pathinfo part of an HttpServletRequest into the three components it is (hopefully)
      * made up of.
-     * 
-     * Example 1: /kml/layername.format.extension (superoverlay) Example 2:
+     *
+     * <p>Example 1: /kml/layername.format.extension (superoverlay) Example 2:
      * /kml/layername/tilekey.format.extension (kml or kmz, overlay) Example 3:
      * /kml/layername/tilekey.format (data)
-     * 
+     *
      * @param pathInfo
      * @return {layername, tilekey, format, wrapperformat}
      */
@@ -158,15 +152,23 @@ public class KMLService extends Service {
             throw new ServiceException("Unable to parse KML request : " + e.getMessage());
         }
 
-        long[] gridLoc = { -1, -1, -1 };
+        long[] gridLoc = {-1, -1, -1};
 
         // Do we have a key for the grid location?
         if (parsed[1].length() > 0) {
             gridLoc = KMLService.parseGridLocString(parsed[1]);
         }
 
-        ConveyorKMLTile tile = new ConveyorKMLTile(sb, parsed[0], gsb.WORLD_EPSG4326.getName(),
-                gridLoc, MimeType.createFromExtension(parsed[2]), null, request, response);
+        ConveyorKMLTile tile =
+                new ConveyorKMLTile(
+                        sb,
+                        parsed[0],
+                        gsb.WORLD_EPSG4326.getName(),
+                        gridLoc,
+                        MimeType.createFromExtension(parsed[2]),
+                        null,
+                        request,
+                        response);
 
         // Sitemap index ? kml/sitemap.xml
         if (parsed[0].equalsIgnoreCase("sitemap") && parsed[2].equalsIgnoreCase("xml")) {
@@ -203,9 +205,7 @@ public class KMLService extends Service {
         return tile;
     }
 
-    /**
-     * Let the service handle the request
-     */
+    /** Let the service handle the request */
     public void handleRequest(Conveyor conv) throws GeoWebCacheException {
 
         ConveyorKMLTile tile = (ConveyorKMLTile) conv;
@@ -234,18 +234,18 @@ public class KMLService extends Service {
             layer = tld.getTileLayer(tile.getLayerId());
 
             if (layer == null) {
-                throw new ServiceException("No layer provided, request parsed to: "
-                        + tile.getLayerId());
+                throw new ServiceException(
+                        "No layer provided, request parsed to: " + tile.getLayerId());
             }
         }
         tile.setTileLayer(layer);
-        
-        if(Objects.nonNull(tile.getLayer())) {
-            // The KML service uses negative magic numbers in the z coordinate 
+
+        if (Objects.nonNull(tile.getLayer())) {
+            // The KML service uses negative magic numbers in the z coordinate
             // for superoverlays.
-            if(tile.getTileIndex()[2]<0) {
+            if (tile.getTileIndex()[2] < 0) {
                 getSecurityDispatcher().checkSecurity(tile.getLayer(), null, null);
-            } else  {
+            } else {
                 getSecurityDispatcher().checkSecurity(tile);
             }
         }
@@ -287,7 +287,7 @@ public class KMLService extends Service {
 
     /**
      * Creates a superoverlay, ie. a short description and network links to the first overlays.
-     * 
+     *
      * @param tile
      */
     private void handleSuperOverlay(ConveyorKMLTile tile) throws GeoWebCacheException {
@@ -308,33 +308,55 @@ public class KMLService extends Service {
 
         // Check whether we need two tiles for world bounds or not
         if (gridRect[4] > 0 && (gridRect[2] != gridRect[0] || gridRect[3] != gridRect[1])) {
-            throw new GeoWebCacheException(layer.getName() + " (" + bbox.toString()
-                    + ") is too big for the sub grid set for " + gridSubset.getName()
-                    + ", allow for smaller zoom levels.");
+            throw new GeoWebCacheException(
+                    layer.getName()
+                            + " ("
+                            + bbox.toString()
+                            + ") is too big for the sub grid set for "
+                            + gridSubset.getName()
+                            + ", allow for smaller zoom levels.");
         } else if (gridRect[0] != gridRect[2]) {
-            long[] gridLocWest = { 0, 0, 0 };
-            long[] gridLocEast = { 1, 0, 0 };
+            long[] gridLocWest = {0, 0, 0};
+            long[] gridLocEast = {1, 0, 0};
 
-            BoundingBox bboxWest = new BoundingBox(bbox.getMinX(), bbox.getMinY(), 0.0,
-                    bbox.getMaxY());
-            BoundingBox bboxEast = new BoundingBox(0.0, bbox.getMinY(), bbox.getMaxX(),
-                    bbox.getMaxY());
+            BoundingBox bboxWest =
+                    new BoundingBox(bbox.getMinX(), bbox.getMinY(), 0.0, bbox.getMaxY());
+            BoundingBox bboxEast =
+                    new BoundingBox(0.0, bbox.getMinY(), bbox.getMaxX(), bbox.getMaxY());
 
-            networkLinks = superOverlayNetworLink(layer.getName() + " West", bboxWest,
-                    tile.getUrlPrefix() + "/" + gridLocString(gridLocWest) + formatExtension)
-                    + superOverlayNetworLink(layer.getName() + " East", bboxEast,
-                            tile.getUrlPrefix() + "/" + gridLocString(gridLocEast)
-                                    + formatExtension);
+            networkLinks =
+                    superOverlayNetworLink(
+                                    layer.getName() + " West",
+                                    bboxWest,
+                                    tile.getUrlPrefix()
+                                            + "/"
+                                            + gridLocString(gridLocWest)
+                                            + formatExtension)
+                            + superOverlayNetworLink(
+                                    layer.getName() + " East",
+                                    bboxEast,
+                                    tile.getUrlPrefix()
+                                            + "/"
+                                            + gridLocString(gridLocEast)
+                                            + formatExtension);
 
         } else {
-            long[] gridLoc = { gridRect[0], gridRect[1], gridRect[4] };
+            long[] gridLoc = {gridRect[0], gridRect[1], gridRect[4]};
 
-            networkLinks = superOverlayNetworLink(layer.getName(), bbox, tile.getUrlPrefix() + "/"
-                    + gridLocString(gridLoc) + formatExtension);
+            networkLinks =
+                    superOverlayNetworLink(
+                            layer.getName(),
+                            bbox,
+                            tile.getUrlPrefix() + "/" + gridLocString(gridLoc) + formatExtension);
         }
 
-        String xml = KMLHeader() + "\n<Folder>" + getLookAt(bbox) + networkLinks + "\n</Folder>"
-                + "\n</kml>\n";
+        String xml =
+                KMLHeader()
+                        + "\n<Folder>"
+                        + getLookAt(bbox)
+                        + networkLinks
+                        + "\n</Folder>"
+                        + "\n</kml>\n";
 
         tile.setBlob(new ByteArrayResource(xml.getBytes()));
         tile.setMimeType(XMLMime.kml);
@@ -345,19 +367,28 @@ public class KMLService extends Service {
 
     /**
      * Creates a network link to the first tile in the pyramid
-     * 
+     *
      * @param superString
      * @param bbox
      * @param url
      * @return
      */
     private static String superOverlayNetworLink(String superString, BoundingBox bbox, String url) {
-        String xml = "\n<NetworkLink><name>Super-overlay: " + superString + "</name>"
-                + "\n<Region>\n" + bbox.toKMLLatLonAltBox()
-                + "\n<Lod><minLodPixels>128</minLodPixels>"
-                + "\n<maxLodPixels>-1</maxLodPixels></Lod>" + "\n</Region>" + "\n<Link><href>"
-                + url + "</href>" + "\n<viewRefreshMode>onRegion</viewRefreshMode>" + "\n</Link>"
-                + "\n</NetworkLink>";
+        String xml =
+                "\n<NetworkLink><name>Super-overlay: "
+                        + superString
+                        + "</name>"
+                        + "\n<Region>\n"
+                        + bbox.toKMLLatLonAltBox()
+                        + "\n<Lod><minLodPixels>128</minLodPixels>"
+                        + "\n<maxLodPixels>-1</maxLodPixels></Lod>"
+                        + "\n</Region>"
+                        + "\n<Link><href>"
+                        + url
+                        + "</href>"
+                        + "\n<viewRefreshMode>onRegion</viewRefreshMode>"
+                        + "\n</Link>"
+                        + "\n</NetworkLink>";
 
         return xml;
     }
@@ -369,7 +400,7 @@ public class KMLService extends Service {
     protected static long[] parseGridLocString(String key) throws ServiceException {
         // format should be x<x>y<y>z<z>
 
-        long[] ret = { -1, -1, -1 };
+        long[] ret = {-1, -1, -1};
 
         int yloc = key.indexOf("y");
         int zloc = key.indexOf("z");
@@ -393,10 +424,10 @@ public class KMLService extends Service {
     /**
      * These are the main nodes in the KML hierarchy, each overlay contains a set of network links
      * (up to 4) that point to the overlays on the next level.
-     * 
-     * 1) KMZ: The cache will contain a zip with overlay and data
-     * 
-     * 2) KML: The cache will only contain the overlay itself, the overlay will cause a separate
+     *
+     * <p>1) KMZ: The cache will contain a zip with overlay and data
+     *
+     * <p>2) KML: The cache will only contain the overlay itself, the overlay will cause a separate
      * tile request to get the data
      */
     private void handleOverlay(ConveyorKMLTile tile) throws GeoWebCacheException {
@@ -434,8 +465,10 @@ public class KMLService extends Service {
                 try {
                     tileLayer.getTile(tile);
                 } catch (OutsideCoverageException oce) {
-                    log.error("Out of bounds: " + Arrays.toString(tile.getTileIndex())
-                            + " should never habe been linked to.");
+                    log.error(
+                            "Out of bounds: "
+                                    + Arrays.toString(tile.getTileIndex())
+                                    + " should never habe been linked to.");
                     throw oce;
                 }
                 tile.setWrapperMimeType(XMLMime.kmz);
@@ -445,8 +478,12 @@ public class KMLService extends Service {
                 throw new ServiceException(ioe.getMessage());
             }
 
-            byte[] zip = KMZHelper.createZippedKML(gridLocString(tile.getTileIndex()), tile
-                    .getMimeType().getFileExtension(), overlayXml.getBytes(), tile.getBlob());
+            byte[] zip =
+                    KMZHelper.createZippedKML(
+                            gridLocString(tile.getTileIndex()),
+                            tile.getMimeType().getFileExtension(),
+                            overlayXml.getBytes(),
+                            tile.getBlob());
 
             tile.setBlob(new ByteArrayResource(zip));
             tile.setStatus(200);
@@ -470,7 +507,7 @@ public class KMLService extends Service {
     /**
      * Creates an overlay element: 1) Header 2) Network links to regions where we have more data 3)
      * Overlay (link to data) 4) Footer
-     * 
+     *
      * @param tileLayer
      * @param urlStr
      * @param key
@@ -496,10 +533,13 @@ public class KMLService extends Service {
         String refreshTags = "";
         int refreshInterval = tileLayer.getExpireClients((int) gridLoc[2]);
         if (refreshInterval > 0) {
-            refreshTags = "\n<refreshMode>onInterval</refreshMode>" + "\n<refreshInterval>"
-                    + refreshInterval + "</refreshInterval>";
+            refreshTags =
+                    "\n<refreshMode>onInterval</refreshMode>"
+                            + "\n<refreshInterval>"
+                            + refreshInterval
+                            + "</refreshInterval>";
         }
-        
+
         StringBuffer buf = new StringBuffer();
 
         // 1) Header
@@ -515,8 +555,14 @@ public class KMLService extends Service {
         long[][] linkGridLocs = gridSubset.getSubGrid(gridLoc);
 
         // 3) Apply secondary filter against linking to empty tiles
-        linkGridLocs = KMZHelper.filterGridLocs(tile.getStorageBroker(), getSecurityDispatcher(), tileLayer,
-                gridSubset.getName(), tile.getMimeType(), linkGridLocs);
+        linkGridLocs =
+                KMZHelper.filterGridLocs(
+                        tile.getStorageBroker(),
+                        getSecurityDispatcher(),
+                        tileLayer,
+                        gridSubset.getName(),
+                        tile.getMimeType(),
+                        linkGridLocs);
 
         // int moreData = 0;
         for (int i = 0; i < 4; i++) {
@@ -527,12 +573,17 @@ public class KMLService extends Service {
                 String gridLocStr = gridLocString(linkGridLocs[i]);
 
                 // Always use absolute URLs for these
-                String gridLocUrl = tile.getUrlPrefix() + gridLocStr + "."
-                        + tile.getMimeType().getFileExtension() + "."
-                        + tile.getWrapperMimeType().getFileExtension();
+                String gridLocUrl =
+                        tile.getUrlPrefix()
+                                + gridLocStr
+                                + "."
+                                + tile.getMimeType().getFileExtension()
+                                + "."
+                                + tile.getWrapperMimeType().getFileExtension();
 
-                buf.append(createNetworkLinkElement(tileLayer, linkBbox, gridLocUrl, gridLocStr,
-                        -1, refreshTags));
+                buf.append(
+                        createNetworkLinkElement(
+                                tileLayer, linkBbox, gridLocUrl, gridLocStr, -1, refreshTags));
                 // moreData++;
             }
         }
@@ -541,8 +592,13 @@ public class KMLService extends Service {
 
         // 5) Overlay, should be relative
         if (isRaster) {
-            buf.append(createGroundOverLayElement(gridLoc, tile.getUrlPrefix(), bbox, tile
-                    .getMimeType().getFileExtension(), refreshTags));
+            buf.append(
+                    createGroundOverLayElement(
+                            gridLoc,
+                            tile.getUrlPrefix(),
+                            bbox,
+                            tile.getMimeType().getFileExtension(),
+                            refreshTags));
         } else {
             // KML
             String gridLocStr = gridLocString(gridLoc);
@@ -557,8 +613,9 @@ public class KMLService extends Service {
                 maxLodPixels = 385;
             }
 
-            buf.append(createNetworkLinkElement(tileLayer, bbox, gridLocUrl, gridLocStr,
-                    maxLodPixels, refreshTags));
+            buf.append(
+                    createNetworkLinkElement(
+                            tileLayer, bbox, gridLocUrl, gridLocStr, maxLodPixels, refreshTags));
         }
 
         // if(moreData > 0) {
@@ -572,7 +629,7 @@ public class KMLService extends Service {
 
     /**
      * This creates the header for the overlay
-     * 
+     *
      * @param bbox
      * @return
      */
@@ -582,14 +639,20 @@ public class KMLService extends Service {
             maxLodPixels = 385;
         }
 
-        return KMLHeader() + "<Document>\n" + "<Region>\n" + bbox.toKMLLatLonAltBox()
-                + "<Lod><minLodPixels>128</minLodPixels>" + "<maxLodPixels>"
-                + Integer.toString(maxLodPixels) + "</maxLodPixels></Lod>\n" + "</Region>\n";
+        return KMLHeader()
+                + "<Document>\n"
+                + "<Region>\n"
+                + bbox.toKMLLatLonAltBox()
+                + "<Lod><minLodPixels>128</minLodPixels>"
+                + "<maxLodPixels>"
+                + Integer.toString(maxLodPixels)
+                + "</maxLodPixels></Lod>\n"
+                + "</Region>\n";
     }
 
     /**
      * For KML features / vector data OR for the next level
-     * 
+     *
      * @param layer
      * @param urlStr
      * @param gridLoc
@@ -597,36 +660,70 @@ public class KMLService extends Service {
      * @param extension
      * @return
      */
-    private static String createNetworkLinkElement(TileLayer layer, BoundingBox bbox,
-            String gridLocUrl, String tileIdx, int maxLodPixels, String refreshTags) {
+    private static String createNetworkLinkElement(
+            TileLayer layer,
+            BoundingBox bbox,
+            String gridLocUrl,
+            String tileIdx,
+            int maxLodPixels,
+            String refreshTags) {
 
-        String xml = "\n<NetworkLink>" + "\n<name>" + layer.getName() + "</name>" + "\n<Region>"
-                + bbox.toKMLLatLonAltBox() + "\n<Lod><minLodPixels>128</minLodPixels>"
-                + "<maxLodPixels>" + Integer.toString(maxLodPixels) + "</maxLodPixels></Lod>\n"
-                + "</Region>" + "\n<Link>" + "\n<href>" + gridLocUrl + "</href>" + refreshTags
-                + "\n<viewRefreshMode>onRegion</viewRefreshMode>" + "\n</Link>"
-                + "\n</NetworkLink>\n";
+        String xml =
+                "\n<NetworkLink>"
+                        + "\n<name>"
+                        + layer.getName()
+                        + "</name>"
+                        + "\n<Region>"
+                        + bbox.toKMLLatLonAltBox()
+                        + "\n<Lod><minLodPixels>128</minLodPixels>"
+                        + "<maxLodPixels>"
+                        + Integer.toString(maxLodPixels)
+                        + "</maxLodPixels></Lod>\n"
+                        + "</Region>"
+                        + "\n<Link>"
+                        + "\n<href>"
+                        + gridLocUrl
+                        + "</href>"
+                        + refreshTags
+                        + "\n<viewRefreshMode>onRegion</viewRefreshMode>"
+                        + "\n</Link>"
+                        + "\n</NetworkLink>\n";
 
         return xml;
     }
 
     /**
      * Used for linking to a raster image
-     * 
+     *
      * @param gridLoc
      * @param urlStr
      * @param bbox
      * @param formatExtension
      * @return
      */
-    private static String createGroundOverLayElement(long[] gridLoc, String urlStr,
-            BoundingBox bbox, String formatExtension, String refreshTags) {
+    private static String createGroundOverLayElement(
+            long[] gridLoc,
+            String urlStr,
+            BoundingBox bbox,
+            String formatExtension,
+            String refreshTags) {
 
-        String xml = "\n<GroundOverlay>" + "\n<drawOrder>" + gridLoc[2] + "</drawOrder>"
-
-        + "\n<Icon>" + "\n<href>" + gridLocString(gridLoc) + "." + formatExtension + "</href>"
-                + refreshTags + "\n</Icon>\n" + "\n<altitudeMode>clampToGround</altitudeMode>"
-                + bbox.toKMLLatLonBox() + "\n</GroundOverlay>\n";
+        String xml =
+                "\n<GroundOverlay>"
+                        + "\n<drawOrder>"
+                        + gridLoc[2]
+                        + "</drawOrder>"
+                        + "\n<Icon>"
+                        + "\n<href>"
+                        + gridLocString(gridLoc)
+                        + "."
+                        + formatExtension
+                        + "</href>"
+                        + refreshTags
+                        + "\n</Icon>\n"
+                        + "\n<altitudeMode>clampToGround</altitudeMode>"
+                        + bbox.toKMLLatLonBox()
+                        + "\n</GroundOverlay>\n";
 
         return xml;
     }
@@ -643,8 +740,8 @@ public class KMLService extends Service {
         // // radians
         double[] p1 = getRect(lon1, lat1, R_EARTH);
         double[] p2 = getRect(lon2, lat2, R_EARTH);
-        double[] midpoint = new double[] { (p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2,
-                (p1[2] + p2[2]) / 2 };
+        double[] midpoint =
+                new double[] {(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2, (p1[2] + p2[2]) / 2};
 
         midpoint = getGeographic(midpoint[0], midpoint[1], midpoint[2]);
 
@@ -657,10 +754,19 @@ public class KMLService extends Service {
 
         // double height = distance / (2 * Math.tan(VIEWER_WIDTH));
 
-        return "<LookAt id=\"superoverlay\">" + "\n<longitude>" + ((lon1 + lon2) / 2)
-                + "</longitude>" + "\n<latitude>" + midpoint[1] + "</latitude>"
-                + "\n<altitude>0</altitude>" + "\n<heading>0</heading>" + "\n<tilt>0</tilt>"
-                + "\n<range>" + distance + "</range>"
+        return "<LookAt id=\"superoverlay\">"
+                + "\n<longitude>"
+                + ((lon1 + lon2) / 2)
+                + "</longitude>"
+                + "\n<latitude>"
+                + midpoint[1]
+                + "</latitude>"
+                + "\n<altitude>0</altitude>"
+                + "\n<heading>0</heading>"
+                + "\n<tilt>0</tilt>"
+                + "\n<range>"
+                + distance
+                + "</range>"
                 + "\n<altitudeMode>clampToGround</altitudeMode>"
                 // + "\n<!--kml:altitudeModeEnum:clampToGround, relativeToGround, absolute -->"
                 + "\n</LookAt>\n";
@@ -700,19 +806,19 @@ public class KMLService extends Service {
         double x = radius * Math.sin(phi) * Math.cos(theta);
         double y = radius * Math.sin(phi) * Math.sin(theta);
         double z = radius * Math.cos(phi);
-        return new double[] { x, y, z };
+        return new double[] {x, y, z};
     }
 
     private static double[] getGeographic(double x, double y, double z) {
         double theta, phi, radius;
-        radius = distance(new double[] { x, y, z }, new double[] { 0, 0, 0 });
+        radius = distance(new double[] {x, y, z}, new double[] {0, 0, 0});
         theta = Math.atan2(Math.sqrt(x * x + y * y), z);
         phi = Math.atan2(y, x);
 
         double lat = 90 - (theta * 180 / Math.PI);
         double lon = 90 - (phi * 180 / Math.PI);
 
-        return new double[] { (lon > 180 ? lon - 360 : lon), lat, radius };
+        return new double[] {(lon > 180 ? lon - 360 : lon), lat, radius};
     }
 
     private static double distance(double[] p1, double[] p2) {
@@ -729,6 +835,4 @@ public class KMLService extends Service {
     protected SecurityDispatcher getSecurityDispatcher() {
         return secDispatcher;
     }
-    
-    
 }

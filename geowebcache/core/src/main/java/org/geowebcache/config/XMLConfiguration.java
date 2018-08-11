@@ -1,21 +1,21 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * @author Arne Kepp, Marius Suta,  The Open Planning Project, Copyright 2008 - 2015
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @author Arne Kepp, Marius Suta, The Open Planning Project, Copyright 2008 - 2015
  */
 package org.geowebcache.config;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
@@ -48,7 +47,6 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -90,18 +88,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomReader;
-
 /**
  * XMLConfiguration class responsible for reading/writing layer configurations to and from XML file
- * <p>
- * NOTE {@link #initialize(GridSetBroker)} MUST have been called before any other method is used,
+ *
+ * <p>NOTE {@link #initialize(GridSetBroker)} MUST have been called before any other method is used,
  * otherwise this configuration is in an inconsistent and unpredictable state.
- * </p>
  */
 public class XMLConfiguration implements Configuration, InitializingBean {
-    
+
     public static final String DEFAULT_CONFIGURATION_FILE_NAME = "geowebcache.xml";
 
     private static Log log = LogFactory.getLog(org.geowebcache.config.XMLConfiguration.class);
@@ -111,7 +105,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
      * {@link #XMLConfiguration(File)} constructor
      */
     private final WebApplicationContext context;
-    
+
     private final ConfigurationResourceProvider resourceProvider;
 
     private GeoWebCacheConfiguration gwcConfig;
@@ -129,85 +123,96 @@ public class XMLConfiguration implements Configuration, InitializingBean {
 
     /**
      * Base Constructor with custom ConfiguratioNResourceProvider
-     *  
+     *
      * @param appCtx use to lookup {@link XMLConfigurationProvider} extensions, may be {@code null}
      * @param inFac
      */
-    public XMLConfiguration(final ApplicationContextProvider appCtx,
-            final ConfigurationResourceProvider inFac) {
+    public XMLConfiguration(
+            final ApplicationContextProvider appCtx, final ConfigurationResourceProvider inFac) {
         this.context = appCtx == null ? null : appCtx.getApplicationContext();
         this.resourceProvider = inFac;
     }
-    
+
     /**
      * File System based Constructor
-     * 
+     *
      * @param appCtx use to lookup {@link XMLConfigurationProvider} extensions, may be {@code null}
      * @param configFileDirectory
      * @param storageDirFinder
      * @throws ConfigurationException
      */
-    public XMLConfiguration(final ApplicationContextProvider appCtx,
+    public XMLConfiguration(
+            final ApplicationContextProvider appCtx,
             final String configFileDirectory,
-            final DefaultStorageFinder storageDirFinder) throws ConfigurationException {
-        this(appCtx, new XMLFileResourceProvider(DEFAULT_CONFIGURATION_FILE_NAME,
-                appCtx, configFileDirectory, storageDirFinder));
+            final DefaultStorageFinder storageDirFinder)
+            throws ConfigurationException {
+        this(
+                appCtx,
+                new XMLFileResourceProvider(
+                        DEFAULT_CONFIGURATION_FILE_NAME,
+                        appCtx,
+                        configFileDirectory,
+                        storageDirFinder));
         resourceProvider.setTemplate("/" + DEFAULT_CONFIGURATION_FILE_NAME);
     }
-    
 
     /**
-     * Constructor that will look for {@code geowebcache.xml} at the directory defined by
-     * {@code storageDirFinder}
-     * 
-     * @param appCtx
-     *            use to lookup {@link XMLConfigurationProvider} extenions, may be {@code null}
+     * Constructor that will look for {@code geowebcache.xml} at the directory defined by {@code
+     * storageDirFinder}
+     *
+     * @param appCtx use to lookup {@link XMLConfigurationProvider} extenions, may be {@code null}
      * @param defaultStorage
      * @throws ConfigurationException
      */
-    public XMLConfiguration(final ApplicationContextProvider appCtx,
-            final DefaultStorageFinder storageDirFinder) throws ConfigurationException {
-        this(appCtx, new XMLFileResourceProvider(DEFAULT_CONFIGURATION_FILE_NAME,
-                appCtx, storageDirFinder));
+    public XMLConfiguration(
+            final ApplicationContextProvider appCtx, final DefaultStorageFinder storageDirFinder)
+            throws ConfigurationException {
+        this(
+                appCtx,
+                new XMLFileResourceProvider(
+                        DEFAULT_CONFIGURATION_FILE_NAME, appCtx, storageDirFinder));
         resourceProvider.setTemplate("/" + DEFAULT_CONFIGURATION_FILE_NAME);
     }
 
     /**
      * Constructor that will accept an absolute or relative path for finding {@code geowebcache.xml}
-     * 
+     *
      * @param appCtx
      * @param configFileDirectory
      * @throws ConfigurationException
      */
-    public XMLConfiguration(final ApplicationContextProvider appCtx,
-            final String configFileDirectory) throws ConfigurationException {
+    public XMLConfiguration(
+            final ApplicationContextProvider appCtx, final String configFileDirectory)
+            throws ConfigurationException {
         this(appCtx, configFileDirectory, null);
     }
 
-    
     /**
-     * @deprecated use {@link #XMLFileConfiguration(ApplicationContextProvider, DefaultStorageFinder)}
+     * @deprecated use {@link #XMLFileConfiguration(ApplicationContextProvider,
+     *     DefaultStorageFinder)}
      */
     @Deprecated
-    public XMLConfiguration(final ApplicationContextProvider appCtx,
-            final GridSetBroker gridSetBroker, final DefaultStorageFinder storageDirFinder)
+    public XMLConfiguration(
+            final ApplicationContextProvider appCtx,
+            final GridSetBroker gridSetBroker,
+            final DefaultStorageFinder storageDirFinder)
             throws ConfigurationException {
         this(appCtx, storageDirFinder);
         log.warn("This constructor is deprecated");
     }
 
-    /**
-     * @deprecated use {@link #XMLFileConfiguration(ApplicationContextProvider, String)}
-     */
+    /** @deprecated use {@link #XMLFileConfiguration(ApplicationContextProvider, String)} */
     @Deprecated
-    public XMLConfiguration(final ApplicationContextProvider appCtx,
-            final GridSetBroker gridSetBroker, final String configFileDirectory)
+    public XMLConfiguration(
+            final ApplicationContextProvider appCtx,
+            final GridSetBroker gridSetBroker,
+            final String configFileDirectory)
             throws ConfigurationException {
 
         this(appCtx, configFileDirectory);
         log.warn("This constructor is deprecated");
     }
-    
+
     @Override
     public void afterPropertiesSet() throws Exception {
         if (resourceProvider.hasInput()) {
@@ -215,64 +220,66 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         }
         this.reloadConfigOnInit = false;
     }
-    
+
     /**
      * Constructor with inputstream (only for testing)
-     * @throws ConfigurationException 
+     *
+     * @throws ConfigurationException
      */
     public XMLConfiguration(final InputStream is) throws ConfigurationException {
-        this (null, new ConfigurationResourceProvider() {
-                        
-            @Override
-            public InputStream in() {
-                throw new UnsupportedOperationException();
-            }
+        this(
+                null,
+                new ConfigurationResourceProvider() {
 
-            @Override
-            public OutputStream out() throws IOException {
-                throw new UnsupportedOperationException();
-            }       
-            
-            @Override
-            public void backup() throws IOException {
-                throw new UnsupportedOperationException();
-            }
+                    @Override
+                    public InputStream in() {
+                        throw new UnsupportedOperationException();
+                    }
 
-            @Override
-            public void setTemplate(String template) {
-                throw new UnsupportedOperationException();
-            }
+                    @Override
+                    public OutputStream out() throws IOException {
+                        throw new UnsupportedOperationException();
+                    }
 
-            @Override
-            public String getLocation() throws IOException {
-                throw new UnsupportedOperationException();
-            }
+                    @Override
+                    public void backup() throws IOException {
+                        throw new UnsupportedOperationException();
+                    }
 
-            @Override
-            public String getId() {
-                return "mockConfig";
-            }
+                    @Override
+                    public void setTemplate(String template) {
+                        throw new UnsupportedOperationException();
+                    }
 
-            @Override
-            public boolean hasInput() {
-                return false;
-            }
+                    @Override
+                    public String getLocation() throws IOException {
+                        throw new UnsupportedOperationException();
+                    }
 
-            @Override
-            public boolean hasOutput() {
-                return false;
-            }
-            
-        });
+                    @Override
+                    public String getId() {
+                        return "mockConfig";
+                    }
+
+                    @Override
+                    public boolean hasInput() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean hasOutput() {
+                        return false;
+                    }
+                });
         try {
             gwcConfig = loadConfiguration(is);
         } catch (IOException e) {
             throw new ConfigurationException(e.getMessage(), e);
         }
     }
-    
+
     public void setTemplate(String template) {
-       resourceProvider.setTemplate(template);
+        resourceProvider.setTemplate(template);
     }
 
     public String getConfigLocation() throws ConfigurationException {
@@ -297,6 +304,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
 
     /**
      * Configuration objects lacking their own defaults can delegate to this
+     *
      * @param layer
      */
     public void setDefaultValues(TileLayer layer) {
@@ -336,20 +344,28 @@ public class XMLConfiguration implements Configuration, InitializingBean {
                     log.debug("Using proxy " + proxyUrl.getHost() + ":" + proxyUrl.getPort());
                 }
             } catch (MalformedURLException e) {
-                log.error("could not parse proxy URL " + wl.getProxyUrl()
-                        + " ! continuing WITHOUT proxy!", e);
+                log.error(
+                        "could not parse proxy URL "
+                                + wl.getProxyUrl()
+                                + " ! continuing WITHOUT proxy!",
+                        e);
             }
 
             final WMSHttpHelper sourceHelper;
 
             if (wl.getHttpUsername() != null) {
-                sourceHelper = new WMSHttpHelper(wl.getHttpUsername(), wl.getHttpPassword(),
-                        proxyUrl);
-                log.debug("Using per-layer HTTP credentials for " + wl.getName() + ", "
-                        + "username " + wl.getHttpUsername());
+                sourceHelper =
+                        new WMSHttpHelper(wl.getHttpUsername(), wl.getHttpPassword(), proxyUrl);
+                log.debug(
+                        "Using per-layer HTTP credentials for "
+                                + wl.getName()
+                                + ", "
+                                + "username "
+                                + wl.getHttpUsername());
             } else if (gwcConfig.getHttpUsername() != null) {
-                sourceHelper = new WMSHttpHelper(gwcConfig.getHttpUsername(),
-                        gwcConfig.getHttpPassword(), proxyUrl);
+                sourceHelper =
+                        new WMSHttpHelper(
+                                gwcConfig.getHttpUsername(), gwcConfig.getHttpPassword(), proxyUrl);
                 log.debug("Using global HTTP credentials for " + wl.getName());
             } else {
                 sourceHelper = new WMSHttpHelper(null, null, proxyUrl);
@@ -372,13 +388,13 @@ public class XMLConfiguration implements Configuration, InitializingBean {
                 in.close();
             }
         } catch (IOException e) {
-            throw new ConfigurationException("Error parsing config file "
-                    + resourceProvider.getId(), e);
+            throw new ConfigurationException(
+                    "Error parsing config file " + resourceProvider.getId(), e);
         }
     }
 
-    private GeoWebCacheConfiguration loadConfiguration(InputStream xmlFile) throws IOException,
-            ConfigurationException {
+    private GeoWebCacheConfiguration loadConfiguration(InputStream xmlFile)
+            throws IOException, ConfigurationException {
         Node rootNode = loadDocument(xmlFile);
         XStream xs = getConfiguredXStreamWithContext(new GeoWebCacheXStream(), Context.PERSIST);
 
@@ -387,37 +403,41 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         return config;
     }
 
-    /**
-     * @see org.geowebcache.config.Configuration#save()
-     */
+    /** @see org.geowebcache.config.Configuration#save() */
     public synchronized void save() throws IOException {
         if (!resourceProvider.hasOutput()) {
             return;
         }
-        
+
         try {
             resourceProvider.backup();
         } catch (Exception e) {
             log.warn("Error creating back up of configuration file " + resourceProvider.getId(), e);
-        } 
-        
+        }
+
         persistToFile();
     }
 
     public XStream getConfiguredXStream(XStream xs) {
-        return getConfiguredXStreamWithContext(xs, this.context, (ContextualConfigurationProvider.Context)null);
+        return getConfiguredXStreamWithContext(
+                xs, this.context, (ContextualConfigurationProvider.Context) null);
     }
+
     public static XStream getConfiguredXStream(XStream xs, WebApplicationContext context) {
-        return getConfiguredXStreamWithContext(xs, context, (ContextualConfigurationProvider.Context)null);
+        return getConfiguredXStreamWithContext(
+                xs, context, (ContextualConfigurationProvider.Context) null);
     }
-    public XStream getConfiguredXStreamWithContext(XStream xs, 
-            ContextualConfigurationProvider.Context providerContext) {
+
+    public XStream getConfiguredXStreamWithContext(
+            XStream xs, ContextualConfigurationProvider.Context providerContext) {
         return getConfiguredXStreamWithContext(xs, this.context, providerContext);
     }
-    
-    public static XStream getConfiguredXStreamWithContext(XStream xs, WebApplicationContext context, 
+
+    public static XStream getConfiguredXStreamWithContext(
+            XStream xs,
+            WebApplicationContext context,
             ContextualConfigurationProvider.Context providerContext) {
-        
+
         {
             // Allow any implementation of these extension points
             xs.allowTypeHierarchy(org.geowebcache.layer.TileLayer.class);
@@ -425,12 +445,12 @@ public class XMLConfiguration implements Configuration, InitializingBean {
             xs.allowTypeHierarchy(org.geowebcache.filter.request.RequestFilter.class);
             xs.allowTypeHierarchy(org.geowebcache.config.BlobStoreConfig.class);
             xs.allowTypeHierarchy(org.geowebcache.config.Configuration.class);
-            
+
             // Allow anything that's part of GWC
             // TODO: replace this with a more narrow whitelist
-            xs.allowTypesByWildcard(new String[]{"org.geowebcache.**"});
+            xs.allowTypesByWildcard(new String[] {"org.geowebcache.**"});
         }
-        
+
         xs.setMode(XStream.NO_REFERENCES);
 
         xs.addDefaultImplementation(ArrayList.class, List.class);
@@ -466,7 +486,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         xs.alias("parameterFilters", new ArrayList<ParameterFilter>().getClass());
         xs.alias("parameterFilter", ParameterFilter.class);
         xs.alias("seedRequest", SeedRequest.class);
-        
+
         xs.processAnnotations(CaseNormalizer.class);
         xs.processAnnotations(StringParameterFilter.class);
         xs.processAnnotations(RegexParameterFilter.class);
@@ -489,7 +509,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
 
         xs.alias("serviceInformation", ServiceInformation.class);
         xs.alias("contactInformation", ContactInformation.class);
-        
+
         xs.processAnnotations(TruncateLayerRequest.class);
 
         if (context != null) {
@@ -497,18 +517,20 @@ public class XMLConfiguration implements Configuration, InitializingBean {
              * Look up XMLConfigurationProvider extension points and let them contribute to the
              * configuration
              */
-            List<XMLConfigurationProvider> configExtensions = GeoWebCacheExtensions.extensions(
-                    XMLConfigurationProvider.class, context);
+            List<XMLConfigurationProvider> configExtensions =
+                    GeoWebCacheExtensions.extensions(XMLConfigurationProvider.class, context);
             for (XMLConfigurationProvider extension : configExtensions) {
                 // Check if the provider is context dependent
-                if(extension instanceof ContextualConfigurationProvider &&
+                if (extension instanceof ContextualConfigurationProvider
+                        &&
                         // Check if the context is applicable for the provider
-                        (providerContext==null ||
-                        !((ContextualConfigurationProvider)extension).appliesTo(providerContext))) {
-                            // If so, try the next one
-                            continue;
-                    }
-                
+                        (providerContext == null
+                                || !((ContextualConfigurationProvider) extension)
+                                        .appliesTo(providerContext))) {
+                    // If so, try the next one
+                    continue;
+                }
+
                 xs = extension.getConfiguredXStream(xs);
             }
         }
@@ -517,8 +539,8 @@ public class XMLConfiguration implements Configuration, InitializingBean {
 
     /**
      * Method responsible for writing out the entire GeoWebCacheConfiguration object
-     * 
-     * throws an exception if it does not succeed
+     *
+     * <p>throws an exception if it does not succeed
      */
     private void persistToFile() throws IOException {
         Assert.isTrue(resourceProvider.hasOutput());
@@ -538,8 +560,13 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         } catch (FileNotFoundException fnfe) {
             throw fnfe;
         } catch (IOException e) {
-            throw (IOException) new IOException("Error writing to " + resourceProvider.getId()
-                    + ": " + e.getMessage()).initCause(e);
+            throw (IOException)
+                    new IOException(
+                                    "Error writing to "
+                                            + resourceProvider.getId()
+                                            + ": "
+                                            + e.getMessage())
+                            .initCause(e);
         }
 
         log.info("Wrote configuration to " + resourceProvider.getId());
@@ -554,11 +581,9 @@ public class XMLConfiguration implements Configuration, InitializingBean {
     }
 
     /**
-     * @param tl
-     *            the layer to add to this configuration
+     * @param tl the layer to add to this configuration
      * @return
-     * @throws IllegalArgumentException
-     *             if a layer named the same than {@code tl} already exists
+     * @throws IllegalArgumentException if a layer named the same than {@code tl} already exists
      * @see org.geowebcache.config.Configuration#addLayer(org.geowebcache.layer.TileLayer)
      */
     public synchronized void addLayer(TileLayer tl) throws IllegalArgumentException {
@@ -566,8 +591,8 @@ public class XMLConfiguration implements Configuration, InitializingBean {
             throw new NullPointerException();
         }
         if (!(tl instanceof WMSLayer)) {
-            throw new IllegalArgumentException("Can't add layers of type "
-                    + tl.getClass().getName());
+            throw new IllegalArgumentException(
+                    "Can't add layers of type " + tl.getClass().getName());
         }
         if (null != getTileLayer(tl.getName())) {
             throw new IllegalArgumentException("Layer '" + tl.getName() + "' already exists");
@@ -580,9 +605,8 @@ public class XMLConfiguration implements Configuration, InitializingBean {
 
     /**
      * Method responsible for modifying an existing layer.
-     * 
-     * @param tl
-     *            the new layer to overwrite the existing layer
+     *
+     * @param tl the new layer to overwrite the existing layer
      * @throws NoSuchElementException
      * @see org.geowebcache.config.Configuration#modifyLayer(org.geowebcache.layer.TileLayer)
      */
@@ -612,7 +636,6 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         removed = gwcConfig.getLayers().remove(tileLayer);
         if (removed) {
             updateLayers();
-            
         }
         return removed;
     }
@@ -627,7 +650,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
 
         List<XMLGridSet> gridSets = gwcConfig.getGridSets();
 
-        for (Iterator<XMLGridSet> it = gridSets.iterator(); it.hasNext();) {
+        for (Iterator<XMLGridSet> it = gridSets.iterator(); it.hasNext(); ) {
             XMLGridSet gset = it.next();
             if (gridsetName.equals(gset.getName())) {
                 it.remove();
@@ -638,14 +661,13 @@ public class XMLConfiguration implements Configuration, InitializingBean {
 
     /**
      * Removes and returns the gridset configuration named {@code gridsetName}.
-     * 
-     * @param gridsetName
-     *            the name of the gridset to remove
+     *
+     * @param gridsetName the name of the gridset to remove
      * @return the removed griset, or {@code null} if no such gridset exists
      */
     public synchronized XMLGridSet removeGridset(final String gridsetName) {
         List<XMLGridSet> gridSets = gwcConfig.getGridSets();
-        for (Iterator<XMLGridSet> it = gridSets.iterator(); it.hasNext();) {
+        for (Iterator<XMLGridSet> it = gridSets.iterator(); it.hasNext(); ) {
             XMLGridSet gset = it.next();
             if (gridsetName.equals(gset.getName())) {
                 it.remove();
@@ -657,9 +679,8 @@ public class XMLConfiguration implements Configuration, InitializingBean {
 
     /**
      * Method responsible for loading xml configuration file and parsing it into a W3C DOM Document
-     * 
-     * @param file
-     *            the file contaning the layer configurations
+     *
+     * @param file the file contaning the layer configurations
      * @return W3C DOM Document
      */
     static Node loadDocument(InputStream xmlFile) throws ConfigurationException, IOException {
@@ -783,7 +804,8 @@ public class XMLConfiguration implements Configuration, InitializingBean {
                 String warndecoration = new String(c).substring(0, 80);
                 log.warn(warndecoration);
                 log.warn(msg);
-                log.warn("*** Will try to use configuration anyway. Please check the order of declared elements against the schema.");
+                log.warn(
+                        "*** Will try to use configuration anyway. Please check the order of declared elements against the schema.");
                 log.warn(warndecoration);
             } catch (IOException e) {
                 throw new RuntimeException(e.getMessage(), e);
@@ -851,9 +873,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         return result.getNode();
     }
 
-    /**
-     * @see org.geowebcache.config.Configuration#initialize(org.geowebcache.grid.GridSetBroker)
-     */
+    /** @see org.geowebcache.config.Configuration#initialize(org.geowebcache.grid.GridSetBroker) */
     public int initialize(final GridSetBroker gridSetBroker) throws GeoWebCacheException {
 
         this.gridSetBroker = gridSetBroker;
@@ -877,7 +897,7 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         }
 
         updateLayers();
-        
+
         this.reloadConfigOnInit = true;
 
         return getTileLayerCount();
@@ -916,69 +936,55 @@ public class XMLConfiguration implements Configuration, InitializingBean {
         layer.initialize(gridSetBroker);
     }
 
-    /**
-     * @see org.geowebcache.config.Configuration#getIdentifier()
-     */
+    /** @see org.geowebcache.config.Configuration#getIdentifier() */
     public String getIdentifier() {
         return resourceProvider.getId();
     }
 
     public void setRelativePath(String relPath) {
-        log.error("Specifying the relative path as a property is deprecated. "
-                + "Please pass it as the 4th argument to the constructor.");
+        log.error(
+                "Specifying the relative path as a property is deprecated. "
+                        + "Please pass it as the 4th argument to the constructor.");
     }
 
     public void setAbsolutePath(String absPath) {
-        log.error("Specifying the absolute path as a property is deprecated. "
-                + "Please pass it as the 4th argument to the constructor.");
+        log.error(
+                "Specifying the absolute path as a property is deprecated. "
+                        + "Please pass it as the 4th argument to the constructor.");
     }
 
-    /**
-     * @see org.geowebcache.config.Configuration#getTileLayers()
-     */
+    /** @see org.geowebcache.config.Configuration#getTileLayers() */
     public List<TileLayer> getTileLayers() {
         return Collections.unmodifiableList(gwcConfig.getLayers());
     }
 
-    /**
-     * @see org.geowebcache.config.Configuration#getLayers()
-     */
+    /** @see org.geowebcache.config.Configuration#getLayers() */
     public Iterable<TileLayer> getLayers() {
         return Collections.unmodifiableList(gwcConfig.getLayers());
     }
 
-    /**
-     * @see org.geowebcache.config.Configuration#getTileLayer(java.lang.String)
-     */
+    /** @see org.geowebcache.config.Configuration#getTileLayer(java.lang.String) */
     public TileLayer getTileLayer(String layerName) {
         return layers.get(layerName);
     }
 
-    /**
-     * @see org.geowebcache.config.Configuration#getTileLayerById(String)
-     */
+    /** @see org.geowebcache.config.Configuration#getTileLayerById(String) */
     public TileLayer getTileLayerById(String layerId) {
         // this configuration does not differentiate between identifier and identity yet
         return layers.get(layerId);
     }
 
-    /**
-     * @see org.geowebcache.config.Configuration#containsLayer(java.lang.String)
-     */
+    /** @see org.geowebcache.config.Configuration#containsLayer(java.lang.String) */
     public boolean containsLayer(String layerId) {
         return layers.containsKey(layerId);
     }
 
-    /**
-     * @see org.geowebcache.config.Configuration#getTileLayerCount()
-     */
+    /** @see org.geowebcache.config.Configuration#getTileLayerCount() */
     public int getTileLayerCount() {
         return layers.size();
     }
 
-    /**
-     * @see org.geowebcache.config.Configuration#getTileLayerNames()
-     */
+    /** @see org.geowebcache.config.Configuration#getTileLayerNames() */
     public Set<String> getTileLayerNames() {
         Set<String> names = Collections.unmodifiableSet(this.layers.keySet());
         return names;
@@ -987,24 +993,24 @@ public class XMLConfiguration implements Configuration, InitializingBean {
     public String getVersion() {
         return gwcConfig.getVersion();
     }
-    
+
     /**
      * Used for getting the "fullWMS" parameter from GeoWebCacheConfigration
+     *
      * @return
      */
-    public Boolean getfullWMS(){
-        if(gwcConfig!=null){
+    public Boolean getfullWMS() {
+        if (gwcConfig != null) {
             return gwcConfig.getFullWMS();
         }
-        return null;        
+        return null;
     }
 
     public List<BlobStoreConfig> getBlobStores() {
         return gwcConfig.getBlobStores();
     }
-    
+
     public LockProvider getLockProvider() {
         return gwcConfig.getLockProvider();
     }
-
 }

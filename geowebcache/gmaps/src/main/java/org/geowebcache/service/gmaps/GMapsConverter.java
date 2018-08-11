@@ -1,26 +1,22 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
 package org.geowebcache.service.gmaps;
 
 import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSetBroker;
@@ -33,9 +29,7 @@ import org.geowebcache.service.ServiceException;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ServletUtils;
 
-/**
- * Class to convert from Google Maps coordinates into the internal representation of a tile.
- */
+/** Class to convert from Google Maps coordinates into the internal representation of a tile. */
 public class GMapsConverter extends Service {
     public static final String SERVICE_GMAPS = "gmaps";
 
@@ -45,13 +39,11 @@ public class GMapsConverter extends Service {
 
     private GridSetBroker gsb;
 
-    /**
-     * Protected no-argument constructor to allow run-time instrumentation
-     */
+    /** Protected no-argument constructor to allow run-time instrumentation */
     protected GMapsConverter() {
         super(SERVICE_GMAPS);
     }
-    
+
     public GMapsConverter(StorageBroker sb, TileLayerDispatcher tld, GridSetBroker gsb) {
         super(SERVICE_GMAPS);
 
@@ -74,8 +66,9 @@ public class GMapsConverter extends Service {
         String strCached = ServletUtils.stringFromMap(params, encoding, "cached");
         String strMetaTiled = ServletUtils.stringFromMap(params, encoding, "metatiled");
 
-        long[] gridLoc = GMapsConverter.convert(Integer.parseInt(strZoom), Integer.parseInt(strX),
-                Integer.parseInt(strY));
+        long[] gridLoc =
+                GMapsConverter.convert(
+                        Integer.parseInt(strZoom), Integer.parseInt(strX), Integer.parseInt(strY));
 
         String layers = ServletUtils.stringFromMap(params, encoding, "layers");
         if (layers == null || layers.length() == 0) {
@@ -83,7 +76,8 @@ public class GMapsConverter extends Service {
         }
 
         TileLayer tileLayer = tld.getTileLayer(layers);
-        Map<String, String> filteringParameters = tileLayer.getModifiableParameters(params, encoding);
+        Map<String, String> filteringParameters =
+                tileLayer.getModifiableParameters(params, encoding);
 
         MimeType mimeType = null;
         try {
@@ -95,8 +89,16 @@ public class GMapsConverter extends Service {
             throw new ServiceException("Unable to determine requested format, " + strFormat);
         }
 
-        ConveyorTile ret = new ConveyorTile(sb, layerId, gsb.WORLD_EPSG3857.getName(), gridLoc,
-                mimeType, filteringParameters, request, response);
+        ConveyorTile ret =
+                new ConveyorTile(
+                        sb,
+                        layerId,
+                        gsb.WORLD_EPSG3857.getName(),
+                        gridLoc,
+                        mimeType,
+                        filteringParameters,
+                        request,
+                        response);
 
         if (strCached != null && !Boolean.parseBoolean(strCached)) {
             ret.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
@@ -111,9 +113,7 @@ public class GMapsConverter extends Service {
         return ret;
     }
 
-    /**
-     * NB The following code is shared across Google Maps, Mobile Google Maps and Virtual Earth
-     */
+    /** NB The following code is shared across Google Maps, Mobile Google Maps and Virtual Earth */
     public void handleRequest(ConveyorTile tile) throws GeoWebCacheException {
         if (tile.getHint() != null) {
             // boolean requestTiled = true;
@@ -131,8 +131,10 @@ public class GMapsConverter extends Service {
             }
 
             if (!tl.isCacheBypassAllowed().booleanValue()) {
-                throw new GeoWebCacheException("Layer " + tile.getLayerId()
-                        + " is not configured to allow bypassing the cache.");
+                throw new GeoWebCacheException(
+                        "Layer "
+                                + tile.getLayerId()
+                                + " is not configured to allow bypassing the cache.");
             }
 
             tile.setTileLayer(tl);
@@ -144,9 +146,9 @@ public class GMapsConverter extends Service {
 
     /**
      * Convert Google's tiling coordinates into an {x,y,x}
-     * 
-     * see http://code.google.com/apis/maps/documentation/overlays.html#Custom_Map_Types
-     * 
+     *
+     * <p>see http://code.google.com/apis/maps/documentation/overlays.html#Custom_Map_Types
+     *
      * @param quadKey
      * @return
      */
@@ -163,7 +165,7 @@ public class GMapsConverter extends Service {
         }
 
         // xPos and yPos correspond to the top left hand corner
-        long[] gridLoc = { x, extent - y - 1, zoomLevel };
+        long[] gridLoc = {x, extent - y - 1, zoomLevel};
 
         return gridLoc;
     }

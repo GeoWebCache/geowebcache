@@ -2,9 +2,9 @@ package org.geowebcache.layer;
 
 public class ExpirationRule {
     private int minZoom;
-    
+
     private int expiration;
-    
+
     ExpirationRule() {
         // default constructor for XStream
     }
@@ -17,9 +17,8 @@ public class ExpirationRule {
     public int getMinZoom() {
         return minZoom;
     }
-    
+
     public int getExpiration() {
         return expiration;
     }
-    
 }
