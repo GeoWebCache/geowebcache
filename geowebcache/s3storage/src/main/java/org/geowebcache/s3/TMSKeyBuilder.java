@@ -16,11 +16,12 @@ package org.geowebcache.s3;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
-import org.apache.commons.lang.StringUtils;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.layer.TileLayer;
@@ -32,34 +33,11 @@ import org.geowebcache.storage.TileRange;
 
 final class TMSKeyBuilder {
 
-    /**
-     * Key format, comprised of {@code <prefix>/<layer name>/<gridset id>/<format id>/<parameters
-     * hash>/<z>/<x>/<y>.<extension>}
-     */
-    private static final String TILE_FORMAT = "%s/%s/%s/%s/%s/%d/%d/%d.%s";
-
-    /**
-     * Coordinates prefix: {@code <prefix>/<layer name>/<gridset id>/<format id>/<parameters hash>/}
-     */
-    private static final String COORDINATES_PREFIX_FORMAT = "%s/%s/%s/%s/%s/";
-
-    /** Layer prefix format, comprised of {@code <prefix>/<layer name>/} */
-    private static final String LAYER_PREFIX_FORMAT = "%s/%s/";
-
-    /** layer + gridset prefix format, comprised of {@code <prefix>/<layer name>/<gridset id>/} */
-    private static final String GRIDSET_PREFIX_FORMAT = "%s/%s/%s/";
+    private static final String DELIMITER = "/";
 
     public static final String LAYER_METADATA_OBJECT_NAME = "metadata.properties";
     public static final String PARAMETERS_METADATA_OBJECT_PREFIX = "parameters-";
-    public static final String PARAMETERS_METADATA_OBJECT_NAME =
-            PARAMETERS_METADATA_OBJECT_PREFIX + "%s.properties";
-
-    private static final String STORE_METADATA_FORMAT = "%s/" + LAYER_METADATA_OBJECT_NAME;
-    private static final String LAYER_METADATA_FORMAT = "%s/%s/" + LAYER_METADATA_OBJECT_NAME;
-    private static final String PARAMETERS_METADATA_FORMAT =
-            "%s/%s/" + PARAMETERS_METADATA_OBJECT_NAME;
-    private static final String PARAMETERS_METADATA_PREFIX_FORMAT =
-            "%s/%s/" + PARAMETERS_METADATA_OBJECT_PREFIX;
+    public static final String PARAMETERS_METADATA_OBJECT_SUFFIX = ".properties";
 
     private String prefix;
 
@@ -135,9 +113,12 @@ final class TMSKeyBuilder {
             throw Throwables.propagate(e);
         }
 
+        // Key format, comprised of
+        // {@code <prefix>/<layer name>/<gridset id>/<format id>/<parameters
+        // hash>/<z>/<x>/<y>.<extension>}
         String key =
-                String.format(
-                        TILE_FORMAT,
+                join(
+                        false,
                         prefix,
                         layer,
                         gridset,
@@ -145,23 +126,26 @@ final class TMSKeyBuilder {
                         parametersId,
                         z,
                         x,
-                        y,
-                        extension);
+                        y + "." + extension);
         return key;
     }
 
     public String forLayer(final String layerName) {
         String layerId = layerId(layerName);
-        return String.format(LAYER_PREFIX_FORMAT, prefix, layerId);
+        // Layer prefix format, comprised of {@code <prefix>/<layer name>/}
+        return join(true, prefix, layerId);
     }
 
     public String forGridset(final String layerName, final String gridsetId) {
         String layerId = layerId(layerName);
-        return String.format(GRIDSET_PREFIX_FORMAT, prefix, layerId, gridsetId);
+        // Layer prefix format, comprised of {@code <prefix>/<layer name>/}
+        return join(true, prefix, layerId, gridsetId);
     }
 
     public Set<String> forParameters(final String layerName, final String parametersId) {
         String layerId = layerId(layerName);
+        // Coordinates prefix: {@code <prefix>/<layer name>/<gridset id>/<format id>/<parameters
+        // hash>/}
         return layerGridsets(layerName)
                 .stream()
                 .flatMap(
@@ -170,8 +154,8 @@ final class TMSKeyBuilder {
                                         .stream()
                                         .map(
                                                 format ->
-                                                        String.format(
-                                                                COORDINATES_PREFIX_FORMAT,
+                                                        join(
+                                                                true,
                                                                 prefix,
                                                                 layerId,
                                                                 gridsetId,
@@ -182,21 +166,27 @@ final class TMSKeyBuilder {
 
     public String layerMetadata(final String layerName) {
         String layerId = layerId(layerName);
-        return String.format(LAYER_METADATA_FORMAT, prefix, layerId);
+        return join(false, prefix, layerId, LAYER_METADATA_OBJECT_NAME);
     }
 
     public String storeMetadata() {
-        return StringUtils.stripStart(String.format(STORE_METADATA_FORMAT, prefix), "/");
+        return join(false, prefix, LAYER_METADATA_OBJECT_NAME);
     }
 
     public String parametersMetadata(final String layerName, final String parametersId) {
         String layerId = layerId(layerName);
-        return String.format(PARAMETERS_METADATA_FORMAT, prefix, layerId, parametersId);
+        return join(
+                false,
+                prefix,
+                layerId,
+                PARAMETERS_METADATA_OBJECT_PREFIX
+                        + parametersId
+                        + PARAMETERS_METADATA_OBJECT_SUFFIX);
     }
 
     public String parametersMetadataPrefix(final String layerName) {
         String layerId = layerId(layerName);
-        return String.format(PARAMETERS_METADATA_PREFIX_FORMAT, prefix, layerId);
+        return join(false, prefix, layerId, PARAMETERS_METADATA_OBJECT_PREFIX);
     }
 
     /**
@@ -225,18 +215,25 @@ final class TMSKeyBuilder {
         }
         shortFormat = mimeType.getFileExtension(); // png, png8, png24, etc
 
-        String key =
-                String.format(
-                        COORDINATES_PREFIX_FORMAT,
-                        prefix,
-                        layer,
-                        gridset,
-                        shortFormat,
-                        parametersId);
+        String key = join(true, prefix, layer, gridset, shortFormat, parametersId);
         return key;
     }
 
     public String pendingDeletes() {
         return String.format("%s/%s", prefix, "_pending_deletes.properties");
+    }
+
+    private static String join(boolean closing, Object... elements) {
+        StringJoiner joiner = new StringJoiner(DELIMITER);
+        for (Object o : elements) {
+            String s = o == null ? null : o.toString();
+            if (!Strings.isNullOrEmpty(s)) {
+                joiner.add(s);
+            }
+        }
+        if (closing) {
+            joiner.add("");
+        }
+        return joiner.toString();
     }
 }
