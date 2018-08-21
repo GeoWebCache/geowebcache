@@ -1,3 +1,16 @@
+GeoWebCache 1.12.5 (2018-08-20)
+-------------------------------
+
+Final maintenance release for 1.12.x branch
+
+Fixes:
+++++++
+- Big bad reformat
+- Enable formatting via coveo plugin
+- Enable format checks in Travis
+- Upgrade Guava to the latest version
+- Resolves #665, Upgrade commons-io dependency to 2.6
+
 GeoWebCache 1.13-beta (2018-02-20)
 ----------------------------------
 
