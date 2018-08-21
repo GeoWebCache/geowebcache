@@ -1,3 +1,24 @@
+GeoWebCache 1.14-RC (2018-08-21)
+--------------------------------
+
+Release candidate for the 1.14 series
+
+Improvements:
++++++++++++++
+- Upgrade the Guava dependency to the latest version
+- Updated commons-io to version 2.6
+- Updated JTS to the 1.16 series (this includes a package name switch, from com.vividsolutions to org.locationtech)
+- Fixes in the S3 support, espially work done to allow usage of S3-like storage (e.g. Minio)
+
+Fixes:
+++++++
+- WMTS dimension identifiers now have the required OWS namespace
+- Make the build pass on Windows again (still having intermittent failures, volunteer wanted to fix them)
+- Prevent a blobstore from being created on top of an existing one and overwriting its contents
+- Fixes in the seed UI, now kills the indicated thread
+- Fixes and documentation for the new pluggable configuration API
+
+
 GeoWebCache 1.12.5 (2018-08-20)
 -------------------------------
 
