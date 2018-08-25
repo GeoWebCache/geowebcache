@@ -20,9 +20,11 @@ package org.geowebcache.rest.controller;
 import com.google.common.base.Splitter;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -50,26 +52,24 @@ public class ReloadController {
 
     @RequestMapping(value = "/reload", method = RequestMethod.POST)
     public @ResponseBody ResponseEntity<?> doPost(
-            HttpServletRequest request, HttpServletResponse resp)
+            HttpServletRequest request,
+            InputStream inputStream,
+            @RequestParam Map<String, String> params)
             throws GeoWebCacheException, RestException, IOException {
 
-        String data;
+        String body =
+                new BufferedReader(new InputStreamReader(inputStream))
+                        .lines()
+                        .collect(Collectors.joining("\n"));
 
-        try {
-            StringBuilder buffer = new StringBuilder();
-            BufferedReader formReader = request.getReader();
-            String line;
-            while ((line = formReader.readLine()) != null) {
-                buffer.append(line);
-            }
-            data = buffer.toString();
-        } catch (IOException e) {
-            data = null;
+        // If Content-Type is not application/x-www-urlencoded, the form contents will still
+        // be in the body.
+        if (body != null && body.length() > 0) {
+            Map<String, String> formMap = splitToMap(body);
+            params.putAll(formMap);
         }
 
-        Map<String, String> params = splitToMap(data);
-
-        if (data == null || !params.containsKey("reload_configuration")) {
+        if (body == null || !params.containsKey("reload_configuration")) {
             throw new RestException(
                     "Unknown or malformed request. Please try again, somtimes the form "
                             + "is not properly received. This frequently happens on the first POST "
