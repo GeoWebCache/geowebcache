@@ -56,11 +56,6 @@
       <url>http://download.osgeo.org/webdav/geotools/</url>
     </repository>
     <repository>
-      <id>maven-restlet</id>
-      <name>Public online Restlet repository</name>
-      <url>http://maven.restlet.org</url>
-    </repository>
-    <repository>
       <id>oracleReleases</id>
       <name>Oracle Released Java Packages</name>
       <url>http://download.oracle.com/maven</url>
