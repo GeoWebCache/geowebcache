@@ -1,3 +1,17 @@
+GeoWebCache 1.14.0 (2018-09-21)
+-------------------------------
+
+First stable release of 1.14 branch
+
+Improvements:
++++++++++++++
+- Clean up of build dependencies
+
+Fixes:
+++++++
+- Fix for downstream problem in GeoServer GEOS-8895
+
+
 GeoWebCache 1.14-RC (2018-08-21)
 --------------------------------
 
