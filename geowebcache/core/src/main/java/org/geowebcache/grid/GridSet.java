@@ -109,7 +109,7 @@ public class GridSet implements Info {
         this.resolutionsPreserved = resolutionsPreserved;
     }
 
-    protected BoundingBox boundsFromIndex(long[] tileIndex) {
+    public BoundingBox boundsFromIndex(long[] tileIndex) {
         final int tileZ = (int) tileIndex[2];
         Grid grid = getGrid(tileZ);
 
