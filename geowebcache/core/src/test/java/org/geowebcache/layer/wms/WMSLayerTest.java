@@ -21,13 +21,16 @@ import static org.easymock.EasyMock.verify;
 import static org.geowebcache.TestHelpers.createFakeSourceImage;
 import static org.geowebcache.TestHelpers.createRequest;
 import static org.geowebcache.TestHelpers.createWMSLayer;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.*;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.IndexColorModel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -151,11 +154,59 @@ public class WMSLayerTest extends TileLayerTest {
 
     @Test
     public void testSeedJpegPngMetaTiled() throws Exception {
-        WMSLayer layer = createWMSLayer("image/vnd.jpeg-png");
+        checkJpegPng(
+                "image/vnd.jpeg-png",
+                () -> {
+                    TileObject to = (TileObject) EasyMock.getCurrentArguments()[0];
+                    assertEquals("image/vnd.jpeg-png", to.getBlobFormat());
+                    assertNotNull(to.getBlob());
+                    assertTrue(to.getBlob().getSize() > 0);
+                    String format = ImageMime.jpegPng.getMimeType(to.getBlob());
+                    long[] xyz = to.getXYZ();
+                    assertEquals(10, xyz[2]);
+                    // check the ones in the full black area are jpeg, the others png
+                    if (xyz[0] == 900 || xyz[1] == 602) {
+                        assertEquals("image/jpeg", format);
+                    } else {
+                        assertEquals("image/png", format);
+                    }
+
+                    return true;
+                });
+    }
+
+    @Test
+    public void testSeedJpegPng8MetaTiled() throws Exception {
+        checkJpegPng(
+                "image/vnd.jpeg-png8",
+                () -> {
+                    TileObject to = (TileObject) EasyMock.getCurrentArguments()[0];
+                    assertEquals("image/vnd.jpeg-png8", to.getBlobFormat());
+                    assertNotNull(to.getBlob());
+                    assertTrue(to.getBlob().getSize() > 0);
+                    String format = ImageMime.jpegPng8.getMimeType(to.getBlob());
+                    long[] xyz = to.getXYZ();
+                    assertEquals(10, xyz[2]);
+                    // check the ones in the full black area are jpeg, the others png
+                    if (xyz[0] == 900 || xyz[1] == 602) {
+                        assertEquals("image/jpeg", format);
+                    } else {
+                        assertEquals("image/png", format);
+                        // verify the image has been paletted
+                        BufferedImage image = ImageIO.read(to.getBlob().getInputStream());
+                        assertThat(image.getColorModel(), instanceOf(IndexColorModel.class));
+                    }
+
+                    return true;
+                });
+    }
+
+    public void checkJpegPng(String forrmat, IAnswer<Boolean> tileVerifier)
+            throws GeoWebCacheException, IOException {
+        WMSLayer layer = createWMSLayer(forrmat);
 
         WMSSourceHelper mockSourceHelper =
                 new WMSSourceHelper() {
-
                     @Override
                     protected void makeRequest(
                             TileResponseReceiver tileRespRecv,
@@ -179,7 +230,7 @@ public class WMSLayerTest extends TileLayerTest {
                         ByteArrayOutputStream output = new ByteArrayOutputStream();
                         try {
                             ImageIO.write(img, "PNG", output);
-                            ImageIO.write(img, "PNG", new java.io.File("./target/meta.png"));
+                            ImageIO.write(img, "PNG", new File("./target/meta.png"));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -200,28 +251,7 @@ public class WMSLayerTest extends TileLayerTest {
         final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
         Capture<TileObject> captured = new Capture<TileObject>(CaptureType.ALL);
         expect(mockStorageBroker.put(EasyMock.capture(captured)))
-                .andAnswer(
-                        new IAnswer<Boolean>() {
-
-                            @Override
-                            public Boolean answer() throws Throwable {
-                                TileObject to = (TileObject) EasyMock.getCurrentArguments()[0];
-                                assertEquals("image/vnd.jpeg-png", to.getBlobFormat());
-                                assertNotNull(to.getBlob());
-                                assertTrue(to.getBlob().getSize() > 0);
-                                String format = ImageMime.jpegPng.getMimeType(to.getBlob());
-                                long[] xyz = to.getXYZ();
-                                assertEquals(10, xyz[2]);
-                                // check the ones in the full black area are jpeg, the others png
-                                if (xyz[0] == 900 || xyz[1] == 602) {
-                                    assertEquals("image/jpeg", format);
-                                } else {
-                                    assertEquals("image/png", format);
-                                }
-
-                                return true;
-                            }
-                        })
+                .andAnswer(tileVerifier)
                 .anyTimes();
         replay(mockStorageBroker);
 

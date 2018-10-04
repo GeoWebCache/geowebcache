@@ -166,8 +166,14 @@
       <artifactId>jt-utilities</artifactId>
       <version>${jaiext.version}</version>
     </dependency>
-    
-	<!-- PNG Encoder dependencies -->
+    <dependency>
+      <groupId>it.geosolutions.jaiext.colorindexer</groupId>
+      <artifactId>jt-colorindexer</artifactId>
+      <version>${jaiext.version}</version>
+    </dependency>
+
+
+    <!-- PNG Encoder dependencies -->
 	<dependency>
       <groupId>it.geosolutions.imageio-ext</groupId>
       <artifactId>imageio-ext-png</artifactId>

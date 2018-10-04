@@ -19,7 +19,6 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -34,7 +33,6 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
-import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
@@ -374,7 +372,8 @@ public class MetaTile implements TileResponseReceiver {
         // GR: it'd be only a 2% perf gain according to profile
         ImageWriter writer = ((ImageMime) responseFormat).getImageWriter(tile);
         ImageWriteParam param = writer.getDefaultWriteParam();
-        tile = preprocessForWriter(tile, writer);
+
+        tile = ((ImageMime) responseFormat).preprocess(tile);
 
         if (this.formatModifier != null) {
             param = formatModifier.adjustImageWriteParam(param);
@@ -391,34 +390,6 @@ public class MetaTile implements TileResponseReceiver {
         }
 
         return true;
-    }
-
-    private RenderedImage preprocessForWriter(RenderedImage ri, ImageWriter writer) {
-        if (ri.getColorModel().hasAlpha()
-                && ri.getSampleModel().getNumBands() == 4
-                && isJpegWriter(writer)) {
-            final int[] bands = new int[3];
-            for (int i = 0; i < bands.length; i++) {
-                bands[i] = i;
-            }
-            // ParameterBlock creation
-            ParameterBlock pb = new ParameterBlock();
-            pb.setSource(ri, 0);
-            pb.set(bands, 0);
-            final RenderingHints hints =
-                    new RenderingHints(JAI.KEY_IMAGE_LAYOUT, new ImageLayout(ri));
-            ri = JAI.create("BandSelect", pb, hints);
-        }
-        return ri;
-    }
-
-    private boolean isJpegWriter(ImageWriter writer) {
-        for (String format : writer.getOriginatingProvider().getFormatNames()) {
-            if (format.equalsIgnoreCase("jpeg")) {
-                return true;
-            }
-        }
-        return false;
     }
 
     protected void disposeLater(RenderedImage tile) {
