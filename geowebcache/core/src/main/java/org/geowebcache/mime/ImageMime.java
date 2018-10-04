@@ -14,12 +14,20 @@
  */
 package org.geowebcache.mime;
 
+import it.geosolutions.jaiext.JAIExt;
+import it.geosolutions.jaiext.colorindexer.ColorIndexer;
+import it.geosolutions.jaiext.colorindexer.Quantizer;
+import java.awt.*;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
+import java.awt.image.renderable.ParameterBlock;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import javax.imageio.ImageWriter;
+import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.ExtremaDescriptor;
@@ -37,6 +45,11 @@ public class ImageMime extends MimeType {
 
     boolean supportsAlphaBit;
 
+    static {
+        // register the custom JAIExt operations, without forcing replacement of JAI own
+        JAIExt.initJAIEXT(false, false);
+    }
+
     public static final ImageMime png =
             new ImageMime("image/png", "png", "png", "image/png", true, true, true) {
 
@@ -48,7 +61,34 @@ public class ImageMime extends MimeType {
             };
 
     public static final ImageMime jpeg =
-            new ImageMime("image/jpeg", "jpeg", "jpeg", "image/jpeg", true, false, false);
+            new ImageMime("image/jpeg", "jpeg", "jpeg", "image/jpeg", true, false, false) {
+
+                /**
+                 * Shave off the alpha band, JPEG cannot write it out
+                 *
+                 * @param ri
+                 * @return
+                 */
+                @Override
+                public RenderedImage preprocess(RenderedImage ri) {
+                    if (ri.getColorModel().hasAlpha()) {
+                        final int numBands = ri.getSampleModel().getNumBands();
+                        // handle both gray-alpha and RGBA (same code as in GeoTools ImageWorker)
+                        final int[] bands = new int[numBands - 1];
+                        for (int i = 0; i < bands.length; i++) {
+                            bands[i] = i;
+                        }
+                        // ParameterBlock creation
+                        ParameterBlock pb = new ParameterBlock();
+                        pb.setSource(ri, 0);
+                        pb.set(bands, 0);
+                        final RenderingHints hints =
+                                new RenderingHints(JAI.KEY_IMAGE_LAYOUT, new ImageLayout(ri));
+                        ri = JAI.create("BandSelect", pb, hints);
+                    }
+                    return ri;
+                }
+            };
 
     public static final ImageMime gif =
             new ImageMime("image/gif", "gif", "gif", "image/gif", true, false, true);
@@ -57,7 +97,36 @@ public class ImageMime extends MimeType {
             new ImageMime("image/tiff", "tiff", "tiff", "image/tiff", true, true, true);
 
     public static final ImageMime png8 =
-            new ImageMime("image/png", "png8", "png", "image/png8", true, false, true);
+            new ImageMime("image/png", "png8", "png", "image/png8", true, false, true) {
+
+                /**
+                 * Quantize if the source did not do so already
+                 *
+                 * @param canvas
+                 * @return
+                 */
+                @Override
+                public RenderedImage preprocess(RenderedImage canvas) {
+                    if (!(canvas.getColorModel() instanceof IndexColorModel)) {
+                        if (canvas.getColorModel() instanceof ComponentColorModel
+                                && canvas.getSampleModel().getDataType() == DataBuffer.TYPE_BYTE) {
+                            ColorIndexer indexer =
+                                    new Quantizer(256).subsample().buildColorIndexer(canvas);
+                            if (indexer != null) {
+                                ParameterBlock pb = new ParameterBlock();
+                                pb.setSource(canvas, 0); // The source image.
+                                pb.set(indexer, 0);
+                                canvas =
+                                        JAI.create(
+                                                "ColorIndexer",
+                                                pb,
+                                                JAI.getDefaultInstance().getRenderingHints());
+                            }
+                        }
+                    }
+                    return canvas;
+                }
+            };
 
     public static final ImageMime png24 =
             new ImageMime("image/png", "png24", "png", "image/png24", true, true, true);
@@ -76,79 +145,17 @@ public class ImageMime extends MimeType {
             new ImageMime("image/dds", "dds", "dds", "image/dds", false, false, false);
 
     public static final ImageMime jpegPng =
-            new ImageMime(
-                    "image/vnd.jpeg-png",
-                    "jpeg-png",
-                    "jpeg-png",
-                    "image/vnd.jpeg-png",
-                    true,
-                    true,
-                    true) {
+            new JpegPngMime(
+                    "image/vnd.jpeg-png", "jpeg-png", "jpeg-png", "image/vnd.jpeg-png", jpeg, png);
 
-                private static final int JPEG_MAGIC_MASK = 0xffd80000;
-
-                /**
-                 * Returns true if the best format to encode the image is jpeg (the image is rgb, or
-                 * rgba without any actual transparency use). This code is duplicated in GeoServer
-                 * JpegPngRenderedImageMapOutputFormat. Unfortunately gwc-core does not depend on
-                 * GeoTools, so we don't have an easy place to share it. On the bright side, it's
-                 * small.
-                 *
-                 * @param renderedImage
-                 * @return
-                 */
-                boolean isBestFormatJpeg(RenderedImage renderedImage) {
-                    int numBands = renderedImage.getSampleModel().getNumBands();
-                    if (numBands == 4 || numBands == 2) {
-                        RenderedOp extremaOp =
-                                ExtremaDescriptor.create(
-                                        renderedImage,
-                                        null,
-                                        1,
-                                        1,
-                                        false,
-                                        1,
-                                        JAI.getDefaultInstance().getRenderingHints());
-                        double[][] extrema = (double[][]) extremaOp.getProperty("Extrema");
-                        double[] mins = extrema[0];
-
-                        return mins[mins.length - 1] == 255; // fully opaque
-                    } else if (renderedImage.getColorModel() instanceof IndexColorModel) {
-                        // JPEG would still compress a bit better, but in order to figure out
-                        // if the image has transparency we'd have to expand to RGB or roll
-                        // a new JAI image op that looks for the transparent pixels. Out of scope
-                        // for the moment
-                        return false;
-                    } else {
-                        // otherwise support RGB or gray
-                        return (numBands == 3) || (numBands == 1);
-                    }
-                }
-
-                public ImageWriter getImageWriter(RenderedImage image) {
-                    if (isBestFormatJpeg(image)) {
-                        return jpeg.getImageWriter(image);
-                    } else {
-                        return png.getImageWriter(image);
-                    }
-                }
-
-                public String getMimeType(org.geowebcache.io.Resource resource) throws IOException {
-                    try (DataInputStream dis = new DataInputStream(resource.getInputStream())) {
-                        final int head = dis.readInt();
-                        if ((head & 0xFFFF0000) == JPEG_MAGIC_MASK) {
-                            return jpeg.getMimeType();
-                        } else {
-                            return png.getMimeType();
-                        }
-                    }
-                };
-
-                @Override
-                public boolean isCompatible(String otherMimeType) {
-                    return jpeg.isCompatible(otherMimeType) || png.isCompatible(otherMimeType);
-                }
-            };
+    public static final ImageMime jpegPng8 =
+            new JpegPngMime(
+                    "image/vnd.jpeg-png8",
+                    "jpeg-png8",
+                    "jpeg-png8",
+                    "image/vnd.jpeg-png8",
+                    jpeg,
+                    png8);
 
     private ImageMime(
             String mimeType,
@@ -196,6 +203,8 @@ public class ImageMime extends MimeType {
             return png_24;
         } else if (tmpStr.equalsIgnoreCase("vnd.jpeg-png")) {
             return jpegPng;
+        } else if (tmpStr.equalsIgnoreCase("vnd.jpeg-png8")) {
+            return jpegPng8;
         }
         return null;
     }
@@ -218,6 +227,8 @@ public class ImageMime extends MimeType {
             return png_24;
         } else if (fileExtension.equalsIgnoreCase("jpeg-png")) {
             return jpegPng;
+        } else if (fileExtension.equalsIgnoreCase("jpeg-png8")) {
+            return jpegPng8;
         }
         return null;
     }
@@ -250,5 +261,105 @@ public class ImageMime extends MimeType {
             }
         }
         return writer;
+    }
+
+    /**
+     * Preprocesses the image to optimize it for the write about to happen
+     *
+     * @param tile
+     * @return
+     */
+    public RenderedImage preprocess(RenderedImage tile) {
+        return tile;
+    }
+
+    private static class JpegPngMime extends ImageMime {
+
+        private static final int JPEG_MAGIC_MASK = 0xffd80000;
+        private final ImageMime jpegDelegate;
+        private final ImageMime pngDelegate;
+
+        public JpegPngMime(
+                String mimeType,
+                String fileExtension,
+                String internalName,
+                String format,
+                ImageMime jpegDelegate,
+                ImageMime pngDelegate) {
+            super(mimeType, fileExtension, internalName, format, true, true, true);
+            this.jpegDelegate = jpegDelegate;
+            this.pngDelegate = pngDelegate;
+        }
+
+        /**
+         * Returns true if the best format to encode the image is jpeg (the image is rgb, or rgba
+         * without any actual transparency use). This code is duplicated in GeoServer
+         * JpegPngRenderedImageMapOutputFormat. Unfortunately gwc-core does not depend on GeoTools,
+         * so we don't have an easy place to share it. On the bright side, it's small.
+         *
+         * @param renderedImage
+         * @return
+         */
+        boolean isBestFormatJpeg(RenderedImage renderedImage) {
+            int numBands = renderedImage.getSampleModel().getNumBands();
+            if (numBands == 4 || numBands == 2) {
+                RenderedOp extremaOp =
+                        ExtremaDescriptor.create(
+                                renderedImage,
+                                null,
+                                1,
+                                1,
+                                false,
+                                1,
+                                JAI.getDefaultInstance().getRenderingHints());
+                double[][] extrema = (double[][]) extremaOp.getProperty("Extrema");
+                double[] mins = extrema[0];
+
+                return mins[mins.length - 1] == 255; // fully opaque
+            } else if (renderedImage.getColorModel() instanceof IndexColorModel) {
+                // JPEG would still compress a bit better, but in order to figure out
+                // if the image has transparency we'd have to expand to RGB or roll
+                // a new JAI image op that looks for the transparent pixels. Out of scope
+                // for the moment
+                return false;
+            } else {
+                // otherwise support RGB or gray
+                return (numBands == 3) || (numBands == 1);
+            }
+        }
+
+        public ImageWriter getImageWriter(RenderedImage image) {
+            if (isBestFormatJpeg(image)) {
+                return jpegDelegate.getImageWriter(image);
+            } else {
+                return pngDelegate.getImageWriter(image);
+            }
+        }
+
+        public String getMimeType(org.geowebcache.io.Resource resource) throws IOException {
+            try (DataInputStream dis = new DataInputStream(resource.getInputStream())) {
+                final int head = dis.readInt();
+                if ((head & 0xFFFF0000) == JPEG_MAGIC_MASK) {
+                    return jpegDelegate.getMimeType();
+                } else {
+                    return pngDelegate.getMimeType();
+                }
+            }
+        };
+
+        @Override
+        public boolean isCompatible(String otherMimeType) {
+            return jpegDelegate.isCompatible(otherMimeType)
+                    || pngDelegate.isCompatible(otherMimeType);
+        }
+
+        @Override
+        public RenderedImage preprocess(RenderedImage tile) {
+            if (isBestFormatJpeg(tile)) {
+                return jpegDelegate.preprocess(tile);
+            } else {
+                return pngDelegate.preprocess(tile);
+            }
+        }
     }
 }

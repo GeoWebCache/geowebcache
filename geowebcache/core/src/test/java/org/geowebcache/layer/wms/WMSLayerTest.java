@@ -21,11 +21,21 @@ import static org.easymock.EasyMock.verify;
 import static org.geowebcache.TestHelpers.createFakeSourceImage;
 import static org.geowebcache.TestHelpers.createRequest;
 import static org.geowebcache.TestHelpers.createWMSLayer;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.IndexColorModel;
+import java.awt.image.SampleModel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -43,6 +53,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.JAI;
+import javax.media.jai.RenderedOp;
+import javax.media.jai.operator.BandSelectDescriptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.httpclient.Header;
@@ -151,77 +165,99 @@ public class WMSLayerTest extends TileLayerTest {
 
     @Test
     public void testSeedJpegPngMetaTiled() throws Exception {
-        WMSLayer layer = createWMSLayer("image/vnd.jpeg-png");
-
-        WMSSourceHelper mockSourceHelper =
-                new WMSSourceHelper() {
-
-                    @Override
-                    protected void makeRequest(
-                            TileResponseReceiver tileRespRecv,
-                            WMSLayer layer,
-                            Map<String, String> wmsParams,
-                            MimeType expectedMimeType,
-                            Resource target)
-                            throws GeoWebCacheException {
-                        int width = Integer.parseInt(wmsParams.get("WIDTH"));
-                        int height = Integer.parseInt(wmsParams.get("HEIGHT"));
-                        assertEquals(768, width);
-                        assertEquals(768, height);
-                        BufferedImage img =
-                                new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
-                        Graphics2D graphics = img.createGraphics();
-                        graphics.setColor(Color.BLACK);
-                        // fill an L shaped set of tiles, making a few partially filled
-                        graphics.fillRect(0, 0, width, 300);
-                        graphics.fillRect(0, 0, 300, height);
-                        graphics.dispose();
-                        ByteArrayOutputStream output = new ByteArrayOutputStream();
-                        try {
-                            ImageIO.write(img, "PNG", output);
-                            ImageIO.write(img, "PNG", new java.io.File("./target/meta.png"));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-
-                        try {
-                            target.transferFrom(
-                                    Channels.newChannel(
-                                            new ByteArrayInputStream(output.toByteArray())));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
+        checkJpegPng(
+                "image/vnd.jpeg-png",
+                () -> {
+                    TileObject to = (TileObject) EasyMock.getCurrentArguments()[0];
+                    assertEquals("image/vnd.jpeg-png", to.getBlobFormat());
+                    assertNotNull(to.getBlob());
+                    assertTrue(to.getBlob().getSize() > 0);
+                    String format = ImageMime.jpegPng.getMimeType(to.getBlob());
+                    long[] xyz = to.getXYZ();
+                    assertEquals(10, xyz[2]);
+                    // check the ones in the full black area are jpeg, the others png
+                    if (xyz[0] == 900 || xyz[1] == 602) {
+                        assertEquals("image/jpeg", format);
+                    } else {
+                        assertEquals("image/png", format);
                     }
-                };
+
+                    return true;
+                },
+                new RGBASourceHelper());
+    }
+
+    @Test
+    public void testSeedJpegPng8MetaTiled() throws Exception {
+        checkJpegPng(
+                "image/vnd.jpeg-png8",
+                () -> {
+                    TileObject to = (TileObject) EasyMock.getCurrentArguments()[0];
+                    assertEquals("image/vnd.jpeg-png8", to.getBlobFormat());
+                    assertNotNull(to.getBlob());
+                    assertTrue(to.getBlob().getSize() > 0);
+                    String format = ImageMime.jpegPng8.getMimeType(to.getBlob());
+                    long[] xyz = to.getXYZ();
+                    assertEquals(10, xyz[2]);
+                    // check the ones in the full black area are jpeg, the others png
+                    if (xyz[0] == 900 || xyz[1] == 602) {
+                        assertEquals("image/jpeg", format);
+                    } else {
+                        assertEquals("image/png", format);
+                        // verify the image has been paletted
+                        BufferedImage image = ImageIO.read(to.getBlob().getInputStream());
+                        assertThat(image.getColorModel(), instanceOf(IndexColorModel.class));
+                    }
+
+                    return true;
+                },
+                new RGBASourceHelper());
+    }
+
+    @Test
+    public void testSeedJpegPng8GrayAlphaMetaTiled() throws Exception {
+        checkJpegPng(
+                "image/vnd.jpeg-png8",
+                () -> {
+                    TileObject to = (TileObject) EasyMock.getCurrentArguments()[0];
+                    assertEquals("image/vnd.jpeg-png8", to.getBlobFormat());
+                    assertNotNull(to.getBlob());
+                    assertTrue(to.getBlob().getSize() > 0);
+                    String format = ImageMime.jpegPng8.getMimeType(to.getBlob());
+                    long[] xyz = to.getXYZ();
+                    assertEquals(10, xyz[2]);
+                    BufferedImage image = ImageIO.read(to.getBlob().getInputStream());
+                    // check the ones in the full black area are jpeg, the others png
+                    if (xyz[0] == 900 || xyz[1] == 602) {
+                        // it's a gray
+                        assertEquals(1, image.getColorModel().getNumComponents());
+                        assertEquals("image/jpeg", format);
+                    } else {
+                        assertEquals("image/png", format);
+                        // verify the image has been paletted (palette gets generated with 4
+                        // components,
+                        // there is no optimized gray/alpha palette generator)
+                        assertThat(image.getColorModel(), instanceOf(IndexColorModel.class));
+                    }
+
+                    return true;
+                },
+                new GrayAlphaSourceHelper());
+    }
+
+    public void checkJpegPng(
+            String format, IAnswer<Boolean> tileVerifier, WMSSourceHelper sourceHelper)
+            throws GeoWebCacheException, IOException {
+        WMSLayer layer = createWMSLayer(format);
+
         MockLockProvider lockProvider = new MockLockProvider();
-        layer.setSourceHelper(mockSourceHelper);
+        layer.setSourceHelper(sourceHelper);
         layer.setLockProvider(lockProvider);
 
         final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
         Capture<TileObject> captured = new Capture<TileObject>(CaptureType.ALL);
         expect(mockStorageBroker.put(EasyMock.capture(captured)))
-                .andAnswer(
-                        new IAnswer<Boolean>() {
-
-                            @Override
-                            public Boolean answer() throws Throwable {
-                                TileObject to = (TileObject) EasyMock.getCurrentArguments()[0];
-                                assertEquals("image/vnd.jpeg-png", to.getBlobFormat());
-                                assertNotNull(to.getBlob());
-                                assertTrue(to.getBlob().getSize() > 0);
-                                String format = ImageMime.jpegPng.getMimeType(to.getBlob());
-                                long[] xyz = to.getXYZ();
-                                assertEquals(10, xyz[2]);
-                                // check the ones in the full black area are jpeg, the others png
-                                if (xyz[0] == 900 || xyz[1] == 602) {
-                                    assertEquals("image/jpeg", format);
-                                } else {
-                                    assertEquals("image/png", format);
-                                }
-
-                                return true;
-                            }
-                        })
+                .andAnswer(tileVerifier)
                 .anyTimes();
         replay(mockStorageBroker);
 
@@ -531,6 +567,92 @@ public class WMSLayerTest extends TileLayerTest {
         requests.shutdown();
 
         return results;
+    }
+
+    private static class RGBASourceHelper extends WMSSourceHelper {
+        @Override
+        protected void makeRequest(
+                TileResponseReceiver tileRespRecv,
+                WMSLayer layer,
+                Map<String, String> wmsParams,
+                MimeType expectedMimeType,
+                Resource target)
+                throws GeoWebCacheException {
+            int width = Integer.parseInt(wmsParams.get("WIDTH"));
+            int height = Integer.parseInt(wmsParams.get("HEIGHT"));
+            assertEquals(768, width);
+            assertEquals(768, height);
+            BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+            Graphics2D graphics = img.createGraphics();
+            graphics.setColor(Color.BLACK);
+            // fill an L shaped set of tiles, making a few partially filled
+            graphics.fillRect(0, 0, width, 300);
+            graphics.fillRect(0, 0, 300, height);
+            graphics.dispose();
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            try {
+                ImageIO.write(img, "PNG", output);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            try {
+                target.transferFrom(
+                        Channels.newChannel(new ByteArrayInputStream(output.toByteArray())));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private static class GrayAlphaSourceHelper extends WMSSourceHelper {
+        @Override
+        protected void makeRequest(
+                TileResponseReceiver tileRespRecv,
+                WMSLayer layer,
+                Map<String, String> wmsParams,
+                MimeType expectedMimeType,
+                Resource target)
+                throws GeoWebCacheException {
+            int width = Integer.parseInt(wmsParams.get("WIDTH"));
+            int height = Integer.parseInt(wmsParams.get("HEIGHT"));
+            assertEquals(768, width);
+            assertEquals(768, height);
+            BufferedImage baseImage =
+                    new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+            Graphics2D graphics = baseImage.createGraphics();
+            graphics.setColor(Color.BLACK);
+            // fill an L shaped set of tiles, making a few partially filled
+            graphics.fillRect(0, 0, width, 300);
+            graphics.fillRect(0, 0, 300, height);
+            graphics.dispose();
+            ColorModel cm =
+                    new ComponentColorModel(
+                            ColorSpace.getInstance(ColorSpace.CS_GRAY),
+                            true,
+                            false,
+                            Transparency.TRANSLUCENT,
+                            DataBuffer.TYPE_BYTE);
+            SampleModel sm = cm.createCompatibleSampleModel(width, height);
+            ImageLayout il = new ImageLayout();
+            il.setSampleModel(sm);
+            il.setColorModel(cm);
+            RenderingHints hints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, il);
+            RenderedOp grayAlpha = BandSelectDescriptor.create(baseImage, new int[] {0, 3}, hints);
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            try {
+                ImageIO.write(grayAlpha, "PNG", output);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            try {
+                target.transferFrom(
+                        Channels.newChannel(new ByteArrayInputStream(output.toByteArray())));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     class MockTileSupport {

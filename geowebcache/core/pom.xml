@@ -123,6 +123,18 @@
     </dependency>
 
     <dependency>
+      <groupId>it.geosolutions.jaiext.colorindexer</groupId>
+      <artifactId>jt-colorindexer</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.locationtech.jts</groupId>
+          <artifactId>jts-core</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+
+    <dependency>
       <groupId>commons-httpclient</groupId>
       <artifactId>commons-httpclient</artifactId>
       <version>3.1</version>
