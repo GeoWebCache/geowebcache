@@ -71,8 +71,10 @@ public class ImageMime extends MimeType {
                  */
                 @Override
                 public RenderedImage preprocess(RenderedImage ri) {
-                    if (ri.getColorModel().hasAlpha() && ri.getSampleModel().getNumBands() == 4) {
-                        final int[] bands = new int[3];
+                    if (ri.getColorModel().hasAlpha()) {
+                        final int numBands = ri.getSampleModel().getNumBands();
+                        // handle both gray-alpha and RGBA (same code as in GeoTools ImageWorker)
+                        final int[] bands = new int[numBands - 1];
                         for (int i = 0; i < bands.length; i++) {
                             bands[i] = i;
                         }
