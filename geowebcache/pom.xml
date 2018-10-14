@@ -19,9 +19,10 @@
     <commons-logging.version>1.1.1</commons-logging.version>
     <commons-io.version>2.6</commons-io.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
-    <commons-lang.version>2.4</commons-lang.version>
+    <commons-lang.version>3.8.1</commons-lang.version>
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-codec.version>1.10</commons-codec.version>
+    <commons-text.version>1.4</commons-text.version>
     <guava.version>25.1-jre</guava.version>
     <jsr305.version>3.0.1</jsr305.version>
     <log4j.version>1.2.14</log4j.version>
@@ -117,7 +118,6 @@
       <artifactId>jsr305</artifactId>
       <version>${jsr305.version}</version>
     </dependency>
-
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
@@ -140,9 +140,14 @@
       <version>${commons-io.version}</version>
     </dependency>
     <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>${commons-lang.version}</version>
+     <groupId>org.apache.commons</groupId>
+     <artifactId>commons-lang3</artifactId>
+     <version>${commons-lang.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-text</artifactId>
+      <version>${commons-text.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-collections</groupId>
