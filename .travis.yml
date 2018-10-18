@@ -11,4 +11,6 @@ notifications:
   email:
     on_success: never
     on_failure: never
-jdk: oraclejdk8
+jdk: 
+  - oraclejdk8
+  - oraclejdk11
