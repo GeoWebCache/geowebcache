@@ -554,7 +554,7 @@
         <version>2.22.1</version>
         <configuration>
           <forkMode>pertest</forkMode>
-          <argLine>${maven.test.jvmargs}</argLine>
+          <argLine>${maven.test.jvmargs} -XX:+IgnoreUnrecognizedVMOptions --illegal-access=warn</argLine>
         </configuration>
       </plugin>
 
