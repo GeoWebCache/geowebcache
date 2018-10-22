@@ -1,5 +1,6 @@
 package org.geowebcache.util;
 
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -7,7 +8,7 @@ import java.util.Properties;
  *
  * @author Kevin Smith, Boundless
  */
-public class PropertyRule extends org.junit.rules.ExternalResource {
+public class PropertyRule extends SetSingletonRule<String> {
     final Properties props;
 
     final String name;
@@ -41,7 +42,7 @@ public class PropertyRule extends org.junit.rules.ExternalResource {
      *
      * @return
      */
-    public Object getOldValue() {
+    public String getOldValue() {
         return oldValue;
     }
 
@@ -51,7 +52,11 @@ public class PropertyRule extends org.junit.rules.ExternalResource {
      * @return
      */
     public void setValue(String value) {
-        props.setProperty(name, value);
+        if(Objects.nonNull(value)) {
+            props.setProperty(name, value);
+        } else {
+            props.remove(name);
+        }
     }
 
     /**
@@ -63,17 +68,13 @@ public class PropertyRule extends org.junit.rules.ExternalResource {
         return name;
     }
 
+    /**
+     * Set the current value of the property
+     *
+     * @return
+     */
     @Override
-    protected void before() throws Throwable {
-        this.oldValue = props.getProperty(name);
-    }
-
-    @Override
-    protected void after() {
-        if (this.oldValue == null) {
-            props.remove(name);
-        } else {
-            props.setProperty(name, oldValue);
-        }
+    public String getValue() {
+        return props.getProperty(name);
     }
 }
