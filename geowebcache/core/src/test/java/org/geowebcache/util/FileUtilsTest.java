@@ -14,8 +14,6 @@
  */
 package org.geowebcache.util;
 
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -50,8 +48,8 @@ public class FileUtilsTest {
         // Creation of a temporary file in the temporary directory directory
         File source = temp.newFile("source.txt");
         File destination = temp.newFile(
-                "dest"
-                + System.currentTimeMillis()
+                        "dest"
+                                + System.currentTimeMillis()
                 + ".txt");
 
         // File rename
