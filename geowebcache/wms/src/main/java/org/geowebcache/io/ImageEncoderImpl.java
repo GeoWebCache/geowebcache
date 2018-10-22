@@ -14,7 +14,6 @@
  */
 package org.geowebcache.io;
 
-import com.sun.imageio.plugins.png.PNGImageWriter;
 import com.sun.media.imageioimpl.plugins.clib.CLibImageWriter;
 import it.geosolutions.imageio.stream.output.ImageOutputStreamAdapter;
 import it.geosolutions.jaiext.colorindexer.ColorIndexer;
@@ -94,7 +93,9 @@ public class ImageEncoderImpl implements ImageEncoder {
                         // we can control quality here
                         params.setCompressionQuality(compressionRate);
                     }
-                } else if (writer instanceof PNGImageWriter) {
+                    // Use class name without import for JDK 11 compatibility
+                } else if ("com.sun.imageio.plugins.png.PNGImageWriter"
+                        .equals(writer.getClass().getName())) {
                     params = new PNGImageWriteParam();
                     // Define compression mode
                     params.setCompressionMode(ImageWriteParam.MODE_DEFAULT);
