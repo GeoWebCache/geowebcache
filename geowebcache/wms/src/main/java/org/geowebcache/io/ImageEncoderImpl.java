@@ -34,7 +34,8 @@ import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geotools.image.ImageWorker;
 import org.geotools.image.ImageWorker.PNGImageWriteParam;
 import org.geowebcache.mime.ImageMime;
@@ -47,7 +48,7 @@ import org.geowebcache.mime.MimeType;
 public class ImageEncoderImpl implements ImageEncoder {
 
     /** Logger used */
-    private static final Logger LOGGER = Logger.getLogger(ImageEncoderImpl.class);
+    private static final Log LOGGER = LogFactory.getLog(ImageEncoderImpl.class);
 
     /** Default string used for exceptions */
     public static final String OPERATION_NOT_SUPPORTED = "Operation not supported";

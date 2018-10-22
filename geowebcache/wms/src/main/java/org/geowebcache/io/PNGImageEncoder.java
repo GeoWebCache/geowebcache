@@ -22,7 +22,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geotools.image.ImageWorker;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
@@ -35,7 +36,7 @@ public class PNGImageEncoder extends ImageEncoderImpl {
     /** Filter type associated string */
     private static final String FILTER_TYPE = "filterType";
     /** Logger used */
-    private static final Logger LOGGER = Logger.getLogger(PNGImageEncoder.class);
+    private static final Log LOGGER = LogFactory.getLog(PNGImageEncoder.class);
     /** Supported mime types */
     private static List<String> supportedMimeTypes;
     /** Boolean used for disabling the png encoding */

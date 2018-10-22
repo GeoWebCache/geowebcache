@@ -27,7 +27,8 @@ import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Class implementing the ImageDecoder interface, the user should only create a new bean for
@@ -35,7 +36,7 @@ import org.apache.log4j.Logger;
  */
 public class ImageDecoderImpl implements ImageDecoder {
     /** Logger used */
-    private static final Logger LOGGER = Logger.getLogger(ImageEncoderImpl.class);
+    private static final Log LOGGER = LogFactory.getLog(ImageEncoderImpl.class);
 
     /** Default string used for exceptions */
     public static final String OPERATION_NOT_SUPPORTED = "Operation not supported";

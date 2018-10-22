@@ -25,7 +25,7 @@
     <commons-text.version>1.4</commons-text.version>
     <guava.version>27.0-jre</guava.version>
     <jsr305.version>3.0.1</jsr305.version>
-    <log4j.version>1.2.14</log4j.version>
+    <log4j.version>2.11.1</log4j.version>
     <h2.version>1.1.119</h2.version>
     <postgresql.version>9.4.1208</postgresql.version>
     <oracle.version/>
@@ -153,10 +153,10 @@
       <artifactId>commons-codec</artifactId>
       <version>${commons-codec.version}</version>
     </dependency>
-
+    
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
       <version>${log4j.version}</version>
     </dependency>
 
