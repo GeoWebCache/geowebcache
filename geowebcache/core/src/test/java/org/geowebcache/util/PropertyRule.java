@@ -52,7 +52,7 @@ public class PropertyRule extends SetSingletonRule<String> {
      * @return
      */
     public void setValue(String value) {
-        if(Objects.nonNull(value)) {
+        if (Objects.nonNull(value)) {
             props.setProperty(name, value);
         } else {
             props.remove(name);

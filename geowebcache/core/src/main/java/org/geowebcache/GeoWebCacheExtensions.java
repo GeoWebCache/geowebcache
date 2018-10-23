@@ -227,7 +227,8 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
                                     + ((BaseConfiguration) bean).getLocation(),
                             e);
                 } else {
-                    LOGGER.error("Error while preparing bean to reinitialize " + bean.toString(), e);
+                    LOGGER.error(
+                            "Error while preparing bean to reinitialize " + bean.toString(), e);
                 }
             }
         }

@@ -20,7 +20,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
@@ -32,25 +31,19 @@ import org.junit.rules.TemporaryFolder;
 
 public class FileUtilsTest {
 
-    Logger rootLogger = (org.apache.logging.log4j.core.Logger)LogManager.getRootLogger();
-    
+    Logger rootLogger = (org.apache.logging.log4j.core.Logger) LogManager.getRootLogger();
+
     @Rule
-    public SetSingletonRule<Level> logLevel = SetSingletonRule.create(
-            rootLogger::getLevel, 
-            rootLogger::setLevel, 
-            ()->Level.DEBUG);
-    
-    @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
+    public SetSingletonRule<Level> logLevel =
+            SetSingletonRule.create(rootLogger::getLevel, rootLogger::setLevel, () -> Level.DEBUG);
+
+    @Rule public TemporaryFolder temp = new TemporaryFolder();
 
     @Test
     public void testFileRenaming() throws Exception {
         // Creation of a temporary file in the temporary directory directory
         File source = temp.newFile("source.txt");
-        File destination = temp.newFile(
-                        "dest"
-                                + System.currentTimeMillis()
-                + ".txt");
+        File destination = temp.newFile("dest" + System.currentTimeMillis() + ".txt");
 
         // File rename
         boolean renameFile = FileUtils.renameFile(source, destination);
@@ -66,14 +59,15 @@ public class FileUtilsTest {
         // Creation of a temporary file in the temporary directory directory
         File source = temp.newFile("source.txt");
         File destination = temp.newFile("destination.txt");
-        
+
         source.delete();
         // File rename
         boolean renameFile = FileUtils.renameFile(source, destination);
 
         // File checks
-        assertFalse("FileUtils.renameFile returned true",renameFile);
-        assertThat(appender.getMessages(), Matchers.hasItem(Matchers.containsString("File.renameTo()")));
+        assertFalse("FileUtils.renameFile returned true", renameFile);
+        assertThat(
+                appender.getMessages(),
+                Matchers.hasItem(Matchers.containsString("File.renameTo()")));
     }
-
 }
