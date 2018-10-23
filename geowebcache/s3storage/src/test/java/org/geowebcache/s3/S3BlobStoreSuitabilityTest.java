@@ -39,7 +39,7 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 
 @RunWith(S3BlobStoreSuitabilityTest.MyTheories.class)
-public class S3BlobStoreSuitabilityTest extends BlobStoreSuitabilityTest<String[]> {
+public class S3BlobStoreSuitabilityTest extends BlobStoreSuitabilityTest {
 
     public PropertiesLoader testConfigLoader = new PropertiesLoader();
 
@@ -66,20 +66,22 @@ public class S3BlobStoreSuitabilityTest extends BlobStoreSuitabilityTest<String[
         EasyMock.replay(tld);
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
-    protected Matcher<String[]> existing() {
-        return hasItemInArray(equalTo("metadata.properties"));
+    protected Matcher<Object> existing() {
+        return (Matcher) hasItemInArray(equalTo("metadata.properties"));
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    @Override
+    protected Matcher<Object> empty() {
+        return (Matcher) Matchers.emptyArray();
     }
 
     @Override
-    protected Matcher<String[]> empty() {
-        return Matchers.emptyArray();
-    }
-
-    @Override
-    public BlobStore create(String[] dir) throws Exception {
+    public BlobStore create(Object dir) throws Exception {
         S3BlobStoreInfo info = tempFolder.getConfig();
-        for (String path : dir) {
+        for (String path : (String[]) dir) {
             String fullPath = info.getPrefix() + "/" + path;
             try (InputStream is = new NullInputStream(0)) {
                 tempFolder
