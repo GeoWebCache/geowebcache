@@ -117,6 +117,7 @@ public class RestIntegrationTest {
 
         CloseableHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate);
+        response.getEntity().writeTo(System.err);
         assertEquals(200, response.getStatusLine().getStatusCode());
         response.close();
     }
@@ -1375,6 +1376,7 @@ public class RestIntegrationTest {
                 doc = XMLUnit.buildTestDocument(new InputSource(in));
                 body.accept(doc);
             }
+            response.getEntity().writeTo(System.out);
             assertThat(response.getStatusLine(), hasProperty("statusCode", statusMatcher));
         }
     }
