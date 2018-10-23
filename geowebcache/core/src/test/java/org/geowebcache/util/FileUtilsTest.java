@@ -14,151 +14,68 @@
  */
 package org.geowebcache.util;
 
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import org.apache.log4j.Appender;
-import org.apache.log4j.Layout;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.ErrorHandler;
-import org.apache.log4j.spi.Filter;
-import org.apache.log4j.spi.LoggingEvent;
-import org.junit.After;
-import org.junit.Before;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.test.appender.ListAppender;
+import org.hamcrest.Matchers;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class FileUtilsTest {
 
-    private MockAppender newAppender;
-
-    private Level level;
+    Logger rootLogger = (org.apache.logging.log4j.core.Logger)LogManager.getRootLogger();
+    
+    @Rule
+    public SetSingletonRule<Level> logLevel = SetSingletonRule.create(
+            rootLogger::getLevel, 
+            rootLogger::setLevel, 
+            ()->Level.DEBUG);
+    
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
 
     @Test
     public void testFileRenaming() throws Exception {
         // Creation of a temporary file in the temporary directory directory
-        File source = File.createTempFile("source", ".txt");
-        File destination =
-                new File(
-                        source.getParent(),
-                        "dest"
-                                + System.currentTimeMillis()
-                                + ".txt"); // File.createTempFile("destination", ".txt");
+        File source = temp.newFile("source.txt");
+        File destination = temp.newFile(
+                "dest"
+                + System.currentTimeMillis()
+                + ".txt");
 
         // File rename
         boolean renameFile = FileUtils.renameFile(source, destination);
         // File checks
-        assertTrue(renameFile);
-        assertFalse(source.exists());
-        assertTrue(destination.exists());
-
-        // Remove the created files
-        source.delete();
-        destination.delete();
-    }
-
-    @Before
-    public void onBefore() {
-        // Configuring logging
-        newAppender = new MockAppender();
-        Logger.getRootLogger().addAppender(newAppender);
-        level = Logger.getRootLogger().getLevel();
-        Logger.getRootLogger().setLevel(Level.DEBUG);
-    }
-
-    @After
-    public void after() {
-        // Configuring logging to default setup
-        Logger.getRootLogger().setLevel(level);
+        assertTrue("FileUtils.renameFile returned false", renameFile);
+        assertThat(source, not(FileMatchers.exists()));
+        assertThat(destination, FileMatchers.exists());
     }
 
     @Test
     public void testFileNotRenamed() throws Exception {
+        ListAppender appender = (ListAppender) rootLogger.getAppenders().get("LIST");
         // Creation of a temporary file in the temporary directory directory
-        File source = File.createTempFile("source", ".txt");
-        File destination = File.createTempFile("destination", ".txt");
+        File source = temp.newFile("source.txt");
+        File destination = temp.newFile("destination.txt");
+        
         source.delete();
         // File rename
         boolean renameFile = FileUtils.renameFile(source, destination);
 
         // File checks
-        assertFalse(renameFile);
-        assertTrue(newAppender.isMessageLogged());
-
-        // Remove the created files
-        source.delete();
-        destination.delete();
+        assertFalse("FileUtils.renameFile returned true",renameFile);
+        assertThat(appender.getMessages(), Matchers.hasItem(Matchers.containsString("File.renameTo()")));
     }
 
-    /**
-     * Mock class for {@link Appender} interface used for keeping track of the message logged by the
-     * {@link FileUtils} class when an Exception has been thrown.
-     *
-     * @author Nicola Lagomarsini Geosolutions
-     */
-    static class MockAppender implements Appender {
-
-        /** Parameter indicating that a message has been launched */
-        private boolean messageLogged = false;
-
-        /**
-         * Method indicating if the Info Message has been logged
-         *
-         * @return a boolean indicating that the message has been logged
-         */
-        public boolean isMessageLogged() {
-            return messageLogged;
-        }
-
-        @Override
-        public void addFilter(Filter newFilter) {}
-
-        @Override
-        public Filter getFilter() {
-            return null;
-        }
-
-        @Override
-        public void clearFilters() {}
-
-        @Override
-        public void close() {}
-
-        @Override
-        public void doAppend(LoggingEvent event) {
-            if (event.getLevel().equals(Level.DEBUG)) {
-                messageLogged = true;
-            }
-        }
-
-        @Override
-        public String getName() {
-            return null;
-        }
-
-        @Override
-        public void setErrorHandler(ErrorHandler errorHandler) {}
-
-        @Override
-        public ErrorHandler getErrorHandler() {
-            return null;
-        }
-
-        @Override
-        public void setLayout(Layout layout) {}
-
-        @Override
-        public Layout getLayout() {
-            return null;
-        }
-
-        @Override
-        public void setName(String name) {}
-
-        @Override
-        public boolean requiresLayout() {
-            return false;
-        }
-    }
 }
