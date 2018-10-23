@@ -35,10 +35,8 @@ import org.springframework.web.context.WebApplicationContext;
  */
 public class GeoWebCacheExtensions implements ApplicationContextAware, ApplicationListener {
 
-    private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayerDispatcher.class);
-
     /** logger */
-    public static Log LOGGER = LogFactory.getLog(GeoWebCacheExtensions.class);
+    private static Log LOGGER = LogFactory.getLog(GeoWebCacheExtensions.class);
 
     /**
      * Caches the names of the beans for a particular type, so that the lookup (expensive) wont' be
@@ -222,14 +220,15 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
                 bean.deinitialize();
             } catch (Exception e) {
                 if (bean instanceof BaseConfiguration) {
-                    log.error(
+                    LOGGER.error(
                             "Error while preparing configuration to reinitialize "
                                     + ((BaseConfiguration) bean).getIdentifier()
                                     + " from "
                                     + ((BaseConfiguration) bean).getLocation(),
                             e);
                 } else {
-                    log.error("Error while preparing bean to reinitialize " + bean.toString(), e);
+                    LOGGER.error(
+                            "Error while preparing bean to reinitialize " + bean.toString(), e);
                 }
             }
         }
@@ -238,14 +237,14 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
                 bean.reinitialize();
             } catch (Exception e) {
                 if (bean instanceof BaseConfiguration) {
-                    log.error(
+                    LOGGER.error(
                             "Error while reinitializing configuration "
                                     + ((BaseConfiguration) bean).getIdentifier()
                                     + " from "
                                     + ((BaseConfiguration) bean).getLocation(),
                             e);
                 } else {
-                    log.error("Error while reinitializing bean " + bean.toString(), e);
+                    LOGGER.error("Error while reinitializing bean " + bean.toString(), e);
                 }
             }
         }
