@@ -21,6 +21,8 @@ import org.geowebcache.grid.GridSet;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
 import org.junit.Assume;
+import org.junit.Ignore;
+import org.junit.Test;
 
 public class DefaultGridsetsConfigurationGridsetConformanceTest extends GridSetConfigurationTest {
 
@@ -104,5 +106,26 @@ public class DefaultGridsetsConfigurationGridsetConformanceTest extends GridSetC
     public void testCanSaveGoodInfo() throws Exception {
         // Should not be able to save anything as it is read only
         assertThat(config.canSave(getGoodInfo("test", 1)), equalTo(false));
+    }
+
+    @Ignore
+    @Test
+    @Override
+    public void testModifyNotExistsExcpetion() throws Exception {
+        super.testModifyNotExistsExcpetion();
+    }
+
+    @Ignore
+    @Test
+    @Override
+    public void testAddBadInfoException() throws Exception {
+        super.testAddBadInfoException();
+    }
+
+    @Ignore
+    @Test
+    @Override
+    public void testRemoveNotExists() throws Exception {
+        super.testRemoveNotExists();
     }
 }

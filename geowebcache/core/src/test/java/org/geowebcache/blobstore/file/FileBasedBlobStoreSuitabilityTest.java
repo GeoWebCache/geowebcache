@@ -32,12 +32,12 @@ import org.junit.experimental.theories.DataPoints;
 import org.junit.rules.TemporaryFolder;
 
 /** Tests persistence suitability checks for BlobStores that use the file system for persistence. */
-public abstract class FileBasedBlobStoreSuitabilityTest extends BlobStoreSuitabilityTest<File> {
+public abstract class FileBasedBlobStoreSuitabilityTest extends BlobStoreSuitabilityTest {
 
     @ClassRule public static TemporaryFolder temp = new TemporaryFolder();
 
     @Override
-    public abstract BlobStore create(File dir) throws Exception;
+    public abstract BlobStore create(Object dir) throws Exception;
 
     protected static File emptyDir() throws IOException {
         File emptyDir = temp.newFolder();
@@ -82,13 +82,14 @@ public abstract class FileBasedBlobStoreSuitabilityTest extends BlobStoreSuitabi
     }
 
     @Override
-    protected Matcher<File> empty() {
-        return either(directoryEmpty()).or(not(exists()));
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    protected Matcher<Object> empty() {
+        return either(directoryEmpty()).or((Matcher) not(exists()));
     }
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    protected Matcher<File> existing() {
+    protected Matcher<Object> existing() {
         return directoryContaining((Matcher) hasItem(named("metadata.properties")));
     }
 

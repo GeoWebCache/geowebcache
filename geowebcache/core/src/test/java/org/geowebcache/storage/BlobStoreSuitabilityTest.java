@@ -35,15 +35,15 @@ import org.junit.runner.RunWith;
  * @param <T>
  */
 @RunWith(Theories.class)
-public abstract class BlobStoreSuitabilityTest<T> {
+public abstract class BlobStoreSuitabilityTest {
 
     @Rule public SuitabilityCheckRule suitability = SuitabilityCheckRule.system();
 
-    protected abstract Matcher<T> existing();
+    protected abstract Matcher<Object> existing();
 
-    protected abstract Matcher<T> empty();
+    protected abstract Matcher<Object> empty();
 
-    public abstract BlobStore create(T dir) throws Exception;
+    public abstract BlobStore create(Object dir) throws Exception;
 
     @Rule public ExpectedException exception = ExpectedException.none();
     static final Class<? extends Exception> EXCEPTION_CLASS = StorageException.class;
@@ -52,20 +52,42 @@ public abstract class BlobStoreSuitabilityTest<T> {
         super();
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Theory
-    public void testEmptyOk(T persistenceLocation) throws Exception {
+    public void testEmptyOk(Object persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY);
-        assumeThat(persistenceLocation, empty());
+        assumeThat(persistenceLocation, (Matcher) empty());
 
-        @SuppressWarnings("unused")
         BlobStore store = create(persistenceLocation);
         assertThat(store, notNullValue(BlobStore.class));
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Theory
-    public void testEmptyFail(T persistenceLocation) throws Exception {
+    public void testEmptyFail(Object persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY);
-        assumeThat(persistenceLocation, not(empty()));
+        assumeThat(persistenceLocation, (Matcher) not(empty()));
+
+        exception.expect(EXCEPTION_CLASS);
+        @SuppressWarnings("unused")
+        BlobStore store = create(persistenceLocation);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Theory
+    public void testExistingOk(Object persistenceLocation) throws Exception {
+        suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EXISTING);
+        assumeThat(persistenceLocation, (either(empty()).or((Matcher) existing())));
+
+        BlobStore store = create(persistenceLocation);
+        assertThat(store, notNullValue(BlobStore.class));
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Theory
+    public void testExistingFail(Object persistenceLocation) throws Exception {
+        suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EXISTING);
+        assumeThat(persistenceLocation, not(either(empty()).or((Matcher) existing())));
 
         exception.expect(EXCEPTION_CLASS);
         @SuppressWarnings("unused")
@@ -73,30 +95,9 @@ public abstract class BlobStoreSuitabilityTest<T> {
     }
 
     @Theory
-    public void testExistingOk(T persistenceLocation) throws Exception {
-        suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EXISTING);
-        assumeThat(persistenceLocation, either(empty()).or(existing()));
-
-        @SuppressWarnings("unused")
-        BlobStore store = create(persistenceLocation);
-        assertThat(store, notNullValue(BlobStore.class));
-    }
-
-    @Theory
-    public void testExistingFail(T persistenceLocation) throws Exception {
-        suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EXISTING);
-        assumeThat(persistenceLocation, not(either(empty()).or(existing())));
-
-        exception.expect(EXCEPTION_CLASS);
-        @SuppressWarnings("unused")
-        BlobStore store = create(persistenceLocation);
-    }
-
-    @Theory
-    public void testNoneOk(T persistenceLocation) throws Exception {
+    public void testNoneOk(Object persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.NONE);
 
-        @SuppressWarnings("unused")
         BlobStore store = create(persistenceLocation);
         assertThat(store, notNullValue(BlobStore.class));
     }

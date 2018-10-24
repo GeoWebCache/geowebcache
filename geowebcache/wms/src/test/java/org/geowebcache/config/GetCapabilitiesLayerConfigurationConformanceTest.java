@@ -40,6 +40,8 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 public class GetCapabilitiesLayerConfigurationConformanceTest extends LayerConfigurationTest {
 
@@ -189,5 +191,19 @@ public class GetCapabilitiesLayerConfigurationConformanceTest extends LayerConfi
     public void testCanSaveGoodInfo() throws Exception {
         // Should not be able to save anything as it is read only
         assertThat(config.canSave(getGoodInfo("test", 1)), equalTo(false));
+    }
+
+    @Test
+    @Ignore
+    @Override
+    public void testRemoveNotExists() throws Exception {
+        super.testRemoveNotExists();
+    }
+
+    @Test
+    @Ignore
+    @Override
+    public void testModifyNotExistsExcpetion() throws Exception {
+        super.testModifyNotExistsExcpetion();
     }
 }
