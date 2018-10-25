@@ -2,13 +2,37 @@
 <beans xmlns="http://www.springframework.org/schema/beans" 
        xmlns:security="http://www.springframework.org/schema/security"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/security
-        http://www.springframework.org/schema/security/spring-security.xsd">
+        http://www.springframework.org/schema/security/spring-security.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd">
+    
+    <bean  id="defaultPasswordEncoder" class = "org.springframework.security.crypto.password.NoOpPasswordEncoder">
+    </bean>
+    
+    <util:map id="passwordEncodersMap">
+        <entry key="noop">
+            <bean class = "org.springframework.security.crypto.password.NoOpPasswordEncoder">
+            </bean>
+        </entry>
+        <entry key="bcrypt">
+            <bean class = "org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
+            </bean>
+        </entry>
+    </util:map>
+    
+    <bean id ="passwordEncoder" class = "org.springframework.security.crypto.password.DelegatingPasswordEncoder" >
+        <constructor-arg value="bcrypt"/>
+        <constructor-arg ref="passwordEncodersMap"/>
+        <property name="defaultPasswordEncoderForMatches" ref="defaultPasswordEncoder" />
+    </bean>
     
     <security:authentication-manager>
         <security:authentication-provider>
+            <security:password-encoder ref="passwordEncoder"/>
             <security:user-service id="userDetailsService" properties="/WEB-INF/users.properties"/>
         </security:authentication-provider>
     </security:authentication-manager>
