@@ -12,12 +12,13 @@
  *
  * @author Gabriel Roldan (OpenGeo) 2010
  */
-package org.geowebcache.storage;
+package org.geowebcache.georss;
 
 import junit.framework.TestCase;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.storage.RasterMask;
 import org.geowebcache.util.TestUtils;
 
 public class RasterMaskTest extends TestCase {

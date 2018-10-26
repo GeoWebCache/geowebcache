@@ -46,7 +46,7 @@ The file :file:`geowebcache-core-context.xml` is a configuration file controling
 
    .. code-block:: xml
 
-      <bean id="gwcWMSConfig" class="org.geowebcache.config.GetCapabilitiesConfiguration">
+      <bean id="gwcWMSConfig" class="org.geowebcache.config.wms.GetCapabilitiesConfiguration">
 
    On the second line you will see a value that contains a URL: 
 

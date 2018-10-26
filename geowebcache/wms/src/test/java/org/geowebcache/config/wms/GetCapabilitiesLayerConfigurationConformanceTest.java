@@ -12,37 +12,37 @@
  *
  * <p>Copyright 2018
  */
-package org.geowebcache.config;
+package org.geowebcache.config.wms;
 
 import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.expect;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.base.Objects;
 import java.net.URL;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import org.easymock.EasyMock;
-import org.geotools.data.ows.*;
-import org.geotools.ows.wms.WebMapServer;
-import org.geotools.ows.wms.CRSEnvelope;
-import org.geotools.ows.wms.Layer;
-import org.geotools.ows.wms.WMSCapabilities;
-import org.geotools.ows.wms.WMSRequest;
-import org.geowebcache.grid.GridSet;
+import org.geotools.data.ows.OperationType;
+import org.geotools.ows.wms.*;
+import org.geowebcache.config.DefaultingConfiguration;
+import org.geowebcache.config.LayerConfigurationTest;
+import org.geowebcache.config.TileLayerConfiguration;
+import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.TileLayer;
-import org.hamcrest.CustomMatcher;
+import org.geowebcache.layer.wms.WMSLayer;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetConfigurationTest {
+public class GetCapabilitiesLayerConfigurationConformanceTest extends LayerConfigurationTest {
 
     private GridSetBroker broker;
 
@@ -54,17 +54,44 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
     }
 
     @Override
-    protected void doModifyInfo(GridSet info, int rand) throws Exception {
-        info.setDescription(Integer.toString(rand));
+    protected void doModifyInfo(TileLayer info, int rand) throws Exception {
+        ((WMSLayer) info).setWmsLayers(Integer.toString(rand));
+    }
+
+    @Override
+    protected TileLayer getGoodInfo(String id, int rand) throws Exception {
+        return new WMSLayer(
+                id,
+                new String[] {"http://foo"},
+                "style",
+                Integer.toString(rand),
+                Collections.<String>emptyList(),
+                Collections.<String, GridSubset>singletonMap(
+                        "EPSG:4326", GridSubsetFactory.createGridSubSet(broker.getWorldEpsg4326())),
+                Collections.<ParameterFilter>emptyList(),
+                new int[] {3, 3},
+                "",
+                false,
+                null);
+    }
+    /*(String layerName, String[] wmsURL, String wmsStyles, String wmsLayers,
+    List<String> mimeFormats, Map<String, GridSubset> subSets,
+    List<ParameterFilter> parameterFilters, int[] metaWidthHeight, String vendorParams,
+    boolean queryable, String wmsQueryLayers)*/
+
+    @Override
+    protected TileLayer getBadInfo(String id, int rand) throws Exception {
+        Assume.assumeFalse(true);
+        return null;
     }
 
     @Override
     protected String getExistingInfo() {
-        return "testExisting:EPSG:3978";
+        return "testExisting";
     }
 
     @Override
-    protected GridSetConfiguration getConfig() throws Exception {
+    protected TileLayerConfiguration getConfig() throws Exception {
         WebMapServer server;
         WMSCapabilities cap;
         WMSRequest req;
@@ -79,7 +106,6 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
 
         Layer l = new Layer();
         l.setName("testExisting");
-        l.setBoundingBoxes(new CRSEnvelope("EPSG:3978", -2259049, 347711, -1994160, 827919));
         l.setLatLonBoundingBox(new CRSEnvelope());
         List<Layer> layers = new LinkedList<Layer>();
         layers.add(l);
@@ -111,50 +137,21 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
     }
 
     @Override
-    protected GridSetConfiguration getSecondConfig() throws Exception {
+    protected TileLayerConfiguration getSecondConfig() throws Exception {
         Assume.assumeTrue("This configuration does not have persistance", false);
         return null;
     }
 
-    @Test
-    public void testLayerGridsets() throws Exception {
-        Optional<TileLayer> layer =
-                ((GetCapabilitiesConfiguration) config).getLayer("testExisting");
-        Optional<GridSet> gridset = config.getGridSet("testExisting:EPSG:3978");
-
-        TileLayer tileLayer = layer.get();
-        GridSubset gridSubset = tileLayer.getGridSubset("testExisting:EPSG:3978");
-        GridSet gridSet2 = gridSubset.getGridSet();
-        assertThat(gridSet2, equalTo(gridset.get()));
+    @Override
+    protected Matcher<TileLayer> infoEquals(TileLayer expected) {
+        return Matchers.allOf(
+                Matchers.hasProperty("name", equalTo(expected.getName())),
+                Matchers.hasProperty("wmsLayers", equalTo(((WMSLayer) expected).getWmsLayers())));
     }
 
     @Override
-    protected Matcher<GridSet> infoEquals(GridSet expected) {
-        return new CustomMatcher<GridSet>(
-                "GridSet matching " + expected.getName() + " with " + expected.getDescription()) {
-
-            @Override
-            public boolean matches(Object item) {
-                return item instanceof GridSet
-                        && ((GridSet) item).getName().equals(((GridSet) expected).getName())
-                        && ((GridSet) item)
-                                .getDescription()
-                                .equals(((GridSet) expected).getDescription());
-            }
-        };
-    }
-
-    @Override
-    protected Matcher<GridSet> infoEquals(int expected) {
-        return new CustomMatcher<GridSet>("GridSet with value " + expected) {
-
-            @Override
-            public boolean matches(Object item) {
-                return item instanceof GridSet
-                        && Objects.equal(
-                                ((GridSet) item).getDescription(), Integer.toString(expected));
-            }
-        };
+    protected Matcher<TileLayer> infoEquals(int expected) {
+        return Matchers.hasProperty("wmsLayers", equalTo(expected));
     }
 
     @Override
@@ -168,24 +165,24 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
     }
 
     @Override
-    protected void renameInfo(GridSetConfiguration config, String name1, String name2)
+    protected void renameInfo(TileLayerConfiguration config, String name1, String name2)
             throws Exception {
         Assume.assumeFalse(true);
     }
 
     @Override
-    protected void addInfo(GridSetConfiguration config, GridSet info) throws Exception {
+    protected void addInfo(TileLayerConfiguration config, TileLayer info) throws Exception {
         // TODO Auto-generated method stub
         Assume.assumeFalse(true);
     }
 
     @Override
-    protected void removeInfo(GridSetConfiguration config, String name) throws Exception {
+    protected void removeInfo(TileLayerConfiguration config, String name) throws Exception {
         Assume.assumeFalse(true);
     }
 
     @Override
-    protected void modifyInfo(GridSetConfiguration config, GridSet info) throws Exception {
+    protected void modifyInfo(TileLayerConfiguration config, TileLayer info) throws Exception {
         Assume.assumeFalse(true);
     }
 
@@ -193,13 +190,6 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
     public void testCanSaveGoodInfo() throws Exception {
         // Should not be able to save anything as it is read only
         assertThat(config.canSave(getGoodInfo("test", 1)), equalTo(false));
-    }
-
-    @Test
-    @Ignore
-    @Override
-    public void testAddBadInfoException() throws Exception {
-        super.testAddBadInfoException();
     }
 
     @Test

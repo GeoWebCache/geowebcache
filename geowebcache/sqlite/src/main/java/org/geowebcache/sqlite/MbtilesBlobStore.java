@@ -44,7 +44,6 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geotools.mbtiles.GeoToolsMbtilesUtils;
 import org.geotools.mbtiles.MBTilesFile;
 import org.geotools.mbtiles.MBTilesMetadata;
 import org.geotools.mbtiles.MBTilesTile;

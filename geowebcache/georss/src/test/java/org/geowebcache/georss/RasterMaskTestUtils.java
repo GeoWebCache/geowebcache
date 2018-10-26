@@ -12,7 +12,7 @@
  *
  * @author Gabriel Roldan (OpenGeo) 2010
  */
-package org.geowebcache.storage;
+package org.geowebcache.georss;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
