@@ -19,7 +19,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.storage.GeometryRasterMaskBuilder;
 import org.locationtech.jts.geom.Geometry;
 
 /**
