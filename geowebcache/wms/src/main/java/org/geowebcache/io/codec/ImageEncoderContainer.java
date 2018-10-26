@@ -12,7 +12,7 @@
  *
  * @author Nicola Lagomarsini, GeoSolutions S.A.S., Copyright 2014
  */
-package org.geowebcache.io;
+package org.geowebcache.io.codec;
 
 import java.awt.image.RenderedImage;
 import java.util.Collection;

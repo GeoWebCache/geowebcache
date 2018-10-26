@@ -1,4 +1,4 @@
-package org.geowebcache.io;
+package org.geowebcache.io.codec;
 
 import com.sun.media.imageioimpl.plugins.gif.GIFImageWriterSpi;
 import java.util.ArrayList;

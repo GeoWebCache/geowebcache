@@ -12,40 +12,34 @@
  *
  * @author Nicola Lagomarsini, GeoSolutions S.A.S., Copyright 2014
  */
-package org.geowebcache.io;
+package org.geowebcache.io.codec;
 
-import java.awt.image.RenderedImage;
+import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Map;
-import org.geowebcache.mime.MimeType;
 
 /**
- * Interface for each encoder object. Each class implementing this interface can be added to the
+ * Interface for each decoder object. Each class implementing this interface can be added to the
  * spring application context as a bean and then will be automatically included in the class {@link
- * ImageEncoderContainer}.
+ * ImageDecoderContainer}.
  */
-public interface ImageEncoder {
-
-    /**
-     * Encodes the selected image
-     *
-     * @param image
-     * @param destination
-     * @param aggressiveOutputStreamOptimization
-     * @param type
-     * @param option
-     */
-    public void encode(
-            RenderedImage image,
-            Object destination,
-            boolean aggressiveOutputStreamOptimization,
-            MimeType type,
-            Map<String, ?> option)
-            throws Exception;
+public interface ImageDecoder {
 
     /** Returns the list of the supported mimetypes */
     public List<String> getSupportedMimeTypes();
 
-    /** Indicates if Aggressive outputStream is supported */
-    public boolean isAggressiveOutputStreamSupported();
+    /**
+     * Decodes the selected input object.
+     *
+     * @param input
+     * @param aggressiveInputStreamOptimization
+     * @param map
+     * @return
+     */
+    public BufferedImage decode(
+            Object input, boolean aggressiveInputStreamOptimization, Map<String, Object> map)
+            throws Exception;
+
+    /** Indicates if Aggressive inputStream is supported */
+    public boolean isAggressiveInputStreamSupported();
 }
