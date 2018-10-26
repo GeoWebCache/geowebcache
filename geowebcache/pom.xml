@@ -40,6 +40,7 @@
     <fmt.action>format</fmt.action>
     <fmt.skip>false</fmt.skip>
     <jackson.version>2.9.7</jackson.version>
+    <jetty.version>9.4.12.v20180830</jetty.version>
   </properties>
   
   <repositories>
@@ -314,13 +315,13 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
-      <version>9.4.6.v20170531</version>
+      <version>${jetty.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-webapp</artifactId>
-      <version>9.4.6.v20170531</version>
+      <version>${jetty.version}</version>
       <scope>test</scope>
     </dependency>
 
