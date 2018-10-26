@@ -22,7 +22,7 @@ import org.geowebcache.storage.blobstore.file.FileBlobStore;
 public class FileBlobStorePersistenceSuitabilityTest extends FileBasedBlobStoreSuitabilityTest {
 
     @Override
-    public BlobStore create(File dir) throws Exception {
-        return new FileBlobStore(dir.getAbsolutePath());
+    public BlobStore create(Object dir) throws Exception {
+        return new FileBlobStore(((File) dir).getAbsolutePath());
     }
 }

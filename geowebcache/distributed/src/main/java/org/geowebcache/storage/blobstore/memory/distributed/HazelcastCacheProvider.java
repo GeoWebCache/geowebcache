@@ -94,6 +94,12 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
         }
     }
 
+    public HazelcastCacheProvider(IMap<String, TileObject> map, long totalSize) {
+        this.map = map;
+        this.totalSize = totalSize;
+        this.configured = true;
+    }
+
     @Override
     public TileObject getTileObj(TileObject obj) {
         if (configured) {

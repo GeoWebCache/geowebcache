@@ -18,8 +18,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.instance.HazelcastInstanceFactory;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
@@ -34,7 +39,6 @@ import org.geowebcache.storage.blobstore.memory.distributed.HazelcastCacheProvid
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * This test class is used for testing {@link HazelcastCacheProvider} functionalities.
@@ -68,33 +72,30 @@ public class HazelcastCacheProviderTest {
     private static MemoryBlobStore mem2;
 
     @BeforeClass
-    public static void initialSetup() {
-        // Creating an Hazelcast configuration
-        ClassPathXmlApplicationContext appContext =
-                new ClassPathXmlApplicationContext(APP_CONTEXT_FILENAME);
+    public static void initialSetup() throws UnknownHostException {
+        Config config = new Config();
+        config.getMapConfig("default").setBackupCount(1).setAsyncBackupCount(0);
+        HazelcastInstance h1 = HazelcastInstanceFactory.newHazelcastInstance(new Config());
+        HazelcastInstance h2 = HazelcastInstanceFactory.newHazelcastInstance(new Config());
 
         // Create a nullblobstore to add to the memory blobstore
         NullBlobStore nbs = new NullBlobStore();
 
         mem1 = new MemoryBlobStore();
         mem1.setStore(nbs);
-        mem1.setCacheBeanName(CACHE_1_NAME);
-        mem1.setApplicationContext(appContext);
+        cache1 = new HazelcastCacheProvider(h1.getMap("map1"), 16);
+        mem1.setCacheProvider(cache1);
 
         mem2 = new MemoryBlobStore();
         mem2.setStore(nbs);
-        mem2.setCacheBeanName(CACHE_2_NAME);
-        mem2.setApplicationContext(appContext);
-
-        // Get the two Hazelcast Cache instances
-        cache1 = appContext.getBean(CACHE_1_NAME, HazelcastCacheProvider.class);
-        cache2 = appContext.getBean(CACHE_2_NAME, HazelcastCacheProvider.class);
+        cache2 = new HazelcastCacheProvider(h2.getMap("map1"), 16);
+        mem2.setCacheProvider(cache2);
 
         // Ensure both the caches are available and immutable
-        assertTrue(cache1.isAvailable());
-        assertTrue(cache1.isImmutable());
-        assertTrue(cache2.isAvailable());
-        assertTrue(cache2.isImmutable());
+        assertTrue(HazelcastCacheProviderTest.cache1.isAvailable());
+        assertTrue(HazelcastCacheProviderTest.cache1.isImmutable());
+        assertTrue(HazelcastCacheProviderTest.cache2.isAvailable());
+        assertTrue(HazelcastCacheProviderTest.cache2.isImmutable());
     }
 
     @Test
@@ -122,7 +123,7 @@ public class HazelcastCacheProviderTest {
         TileObject to2 =
                 TileObject.createQueryTileObject(
                         "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
-        mem2.get(to2);
+        assertTrue(mem2.get(to2));
 
         // Checks on the format
         assertEquals(to.getBlobFormat(), to2.getBlobFormat());
@@ -161,7 +162,7 @@ public class HazelcastCacheProviderTest {
 
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("a", "x");
-        parameters.put("b", "ø");
+        parameters.put("b", "y");
 
         // Put a TileObject
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
@@ -176,7 +177,7 @@ public class HazelcastCacheProviderTest {
         TileObject to2 =
                 TileObject.createQueryTileObject(
                         "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
-        mem2.get(to2);
+        assertTrue(mem2.get(to2));
 
         // Checks if the resources are equals
         InputStream is = to2.getBlob().getInputStream();
@@ -212,6 +213,9 @@ public class HazelcastCacheProviderTest {
         // Cache destruction
         cache1.destroy();
         cache2.destroy();
+
+        // tear down hazelcast itself
+        Hazelcast.shutdownAll();
     }
 
     /**

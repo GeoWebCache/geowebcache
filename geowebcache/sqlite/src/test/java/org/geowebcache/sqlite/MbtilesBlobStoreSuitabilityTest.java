@@ -46,14 +46,14 @@ public class MbtilesBlobStoreSuitabilityTest extends FileBasedBlobStoreSuitabili
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    protected Matcher<File> existing() {
+    protected Matcher<Object> existing() {
         return directoryContaining((Matcher) hasItem(named("metadata.sqlite")));
     }
 
     @Override
-    public BlobStore create(File dir) throws Exception {
+    public BlobStore create(Object dir) throws Exception {
         MbtilesInfo info = new MbtilesInfo();
-        info.setRootDirectory(dir.getAbsolutePath());
+        info.setRootDirectory(((File) dir).getAbsolutePath());
         return new MbtilesBlobStore(info);
     }
 }

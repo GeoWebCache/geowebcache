@@ -35,6 +35,7 @@ import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetConfigurationTest {
@@ -188,5 +189,26 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
     public void testCanSaveGoodInfo() throws Exception {
         // Should not be able to save anything as it is read only
         assertThat(config.canSave(getGoodInfo("test", 1)), equalTo(false));
+    }
+
+    @Test
+    @Ignore
+    @Override
+    public void testAddBadInfoException() throws Exception {
+        super.testAddBadInfoException();
+    }
+
+    @Test
+    @Ignore
+    @Override
+    public void testRemoveNotExists() throws Exception {
+        super.testRemoveNotExists();
+    }
+
+    @Test
+    @Ignore
+    @Override
+    public void testModifyNotExistsExcpetion() throws Exception {
+        super.testModifyNotExistsExcpetion();
     }
 }

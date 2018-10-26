@@ -15,7 +15,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -327,7 +327,7 @@ public class Demo {
                 .append("';\n" + "var gridNames = ")
                 .append(
                         Arrays.stream(gridSubset.getGridNames())
-                                .map(StringEscapeUtils::escapeJavaScript)
+                                .map(StringEscapeUtils::escapeEcmaScript)
                                 .map(s -> String.format("'%s'", s))
                                 .collect(Collectors.joining(", ", "[", "]")))
                 .append(";\n" + "var baseUrl = '../service/wmts';\n" + "var style = '';\n");

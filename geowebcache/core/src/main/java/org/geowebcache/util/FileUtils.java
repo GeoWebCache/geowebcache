@@ -27,7 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class FileUtils {
-    private static Log log = LogFactory.getLog(org.geowebcache.util.FileUtils.class);
+    static Log log = LogFactory.getLog(org.geowebcache.util.FileUtils.class);
 
     public static boolean rmFileCacheDir(File path, ExtensionFileLister extfl) {
         if (path.exists()) {
