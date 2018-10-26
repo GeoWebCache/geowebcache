@@ -12,7 +12,7 @@
  *
  * @author Arne Kepp, Copyright 2010
  */
-package org.geowebcache.filter.parameters;
+package org.geowebcache.config.wms.parameters;
 
 public interface WMSDimensionProvider {
     public void appendDimensionElement(StringBuilder str, String indent);

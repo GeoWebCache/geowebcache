@@ -12,7 +12,7 @@
  *
  * <p>Copyright 2018
  */
-package org.geowebcache.config;
+package org.geowebcache.config.wms;
 
 import static org.easymock.EasyMock.*;
 import static org.hamcrest.Matchers.is;
@@ -31,6 +31,7 @@ import java.util.List;
 import org.easymock.Capture;
 import org.geotools.data.ows.*;
 import org.geotools.data.wms.WebMapServer;
+import org.geowebcache.config.DefaultingConfiguration;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;

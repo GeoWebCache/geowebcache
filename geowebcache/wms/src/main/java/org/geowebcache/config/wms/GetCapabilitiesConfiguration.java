@@ -12,7 +12,7 @@
  *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
-package org.geowebcache.config;
+package org.geowebcache.config.wms;
 
 import com.google.common.collect.Sets;
 import java.io.IOException;
@@ -49,9 +49,13 @@ import org.geotools.ows.ServiceException;
 import org.geotools.xml.PreventLocalEntityResolver;
 import org.geotools.xml.XMLHandlerHints;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.ConfigurationException;
+import org.geowebcache.config.DefaultingConfiguration;
+import org.geowebcache.config.GridSetConfiguration;
+import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.legends.LegendRawInfo;
 import org.geowebcache.config.legends.LegendsRawInfo;
-import org.geowebcache.filter.parameters.NaiveWMSDimensionFilter;
+import org.geowebcache.config.wms.parameters.NaiveWMSDimensionFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.RegexParameterFilter;
 import org.geowebcache.filter.parameters.StringParameterFilter;
@@ -73,7 +77,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 public class GetCapabilitiesConfiguration implements TileLayerConfiguration, GridSetConfiguration {
 
     private static Log log =
-            LogFactory.getLog(org.geowebcache.config.GetCapabilitiesConfiguration.class);
+            LogFactory.getLog(org.geowebcache.config.wms.GetCapabilitiesConfiguration.class);
 
     // regex patterns used to parse legends urls parameters
     private static final Pattern LEGEND_WIDTH_PATTERN =

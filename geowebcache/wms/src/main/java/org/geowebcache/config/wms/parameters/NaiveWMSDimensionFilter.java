@@ -12,7 +12,7 @@
  *
  * @author Björn Hartell, Copyright 2010
  */
-package org.geowebcache.filter.parameters;
+package org.geowebcache.config.wms.parameters;
 
 import com.google.common.base.Preconditions;
 import java.util.List;
@@ -20,6 +20,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.geotools.data.wms.xml.Dimension;
 import org.geotools.data.wms.xml.Extent;
+import org.geowebcache.filter.parameters.ParameterException;
+import org.geowebcache.filter.parameters.ParameterFilter;
 
 /**
  * This class is used to forward information about WMS 1.1.x dimensions from the getcapabilities
