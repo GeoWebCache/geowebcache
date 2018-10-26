@@ -17,19 +17,7 @@ package org.geowebcache.config.wms;
 import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,16 +25,12 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geotools.data.ows.CRSEnvelope;
-import org.geotools.data.ows.Layer;
 import org.geotools.data.ows.SimpleHttpClient;
-import org.geotools.data.ows.StyleImpl;
-import org.geotools.data.ows.WMSCapabilities;
-import org.geotools.data.wms.WebMapServer;
-import org.geotools.data.wms.xml.Dimension;
-import org.geotools.data.wms.xml.Extent;
 import org.geotools.ows.ServiceException;
-import org.geotools.xml.PreventLocalEntityResolver;
+import org.geotools.ows.wms.*;
+import org.geotools.ows.wms.xml.Dimension;
+import org.geotools.ows.wms.xml.Extent;
+import org.geotools.util.PreventLocalEntityResolver;
 import org.geotools.xml.XMLHandlerHints;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ConfigurationException;
@@ -59,13 +43,7 @@ import org.geowebcache.config.wms.parameters.NaiveWMSDimensionFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.RegexParameterFilter;
 import org.geowebcache.filter.parameters.StringParameterFilter;
-import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.GridSet;
-import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSetFactory;
-import org.geowebcache.grid.GridSubset;
-import org.geowebcache.grid.GridSubsetFactory;
-import org.geowebcache.grid.SRS;
+import org.geowebcache.grid.*;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.meta.MetadataURL;
@@ -359,11 +337,11 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
                     }
                     wmsLayer.setSourceHelper(sourceHelper);
 
-                    List<org.geotools.data.wms.xml.MetadataURL> metadataURLs =
+                    List<org.geotools.ows.wms.xml.MetadataURL> metadataURLs =
                             layer.getMetadataURL();
                     if (metadataURLs != null && !metadataURLs.isEmpty()) {
                         List<MetadataURL> convertedMetadataURLs = new ArrayList<MetadataURL>();
-                        for (org.geotools.data.wms.xml.MetadataURL metadataURL : metadataURLs) {
+                        for (org.geotools.ows.wms.xml.MetadataURL metadataURL : metadataURLs) {
                             convertedMetadataURLs.add(
                                     new MetadataURL(
                                             metadataURL.getType(),
