@@ -12,7 +12,7 @@
  *
  * <p>Copyright 2018
  */
-package org.geowebcache.config;
+package org.geowebcache.config.wms;
 
 import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.expect;
@@ -27,6 +27,9 @@ import java.util.Optional;
 import org.easymock.EasyMock;
 import org.geotools.data.ows.*;
 import org.geotools.data.wms.WebMapServer;
+import org.geowebcache.config.DefaultingConfiguration;
+import org.geowebcache.config.GridSetConfiguration;
+import org.geowebcache.config.GridSetConfigurationTest;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;

@@ -12,11 +12,12 @@
  *
  * @author Arne Kepp / The Open Planning Project 2008
  */
-package org.geowebcache.conveyor;
+package org.geowebcache.service.kml;
 
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageBroker;
 

@@ -24,7 +24,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
-import org.geowebcache.conveyor.ConveyorKMLTile;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.security.SecurityDispatcher;
 import org.geowebcache.grid.BoundingBox;

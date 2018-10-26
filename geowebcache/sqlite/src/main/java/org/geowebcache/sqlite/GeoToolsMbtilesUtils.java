@@ -12,10 +12,11 @@
  *
  * @author Nuno Oliveira, GeoSolutions S.A.S., Copyright 2016
  */
-package org.geotools.mbtiles;
+package org.geowebcache.sqlite;
 
 import java.io.File;
 import java.sql.Connection;
+import org.geotools.mbtiles.MBTilesFile;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 /** Utils objects used to interact with GeoTools. */

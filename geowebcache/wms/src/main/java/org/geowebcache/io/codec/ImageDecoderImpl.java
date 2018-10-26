@@ -12,7 +12,7 @@
  *
  * @author Nicola Lagomarsini, GeoSolutions S.A.S., Copyright 2014
  */
-package org.geowebcache.io;
+package org.geowebcache.io.codec;
 
 import it.geosolutions.imageio.stream.input.FileImageInputStreamExtImpl;
 import it.geosolutions.imageio.stream.input.ImageInputStreamAdapter;
@@ -28,6 +28,8 @@ import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 import org.apache.log4j.Logger;
+import org.geowebcache.io.FileResource;
+import org.geowebcache.io.Resource;
 
 /**
  * Class implementing the ImageDecoder interface, the user should only create a new bean for

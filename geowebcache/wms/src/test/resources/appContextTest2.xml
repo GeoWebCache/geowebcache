@@ -10,13 +10,13 @@
 
 	<context:annotation-config />
 
-  <bean id="ioInitializer" class="org.geowebcache.io.ImageIOInitializer" factory-method="getInstance">
+  <bean id="ioInitializer" class="org.geowebcache.io.codec.ImageIOInitializer" factory-method="getInstance">
   		<constructor-arg index="0">
 			<list></list>
 		</constructor-arg>
   </bean>
 
-	<bean id="TIFFDecoder" class="org.geowebcache.io.ImageDecoderImpl">
+	<bean id="TIFFDecoder" class="org.geowebcache.io.codec.ImageDecoderImpl">
 		<constructor-arg type="boolean" value="false" />
 		<constructor-arg>
 			<list>
@@ -32,6 +32,6 @@
 		<constructor-arg ref="ioInitializer" />
 	</bean>
 
-	<bean id="decoderContainer" class="org.geowebcache.io.ImageDecoderContainer" />
+	<bean id="decoderContainer" class="org.geowebcache.io.codec.ImageDecoderContainer" />
 
 </beans>
