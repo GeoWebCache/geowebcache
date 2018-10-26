@@ -46,6 +46,7 @@ import org.geotools.data.wms.WebMapServer;
 import org.geotools.data.wms.xml.Dimension;
 import org.geotools.data.wms.xml.Extent;
 import org.geotools.ows.ServiceException;
+import org.geotools.util.PreventLocalEntityResolver;
 import org.geotools.xml.PreventLocalEntityResolver;
 import org.geotools.xml.XMLHandlerHints;
 import org.geowebcache.GeoWebCacheException;
