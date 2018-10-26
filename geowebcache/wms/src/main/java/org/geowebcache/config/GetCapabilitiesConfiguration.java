@@ -37,14 +37,14 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geotools.data.ows.CRSEnvelope;
-import org.geotools.data.ows.Layer;
+import org.geotools.ows.wms.CRSEnvelope;
+import org.geotools.ows.wms.Layer;
 import org.geotools.data.ows.SimpleHttpClient;
-import org.geotools.data.ows.StyleImpl;
-import org.geotools.data.ows.WMSCapabilities;
-import org.geotools.data.wms.WebMapServer;
-import org.geotools.data.wms.xml.Dimension;
-import org.geotools.data.wms.xml.Extent;
+import org.geotools.ows.wms.StyleImpl;
+import org.geotools.ows.wms.WMSCapabilities;
+import org.geotools.ows.wms.WebMapServer;
+import org.geotools.ows.wms.xml.Dimension;
+import org.geotools.ows.wms.xml.Extent;
 import org.geotools.ows.ServiceException;
 import org.geotools.util.PreventLocalEntityResolver;
 import org.geotools.xml.XMLHandlerHints;
@@ -355,11 +355,11 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
                     }
                     wmsLayer.setSourceHelper(sourceHelper);
 
-                    List<org.geotools.data.wms.xml.MetadataURL> metadataURLs =
+                    List<org.geotools.ows.wms.xml.MetadataURL> metadataURLs =
                             layer.getMetadataURL();
                     if (metadataURLs != null && !metadataURLs.isEmpty()) {
                         List<MetadataURL> convertedMetadataURLs = new ArrayList<MetadataURL>();
-                        for (org.geotools.data.wms.xml.MetadataURL metadataURL : metadataURLs) {
+                        for (org.geotools.ows.wms.xml.MetadataURL metadataURL : metadataURLs) {
                             convertedMetadataURLs.add(
                                     new MetadataURL(
                                             metadataURL.getType(),
