@@ -35,7 +35,6 @@ import org.geowebcache.seed.GWCTask;
 import org.geowebcache.seed.GWCTask.STATE;
 import org.geowebcache.seed.TileBreeder;
 import org.geowebcache.storage.DiscontinuousTileRange;
-import org.geowebcache.storage.GeometryRasterMaskBuilder;
 import org.geowebcache.storage.RasterMask;
 import org.geowebcache.storage.StorageBroker;
 

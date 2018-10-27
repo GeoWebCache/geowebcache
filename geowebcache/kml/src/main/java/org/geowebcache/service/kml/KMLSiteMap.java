@@ -20,7 +20,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.conveyor.ConveyorKMLTile;
 import org.geowebcache.filter.security.SecurityDispatcher;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;

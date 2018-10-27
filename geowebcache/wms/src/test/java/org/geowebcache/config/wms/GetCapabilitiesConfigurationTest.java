@@ -12,7 +12,7 @@
  *
  * <p>Copyright 2018
  */
-package org.geowebcache.config;
+package org.geowebcache.config.wms;
 
 import static org.easymock.EasyMock.*;
 import static org.hamcrest.Matchers.is;
@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.Sets;
 import java.net.URL;
@@ -29,8 +29,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import org.easymock.Capture;
-import org.geotools.data.ows.*;
-import org.geotools.data.wms.WebMapServer;
+import org.geotools.data.ows.OperationType;
+import org.geotools.ows.wms.*;
+import org.geowebcache.config.DefaultingConfiguration;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;

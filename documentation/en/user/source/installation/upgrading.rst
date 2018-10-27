@@ -1,5 +1,43 @@
 .. _upgrading:
 
+Upgrading from a pre 1.15 release
+=================================
+
+In 1.15 GeoWebCache changed to work on Java 9 and higher.  This included several changes to package names to avoid splitting packages across modules.  If you used any of the following classes in plugins, while emebdding GWC in a larger application, or using modified application contexts, you will need to make the follwing changes.
+
++----------------+---------------------------------------+-------------------------------------------+
+| Module         | ≤ 1.14                                | ≥ 1.15                                    |
+|                +---------------------------------------+-------------------------------------------+
+|                | Classes Affected                                                                  |
++================+=======================================+===========================================+
+| **gwc-georss** | **org.geowebcache.storage**           | **org.geowebcache.georss**                |
+|                +---------------------------------------+-------------------------------------------+
+|                | ``GeometryRasterMaskBuilder``, ``RasterMaskTestUtils``                            |
++----------------+---------------------------------------+-------------------------------------------+
+| **gwc-kml**    | **org.geowebcache.conveyor**          | **org.geowebcache.service.kml**           |
+|                +---------------------------------------+-------------------------------------------+
+|                | ``ConveyorKMLTile``                                                               |
++----------------+---------------------------------------+-------------------------------------------+
+| **gwc-sqlite** | **org.geotools.mbtiles**              | **org.geowebcache.sqlite**                |
+|                +---------------------------------------+-------------------------------------------+
+|                | ``GeoToolsMbtilesUtils``                                                          |
++----------------+---------------------------------------+-------------------------------------------+
+| **gwc-wms**    | **org.geowebcache.config**            | **org.geowebcache.config.wms**            |
+|                +---------------------------------------+-------------------------------------------+
+|                | ``GetCapabilitiesConfiguration``                                                  |
++----------------+---------------------------------------+-------------------------------------------+
+| **gwc-wms**    | **org.geowebcache.filter.parameters** | **org.geowebcache.config.wms.parameters** |
+|                +---------------------------------------+-------------------------------------------+
+|                | ``NaiveWMSDimensionFilter``, ``WMSDimensionProvider``                             |
++----------------+---------------------------------------+-------------------------------------------+
+| **gwc-wms**    | **org.geowebcache.io**                | **org.geowebcache.io.codec**              |
+|                +---------------------------------------+-------------------------------------------+
+|                | ``ImageDecoder``, ``ImageDecoderContainer``, ``ImageDecoderImpl``,                |
+|                | ``ImageEncoder``, ``ImageEncoderContainer``, ``ImageEncoderImpl``,                |
+|                | ``ImageIOInitializer``, ``PNGImageEncoder``                                       |
++----------------+---------------------------------------+-------------------------------------------+
+
+
 Upgrading from a pre 1.4 release
 ================================
 

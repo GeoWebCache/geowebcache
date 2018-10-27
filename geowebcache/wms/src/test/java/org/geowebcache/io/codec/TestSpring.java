@@ -1,4 +1,4 @@
-package org.geowebcache.io;
+package org.geowebcache.io.codec;
 
 import java.util.List;
 import org.junit.Assert;

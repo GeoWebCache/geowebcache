@@ -14,7 +14,7 @@
  */
 package org.geowebcache.georss;
 
-import static org.geowebcache.storage.RasterMaskTestUtils.buildSampleFilterMatrix;
+import static org.geowebcache.georss.RasterMaskTestUtils.buildSampleFilterMatrix;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -28,8 +28,6 @@ import junit.framework.TestCase;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.storage.GeometryRasterMaskBuilder;
-import org.geowebcache.storage.RasterMaskTestUtils;
 import org.geowebcache.util.TestUtils;
 
 public class GeoRSSTileRangeBuilderTest extends TestCase {
