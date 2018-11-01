@@ -94,11 +94,9 @@ public abstract class TestSupport {
 
     protected void writeToFile(File file, String content) {
         Utils.createFileParents(file);
-        try {
-            FileWriter writer = new FileWriter(file);
+        try (FileWriter writer = new FileWriter(file); ) {
             writer.write(content);
             writer.flush();
-            writer.close();
         } catch (Exception exception) {
             throw Utils.exception(
                     exception, "Error creating or writing content to file '%s'.", file);

@@ -63,16 +63,13 @@ public class ConfigLoaderTest extends TestCase {
         FileUtils.rmFileCacheDir(cacheDir, null);
         cacheDir.mkdirs();
         // copy configuration file to cache directory
-        {
-            InputStream in = getClass().getResourceAsStream("/geowebcache-diskquota.xml");
-            FileOutputStream out =
-                    new FileOutputStream(new File(cacheDir, "geowebcache-diskquota.xml"));
+        try (InputStream in = getClass().getResourceAsStream("/geowebcache-diskquota.xml");
+                FileOutputStream out =
+                        new FileOutputStream(new File(cacheDir, "geowebcache-diskquota.xml")); ) {
             int c;
             while ((c = in.read()) != -1) {
                 out.write(c);
             }
-            in.close();
-            out.close();
         }
         storageFinder = EasyMock.createMock(DefaultStorageFinder.class);
         EasyMock.expect(storageFinder.getDefaultPath())

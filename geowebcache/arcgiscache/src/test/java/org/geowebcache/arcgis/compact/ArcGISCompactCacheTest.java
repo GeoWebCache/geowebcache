@@ -159,8 +159,7 @@ public class ArcGISCompactCacheTest extends TestCase {
     }
 
     private boolean startsWithJPEGHeader(File f) {
-        try {
-            FileInputStream fis = new FileInputStream(f);
+        try (FileInputStream fis = new FileInputStream(f); ) {
 
             byte[] fileHeader = new byte[JFIFHeader.length];
 

@@ -289,11 +289,8 @@ public abstract class JDBCQuotaStoreTest {
 
     protected void cleanupDatabase(DataSource dataSource) throws SQLException {
         // cleanup
-        Connection cx = null;
-        Statement st = null;
-        try {
-            cx = dataSource.getConnection();
-            st = cx.createStatement();
+        try (Connection cx = dataSource.getConnection();
+                Statement st = cx.createStatement(); ) {
             try {
                 st.execute("DROP TABLE TILEPAGE CASCADE");
             } catch (Exception e) {
@@ -303,13 +300,6 @@ public abstract class JDBCQuotaStoreTest {
                 st.execute("DROP TABLE TILESET CASCADE");
             } catch (Exception e) {
                 // fine too
-            }
-        } finally {
-            if (st != null) {
-                st.close();
-            }
-            if (cx != null) {
-                cx.close();
             }
         }
     }

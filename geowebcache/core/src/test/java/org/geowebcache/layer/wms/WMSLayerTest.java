@@ -39,6 +39,7 @@ import java.awt.image.SampleModel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
@@ -205,8 +206,10 @@ public class WMSLayerTest extends TileLayerTest {
                     } else {
                         assertEquals("image/png", format);
                         // verify the image has been paletted
-                        BufferedImage image = ImageIO.read(to.getBlob().getInputStream());
-                        assertThat(image.getColorModel(), instanceOf(IndexColorModel.class));
+                        try (InputStream inputStream = to.getBlob().getInputStream(); ) {
+                            BufferedImage image = ImageIO.read(inputStream);
+                            assertThat(image.getColorModel(), instanceOf(IndexColorModel.class));
+                        }
                     }
 
                     return true;
@@ -226,20 +229,23 @@ public class WMSLayerTest extends TileLayerTest {
                     String format = ImageMime.jpegPng8.getMimeType(to.getBlob());
                     long[] xyz = to.getXYZ();
                     assertEquals(10, xyz[2]);
-                    BufferedImage image = ImageIO.read(to.getBlob().getInputStream());
-                    // check the ones in the full black area are jpeg, the others png
-                    if (xyz[0] == 900 || xyz[1] == 602) {
-                        // it's a gray
-                        assertEquals(1, image.getColorModel().getNumComponents());
-                        assertEquals("image/jpeg", format);
-                    } else {
-                        assertEquals("image/png", format);
-                        // verify the image has been paletted (palette gets generated with 4
-                        // components,
-                        // there is no optimized gray/alpha palette generator)
-                        assertThat(image.getColorModel(), instanceOf(IndexColorModel.class));
-                    }
 
+                    try (InputStream is = to.getBlob().getInputStream()) {
+                        BufferedImage image = ImageIO.read(is);
+
+                        // check the ones in the full black area are jpeg, the others png
+                        if (xyz[0] == 900 || xyz[1] == 602) {
+                            // it's a gray
+                            assertEquals(1, image.getColorModel().getNumComponents());
+                            assertEquals("image/jpeg", format);
+                        } else {
+                            assertEquals("image/png", format);
+                            // verify the image has been paletted (palette gets generated with 4
+                            // components,
+                            // there is no optimized gray/alpha palette generator)
+                            assertThat(image.getColorModel(), instanceOf(IndexColorModel.class));
+                        }
+                    }
                     return true;
                 },
                 new GrayAlphaSourceHelper());

@@ -787,7 +787,8 @@ public class FileBlobStore implements BlobStore {
         final DirectoryStream<Path> layerDirStream =
                 Files.newDirectoryStream(layerPath.toPath(), filter);
         return StreamSupport.stream(layerDirStream.spliterator(), false)
-                .onClose(
+                .onClose( // Delegate closing so that when the returned stream is closed, so is the
+                        // underlying DirectoryStream
                         () -> {
                             try {
                                 layerDirStream.close();
