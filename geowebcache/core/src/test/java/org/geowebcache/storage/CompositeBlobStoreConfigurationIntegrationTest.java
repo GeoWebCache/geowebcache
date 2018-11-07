@@ -29,6 +29,7 @@ import org.geowebcache.config.ConfigurationPersistenceException;
 import org.geowebcache.config.FileBlobStoreInfo;
 import org.geowebcache.config.GWCConfigIntegrationTest;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -202,6 +203,8 @@ public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigInt
         assertFalse(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
     }
 
+    @Ignore // The state of not having a default blobstore is allowed, so removing it should be
+    // allowed.
     @Test
     public void testRemoveDefault() throws IOException {
         testAddDefault();
@@ -215,7 +218,7 @@ public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigInt
                                     "message",
                                     containsString("default blob store can't be removed"))));
             blobStoreAggregator.removeBlobStore("newFileBlobStore");
-
+            System.out.println("FOO");
         } finally {
             assertTrue(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
             assertTrue(blobStoreAggregator.blobStoreExists("newFileBlobStore"));

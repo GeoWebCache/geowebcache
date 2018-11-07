@@ -1127,16 +1127,16 @@ public class XMLConfiguration
     @Override
     public synchronized void removeBlobStore(String name) {
         // ensure there is a BlobStoreInfo with the name
-        final Optional<BlobStoreInfo> optionalInfo = getBlobStore(name);
-        if (!optionalInfo.isPresent()) {
-            throw new NoSuchElementException(
-                    String.format(
-                            "Failed to remove BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.",
-                            name));
-        }
+        final BlobStoreInfo infoToRemove =
+                getBlobStore(name)
+                        .orElseThrow(
+                                () ->
+                                        new NoSuchElementException(
+                                                String.format(
+                                                        "Failed to remove BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.",
+                                                        name)));
         // remove the BlobStoreInfo
         final List<BlobStoreInfo> blobStores = getGwcConfig().getBlobStores();
-        final BlobStoreInfo infoToRemove = optionalInfo.get();
         blobStores.remove(infoToRemove);
         // try to save
         try {
