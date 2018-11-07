@@ -64,7 +64,7 @@ public class ApplicationMime extends MimeType {
             new ApplicationMime(
                     "application/vnd.mapbox-vector-tile",
                     "pbf",
-                    "mapbox-vectortile-legacy",
+                    "mapbox-vectortile",
                     "application/vnd.mapbox-vector-tile",
                     true);
 
