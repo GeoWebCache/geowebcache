@@ -14,18 +14,24 @@
  */
 package org.geowebcache.storage;
 
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.MockWepAppContextRule;
 import org.geowebcache.config.BlobStoreInfo;
+import org.geowebcache.config.ConfigurationException;
+import org.geowebcache.config.ConfigurationPersistenceException;
 import org.geowebcache.config.FileBlobStoreInfo;
 import org.geowebcache.config.GWCConfigIntegrationTest;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 /**
@@ -43,6 +49,8 @@ public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigInt
     @Rule public TemporaryFolder tmpFolder = new TemporaryFolder();
 
     @Rule public MockWepAppContextRule context = new MockWepAppContextRule();
+
+    @Rule public ExpectedException exception = ExpectedException.none();
 
     @Override
     @Before
@@ -199,12 +207,18 @@ public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigInt
         testAddDefault();
 
         try {
+            exception.expect(ConfigurationPersistenceException.class);
+            exception.expectCause(
+                    allOf(
+                            instanceOf(ConfigurationException.class),
+                            hasProperty(
+                                    "message",
+                                    containsString("default blob store can't be removed"))));
             blobStoreAggregator.removeBlobStore("newFileBlobStore");
-            Assert.fail();
-        } catch (Exception e) {
-            // expected
+
+        } finally {
+            assertTrue(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
+            assertTrue(blobStoreAggregator.blobStoreExists("newFileBlobStore"));
         }
-        assertTrue(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
-        assertTrue(blobStoreAggregator.blobStoreExists("newFileBlobStore"));
     }
 }
