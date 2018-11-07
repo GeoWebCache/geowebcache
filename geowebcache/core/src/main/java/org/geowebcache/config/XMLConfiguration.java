@@ -121,7 +121,7 @@ public class XMLConfiguration
 
     private GridSetBroker gridSetBroker;
 
-    private List<BlobStoreConfigurationListener> blobStoreListeners = new ArrayList<>();
+    private ListenerCollection<BlobStoreConfigurationListener> blobStoreListeners = new ListenerCollection<>();
 
     /**
      * Base Constructor with custom ConfiguratioNResourceProvider
@@ -1098,9 +1098,7 @@ public class XMLConfiguration
         // try to save the config
         try {
             save();
-            for (BlobStoreConfigurationListener listener : blobStoreListeners) {
-                listener.handleAddBlobStore(info);
-            }
+            blobStoreListeners.safeForEach(listener->{listener.handleAddBlobStore(info);});
         } catch (IOException | GeoWebCacheException ioe) {
             // save failed, roll back the add
             blobStores.remove(info);
@@ -1127,9 +1125,7 @@ public class XMLConfiguration
         // try to save
         try {
             save();
-            for (BlobStoreConfigurationListener listener : blobStoreListeners) {
-                listener.handleRemoveBlobStore(infoToRemove);
-            }
+            blobStoreListeners.safeForEach(listener->{listener.handleRemoveBlobStore(infoToRemove);});
         } catch (IOException | GeoWebCacheException ioe) {
             // save failed, roll back the delete
             blobStores.add(infoToRemove);
@@ -1160,9 +1156,7 @@ public class XMLConfiguration
         // try to save
         try {
             save();
-            for (BlobStoreConfigurationListener listener : blobStoreListeners) {
-                listener.handleModifyBlobStore(info);
-            }
+            blobStoreListeners.safeForEach(listener->{listener.handleModifyBlobStore(info);});
         } catch (IOException | GeoWebCacheException ioe) {
             // save failed, roll back the modify
             blobStores.remove(info);
@@ -1226,16 +1220,20 @@ public class XMLConfiguration
         // get the list of BlobStoreInfos
         final List<BlobStoreInfo> blobStoreInfos = getGwcConfig().getBlobStores();
         // find the one to rename
+        final BlobStoreInfo blobStoreInfoToRename;
         Iterator<BlobStoreInfo> infos = blobStoreInfos.iterator();
-        BlobStoreInfo blobStoreInfoToRename = null;
-        while (infos.hasNext() && blobStoreInfoToRename == null) {
-            final BlobStoreInfo info = infos.next();
-            if (info.getName().equals(oldName)) {
-                // found the one to rename
-                // remove from the iterator
-                infos.remove();
-                blobStoreInfoToRename = info;
+        {
+            BlobStoreInfo foundInfo = null;
+            while (infos.hasNext() && foundInfo == null) {
+                final BlobStoreInfo info = infos.next();
+                if (info.getName().equals(oldName)) {
+                    // found the one to rename
+                    // remove from the iterator
+                    infos.remove();
+                    foundInfo = info;
+                }
             }
+            blobStoreInfoToRename = foundInfo;
         }
         // if we didn't remove one, it wasn't in there to be removed
         if (blobStoreInfoToRename == null) {
@@ -1251,9 +1249,7 @@ public class XMLConfiguration
         // persist the info
         try {
             save();
-            for (BlobStoreConfigurationListener listener : blobStoreListeners) {
-                listener.handleRenameBlobStore(oldName, blobStoreInfoToRename);
-            }
+            blobStoreListeners.safeForEach(listener->{listener.handleRenameBlobStore(oldName, blobStoreInfoToRename);});
 
             if (log.isTraceEnabled()) {
                 log.trace(
@@ -1308,9 +1304,7 @@ public class XMLConfiguration
 
     @Override
     public void removeBlobStoreListener(BlobStoreConfigurationListener listener) {
-        if (blobStoreListeners.contains(listener)) {
-            blobStoreListeners.remove(listener);
-        }
+        blobStoreListeners.remove(listener);
     }
 
     /** @see ServerConfiguration#getLockProvider() */
