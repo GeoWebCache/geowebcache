@@ -16,6 +16,7 @@ package org.geowebcache.config;
 
 import java.io.IOException;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.storage.UnsuitableStorageException;
 
 /**
  * Indicates a class should listen to {@link BlobStoreConfiguration} change events. Implementations
@@ -23,13 +24,14 @@ import org.geowebcache.GeoWebCacheException;
  * org.geowebcache.storage.BlobStoreAggregator}
  */
 public interface BlobStoreConfigurationListener {
-    void handleAddBlobStore(BlobStoreInfo newBlobStore) throws GeoWebCacheException, IOException;
+    void handleAddBlobStore(BlobStoreInfo newBlobStore) 
+            throws UnsuitableStorageException, GeoWebCacheException, IOException;
 
     void handleRemoveBlobStore(BlobStoreInfo removedBlobStore)
             throws GeoWebCacheException, IOException;
 
     void handleModifyBlobStore(BlobStoreInfo modifiedBlobStore)
-            throws GeoWebCacheException, IOException;
+            throws UnsuitableStorageException, GeoWebCacheException, IOException;
 
     void handleRenameBlobStore(String oldName, BlobStoreInfo modifiedBlobStore)
             throws GeoWebCacheException, IOException;
