@@ -12,7 +12,6 @@
  *
  * <p>Copyright 2018
  */
-
 package org.geowebcache.config;
 
 import static org.hamcrest.Matchers.arrayContaining;
@@ -28,89 +27,96 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 public class ListenerCollectionTest {
-    
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-    
+
+    @Rule public ExpectedException exception = ExpectedException.none();
+
     @Test
     public void testEmpty() throws Exception {
         ListenerCollection<Runnable> collection = new ListenerCollection<>();
-        
-        collection.safeForEach((x)->{fail("should not be called");});
+
+        collection.safeForEach(
+                (x) -> {
+                    fail("should not be called");
+                });
     }
-    
+
     @Test
     public void testCallsListener() throws Exception {
         ListenerCollection<Runnable> collection = new ListenerCollection<>();
-        
-        Runnable l1 = EasyMock.createMock("l1",Runnable.class);
-        
-        l1.run(); EasyMock.expectLastCall().once();
-        
+
+        Runnable l1 = EasyMock.createMock("l1", Runnable.class);
+
+        l1.run();
+        EasyMock.expectLastCall().once();
+
         EasyMock.replay(l1);
-        
+
         collection.add(l1);
-        
+
         collection.safeForEach(Runnable::run);
-        
+
         EasyMock.verify(l1);
     }
-    
+
     @Test
     public void testCallsListeners() throws Exception {
         ListenerCollection<Runnable> collection = new ListenerCollection<>();
         IMocksControl control = EasyMock.createControl();
-        Runnable l1 = control.createMock("l1",Runnable.class);
-        Runnable l2 = control.createMock("l2",Runnable.class);
-        
+        Runnable l1 = control.createMock("l1", Runnable.class);
+        Runnable l2 = control.createMock("l2", Runnable.class);
+
         control.checkOrder(true);
-        l1.run(); EasyMock.expectLastCall().once();
-        l2.run(); EasyMock.expectLastCall().once();
-        
+        l1.run();
+        EasyMock.expectLastCall().once();
+        l2.run();
+        EasyMock.expectLastCall().once();
+
         control.replay();
-        
+
         collection.add(l1);
         collection.add(l2);
-        
+
         collection.safeForEach(Runnable::run);
-        
+
         control.verify();
     }
-    
+
     @Test
     public void testRemove() throws Exception {
         ListenerCollection<Runnable> collection = new ListenerCollection<>();
         IMocksControl control = EasyMock.createControl();
-        Runnable l1 = control.createMock("l1",Runnable.class);
-        Runnable l2 = control.createMock("l2",Runnable.class);
-        
+        Runnable l1 = control.createMock("l1", Runnable.class);
+        Runnable l2 = control.createMock("l2", Runnable.class);
+
         control.checkOrder(true);
-        l2.run(); EasyMock.expectLastCall().once();
-        
+        l2.run();
+        EasyMock.expectLastCall().once();
+
         control.replay();
-        
+
         collection.add(l1);
         collection.add(l2);
         collection.remove(l1);
-        
+
         collection.safeForEach(Runnable::run);
-        
+
         control.verify();
     }
-    
+
     @Test
     public void testException() throws Exception {
         ListenerCollection<Runnable> collection = new ListenerCollection<>();
         IMocksControl control = EasyMock.createControl();
-        Runnable l1 = control.createMock("l1",Runnable.class);
-        
+        Runnable l1 = control.createMock("l1", Runnable.class);
+
         Exception e1 = new IllegalArgumentException();
         control.checkOrder(true);
-        
-        l1.run(); EasyMock.expectLastCall().andThrow(e1);
-        
+
+        l1.run();
+        EasyMock.expectLastCall().andThrow(e1);
+
         control.replay();
-        
+
         try {
             collection.add(l1);
             exception.expect(sameInstance(e1));
@@ -119,22 +125,24 @@ public class ListenerCollectionTest {
             control.verify();
         }
     }
-    
+
     @Test
     public void testExceptionDoesntPreventOthers() throws Exception {
         ListenerCollection<Runnable> collection = new ListenerCollection<>();
         IMocksControl control = EasyMock.createControl();
-        Runnable l1 = control.createMock("l1",Runnable.class);
-        Runnable l2 = control.createMock("l2",Runnable.class);
-        
+        Runnable l1 = control.createMock("l1", Runnable.class);
+        Runnable l2 = control.createMock("l2", Runnable.class);
+
         Exception e1 = new IllegalArgumentException();
         control.checkOrder(true);
-        
-        l1.run(); EasyMock.expectLastCall().andThrow(e1);
-        l2.run(); EasyMock.expectLastCall().once();
-        
+
+        l1.run();
+        EasyMock.expectLastCall().andThrow(e1);
+        l2.run();
+        EasyMock.expectLastCall().once();
+
         control.replay();
-        
+
         try {
             collection.add(l1);
             collection.add(l2);
@@ -144,28 +152,32 @@ public class ListenerCollectionTest {
             control.verify();
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void testSuppressedExceptionsRecorded() throws Exception {
         ListenerCollection<Runnable> collection = new ListenerCollection<>();
         IMocksControl control = EasyMock.createControl();
-        Runnable l1 = control.createMock("l1",Runnable.class);
-        Runnable l2 = control.createMock("l2",Runnable.class);
-        
+        Runnable l1 = control.createMock("l1", Runnable.class);
+        Runnable l2 = control.createMock("l2", Runnable.class);
+
         Exception e1 = new IllegalArgumentException();
         Exception e2 = new IllegalArgumentException();
         control.checkOrder(true);
-        
-        l1.run(); EasyMock.expectLastCall().andThrow(e1);
-        l2.run(); EasyMock.expectLastCall().andThrow(e2);
-        
+
+        l1.run();
+        EasyMock.expectLastCall().andThrow(e1);
+        l2.run();
+        EasyMock.expectLastCall().andThrow(e2);
+
         control.replay();
-        
+
         try {
             collection.add(l1);
             collection.add(l2);
-            exception.expect(both(sameInstance(e2)).and(hasProperty("suppressed",arrayContaining(sameInstance(e1)))));
+            exception.expect(
+                    both(sameInstance(e2))
+                            .and(hasProperty("suppressed", arrayContaining(sameInstance(e1)))));
             collection.safeForEach(Runnable::run);
         } finally {
             control.verify();
