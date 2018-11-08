@@ -22,6 +22,9 @@ import java.util.Set;
 
 public class ApplicationMime extends MimeType {
 
+    public static final String MAPBOX_TILES_LEGACY_MIME =
+            "application/x-protobuf;type=mapbox-vector";
+
     protected boolean vector;
 
     public static final ApplicationMime bil16 =
@@ -59,10 +62,10 @@ public class ApplicationMime extends MimeType {
 
     public static final ApplicationMime mapboxVector =
             new ApplicationMime(
-                    "application/x-protobuf",
+                    "application/vnd.mapbox-vector-tile",
                     "pbf",
                     "mapbox-vectortile",
-                    "application/x-protobuf;type=mapbox-vector",
+                    "application/vnd.mapbox-vector-tile",
                     true);
 
     static Set<ApplicationMime> ALL =
@@ -108,6 +111,9 @@ public class ApplicationMime extends MimeType {
 
     protected static ApplicationMime checkForFormat(String formatStr) throws MimeException {
         ApplicationMime mimeType = BY_FORMAT.get(formatStr);
+        if (mimeType == null && formatStr.equals(MAPBOX_TILES_LEGACY_MIME)) {
+            return mapboxVector;
+        }
         return mimeType;
     }
 
