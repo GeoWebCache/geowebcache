@@ -27,6 +27,7 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.mime.ApplicationMime;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
@@ -292,6 +293,7 @@ public class Demo {
                         + "  var options = opt_options || {};\n"
                         + "\n"
                         + "  var element = document.createElement('div');\n"
+                        + "  element.setAttribute('id', 'scale');\n"
                         + "  element.className = 'ol-scale-value';\n"
                         + "\n"
                         + "  ol.control.Control.call(this, {\n"
@@ -317,7 +319,7 @@ public class Demo {
                         + "    } else {\n"
                         + "        scale = Math.round(scale);\n"
                         + "    } \n"
-                        + "    this.element.innerHTML = 'Scale = 1 : ' + scale;\n"
+                        + "    document.getElementById('scale').innerHTML =  'Scale = 1 : ' + scale;\n"
                         + "  }, this);\n"
                         + "  ol.control.Control.prototype.setMap.call(this, map);\n"
                         + "}\n"
@@ -387,11 +389,11 @@ public class Demo {
                             + "    url: url,\n");
             // Examine mime type for correct VT format
             String vtName = formatMime.getInternalName();
-            if ("mapbox-vectortile".equals(vtName)) {
+            if (ApplicationMime.mapboxVector.getInternalName().equals(vtName)) {
                 buf.append("    format: new ol.format.MVT({}),\n");
-            } else if ("topojson".equals(vtName)) {
+            } else if (ApplicationMime.topojson.getInternalName().equals(vtName)) {
                 buf.append("    format: new ol.format.TopoJSON({}),\n");
-            } else if ("geojson".equals(vtName)) {
+            } else if (ApplicationMime.geojson.getInternalName().equals(vtName)) {
                 buf.append("    format: new ol.format.GeoJSON({}),\n");
             }
             buf.append("    projection: projection,\n" + "    tileGrid: new ol.tilegrid.WMTS({\n");
