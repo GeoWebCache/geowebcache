@@ -14,8 +14,10 @@
  */
 package org.geowebcache.config;
 
+import static org.geowebcache.util.TestUtils.assertPresent;
 import static org.geowebcache.util.TestUtils.isPresent;
 import static org.geowebcache.util.TestUtils.notPresent;
+import static org.geowebcache.util.TestUtils.requirePresent;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
@@ -59,7 +61,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     public void testAdd() throws Exception {
         I goodGridSet = getGoodInfo("test", 1);
         addInfo(config, goodGridSet);
-        I retrieved = getInfo(config, "test").get();
+        I retrieved = assertPresent(getInfo(config, "test"));
         assertThat(retrieved, infoEquals(goodGridSet));
     }
 
@@ -69,7 +71,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         addInfo(config, goodGridSet);
 
         C config2 = getSecondConfig();
-        I retrieved = getInfo(config2, "test").get();
+        I retrieved = assertPresent(getInfo(config2, "test"));
         assertThat(retrieved, infoEquals(goodGridSet));
         assertNameSetMatchesCollection(config2);
     }
@@ -98,7 +100,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         } catch (IllegalArgumentException ex) { // May want to change to something more specific.
 
         }
-        I retrieved = getInfo(config, "test").get();
+        I retrieved = assertPresent(getInfo(config, "test"));
         assertThat(retrieved, infoEquals(goodGridSet));
     }
 
@@ -179,7 +181,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     @Test
     public void testModifyBadGridSetNoChange() throws Exception {
         testAdd();
-        I goodGridSet = getInfo(config, "test").get();
+        I goodGridSet = requirePresent(getInfo(config, "test"));
         I badGridSet = getBadInfo("test", 2);
 
         try {
@@ -246,7 +248,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     @Test
     public void testModifyCallRequiredToChangeInfoFromGetInfo() throws Exception {
         testAdd();
-        I goodGridSet = getInfo(config, "test").get();
+        I goodGridSet = requirePresent(getInfo(config, "test"));
         doModifyInfo(goodGridSet, 2);
 
         Optional<I> retrieved = getInfo(config, "test");
@@ -258,7 +260,11 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     public void testModifyCallRequiredToChangeInfoFromGetInfos() throws Exception {
         testAdd();
         I goodGridSet =
-                getInfos(config).stream().filter(i -> i.getName().equals("test")).findAny().get();
+                requirePresent(
+                        getInfos(config)
+                                .stream()
+                                .filter(i -> i.getName().equals("test"))
+                                .findAny());
         doModifyInfo(goodGridSet, 2);
 
         Optional<I> retrieved = getInfo(config, "test");
@@ -269,7 +275,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     @Test
     public void testModifyCallRequiredToChangeExistingInfoFromGetInfo() throws Exception {
         String name = getExistingInfo();
-        I goodGridSet = getInfo(config, name).get();
+        I goodGridSet = requirePresent(getInfo(config, name));
         doModifyInfo(goodGridSet, 2);
 
         Optional<I> retrieved = getInfo(config, name);
@@ -280,7 +286,8 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     public void testModifyCallRequiredToChangeExistingInfoFromGetInfos() throws Exception {
         String name = getExistingInfo();
         I goodGridSet =
-                getInfos(config).stream().filter(i -> i.getName().equals(name)).findAny().get();
+                requirePresent(
+                        getInfos(config).stream().filter(i -> i.getName().equals(name)).findAny());
         doModifyInfo(goodGridSet, 2);
 
         Optional<I> retrieved = getInfo(config, name);

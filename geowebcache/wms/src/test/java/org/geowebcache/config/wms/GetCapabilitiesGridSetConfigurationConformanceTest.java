@@ -16,6 +16,8 @@ package org.geowebcache.config.wms;
 
 import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.expect;
+import static org.geowebcache.util.TestUtils.assertPresent;
+import static org.geowebcache.util.TestUtils.requirePresent;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -23,7 +25,6 @@ import com.google.common.base.Objects;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import org.easymock.EasyMock;
 import org.geotools.data.ows.OperationType;
 import org.geotools.ows.wms.*;
@@ -117,14 +118,13 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
 
     @Test
     public void testLayerGridsets() throws Exception {
-        Optional<TileLayer> layer =
-                ((GetCapabilitiesConfiguration) config).getLayer("testExisting");
-        Optional<GridSet> gridset = config.getGridSet("testExisting:EPSG:3978");
+        TileLayer layer =
+                requirePresent(((GetCapabilitiesConfiguration) config).getLayer("testExisting"));
+        GridSet gridset = assertPresent(config.getGridSet("testExisting:EPSG:3978"));
 
-        TileLayer tileLayer = layer.get();
-        GridSubset gridSubset = tileLayer.getGridSubset("testExisting:EPSG:3978");
+        GridSubset gridSubset = layer.getGridSubset("testExisting:EPSG:3978");
         GridSet gridSet2 = gridSubset.getGridSet();
-        assertThat(gridSet2, equalTo(gridset.get()));
+        assertThat(gridSet2, equalTo(gridset));
     }
 
     @Override

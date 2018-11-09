@@ -205,4 +205,29 @@ public class TestUtils {
             }
         };
     }
+
+    /**
+     * Assert that an Optional is present, and returns its value if it is. Use this for checking the
+     * behaviour of the unit under test.
+     *
+     * @param opt
+     * @return The optional's value
+     */
+    public static <T> T assertPresent(Optional<T> opt) throws AssertionError {
+        return opt.orElseThrow(() -> new AssertionError("Optional was not present"));
+    };
+
+    /**
+     * Require that an Optional is present, and returns its value if it is. Use this where the test
+     * should have ensured that it will be present.
+     *
+     * @param opt
+     * @return The optional's value
+     */
+    public static <T> T requirePresent(Optional<T> opt) throws IllegalStateException {
+        return opt.orElseThrow(
+                () ->
+                        new IllegalStateException(
+                                "Optional was not present and is required for test"));
+    };
 }
