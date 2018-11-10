@@ -222,6 +222,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
             isRunning = true;
         } catch (InterruptedException e) {
             log.info("DiskQuotaMonitor startup process interrupted", e);
+            Thread.currentThread().interrupt();
         }
     }
 

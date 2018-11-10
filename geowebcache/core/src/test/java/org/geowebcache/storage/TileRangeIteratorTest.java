@@ -234,6 +234,7 @@ public class TileRangeIteratorTest extends TestCase {
         try {
             executorService.awaitTermination(120, TimeUnit.SECONDS);
         } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
             fail("Executor service timeout: " + ie.getMessage());
         }
 

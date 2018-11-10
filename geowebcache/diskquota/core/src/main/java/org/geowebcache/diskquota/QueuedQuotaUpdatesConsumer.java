@@ -190,6 +190,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long>, Serializable 
                 checkAggregatedTimeouts();
             } catch (InterruptedException e) {
                 log.info("Shutting down quota update background task due to InterruptedException");
+                Thread.currentThread().interrupt();
                 break;
                 // it doesn't matter
             } catch (RuntimeException e) {

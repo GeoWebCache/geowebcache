@@ -48,6 +48,7 @@ public class BDBQuotaStoreFactory implements QuotaStoreFactory {
 
             return bdbQuotaStore;
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new IOException("Failed to startup the BDB store", e);
         }
     }

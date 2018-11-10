@@ -298,6 +298,7 @@ class GeoRSSPollTask implements Runnable {
                 logger.error("Problem truncating based on GeoRSS feed: " + e.getMessage());
             } catch (InterruptedException e) {
                 logger.info("Task abruptly interrupted.");
+                Thread.currentThread().interrupt();
                 return;
             }
         }
@@ -367,6 +368,7 @@ class GeoRSSPollTask implements Runnable {
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
                 logger.debug(e);
+                Thread.currentThread().interrupt();
             }
 
             liveCount = 0;

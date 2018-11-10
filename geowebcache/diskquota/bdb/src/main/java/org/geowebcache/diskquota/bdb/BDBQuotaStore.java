@@ -197,6 +197,7 @@ public class BDBQuotaStore implements QuotaStore {
                     "Time out shutting down quota store write thread, trying to "
                             + "close the entity store as is.",
                     ie);
+            Thread.currentThread().interrupt();
         } finally {
             Environment environment = entityStore.getEnvironment();
             entityStore.close();

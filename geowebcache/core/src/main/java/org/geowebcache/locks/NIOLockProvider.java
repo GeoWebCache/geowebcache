@@ -87,6 +87,7 @@ public class NIOLockProvider implements LockProvider {
                         try {
                             Thread.sleep(waitBeforeRetry);
                         } catch (InterruptedException ie) {
+                            Thread.currentThread().interrupt();
                             // ok, moving on
                         }
                     } catch (IOException e) {
@@ -95,6 +96,7 @@ public class NIOLockProvider implements LockProvider {
                         try {
                             Thread.sleep(waitBeforeRetry);
                         } catch (InterruptedException ie) {
+                            Thread.currentThread().interrupt();
                             // ok, moving on
                         }
                     }

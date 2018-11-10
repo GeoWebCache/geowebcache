@@ -118,23 +118,32 @@ public class QuotaUpdatesMonitor {
         final int maxAttempts = 6;
         final int seconds = 5;
         int attempts = 1;
-        while (!executorService.isTerminated()) {
-            attempts++;
-            try {
-                awaitTermination(seconds, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                String message =
-                        "Usage statistics thread helper for DiskQuota failed to shutdown within "
-                                + (attempts * seconds)
-                                + " seconds. Attempt "
-                                + attempts
-                                + " of "
-                                + maxAttempts
-                                + "...";
-                log.warn(message);
-                if (attempts == maxAttempts) {
-                    throw new RuntimeException(message, e);
+        boolean interrupted = false;
+        try {
+            while (!executorService.isTerminated()) {
+                attempts++;
+                try {
+                    awaitTermination(seconds, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                    String message =
+                            "Usage statistics thread helper for DiskQuota failed to shutdown within "
+                                    + (attempts * seconds)
+                                    + " seconds. Attempt "
+                                    + attempts
+                                    + " of "
+                                    + maxAttempts
+                                    + "...";
+                    log.warn(message);
+                    if (attempts == maxAttempts) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException(message, e);
+                    }
                 }
+            }
+        } finally {
+            if (interrupted) {
+                Thread.currentThread().interrupt();
             }
         }
     }

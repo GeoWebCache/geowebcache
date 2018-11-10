@@ -396,14 +396,14 @@ public class RuntimeStats {
         }
 
         public void run() {
-            while (run) {
-                try {
+            try {
+                while (run) {
                     Thread.sleep(stats.pollInterval * 1000);
-                } catch (InterruptedException e) {
-                    // /Nothing
+                    updateLists();
                 }
-
-                updateLists();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                // Let the thread die
             }
         }
 

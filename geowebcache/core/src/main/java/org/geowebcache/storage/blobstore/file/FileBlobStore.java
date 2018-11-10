@@ -197,6 +197,7 @@ public class FileBlobStore implements BlobStore {
                         "FileStore delete background service interrupted while deleting '"
                                 + directory.getAbsolutePath()
                                 + "'. Process will be resumed at next start up");
+                Thread.currentThread().interrupt();
             }
         }
 
