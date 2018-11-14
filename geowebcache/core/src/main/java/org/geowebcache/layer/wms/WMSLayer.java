@@ -219,7 +219,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         this.wmsQueryLayers = wmsQueryLayers;
     }
 
-    protected WMSLayer readResolve() {
+    protected Object readResolve() {
         super.readResolve();
         return this;
     }

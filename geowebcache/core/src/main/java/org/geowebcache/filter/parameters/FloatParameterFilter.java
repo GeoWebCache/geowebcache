@@ -42,7 +42,7 @@ public class FloatParameterFilter extends ParameterFilter {
         values = new ArrayList<Float>(0);
     }
 
-    protected FloatParameterFilter readResolve() {
+    protected Object readResolve() {
         super.readResolve();
         if (values == null) {
             values = new ArrayList<Float>(0);
