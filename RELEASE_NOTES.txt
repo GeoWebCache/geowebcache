@@ -1,3 +1,15 @@
+GeoWebCache 1.14.1 (2018-11-19)
+-------------------------------
+
+Stable release for 1.14 branch
+
+Improvements:
++++++++++++++
+- Update to jai-ext 1.1.3
+- Update to imageio-ext 1.1.27
+- Add support for modern application/vnd.mapbox-vector-tile mapbox vector tiles mime type
+- Update demo page to use OpenLayers 5.3.0
+
 GeoWebCache 1.14.0 (2018-09-21)
 -------------------------------
 
