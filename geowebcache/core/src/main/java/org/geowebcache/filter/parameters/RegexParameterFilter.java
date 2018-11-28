@@ -58,7 +58,7 @@ public class RegexParameterFilter extends CaseNormalizingParameterFilter {
         return Pattern.compile(regex, flags);
     }
 
-    protected RegexParameterFilter readResolve() {
+    protected Object readResolve() {
         super.readResolve();
         Preconditions.checkNotNull(regex);
         this.pat = Pattern.compile(regex);

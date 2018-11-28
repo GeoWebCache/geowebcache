@@ -34,7 +34,7 @@ public class StringParameterFilter extends CaseNormalizingParameterFilter {
         values = new ArrayList<String>(0);
     }
 
-    protected StringParameterFilter readResolve() {
+    protected Object readResolve() {
         super.readResolve();
         if (values == null) {
             values = new ArrayList<String>(0);
