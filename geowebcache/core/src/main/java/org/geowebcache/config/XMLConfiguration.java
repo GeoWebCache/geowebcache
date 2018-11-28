@@ -77,7 +77,9 @@ import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.seed.TruncateLayerRequest;
 import org.geowebcache.storage.DefaultStorageFinder;
+import org.geowebcache.storage.UnsuitableStorageException;
 import org.geowebcache.util.ApplicationContextProvider;
+import org.geowebcache.util.ExceptionUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -121,7 +123,8 @@ public class XMLConfiguration
 
     private GridSetBroker gridSetBroker;
 
-    private List<BlobStoreConfigurationListener> blobStoreListeners = new ArrayList<>();
+    private ListenerCollection<BlobStoreConfigurationListener> blobStoreListeners =
+            new ListenerCollection<>();
 
     /**
      * Base Constructor with custom ConfiguratioNResourceProvider
@@ -1098,14 +1101,25 @@ public class XMLConfiguration
         // try to save the config
         try {
             save();
-            for (BlobStoreConfigurationListener listener : blobStoreListeners) {
-                listener.handleAddBlobStore(info);
-            }
-        } catch (IOException | GeoWebCacheException ioe) {
+        } catch (IOException ioe) {
             // save failed, roll back the add
             blobStores.remove(info);
             throw new ConfigurationPersistenceException(
                     String.format("Unable to add BlobStoreInfo \"%s\"", info), ioe);
+        }
+        try {
+            blobStoreListeners.safeForEach(
+                    listener -> {
+                        listener.handleAddBlobStore(info);
+                    });
+        } catch (IOException | GeoWebCacheException e) {
+            if (ExceptionUtils.isOrSuppresses(e, UnsuitableStorageException.class)) {
+                // Can't store here, roll back
+                blobStores.remove(info);
+                throw new ConfigurationPersistenceException(
+                        String.format("Unable to add BlobStoreInfo \"%s\"", info), e);
+            }
+            throw new ConfigurationPersistenceException(e);
         }
     }
 
@@ -1113,28 +1127,33 @@ public class XMLConfiguration
     @Override
     public synchronized void removeBlobStore(String name) {
         // ensure there is a BlobStoreInfo with the name
-        final Optional<BlobStoreInfo> optionalInfo = getBlobStore(name);
-        if (!optionalInfo.isPresent()) {
-            throw new NoSuchElementException(
-                    String.format(
-                            "Failed to remove BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.",
-                            name));
-        }
+        final BlobStoreInfo infoToRemove =
+                getBlobStore(name)
+                        .orElseThrow(
+                                () ->
+                                        new NoSuchElementException(
+                                                String.format(
+                                                        "Failed to remove BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.",
+                                                        name)));
         // remove the BlobStoreInfo
         final List<BlobStoreInfo> blobStores = getGwcConfig().getBlobStores();
-        final BlobStoreInfo infoToRemove = optionalInfo.get();
         blobStores.remove(infoToRemove);
         // try to save
         try {
             save();
-            for (BlobStoreConfigurationListener listener : blobStoreListeners) {
-                listener.handleRemoveBlobStore(infoToRemove);
-            }
-        } catch (IOException | GeoWebCacheException ioe) {
+        } catch (IOException ioe) {
             // save failed, roll back the delete
             blobStores.add(infoToRemove);
             throw new ConfigurationPersistenceException(
                     String.format("Unable to remove BlobStoreInfo \"%s\"", name), ioe);
+        }
+        try {
+            blobStoreListeners.safeForEach(
+                    listener -> {
+                        listener.handleRemoveBlobStore(infoToRemove);
+                    });
+        } catch (IOException | GeoWebCacheException e) {
+            throw new ConfigurationPersistenceException(e);
         }
     }
 
@@ -1160,15 +1179,27 @@ public class XMLConfiguration
         // try to save
         try {
             save();
-            for (BlobStoreConfigurationListener listener : blobStoreListeners) {
-                listener.handleModifyBlobStore(info);
-            }
-        } catch (IOException | GeoWebCacheException ioe) {
+        } catch (IOException ioe) {
             // save failed, roll back the modify
             blobStores.remove(info);
             blobStores.add(infoToRemove);
             throw new ConfigurationPersistenceException(
                     String.format("Unable to modify BlobStoreInfo \"%s\"", info.getName()), ioe);
+        }
+        try {
+            blobStoreListeners.safeForEach(
+                    listener -> {
+                        listener.handleModifyBlobStore(info);
+                    });
+        } catch (IOException | GeoWebCacheException e) {
+            if (ExceptionUtils.isOrSuppresses(e, UnsuitableStorageException.class)) {
+                // Can't store here, roll back
+                blobStores.remove(info);
+                blobStores.add(infoToRemove);
+                throw new ConfigurationPersistenceException(
+                        String.format("Unable to modify BlobStoreInfo \"%s\"", info), e);
+            }
+            throw new ConfigurationPersistenceException(e);
         }
     }
 
@@ -1226,16 +1257,20 @@ public class XMLConfiguration
         // get the list of BlobStoreInfos
         final List<BlobStoreInfo> blobStoreInfos = getGwcConfig().getBlobStores();
         // find the one to rename
+        final BlobStoreInfo blobStoreInfoToRename;
         Iterator<BlobStoreInfo> infos = blobStoreInfos.iterator();
-        BlobStoreInfo blobStoreInfoToRename = null;
-        while (infos.hasNext() && blobStoreInfoToRename == null) {
-            final BlobStoreInfo info = infos.next();
-            if (info.getName().equals(oldName)) {
-                // found the one to rename
-                // remove from the iterator
-                infos.remove();
-                blobStoreInfoToRename = info;
+        {
+            BlobStoreInfo foundInfo = null;
+            while (infos.hasNext() && foundInfo == null) {
+                final BlobStoreInfo info = infos.next();
+                if (info.getName().equals(oldName)) {
+                    // found the one to rename
+                    // remove from the iterator
+                    infos.remove();
+                    foundInfo = info;
+                }
             }
+            blobStoreInfoToRename = foundInfo;
         }
         // if we didn't remove one, it wasn't in there to be removed
         if (blobStoreInfoToRename == null) {
@@ -1251,9 +1286,6 @@ public class XMLConfiguration
         // persist the info
         try {
             save();
-            for (BlobStoreConfigurationListener listener : blobStoreListeners) {
-                listener.handleRenameBlobStore(oldName, blobStoreInfoToRename);
-            }
 
             if (log.isTraceEnabled()) {
                 log.trace(
@@ -1261,7 +1293,7 @@ public class XMLConfiguration
                                 "BlobStoreInfo rename from \"%s\" to \"%s\" successful.",
                                 oldName, newName));
             }
-        } catch (IOException | GeoWebCacheException ioe) {
+        } catch (IOException ioe) {
             // save didn't work, need to roll things back
             infos = blobStoreInfos.iterator();
             BlobStoreInfo blobStoreInfoToRevert = null;
@@ -1276,7 +1308,7 @@ public class XMLConfiguration
             if (blobStoreInfoToRevert == null) {
                 // we're really messed up now as we couldn't find the BlobStoreInfo that was just
                 // renamed.
-                throw new IllegalArgumentException(
+                throw new ConfigurationPersistenceException(
                         String.format(
                                 "Error reverting BlobStoreInfo modification. Could not revert rename from \"%s\" to \"%s\"",
                                 oldName, newName));
@@ -1284,11 +1316,23 @@ public class XMLConfiguration
             // revert the name and add it back to the list
             blobStoreInfoToRevert.setName(oldName);
             blobStoreInfos.add(blobStoreInfoToRevert);
-            throw new IllegalArgumentException(
+            throw new ConfigurationPersistenceException(
                     String.format(
                             "Unable to rename BlobStoreInfo from \"%s\" to \"%s\"",
                             oldName, newName),
                     ioe);
+        }
+        try {
+            blobStoreListeners.safeForEach(
+                    listener -> {
+                        listener.handleRenameBlobStore(oldName, blobStoreInfoToRename);
+                    });
+        } catch (IOException | GeoWebCacheException e) {
+            throw new ConfigurationPersistenceException(
+                    String.format(
+                            "Exception while handling listeners for renaming blobstore \"%s\" to \"%s\"",
+                            oldName, newName),
+                    e);
         }
     }
 
@@ -1308,9 +1352,7 @@ public class XMLConfiguration
 
     @Override
     public void removeBlobStoreListener(BlobStoreConfigurationListener listener) {
-        if (blobStoreListeners.contains(listener)) {
-            blobStoreListeners.remove(listener);
-        }
+        blobStoreListeners.remove(listener);
     }
 
     /** @see ServerConfiguration#getLockProvider() */

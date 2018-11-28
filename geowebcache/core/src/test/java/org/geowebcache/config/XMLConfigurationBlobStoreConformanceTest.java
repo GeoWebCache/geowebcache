@@ -151,9 +151,9 @@ public class XMLConfigurationBlobStoreConformanceTest extends BlobStoreConfigura
 
             @Override
             public boolean matches(Object item) {
-                return item instanceof BlobStoreInfo
+                return item instanceof FileBlobStoreInfo
                         && (Objects.equals(
-                                ((BlobStoreInfo) item).getName(), Integer.toString(expected)));
+                                ((FileBlobStoreInfo) item).getFileSystemBlockSize(), expected));
             }
         };
     }
