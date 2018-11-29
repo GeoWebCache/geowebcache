@@ -8,10 +8,14 @@ import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.io.Resource;
 
 /** @author Bjoern Saxe */
 public class BundleFileResource implements Resource {
+    private static Log log = LogFactory.getLog(BundleFileResource.class);
+
     private final String bundleFilePath;
 
     private final long tileOffset;
@@ -31,7 +35,8 @@ public class BundleFileResource implements Resource {
 
     /** @see org.geowebcache.io.Resource#transferTo(WritableByteChannel) */
     public long transferTo(WritableByteChannel target) throws IOException {
-        try (FileChannel in = new FileInputStream(new File(bundleFilePath)).getChannel()) {
+        try (FileInputStream fin = new FileInputStream(new File(bundleFilePath));
+                FileChannel in = fin.getChannel()) {
             final long size = tileSize;
             long written = 0;
             while ((written += in.transferTo(tileOffset + written, size, target)) < size) ;
@@ -52,8 +57,17 @@ public class BundleFileResource implements Resource {
     /** @see org.geowebcache.io.Resource#getInputStream() */
     public InputStream getInputStream() throws IOException {
         FileInputStream fis = new FileInputStream(bundleFilePath);
-        fis.skip(tileOffset);
-
+        long skipped = fis.skip(tileOffset);
+        if (skipped != tileOffset) {
+            log.error(
+                    "tried to skip to tile offset "
+                            + tileOffset
+                            + " in "
+                            + bundleFilePath
+                            + " but skipped "
+                            + skipped
+                            + " instead.");
+        }
         return fis;
     }
 

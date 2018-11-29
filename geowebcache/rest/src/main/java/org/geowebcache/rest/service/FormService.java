@@ -240,6 +240,7 @@ public class FormService {
             Thread.sleep(500);
         } catch (InterruptedException e) {
             // Ok, no worries
+            Thread.currentThread().interrupt();
         }
 
         return new ResponseEntity<Object>(this.makeResponsePage(tl), getHeaders(), HttpStatus.OK);

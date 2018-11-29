@@ -34,7 +34,9 @@ public class FileResource implements Resource {
 
     public long transferTo(WritableByteChannel target) throws IOException {
         // FileLock lock = in.lock();
-        try (FileChannel in = new FileInputStream(file).getChannel()) {
+
+        try (FileInputStream fis = new FileInputStream(file);
+                FileChannel in = fis.getChannel(); ) {
             final long size = in.size();
             long written = 0;
             while ((written += in.transferTo(written, size, target)) < size) {;
@@ -44,9 +46,9 @@ public class FileResource implements Resource {
     }
 
     public long transferFrom(ReadableByteChannel channel) throws IOException {
-        FileLock lock = null;
-        try (FileChannel out = new FileOutputStream(file).getChannel()) {
-            lock = out.lock();
+        try (FileOutputStream fos = new FileOutputStream(file);
+                FileChannel out = fos.getChannel();
+                FileLock lock = out.lock(); ) {
             final int buffsize = 4096;
             long position = 0;
             long read;
@@ -54,10 +56,6 @@ public class FileResource implements Resource {
                 position += read;
             }
             return position;
-        } finally {
-            if (lock != null) {
-                lock.release();
-            }
         }
     }
 

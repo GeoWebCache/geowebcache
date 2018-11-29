@@ -414,7 +414,7 @@ class S3Ops {
                         String.format(
                                 "S3 bulk delete aborted for '%s/%s'. Will resume on next startup.",
                                 bucketName, prefix));
-                return null;
+                throw e;
             } catch (Exception e) {
                 S3BlobStore.log.warn(
                         String.format(

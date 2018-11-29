@@ -455,6 +455,7 @@ public class GuavaCacheProvider implements CacheProvider {
                     if (LOGGER.isErrorEnabled()) {
                         LOGGER.error(e.getMessage(), e);
                     }
+                    Thread.currentThread().interrupt();
                 } finally {
                     scheduledPool = null;
                 }

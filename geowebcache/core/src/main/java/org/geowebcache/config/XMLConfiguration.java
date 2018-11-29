@@ -862,18 +862,12 @@ public class XMLConfiguration
     }
 
     static String getCurrentSchemaVersion() {
-        InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd");
+
         Document dom;
-        try {
+        try (InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd"); ) {
             dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(is);
         } catch (Exception e) {
             throw new RuntimeException(e);
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
         }
 
         String version = dom.getDocumentElement().getAttribute("version");

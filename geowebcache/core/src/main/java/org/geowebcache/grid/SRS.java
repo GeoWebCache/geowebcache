@@ -63,7 +63,7 @@ public class SRS implements Comparable<SRS> {
     }
 
     // called by XStream for custom initialization
-    private SRS readResolve() {
+    private Object readResolve() {
         if (!list.containsKey(Integer.valueOf(number))) {
             list.put(number, this);
         }

@@ -333,6 +333,7 @@ public class BDBQuotaStoreTest {
                                                 Collections.singleton(new PageStatsPayload(page)));
                                         return 42;
                                     } catch (InterruptedException e) {
+                                        Thread.currentThread().interrupt();
                                         throw new AssertionError("Unexpected Exception", e);
                                     }
                                 })
@@ -354,6 +355,7 @@ public class BDBQuotaStoreTest {
                                                 Collections.singleton(new PageStatsPayload(page)));
                                         return 10;
                                     } catch (InterruptedException e) {
+                                        Thread.currentThread().interrupt();
                                         throw new AssertionError("Unexpected Exception", e);
                                     }
                                 })
@@ -388,6 +390,7 @@ public class BDBQuotaStoreTest {
                                                 Collections.singleton(new PageStatsPayload(page)));
                                         return 42;
                                     } catch (InterruptedException e) {
+                                        Thread.currentThread().interrupt();
                                         throw new AssertionError("Unexpected Exception", e);
                                     }
                                 })
@@ -409,6 +412,7 @@ public class BDBQuotaStoreTest {
                                                 Collections.singleton(new PageStatsPayload(page)));
                                         return 10;
                                     } catch (InterruptedException e) {
+                                        Thread.currentThread().interrupt();
                                         throw new AssertionError("Unexpected Exception", e);
                                     }
                                 })

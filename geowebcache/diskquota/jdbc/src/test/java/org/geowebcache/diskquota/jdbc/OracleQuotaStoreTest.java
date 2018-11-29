@@ -44,11 +44,8 @@ public class OracleQuotaStoreTest extends JDBCQuotaStoreTest {
         BasicDataSource dataSource = super.getDataSource();
 
         // cleanup
-        Connection cx = null;
-        Statement st = null;
-        try {
-            cx = dataSource.getConnection();
-            st = cx.createStatement();
+        try (Connection cx = dataSource.getConnection();
+                Statement st = cx.createStatement(); ) {
             try {
                 st.execute("DROP TABLE TILEPAGE CASCADE CONSTRAINTS");
             } catch (Exception e) {
@@ -61,9 +58,6 @@ public class OracleQuotaStoreTest extends JDBCQuotaStoreTest {
                 e.printStackTrace();
                 // fine too
             }
-        } finally {
-            st.close();
-            cx.close();
         }
 
         return dataSource;

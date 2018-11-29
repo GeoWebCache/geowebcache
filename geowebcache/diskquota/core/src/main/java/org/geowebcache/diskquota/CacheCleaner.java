@@ -240,6 +240,7 @@ public class CacheCleaner implements DisposableBean {
             pageStore.setTruncated(tilePage);
         } catch (InterruptedException e) {
             log.debug("Truncate task interrupted");
+            Thread.currentThread().interrupt();
             return;
         } catch (GeoWebCacheException e) {
             throw new RuntimeException(e);

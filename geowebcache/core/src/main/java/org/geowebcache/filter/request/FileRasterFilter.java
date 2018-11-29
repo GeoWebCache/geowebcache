@@ -99,9 +99,9 @@ public class FileRasterFilter extends RasterFilter {
             throws IOException {
         // Persist
         File fh = new File(createFilePath(gridSetId, zoomLevel));
-        FileOutputStream fos = new FileOutputStream(fh);
-        fos.write(data);
-        fos.close();
+        try (FileOutputStream fos = new FileOutputStream(fh); ) {
+            fos.write(data);
+        }
     }
 
     public void update(byte[] filterData, TileLayer layer, String gridSetId, int z)

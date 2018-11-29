@@ -146,7 +146,7 @@ public abstract class ParameterFilter implements Serializable, Cloneable {
         return HashCodeBuilder.reflectionHashCode(this);
     }
 
-    protected ParameterFilter readResolve() {
+    protected Object readResolve() {
         // Make sure XStream found a Key
         Preconditions.checkNotNull(key);
         Preconditions.checkState(!key.isEmpty(), "ParameterFilter key must be non-empty");

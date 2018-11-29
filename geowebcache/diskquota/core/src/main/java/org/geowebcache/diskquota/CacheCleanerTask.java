@@ -75,6 +75,7 @@ class CacheCleanerTask implements Runnable {
             innerRun();
         } catch (InterruptedException e) {
             log.info("CacheCleanerTask called for shut down", e);
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             log.error("Error running cache diskquota enforcement task", e);
         }
@@ -220,6 +221,7 @@ class CacheCleanerTask implements Runnable {
             try {
                 monitor.expireByLayerNames(layerNames, quotaResolver);
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 log.info("Layer quota enforcement task terminated prematurely");
                 return null;
             } catch (Exception e) {

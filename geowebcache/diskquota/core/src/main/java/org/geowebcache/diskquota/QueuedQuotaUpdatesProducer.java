@@ -160,6 +160,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
         } catch (InterruptedException e) {
             log.error(
                     "Can't rename " + oldLayerName + " to " + newLayerName + " in quota store", e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -211,6 +212,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
                             + " abruptly interrupted on thread "
                             + Thread.currentThread().getName()
                             + ".");
+            Thread.currentThread().interrupt();
         }
     }
 

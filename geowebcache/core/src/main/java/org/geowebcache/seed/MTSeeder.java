@@ -35,6 +35,7 @@ class MTSeeder implements Callable<GWCTask> {
             log.error(gwce.getMessage(), gwce);
         } catch (InterruptedException e) {
             log.info(task.getType() + " task #" + task.getTaskId() + " has been interrupted");
+            Thread.currentThread().interrupt();
         } catch (RuntimeException e) {
             log.error(task.getType() + " task #" + task.getTaskId() + " failed", e);
         }

@@ -81,35 +81,35 @@ final class SqlitlePerf {
         // submitting the select tasks
         ExecutorService executor = Executors.newFixedThreadPool(WORKERS);
         long startTime = System.currentTimeMillis();
-        Connection connection = DriverManager.getConnection("jdbc:sqlite:" + seedFile.getPath());
-        for (int i = 0; i < tiles.length; i++) {
-            long[] tile = tiles[i];
-            executor.submit((Runnable) () -> getTile(connection, tile));
-            if (i != 0 && i % 10000 == 0) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(String.format("Submitted %d select tasks.", i));
+        try (Connection connection =
+                DriverManager.getConnection("jdbc:sqlite:" + seedFile.getPath()); ) {
+            for (int i = 0; i < tiles.length; i++) {
+                long[] tile = tiles[i];
+                executor.submit((Runnable) () -> getTile(connection, tile));
+                if (i != 0 && i % 10000 == 0) {
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug(String.format("Submitted %d select tasks.", i));
+                    }
                 }
             }
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(String.format("Submitted %d select tasks.", TILES));
+            }
+            // lets wait for the workers to finish
+            executor.shutdown();
+            executor.awaitTermination(5, TimeUnit.MINUTES);
+            // computing some stats
+            long endTime = System.currentTimeMillis();
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(String.format("Tiles raw select time '%d'.", endTime - startTime));
+            }
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(
+                        String.format(
+                                "Tiles raw selected per second '%f'.",
+                                TILES / (float) (endTime - startTime) * 1000));
+            }
         }
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(String.format("Submitted %d select tasks.", TILES));
-        }
-        // lets wait for the workers to finish
-        executor.shutdown();
-        executor.awaitTermination(5, TimeUnit.MINUTES);
-        // computing some stats
-        long endTime = System.currentTimeMillis();
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(String.format("Tiles raw select time '%d'.", endTime - startTime));
-        }
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(
-                    String.format(
-                            "Tiles raw selected per second '%f'.",
-                            TILES / (float) (endTime - startTime) * 1000));
-        }
-        // clean everything
-        connection.close();
         FileUtils.deleteQuietly(databaseFile);
     }
 
@@ -382,28 +382,30 @@ final class SqlitlePerf {
             statement.setLong(1, xyz[2]);
             statement.setLong(2, xyz[0]);
             statement.setLong(3, xyz[1]);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                // the tile exists
-                byte[] data = resultSet.getBytes(1);
-                if (data.length != 2024) {
-                    // the data doesn't have the expected size
+            try (ResultSet resultSet = statement.executeQuery(); ) {
+                if (resultSet.next()) {
+                    // the tile exists
+                    byte[] data = resultSet.getBytes(1);
+                    if (data.length != 2024) {
+                        // the data doesn't have the expected size
+                        if (LOGGER.isErrorEnabled()) {
+                            LOGGER.error(
+                                    String.format(
+                                            "Tile %d-%d-%d data is not valid.",
+                                            xyz[2], xyz[0], xyz[1]));
+                        }
+                    }
+                    // the tile data looks good
+                    return data;
+                } else {
+                    // the tile was not found
                     if (LOGGER.isErrorEnabled()) {
                         LOGGER.error(
                                 String.format(
-                                        "Tile %d-%d-%d data is not valid.",
-                                        xyz[2], xyz[0], xyz[1]));
+                                        "Failed to load tile %d-%d-%d.", xyz[2], xyz[0], xyz[1]));
                     }
+                    return null;
                 }
-                // the tile data looks good
-                return data;
-            } else {
-                // the tile was not found
-                if (LOGGER.isErrorEnabled()) {
-                    LOGGER.error(
-                            String.format("Failed to load tile %d-%d-%d.", xyz[2], xyz[0], xyz[1]));
-                }
-                return null;
             }
         } catch (Exception exception) {
             throw Utils.exception(exception, "Error executing SQL '%s'.", sql);

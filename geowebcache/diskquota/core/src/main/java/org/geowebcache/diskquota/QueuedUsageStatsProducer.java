@@ -51,6 +51,7 @@ public class QueuedUsageStatsProducer implements TileLayerListener {
                             + layerName
                             + " abruptly interrupted on thread "
                             + Thread.currentThread().getName());
+            Thread.currentThread().interrupt();
         }
     }
 

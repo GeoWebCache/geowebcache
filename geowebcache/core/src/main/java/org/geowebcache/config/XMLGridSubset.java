@@ -56,7 +56,7 @@ public class XMLGridSubset implements Serializable, Cloneable {
         readResolve();
     }
 
-    private XMLGridSubset readResolve() {
+    private Object readResolve() {
         return this;
     }
 

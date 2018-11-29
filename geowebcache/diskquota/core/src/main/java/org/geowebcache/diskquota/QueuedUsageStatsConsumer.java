@@ -118,6 +118,7 @@ public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
                 }
             } catch (InterruptedException e) {
                 log.info("Shutting down quota update background task due to interrupted exception");
+                Thread.currentThread().interrupt();
                 break;
                 // it doesn't matter
             } catch (RuntimeException e) {

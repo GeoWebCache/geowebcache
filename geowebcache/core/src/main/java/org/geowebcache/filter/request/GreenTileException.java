@@ -40,20 +40,12 @@ public class GreenTileException extends RequestFilterException {
 
     private Resource getGreenTile() {
         byte[] green = new byte[659];
-        InputStream is = null;
 
-        try {
-            is = GreenTileException.class.getResourceAsStream("green.png");
+        try (InputStream is = GreenTileException.class.getResourceAsStream("green.png"); ) {
             int ret = is.read(green);
             log.info("Read " + ret + " from gree PNG file (expected 659).");
         } catch (IOException ioe) {
             log.error(ioe.getMessage());
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                // close quietly
-            }
         }
 
         return new ByteArrayResource(green);

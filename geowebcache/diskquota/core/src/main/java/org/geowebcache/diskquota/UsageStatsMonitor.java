@@ -1,10 +1,19 @@
+/**
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.geowebcache.diskquota;
 
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.diskquota.storage.TilePageCalculator;
@@ -14,7 +23,7 @@ import org.geowebcache.layer.TileLayerListener;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.util.Assert;
 
-public class UsageStatsMonitor {
+public class UsageStatsMonitor extends AbstractMonitor {
 
     private static final Log log = LogFactory.getLog(UsageStatsMonitor.class);
 
@@ -26,9 +35,6 @@ public class UsageStatsMonitor {
     private final TileLayerDispatcher tileLayerDispatcher;
 
     private final TilePageCalculator tilePageCalculator;
-
-    /** Single threaded executor service for the {@link #usageStatsConsumer} */
-    private ExecutorService executorService;
 
     /** Queue shared by the stats producer and the consumer */
     private BlockingQueue<UsageStats> sharedQueue;
@@ -58,14 +64,15 @@ public class UsageStatsMonitor {
         this.tilePageCalculator = quotaStore.getTilePageCalculator();
     }
 
+    @Override
     public void startUp() {
-        executorService = Executors.newSingleThreadExecutor(tf);
+        super.startUp();
 
-        sharedQueue = new LinkedBlockingQueue<UsageStats>(1000);
+        sharedQueue = new LinkedBlockingQueue<>(1000);
 
         usageStatsConsumer =
                 new QueuedUsageStatsConsumer(quotaStore, sharedQueue, tilePageCalculator);
-        executorService.submit(usageStatsConsumer);
+        getExecutorService().submit(usageStatsConsumer);
 
         usageStatsProducer = new QueuedUsageStatsProducer(sharedQueue);
         Iterable<TileLayer> allLayers = tileLayerDispatcher.getLayerList();
@@ -74,49 +81,8 @@ public class UsageStatsMonitor {
         }
     }
 
-    /** Calls for a shut down and waits until any remaining task finishes before returning */
-    public void shutDown() {
-        final boolean cancel = false;
-        shutDown(cancel);
-
-        final int maxAttempts = 6;
-        final int seconds = 5;
-        int attempts = 1;
-        while (!executorService.isTerminated()) {
-            attempts++;
-            try {
-                awaitTermination(seconds, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                String message =
-                        "Usage statistics thread helper for DiskQuota failed to shutdown within "
-                                + (attempts * seconds)
-                                + " seconds. Attempt "
-                                + attempts
-                                + " of "
-                                + maxAttempts
-                                + "...";
-                log.warn(message);
-                if (attempts == maxAttempts) {
-                    throw new RuntimeException(message, e);
-                }
-            }
-        }
-    }
-
-    public void awaitTermination(int timeout, TimeUnit units) throws InterruptedException {
-        if (!executorService.isShutdown()) {
-            throw new IllegalStateException(
-                    "Called awaitTermination but the " + "UsageStatsMonitor is not shutting down");
-        }
-        executorService.awaitTermination(timeout, units);
-    }
-
-    /** Calls for a shut down and returns immediatelly */
-    public void shutDownNow() {
-        shutDown(true);
-    }
-
-    private void shutDown(final boolean cancel) {
+    @Override
+    protected void shutDown(final boolean cancel) {
         Iterable<TileLayer> allLayers = tileLayerDispatcher.getLayerList();
         for (TileLayer layer : allLayers) {
             try {
@@ -135,10 +101,15 @@ public class UsageStatsMonitor {
         usageStatsConsumer.shutdown();
         if (cancel) {
             usageStatsProducer.setCancelled(true);
-            executorService.shutdownNow();
+            getExecutorService().shutdownNow();
         } else {
-            executorService.shutdown();
+            getExecutorService().shutdown();
         }
         sharedQueue = null;
+    }
+
+    @Override
+    protected CustomizableThreadFactory getThreadFactory() {
+        return tf;
     }
 }

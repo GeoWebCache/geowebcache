@@ -110,7 +110,7 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     // Styles?
 
-    protected AbstractTileLayer readResolve() {
+    protected Object readResolve() {
         if (gridSubsets == null) {
             gridSubsets = new ArrayList<XMLGridSubset>();
         }

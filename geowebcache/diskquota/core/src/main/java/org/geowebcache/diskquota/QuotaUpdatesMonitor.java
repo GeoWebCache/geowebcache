@@ -13,10 +13,7 @@
 package org.geowebcache.diskquota;
 
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheExtensions;
@@ -24,10 +21,9 @@ import org.geowebcache.storage.StorageBroker;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.util.Assert;
 
-public class QuotaUpdatesMonitor {
+public class QuotaUpdatesMonitor extends AbstractMonitor {
 
     private static final Log log = LogFactory.getLog(QuotaUpdatesMonitor.class);
-
     private static final CustomizableThreadFactory tf =
             new CustomizableThreadFactory("GWC DiskQuota Updates Gathering Thread-");
 
@@ -36,8 +32,6 @@ public class QuotaUpdatesMonitor {
     private final StorageBroker storageBroker;
 
     private final QuotaStore quotaStore;
-
-    private ExecutorService executorService;
 
     private BlockingQueue<QuotaUpdate> sharedQueue;
 
@@ -63,14 +57,15 @@ public class QuotaUpdatesMonitor {
             quotaQueueSize = Integer.parseInt(sizeStr);
         }
         if (quotaQueueSize > 0) {
-            this.sharedQueue = new LinkedBlockingQueue<QuotaUpdate>(quotaQueueSize);
+            this.sharedQueue = new LinkedBlockingQueue<>(quotaQueueSize);
         } else {
-            this.sharedQueue = new LinkedBlockingQueue<QuotaUpdate>();
+            this.sharedQueue = new LinkedBlockingQueue<>();
         }
     }
 
+    @Override
     public void startUp() {
-        executorService = Executors.newSingleThreadExecutor(tf);
+        super.startUp();
 
         quotaDiffsProducer = new QueuedQuotaUpdatesProducer(quotaConfig, sharedQueue, quotaStore);
 
@@ -80,10 +75,11 @@ public class QuotaUpdatesMonitor {
         // the listener that puts quota updates on the queue
         storageBroker.addBlobStoreListener(quotaDiffsProducer);
 
-        executorService.submit(quotaUsageUpdatesConsumer);
+        getExecutorService().submit(quotaUsageUpdatesConsumer);
     }
 
-    private void shutDown(final boolean cancel) {
+    @Override
+    protected void shutDown(final boolean cancel) {
         log.info("Shutting down quota usage monitor...");
         try {
             storageBroker.removeBlobStoreListener(quotaDiffsProducer);
@@ -97,46 +93,17 @@ public class QuotaUpdatesMonitor {
 
         if (cancel) {
             quotaDiffsProducer.setCancelled(true);
-            executorService.shutdownNow();
+            getExecutorService().shutdownNow();
         } else {
-            executorService.shutdown();
+            getExecutorService().shutdown();
         }
         sharedQueue = null;
     }
 
-    /** Calls for a shut down and returns immediatelly */
-    public void shutDownNow() {
-        shutDown(true);
-    }
-
-    /** Calls for a shut down and waits until any remaining task finishes before returning */
+    @Override
     public void shutDown() {
         quotaUsageUpdatesConsumer.shutdown();
-        final boolean cancel = false;
-        shutDown(cancel);
-
-        final int maxAttempts = 6;
-        final int seconds = 5;
-        int attempts = 1;
-        while (!executorService.isTerminated()) {
-            attempts++;
-            try {
-                awaitTermination(seconds, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                String message =
-                        "Usage statistics thread helper for DiskQuota failed to shutdown within "
-                                + (attempts * seconds)
-                                + " seconds. Attempt "
-                                + attempts
-                                + " of "
-                                + maxAttempts
-                                + "...";
-                log.warn(message);
-                if (attempts == maxAttempts) {
-                    throw new RuntimeException(message, e);
-                }
-            }
-        }
+        super.shutDown();
     }
 
     public void tileStored(
@@ -152,11 +119,8 @@ public class QuotaUpdatesMonitor {
                 layerName, gridSetId, blobFormat, parametersId, x, y, z, blobSize);
     }
 
-    public void awaitTermination(int timeout, TimeUnit units) throws InterruptedException {
-        if (!executorService.isShutdown()) {
-            throw new IllegalStateException(
-                    "Called awaitTermination but the " + "UsageStatsMonitor is not shutting down");
-        }
-        executorService.awaitTermination(timeout, units);
+    @Override
+    protected CustomizableThreadFactory getThreadFactory() {
+        return tf;
     }
 }
