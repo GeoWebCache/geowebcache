@@ -1,3 +1,15 @@
+GeoWebCache 1.13.4 (2018-12-22)
+-------------------------------
+
+<Release Description>
+
+Improvements:
++++++++++++++
+- Update demo page to OL 5.3.0
+- Support new mapbox vector mime on Demo page
+- Adding support for mapbox vector tiles new format, retaining ability to lookup the old one
+
+
 GeoWebCache 1.13.3 (2018-10-18)
 -------------------------------
 
