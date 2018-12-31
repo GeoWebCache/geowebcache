@@ -132,7 +132,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long>, Serializable 
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder('[');
+            StringBuilder sb = new StringBuilder("[");
             sb.append(tileSet);
             sb.append(numAggregations).append(" aggregated updates, ");
             sb.append(tilePages.size()).append(" different pages, ");
@@ -140,7 +140,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long>, Serializable 
             sb.append(", created ")
                     .append((System.currentTimeMillis() - creationTime))
                     .append("ms ago")
-                    .append(']');
+                    .append("]");
             return sb.toString();
         }
     }

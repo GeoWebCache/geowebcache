@@ -115,7 +115,7 @@ public class XMLConfiguration
 
     private final ConfigurationResourceProvider resourceProvider;
 
-    private GeoWebCacheConfiguration gwcConfig;
+    private volatile GeoWebCacheConfiguration gwcConfig;
 
     private transient Map<String, TileLayer> layers;
 
@@ -1086,7 +1086,7 @@ public class XMLConfiguration
         if (getBlobStoreNames().contains(info.getName())) {
             throw new IllegalArgumentException(
                     String.format(
-                            "Failed to add BlobStoreInfo. A BlobStoreInfo with name \"$s\" already exists",
+                            "Failed to add BlobStoreInfo. A BlobStoreInfo with name \"%s\" already exists",
                             info.getName()));
         }
         // add the BlobStoreInfo
