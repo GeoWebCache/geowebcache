@@ -42,6 +42,7 @@ import org.geowebcache.layer.TileLayer;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
+import org.junit.Test;
 
 public class XMLConfigurationLayerConformanceWithArcGisLayersTest
         extends XMLConfigurationLayerConformanceTest {
@@ -214,8 +215,9 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
                                 Matchers.containsInAnyOrder("EPSG:3857_testExisting"))));
     }
 
+    @Test
     public void testGetExistingIsArcGisLayer() throws Exception {
         Optional<TileLayer> retrieved = getInfo(config, getExistingInfo());
-        assertThat(retrieved, Matchers.instanceOf(ArcGISCacheLayer.class));
+        assertThat(retrieved.get(), Matchers.instanceOf(ArcGISCacheLayer.class));
     }
 }

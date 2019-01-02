@@ -6,11 +6,17 @@ language: java
 before_script:
   - cd geowebcache
 script:
-  - mvn -B -U -T2 -fae -Prelease clean install -Dtest.maxHeapSize=512M -Djava.awt.headless=true -Dfmt.action=check
+  - mvn -B -U -T2 -fae clean install -Dtest.maxHeapSize=512M -Djava.awt.headless=true $ARGS
 notifications:
   email:
     on_success: never
     on_failure: never
-jdk: 
-  - oraclejdk8
-  - oraclejdk11
+matrix:
+  include:
+    - jdk: oraclejdk8
+      env: ARGS="-Dfmt.skip=true"
+    - jdk: oraclejdk11
+      env: ARGS="-Dfmt.skip=true"
+    - jdk: oraclejdk11
+      env: ARGS="-Dfmt.action=check -Ppmd -Perrorprone -DskipTests=true"
+

@@ -53,7 +53,6 @@ public class SeedRequest {
 
     public SeedRequest() {
         // do nothing, i guess
-        System.out.println("New Empty SeedRequest");
     }
 
     /**

@@ -234,7 +234,7 @@ class GeoRSSPollTask implements Runnable {
 
         for (int i = 0; i < byLevelMasks.length; i++) {
             File output = new File(target, poll.getLayerName() + "_level_" + i + ".tiff");
-            System.out.println("--- writing " + output.getAbsolutePath() + "---");
+            logger.info("--- writing " + output.getAbsolutePath() + "---");
             try {
                 ImageIO.write(byLevelMasks[i], "TIFF", output);
             } catch (IOException e) {
