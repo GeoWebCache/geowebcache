@@ -797,7 +797,7 @@ public class FormService {
 
     private HttpHeaders getHeaders() {
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.TEXT_HTML);
+        headers.setContentType(new MediaType(MediaType.TEXT_HTML, Collections.singletonMap("charset", "utf-8")));
         return headers;
     }
 }
