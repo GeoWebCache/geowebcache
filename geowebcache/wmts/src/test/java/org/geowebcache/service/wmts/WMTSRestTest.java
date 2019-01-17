@@ -14,166 +14,227 @@
  */
 package org.geowebcache.service.wmts;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.xpath;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import javax.imageio.ImageIO;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.io.FileUtils;
+import org.custommonkey.xmlunit.SimpleNamespaceContext;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.custommonkey.xmlunit.XpathEngine;
 import org.geowebcache.config.ServerConfiguration;
+import org.geowebcache.config.XMLGridSubset;
+import org.geowebcache.config.legends.LegendInfo;
+import org.geowebcache.config.legends.LegendInfoBuilder;
+import org.geowebcache.conveyor.Conveyor;
+import org.geowebcache.conveyor.ConveyorTile;
+import org.geowebcache.filter.parameters.StringParameterFilter;
+import org.geowebcache.filter.security.SecurityDispatcher;
+import org.geowebcache.grid.BoundingBox;
+import org.geowebcache.grid.GridSet;
+import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.SRS;
+import org.geowebcache.io.ByteArrayResource;
+import org.geowebcache.io.Resource;
+import org.geowebcache.layer.TileLayer;
+import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.mime.MimeType;
+import org.geowebcache.service.OWSException;
+import org.geowebcache.stats.RuntimeStats;
+import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.util.ResponseUtils;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.w3c.dom.Document;
 
-@WebAppConfiguration
-@ContextConfiguration(classes = WMTSRestWebConfig.class)
-@RunWith(SpringJUnit4ClassRunner.class)
-@ActiveProfiles("test")
 public class WMTSRestTest {
 
-    private static Map<String, String> namespaces = new HashMap<String, String>(0);
+    // private static Map<String, String> namespaces = new HashMap<String, String>(0);
+    private static XpathEngine xpath;
 
-    @Autowired private WebApplicationContext webApplicationContext;
+    GridSetBroker broker = new GridSetBroker(true, true);
+    private WMTSService wmtsService;
+    private StorageBroker storageBroker;
+    private TileLayerDispatcher tileLayerDispatcher;
+    private SecurityDispatcher securityDispatcher;
+    private RuntimeStats runtimeStats;
+
+    @Before
+    public void setupMockService() throws Exception {
+        this.storageBroker = mock(StorageBroker.class);
+        this.tileLayerDispatcher = tileLayerDispatcher();
+        this.runtimeStats = mock(RuntimeStats.class);
+        this.wmtsService =
+                new WMTSService(storageBroker, tileLayerDispatcher, broker, runtimeStats);
+        this.securityDispatcher = securityDispatcher();
+        wmtsService.setSecurityDispatcher(securityDispatcher);
+    }
 
     @BeforeClass
-    public static void beforeClass() {
+    public static void setupXMLUnit() {
+        Map<String, String> namespaces = new HashMap<>();
         namespaces.put("xlink", "http://www.w3.org/1999/xlink");
         namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
         namespaces.put("ows", "http://www.opengis.net/ows/1.1");
         namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
+        XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
+        xpath = XMLUnit.newXpathEngine();
     }
 
     @Test
     public void testGetCap() throws Exception {
-        MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        mockMvc.perform(get("/rest/wmts/WMTSCapabilities.xml"))
-                .andExpect(content().contentType("text/xml"))
-                .andExpect(status().is(200))
-                .andExpect(xpath("//wmts:Contents/wmts:Layer", namespaces).nodeCount(1))
-                .andExpect(
-                        xpath("//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer']", namespaces)
-                                .nodeCount(1))
-                .andExpect(
-                        xpath("//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier", namespaces)
-                                .nodeCount(2))
-                .andExpect(
-                        xpath(
-                                        "//wmts:Contents/wmts:Layer/wmts:Style[ows:Identifier='style-a']",
-                                        namespaces)
-                                .nodeCount(1))
-                .andExpect(
-                        xpath(
-                                        "//wmts:Contents/wmts:Layer/wmts:Style[ows:Identifier='style-b']/wmts:LegendURL"
-                                                + "[@width='125'][@height='130'][@format='image/png'][@minScaleDenominator='5000.0'][@maxScaleDenominator='10000.0']"
-                                                + "[@xlink:href='https://some-url?some-parameter=value3&another-parameter=value4']",
-                                        namespaces)
-                                .nodeCount(1))
-                .andExpect(
-                        xpath(
-                                        "//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='tile']"
-                                                + "[@format='image/jpeg']"
-                                                + "[@template='http://localhost/rest/wmts"
-                                                + "/mockLayer/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}?format=image/jpeg&time={time}&elevation={elevation}']",
-                                        namespaces)
-                                .nodeCount(1))
-                .andExpect(
-                        xpath(
-                                        "//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='FeatureInfo']"
-                                                + "[@format='text/plain']"
-                                                + "[@template='http://localhost/rest/wmts"
-                                                + "/mockLayer/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}/{J}/{I}?format=text/plain&time={time}&elevation={elevation}']",
-                                        namespaces)
-                                .nodeCount(1))
-                .andExpect(
-                        xpath(
-                                        "//wmts:ServiceMetadataURL[@xlink:href='http://localhost/service/wmts"
-                                                + "?SERVICE=wmts&REQUEST=getcapabilities&VERSION=1.0.0']",
-                                        namespaces)
-                                .nodeCount(1))
-                .andExpect(
-                        xpath(
-                                        "//wmts:ServiceMetadataURL[@xlink:href='http://localhost/rest/wmts"
-                                                + "/WMTSCapabilities.xml']",
-                                        namespaces)
-                                .nodeCount(1));
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        req.setPathInfo("geowebcache/service/wmts/rest/WMTSCapabilities.xml");
+        MockHttpServletResponse resp = dispatch(req);
+
+        assertEquals(200, resp.getStatus());
+        assertEquals("text/xml", resp.getContentType());
+        final Document doc = XMLUnit.buildTestDocument(resp.getContentAsString());
+        assertXpathExists("//wmts:Contents/wmts:Layer", doc);
+        assertXpathExists("//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer']", doc);
+        assertXpathEvaluatesTo(
+                "2", "count(//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier)", doc);
+        assertXpathExists("//wmts:Contents/wmts:Layer/wmts:Style[ows:Identifier='style-a']", doc);
+        assertXpathExists(
+                "//wmts:Contents/wmts:Layer/wmts:Style[ows:Identifier='style-b']/wmts:LegendURL"
+                        + "[@width='125'][@height='130'][@format='image/png']"
+                        + "[@minScaleDenominator='5000.0'][@maxScaleDenominator='10000.0']"
+                        + "[@xlink:href='https://some-url?some-parameter=value3&another-parameter=value4']",
+                doc);
+        assertXpathExists(
+                "//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='tile']"
+                        + "[@format='image/jpeg']"
+                        + "[@template='http://localhost/service/wmts/rest/"
+                        + "mockLayer/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}?format=image/jpeg&time={time}&elevation={elevation}']",
+                doc);
+        assertXpathExists(
+                "//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='FeatureInfo']"
+                        + "[@format='text/plain']"
+                        + "[@template='http://localhost/service/wmts/rest"
+                        + "/mockLayer/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}/{J}/{I}?format=text/plain&time={time}&elevation={elevation}']",
+                doc);
+        assertXpathExists(
+                "//wmts:ServiceMetadataURL[@xlink:href='http://localhost/service/wmts/rest"
+                        + "/WMTSCapabilities.xml']",
+                doc);
     }
 
     @Test
     public void testGetTileWithStyle() throws Exception {
-        MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        final File imgPath = new File(getClass().getResource("/image.png").toURI());
-        BufferedImage originalImage = ImageIO.read(imgPath);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(originalImage, "png", baos);
-        mockMvc.perform(
-                        get(
-                                "/rest/wmts/mockLayer/style-a/EPSG:4326/EPSG:4326:0/0/0?format=image/png"))
-                .andExpect(status().isOk())
-                .andExpect(header().string("geowebcache-crs", "EPSG:4326"))
-                .andExpect(content().contentType("image/png"))
-                .andExpect(content().bytes(baos.toByteArray()));
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        req.setPathInfo(
+                "geowebcache/service/wmts/rest/mockLayer/style-a/EPSG:4326/EPSG:4326:0/0/0");
+        req.addParameter("format", "image/png");
+
+        MockHttpServletResponse resp = dispatch(req);
+
+        assertEquals(200, resp.getStatus());
+        assertEquals("image/png", resp.getContentType());
+        assertEquals("EPSG:4326", resp.getHeader("geowebcache-crs"));
+        assertArrayEquals(getSampleTileContent().getContents(), resp.getContentAsByteArray());
+    }
+
+    public MockHttpServletResponse dispatch(MockHttpServletRequest req) throws Exception {
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        try {
+            final Conveyor conveyor = wmtsService.getConveyor(req, resp);
+
+            if (conveyor.reqHandler == Conveyor.RequestHandler.SERVICE) {
+                wmtsService.handleRequest(conveyor);
+            } else {
+                ResponseUtils.writeTile(
+                        securityDispatcher(),
+                        conveyor,
+                        conveyor.getLayerId(),
+                        tileLayerDispatcher(),
+                        null,
+                        runtimeStats);
+            }
+        } catch (OWSException e) {
+            ResponseUtils.writeFixedResponse(
+                    resp,
+                    e.getResponseCode(),
+                    e.getContentType(),
+                    e.getResponse(),
+                    Conveyor.CacheResult.OTHER,
+                    runtimeStats);
+        }
+
+        return resp;
     }
 
     @Test
     public void testGetTileWithoutStyle() throws Exception {
-        MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        mockMvc.perform(get("/rest/wmts/mockLayer/EPSG:4326/EPSG:4326:0/0/0?format=image/png"))
-                .andExpect(status().isOk());
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        req.setPathInfo("geowebcache/service/wmts/rest/mockLayer/EPSG:4326/EPSG:4326:0/0/0");
+        req.addParameter("format", "image/png");
+
+        final MockHttpServletResponse resp = dispatch(req);
+        assertEquals(200, resp.getStatus());
     }
 
     @Test
     public void testGetInfoWithStyle() throws Exception {
-        MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        final File imgPath = new File(getClass().getResource("/image.png").toURI());
-        BufferedImage originalImage = ImageIO.read(imgPath);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(originalImage, "png", baos);
-        mockMvc.perform(
-                        get("/rest/wmts/mockLayer/style-a/EPSG:4326/EPSG:4326:0/0/0/0/0?format=text/plain")
-                                .header("Host", new String("localhost")))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain"));
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        req.setPathInfo(
+                "geowebcache/service/wmts/rest/mockLayer/style-a/EPSG:4326/EPSG:4326:0/0/0/0/0");
+        req.addParameter("format", "text/plain");
+
+        final MockHttpServletResponse resp = dispatch(req);
+
+        assertEquals(200, resp.getStatus());
+        assertEquals("text/plain", resp.getContentType());
     }
 
     @Test
     public void testGetInfoWithoutStyle() throws Exception {
-        MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        mockMvc.perform(
-                        get("/rest/wmts/mockLayer/EPSG:4326/EPSG:4326:0/0/0/0/0?format=text/plain")
-                                .header("Host", new String("localhost")))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain"));
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        req.setPathInfo("geowebcache/service/wmts/rest/mockLayer/EPSG:4326/EPSG:4326:0/0/0/0/0");
+        req.addParameter("format", "text/plain");
+
+        final MockHttpServletResponse resp = dispatch(req);
+
+        assertEquals(200, resp.getStatus());
+        assertEquals("text/plain", resp.getContentType());
     }
 
     @Test
     public void testOWSException() throws Exception {
-        MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        mockMvc.perform(get("/rest/wmts/mockLayer/EPSG:4326/EPSG:4326:0/0/0/0/0?format=text/none"))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType("text/xml"))
-                .andExpect(
-                        xpath(
-                                        "//ows:ExceptionReport/ows:Exception[@exceptionCode='InvalidParameterValue']",
-                                        namespaces)
-                                .nodeCount(1));
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        req.setPathInfo("geowebcache/service/wmts/rest/mockLayer/EPSG:4326/EPSG:4326:0/0/0/0/0");
+        req.addParameter("format", "text/none");
+
+        MockHttpServletResponse resp = dispatch(req);
+
+        assertEquals(HttpStatus.SC_BAD_REQUEST, resp.getStatus());
+        assertEquals("text/xml", resp.getContentType());
+
+        Document doc = XMLUnit.buildTestDocument(resp.getContentAsString());
+        assertXpathExists(
+                "//ows:ExceptionReport/ows:Exception[@exceptionCode='InvalidParameterValue']", doc);
     }
 
     @FunctionalInterface
@@ -209,8 +270,6 @@ public class WMTSRestTest {
         // mock server configuration to activate CITE compliance checks
         ServerConfiguration configuration = mock(ServerConfiguration.class);
         when(configuration.isWmtsCiteCompliant()).thenReturn(true);
-        // update WTMS service whit the mocked server configuration
-        WMTSService wmtsService = webApplicationContext.getBean(WMTSService.class);
         ServerConfiguration previousConfiguration = wmtsService.getMainConfiguration();
         wmtsService.setMainConfiguration(configuration);
         try {
@@ -220,5 +279,127 @@ public class WMTSRestTest {
             // set whatever was the previous server configuration used by WMTS service
             wmtsService.setMainConfiguration(previousConfiguration);
         }
+    }
+
+    public TileLayerDispatcher tileLayerDispatcher() throws Exception {
+        TileLayerDispatcher tld = mock(TileLayerDispatcher.class);
+        List<String> gridSetNames =
+                Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
+        String layerName = "mockLayer";
+        TileLayer tileLayer = mock(TileLayer.class);
+
+        StringParameterFilter styles = new StringParameterFilter();
+        styles.setKey("STYLES");
+        styles.setValues(Arrays.asList("style-a", "style-b"));
+
+        StringParameterFilter time = new StringParameterFilter();
+        time.setKey("time");
+        time.setValues(Arrays.asList("2016-02-23T03:00:00.000Z"));
+
+        StringParameterFilter elevation = new StringParameterFilter();
+        elevation.setKey("elevation");
+        elevation.setValues(Arrays.asList("500"));
+
+        when(tileLayer.getParameterFilters()).thenReturn(Arrays.asList(styles, time, elevation));
+
+        LegendInfo legendInfo2 =
+                new LegendInfoBuilder()
+                        .withStyleName("styla-b-legend")
+                        .withWidth(125)
+                        .withHeight(130)
+                        .withFormat("image/png")
+                        .withCompleteUrl(
+                                "https://some-url?some-parameter=value3&another-parameter=value4")
+                        .withMinScale(5000D)
+                        .withMaxScale(10000D)
+                        .build();
+        when(tileLayer.getLayerLegendsInfo())
+                .thenReturn(Collections.singletonMap("style-b", legendInfo2));
+
+        when(tld.getTileLayer(eq(layerName))).thenReturn(tileLayer);
+        when(tileLayer.getName()).thenReturn(layerName);
+        when(tileLayer.isEnabled()).thenReturn(true);
+        when(tileLayer.isAdvertised()).thenReturn(true);
+
+        final MimeType mimeType1 = MimeType.createFromFormat("image/png");
+        final MimeType mimeType2 = MimeType.createFromFormat("image/jpeg");
+        when(tileLayer.getMimeTypes()).thenReturn(Arrays.asList(mimeType1, mimeType2));
+
+        final MimeType infoMimeType1 = MimeType.createFromFormat("text/plain");
+        final MimeType infoMimeType2 = MimeType.createFromFormat("text/html");
+        final MimeType infoMimeType3 = MimeType.createFromFormat("application/vnd.ogc.gml");
+        when(tileLayer.getInfoMimeTypes())
+                .thenReturn(Arrays.asList(infoMimeType1, infoMimeType2, infoMimeType3));
+        Map<String, GridSubset> subsets = new HashMap<String, GridSubset>();
+        Map<SRS, List<GridSubset>> bySrs = new HashMap<SRS, List<GridSubset>>();
+
+        for (String gsetName : gridSetNames) {
+            GridSet gridSet = broker.get(gsetName);
+            XMLGridSubset xmlGridSubset = new XMLGridSubset();
+            String gridSetName = gridSet.getName();
+            xmlGridSubset.setGridSetName(gridSetName);
+            GridSubset gridSubSet = xmlGridSubset.getGridSubSet(broker);
+            subsets.put(gsetName, gridSubSet);
+
+            List<GridSubset> list = bySrs.get(gridSet.getSrs());
+            if (list == null) {
+                list = new ArrayList<GridSubset>();
+                bySrs.put(gridSet.getSrs(), list);
+            }
+            list.add(gridSubSet);
+
+            when(tileLayer.getGridSubset(eq(gsetName))).thenReturn(gridSubSet);
+        }
+
+        for (SRS srs : bySrs.keySet()) {
+            List<GridSubset> list = bySrs.get(srs);
+            when(tileLayer.getGridSubsetsForSRS(eq(srs))).thenReturn(list);
+        }
+        when(tileLayer.getGridSubsets()).thenReturn(subsets.keySet());
+
+        when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
+
+        when(tileLayer.getTile(any(ConveyorTile.class)))
+                .thenAnswer(
+                        new Answer<ConveyorTile>() {
+                            @Override
+                            public ConveyorTile answer(InvocationOnMock invocation)
+                                    throws Throwable {
+                                ConveyorTile sourceTile =
+                                        (ConveyorTile) invocation.getArguments()[0];
+                                sourceTile.setBlob(getSampleTileContent());
+                                return sourceTile;
+                            }
+                        });
+
+        when(tileLayer.getFeatureInfo(
+                        any(ConveyorTile.class),
+                        any(BoundingBox.class),
+                        anyInt(),
+                        anyInt(),
+                        anyInt(),
+                        anyInt()))
+                .thenAnswer(
+                        new Answer<Resource>() {
+                            @Override
+                            public Resource answer(InvocationOnMock invocation) throws Throwable {
+                                return new ByteArrayResource(new byte[0]);
+                            }
+                        });
+
+        return tld;
+    }
+
+    public ByteArrayResource getSampleTileContent() throws IOException, URISyntaxException {
+        return new ByteArrayResource(
+                FileUtils.readFileToByteArray(
+                        new File(getClass().getResource("/image.png").toURI())));
+    }
+
+    @Bean
+    public SecurityDispatcher securityDispatcher() {
+        SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
+        when(secDisp.isSecurityEnabled()).thenReturn(false);
+        return secDisp;
     }
 }

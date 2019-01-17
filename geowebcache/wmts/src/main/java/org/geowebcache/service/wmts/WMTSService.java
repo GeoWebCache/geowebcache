@@ -14,6 +14,7 @@
  */
 package org.geowebcache.service.wmts;
 
+import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.GeoWebCacheDispatcher;
@@ -39,6 +42,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.service.HttpErrorCodeException;
 import org.geowebcache.service.OWSException;
 import org.geowebcache.service.Service;
 import org.geowebcache.stats.RuntimeStats;
@@ -52,14 +56,81 @@ public class WMTSService extends Service {
     public static final String SERVICE_WMTS = "wmts";
     public static final String SERVICE_PATH =
             "/" + GeoWebCacheDispatcher.TYPE_SERVICE + "/" + SERVICE_WMTS;
-    public static final String REST_PATH =
-            "/" + GeoWebCacheDispatcher.TYPE_REST + "/" + SERVICE_WMTS;
+    public static final String REST_PATH = SERVICE_PATH + "/rest";
+    public static final String GET_CAPABILITIES = "getcapabilities";
+    public static final String GET_FEATUREINFO = "getfeatureinfo";
+    public static final String GET_TILE = "gettile";
 
     enum RequestType {
         TILE,
         CAPABILITIES,
         FEATUREINFO
-    };
+    }
+
+    static final String buildRestPattern(int numPathElements) {
+        return ".*/service/wmts/rest" + Strings.repeat("/([^/]+)", numPathElements);
+    }
+
+    enum RestRequest {
+        // "/{layer}/{tileMatrixSet}/{tileMatrix}/{tileRow}/{tileCol}"
+        TILE(buildRestPattern(5), RequestType.TILE, false),
+        // "/{layer}/{style}/{tileMatrixSet}/{tileMatrix}/{tileRow}/{tileCol}",
+        TILE_STYLE(buildRestPattern(6), RequestType.TILE, true),
+        // "/{layer}/{tileMatrixSet}/{tileMatrix}/{tileRow}/{tileCol}/{j}/{i}"
+        FEATUREINFO(buildRestPattern(7), RequestType.FEATUREINFO, false),
+        // "/{layer}/{style}/{tileMatrixSet}/{tileMatrix}/{tileRow}/{tileCol}/{j}/{i}",
+        FEATUREINFO_STYLE(buildRestPattern(8), RequestType.FEATUREINFO, true);
+
+        Pattern pattern;
+        RequestType type;
+        boolean hasStyle;
+
+        RestRequest(String pattern, RequestType type, boolean hasStyle) {
+            this.pattern = Pattern.compile(pattern);
+            this.type = type;
+            this.hasStyle = hasStyle;
+        }
+
+        /**
+         * Returns the parsed KVP, or null if the path does not match the request pattern
+         *
+         * @param request
+         * @return
+         */
+        public Map<String, String> toKVP(HttpServletRequest request) {
+            final Matcher matcher = pattern.matcher(request.getPathInfo());
+            if (!matcher.matches()) {
+                return null;
+            }
+            Map<String, String> values = new HashMap<>();
+            // go through the pattern and extract the actual request
+            // leverage the predictable path structure to use a single parsing sequence for all
+            // requests
+            int i = 1;
+            final boolean isFeatureInfo = type == RequestType.FEATUREINFO;
+            values.put("request", isFeatureInfo ? GET_FEATUREINFO : GET_TILE);
+            values.put("layer", matcher.group(i++));
+            if (hasStyle) {
+                values.put("style", matcher.group(i++));
+            }
+            values.put("tilematrixset", matcher.group(i++));
+            values.put("tilematrix", matcher.group(i++));
+            values.put("tilerow", matcher.group(i++));
+            values.put("tilecol", matcher.group(i++));
+            if (isFeatureInfo) {
+                values.put("j", matcher.group(i++));
+                values.put("i", matcher.group(i++));
+            }
+            if (request.getParameter("format") instanceof String) {
+                if (isFeatureInfo) {
+                    values.put("infoformat", request.getParameter("format"));
+                } else {
+                    values.put("format", request.getParameter("format"));
+                }
+            }
+            return values;
+        }
+    }
 
     // private static Log log = LogFactory.getLog(org.geowebcache.service.wmts.WMTSService.class);
 
@@ -130,7 +201,10 @@ public class WMTSService extends Service {
             }
         }
 
-        String encoding = request.getCharacterEncoding();
+        if (request.getPathInfo() != null && request.getPathInfo().contains("service/wmts/rest")) {
+            return getRestConveyor(request, response);
+        }
+
         String[] keys = {
             "layer",
             "request",
@@ -144,15 +218,41 @@ public class WMTSService extends Service {
             "i",
             "j"
         };
+        String encoding = request.getCharacterEncoding();
         Map<String, String> values =
                 ServletUtils.selectedStringsFromMap(request.getParameterMap(), encoding, keys);
-        return getConveyor(request, response, values);
+        return getKvpConveyor(request, response, values);
     }
 
-    public Conveyor getConveyor(
+    public Conveyor getRestConveyor(HttpServletRequest request, HttpServletResponse response)
+            throws GeoWebCacheException, OWSException {
+        final String path = request.getPathInfo();
+
+        // special simpler case for GetCapabilities
+        if (path.endsWith("/service/wmts/rest/WMTSCapabilities.xml")) {
+            ConveyorTile tile = new ConveyorTile(sb, null, request, response);
+            tile.setHint(GET_CAPABILITIES);
+            tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
+            return tile;
+        }
+
+        // all other paths are handled via the RestRequest enumeration, matching patterns and
+        // extracting variables
+        for (RestRequest restRequest : RestRequest.values()) {
+            Map<String, String> values = restRequest.toKVP(request);
+            if (values != null) {
+                return getKvpConveyor(request, response, values);
+            }
+        }
+
+        // we implement all WMTS supported request, this means that the provided request name is
+        // invalid
+        throw new HttpErrorCodeException(404, "Unknown resource " + request.getPathInfo());
+    }
+
+    public Conveyor getKvpConveyor(
             HttpServletRequest request, HttpServletResponse response, Map<String, String> values)
             throws GeoWebCacheException, OWSException {
-
         // let's see if we have any extension that wants to provide a conveyor for this request
         for (WMTSExtension extension : extensions) {
             Conveyor conveyor = extension.getConveyor(request, response, sb);
@@ -196,7 +296,7 @@ public class WMTSService extends Service {
             }
         }
 
-        if (req.equals("gettile")) {
+        if (req.equals(GET_TILE)) {
             if (isCitecompliant) {
                 boolean isRestRequest = isRestRequest(request);
                 // we need to make sure that a style was provided, otherwise GWC will just assume
@@ -440,7 +540,7 @@ public class WMTSService extends Service {
                         conv.servletReq, new String[] {SERVICE_PATH, REST_PATH}, servletPrefix);
 
         if (tile.getHint() != null) {
-            if (tile.getHint().equals("getcapabilities")) {
+            if (tile.getHint().equals(GET_CAPABILITIES)) {
                 WMTSGetCapabilities wmsGC =
                         new WMTSGetCapabilities(
                                 tld,
@@ -452,7 +552,7 @@ public class WMTSService extends Service {
                                 extensions);
                 wmsGC.writeResponse(tile.servletResp, stats);
 
-            } else if (tile.getHint().equals("getfeatureinfo")) {
+            } else if (tile.getHint().equals(GET_FEATUREINFO)) {
                 getSecurityDispatcher().checkSecurity(tile);
                 ConveyorTile convTile = (ConveyorTile) conv;
                 WMTSGetFeatureInfo wmsGFI = new WMTSGetFeatureInfo(convTile);
@@ -542,7 +642,7 @@ public class WMTSService extends Service {
      */
     private static boolean isRestRequest(HttpServletRequest request) {
         // rest/wmts is always lowercase
-        return request.getPathInfo().contains("rest/wmts");
+        return request.getPathInfo().contains("service/wmts/rest");
     }
 
     /**

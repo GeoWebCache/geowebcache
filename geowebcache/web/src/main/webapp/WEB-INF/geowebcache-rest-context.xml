@@ -15,6 +15,6 @@
     </mvc:message-converters>
   </mvc:annotation-driven>
 
-  <context:component-scan base-package="org.geowebcache.rest, org.geowebcache.diskquota.rest.controller, org.geowebcache.service.wmts" />
+  <context:component-scan base-package="org.geowebcache.rest, org.geowebcache.diskquota.rest.controller" />
 
 </beans>
