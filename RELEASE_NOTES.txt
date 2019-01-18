@@ -1,3 +1,14 @@
+GeoWebCache 1.14.2 (2019-01-18)
+-------------------------------
+
+Stable release for 1.14 branch
+
+Improvements:
++++++++++++++
+- Update to jai-ext 1.1.6
+- Update to imageio-ext 1.1.28
+- WMTS REST integration updated and moved to /service/wmts/rest (previously /rest/wmts)
+
 GeoWebCache 1.14.1 (2018-11-19)
 -------------------------------
 
