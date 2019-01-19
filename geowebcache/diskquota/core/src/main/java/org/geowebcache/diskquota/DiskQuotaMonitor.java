@@ -236,7 +236,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
         quotaStore = quotaStoreProvider.getQuotaStore();
 
-        quotaUsageMonitor = new QuotaUpdatesMonitor(quotaConfig, storageBroker, quotaStore);
+        quotaUsageMonitor = new QuotaUpdatesMonitor(storageBroker, quotaStore);
         usageStatsMonitor = new UsageStatsMonitor(quotaStore, tileLayerDispatcher);
 
         if (cleanUpExecutorService != null) {

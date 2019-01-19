@@ -27,8 +27,6 @@ public class QuotaUpdatesMonitor extends AbstractMonitor {
     private static final CustomizableThreadFactory tf =
             new CustomizableThreadFactory("GWC DiskQuota Updates Gathering Thread-");
 
-    private final DiskQuotaConfig quotaConfig;
-
     private final StorageBroker storageBroker;
 
     private final QuotaStore quotaStore;
@@ -39,15 +37,10 @@ public class QuotaUpdatesMonitor extends AbstractMonitor {
 
     private QueuedQuotaUpdatesConsumer quotaUsageUpdatesConsumer;
 
-    public QuotaUpdatesMonitor(
-            final DiskQuotaConfig quotaConfig,
-            final StorageBroker storageBroker,
-            final QuotaStore quotaStore) {
-        Assert.notNull(quotaConfig, "quotaConfig is null");
+    public QuotaUpdatesMonitor(final StorageBroker storageBroker, final QuotaStore quotaStore) {
         Assert.notNull(storageBroker, "storageBroker is null");
         Assert.notNull(quotaStore, "quotaStore is null");
 
-        this.quotaConfig = quotaConfig;
         this.storageBroker = storageBroker;
         this.quotaStore = quotaStore;
 
@@ -67,7 +60,7 @@ public class QuotaUpdatesMonitor extends AbstractMonitor {
     public void startUp() {
         super.startUp();
 
-        quotaDiffsProducer = new QueuedQuotaUpdatesProducer(quotaConfig, sharedQueue, quotaStore);
+        quotaDiffsProducer = new QueuedQuotaUpdatesProducer(sharedQueue, quotaStore);
 
         // the task that takes quota updates from the queue and saves them to the store
         quotaUsageUpdatesConsumer = new QueuedQuotaUpdatesConsumer(quotaStore, sharedQueue);

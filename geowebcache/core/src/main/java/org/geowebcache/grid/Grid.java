@@ -15,6 +15,7 @@
 package org.geowebcache.grid;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /** @author groldan */
 public class Grid implements Serializable, Cloneable {
@@ -45,6 +46,11 @@ public class Grid implements Serializable, Cloneable {
                 > 0.005) return false;
 
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(numTilesWide, numTilesHigh, resolution, scaleDenom, name);
     }
 
     public String getName() {

@@ -423,6 +423,7 @@ public class GuavaCacheProvider implements CacheProvider {
     }
 
     @Override
+    @SuppressWarnings("PMD.EmptyWhileStmt")
     public void reset() {
         if (configured.getAndSet(false)) {
             if (LOGGER.isDebugEnabled()) {

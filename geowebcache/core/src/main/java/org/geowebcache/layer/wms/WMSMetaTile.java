@@ -15,8 +15,6 @@
 package org.geowebcache.layer.wms;
 
 import java.util.Map;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.MetaTile;
@@ -24,11 +22,7 @@ import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
 
 public class WMSMetaTile extends MetaTile {
-    private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSMetaTile.class);
-
     protected WMSLayer wmsLayer = null;
-
-    protected boolean requestTiled = false;
 
     protected Map<String, String> fullParameters;
 

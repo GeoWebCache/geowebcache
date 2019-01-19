@@ -222,33 +222,6 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
         return scalesCRS84QuadScaleResolutions;
     }
 
-    private double[] googleMapsCompatibleResolutions() {
-        double[] scalesCRS84QuadScaleResolutions = { //
-            156543.0339280410, //
-            78271.51696402048, //
-            39135.75848201023, //
-            19567.87924100512, //
-            9783.939620502561, //
-            4891.969810251280, //
-            2445.984905125640, //
-            1222.992452562820, //
-            611.4962262814100, //
-            305.7481131407048, //
-            152.8740565703525, //
-            76.43702828517624, //
-            38.21851414258813, //
-            19.10925707129406, //
-            9.554628535647032, //
-            4.777314267823516, //
-            2.388657133911758, //
-            1.194328566955879, //
-            0.5971642834779395, //
-            0.29858214173896974, //
-            0.14929107086948487
-        };
-        return scalesCRS84QuadScaleResolutions;
-    }
-
     private double[] commonPractice900913Resolutions() {
         return new double[] { //
             156543.03390625,

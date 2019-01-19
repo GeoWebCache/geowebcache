@@ -688,8 +688,8 @@
               <rulesets>
                 <ruleset>${geowebcacheBaseDir}/pmd-ruleset.xml</ruleset>
               </rulesets>
-              <failurePriority>2</failurePriority>
-              <minimumPriority>2</minimumPriority>
+              <failurePriority>3</failurePriority>
+              <minimumPriority>3</minimumPriority>
               <verbose>true</verbose>
               <printFailingErrors>true</printFailingErrors>
               <excludeRoots>

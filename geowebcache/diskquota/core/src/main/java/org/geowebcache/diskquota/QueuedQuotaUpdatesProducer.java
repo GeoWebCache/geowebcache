@@ -38,8 +38,6 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
 
     private static final Log log = LogFactory.getLog(QueuedQuotaUpdatesProducer.class);
 
-    private final DiskQuotaConfig quotaConfig;
-
     private final BlockingQueue<QuotaUpdate> queuedUpdates;
 
     private boolean cancelled;
@@ -56,13 +54,9 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
      *     should be a separate thread that takes care of them.
      */
     public QueuedQuotaUpdatesProducer(
-            final DiskQuotaConfig quotaConfig,
-            final BlockingQueue<QuotaUpdate> queuedUpdates,
-            QuotaStore quotaStore) {
-        Assert.notNull(quotaConfig, "quotaConfig can't be null");
+            final BlockingQueue<QuotaUpdate> queuedUpdates, QuotaStore quotaStore) {
         Assert.notNull(queuedUpdates, "queuedUpdates can't be null");
 
-        this.quotaConfig = quotaConfig;
         this.queuedUpdates = queuedUpdates;
         this.quotaStore = quotaStore;
 

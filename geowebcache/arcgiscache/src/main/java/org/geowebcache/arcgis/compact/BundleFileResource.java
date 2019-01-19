@@ -34,6 +34,7 @@ public class BundleFileResource implements Resource {
     }
 
     /** @see org.geowebcache.io.Resource#transferTo(WritableByteChannel) */
+    @SuppressWarnings("PMD.EmptyWhileStmt")
     public long transferTo(WritableByteChannel target) throws IOException {
         try (FileInputStream fin = new FileInputStream(new File(bundleFilePath));
                 FileChannel in = fin.getChannel()) {

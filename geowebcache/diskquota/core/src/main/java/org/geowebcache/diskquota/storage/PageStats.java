@@ -29,6 +29,7 @@ public class PageStats implements Serializable {
 
     private static final long serialVersionUID = 719776699585233200L;
 
+    @SuppressWarnings("PMD.UnusedPrivateField")
     private long id;
 
     private long pageId;

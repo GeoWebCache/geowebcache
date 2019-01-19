@@ -122,7 +122,6 @@ public class FormService {
                     "<ul><li>Sorry, either task "
                             + id
                             + " has not started yet, or it is a truncate task that cannot be interrutped.</li></ul>");
-            ;
         }
 
         if (tl != null) {
@@ -194,7 +193,6 @@ public class FormService {
         Map<String, String> fullParameters;
         {
             Map<String, String> parameters = new HashMap<String, String>();
-            ;
             Set<String> paramNames = form.keySet();
             String prefix = "parameter_";
             for (String name : paramNames) {

@@ -55,7 +55,6 @@ class GridSetBuilder {
         final double pixelSize = 0.0254 / tileCacheInfo.getDPI(); // see GridSubset.getDotsPerInch()
         {
             int epsgNumber = spatialReference.getWKID();
-            if (0 == epsgNumber) {}
             srs = SRS.getSRS(epsgNumber);
         }
         {

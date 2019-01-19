@@ -483,6 +483,5 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
          * NOTE: this method doesn't seem like belonging to TileLayer, but to GeoWebCacheDispatcher
          * itself
          */
-        return;
     }
 }
