@@ -30,8 +30,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.ContextualConfigurationProvider;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.io.GeoWebCacheXStream;
@@ -44,7 +42,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.WebApplicationContext;
 
 public abstract class GWCSeedingController extends GWCController {
-    private static Log log = LogFactory.getLog(GWCSeedingController.class);
 
     public JSONObject myrequest;
 

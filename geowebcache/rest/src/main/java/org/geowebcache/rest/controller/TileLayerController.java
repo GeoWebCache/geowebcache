@@ -20,7 +20,6 @@ package org.geowebcache.rest.controller;
 import java.io.IOException;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
-import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.layer.TileLayer;
@@ -29,8 +28,6 @@ import org.geowebcache.rest.converter.XStreamListAliasWrapper;
 import org.geowebcache.rest.exception.RestException;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
-import org.geowebcache.util.NullURLMangler;
-import org.geowebcache.util.URLMangler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -46,10 +43,6 @@ public class TileLayerController extends GWCController {
 
     @Autowired TileLayerDispatcher layerDispatcher;
 
-    private URLMangler urlMangler = new NullURLMangler();
-
-    private GeoWebCacheDispatcher controller = null;
-
     @Autowired private StorageBroker storageBroker;
 
     @ExceptionHandler(RestException.class)
@@ -57,16 +50,6 @@ public class TileLayerController extends GWCController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
         return new ResponseEntity<Object>(ex.toString(), headers, ex.getStatus());
-    }
-
-    // set by spring
-    public void setUrlMangler(URLMangler urlMangler) {
-        this.urlMangler = urlMangler;
-    }
-
-    // set by spring
-    public void setController(GeoWebCacheDispatcher controller) {
-        this.controller = controller;
     }
 
     // set by spring

@@ -151,7 +151,6 @@ class PagePyramid {
      */
     public PageLevelInfo calculatePageInfo(final long[] coverage) {
 
-        final int level = (int) coverage[4];
         final long coverageMinX = coverage[0];
         final long coverageMaxX = coverage[2];
         final long coverageMinY = coverage[1];

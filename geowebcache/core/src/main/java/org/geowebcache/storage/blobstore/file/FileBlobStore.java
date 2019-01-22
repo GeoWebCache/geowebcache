@@ -442,9 +442,7 @@ public class FileBlobStore implements BlobStore {
                 }
 
                 // Try deleting the directory (will be done only if the directory is empty)
-                if (imd.delete()) {
-                    // listeners.sendDirectoryDeleted(layerName);
-                }
+                imd.delete();
             }
 
             // Try deleting the zoom directory (will be done only if the directory is empty)

@@ -107,9 +107,8 @@ public class MGMapsConverter extends Service {
     public void handleRequest(ConveyorTile tile) throws GeoWebCacheException {
         if (tile.getHint() != null) {
             // boolean requestTiled = true;
-            if (tile.getHint().equals("not_cached,not_metatiled")) {
-                // requestTiled = false;
-            } else if (!tile.getHint().equals("not_cached")) {
+            if (!tile.getHint().equals("not_cached,not_metatiled")
+                    && !tile.getHint().equals("not_cached")) {
                 throw new GeoWebCacheException("Hint " + tile.getHint() + " is not known.");
             }
 

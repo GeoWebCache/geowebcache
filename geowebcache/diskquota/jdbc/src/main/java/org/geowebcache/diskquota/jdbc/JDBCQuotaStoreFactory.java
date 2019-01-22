@@ -75,7 +75,6 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         TilePageCalculator tilePageCalculator =
                 (TilePageCalculator) ctx.getBean("gwcTilePageCalculator");
 
-        DataSource ds = null;
         if (H2_STORE.equals(quotaStoreName)) {
             return initializeH2Store(cacheDirFinder, tilePageCalculator);
         } else if (JDBC_STORE.equals(quotaStoreName)) {

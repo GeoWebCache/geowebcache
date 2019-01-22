@@ -13,6 +13,7 @@
 package org.geowebcache.storage.blobstore.memory;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * This class contains the configuration for the {@link CacheProvider} object to use.
@@ -144,5 +145,10 @@ public class CacheConfiguration implements Serializable {
         }
 
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(hardMemoryLimit, policy, concurrencyLevel, evictionTime);
     }
 }

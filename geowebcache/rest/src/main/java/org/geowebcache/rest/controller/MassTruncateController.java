@@ -51,8 +51,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class MassTruncateController extends GWCSeedingController {
     private static Log log = LogFactory.getLog(MassTruncateController.class);
 
-    @Autowired private StorageBroker storageBroker;
-
     @Autowired private StorageBroker broker;
 
     @Autowired private TileBreeder breeder;

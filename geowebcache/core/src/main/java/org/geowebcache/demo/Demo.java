@@ -221,8 +221,6 @@ public class Demo {
                                     .collect(Collectors.joining(", ")));
 
                     buf.append("]");
-                } else {
-                    // No Google Earth support
                 }
                 buf.append("</td></tr>");
             }
@@ -260,10 +258,6 @@ public class Demo {
         }
 
         StringBuffer buf = new StringBuffer();
-
-        String res = "resolutions: " + Arrays.toString(gridSubset.getResolutions()) + ",\n";
-
-        String units = "units: \"" + gridSubset.getGridSet().guessMapUnits() + "\",\n";
 
         String openLayersPath = "../rest/web/openlayers3/";
 

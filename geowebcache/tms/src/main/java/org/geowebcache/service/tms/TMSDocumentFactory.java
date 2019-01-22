@@ -239,7 +239,6 @@ public class TMSDocumentFactory {
                 xml.attribute("units-per-pixel", Double.toString(resolutions[resIdx]));
                 xml.attribute("order", Integer.toString(resIdx));
                 xml.endElement();
-                ;
                 resIdx++;
             }
 

@@ -18,15 +18,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
 
 final class WMTSUtils {
-
-    private static Log log = LogFactory.getLog(WMTSUtils.class);
 
     private WMTSUtils() {}
 

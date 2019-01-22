@@ -19,8 +19,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.BaseConfiguration;
@@ -47,8 +45,6 @@ public class TileLayerDispatcher
                 InitializingBean,
                 ApplicationContextAware,
                 ConfigurationAggregator<TileLayerConfiguration> {
-
-    private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayerDispatcher.class);
 
     private List<TileLayerConfiguration> configs;
 

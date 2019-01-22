@@ -72,7 +72,6 @@ public class ClassMetadataBuilder {
     }
 
     private Field getField(String lookup) {
-        List<FieldMetadata> fields = new ArrayList<FieldMetadata>();
         for (Field field : entityClass.getDeclaredFields()) {
             if (field.getName().equals(lookup)) {
                 return field;
