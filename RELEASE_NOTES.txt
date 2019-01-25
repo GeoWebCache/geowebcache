@@ -1,3 +1,13 @@
+GeoWebCache 1.15-RC (2019-01-25)
+--------------------------------
+
+Release candidate for 1.15-RC
+
+Improvements:
++++++++++++++
+- Java 11 support
+- PMD and ErrorProne integration and associated fixes
+
 GeoWebCache 1.14.2 (2019-01-18)
 -------------------------------
 
