@@ -7,7 +7,7 @@
 	<fileSets>
 		<fileSet>
 			<directory>../documentation/en/user/build/html</directory>
-			<outputDirectory>geowebcache-<!-- GWC VERSION -->1.14-SNAPSHOT<!-- /GWC VERSION -->/doc</outputDirectory>
+			<outputDirectory>geowebcache-<!-- GWC VERSION -->1.15-SNAPSHOT<!-- /GWC VERSION -->/doc</outputDirectory>
 			<includes>
 				<include>**/*</include>
 			</includes>
