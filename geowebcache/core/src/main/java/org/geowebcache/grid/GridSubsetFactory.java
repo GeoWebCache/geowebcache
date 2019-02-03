@@ -47,7 +47,7 @@ public class GridSubsetFactory {
             Integer maxCachedZoom) {
 
         if (gridSet == null) {
-            log.error("Passed GridSet was null!");
+            throw new NullPointerException("Passed GridSet was null!");
         }
 
         final Grid[] gridLevels = gridSet.getGridLevels();
