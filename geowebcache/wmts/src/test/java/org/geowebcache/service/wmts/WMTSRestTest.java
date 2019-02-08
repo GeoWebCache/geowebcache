@@ -197,6 +197,16 @@ public class WMTSRestTest {
     }
 
     @Test
+    public void testGetTileWithEmptyStyle() throws Exception {
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        req.setPathInfo("geowebcache/service/wmts/rest/mockLayer//EPSG:4326/EPSG:4326:0/0/0");
+        req.addParameter("format", "image/png");
+
+        final MockHttpServletResponse resp = dispatch(req);
+        assertEquals(200, resp.getStatus());
+    }
+
+    @Test
     public void testGetInfoWithStyle() throws Exception {
         MockHttpServletRequest req = new MockHttpServletRequest();
         req.setPathInfo(
