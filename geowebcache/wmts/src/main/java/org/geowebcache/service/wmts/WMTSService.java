@@ -67,19 +67,24 @@ public class WMTSService extends Service {
         FEATUREINFO
     }
 
-    static final String buildRestPattern(int numPathElements) {
-        return ".*/service/wmts/rest" + Strings.repeat("/([^/]+)", numPathElements);
+    static final String buildRestPattern(int numPathElements, boolean hasStyle) {
+        if (!hasStyle) {
+            return ".*/service/wmts/rest" + Strings.repeat("/([^/]+)", numPathElements);
+        } else {
+            return ".*/service/wmts/rest/([^/]+)/([^/]*)"
+                    + Strings.repeat("/([^/]+)", numPathElements - 2);
+        }
     }
 
     enum RestRequest {
         // "/{layer}/{tileMatrixSet}/{tileMatrix}/{tileRow}/{tileCol}"
-        TILE(buildRestPattern(5), RequestType.TILE, false),
+        TILE(buildRestPattern(5, false), RequestType.TILE, false),
         // "/{layer}/{style}/{tileMatrixSet}/{tileMatrix}/{tileRow}/{tileCol}",
-        TILE_STYLE(buildRestPattern(6), RequestType.TILE, true),
+        TILE_STYLE(buildRestPattern(6, true), RequestType.TILE, true),
         // "/{layer}/{tileMatrixSet}/{tileMatrix}/{tileRow}/{tileCol}/{j}/{i}"
-        FEATUREINFO(buildRestPattern(7), RequestType.FEATUREINFO, false),
+        FEATUREINFO(buildRestPattern(7, false), RequestType.FEATUREINFO, false),
         // "/{layer}/{style}/{tileMatrixSet}/{tileMatrix}/{tileRow}/{tileCol}/{j}/{i}",
-        FEATUREINFO_STYLE(buildRestPattern(8), RequestType.FEATUREINFO, true);
+        FEATUREINFO_STYLE(buildRestPattern(8, true), RequestType.FEATUREINFO, true);
 
         Pattern pattern;
         RequestType type;
