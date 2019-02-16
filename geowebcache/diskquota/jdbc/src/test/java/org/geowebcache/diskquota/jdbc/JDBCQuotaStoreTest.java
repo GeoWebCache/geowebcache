@@ -562,6 +562,8 @@ public abstract class JDBCQuotaStoreTest {
 
         assertNotNull(store.getTileSetById(tileSet.getId()));
 
+        // make sure previous steps have released the lock
+        Thread.sleep(100);
         store.deleteLayer(layerName);
 
         // cascade deleted?
