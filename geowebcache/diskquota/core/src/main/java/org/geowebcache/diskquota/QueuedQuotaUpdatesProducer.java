@@ -47,9 +47,6 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
     int updateOfferTimeoutSeconds;
 
     /**
-     * @param quotaConfig needed to get the {@link DiskQuotaConfig#getDiskBlockSize() disk block
-     *     size} at each tile event, so that the computation is consistent with config changes at
-     *     runtime
      * @param queuedUpdates queue that this monitor will fill with updates at each tile event. There
      *     should be a separate thread that takes care of them.
      */

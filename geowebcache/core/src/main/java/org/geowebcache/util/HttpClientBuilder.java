@@ -10,7 +10,7 @@
  * <p>You should have received a copy of the GNU Lesser General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
- * @author Lennart Juette, PTV AG (http://www.ptvag.com)
+ * @author Lennart Juette, PTV AG (http://www.ptvag.com) 2010
  */
 package org.geowebcache.util;
 
