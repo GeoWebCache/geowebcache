@@ -10,7 +10,7 @@
  * <p>You should have received a copy of the GNU Lesser General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
- * @author Arne Kepp, Marius Suta, The Open Planning Project, Copyright 2008 - 2015
+ * @author Arne Kepp, Marius Suta, The Open Planning Project, Copyright 2008
  */
 package org.geowebcache.config;
 
@@ -645,10 +645,7 @@ public class XMLConfiguration
                 "renameLayer is not supported by " + getClass().getSimpleName());
     }
 
-    /**
-     * @return {@code true} if the layer was removed, {@code false} if no such layer exists
-     * @see TileLayerConfiguration#removeLayer(java.lang.String)
-     */
+    /** @see TileLayerConfiguration#removeLayer(java.lang.String) */
     public synchronized void removeLayer(final String layerName)
             throws NoSuchElementException, IllegalArgumentException {
         final TileLayer tileLayer = findLayer(layerName);

@@ -10,7 +10,7 @@
  * <p>You should have received a copy of the GNU Lesser General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
- * @author Niels Charlier
+ * @author Niels Charlier Copyright 2015
  */
 package org.geowebcache.config;
 

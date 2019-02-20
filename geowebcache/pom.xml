@@ -45,6 +45,8 @@
     <errorProne.version>2.3.2</errorProne.version>
     <javac.version>9+181-r4173-1</javac.version>
     <pmd.version>6.11.0</pmd.version>
+    <checkstyle.skip>false</checkstyle.skip>
+    <qa>false</qa>
   </properties>
   
   <repositories>
@@ -679,6 +681,11 @@
   <profiles>
     <profile>
       <id>pmd</id>
+      <activation>
+        <property>
+          <name>qa</name>
+        </property>
+      </activation>
       <build>
         <plugins>
           <plugin>
@@ -734,6 +741,12 @@
     <!-- for those using JDK 11 -->
     <profile>
       <id>errorprone</id>
+      <activation>
+        <property>
+          <name>qa</name>
+        </property>
+        <jdk>(1.8,)</jdk>
+      </activation>
       <build>
         <plugins>
           <plugin>
@@ -762,6 +775,12 @@
     <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
     <profile>
       <id>errorprone8</id>
+      <activation>
+        <property>
+          <name>qa</name>
+        </property>
+        <jdk>1.8</jdk>
+      </activation>
       <build>
         <plugins>
           <plugin>
@@ -790,6 +809,11 @@
     
     <profile>
       <id>spotbugs</id>
+      <activation>
+        <property>
+          <name>qa</name>
+        </property>
+      </activation>
       <build>
         <plugins>
           <plugin>
@@ -814,7 +838,39 @@
           </plugin>
         </plugins>
       </build>
-    </profile>  
+    </profile>
+    
+    <profile>
+      <id>checkstyle</id>
+      <activation>
+        <property>
+          <name>qa</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+           <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-checkstyle-plugin</artifactId>
+              <version>3.0.0</version>
+              <configuration>
+                    <logViolationsToConsole>true</logViolationsToConsole>
+                    <!-- ignore generated classes, e.g., javacc ones -->
+                    <excludes>**/generated/**/*</excludes>
+                    <skip>${checkstyle.skip}</skip>
+                    <configLocation>${geowebcacheBaseDir}/checkstyle.xml</configLocation>
+                  </configuration>
+              <executions>
+                <execution>
+                  <goals>
+                    <goal>check</goal>
+                  </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>  
+    </profile>
   </profiles>
   
 

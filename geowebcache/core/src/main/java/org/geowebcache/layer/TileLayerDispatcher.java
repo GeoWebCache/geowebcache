@@ -163,7 +163,6 @@ public class TileLayerDispatcher
      * saves the configuration.
      *
      * @param layerName the name of the layer to remove
-     * @return true if the layer was removed, false if it was not found.
      */
     public synchronized void removeLayer(final String layerName) throws IllegalArgumentException {
         for (TileLayerConfiguration config : configs) {

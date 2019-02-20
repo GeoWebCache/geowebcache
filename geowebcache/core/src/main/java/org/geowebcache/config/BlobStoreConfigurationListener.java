@@ -47,7 +47,7 @@ public interface BlobStoreConfigurationListener {
 
     /**
      * @param oldName The old name of the blobstore
-     * @param removedBlobStore The configuration for the blobstore including its new name
+     * @param modifiedBlobStore The configuration for the blobstore including its new name
      */
     void handleRenameBlobStore(String oldName, BlobStoreInfo modifiedBlobStore)
             throws GeoWebCacheException, IOException;

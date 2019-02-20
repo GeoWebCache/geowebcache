@@ -241,7 +241,6 @@ public class BlobStoreAggregator {
      * saves the configuration.
      *
      * @param blobStoreName the name of the blob store to remove
-     * @return true if the blob store was removed, false if it was not found.
      */
     public synchronized void removeBlobStore(final String blobStoreName)
             throws IllegalArgumentException {
