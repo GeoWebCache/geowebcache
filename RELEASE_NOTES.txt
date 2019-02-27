@@ -1,3 +1,13 @@
+
+GeoWebCache 1.15.0 (2019-02-26)
+--------------------------------
+
+First stable release of 1.15 branch
+
+Improvements:
++++++++++++++
+- WMTS REST integration followup - allow serving back requests with empty style
+
 GeoWebCache 1.15-RC (2019-01-25)
 --------------------------------
 
