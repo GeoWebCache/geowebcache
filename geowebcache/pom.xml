@@ -34,7 +34,7 @@
     <jalopy.srcExcludesPattern>disabled</jalopy.srcExcludesPattern>
     <test.maxHeapSize>64M</test.maxHeapSize>
     <maven.test.jvmargs/>
-    <imageio-ext.version>1.2.1</imageio-ext.version>
+    <imageio-ext.version>1.3.0</imageio-ext.version>
     <hazelcast.version>3.11-BETA-1</hazelcast.version>
     <joda-time.version>2.8.1</joda-time.version>
     <fmt.action>format</fmt.action>
