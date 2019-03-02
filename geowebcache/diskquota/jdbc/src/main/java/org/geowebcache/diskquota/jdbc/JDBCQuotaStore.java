@@ -45,10 +45,10 @@ import org.geowebcache.diskquota.storage.TilePageCalculator;
 import org.geowebcache.diskquota.storage.TileSet;
 import org.geowebcache.diskquota.storage.TileSetVisitor;
 import org.geowebcache.storage.DefaultStorageFinder;
+import org.geowebcache.util.SuppressFBWarnings;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DeadlockLoserDataAccessException;
-import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -137,6 +137,7 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     /** Sets the connection pool provider and initializes the tables in the dbms if missing */
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
         DataSourceTransactionManager dsTransactionManager =
@@ -399,13 +400,10 @@ public class JDBCQuotaStore implements QuotaStore {
         final TileSetRowMapper tileSetMapper = new TileSetRowMapper();
         jt.query(
                 getTileSet,
-                new RowCallbackHandler() {
-
-                    public void processRow(ResultSet rs) throws SQLException {
-                        TileSet tileSet = tileSetMapper.mapRow(rs, 0);
-                        if (!GLOBAL_QUOTA_NAME.equals(tileSet.getId())) {
-                            visitor.visit(tileSet, JDBCQuotaStore.this);
-                        }
+                rs -> {
+                    TileSet tileSet = tileSetMapper.mapRow(rs, 0);
+                    if (tileSet != null && !GLOBAL_QUOTA_NAME.equals(tileSet.getId())) {
+                        visitor.visit(tileSet, this);
                     }
                 });
     }

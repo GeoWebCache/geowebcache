@@ -43,6 +43,7 @@ import org.geowebcache.storage.blobstore.memory.CacheConfiguration;
 import org.geowebcache.storage.blobstore.memory.CacheConfiguration.EvictionPolicy;
 import org.geowebcache.storage.blobstore.memory.CacheProvider;
 import org.geowebcache.storage.blobstore.memory.CacheStatistics;
+import org.geowebcache.util.SuppressFBWarnings;
 
 /**
  * This class is an implementation of the {@link CacheProvider} interface using a backing Guava
@@ -657,6 +658,14 @@ public class GuavaCacheProvider implements CacheProvider {
          * @param layer
          * @param id
          */
+        // not sure why locking is used on top of concurrent structures to start with... just
+        // ignoring to move on, but imho all locks should be removed and concurrent structure
+        // be used as intended (e.g., putIfAbsent and the like
+        @SuppressFBWarnings({
+            "AT_OPERATION_SEQUENCE_ON_CONCURRENT_ABSTRACTION",
+            "UL_UNRELEASED_LOCK",
+            "UL_UNRELEASED_LOCK_EXCEPTION_PATH"
+        })
         public void putTile(String layer, String id) {
             // ReadLock is used because we are only accessing the map
             readLock.lock();

@@ -127,9 +127,9 @@ public class IntegerParameterFilter extends ParameterFilter {
                         + "="
                         + str
                         + " is "
-                        + Integer.toString(best)
+                        + best
                         + ", but this exceeds the threshold of "
-                        + Integer.toString(threshold));
+                        + threshold);
     }
 
     @Override

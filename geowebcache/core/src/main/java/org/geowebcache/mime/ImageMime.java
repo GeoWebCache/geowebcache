@@ -175,7 +175,6 @@ public class ImageMime extends MimeType {
         if (!formatStr.startsWith("image/")) {
             return null;
         }
-        final String tmpStr = formatStr.substring(6, formatStr.length());
 
         // TODO Making a special exception, generalize later
         if (!formatStr.equals("image/png; mode=24bit") && formatStr.contains(";")) {
@@ -185,6 +184,7 @@ public class ImageMime extends MimeType {
             formatStr = formatStr.split(";")[0];
         }
 
+        final String tmpStr = formatStr.substring(6);
         if (tmpStr.equalsIgnoreCase("png")) {
             return png;
         } else if (tmpStr.equalsIgnoreCase("jpeg")) {

@@ -293,7 +293,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
 
                 if (this.cachedParameters != null) {
                     for (Map.Entry<String, String> entry : this.cachedParameters.entrySet()) {
-                        if (entry.getKey() != "") {
+                        if (!"".equals(entry.getKey())) {
                             RegexParameterFilter f = new RegexParameterFilter();
                             f.setRegex(".*");
                             f.setKey(entry.getKey());

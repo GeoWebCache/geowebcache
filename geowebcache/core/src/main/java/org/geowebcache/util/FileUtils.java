@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class FileUtils {
+    private static final File[] NO_FILES = new File[0];
     static Log log = LogFactory.getLog(org.geowebcache.util.FileUtils.class);
 
     public static boolean rmFileCacheDir(File path, ExtensionFileLister extfl) {
@@ -34,9 +35,9 @@ public class FileUtils {
             File[] files = null;
 
             if (extfl != null) {
-                files = path.listFiles(extfl);
+                files = listFilesNullSafe(path, extfl);
             } else {
-                files = path.listFiles();
+                files = listFilesNullSafe(path);
             }
 
             for (int i = 0; i < files.length; i++) {
@@ -84,12 +85,12 @@ public class FileUtils {
         // Use path.list() instead of path.listFiles() to avoid the simultaneous creation of
         // thousands of File objects as well as its String objects for the path name. Faster and
         // less resource intensive
-        String[] fileNames = path.list();
+        File[] files = listFilesNullSafe(path);
         List<File> subDirectories = new ArrayList<File>();
 
         File file;
-        for (int i = 0; i < fileNames.length; i++) {
-            file = new File(path, fileNames[i]);
+        for (int i = 0; i < files.length; i++) {
+            file = files[i];
             if (file.isDirectory()) {
                 subDirectories.add(file);
             }
@@ -204,5 +205,26 @@ public class FileUtils {
                 }
             }
         }
+    }
+
+    /** Lists files with the given filter, never returns null */
+    public static File[] listFilesNullSafe(File layerPath, FileFilter filter) {
+        File[] files = layerPath.listFiles(filter);
+        if (files != null) return files;
+        return NO_FILES;
+    }
+
+    /** Lists files, never returns null */
+    public static File[] listFilesNullSafe(File directory) {
+        File[] files = directory.listFiles();
+        if (files != null) return files;
+        return NO_FILES;
+    }
+
+    /** Lists files with the given filter, never returns null */
+    public static File[] listFilesNullSafe(File layerPath, FilenameFilter tileFinder) {
+        File[] files = layerPath.listFiles(tileFinder);
+        if (files != null) return files;
+        return NO_FILES;
     }
 }

@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import javax.servlet.ServletContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -82,14 +83,19 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
                                 + "'");
                 this.configDirectory = new File(configFileDirectory);
             } else {
-
-                String baseDir = context.getServletContext().getRealPath("");
-                log.info(
-                        "Provided configuration directory relative to servlet context '"
-                                + baseDir
-                                + "': "
-                                + configFileDirectory);
-                this.configDirectory = new File(baseDir, configFileDirectory);
+                ServletContext servletContext = context.getServletContext();
+                if (servletContext != null) {
+                    String baseDir = servletContext.getRealPath("");
+                    log.info(
+                            "Provided configuration directory relative to servlet context '"
+                                    + baseDir
+                                    + "': "
+                                    + configFileDirectory);
+                    this.configDirectory = new File(baseDir, configFileDirectory);
+                } else {
+                    throw new IllegalStateException(
+                            "Unexpected, cannot locate the config directory");
+                }
             }
         } else {
             // Otherwise use the storage directory
@@ -264,7 +270,7 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
                         });
 
         final int maxBackups = 10;
-        if (previousBackUps.length > maxBackups) {
+        if (previousBackUps != null && previousBackUps.length > maxBackups) {
             Arrays.sort(previousBackUps);
             String oldest = previousBackUps[0];
             log.debug(

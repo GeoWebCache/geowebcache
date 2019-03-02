@@ -113,7 +113,7 @@ public class MemoryCacheController {
             entity =
                     new ResponseEntity<Object>(
                             "No statistics available for the current BlobStore: "
-                                    + store.getClass(),
+                                    + (store != null ? store.getClass() : null),
                             HttpStatus.NOT_FOUND);
         }
         return entity;
@@ -127,19 +127,13 @@ public class MemoryCacheController {
      * @throws JSONException
      */
     private ResponseEntity<?> getJsonRepresentation(CacheStatistics stats) throws JSONException {
-        JSONObject rep = null;
-        try {
-            XStream xs =
-                    XMLConfiguration.getConfiguredXStreamWithContext(
-                            new GeoWebCacheXStream(new JsonHierarchicalStreamDriver()),
-                            context,
-                            Context.REST);
-            JSONObject obj = new JSONObject(xs.toXML(stats));
-            rep = obj;
-        } catch (JSONException jse) {
-            LOG.debug(jse);
-        }
-        return new ResponseEntity(rep.toString(), HttpStatus.OK);
+        XStream xs =
+                XMLConfiguration.getConfiguredXStreamWithContext(
+                        new GeoWebCacheXStream(new JsonHierarchicalStreamDriver()),
+                        context,
+                        Context.REST);
+        JSONObject obj = new JSONObject(xs.toXML(stats));
+        return new ResponseEntity(obj.toString(), HttpStatus.OK);
     }
 
     /**

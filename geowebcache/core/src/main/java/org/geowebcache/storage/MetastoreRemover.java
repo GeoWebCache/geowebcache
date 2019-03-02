@@ -23,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -118,7 +119,10 @@ public class MetastoreRemover {
                         + "group by layer, gridset, z, parameters, parameters_id";
 
         final long total =
-                template.queryForObject("select count(*) from (" + query + ")", Long.class);
+                Optional.ofNullable(
+                                template.queryForObject(
+                                        "select count(*) from (" + query + ")", Long.class))
+                        .orElse(0l);
         log.info("Migrating " + total + " parameters from the metastore to the file system");
         template.query(
                 query,
@@ -205,7 +209,10 @@ public class MetastoreRemover {
                         + "order by layer_id, parameters_id, gridset, z, x, y";
 
         final long total =
-                template.queryForObject("select count(*) from (" + query + ")", Long.class);
+                Optional.ofNullable(
+                                template.queryForObject(
+                                        "select count(*) from (" + query + ")", Long.class))
+                        .orElse(0l);
         log.info(
                 "Migrating "
                         + total

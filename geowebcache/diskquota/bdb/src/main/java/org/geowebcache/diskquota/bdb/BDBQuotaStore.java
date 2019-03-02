@@ -15,6 +15,7 @@
 package org.geowebcache.diskquota.bdb;
 
 import static org.geowebcache.diskquota.DiskQuotaMonitor.GWC_DISKQUOTA_DISABLED;
+import static org.geowebcache.util.FileUtils.listFilesNullSafe;
 
 import com.google.common.base.Objects;
 import com.sleepycat.je.CursorConfig;
@@ -141,7 +142,7 @@ public class BDBQuotaStore implements QuotaStore {
         File storeDirectory = new File(cacheRootDir, "diskquota_page_store");
         storeDirectory.mkdirs();
         File version = new File(storeDirectory, VERSION_FILE);
-        if (storeDirectory.list().length == 0) {
+        if (listFilesNullSafe(storeDirectory).length == 0) {
             // Directory is empty
             try {
                 FileUtils.write(version, STORE_VERSION);
