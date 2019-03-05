@@ -17,6 +17,7 @@ package org.geowebcache.storage.blobstore.file;
 import static org.geowebcache.storage.blobstore.file.FilePathUtils.filteredGridSetId;
 import static org.geowebcache.storage.blobstore.file.FilePathUtils.filteredLayerName;
 import static org.geowebcache.storage.blobstore.file.FilePathUtils.findZoomLevel;
+import static org.geowebcache.util.FileUtils.listFilesNullSafe;
 
 import com.google.common.base.Preconditions;
 import java.io.File;
@@ -68,6 +69,7 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 /** See BlobStore interface description for details */
 public class FileBlobStore implements BlobStore {
+
     private static Log log =
             LogFactory.getLog(org.geowebcache.storage.blobstore.file.FileBlobStore.class);
 
@@ -150,7 +152,7 @@ public class FileBlobStore implements BlobStore {
                     "Staging area is not writable or is not a directory: "
                             + stagingArea.getAbsolutePath());
         }
-        File[] pendings = stagingArea.listFiles();
+        File[] pendings = listFilesNullSafe(stagingArea);
         for (File directory : pendings) {
             if (directory.isDirectory()) {
                 deletePending(directory);
@@ -208,7 +210,7 @@ public class FileBlobStore implements BlobStore {
             if (Thread.interrupted()) {
                 throw new InterruptedException();
             }
-            File[] files = directory.listFiles();
+            File[] files = listFilesNullSafe(directory);
             for (int i = 0; i < files.length; i++) {
                 if (Thread.interrupted()) {
                     throw new InterruptedException();
@@ -287,17 +289,17 @@ public class FileBlobStore implements BlobStore {
         }
         final String filteredGridSetId = filteredGridSetId(gridSetId);
 
-        File[] gridSubsetCaches =
-                layerPath.listFiles(
-                        new FileFilter() {
-                            public boolean accept(File pathname) {
-                                if (!pathname.isDirectory()) {
-                                    return false;
-                                }
-                                String dirName = pathname.getName();
-                                return dirName.startsWith(filteredGridSetId);
-                            }
-                        });
+        FileFilter filter =
+                new FileFilter() {
+                    public boolean accept(File pathname) {
+                        if (!pathname.isDirectory()) {
+                            return false;
+                        }
+                        String dirName = pathname.getName();
+                        return dirName.startsWith(filteredGridSetId);
+                    }
+                };
+        File[] gridSubsetCaches = listFilesNullSafe(layerPath, filter);
 
         for (File gridSubsetCache : gridSubsetCaches) {
             String target = filteredLayerName(layerName) + "_" + gridSubsetCache.getName();
@@ -410,15 +412,15 @@ public class FileBlobStore implements BlobStore {
         final String blobFormat = trObj.getMimeType().getFormat();
         final String parametersId = trObj.getParametersId();
 
-        File[] srsZoomDirs = layerPath.listFiles(tileFinder);
+        File[] srsZoomDirs = listFilesNullSafe(layerPath, tileFinder);
 
         final String gridsetPrefix = filteredGridSetId(gridSetId);
         for (File srsZoomParamId : srsZoomDirs) {
             int zoomLevel = findZoomLevel(gridsetPrefix, srsZoomParamId.getName());
-            File[] intermediates = srsZoomParamId.listFiles(tileFinder);
+            File[] intermediates = listFilesNullSafe(srsZoomParamId, tileFinder);
 
             for (File imd : intermediates) {
-                File[] tiles = imd.listFiles(tileFinder);
+                File[] tiles = listFilesNullSafe(imd, tileFinder);
                 long length;
 
                 for (File tile : tiles) {
@@ -758,7 +760,8 @@ public class FileBlobStore implements BlobStore {
         }
 
         File[] parameterCaches =
-                layerPath.listFiles(
+                listFilesNullSafe(
+                        layerPath,
                         (pathname) -> {
                             if (!pathname.isDirectory()) {
                                 return false;

@@ -10,31 +10,25 @@
  * <p>You should have received a copy of the GNU Lesser General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
- * <p>Copyright 2019
+ * @author Andrea Aime / GeoSolutions 2019
  */
-package org.geowebcache.layer;
+package org.geowebcache.util;
 
-import java.io.Serializable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-public class ExpirationRule implements Serializable {
-    private int minZoom;
+/**
+ * Allows to suppress SpotBugs/FindBugs warnings without depending on external jars, the tools match
+ * by annotatin name
+ */
+@Retention(RetentionPolicy.CLASS)
+public @interface SuppressFBWarnings {
+    /**
+     * The set of FindBugs warnings that are to be suppressed in annotated element. The value can be
+     * a bug category, kind or pattern.
+     */
+    String[] value() default {};
 
-    private int expiration;
-
-    ExpirationRule() {
-        // default constructor for XStream
-    }
-
-    public ExpirationRule(int minZoom, int expiration) {
-        this.minZoom = minZoom;
-        this.expiration = expiration;
-    }
-
-    public int getMinZoom() {
-        return minZoom;
-    }
-
-    public int getExpiration() {
-        return expiration;
-    }
+    /** Optional documentation of the reason why the warning is suppressed */
+    String justification() default "";
 }

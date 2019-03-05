@@ -51,6 +51,7 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.mime.TextMime;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.stats.RuntimeStats;
@@ -410,7 +411,15 @@ public class WMSService extends Service {
                             + ")is missing or not recognized.");
         }
 
-        if (mimeType != null && !tl.getInfoMimeTypes().contains(mimeType)) {
+        if (mimeType == null) {
+            if (tl.getInfoMimeTypes().contains(TextMime.txt)) {
+                mimeType = TextMime.txt;
+            } else {
+                // use first as default
+                mimeType = tl.getInfoMimeTypes().get(0);
+            }
+        }
+        if (!tl.getInfoMimeTypes().contains(mimeType)) {
             throw new GeoWebCacheException(
                     "The info_format parameter ("
                             + values.get("info_format")

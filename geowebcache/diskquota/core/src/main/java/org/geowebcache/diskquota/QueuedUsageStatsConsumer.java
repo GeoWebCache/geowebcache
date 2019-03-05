@@ -14,7 +14,6 @@
  */
 package org.geowebcache.diskquota;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,7 +30,7 @@ import org.geowebcache.diskquota.storage.TileSet;
 import org.springframework.util.Assert;
 
 /** @author groldan */
-public class QueuedUsageStatsConsumer implements Callable<Long>, Serializable {
+public class QueuedUsageStatsConsumer implements Callable<Long> {
 
     private static final Log log = LogFactory.getLog(QueuedUsageStatsConsumer.class);
 

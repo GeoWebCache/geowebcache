@@ -164,7 +164,7 @@ final class LayerCacheInfoBuilder {
                             return pathname.getName().startsWith(gridSetDirPrefix + "_");
                         }
                     };
-            File[] thisGridSetDirs = layerDir.listFiles(prefixFilter);
+            File[] thisGridSetDirs = FileUtils.listFilesNullSafe(layerDir, prefixFilter);
             for (File directory : thisGridSetDirs) {
                 // <Filtered gridset id><_zoom level>[_<parametersId>]
                 final String dirName = directory.getName();

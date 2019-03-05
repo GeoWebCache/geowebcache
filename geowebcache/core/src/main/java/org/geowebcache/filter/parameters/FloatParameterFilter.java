@@ -128,9 +128,9 @@ public class FloatParameterFilter extends ParameterFilter {
                         + "="
                         + str
                         + " is "
-                        + Float.toString(best)
+                        + best
                         + ", but this exceeds the threshold of "
-                        + Float.toString(threshold));
+                        + threshold);
     }
 
     @Override

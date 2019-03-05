@@ -47,7 +47,7 @@ public class GridSetBroker
 
     private List<GridSetConfiguration> configurations;
 
-    private DefaultGridsets defaults;
+    private volatile DefaultGridsets defaults;
 
     private ApplicationContext applicationContext;
 

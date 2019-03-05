@@ -24,6 +24,7 @@ import javax.servlet.ServletContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.BaseConfiguration;
+import org.geowebcache.util.SuppressFBWarnings;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -71,6 +72,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
      *
      * <p>This is the context that is used for methods which dont supply their own context.
      */
+    @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         GeoWebCacheExtensions.context = context;
         extensionsCache.clear();

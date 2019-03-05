@@ -112,12 +112,12 @@ public class ClassMetadataBuilder {
             for (SecondaryKeyMetadata metadata : secondaryKeys) {
                 secondaryKeyMap.put(metadata.getName(), metadata);
             }
+            secondaryKeys.clear();
         }
         ClassMetadata classMetadata =
                 new ClassMetadata(
                         type.getName(), 0, null, true, primaryKey, secondaryKeyMap, null, fields);
         primaryKey = null;
-        secondaryKeys.clear();
         entityClass = null;
         return classMetadata;
     }

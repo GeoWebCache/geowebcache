@@ -16,13 +16,14 @@ package org.geowebcache.grid;
 
 import static java.util.Arrays.asList;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.geowebcache.GeoWebCacheException;
 
-public class SRS implements Comparable<SRS> {
+public class SRS implements Comparable<SRS>, Serializable {
 
     private static Map<Integer, SRS> list = new ConcurrentHashMap<Integer, SRS>();
 

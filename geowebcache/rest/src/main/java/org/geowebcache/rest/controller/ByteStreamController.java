@@ -45,7 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ByteStreamController {
     private static Log log = LogFactory.getLog(ByteStreamController.class);
 
-    WebResourceBundle bundle;
+    volatile WebResourceBundle bundle;
 
     private static final WebResourceBundle DEFAULT_BUNDLE = WebResourceBundle.class::getResource;
 
@@ -58,12 +58,12 @@ public class ByteStreamController {
                     if (result.isEmpty()) {
                         bundle = DEFAULT_BUNDLE;
                     } else {
-                        bundle = result.get(0);
                         if (result.size() > 1) {
                             log.warn(
                                     "Multiple web resource bundles present, using "
-                                            + bundle.getClass().getName());
+                                            + result.get(0).getClass().getName());
                         }
+                        bundle = result.get(0);
                     }
                 }
             }

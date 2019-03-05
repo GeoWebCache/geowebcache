@@ -15,6 +15,7 @@
  */
 package org.geowebcache.util;
 
+import java.util.Optional;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -44,7 +45,10 @@ public class ApplicationContextProvider implements ApplicationContextAware {
             throw new RuntimeException(msg);
         }
 
-        String tmpVar = ctx.getServletContext().getInitParameter(varName);
+        String tmpVar =
+                Optional.ofNullable(ctx.getServletContext())
+                        .map(sc -> sc.getInitParameter(varName))
+                        .orElse(null);
         if (tmpVar != null && tmpVar.length() > 7) {
             log.info(
                     "Using servlet init context parameter to configure "

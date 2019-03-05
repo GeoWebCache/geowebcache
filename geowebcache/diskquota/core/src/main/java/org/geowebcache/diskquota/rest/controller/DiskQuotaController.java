@@ -180,19 +180,13 @@ public class DiskQuotaController {
      * @throws JSONException
      */
     private ResponseEntity<?> getJsonRepresentation(DiskQuotaConfig config) throws JSONException {
-        JSONObject rep = null;
-        try {
-            XStream xs =
-                    XMLConfiguration.getConfiguredXStreamWithContext(
-                            new GeoWebCacheXStream(new JsonHierarchicalStreamDriver()),
-                            context,
-                            Context.REST);
-            JSONObject obj = new JSONObject(xs.toXML(config));
-            rep = obj;
-        } catch (JSONException jse) {
-            log.debug(jse);
-        }
-        return new ResponseEntity(rep.toString(), HttpStatus.OK);
+        XStream xs =
+                XMLConfiguration.getConfiguredXStreamWithContext(
+                        new GeoWebCacheXStream(new JsonHierarchicalStreamDriver()),
+                        context,
+                        Context.REST);
+        JSONObject obj = new JSONObject(xs.toXML(config));
+        return new ResponseEntity(obj.toString(), HttpStatus.OK);
     }
 
     /**

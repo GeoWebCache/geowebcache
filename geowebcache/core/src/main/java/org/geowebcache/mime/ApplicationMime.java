@@ -14,7 +14,6 @@
  */
 package org.geowebcache.mime;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import java.util.Map;
@@ -72,26 +71,10 @@ public class ApplicationMime extends MimeType {
             ImmutableSet.of(bil16, bil32, json, topojson, geojson, utfgrid, mapboxVector);
 
     private static Map<String, ApplicationMime> BY_FORMAT =
-            Maps.uniqueIndex(
-                    ALL,
-                    new Function<ApplicationMime, String>() {
-
-                        @Override
-                        public String apply(ApplicationMime mimeType) {
-                            return mimeType.getFormat();
-                        }
-                    });
+            Maps.uniqueIndex(ALL, mimeType -> mimeType.getFormat());
 
     private static Map<String, ApplicationMime> BY_EXTENSION =
-            Maps.uniqueIndex(
-                    ALL,
-                    new Function<ApplicationMime, String>() {
-
-                        @Override
-                        public String apply(ApplicationMime mimeType) {
-                            return mimeType.getFileExtension();
-                        }
-                    });
+            Maps.uniqueIndex(ALL, mimeType -> mimeType.getFileExtension());
 
     private ApplicationMime(
             String mimeType,

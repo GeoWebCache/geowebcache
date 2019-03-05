@@ -14,11 +14,12 @@
  */
 package org.geowebcache.mime;
 
+import java.io.Serializable;
 import javax.imageio.ImageWriteParam;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class FormatModifier {
+public class FormatModifier implements Serializable {
 
     // TODO May want to add initialization with double locking instead of testing each time
 

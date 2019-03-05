@@ -14,15 +14,12 @@
  */
 package org.geowebcache.diskquota.jdbc;
 
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
-import org.springframework.jdbc.support.DatabaseMetaDataCallback;
 import org.springframework.jdbc.support.JdbcAccessor;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.MetaDataAccessException;
@@ -161,32 +158,26 @@ public class SQLDialect {
             SimpleJdbcTemplate template, final String schema, final String tableName) {
         try {
             DataSource ds = ((JdbcAccessor) template.getJdbcOperations()).getDataSource();
+            if (ds == null) return false;
             return (Boolean)
                     JdbcUtils.extractDatabaseMetaData(
                             ds,
-                            new DatabaseMetaDataCallback() {
-
-                                public Object processMetaData(DatabaseMetaData dbmd)
-                                        throws SQLException, MetaDataAccessException {
-                                    ResultSet rs = null;
-                                    try {
-                                        rs =
-                                                dbmd.getTables(
-                                                        null,
-                                                        schema,
-                                                        tableName.toLowerCase(),
-                                                        null);
-                                        boolean exists = rs.next();
+                            dbmd -> {
+                                ResultSet rs = null;
+                                try {
+                                    rs =
+                                            dbmd.getTables(
+                                                    null, schema, tableName.toLowerCase(), null);
+                                    boolean exists = rs.next();
+                                    rs.close();
+                                    if (exists) {
+                                        return true;
+                                    }
+                                    rs = dbmd.getTables(null, schema, tableName, null);
+                                    return rs.next();
+                                } finally {
+                                    if (rs != null) {
                                         rs.close();
-                                        if (exists) {
-                                            return true;
-                                        }
-                                        rs = dbmd.getTables(null, schema, tableName, null);
-                                        return rs.next();
-                                    } finally {
-                                        if (rs != null) {
-                                            rs.close();
-                                        }
                                     }
                                 }
                             });

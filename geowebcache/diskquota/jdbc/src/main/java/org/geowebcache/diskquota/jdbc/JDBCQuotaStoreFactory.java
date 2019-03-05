@@ -196,6 +196,9 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
                 bds.setValidationQuery(cp.getValidationQuery());
 
                 ds = bds;
+            } else {
+                throw new IllegalArgumentException(
+                        "JDBC configuration misses both JNDI source and connection pool");
             }
 
             // verify the datasource works
