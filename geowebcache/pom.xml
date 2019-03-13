@@ -716,7 +716,7 @@
             </dependencies>
             <configuration>
               <rulesets>
-                <ruleset>${geowebcacheBaseDir}/pmd-ruleset.xml</ruleset>
+                <ruleset>"${geowebcacheBaseDir}"/pmd-ruleset.xml</ruleset>
               </rulesets>
               <failurePriority>3</failurePriority>
               <minimumPriority>3</minimumPriority>
@@ -825,7 +825,7 @@
               <!--threshold>High</threshold-->
               <xmlOutput>true</xmlOutput>
               <maxRank>15</maxRank>
-              <excludeFilterFile>${geowebcacheBaseDir}/spotbugs-exclude.xml</excludeFilterFile>
+              <excludeFilterFile>"${geowebcacheBaseDir}"/spotbugs-exclude.xml</excludeFilterFile>
               <jvmArgs>-XX:+TieredCompilation -XX:TieredStopAtLevel=1</jvmArgs>
             </configuration>
             <executions>
@@ -858,7 +858,7 @@
                     <!-- ignore generated classes, e.g., javacc ones -->
                     <excludes>**/generated/**/*</excludes>
                     <skip>${checkstyle.skip}</skip>
-                    <configLocation>${geowebcacheBaseDir}/checkstyle.xml</configLocation>
+                    <configLocation>"${geowebcacheBaseDir}"/checkstyle.xml</configLocation>
                   </configuration>
               <executions>
                 <execution>
