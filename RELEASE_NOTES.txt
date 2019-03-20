@@ -1,3 +1,13 @@
+GeoWebCache 1.14.3 (2019-03-20)
+-------------------------------
+
+Maintenance release for 1.14 branch
+
+Fixes:
+++++++
+- REST WMTS rewiring follow up, allow to serve requests with empty style
+
+
 GeoWebCache 1.14.2 (2019-01-18)
 -------------------------------
 
