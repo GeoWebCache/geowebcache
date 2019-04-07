@@ -233,7 +233,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
                     InputStream stream = null;
                     try {
                         stream = method.getResponseBodyAsStream();
-                        message = IOUtils.toString(stream);
+                        message = IOUtils.toString(stream, "UTF-8");
                     } catch (IOException e) {
                         //
                     } finally {
