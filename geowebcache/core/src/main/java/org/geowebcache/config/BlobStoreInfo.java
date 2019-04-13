@@ -17,7 +17,6 @@ package org.geowebcache.config;
 import java.io.Serializable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.storage.BlobStore;
@@ -61,17 +60,6 @@ public abstract class BlobStoreInfo implements Serializable, Cloneable, Info {
     }
 
     /**
-     * @return the unique identifier for the blob store; which {@link TileLayer#getBlobStoreId()}
-     *     refers to.
-     * @deprecated Please use {@link #getName()} to retrieve the unique name.
-     * @see #getName()
-     */
-    @Deprecated
-    public String getId() {
-        return getName();
-    }
-
-    /**
      * Returns this {@link Info Info}s name. For now, this just returns this BlobStoreInfo's ID.
      *
      * @return A String representing the name of this Info implementation.
@@ -79,17 +67,6 @@ public abstract class BlobStoreInfo implements Serializable, Cloneable, Info {
     @Override
     public String getName() {
         return name;
-    }
-
-    /**
-     * Set this BlobStoreInfo's unique id.
-     *
-     * @param id The unique id to set.
-     * @deprecated Please use {@link #setName(java.lang.String)} to set the unique name.
-     */
-    @Deprecated
-    void setId(String id) {
-        setName(id);
     }
 
     /**

@@ -57,7 +57,7 @@ public class FileBlobStoreConfigTest {
 
     @Test
     public void testCreateInstanceNotEnabled() throws StorageException {
-        config.setId("myblobstore");
+        config.setName("myblobstore");
         config.setEnabled(false);
         ex.expect(IllegalStateException.class);
         ex.expectMessage("store is not enabled");
@@ -66,7 +66,7 @@ public class FileBlobStoreConfigTest {
 
     @Test
     public void testCreateInstanceNoBaseDirectory() throws StorageException {
-        config.setId("myblobstore");
+        config.setName("myblobstore");
         config.setEnabled(true);
         ex.expect(IllegalStateException.class);
         ex.expectMessage("baseDirectory not provided");
@@ -75,7 +75,7 @@ public class FileBlobStoreConfigTest {
 
     @Test
     public void testCreateInstanceIllegalBlockSize() throws StorageException {
-        config.setId("myblobstore");
+        config.setName("myblobstore");
         config.setEnabled(true);
         config.setFileSystemBlockSize(-2048);
         config.setBaseDirectory(tmp.getRoot().getAbsolutePath());
@@ -86,7 +86,7 @@ public class FileBlobStoreConfigTest {
 
     @Test
     public void testCreateInstance() throws StorageException {
-        config.setId("myblobstore");
+        config.setName("myblobstore");
         config.setEnabled(true);
         File root = tmp.getRoot();
         Preconditions.checkState(root.exists() && root.isDirectory());
