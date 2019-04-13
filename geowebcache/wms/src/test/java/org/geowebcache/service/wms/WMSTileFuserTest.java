@@ -48,6 +48,7 @@ import org.geowebcache.storage.DefaultStorageBroker;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
+import org.geowebcache.storage.TransientCache;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -280,17 +281,16 @@ public class WMSTileFuserTest {
             final File imageTile = new File(getClass().getResource("/image.png").toURI());
 
             StorageBroker broker =
-                    new DefaultStorageBroker(
-                            new FileBlobStore(temp.getAbsolutePath()) {
-
-                                @Override
-                                public boolean get(TileObject stObj) throws StorageException {
-                                    stObj.setBlob(new FileResource(imageTile));
-                                    stObj.setCreated((new Date()).getTime());
-                                    stObj.setBlobSize(1000);
-                                    return true;
-                                }
-                            });
+                    new DefaultStorageBroker(new FileBlobStore(temp.getAbsolutePath()) {
+                    
+                                                    @Override
+                                                    public boolean get(TileObject stObj) throws StorageException {
+                                                        stObj.setBlob(new FileResource(imageTile));
+                                                        stObj.setCreated((new Date()).getTime());
+                                                        stObj.setBlobSize(1000);
+                                                        return true;
+                                                    }
+                                                }, new TransientCache(100, 1024));
 
             WMSTileFuser tileFuser = new WMSTileFuser(dispatcher, broker, request);
             tileFuser.setSecurityDispatcher(secDisp);

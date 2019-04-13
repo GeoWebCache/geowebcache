@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
-import org.junit.Assert;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
@@ -38,6 +37,7 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.junit.Assert;
 
 public class TestUtils {
 
