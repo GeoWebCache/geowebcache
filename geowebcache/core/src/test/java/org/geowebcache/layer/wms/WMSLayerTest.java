@@ -671,7 +671,7 @@ public class WMSLayerTest extends TileLayerTest {
         final AtomicInteger storageGetCounter = new AtomicInteger();
         final AtomicInteger wmsMetaRequestCounter = new AtomicInteger();
         final AtomicInteger tileTransferCounter = new AtomicInteger();
-        final TransientCache transientCache = new TransientCache(100, 100);
+        final TransientCache transientCache = new TransientCache(100, 100, 2000);
 
         public MockTileSupport(WMSLayer tl) throws Exception {
             // create an image to be returned by the mock WMSSourceHelper

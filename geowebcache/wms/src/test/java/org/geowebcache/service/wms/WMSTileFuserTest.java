@@ -281,16 +281,18 @@ public class WMSTileFuserTest {
             final File imageTile = new File(getClass().getResource("/image.png").toURI());
 
             StorageBroker broker =
-                    new DefaultStorageBroker(new FileBlobStore(temp.getAbsolutePath()) {
-                    
-                                                    @Override
-                                                    public boolean get(TileObject stObj) throws StorageException {
-                                                        stObj.setBlob(new FileResource(imageTile));
-                                                        stObj.setCreated((new Date()).getTime());
-                                                        stObj.setBlobSize(1000);
-                                                        return true;
-                                                    }
-                                                }, new TransientCache(100, 1024));
+                    new DefaultStorageBroker(
+                            new FileBlobStore(temp.getAbsolutePath()) {
+
+                                @Override
+                                public boolean get(TileObject stObj) throws StorageException {
+                                    stObj.setBlob(new FileResource(imageTile));
+                                    stObj.setCreated((new Date()).getTime());
+                                    stObj.setBlobSize(1000);
+                                    return true;
+                                }
+                            },
+                            new TransientCache(100, 1024, 2000));
 
             WMSTileFuser tileFuser = new WMSTileFuser(dispatcher, broker, request);
             tileFuser.setSecurityDispatcher(secDisp);
