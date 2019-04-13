@@ -1,6 +1,6 @@
 package org.geowebcache.util;
 
-import static junit.framework.Assert.*;
+import static org.junit.Assert.*;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

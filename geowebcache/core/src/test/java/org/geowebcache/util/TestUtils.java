@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
