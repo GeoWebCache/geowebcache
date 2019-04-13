@@ -118,7 +118,13 @@ public class WMSRasterFilter extends RasterFilter {
         BufferedImage img = null;
 
         try {
-            getMethod = srcHelper.executeRequest(wmsUrl, requestParams, backendTimeout);
+            getMethod =
+                    (GetMethod)
+                            srcHelper.executeRequest(
+                                    wmsUrl,
+                                    requestParams,
+                                    backendTimeout,
+                                    WMSLayer.HttpRequestMode.Get);
 
             if (getMethod.getStatusCode() != 200) {
                 throw new GeoWebCacheException(

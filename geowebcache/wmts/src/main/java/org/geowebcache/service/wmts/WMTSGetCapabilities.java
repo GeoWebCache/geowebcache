@@ -768,12 +768,11 @@ public class WMTSGetCapabilities {
                 "ows:SupportedCRS", "urn:ogc:def:crs:EPSG::" + gridSet.getSrs().getNumber(), true);
         // TODO detect these str.append("
         // <WellKnownScaleSet>urn:ogc:def:wkss:GlobalCRS84Pixel</WellKnownScaleSet>\n");
-        Grid[] grids = gridSet.getGridLevels();
-        for (int i = 0; i < grids.length; i++) {
+        for (int i = 0; i < gridSet.getNumLevels(); i++) {
             double[] tlCoordinates = gridSet.getOrderedTopLeftCorner(i);
             tileMatrix(
                     xml,
-                    grids[i],
+                    gridSet.getGrid(i),
                     tlCoordinates,
                     gridSet.getTileWidth(),
                     gridSet.getTileHeight(),

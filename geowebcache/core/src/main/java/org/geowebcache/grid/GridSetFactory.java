@@ -79,7 +79,9 @@ public class GridSetFactory {
         Assert.notNull(srs, "srs is null");
         Assert.notNull(extent, "extent is null");
         Assert.isTrue(!extent.isNull() && extent.isSane(), "Extent is invalid: " + extent);
-        Assert.isTrue(resolutions != null || scaleDenoms != null);
+        Assert.isTrue(
+                resolutions != null || scaleDenoms != null,
+                "The gridset definition must have either resolutions or scale denominators");
         Assert.isTrue(
                 resolutions == null || scaleDenoms == null,
                 "Only one of resolutions or scaleDenoms should be provided, not both");
@@ -158,7 +160,7 @@ public class GridSetFactory {
             gridSet.setGridLevels(new Grid[resolutions.length]);
         }
 
-        for (int i = 0; i < gridSet.getGridLevels().length; i++) {
+        for (int i = 0; i < gridSet.getNumLevels(); i++) {
             Grid curGrid = new Grid();
 
             if (scaleDenoms != null) {
@@ -187,7 +189,7 @@ public class GridSetFactory {
                 curGrid.setName(scaleNames[i]);
             }
 
-            gridSet.getGridLevels()[i] = curGrid;
+            gridSet.setGrid(i, curGrid);
         }
 
         return gridSet;

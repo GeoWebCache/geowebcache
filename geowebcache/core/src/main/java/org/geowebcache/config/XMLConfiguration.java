@@ -349,7 +349,7 @@ public class XMLConfiguration
     }
 
     private GeoWebCacheConfiguration loadConfiguration() throws ConfigurationException {
-        Assert.isTrue(resourceProvider.hasInput());
+        Assert.isTrue(resourceProvider.hasInput(), "Resource provider must have an input");
         InputStream in;
         try {
             in = resourceProvider.in();
@@ -518,7 +518,7 @@ public class XMLConfiguration
      * <p>throws an exception if it does not succeed
      */
     private void persistToFile() throws IOException {
-        Assert.isTrue(resourceProvider.hasOutput());
+        Assert.isTrue(resourceProvider.hasOutput(), "Resource provider must have an output");
         // create the XStream for serializing the configuration
         XStream xs = getConfiguredXStreamWithContext(new GeoWebCacheXStream(), Context.PERSIST);
 
@@ -1474,7 +1474,7 @@ public class XMLConfiguration
         if (Objects.isNull(gridSet.getName())) {
             throw new IllegalArgumentException("GridSet name is not set");
         }
-        if (Objects.isNull(gridSet.getGridLevels())) {
+        if (gridSet.getNumLevels() == 0) {
             throw new IllegalArgumentException("GridSet has no levels");
         }
     }

@@ -25,7 +25,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -53,6 +52,7 @@ import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.util.GWCVars;
+import org.geowebcache.util.IOUtils;
 
 /** A tile layer backed by a WMS server */
 public class WMSLayer extends AbstractTileLayer implements ProxyLayer {

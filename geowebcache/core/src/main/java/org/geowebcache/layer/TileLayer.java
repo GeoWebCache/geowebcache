@@ -93,9 +93,7 @@ public abstract class TileLayer implements Info {
      * The unique identifier for the layer.
      *
      * @return
-     * @deprecated use {@link #getName()}
      */
-    @Deprecated
     public abstract String getId();
 
     /**

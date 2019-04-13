@@ -26,15 +26,15 @@ public class GridSetFactoryTest extends TestCase {
         assertEquals("test", gridSet.getName());
         assertEquals(-180.0, gridSet.tileOrigin()[0]);
         assertEquals(-90.0, gridSet.tileOrigin()[1]);
-        assertEquals(resolutions.length, gridSet.getGridLevels().length);
+        assertEquals(resolutions.length, gridSet.getNumLevels());
 
-        Grid grid0 = gridSet.getGridLevels()[0];
+        Grid grid0 = gridSet.getGrid(0);
 
         assertEquals(180.0 / 256, grid0.getResolution());
         assertEquals(2L, grid0.getNumTilesWide());
         assertEquals(1L, grid0.getNumTilesHigh());
 
-        Grid grid3 = gridSet.getGridLevels()[3];
+        Grid grid3 = gridSet.getGrid(3);
 
         assertEquals(180.0 / 2048, grid3.getResolution());
         assertEquals((long) Math.pow(2, 4), grid3.getNumTilesWide());
@@ -65,13 +65,13 @@ public class GridSetFactoryTest extends TestCase {
                         256,
                         false);
 
-        Grid grid0 = gridSet.getGridLevels()[0];
+        Grid grid0 = gridSet.getGrid(0);
 
         assertEquals((20037508.34 * 2) / 256, grid0.getResolution());
         assertEquals(1L, grid0.getNumTilesWide());
         assertEquals(1L, grid0.getNumTilesHigh());
 
-        Grid grid3 = gridSet.getGridLevels()[3];
+        Grid grid3 = gridSet.getGrid(3);
 
         assertEquals((long) Math.pow(2, 3), grid3.getNumTilesWide());
         assertEquals((long) Math.pow(2, 3), grid3.getNumTilesHigh());
@@ -99,15 +99,15 @@ public class GridSetFactoryTest extends TestCase {
 
         assertEquals(-173.0, gridSet.tileOrigin()[0]);
         assertEquals(-90.0, gridSet.tileOrigin()[1]);
-        assertEquals(resolutions.length, gridSet.getGridLevels().length);
+        assertEquals(resolutions.length, gridSet.getNumLevels());
 
-        Grid grid0 = gridSet.getGridLevels()[0];
+        Grid grid0 = gridSet.getGrid(0);
 
         assertEquals(180.0 / 200, grid0.getResolution());
         assertEquals(2L, grid0.getNumTilesWide());
         assertEquals(2L, grid0.getNumTilesHigh());
 
-        Grid grid3 = gridSet.getGridLevels()[2];
+        Grid grid3 = gridSet.getGrid(2);
 
         assertEquals(180.0 / 800, grid3.getResolution());
         assertEquals(8L, grid3.getNumTilesWide());
@@ -133,15 +133,15 @@ public class GridSetFactoryTest extends TestCase {
         assertEquals("test", gridSet.getName());
         assertEquals(-180.0, gridSet.tileOrigin()[0]);
         assertEquals(-90.0, gridSet.tileOrigin()[1]);
-        assertEquals(4, gridSet.getGridLevels().length);
+        assertEquals(4, gridSet.getNumLevels());
 
-        Grid grid0 = gridSet.getGridLevels()[0];
+        Grid grid0 = gridSet.getGrid(0);
 
         assertEquals(180.0 / 256, grid0.getResolution());
         assertEquals(2L, grid0.getNumTilesWide());
         assertEquals(1L, grid0.getNumTilesHigh());
 
-        Grid grid3 = gridSet.getGridLevels()[3];
+        Grid grid3 = gridSet.getGrid(3);
 
         assertEquals(180.0 / 2048, grid3.getResolution());
         assertEquals((long) Math.pow(2, 4), grid3.getNumTilesWide());
@@ -163,13 +163,13 @@ public class GridSetFactoryTest extends TestCase {
                         256,
                         false);
 
-        Grid grid0 = gridSet.getGridLevels()[0];
+        Grid grid0 = gridSet.getGrid(0);
 
         assertEquals((20037508.34 * 2) / 256, grid0.getResolution());
         assertEquals(1L, grid0.getNumTilesWide());
         assertEquals(1L, grid0.getNumTilesHigh());
 
-        Grid grid3 = gridSet.getGridLevels()[3];
+        Grid grid3 = gridSet.getGrid(3);
 
         assertEquals((long) Math.pow(2, 3), grid3.getNumTilesWide());
         assertEquals((long) Math.pow(2, 3), grid3.getNumTilesHigh());
@@ -194,9 +194,9 @@ public class GridSetFactoryTest extends TestCase {
         assertEquals("test", gridSet.getName());
         assertEquals(-180.0, gridSet.tileOrigin()[0]);
         assertEquals(-90.0, gridSet.tileOrigin()[1]);
-        assertEquals(4, gridSet.getGridLevels().length);
+        assertEquals(4, gridSet.getNumLevels());
 
-        Grid grid0 = gridSet.getGridLevels()[0];
+        Grid grid0 = gridSet.getGrid(0);
 
         assertEquals(180.0 / 256, grid0.getResolution());
         assertEquals(2L, grid0.getNumTilesWide());
@@ -215,9 +215,9 @@ public class GridSetFactoryTest extends TestCase {
         assertEquals("test", gridSet.getName());
         assertEquals(-180.0, gridSet.tileOrigin()[0]);
         assertEquals(-90.0, gridSet.tileOrigin()[1]);
-        assertEquals(4, gridSet.getGridLevels().length);
+        assertEquals(4, gridSet.getNumLevels());
 
-        Grid grid0 = gridSet.getGridLevels()[0];
+        Grid grid0 = gridSet.getGrid(0);
 
         assertEquals(180.0 / 256, grid0.getResolution());
         assertEquals(2L, grid0.getNumTilesWide());
@@ -285,14 +285,17 @@ public class GridSetFactoryTest extends TestCase {
                         false);
 
         assertEquals(extent, gridSet.getOriginalExtent());
-        Grid[] gridLevels = gridSet.getGridLevels();
-        assertEquals(16, gridLevels.length);
-        assertEquals(1, gridLevels[0].getNumTilesWide());
-        assertEquals(3, gridLevels[0].getNumTilesHigh());
+        assertEquals(16, gridSet.getNumLevels());
+        assertEquals(1, gridSet.getGrid(0).getNumTilesWide());
+        assertEquals(3, gridSet.getGrid(0).getNumTilesHigh());
 
-        for (int i = 1; i < gridLevels.length; i++) {
-            assertEquals(2 * gridLevels[i - 1].getNumTilesWide(), gridLevels[i].getNumTilesWide());
-            assertEquals(2 * gridLevels[i - 1].getNumTilesHigh(), gridLevels[i].getNumTilesHigh());
+        for (int i = 1; i < gridSet.getNumLevels(); i++) {
+            assertEquals(
+                    2 * gridSet.getGrid(i - 1).getNumTilesWide(),
+                    gridSet.getGrid(i).getNumTilesWide());
+            assertEquals(
+                    2 * gridSet.getGrid(i - 1).getNumTilesHigh(),
+                    gridSet.getGrid(i).getNumTilesHigh());
         }
     }
 
@@ -325,9 +328,9 @@ public class GridSetFactoryTest extends TestCase {
 
         assertEquals(new BoundingBox(0, 0, 100, 50), gridSet.getBounds());
 
-        assertEquals(4, gridSet.getGridLevels().length);
+        assertEquals(4, gridSet.getNumLevels());
 
-        Grid grid0 = gridSet.getGridLevels()[0];
+        Grid grid0 = gridSet.getGrid(0);
 
         assertEquals(4L, grid0.getNumTilesWide());
         assertEquals(1L, grid0.getNumTilesHigh());
@@ -378,9 +381,9 @@ public class GridSetFactoryTest extends TestCase {
 
         assertEquals(new BoundingBox(0, 0, 100, 500), gridSet.getBounds());
 
-        assertEquals(4, gridSet.getGridLevels().length);
+        assertEquals(4, gridSet.getNumLevels());
 
-        Grid grid0 = gridSet.getGridLevels()[0];
+        Grid grid0 = gridSet.getGrid(0);
 
         long tilesWide = 1;
         long tilesHigh = 10;

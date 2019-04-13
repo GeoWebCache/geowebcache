@@ -65,8 +65,9 @@ public class ByteArrayResource implements Resource, Serializable {
             this.length = 0;
         } else {
             this.data = data;
-            Assert.isTrue(offset < data.length);
-            Assert.isTrue(offset + length <= data.length);
+            Assert.isTrue(offset < data.length, "Offset should be less than data length");
+            Assert.isTrue(
+                    offset + length <= data.length, "Offset + length should be less than length");
             this.offset = offset;
             this.length = length;
         }
