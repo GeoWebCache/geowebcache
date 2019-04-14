@@ -109,15 +109,6 @@ public class TileLayerDispatcher
                         + " it may not have loaded properly.");
     }
 
-    /**
-     * *
-     *
-     * @deprecated use GeoWebCacheExtensions.reinitializeConfigurations instead
-     */
-    public void reInit() {
-        GeoWebCacheExtensions.reinitialize(this.applicationContext);
-    }
-
     public int getLayerCount() {
         int count = 0;
         for (int i = 0; i < configs.size(); i++) {
