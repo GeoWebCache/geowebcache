@@ -33,7 +33,6 @@ public class Start {
             http.setPort(Integer.getInteger("jetty.port", 8080));
             http.setAcceptQueueSize(100);
             http.setIdleTimeout(1000 * 60 * 60);
-            http.setSoLingerTime(-1);
 
             jettyServer.setConnectors(new Connector[] {http});
 

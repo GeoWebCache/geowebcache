@@ -117,7 +117,6 @@ public class JettyRule extends org.junit.rules.ExternalResource {
             http.setPort(port);
             http.setAcceptQueueSize(100);
             http.setIdleTimeout(1000 * 60 * 60);
-            http.setSoLingerTime(-1);
 
             jettyServer.setConnectors(new Connector[] {http});
 
