@@ -313,4 +313,9 @@ public class TileLayerDispatcher
         Objects.requireNonNull(applicationContext);
         this.applicationContext = applicationContext;
     }
+
+    /** @deprecated use GeoWebCacheExtensions.reinitializeConfigurations instead */
+    public void reInit() {
+        GeoWebCacheExtensions.reinitialize(this.applicationContext);
+    }
 }
