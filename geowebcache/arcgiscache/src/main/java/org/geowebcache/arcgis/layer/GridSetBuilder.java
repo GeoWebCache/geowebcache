@@ -44,9 +44,9 @@ class GridSetBuilder {
     public GridSet buildGridset(
             final String layerName, final CacheInfo info, final BoundingBox layerBounds) {
 
-        Assert.notNull(layerName);
-        Assert.notNull(info);
-        Assert.notNull(layerBounds);
+        Assert.notNull(layerName, "Layer name must be non null");
+        Assert.notNull(info, "Layer name must be non null");
+        Assert.notNull(layerBounds, "Layer name must be non null");
 
         final TileCacheInfo tileCacheInfo = info.getTileCacheInfo();
         final SpatialReference spatialReference = tileCacheInfo.getSpatialReference();
