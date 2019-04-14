@@ -14,22 +14,10 @@
  */
 package org.geowebcache.layer;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.Info;
-import org.geowebcache.config.legends.LegendInfo;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.request.RequestFilter;
@@ -53,6 +41,19 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * "Pure virtual" base class for Layers.
@@ -308,11 +309,9 @@ public abstract class TileLayer implements Info {
     public abstract boolean initialize(GridSetBroker gridSetBroker);
 
     /**
-     * This method is deprecated, as a layer may be configured for more than one gridset with the
-     * same SRS.
-     *
-     * @deprecated use {@link #getGridSubsetsForSRS(SRS)} in combination with {@link
-     *     GridUtil#findBestMatchingGrid} instead
+     * Returns the first grid subset matching the specified SRS. A layer can have more than one
+     * gridset for a given SRS, if all the informations are available, it's better to use use {@link
+     * #getGridSubsetsForSRS(SRS)} in combination with {@link GridUtil#findBestMatchingGrid} instead
      */
     public GridSubset getGridSubsetForSRS(SRS srs) {
         for (String gridSet : getGridSubsets()) {

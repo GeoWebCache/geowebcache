@@ -136,7 +136,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
      * @param wmsLayers
      * @param mimeFormats
      * @param subSets
-     * @param parameterFilters
+     * @param parameterFilters<
      * @param metaWidthHeight
      * @param vendorParams
      * @param queryable
