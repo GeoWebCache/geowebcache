@@ -214,42 +214,9 @@ public abstract class TileLayer implements Info {
     /** @return the styles configured for the layer, may be null */
     public abstract String getStyles();
 
-    /**
-     * Returns legend info indexed by style.
-     *
-     * @deprecated please use method {@link #getLayerLegendsInfo()}
-     * @see #getLayerLegendsInfo()
-     */
-    @Deprecated
-    public Map<String, LegendInfo> getLegendsInfo() {
-        return Collections.EMPTY_MAP;
-    }
-
     /** Returns legend info indexed by style. */
     public Map<String, org.geowebcache.config.legends.LegendInfo> getLayerLegendsInfo() {
         return Collections.emptyMap();
-    }
-
-    /**
-     * Information container for a style legend.
-     *
-     * @deprecated please use {@link org.geowebcache.config.legends.LegendInfo}
-     * @see org.geowebcache.config.legends.LegendInfo
-     */
-    @Deprecated
-    public static class LegendInfo {
-
-        public String id;
-        public int width;
-        public int height;
-        public String format;
-        public String legendUrl;
-    }
-
-    /** Helper constructor for legend info; */
-    @Deprecated
-    public static LegendInfo createLegendInfo() {
-        return new LegendInfo();
     }
 
     /**
