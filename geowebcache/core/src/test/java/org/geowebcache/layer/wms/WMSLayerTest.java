@@ -371,7 +371,10 @@ public class WMSLayerTest extends TileLayerTest {
                 new WMSHttpHelper() {
                     @Override
                     public GetMethod executeRequest(
-                            URL url, Map<String, String> queryParams, Integer backendTimeout)
+                            URL url,
+                            Map<String, String> queryParams,
+                            Integer backendTimeout,
+                            WMSLayer.HttpRequestMode httpRequestMode)
                             throws HttpException, IOException {
                         GetMethod response = EasyMock.createMock(GetMethod.class);
                         expect(response.getStatusCode()).andReturn(200);

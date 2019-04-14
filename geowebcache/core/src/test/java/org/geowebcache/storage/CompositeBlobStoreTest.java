@@ -29,7 +29,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.common.base.Throwables;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -445,7 +444,6 @@ public class CompositeBlobStoreTest {
         try {
             format = MimeType.createFromExtension(extension).getFormat();
         } catch (MimeException e) {
-            Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);
         }
 
