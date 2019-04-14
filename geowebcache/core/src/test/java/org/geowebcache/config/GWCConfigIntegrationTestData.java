@@ -112,7 +112,8 @@ public class GWCConfigIntegrationTestData {
                         Collections.singletonList(parameterFilter),
                         null,
                         null,
-                        true);
+                        true,
+                        null);
         wmsLayer.setBlobStoreId(blobStore.getName());
         tileLayerConfiguration.addLayer(wmsLayer);
     }

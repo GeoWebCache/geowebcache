@@ -324,7 +324,8 @@ public class WMSServiceTest {
                         parameterFilters,
                         null,
                         null,
-                        true);
+                        true,
+                        null);
         when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
 
         HttpServletRequest req = mock(HttpServletRequest.class);
