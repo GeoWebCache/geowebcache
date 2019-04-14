@@ -1,4 +1,4 @@
-/*
+/**
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
  * of the License, or (at your option) any later version.
@@ -12,12 +12,10 @@
  *
  * @author Andrea Aime - GeoSolutions 2019
  */
-
 package org.geowebcache.util;
 
+import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 /** IO related utility methods that common libraries won't provide */
 public class IOUtils {
@@ -26,23 +24,10 @@ public class IOUtils {
      * A replacement for commons-io closeQuietly, for those rare cases in which the quiet closing
      * behavior is actually needed and try-with-resources won't do the expected job
      */
-    public static void closeQuietly(InputStream is) {
-        if (is != null) {
+    public static void closeQuietly(Closeable clo) {
+        if (clo != null) {
             try {
-                is.close();
-            } catch (IOException ignore) {
-            }
-        }
-    }
-
-    /**
-     * A replacement for commons-io closeQuietly, for those rare cases in which the quiet closing
-     * behavior is actually needed and try-with-resources won't do the expected job
-     */
-    public static void closeQuietly(OutputStream os) {
-        if (os != null) {
-            try {
-                os.close();
+                clo.close();
             } catch (IOException ignore) {
             }
         }
