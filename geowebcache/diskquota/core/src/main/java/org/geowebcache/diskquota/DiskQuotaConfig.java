@@ -139,8 +139,8 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
     }
 
     public void addLayerQuota(LayerQuota quota) {
-        Assert.notNull(quota);
-        Assert.notNull(quota.getQuota());
+        Assert.notNull(quota, "Quota must be non null");
+        Assert.notNull(quota.getQuota(), "Quota must be non null");
         if (layerQuotas == null) {
             layerQuotas = new ArrayList<LayerQuota>();
         }

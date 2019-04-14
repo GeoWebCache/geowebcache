@@ -380,7 +380,9 @@ public class ConfigLoader {
 
             reader.moveDown();
             String nodeName = reader.getNodeName();
-            Assert.isTrue("value".equals(nodeName));
+            Assert.isTrue(
+                    "value".equals(nodeName),
+                    "Expected element name to be 'value' but was " + nodeName + " instead");
 
             String nodevalue = reader.getValue();
             double value = Double.parseDouble(nodevalue);
@@ -388,7 +390,9 @@ public class ConfigLoader {
 
             reader.moveDown();
             nodeName = reader.getNodeName();
-            Assert.isTrue("units".equals(nodeName));
+            Assert.isTrue(
+                    "units".equals(nodeName),
+                    "Expected to find a units element, but found " + nodeName + " instead");
 
             nodevalue = reader.getValue();
             StorageUnit unit = StorageUnit.valueOf(nodevalue);

@@ -21,7 +21,7 @@ public class SystemUtils {
     private static SystemUtils INSTANCE = new SystemUtils();
 
     public static void set(SystemUtils instance) {
-        Assert.notNull(instance);
+        Assert.notNull(instance, "SystemUtils instance must be non null");
         INSTANCE = instance;
     }
 

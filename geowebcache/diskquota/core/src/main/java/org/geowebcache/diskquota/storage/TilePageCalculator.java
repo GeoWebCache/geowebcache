@@ -63,9 +63,11 @@ public class TilePageCalculator {
     public int[] pageIndexForTile(
             final TileSet tileSet, final long[] tileIndex, int[] pageIndexTarget) {
 
-        Assert.notNull(tileSet);
-        Assert.notNull(tileIndex);
-        Assert.isTrue(pageIndexTarget != null && pageIndexTarget.length > 2);
+        Assert.notNull(tileSet, "TileSet must be non null");
+        Assert.notNull(tileIndex, "TileIndex must be non null");
+        Assert.isTrue(
+                pageIndexTarget != null && pageIndexTarget.length > 2,
+                "PageIndexTarget must be non null and have at least a size of 2");
 
         PagePyramid pagePyramid = getPagePyramid(tileSet);
         pagePyramid.pageIndexForTile(
