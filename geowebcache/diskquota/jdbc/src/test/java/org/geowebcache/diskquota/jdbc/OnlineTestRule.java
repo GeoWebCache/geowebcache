@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import org.junit.Assume;
-import org.junit.internal.AssumptionViolatedException;
+import org.junit.AssumptionViolatedException;
 import org.junit.rules.ExternalResource;
 
 public class OnlineTestRule extends ExternalResource {
