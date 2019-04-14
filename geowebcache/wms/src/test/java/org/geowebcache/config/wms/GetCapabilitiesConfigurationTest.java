@@ -37,6 +37,7 @@ import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -99,7 +100,7 @@ public class GetCapabilitiesConfigurationTest {
 
         assertThat(
                 outputParameterFilters,
-                containsInAnyOrder(hasProperty("key", equalToIgnoringCase("styles"))));
+                Matchers.contains(hasProperty("key", equalToIgnoringCase("styles"))));
     }
 
     @Test
@@ -130,7 +131,7 @@ public class GetCapabilitiesConfigurationTest {
 
         assertThat(
                 outputParameterFilters,
-                containsInAnyOrder(hasProperty("key", equalToIgnoringCase("styles"))));
+                Matchers.contains(hasProperty("key", equalToIgnoringCase("styles"))));
     }
 
     @Test
@@ -164,7 +165,7 @@ public class GetCapabilitiesConfigurationTest {
 
         assertThat(
                 outputParameterFilters,
-                containsInAnyOrder(hasProperty("key", equalToIgnoringCase("styles"))));
+                Matchers.contains(hasProperty("key", equalToIgnoringCase("styles"))));
     }
 
     @Test

@@ -320,7 +320,7 @@ public class FormService {
         doc.append("<tr><td>Modifiable Parameters:</td><td>\n");
         doc.append("<table>");
         for (ParameterFilter pf : parameterFilters) {
-            Assert.notNull(pf);
+            Assert.notNull(pf, "Parameter filter must be non null");
             String key = pf.getKey();
             String defaultValue = pf.getDefaultValue();
             List<String> legalValues = pf.getLegalValues();
