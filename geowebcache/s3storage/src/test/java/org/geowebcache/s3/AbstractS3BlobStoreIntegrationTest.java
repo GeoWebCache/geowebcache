@@ -29,7 +29,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
 import java.io.File;
@@ -593,7 +592,7 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
         try {
             format = MimeType.createFromExtension(extension).getFormat();
         } catch (MimeException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         TileObject tile =

@@ -161,7 +161,7 @@ public class HazelcastLoader implements InitializingBean {
                 boolean nearCacheAccepted = true;
                 if (mapConfig.getNearCacheConfig() != null) {
                     NearCacheConfig conf = mapConfig.getNearCacheConfig();
-                    nearCacheAccepted = conf.getMaxSize() < Integer.MAX_VALUE;
+                    nearCacheAccepted = conf.getEvictionConfig().getSize() < Integer.MAX_VALUE;
                 }
 
                 if (sizeDefined && policyExists && sizeFromHeap && nearCacheAccepted) {

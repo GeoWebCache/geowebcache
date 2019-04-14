@@ -25,7 +25,6 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -151,7 +150,7 @@ class S3Ops {
                                 bucketName, prefix));
             }
         } catch (StorageException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             lock.release();
         }
@@ -176,7 +175,7 @@ class S3Ops {
             }
             return taskRuns;
         } catch (StorageException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         } finally {
             lock.release();
         }
@@ -310,7 +309,7 @@ class S3Ops {
         try {
             bytes = getBytes(key);
         } catch (StorageException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         if (bytes != null) {
             try {
@@ -318,7 +317,7 @@ class S3Ops {
                         new InputStreamReader(
                                 new ByteArrayInputStream(bytes), StandardCharsets.UTF_8));
             } catch (IOException e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException(e);
             }
         }
         return properties;
@@ -330,7 +329,7 @@ class S3Ops {
         try {
             properties.store(out, "");
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         byte[] bytes = out.toByteArray();
