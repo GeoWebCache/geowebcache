@@ -15,10 +15,7 @@
 package org.geowebcache.layer;
 
 import com.google.common.base.Preconditions;
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.BaseConfiguration;
@@ -36,6 +33,20 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Serves tile layers from the {@link TileLayerConfiguration}s available in the application context.
@@ -55,8 +66,9 @@ public class TileLayerDispatcher
     private ApplicationContext applicationContext;
 
     /**
-     * @deprecated use {@link #TileLayerDispatcher(GridSetBroker)} instead, configurations are
-     *     loaded from the application context, this {@code config} parameter will be ignored
+     * Used for testing only, in production use {@link #TileLayerDispatcher(GridSetBroker)} instead,
+     * configurations are loaded from the application context, the {@code config} parameter will be
+     * overwritten
      */
     public TileLayerDispatcher(GridSetBroker gridSetBroker, List<TileLayerConfiguration> configs) {
         this.gridSetBroker = gridSetBroker;
