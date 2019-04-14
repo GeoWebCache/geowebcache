@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.Conveyor.RequestHandler;
@@ -77,7 +78,8 @@ public class WMSServiceTest {
     public void setUp() throws Exception {
         sb = mock(StorageBroker.class);
         tld = mock(TileLayerDispatcher.class);
-        gridsetBroker = new GridSetBroker(true, true);
+        gridsetBroker =
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
     }
 
     @After

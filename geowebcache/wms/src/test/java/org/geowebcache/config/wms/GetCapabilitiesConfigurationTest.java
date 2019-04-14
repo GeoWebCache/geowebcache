@@ -31,6 +31,7 @@ import java.util.List;
 import org.easymock.Capture;
 import org.geotools.data.ows.OperationType;
 import org.geotools.ows.wms.*;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.DefaultingConfiguration;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.grid.GridSetBroker;
@@ -57,7 +58,7 @@ public class GetCapabilitiesConfigurationTest {
         gcOpType = createNiceMock(OperationType.class);
         globalConfig = createNiceMock(DefaultingConfiguration.class);
         layerCapture = new Capture<TileLayer>();
-        broker = new GridSetBroker(false, false);
+        broker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
         expect(server.getCapabilities()).andStubReturn(cap);
         expect(cap.getRequest()).andStubReturn(req);
@@ -168,7 +169,8 @@ public class GetCapabilitiesConfigurationTest {
 
     @Test
     public void testDelegateInitializingLayers() throws Exception {
-        GridSetBroker broker = new GridSetBroker(false, false);
+        GridSetBroker broker =
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
         String url = "http://test/wms";
         String mimeTypes = "image/png";
         String vendorParameters = "map=/osgeo/mapserver/msautotest/world/world.map";

@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.geowebcache.grid.GridSetBroker;
@@ -47,7 +48,8 @@ public class GWCConfigIntegrationRoundTripTest {
 
         FileUtils.copyFile(testSupport.configFile, configFileCopy);
         XMLConfiguration configCopy = new XMLConfiguration(null, configDirCopy.getAbsolutePath());
-        configCopy.setGridSetBroker(new GridSetBroker(true, true));
+        configCopy.setGridSetBroker(
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true))));
         configCopy.afterPropertiesSet();
 
         assertTileLayerConfiguration(configCopy);

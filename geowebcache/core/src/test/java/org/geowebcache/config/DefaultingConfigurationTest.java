@@ -19,6 +19,7 @@ import static org.junit.Assert.assertNull;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Set;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.GridSetBroker;
@@ -44,7 +45,8 @@ public class DefaultingConfigurationTest {
                     false,
                     null);
     GeoWebCacheConfiguration gwcConfig = new GeoWebCacheConfiguration();
-    GridSetBroker gridSetBroker = new GridSetBroker(true, true);
+    GridSetBroker gridSetBroker =
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
 
     @Test
     public void testUnsetConfigs() {

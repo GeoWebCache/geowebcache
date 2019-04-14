@@ -8,6 +8,7 @@ import static org.easymock.EasyMock.verify;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -16,6 +17,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import junit.framework.TestCase;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -48,7 +50,9 @@ public class TileRangeIteratorTest extends TestCase {
     public void setUp() throws Exception {
         mimeType = MimeType.createFromFormat("image/png");
         parameters = null;
-        gridSet = new GridSetBroker(true, false).getWorldEpsg3857();
+        gridSet =
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, false)))
+                        .getWorldEpsg3857();
         BoundingBox extent = new BoundingBox(0, 0, 100, 100);
         boolean alignTopLeft = false;
         int levels = 12;

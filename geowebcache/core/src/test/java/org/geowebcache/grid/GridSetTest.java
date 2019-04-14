@@ -7,6 +7,8 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.Collections;
+import org.geowebcache.config.DefaultGridsets;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -17,7 +19,8 @@ public class GridSetTest {
 
     public @Rule ExpectedException exception = ExpectedException.none();
 
-    GridSetBroker gridSetBroker = new GridSetBroker(false, false);
+    GridSetBroker gridSetBroker =
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
     // Top left
     GridSet gridSetTL =

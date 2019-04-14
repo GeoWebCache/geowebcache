@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Collections;
 import org.apache.commons.io.FileUtils;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.grid.GridSetBroker;
@@ -109,7 +110,8 @@ public class ServerConfigurationTest {
             FileUtils.copyURLToFile(source, configFile);
         }
         // initialize the config with an XMLFileResourceProvider that uses the temp config file
-        gridSetBroker = new GridSetBroker(true, true);
+        gridSetBroker =
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
         ConfigurationResourceProvider configProvider =
                 new XMLFileResourceProvider(
                         XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,

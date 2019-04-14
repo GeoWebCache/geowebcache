@@ -44,6 +44,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +70,7 @@ import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.TestHelpers;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.grid.GridSet;
@@ -106,7 +108,8 @@ import org.springframework.mock.web.MockHttpServletResponse;
  */
 public class WMSLayerTest extends TileLayerTest {
 
-    private final GridSetBroker gridSetBroker = new GridSetBroker(false, false);
+    private final GridSetBroker gridSetBroker =
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
     @After
     public void tearDown() throws Exception {

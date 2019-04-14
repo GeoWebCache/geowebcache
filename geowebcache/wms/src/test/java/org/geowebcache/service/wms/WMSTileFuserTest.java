@@ -24,6 +24,7 @@ import static org.mockito.Mockito.times;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.filter.security.SecurityDispatcher;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
@@ -63,7 +65,8 @@ public class WMSTileFuserTest {
 
     @Rule public ExpectedException exception = ExpectedException.none();
 
-    GridSetBroker gridSetBroker = new GridSetBroker(false, false);
+    GridSetBroker gridSetBroker =
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
     SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
 
     HttpServletRequest fuserRequest(

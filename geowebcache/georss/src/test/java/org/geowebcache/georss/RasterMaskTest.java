@@ -14,7 +14,9 @@
  */
 package org.geowebcache.georss;
 
+import java.util.Collections;
 import junit.framework.TestCase;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
@@ -39,7 +41,8 @@ public class RasterMaskTest extends TestCase {
         layer =
                 TestUtils.createWMSLayer(
                         "image/png",
-                        new GridSetBroker(false, false),
+                        new GridSetBroker(
+                                Collections.singletonList(new DefaultGridsets(false, false))),
                         3,
                         3,
                         new BoundingBox(-180, -90, 180, 90));

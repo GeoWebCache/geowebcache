@@ -37,6 +37,7 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.config.legends.LegendInfo;
 import org.geowebcache.config.legends.LegendInfoBuilder;
@@ -86,7 +87,8 @@ public class WMTSServiceTest {
     public void setUp() throws Exception {
         sb = mock(StorageBroker.class);
         tld = mock(TileLayerDispatcher.class);
-        gridsetBroker = new GridSetBroker(true, true);
+        gridsetBroker =
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
     }
 
     private TileLayer mockTileLayer(

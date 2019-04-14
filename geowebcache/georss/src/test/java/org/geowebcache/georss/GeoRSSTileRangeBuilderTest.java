@@ -22,9 +22,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Collections;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 import junit.framework.TestCase;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
@@ -47,7 +49,8 @@ public class GeoRSSTileRangeBuilderTest extends TestCase {
         layer =
                 TestUtils.createWMSLayer(
                         "image/png",
-                        new GridSetBroker(false, false),
+                        new GridSetBroker(
+                                Collections.singletonList(new DefaultGridsets(false, false))),
                         3,
                         3,
                         new BoundingBox(-180, -90, 180, 90));

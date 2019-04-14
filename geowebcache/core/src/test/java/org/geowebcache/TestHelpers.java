@@ -10,6 +10,7 @@ import java.util.Hashtable;
 import java.util.List;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
@@ -30,7 +31,8 @@ import org.springframework.http.HttpStatus;
  */
 public class TestHelpers {
 
-    static GridSetBroker gridSetBroker = new GridSetBroker(false, false);
+    static GridSetBroker gridSetBroker =
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
     public static MockLockProvider mockProvider = new MockLockProvider();
 
     public static byte[] createFakeSourceImage(final WMSLayer layer) throws IOException {

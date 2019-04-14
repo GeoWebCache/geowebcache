@@ -35,10 +35,12 @@ import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
@@ -283,7 +285,9 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
         BlobStoreListener listener = mock(BlobStoreListener.class);
         blobStore.addListener(listener);
 
-        GridSet gridset = new GridSetBroker(false, false).getWorldEpsg4326();
+        GridSet gridset =
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)))
+                        .getWorldEpsg4326();
         GridSubset gridSubSet = GridSubsetFactory.createGridSubSet(gridset);
 
         long[][] rangeBounds = { //
@@ -328,7 +332,9 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
         blobStore.addListener(listener);
 
         // use a gridset for which there're no tiles
-        GridSet gridset = new GridSetBroker(false, true).getWorldEpsg3857();
+        GridSet gridset =
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, true)))
+                        .getWorldEpsg3857();
         GridSubset gridSubSet = GridSubsetFactory.createGridSubSet(gridset);
 
         long[][] rangeBounds = { //
@@ -370,7 +376,9 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
         final int zoomStop = 2;
 
         // use a gridset for which there're no tiles
-        GridSet gridset = new GridSetBroker(false, true).getWorldEpsg3857();
+        GridSet gridset =
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, true)))
+                        .getWorldEpsg3857();
         GridSubset gridSubSet = GridSubsetFactory.createGridSubSet(gridset);
 
         long[][] rangeBounds = gridSubSet.getCoverages();

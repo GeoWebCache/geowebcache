@@ -17,7 +17,6 @@ package org.geowebcache.grid;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -52,14 +51,6 @@ public class GridSetBroker
     private ApplicationContext applicationContext;
 
     public GridSetBroker() {}
-
-    @Deprecated // use GridSetBroker(Collections.singletonList(new DefaultGridset(useEPSG900913,
-    // boolean useGWC11xNames)))
-    public GridSetBroker(boolean useEPSG900913, boolean useGWC11xNames) {
-        configurations = new LinkedList<>();
-        defaults = new DefaultGridsets(useEPSG900913, useGWC11xNames);
-        configurations.add(defaults);
-    }
 
     public GridSetBroker(List<GridSetConfiguration> configurations) {
         this.configurations = configurations;
