@@ -26,6 +26,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.util.ServletUtils;
 import org.springframework.util.StopWatch;
 
 public class TileRangeIteratorTest extends TestCase {
@@ -214,7 +215,7 @@ public class TileRangeIteratorTest extends TestCase {
                             zoomStop,
                             coveredGridLevels,
                             mimeType,
-                            parameters);
+                            ServletUtils.queryStringToMap(parameters));
         } else {
             tileRange =
                     new DiscontinuousTileRange(
@@ -224,7 +225,7 @@ public class TileRangeIteratorTest extends TestCase {
                             zoomStop,
                             rasterMask,
                             mimeType,
-                            parameters);
+                            ServletUtils.queryStringToMap(parameters));
         }
 
         final TileRangeIterator tri = new TileRangeIterator(tileRange, metaTilingFactors);

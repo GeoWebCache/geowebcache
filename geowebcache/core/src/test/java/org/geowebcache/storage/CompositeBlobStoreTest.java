@@ -445,7 +445,8 @@ public class CompositeBlobStoreTest {
         try {
             format = MimeType.createFromExtension(extension).getFormat();
         } catch (MimeException e) {
-            throw Throwables.propagate(e);
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
         }
 
         TileObject tile =

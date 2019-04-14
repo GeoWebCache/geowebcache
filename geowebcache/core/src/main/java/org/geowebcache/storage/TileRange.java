@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.util.ServletUtils;
 
 /**
  * A 3 dimensional tile range inside a grid set, specified by a range of zooms for fast filtering
@@ -41,25 +40,6 @@ public class TileRange {
     private final Map<String, String> parameters;
 
     private String parametersId;
-
-    /** @deprecated use {@link #TileRange(String, String, int, int, long[][], MimeType, Map)} */
-    public TileRange(
-            String layerName,
-            String gridSetId,
-            int zoomStart,
-            int zoomStop,
-            long[][] rangeBounds,
-            MimeType mimeType,
-            String parameters) {
-        this(
-                layerName,
-                gridSetId,
-                zoomStart,
-                zoomStop,
-                rangeBounds,
-                mimeType,
-                ServletUtils.queryStringToMap(parameters));
-    }
 
     public TileRange(
             String layerName,

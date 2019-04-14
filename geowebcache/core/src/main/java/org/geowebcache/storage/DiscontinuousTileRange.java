@@ -16,34 +16,11 @@ package org.geowebcache.storage;
 
 import java.util.Map;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.util.ServletUtils;
 
 /** This class is a TileRange object with an additional filter */
 public class DiscontinuousTileRange extends TileRange {
 
     private final TileRangeMask mask;
-
-    /**
-     * @deprecated use {@link #DiscontinuousTileRange(String, String, int, int, TileRangeMask,
-     *     MimeType, Map)}
-     */
-    public DiscontinuousTileRange(
-            String layerName,
-            String gridSetId,
-            int zoomStart,
-            int zoomStop,
-            RasterMask rasterMask,
-            MimeType mimeType,
-            String parameters) {
-        this(
-                layerName,
-                gridSetId,
-                zoomStart,
-                zoomStop,
-                rasterMask,
-                mimeType,
-                ServletUtils.queryStringToMap(parameters));
-    }
 
     public DiscontinuousTileRange(
             String layerName,
