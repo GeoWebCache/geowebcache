@@ -188,12 +188,6 @@ public class ConfigLoader {
             throw new ConfigurationException(
                     "cacheCleanUpUnits shall be specified. Expected one of SECONDS, MINUTES, HOURS, DAYS. Got null");
         }
-        int diskBlockSize = quotaConfig.getDiskBlockSize();
-        if (diskBlockSize <= 0) {
-            throw new ConfigurationException(
-                    "Disk block size shall be specified and be a positive integer");
-        }
-
         int maxConcurrentCleanUps = quotaConfig.getMaxConcurrentCleanUps();
         if (maxConcurrentCleanUps <= 0) {
             throw new ConfigurationException(
