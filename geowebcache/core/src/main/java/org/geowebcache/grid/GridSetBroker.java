@@ -31,7 +31,6 @@ import org.geowebcache.config.ConfigurationAggregator;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.GridSetConfiguration;
 import org.geowebcache.config.XMLConfiguration;
-import org.geowebcache.layer.TileLayerDispatcher;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -136,8 +135,7 @@ public class GridSetBroker
      * Blindly removes a gridset from this gridset broker.
      *
      * <p>This method doesn't check whether there's any layer referencing the gridset nor removes it
-     * from the {@link XMLConfiguration}. For such a thing, check {@link
-     * TileLayerDispatcher#removeGridset(String)}, which cascades to this method.
+     * from the {@link XMLConfiguration}.
      *
      * @param gridSetName
      * @return
