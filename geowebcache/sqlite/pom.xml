@@ -17,11 +17,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-            <version>1.2.1</version>
-        </dependency>
-        <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-mbtiles</artifactId>
             <version>${gt.version}</version>
