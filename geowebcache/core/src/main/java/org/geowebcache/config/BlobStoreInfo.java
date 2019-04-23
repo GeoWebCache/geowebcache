@@ -70,6 +70,14 @@ public abstract class BlobStoreInfo implements Serializable, Cloneable, Info {
     }
 
     /**
+     * @return the unique identifier for the blob store; which {@link TileLayer#getBlobStoreId()}
+     *     refers to.
+     */
+    public String getId() {
+        return getName();
+    }
+
+    /**
      * Set this BlobStoreIngo's unique name.
      *
      * @param name The unique name to set.
@@ -77,6 +85,16 @@ public abstract class BlobStoreInfo implements Serializable, Cloneable, Info {
     public void setName(String name) {
         this.name = name;
     }
+
+    /**
+     * Set this BlobStoreInfo's unique id.
+     *
+     * @param id The unique id to set.
+     */
+    void setId(String id) {
+        setName(id);
+    }
+
     /** @return whether the blob store is enabled ({@code true}) or not. */
     public boolean isEnabled() {
         return enabled;
