@@ -1,17 +1,11 @@
 GeoWebCache 1.15.1 (2019-04-25)
 -------------------------------
 
-<Release Description>
+Stable release of 1.15 branch.
 
 Improvements:
 +++++++++++++
-- <New feature>
-
-Fixes:
-++++++
-- <Bug fix>
-
-
+- Upgrading to the jai-ext 1.1.9
 
 GeoWebCache 1.15.0 (2019-02-26)
 --------------------------------
