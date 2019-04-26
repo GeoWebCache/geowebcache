@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import org.easymock.Capture;
+import org.easymock.CaptureType;
 import org.geotools.data.ows.OperationType;
 import org.geotools.ows.wms.*;
 import org.geowebcache.config.DefaultGridsets;
@@ -58,7 +59,7 @@ public class GetCapabilitiesConfigurationTest {
         req = createNiceMock(WMSRequest.class);
         gcOpType = createNiceMock(OperationType.class);
         globalConfig = createNiceMock(DefaultingConfiguration.class);
-        layerCapture = new Capture<TileLayer>();
+        layerCapture = new Capture<TileLayer>(CaptureType.LAST);
         broker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
         expect(server.getCapabilities()).andStubReturn(cap);
