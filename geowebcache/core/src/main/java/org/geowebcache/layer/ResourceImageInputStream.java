@@ -79,6 +79,7 @@ public class ResourceImageInputStream extends ImageInputStreamImpl {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected void finalize() throws Throwable {
         super.finalize();
         is = null;
