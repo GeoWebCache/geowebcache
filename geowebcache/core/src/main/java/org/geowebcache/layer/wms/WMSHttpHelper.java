@@ -301,23 +301,6 @@ public class WMSHttpHelper extends WMSSourceHelper {
     }
 
     /**
-     * sets up a HTTP GET request to a URL and configures authentication.
-     *
-     * @param url endpoint to talk to
-     * @param queryParams parameters for the query string
-     * @param backendTimeout timeout to use in seconds
-     * @return executed GetMethod (that has to be closed after reading the response!)
-     * @throws IOException
-     * @deprecated Use {@link #executeRequest(URL, Map, Integer, WMSLayer.HttpRequestMode)} instead
-     */
-    public GetMethod executeRequest(
-            final URL url, final Map<String, String> queryParams, final Integer backendTimeout)
-            throws IOException {
-        return (GetMethod)
-                executeRequest(url, queryParams, backendTimeout, WMSLayer.HttpRequestMode.Get);
-    }
-
-    /**
      * sets up a HTTP request to a URL and configures authentication.
      *
      * @param url endpoint to talk to

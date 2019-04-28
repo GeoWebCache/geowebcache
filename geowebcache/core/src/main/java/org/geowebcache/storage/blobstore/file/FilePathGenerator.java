@@ -93,31 +93,4 @@ public class FilePathGenerator {
         File tileFile = new File(path.toString());
         return tileFile;
     }
-
-    /** @deprecated Use {@link ParametersUtils#buildKey(String)} instead */
-    public static String buildKey(String parametersKvp) {
-        return ParametersUtils.buildKey(parametersKvp);
-    }
-
-    /**
-     * Returns the parameters identifier for the given parameters map
-     *
-     * @param parameters
-     * @return
-     * @deprecated Use {@link ParametersUtils#getId(Map)} instead
-     */
-    public static String getParametersId(Map<String, String> parameters) {
-        return ParametersUtils.getId(parameters);
-    }
-
-    /**
-     * Turns the parameter list into a sorted KVP string
-     *
-     * @param parameters
-     * @return
-     * @deprecated Use {@link ParametersUtils#getKvp(Map)} instead
-     */
-    public static String getParametersKvp(Map<String, String> parameters) {
-        return ParametersUtils.getLegacyParametersKvp(parameters);
-    }
 }

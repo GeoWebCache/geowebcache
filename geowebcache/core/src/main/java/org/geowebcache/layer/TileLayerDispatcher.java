@@ -315,7 +315,7 @@ public class TileLayerDispatcher
     }
 
     /** @deprecated use GeoWebCacheExtensions.reinitializeConfigurations instead */
-    public void reInit() {
+    public void reInit() { // do not know how to get rid of it, it's used in mock testing...
         GeoWebCacheExtensions.reinitialize(this.applicationContext);
     }
 }

@@ -193,31 +193,6 @@ public class XMLConfiguration
     }
 
     /**
-     * @deprecated use {@link #XMLConfiguration(ApplicationContextProvider, DefaultStorageFinder)}
-     */
-    @Deprecated
-    public XMLConfiguration(
-            final ApplicationContextProvider appCtx,
-            final GridSetBroker gridSetBroker,
-            final DefaultStorageFinder storageDirFinder)
-            throws ConfigurationException {
-        this(appCtx, storageDirFinder);
-        log.warn("This constructor is deprecated");
-    }
-
-    /** @deprecated use {@link #XMLConfiguration(ApplicationContextProvider, String)} */
-    @Deprecated
-    public XMLConfiguration(
-            final ApplicationContextProvider appCtx,
-            final GridSetBroker gridSetBroker,
-            final String configFileDirectory)
-            throws ConfigurationException {
-
-        this(appCtx, configFileDirectory);
-        log.warn("This constructor is deprecated");
-    }
-
-    /**
      * Path to template to use when there is no config file.
      *
      * @param template
@@ -686,25 +661,6 @@ public class XMLConfiguration
     }
 
     /**
-     * Removes and returns the gridset configuration named {@code gridsetName}.
-     *
-     * @param gridsetName the name of the gridset to remove
-     * @return the removed griset, or {@code null} if no such gridset exists
-     * @deprecated use removeGridSet
-     */
-    @Deprecated
-    public synchronized XMLGridSet removeGridset(final String gridsetName) {
-        return getGridSet(gridsetName)
-                .map(
-                        g -> {
-                            removeGridSet(gridsetName);
-                            return g;
-                        })
-                .map(XMLGridSet::new)
-                .orElse(null);
-    }
-
-    /**
      * Method responsible for loading xml configuration file and parsing it into a W3C DOM Document
      *
      * @param xmlFile the file contaning the layer configurations
@@ -978,12 +934,6 @@ public class XMLConfiguration
                         + "Please pass it as the 4th argument to the constructor.");
     }
 
-    /** @see TileLayerConfiguration#getTileLayers() */
-    @Deprecated
-    public List<TileLayer> getTileLayers() {
-        return Collections.unmodifiableList(getGwcConfig().getLayers());
-    }
-
     /** @see TileLayerConfiguration#getLayers() */
     public Collection<TileLayer> getLayers() {
         return Collections.unmodifiableList(getGwcConfig().getLayers());
@@ -1017,21 +967,9 @@ public class XMLConfiguration
         return layers.size();
     }
 
-    /** @see TileLayerConfiguration#getTileLayerCount() */
-    @Deprecated
-    public int getTileLayerCount() {
-        return getLayerCount();
-    }
-
     /** @see TileLayerConfiguration#getLayerNames() */
     public Set<String> getLayerNames() {
         return Collections.unmodifiableSet(this.layers.keySet());
-    }
-
-    /** @see TileLayerConfiguration#getTileLayerNames() */
-    @Deprecated
-    public Set<String> getTileLayerNames() {
-        return getLayerNames();
     }
 
     public String getVersion() {
