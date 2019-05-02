@@ -79,7 +79,7 @@ public class ResourceImageInputStream extends ImageInputStreamImpl {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("deprecation") // finalize is deprecated in Java 9
     protected void finalize() throws Throwable {
         super.finalize();
         is = null;
