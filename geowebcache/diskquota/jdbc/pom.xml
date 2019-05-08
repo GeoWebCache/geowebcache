@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.geowebcache</groupId>
     <artifactId>gwc-diskquota</artifactId>
-    <version>1.15.1</version><!-- GWC VERSION -->
+    <version>1.15-SNAPSHOT</version><!-- GWC VERSION -->
   </parent>
   <groupId>org.geowebcache</groupId>
   <artifactId>gwc-diskquota-jdbc</artifactId>
