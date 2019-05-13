@@ -27,3 +27,10 @@ Similarly, the TileMap documents are available at
 
 ``http://servername/contextpath/service/tms/1.0.0/layername@grisetId@formatExtension``
 
+
+The TMS specification has the TileGrid Map origin located at bottom left so Y coordinates grow up moving towards north.
+A vendor parameter "flipY=true" can be appended to the path to support Y coordinates numbered in the opposite direction, from north southwards.
+
+``http://servername/contextpath/service/tms/1.0.0/layername/z/x/y.formatExtension?flipY=true``
+
+
