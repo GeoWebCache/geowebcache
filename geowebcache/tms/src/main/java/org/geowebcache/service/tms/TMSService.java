@@ -17,6 +17,7 @@ package org.geowebcache.service.tms;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -47,6 +48,8 @@ import org.geowebcache.util.URLMangler;
 public class TMSService extends Service {
 
     public static final String SERVICE_TMS = "tms";
+
+    private static final String FLIP_Y = "FLIPY";
 
     private StorageBroker sb;
 
@@ -133,6 +136,12 @@ public class TMSService extends Service {
                 if (gridSubset == null) {
                     throw new HttpErrorCodeException(400, "Unsupported gridset: " + gridSetId);
                 }
+
+                if (hasFlipY(request)) {
+                    final long tilesHigh = gridSubset.getNumTilesHigh((int) gridLoc[2]);
+                    gridLoc[1] = tilesHigh - gridLoc[1] - 1;
+                }
+
                 gridSubset.checkCoverage(gridLoc);
             } catch (OutsideCoverageException e) {
                 throw new HttpErrorCodeException(404, e.getMessage(), e);
@@ -149,6 +158,21 @@ public class TMSService extends Service {
             tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
             return tile;
         }
+    }
+
+    /** Look for the presence of the flipY parameter */
+    private boolean hasFlipY(HttpServletRequest request) {
+        Enumeration<String> parameterNames = request.getParameterNames();
+        if (parameterNames != null) {
+            while (parameterNames.hasMoreElements()) {
+                String name = (String) parameterNames.nextElement();
+                if (FLIP_Y.equalsIgnoreCase(name)) {
+                    String flipY = request.getParameter(name);
+                    return Boolean.parseBoolean(flipY);
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -178,7 +202,6 @@ public class TMSService extends Service {
         }
 
         String[] yExt = params[paramsLength - 1].split("\\.");
-
         parsed.put("x", params[paramsLength - 2]);
         parsed.put("y", yExt[0]);
         parsed.put("z", params[paramsLength - 3]);
