@@ -402,7 +402,7 @@ public class TileBreeder implements ApplicationContextAware {
     private GWCTask createTruncateTask(
             TileRangeIterator trIter, TileLayer tl, boolean doFilterUpdate) {
 
-        return new TruncateTask(storageBroker, trIter.getTileRange(), tl, doFilterUpdate);
+        return new TruncateTask(storageBroker, trIter, tl, doFilterUpdate);
     }
 
     /**

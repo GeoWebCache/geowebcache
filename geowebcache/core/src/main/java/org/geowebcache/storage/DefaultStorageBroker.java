@@ -78,6 +78,10 @@ public class DefaultStorageBroker implements StorageBroker {
         return blobStore.rename(oldLayerName, newLayerName);
     }
 
+    public boolean delete(TileObject tlObj) throws StorageException {
+        return blobStore.delete(tlObj);
+    }
+
     public boolean delete(TileRange trObj) throws StorageException {
         return blobStore.delete(trObj);
     }

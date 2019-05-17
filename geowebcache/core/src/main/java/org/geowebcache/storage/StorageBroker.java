@@ -60,6 +60,8 @@ public interface StorageBroker {
 
     boolean rename(String oldLayerName, String newLayerName) throws StorageException;
 
+    boolean delete(TileObject tlObj) throws StorageException;
+
     boolean delete(TileRange trObj) throws StorageException;
 
     /**

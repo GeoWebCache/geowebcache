@@ -16,16 +16,21 @@ package org.geowebcache.seed;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileRange;
+import org.geowebcache.storage.TileRangeIterator;
 
 class TruncateTask extends GWCTask {
     private static Log log = LogFactory.getLog(TruncateTask.class);
+
+    private final TileRangeIterator trIter;
 
     private final TileRange tr;
 
@@ -35,9 +40,11 @@ class TruncateTask extends GWCTask {
 
     private final StorageBroker storageBroker;
 
-    public TruncateTask(StorageBroker sb, TileRange tr, TileLayer tl, boolean doFilterUpdate) {
+    public TruncateTask(
+            StorageBroker sb, TileRangeIterator trIter, TileLayer tl, boolean doFilterUpdate) {
         this.storageBroker = sb;
-        this.tr = tr;
+        this.trIter = trIter;
+        this.tr = trIter.getTileRange();
         this.tl = tl;
         this.doFilterUpdate = doFilterUpdate;
 
@@ -49,11 +56,40 @@ class TruncateTask extends GWCTask {
     protected void doActionInternal() throws GeoWebCacheException, InterruptedException {
         super.state = GWCTask.STATE.RUNNING;
         checkInterrupted();
-        try {
-            storageBroker.delete(tr);
-        } catch (Exception e) {
-            super.state = GWCTask.STATE.DEAD;
-            log.error("During truncate request", e);
+
+        final String layerName = tl.getName();
+        TileRange tr = trIter.getTileRange();
+        checkInterrupted();
+
+        long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
+
+        while (gridLoc != null && !this.terminate) {
+
+            checkInterrupted();
+            Map<String, String> fullParameters = tr.getParameters();
+
+            ConveyorTile tile =
+                    new ConveyorTile(
+                            storageBroker,
+                            layerName,
+                            tr.getGridSetId(),
+                            gridLoc,
+                            tr.getMimeType(),
+                            fullParameters,
+                            null,
+                            null);
+
+            try {
+                checkInterrupted();
+                storageBroker.delete(tile.getStorageObject());
+            } catch (Exception e) {
+                super.state = GWCTask.STATE.DEAD;
+                log.error("During truncate request", e);
+                throw new GeoWebCacheException(e);
+            }
+
+            checkInterrupted();
+            gridLoc = trIter.nextMetaGridLocation(gridLoc);
         }
 
         checkInterrupted();
