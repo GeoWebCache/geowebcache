@@ -15,6 +15,7 @@
 package org.geowebcache.rest.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,7 +37,7 @@ import org.springframework.web.context.WebApplicationContext;
     "file:../web/src/main/webapp/WEB-INF/geowebcache-rest-context.xml",
     "file:../web/src/main/webapp/WEB-INF/geowebcache-core-context.xml"
 })
-public class BlobStoreControllerTest {
+public class SeedControllerTest {
 
     @Autowired private WebApplicationContext wac;
 
@@ -49,10 +50,19 @@ public class BlobStoreControllerTest {
 
     /** Checks correct media type for RestException response handling. GET method. */
     @Test
-    public void testBlobstoresGetContentType() throws Exception {
+    public void testSeedGetContentType() throws Exception {
+        mockMvc.perform(get("/rest/seed/{layer}", "xxxp4z85").accept(MediaType.TEXT_HTML))
+                .andExpect(content().contentType(MediaType.TEXT_PLAIN))
+                .andExpect(status().is4xxClientError());
+    }
+
+    /** Checks correct media type for RestException response handling. POST method. */
+    @Test
+    public void testSeedPostContentType() throws Exception {
         mockMvc.perform(
-                        get("/rest/blobstores/{blobStoreName}", "xxxp4z85")
-                                .accept(MediaType.APPLICATION_JSON))
+                        post("/rest/seed/{layer}", "xxxp4z85")
+                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                                .accept(MediaType.TEXT_HTML))
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(status().is4xxClientError());
     }

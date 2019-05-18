@@ -27,7 +27,9 @@ import org.geowebcache.rest.exception.RestException;
 import org.geowebcache.rest.filter.XmlFilterUpdate;
 import org.geowebcache.rest.filter.ZipFilterUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
@@ -38,11 +40,6 @@ import org.springframework.web.bind.annotation.*;
 public class FilterUpdateController extends GWCController {
 
     @Autowired TileLayerDispatcher tld;
-
-    @ExceptionHandler(RestException.class)
-    public ResponseEntity<?> handleRestException(RestException ex) {
-        return new ResponseEntity<Object>(ex.toString(), ex.getStatus());
-    }
 
     @RequestMapping(value = "/filter/{filterName}/update/{updateType}", method = RequestMethod.POST)
     public ResponseEntity<?> doPost(
@@ -94,9 +91,11 @@ public class FilterUpdateController extends GWCController {
         } catch (IOException e) {
             throw new RestException("Internal Error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
+        // prepare response content type
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
         return new ResponseEntity<Object>(
-                "Filter update completed, no problems encountered.\n", HttpStatus.OK);
+                "Filter update completed, no problems encountered.\n", headers, HttpStatus.OK);
     }
 
     public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {

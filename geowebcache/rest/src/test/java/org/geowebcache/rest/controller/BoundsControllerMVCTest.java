@@ -36,7 +36,7 @@ import org.springframework.web.context.WebApplicationContext;
     "file:../web/src/main/webapp/WEB-INF/geowebcache-rest-context.xml",
     "file:../web/src/main/webapp/WEB-INF/geowebcache-core-context.xml"
 })
-public class BlobStoreControllerTest {
+public class BoundsControllerMVCTest {
 
     @Autowired private WebApplicationContext wac;
 
@@ -49,9 +49,9 @@ public class BlobStoreControllerTest {
 
     /** Checks correct media type for RestException response handling. GET method. */
     @Test
-    public void testBlobstoresGetContentType() throws Exception {
+    public void testBoundsGetContentType() throws Exception {
         mockMvc.perform(
-                        get("/rest/blobstores/{blobStoreName}", "xxxp4z85")
+                        get("/rest/bounds/{layer}/{srs}/{type}", "xxxp4z85", "4326", "nothanks")
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(status().is4xxClientError());
