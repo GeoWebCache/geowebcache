@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -398,7 +399,14 @@ public class TMSServiceTest extends TestCase {
     }
 
     public void testGetTile() throws Exception {
+        testGetTile(false);
+    }
 
+    public void testGetTileFlipped() throws Exception {
+        testGetTile(true);
+    }
+
+    private void testGetTile(boolean flipY) throws Exception {
         GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
         when(gwcd.getServletPrefix()).thenReturn(null);
         service = new TMSService(sb, mock(RuntimeStats.class), gwcd, customFactory);
@@ -417,24 +425,46 @@ public class TMSServiceTest extends TestCase {
             when(customFactory.tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
         }
 
+        final int level = 3;
+        final int column = 1;
+        final int row = 2;
+        String tilePath =
+                "customLayer2@EPSG%3A4326@jpeg-png/"
+                        + level
+                        + "/"
+                        + column
+                        + "/"
+                        + row
+                        + ".jpeg-png";
         // Sending a Tile request
         when(req.getRequestURL())
                 .thenReturn(
                         new StringBuffer(
-                                "http://localhost:8080/mycontext/service/tms/1.0.0/customLayer2@EPSG%3A4326@jpeg-png/2/1/1.jpeg-png"));
-        when(req.getPathInfo())
-                .thenReturn("/service/tms/1.0.0/customLayer2@EPSG%3A4326@png/2/1/1.jpeg-png");
-        when(req.getRequestURI())
-                .thenReturn(
-                        "/mycontext/service/tms/1.0.0/customLayer2@EPSG%3A4326@png/2/1/1.jpeg-png");
+                                "http://localhost:8080/mycontext/service/tms/1.0.0/" + tilePath));
+        when(req.getPathInfo()).thenReturn("/service/tms/1.0.0/" + tilePath);
+        when(req.getRequestURI()).thenReturn("/mycontext/service/tms/1.0.0/" + tilePath);
         when(req.getCharacterEncoding()).thenReturn("UTF-8");
         when(req.getScheme()).thenReturn("http");
         when(req.getServerName()).thenReturn("localhost");
         when(req.getServerPort()).thenReturn(8080);
         when(req.getContextPath()).thenReturn("/mycontext");
+        Enumeration<String> parameterNames = null;
+        String flipParameter = "false";
+        if (flipY) {
+            String[] paramNames = new String[] {"random", "flipY"};
+            parameterNames = Collections.enumeration(Arrays.asList(paramNames));
+            flipParameter = "true";
+        }
+        when(req.getParameterNames()).thenReturn(parameterNames);
+        when(req.getParameter("flipY")).thenReturn(flipParameter);
 
         Conveyor conv = service.getConveyor(req, resp);
         assertNotNull(conv);
         assertThat(conv, instanceOf(ConveyorTile.class));
+        ConveyorTile tile = (ConveyorTile) conv;
+        final long[] tileIndex = tile.getTileIndex();
+        assertEquals(column, tileIndex[0]);
+        assertEquals(row, flipY ? ((int) Math.pow(2, level) - tileIndex[1] - 1) : tileIndex[1]);
+        assertEquals(level, tileIndex[2]);
     }
 }
