@@ -26,10 +26,7 @@ public class GridSubsetFactory {
 
         GridSubset ret =
                 createGridSubSet(
-                        gridSet,
-                        gridSet.getOriginalExtent(),
-                        0,
-                        gridSet.getGridLevels().length - 1);
+                        gridSet, gridSet.getOriginalExtent(), 0, gridSet.getNumLevels() - 1);
         return ret;
     }
 
@@ -50,8 +47,7 @@ public class GridSubsetFactory {
             throw new NullPointerException("Passed GridSet was null!");
         }
 
-        final Grid[] gridLevels = gridSet.getGridLevels();
-        final int maxLevel = gridLevels.length - 1;
+        final int maxLevel = gridSet.getNumLevels() - 1;
         if (zoomStart == null) {
             zoomStart = 0;
         }
@@ -74,7 +70,7 @@ public class GridSubsetFactory {
         Map<Integer, GridCoverage> coverages = new TreeMap<Integer, GridCoverage>();
         for (int z = zoomStart; z <= zoomStop; z++) {
 
-            Grid level = gridLevels[z];
+            Grid level = gridSet.getGrid(z);
 
             long[] coverage;
             if (extent == null) {

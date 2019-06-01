@@ -22,7 +22,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Collections;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.MockConfigurationResourceProvider;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
@@ -53,7 +55,8 @@ public class MassTruncateControllerTest {
 
     @Before
     public void setup() throws GeoWebCacheException {
-        GridSetBroker gridSetBroker = new GridSetBroker(false, false);
+        GridSetBroker gridSetBroker =
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
         XMLConfiguration xmlConfig = loadXMLConfig();
         xmlConfig.setGridSetBroker(gridSetBroker);
         xmlConfig.afterPropertiesSet();

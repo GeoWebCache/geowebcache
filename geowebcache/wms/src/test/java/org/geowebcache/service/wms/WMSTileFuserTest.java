@@ -24,6 +24,7 @@ import static org.mockito.Mockito.times;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.filter.security.SecurityDispatcher;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
@@ -48,6 +50,7 @@ import org.geowebcache.storage.DefaultStorageBroker;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
+import org.geowebcache.storage.TransientCache;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -62,7 +65,8 @@ public class WMSTileFuserTest {
 
     @Rule public ExpectedException exception = ExpectedException.none();
 
-    GridSetBroker gridSetBroker = new GridSetBroker(false, false);
+    GridSetBroker gridSetBroker =
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
     SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
 
     HttpServletRequest fuserRequest(
@@ -290,7 +294,8 @@ public class WMSTileFuserTest {
                                     stObj.setBlobSize(1000);
                                     return true;
                                 }
-                            });
+                            },
+                            new TransientCache(100, 1024, 2000));
 
             WMSTileFuser tileFuser = new WMSTileFuser(dispatcher, broker, request);
             tileFuser.setSecurityDispatcher(secDisp);

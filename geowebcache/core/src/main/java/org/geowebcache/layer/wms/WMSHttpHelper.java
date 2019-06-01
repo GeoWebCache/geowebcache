@@ -218,26 +218,19 @@ public class WMSHttpHelper extends WMSSourceHelper {
                 if (responseMime.equalsIgnoreCase(ErrorMime.vnd_ogc_se_inimage.getFormat())) {
                     // TODO: revisit: I don't understand why it's trying to create a String message
                     // out of an ogc_se_inimage response?
-                    InputStream stream = null;
-                    try {
-                        stream = method.getResponseBodyAsStream();
+
+                    try (InputStream stream = method.getResponseBodyAsStream()) {
                         byte[] error = IOUtils.toByteArray(stream);
                         message = new String(error);
                     } catch (IOException ioe) {
                         // Do nothing
-                    } finally {
-                        IOUtils.closeQuietly(stream);
                     }
                 } else if (responseMime != null
                         && responseMime.toLowerCase().startsWith("application/vnd.ogc.se_xml")) {
-                    InputStream stream = null;
-                    try {
-                        stream = method.getResponseBodyAsStream();
-                        message = IOUtils.toString(stream);
+                    try (InputStream stream = method.getResponseBodyAsStream()) {
+                        message = IOUtils.toString(stream, "UTF-8");
                     } catch (IOException e) {
                         //
-                    } finally {
-                        IOUtils.closeQuietly(stream);
                     }
                 }
                 String msg =
@@ -305,23 +298,6 @@ public class WMSHttpHelper extends WMSSourceHelper {
                 method.releaseConnection();
             }
         }
-    }
-
-    /**
-     * sets up a HTTP GET request to a URL and configures authentication.
-     *
-     * @param url endpoint to talk to
-     * @param queryParams parameters for the query string
-     * @param backendTimeout timeout to use in seconds
-     * @return executed GetMethod (that has to be closed after reading the response!)
-     * @throws IOException
-     * @deprecated Use {@link #executeRequest(URL, Map, Integer, WMSLayer.HttpRequestMode)} instead
-     */
-    public GetMethod executeRequest(
-            final URL url, final Map<String, String> queryParams, final Integer backendTimeout)
-            throws IOException {
-        return (GetMethod)
-                executeRequest(url, queryParams, backendTimeout, WMSLayer.HttpRequestMode.Get);
     }
 
     /**

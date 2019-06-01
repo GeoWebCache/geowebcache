@@ -18,9 +18,11 @@ import java.math.BigInteger;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import junit.framework.TestCase;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.diskquota.storage.PagePyramid.PageLevelInfo;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -30,9 +32,13 @@ import org.geowebcache.storage.blobstore.file.FilePathUtils;
 
 public class PagePyramidTest extends TestCase {
 
-    GridSet world_EPSG3857 = new GridSetBroker(true, false).getWorldEpsg3857();
+    GridSet world_EPSG3857 =
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, false)))
+                    .getWorldEpsg3857();
 
-    GridSet world_EPSG4326 = new GridSetBroker(true, false).getWorldEpsg4326();
+    GridSet world_EPSG4326 =
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, false)))
+                    .getWorldEpsg4326();
 
     private long[][] coverages;
 

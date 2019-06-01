@@ -1,11 +1,14 @@
 package org.geowebcache.grid;
 
 import java.util.Arrays;
+import java.util.Collections;
 import junit.framework.TestCase;
+import org.geowebcache.config.DefaultGridsets;
 
 public class GridSubSetFactoryTest extends TestCase {
 
-    GridSetBroker gridSetBroker = new GridSetBroker(false, false);
+    GridSetBroker gridSetBroker =
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
     public void testCoverageBounds() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180, 90);

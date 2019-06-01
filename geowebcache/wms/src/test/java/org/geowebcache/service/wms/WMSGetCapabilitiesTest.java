@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.easymock.EasyMock;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.legends.LegendRawInfo;
 import org.geowebcache.config.legends.LegendsRawInfo;
 import org.geowebcache.config.meta.ServiceInformation;
@@ -73,7 +74,10 @@ public class WMSGetCapabilitiesTest {
         // create grid sets for this layer
         Map<String, GridSubset> subSets = new HashMap<>();
         GridSubset gridSubSet =
-                GridSubsetFactory.createGridSubSet(new GridSetBroker(true, true).get("EPSG:4326"));
+                GridSubsetFactory.createGridSubSet(
+                        new GridSetBroker(
+                                        Collections.singletonList(new DefaultGridsets(true, true)))
+                                .get("EPSG:4326"));
         subSets.put(gridSubSet.getName(), gridSubSet);
         // create the layer
         WMSLayer advertisedLayer =

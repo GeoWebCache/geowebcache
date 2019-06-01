@@ -15,7 +15,6 @@
 package org.geowebcache.config;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -31,13 +30,6 @@ import org.geowebcache.layer.TileLayerDispatcher;
  * spring beans)
  */
 public interface TileLayerConfiguration extends BaseConfiguration {
-
-    /**
-     * @return an unmodifiable list of layers, may be empty, but not null.
-     * @deprecated use {@link #getLayers()}
-     */
-    @Deprecated
-    List<? extends TileLayer> getTileLayers();
 
     /**
      * Get all {@link TileLayer}s included in a TileLayerConfiguration.
@@ -57,24 +49,6 @@ public interface TileLayerConfiguration extends BaseConfiguration {
     Optional<TileLayer> getLayer(String layerName);
 
     /**
-     * @param layerName the layer name
-     * @return the layer named {@code layerIdent} or {@code null} if no such layer exists in this
-     *     configuration
-     * @deprecated use {@link #getLayer(String)}
-     */
-    @Deprecated
-    TileLayer getTileLayer(String layerName);
-
-    /**
-     * @param layerId the layer identifier
-     * @return the layer identified by {@code layerId} or {@code null} if no such layer exists in
-     *     this configuration
-     * @deprecated use {@link #getLayer(String)}
-     */
-    @Deprecated
-    TileLayer getTileLayerById(String layerId);
-
-    /**
      * Get the number of TileLayers configured
      *
      * @return the number of {@link TileLayer}s configured
@@ -82,30 +56,11 @@ public interface TileLayerConfiguration extends BaseConfiguration {
     int getLayerCount();
 
     /**
-     * Get the number of TileLayers configured
-     *
-     * @return
-     * @deprecated use {@link #getLayerCount()}
-     */
-    @Deprecated
-    int getTileLayerCount();
-
-    /**
      * Get the names of all TileLayers configured
      *
      * @return The set of all TileLayers configured. May be empty, but not null.
      */
     Set<String> getLayerNames();
-
-    /**
-     * Get the names of all TileLayers configured
-     *
-     * @return
-     * @deprecated use {@link #getLayerNames()}
-     */
-    @Deprecated
-    Set<String> getTileLayerNames();
-
     /**
      * Removes the given tile layer from this configuration
      *

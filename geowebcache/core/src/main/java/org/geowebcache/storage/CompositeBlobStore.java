@@ -17,7 +17,6 @@ package org.geowebcache.storage;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -499,7 +498,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
         try {
             return readFunctionUnsafe(function);
         } catch (StorageException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

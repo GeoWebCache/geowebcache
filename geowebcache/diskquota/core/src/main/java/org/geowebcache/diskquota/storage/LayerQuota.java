@@ -28,16 +28,6 @@ public final class LayerQuota implements Serializable {
 
     private Quota quota;
 
-    /**
-     * @deprecated usage quota no longer tracked here but on the quota store. This field is
-     *     temporarily left here to avoid XStram parsing problems for older versions
-     */
-    @Deprecated private transient Quota usedQuota;
-
-    LayerQuota() {
-        //
-    }
-
     public LayerQuota(final String layer, final ExpirationPolicy expirationPolicyName) {
         this(layer, expirationPolicyName, null);
     }

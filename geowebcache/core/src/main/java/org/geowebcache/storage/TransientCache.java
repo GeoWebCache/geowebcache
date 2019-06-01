@@ -62,11 +62,6 @@ public class TransientCache {
                 }
             };
 
-    /** @deprecated Use {@link #TransientCache(int,int,long)} instead */
-    public TransientCache(int maxTiles, int maxStorageKB) {
-        this(maxTiles, maxStorageKB, 2000);
-    }
-
     /**
      * @param maxTiles Maximum number of tiles in cache
      * @param maxStorageKB Maximum size of cached data in KiB

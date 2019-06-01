@@ -536,16 +536,18 @@ public class WMTSGetCapabilities {
      */
     private Map<String, LegendInfo> getLegendsInfo(TileLayer layer) {
         Map<String, LegendInfo> legendsInfo = new HashMap<>();
-        for (Map.Entry<String, TileLayer.LegendInfo> entry : layer.getLegendsInfo().entrySet()) {
+        for (Map.Entry<String, LegendInfo> entry : layer.getLayerLegendsInfo().entrySet()) {
             // convert deprecated model to new model
+            String styleName = entry.getKey();
+            LegendInfo legend = entry.getValue();
             legendsInfo.put(
-                    entry.getKey(),
+                    styleName,
                     new LegendInfoBuilder()
-                            .withWidth(entry.getValue().width)
-                            .withHeight(entry.getValue().height)
-                            .withFormat(entry.getValue().format)
-                            .withCompleteUrl(entry.getValue().legendUrl)
-                            .withStyleName(entry.getKey())
+                            .withWidth(legend.getWidth())
+                            .withHeight(legend.getHeight())
+                            .withFormat(legend.getFormat())
+                            .withCompleteUrl(legend.getLegendUrl())
+                            .withStyleName(styleName)
                             .build());
         }
         // add the new legend info model objects
@@ -768,12 +770,11 @@ public class WMTSGetCapabilities {
                 "ows:SupportedCRS", "urn:ogc:def:crs:EPSG::" + gridSet.getSrs().getNumber(), true);
         // TODO detect these str.append("
         // <WellKnownScaleSet>urn:ogc:def:wkss:GlobalCRS84Pixel</WellKnownScaleSet>\n");
-        Grid[] grids = gridSet.getGridLevels();
-        for (int i = 0; i < grids.length; i++) {
+        for (int i = 0; i < gridSet.getNumLevels(); i++) {
             double[] tlCoordinates = gridSet.getOrderedTopLeftCorner(i);
             tileMatrix(
                     xml,
-                    grids[i],
+                    gridSet.getGrid(i),
                     tlCoordinates,
                     gridSet.getTileWidth(),
                     gridSet.getTileHeight(),

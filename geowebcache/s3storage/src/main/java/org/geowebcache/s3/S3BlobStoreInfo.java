@@ -37,6 +37,7 @@ import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.StorageException;
 
 /** Plain old java object representing the configuration for an S3 blob store. */
+@SuppressWarnings("deprecation")
 public class S3BlobStoreInfo extends BlobStoreInfo {
 
     static Log log = LogFactory.getLog(S3BlobStoreInfo.class);

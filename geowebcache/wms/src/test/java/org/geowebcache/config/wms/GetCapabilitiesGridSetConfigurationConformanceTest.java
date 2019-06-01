@@ -23,11 +23,13 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.base.Objects;
 import java.net.URL;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.easymock.EasyMock;
 import org.geotools.data.ows.OperationType;
 import org.geotools.ows.wms.*;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.DefaultingConfiguration;
 import org.geowebcache.config.GridSetConfiguration;
 import org.geowebcache.config.GridSetConfigurationTest;
@@ -49,7 +51,8 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
     @Before
     public void setupBroker() {
         if (broker == null) {
-            broker = new GridSetBroker(false, false);
+            broker =
+                    new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
         }
     }
 

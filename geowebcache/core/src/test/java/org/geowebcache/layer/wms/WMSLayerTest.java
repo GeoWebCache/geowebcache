@@ -44,6 +44,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +70,7 @@ import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.TestHelpers;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.grid.GridSet;
@@ -106,7 +108,8 @@ import org.springframework.mock.web.MockHttpServletResponse;
  */
 public class WMSLayerTest extends TileLayerTest {
 
-    private final GridSetBroker gridSetBroker = new GridSetBroker(false, false);
+    private final GridSetBroker gridSetBroker =
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
     @After
     public void tearDown() throws Exception {
@@ -368,7 +371,10 @@ public class WMSLayerTest extends TileLayerTest {
                 new WMSHttpHelper() {
                     @Override
                     public GetMethod executeRequest(
-                            URL url, Map<String, String> queryParams, Integer backendTimeout)
+                            URL url,
+                            Map<String, String> queryParams,
+                            Integer backendTimeout,
+                            WMSLayer.HttpRequestMode httpRequestMode)
                             throws HttpException, IOException {
                         GetMethod response = EasyMock.createMock(GetMethod.class);
                         expect(response.getStatusCode()).andReturn(200);
@@ -671,7 +677,7 @@ public class WMSLayerTest extends TileLayerTest {
         final AtomicInteger storageGetCounter = new AtomicInteger();
         final AtomicInteger wmsMetaRequestCounter = new AtomicInteger();
         final AtomicInteger tileTransferCounter = new AtomicInteger();
-        final TransientCache transientCache = new TransientCache(100, 100);
+        final TransientCache transientCache = new TransientCache(100, 100, 2000);
 
         public MockTileSupport(WMSLayer tl) throws Exception {
             // create an image to be returned by the mock WMSSourceHelper

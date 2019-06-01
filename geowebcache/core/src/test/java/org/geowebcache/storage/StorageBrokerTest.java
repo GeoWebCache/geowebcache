@@ -85,7 +85,7 @@ public class StorageBrokerTest extends TestCase {
         BlobStore blobStore = new FileBlobStore(blobPath);
         TransientCache transCache = new TransientCache(100, 1024, 2000);
 
-        StorageBroker sb = new DefaultStorageBroker(blobStore);
+        StorageBroker sb = new DefaultStorageBroker(blobStore, new TransientCache(100, 1024, 2000));
 
         // long[] xyz = {1L,2L,3L};
         Resource blob = new ByteArrayResource(new byte[20 * 1024]);

@@ -129,11 +129,6 @@ public class SRS implements Comparable<SRS>, Serializable {
         return equivalent;
     }
 
-    /** @deprecated just use {@link #equals} */
-    public boolean equalsIncludingAlias(Object o) {
-        return equals(o);
-    }
-
     public int getNumber() {
         return number;
     }

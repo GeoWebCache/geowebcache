@@ -251,12 +251,5 @@ public class TileLayerDispatcherTest extends GWCConfigIntegrationTest {
         } catch (IllegalStateException e) {
 
         }
-
-        // TODO: This behavior will change after the API change
-        assertNull(
-                "Expected failure removing null gridset", tileLayerDispatcher.removeGridset(null));
-        assertNull(
-                "Expected failure removing nonexistant gridset",
-                tileLayerDispatcher.removeGridset("nonexistantGridset"));
     }
 }

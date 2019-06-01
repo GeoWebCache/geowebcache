@@ -16,19 +16,25 @@ package org.geowebcache.layer;
 
 import com.google.common.base.Preconditions;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
-import org.geowebcache.config.BaseConfiguration;
 import org.geowebcache.config.ConfigurationAggregator;
 import org.geowebcache.config.TileLayerConfiguration;
-import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSubset;
 import org.geowebcache.util.CompositeIterable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
@@ -55,8 +61,9 @@ public class TileLayerDispatcher
     private ApplicationContext applicationContext;
 
     /**
-     * @deprecated use {@link #TileLayerDispatcher(GridSetBroker)} instead, configurations are
-     *     loaded from the application context, this {@code config} parameter will be ignored
+     * Used for testing only, in production use {@link #TileLayerDispatcher(GridSetBroker)} instead,
+     * configurations are loaded from the application context, the {@code config} parameter will be
+     * overwritten
      */
     public TileLayerDispatcher(GridSetBroker gridSetBroker, List<TileLayerConfiguration> configs) {
         this.gridSetBroker = gridSetBroker;
@@ -100,15 +107,6 @@ public class TileLayerDispatcher
                         + layerName
                         + ". Check the logfiles,"
                         + " it may not have loaded properly.");
-    }
-
-    /**
-     * *
-     *
-     * @deprecated use GeoWebCacheExtensions.reinitializeConfigurations instead
-     */
-    public void reInit() {
-        GeoWebCacheExtensions.reinitialize(this.applicationContext);
     }
 
     public int getLayerCount() {
@@ -233,58 +231,6 @@ public class TileLayerDispatcher
                 "No configuration found containing layer " + tileLayerName);
     }
 
-    /**
-     * Eliminates the gridset from the {@link GridSetBroker} and the {@link XMLConfiguration} only
-     * if no layer references the given GridSet.
-     *
-     * <p>NOTE this method does not save the configuration, it's up to the calling code to do that
-     * in order to make the change persistent.
-     *
-     * @param gridSetName the gridset to remove.
-     * @return the configuration modified after removing the gridset, or {@code null}
-     * @throws IllegalStateException if there's any layer referencing the given GridSet
-     * @throws IOException
-     * @see {@link GridSetBroker#remove(String)}
-     */
-    @Deprecated
-    public synchronized TileLayerConfiguration removeGridset(final String gridSetName)
-            throws IllegalStateException, IOException {
-
-        GridSet gridSet = gridSetBroker.get(gridSetName);
-        if (gridSet == null) {
-            return null;
-        }
-        List<String> refereningLayers = new ArrayList<String>();
-        for (TileLayer layer : getLayerList()) {
-            GridSubset gridSubset = layer.getGridSubset(gridSetName);
-            if (gridSubset != null) {
-                refereningLayers.add(layer.getName());
-            }
-        }
-        if (refereningLayers.size() > 0) {
-            throw new IllegalStateException(
-                    "There are TileLayers referencing gridset '"
-                            + gridSetName
-                            + "': "
-                            + refereningLayers.toString());
-        }
-        XMLConfiguration persistingConfig = null;
-        for (BaseConfiguration c : configs) {
-            if (c instanceof XMLConfiguration) {
-                persistingConfig = (XMLConfiguration) c;
-            }
-        }
-        if (persistingConfig == null) {
-            throw new IllegalStateException(
-                    "Found no configuration of type " + XMLConfiguration.class.getName());
-        }
-        GridSet removed = gridSetBroker.remove(gridSetName);
-        Assert.notNull(removed != null);
-        Assert.notNull(persistingConfig.removeGridset(gridSetName));
-
-        return persistingConfig;
-    }
-
     public synchronized void addGridSet(final GridSet gridSet)
             throws IllegalArgumentException, IOException {
         if (null != gridSetBroker.get(gridSet.getName())) {
@@ -366,5 +312,10 @@ public class TileLayerDispatcher
             throw new IllegalStateException("Application context has already been set");
         Objects.requireNonNull(applicationContext);
         this.applicationContext = applicationContext;
+    }
+
+    /** @deprecated use GeoWebCacheExtensions.reinitializeConfigurations instead */
+    public void reInit() { // do not know how to get rid of it, it's used in mock testing...
+        GeoWebCacheExtensions.reinitialize(this.applicationContext);
     }
 }

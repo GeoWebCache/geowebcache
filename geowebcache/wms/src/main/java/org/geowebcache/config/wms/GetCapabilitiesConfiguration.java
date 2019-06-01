@@ -22,7 +22,6 @@ import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geotools.data.ows.SimpleHttpClient;
@@ -566,15 +565,6 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
         }
     }
 
-    /**
-     * @see TileLayerConfiguration#getTileLayers()
-     * @deprecated
-     */
-    @Deprecated
-    public List<TileLayer> getTileLayers() {
-        return Collections.unmodifiableList(new ArrayList<TileLayer>(layers.values()));
-    }
-
     /** @see TileLayerConfiguration#getLayers() */
     public Collection<? extends TileLayer> getLayers() {
         return Collections.unmodifiableList(new ArrayList<>(layers.values()));
@@ -583,12 +573,6 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     /** @see TileLayerConfiguration#getLayerNames() */
     public Set<String> getLayerNames() {
         return new HashSet<String>(layers.keySet());
-    }
-
-    /** @see TileLayerConfiguration#getTileLayerNames() */
-    @Deprecated
-    public Set<String> getTileLayerNames() {
-        return getLayerNames();
     }
 
     /** @see TileLayerConfiguration#containsLayer(java.lang.String) */
@@ -601,28 +585,9 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
         return Optional.ofNullable(layers.get(layerName));
     }
 
-    /** @see TileLayerConfiguration#getTileLayerById(java.lang.String) */
-    @Deprecated
-    public @Nullable TileLayer getTileLayerById(String layerId) {
-        // this configuration does not differentiate between layer identifier and identity
-        return getLayer(layerId).orElse(null);
-    }
-
-    /** @see TileLayerConfiguration#getTileLayer(java.lang.String) */
-    @Deprecated
-    public @Nullable TileLayer getTileLayer(String layerName) {
-        return getLayer(layerName).orElse(null);
-    }
-
     /** @see TileLayerConfiguration#getLayerCount() */
     public int getLayerCount() {
         return layers.size();
-    }
-
-    /** @see TileLayerConfiguration#getTileLayerCount() */
-    @Deprecated
-    public int getTileLayerCount() {
-        return getLayerCount();
     }
 
     /** @see TileLayerConfiguration#removeLayer(java.lang.String) */

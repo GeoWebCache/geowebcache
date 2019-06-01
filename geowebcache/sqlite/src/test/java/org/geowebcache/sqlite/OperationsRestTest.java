@@ -83,14 +83,14 @@ public class OperationsRestTest extends TestSupport {
             MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
             // first request
             mockMvc.perform(
-                            MockMvcRequestBuilders.fileUpload("/sqlite/replace")
+                            MockMvcRequestBuilders.multipart("/sqlite/replace")
                                     .file(fileUploadA)
                                     .param("layer", "europe")
                                     .param("destination", testFiles.second.first))
                     .andExpect(status().is(200));
             // second request
             mockMvc.perform(
-                            MockMvcRequestBuilders.fileUpload("/sqlite/replace")
+                            MockMvcRequestBuilders.multipart("/sqlite/replace")
                                     .file(fileUploadB)
                                     .param("layer", "europe")
                                     .param("destination", testFiles.second.second))
@@ -116,7 +116,7 @@ public class OperationsRestTest extends TestSupport {
             MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
             // execute request
             mockMvc.perform(
-                            MockMvcRequestBuilders.fileUpload("/sqlite/replace")
+                            MockMvcRequestBuilders.multipart("/sqlite/replace")
                                     .file(zipUpload)
                                     .param("layer", "europe"))
                     .andExpect(status().is(200));
@@ -134,7 +134,7 @@ public class OperationsRestTest extends TestSupport {
         MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         // execute request
         mockMvc.perform(
-                        MockMvcRequestBuilders.fileUpload("/sqlite/replace")
+                        MockMvcRequestBuilders.multipart("/sqlite/replace")
                                 .param("layer", "europe")
                                 .param("source", rootDirectory.getPath()))
                 .andExpect(status().is(200));

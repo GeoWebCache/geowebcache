@@ -20,12 +20,12 @@ import java.io.IOException;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.storage.DefaultStorageFinder;
+import org.geowebcache.util.IOUtils;
 
 /**
  * A lock provider based on file system locks
@@ -84,16 +84,7 @@ public class NIOLockProvider implements LockProvider {
                         currFos = new FileOutputStream(file);
 
                         currLock = currFos.getChannel().lock();
-                    } catch (OverlappingFileLockException e) {
-                        IOUtils.closeQuietly(currFos);
-                        try {
-                            Thread.sleep(waitBeforeRetry);
-                        } catch (InterruptedException ie) {
-                            Thread.currentThread().interrupt();
-                            // ok, moving on
-                        }
-                    } catch (IOException e) {
-                        // this one is also thrown with a message "avoided fs deadlock"
+                    } catch (OverlappingFileLockException | IOException e) {
                         IOUtils.closeQuietly(currFos);
                         try {
                             Thread.sleep(waitBeforeRetry);
@@ -204,7 +195,7 @@ public class NIOLockProvider implements LockProvider {
     private File getFile(String lockKey) {
         File locks = new File(root, "lockfiles");
         locks.mkdirs();
-        String sha1 = DigestUtils.shaHex(lockKey);
+        String sha1 = DigestUtils.sha1Hex(lockKey);
         return new File(locks, sha1 + ".lck");
     }
 }

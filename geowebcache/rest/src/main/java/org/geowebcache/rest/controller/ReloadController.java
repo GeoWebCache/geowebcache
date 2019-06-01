@@ -28,10 +28,14 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.exception.RestException;
 import org.geowebcache.util.ServletUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -40,10 +44,11 @@ import org.springframework.web.bind.annotation.*;
 @Component
 @RestController
 @RequestMapping(path = "${gwc.context.suffix:}/rest")
-public class ReloadController {
+public class ReloadController implements ApplicationContextAware {
     private static Log log = LogFactory.getLog(ReloadController.class);
 
     @Autowired TileLayerDispatcher layerDispatcher;
+    private ApplicationContext applicationContext;
 
     @ExceptionHandler(RestException.class)
     public ResponseEntity<?> handleRestException(RestException ex) {
@@ -87,7 +92,7 @@ public class ReloadController {
                         + ServletUtils.gwcHtmlLogoLink("../"));
 
         try {
-            layerDispatcher.reInit();
+            GeoWebCacheExtensions.reinitialize(applicationContext);
             String info =
                     "TileLayerConfiguration reloaded. Read "
                             + layerDispatcher.getLayerCount()
@@ -127,5 +132,10 @@ public class ReloadController {
         } else {
             return Splitter.on(" ").withKeyValueSeparator("=").split(data);
         }
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

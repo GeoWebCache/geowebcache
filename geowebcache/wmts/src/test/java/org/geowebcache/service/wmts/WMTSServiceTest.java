@@ -11,7 +11,12 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
@@ -37,6 +42,7 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.config.legends.LegendInfo;
 import org.geowebcache.config.legends.LegendInfoBuilder;
@@ -86,7 +92,8 @@ public class WMTSServiceTest {
     public void setUp() throws Exception {
         sb = mock(StorageBroker.class);
         tld = mock(TileLayerDispatcher.class);
-        gridsetBroker = new GridSetBroker(true, true);
+        gridsetBroker =
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
     }
 
     private TileLayer mockTileLayer(
@@ -198,15 +205,17 @@ public class WMTSServiceTest {
             styles.setValues(Arrays.asList("style-a", "style-b"));
             when(tileLayer.getParameterFilters()).thenReturn(Collections.singletonList(styles));
             // add legend info for style-a
-            TileLayer.LegendInfo legendInfo1 = TileLayer.createLegendInfo();
-            legendInfo1.id = "styla-a-legend";
-            legendInfo1.width = 250;
-            legendInfo1.height = 500;
-            legendInfo1.format = "image/jpeg";
-            legendInfo1.legendUrl =
-                    "https://some-url?some-parameter=value1&another-parameter=value2";
-            when(tileLayer.getLegendsInfo())
-                    .thenReturn(Collections.singletonMap("style-a", legendInfo1));
+            LegendInfo legendInfo1 =
+                    new LegendInfoBuilder()
+                            .withStyleName("style-a-legend")
+                            .withWidth(250)
+                            .withHeight(500)
+                            .withFormat("image/jpeg")
+                            .withCompleteUrl(
+                                    "https://some-url?some-parameter=value1&another-parameter=value2")
+                            .build();
+            Map<String, LegendInfo> legends = new HashMap<>();
+            legends.put("style-a", legendInfo1);
             // add legend info for style-b
             LegendInfo legendInfo2 =
                     new LegendInfoBuilder()
@@ -219,8 +228,8 @@ public class WMTSServiceTest {
                             .withMinScale(5000D)
                             .withMaxScale(10000D)
                             .build();
-            when(tileLayer.getLayerLegendsInfo())
-                    .thenReturn(Collections.singletonMap("style-b", legendInfo2));
+            legends.put("style-b", legendInfo2);
+            when(tileLayer.getLayerLegendsInfo()).thenReturn(legends);
 
             // add some layer metadata
             MetadataURL metadataURL =
