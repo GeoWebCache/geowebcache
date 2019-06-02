@@ -51,7 +51,9 @@ import org.geowebcache.util.ApplicationContextProvider;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.WebApplicationContext;
@@ -83,9 +85,13 @@ public class SeedService {
             long[][] list;
             list = seeder.getStatusList();
             obj = new JSONObject(xs.toXML(list));
-            return new ResponseEntity<>(obj.toString(), HttpStatus.OK);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            return new ResponseEntity<>(obj.toString(), headers, HttpStatus.OK);
         } catch (JSONException jse) {
-            return new ResponseEntity<Object>("error", HttpStatus.INTERNAL_SERVER_ERROR);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.TEXT_PLAIN);
+            return new ResponseEntity<Object>("error", headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -107,15 +113,22 @@ public class SeedService {
                 try {
                     seeder.findTileLayer(layer);
                 } catch (GeoWebCacheException e) {
-                    return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setContentType(MediaType.TEXT_PLAIN);
+                    return new ResponseEntity<String>(
+                            e.getMessage(), headers, HttpStatus.BAD_REQUEST);
                 }
                 list = seeder.getStatusList(layer);
             }
             obj = new JSONObject(xs.toXML(list));
-            return new ResponseEntity<>(obj.toString(), HttpStatus.OK);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            return new ResponseEntity<>(obj.toString(), headers, HttpStatus.OK);
         } catch (JSONException jse) {
             log.error(jse);
-            return new ResponseEntity<Object>("error", HttpStatus.INTERNAL_SERVER_ERROR);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.TEXT_PLAIN);
+            return new ResponseEntity<Object>("error", headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -224,9 +237,13 @@ public class SeedService {
                         HttpStatus.BAD_REQUEST);
             }
             handleRequest(layer, obj);
-            return new ResponseEntity<Object>(HttpStatus.OK);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.TEXT_PLAIN);
+            return new ResponseEntity<Object>(headers, HttpStatus.OK);
         } catch (IOException e) {
-            return new ResponseEntity<Object>(HttpStatus.INTERNAL_SERVER_ERROR);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.TEXT_PLAIN);
+            return new ResponseEntity<Object>(headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

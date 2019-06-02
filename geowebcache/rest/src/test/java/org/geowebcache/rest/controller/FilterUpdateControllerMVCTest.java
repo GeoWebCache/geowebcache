@@ -14,7 +14,7 @@
  */
 package org.geowebcache.rest.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,7 +36,7 @@ import org.springframework.web.context.WebApplicationContext;
     "file:../web/src/main/webapp/WEB-INF/geowebcache-rest-context.xml",
     "file:../web/src/main/webapp/WEB-INF/geowebcache-core-context.xml"
 })
-public class BlobStoreControllerTest {
+public class FilterUpdateControllerMVCTest {
 
     @Autowired private WebApplicationContext wac;
 
@@ -47,11 +47,11 @@ public class BlobStoreControllerTest {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
     }
 
-    /** Checks correct media type for RestException response handling. GET method. */
+    /** Checks correct media type for RestException response handling. POST method. */
     @Test
-    public void testBlobstoresGetContentType() throws Exception {
+    public void testFilterGetContentType() throws Exception {
         mockMvc.perform(
-                        get("/rest/blobstores/{blobStoreName}", "xxxp4z85")
+                        post("/rest/filter/{filterName}/update/{updateType}", "xxxp4z85", "noidea")
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(status().is4xxClientError());
