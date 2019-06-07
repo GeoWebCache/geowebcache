@@ -278,7 +278,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
             GridSet gridSet = gridSubset.getGridSet();
             final int zoom = (int) tileIndex[2];
 
-            Grid grid = gridSet.getGridLevels()[zoom];
+            Grid grid = gridSet.getGrid(zoom);
             long coverageMaxY = grid.getNumTilesHigh() - 1;
 
             final int col = (int) tileIndex[0];
@@ -378,7 +378,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         GridSet gridSet = gridSubset.getGridSet();
         final int z = (int) tileIndex[2];
 
-        Grid grid = gridSet.getGridLevels()[z];
+        Grid grid = gridSet.getGrid(z);
 
         // long[] coverage = gridSubset.getCoverage(z);
         // long coverageMinY = coverage[1];

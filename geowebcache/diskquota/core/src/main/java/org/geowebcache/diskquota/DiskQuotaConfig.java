@@ -49,8 +49,6 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
 
     private Boolean enabled;
 
-    @Deprecated private transient Integer diskBlockSize;
-
     private Integer cacheCleanUpFrequency;
 
     private TimeUnit cacheCleanUpUnits;
@@ -70,9 +68,6 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
     public void setDefaults() {
         if (enabled == null) {
             enabled = Boolean.FALSE;
-        }
-        if (diskBlockSize == null) {
-            diskBlockSize = DEFAULT_DISK_BLOCK_SIZE;
         }
         if (cacheCleanUpFrequency == null) {
             cacheCleanUpFrequency = DEFAULT_CLEANUP_FREQUENCY;
@@ -95,7 +90,6 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
     void setFrom(DiskQuotaConfig other) {
         this.cacheCleanUpFrequency = other.cacheCleanUpFrequency;
         this.cacheCleanUpUnits = other.cacheCleanUpUnits;
-        this.diskBlockSize = other.diskBlockSize;
         this.enabled = other.enabled;
         this.globalExpirationPolicyName = other.globalExpirationPolicyName;
         this.globalQuota = other.globalQuota;
@@ -111,19 +105,6 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
-    }
-
-    @Deprecated
-    public Integer getDiskBlockSize() {
-        return diskBlockSize;
-    }
-
-    @Deprecated
-    public void setDiskBlockSize(int blockSizeBytes) {
-        if (blockSizeBytes <= 0) {
-            throw new IllegalArgumentException("Block size shall be a positive integer");
-        }
-        this.diskBlockSize = blockSizeBytes;
     }
 
     public Integer getCacheCleanUpFrequency() {
@@ -158,8 +139,8 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
     }
 
     public void addLayerQuota(LayerQuota quota) {
-        Assert.notNull(quota);
-        Assert.notNull(quota.getQuota());
+        Assert.notNull(quota, "Quota must be non null");
+        Assert.notNull(quota.getQuota(), "Quota must be non null");
         if (layerQuotas == null) {
             layerQuotas = new ArrayList<LayerQuota>();
         }

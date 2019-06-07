@@ -145,7 +145,7 @@ public class BDBQuotaStore implements QuotaStore {
         if (listFilesNullSafe(storeDirectory).length == 0) {
             // Directory is empty
             try {
-                FileUtils.write(version, STORE_VERSION);
+                FileUtils.write(version, STORE_VERSION, "UTF-8");
             } catch (IOException e) {
                 throw new IOException(
                         "BDB DiskQuota could not write " + VERSION_FILE + " to new database", e);
@@ -153,7 +153,7 @@ public class BDBQuotaStore implements QuotaStore {
         } else {
             // Directory not empty
             try {
-                String versionString = FileUtils.readFileToString(version);
+                String versionString = FileUtils.readFileToString(version, "UTF-8");
                 if (!versionString.equals(STORE_VERSION)) {
                     throw new IOException(
                             "BDB DiskQuota does not support database version " + versionString);
@@ -413,7 +413,7 @@ public class BDBQuotaStore implements QuotaStore {
 
     /** @see org.geowebcache.diskquota.QuotaStore#deleteLayer(java.lang.String) */
     public void deleteLayer(final String layerName) {
-        Assert.notNull(layerName);
+        Assert.notNull(layerName, "LayerName must be non null");
         issue(new Deleter(layerName, ts -> true));
     }
 
@@ -476,8 +476,8 @@ public class BDBQuotaStore implements QuotaStore {
 
     /** @see org.geowebcache.diskquota.QuotaStore#renameLayer(java.lang.String, java.lang.String) */
     public void renameLayer(String oldLayerName, String newLayerName) throws InterruptedException {
-        Assert.notNull(oldLayerName);
-        Assert.notNull(newLayerName);
+        Assert.notNull(oldLayerName, "Old layer name must be non null");
+        Assert.notNull(newLayerName, "New layer name must be non null");
         issueSync(new RenameLayer(oldLayerName, newLayerName));
     }
 
@@ -760,7 +760,7 @@ public class BDBQuotaStore implements QuotaStore {
     public Future<List<PageStats>> addHitsAndSetAccesTime(
             final Collection<PageStatsPayload> statsUpdates) {
 
-        Assert.notNull(statsUpdates);
+        Assert.notNull(statsUpdates, "Stats update must be non null");
 
         return issue(new AddHitsAndSetAccesTime(statsUpdates));
     }

@@ -74,12 +74,12 @@ public class GeoWebCacheXStream extends XStream {
 
     public GeoWebCacheXStream() {
         super();
-        secure();
+        init();
     }
 
     public GeoWebCacheXStream(HierarchicalStreamDriver hierarchicalStreamDriver) {
         super(hierarchicalStreamDriver);
-        secure();
+        init();
     }
 
     public GeoWebCacheXStream(
@@ -96,7 +96,7 @@ public class GeoWebCacheXStream extends XStream {
                 mapper,
                 converterLookup,
                 converterRegistry);
-        secure();
+        init();
     }
 
     public GeoWebCacheXStream(
@@ -105,7 +105,7 @@ public class GeoWebCacheXStream extends XStream {
             ClassLoaderReference classLoaderReference,
             Mapper mapper) {
         super(reflectionProvider, driver, classLoaderReference, mapper);
-        secure();
+        init();
     }
 
     public GeoWebCacheXStream(
@@ -113,19 +113,19 @@ public class GeoWebCacheXStream extends XStream {
             HierarchicalStreamDriver driver,
             ClassLoaderReference classLoaderReference) {
         super(reflectionProvider, driver, classLoaderReference);
-        secure();
+        init();
     }
 
     public GeoWebCacheXStream(
             ReflectionProvider reflectionProvider,
             HierarchicalStreamDriver hierarchicalStreamDriver) {
         super(reflectionProvider, hierarchicalStreamDriver);
-        secure();
+        init();
     }
 
     public GeoWebCacheXStream(ReflectionProvider reflectionProvider) {
         super(reflectionProvider);
-        secure();
+        init();
     }
 
     @Deprecated
@@ -137,7 +137,7 @@ public class GeoWebCacheXStream extends XStream {
             ConverterLookup converterLookup,
             ConverterRegistry converterRegistry) {
         super(reflectionProvider, driver, classLoader, mapper, converterLookup, converterRegistry);
-        secure();
+        init();
     }
 
     @Deprecated
@@ -147,7 +147,7 @@ public class GeoWebCacheXStream extends XStream {
             ClassLoader classLoader,
             Mapper mapper) {
         super(reflectionProvider, driver, classLoader, mapper);
-        secure();
+        init();
     }
 
     @Deprecated
@@ -156,14 +156,14 @@ public class GeoWebCacheXStream extends XStream {
             HierarchicalStreamDriver driver,
             ClassLoader classLoader) {
         super(reflectionProvider, driver, classLoader);
-        secure();
+        init();
     }
 
     @Deprecated
     public GeoWebCacheXStream(
             ReflectionProvider reflectionProvider, Mapper mapper, HierarchicalStreamDriver driver) {
         super(reflectionProvider, mapper, driver);
-        secure();
+        init();
     }
 
     /**
@@ -178,7 +178,11 @@ public class GeoWebCacheXStream extends XStream {
         }
     }
 
-    private void secure() {
+    private void init() {
+        // ignore unkonwn fields, this allows to load older configurations that have elements
+        // deprecated and now removed
+        ignoreUnknownElements();
+
         // Require classes to be on whitelist
         addPermission(NoTypePermission.NONE);
 

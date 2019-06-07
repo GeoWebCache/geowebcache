@@ -26,6 +26,7 @@ import java.util.List;
 import org.easymock.EasyMock;
 import org.geotools.data.ows.OperationType;
 import org.geotools.ows.wms.*;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.DefaultingConfiguration;
 import org.geowebcache.config.LayerConfigurationTest;
 import org.geowebcache.config.TileLayerConfiguration;
@@ -49,7 +50,8 @@ public class GetCapabilitiesLayerConfigurationConformanceTest extends LayerConfi
     @Before
     public void setupBroker() {
         if (broker == null) {
-            broker = new GridSetBroker(false, false);
+            broker =
+                    new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
         }
     }
 

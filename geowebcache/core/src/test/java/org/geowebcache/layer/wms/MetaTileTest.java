@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Random;
 import javax.media.jai.PlanarImage;
 import junit.framework.TestCase;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
@@ -24,7 +25,8 @@ import org.geowebcache.mime.ImageMime;
 
 public class MetaTileTest extends TestCase {
 
-    GridSetBroker gridSetBroker = new GridSetBroker(false, false);
+    GridSetBroker gridSetBroker =
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
     @Override
     protected void setUp() throws Exception {

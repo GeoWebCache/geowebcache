@@ -294,11 +294,11 @@ public class GridSubset {
     }
 
     public long getNumTilesWide(int zoomLevel) {
-        return gridSet.getGridLevels()[zoomLevel].getNumTilesWide();
+        return gridSet.getGrid(zoomLevel).getNumTilesWide();
     }
 
     public long getNumTilesHigh(int zoomLevel) {
-        return gridSet.getGridLevels()[zoomLevel].getNumTilesHigh();
+        return gridSet.getGrid(zoomLevel).getNumTilesHigh();
     }
 
     public String getName() {
@@ -318,9 +318,8 @@ public class GridSubset {
         final int zoomStart = getZoomStart();
         final int zoomStop = getZoomStop();
 
-        final Grid[] gridLevels = gridSet.getGridLevels();
         for (int z = zoomStart, i = 0; z <= zoomStop; z++, i++) {
-            Grid grid = gridLevels[z];
+            Grid grid = gridSet.getGrid(z);
             ret[i] = grid.getResolution();
         }
 
@@ -338,11 +337,10 @@ public class GridSubset {
         if ((idx - firstLevel + 1) <= zoomStop) {
             // Check whether this grid is doubling
             double resolutionCheck =
-                    gridSet.getGridLevels()[idx].getResolution() / 2
-                            - gridSet.getGridLevels()[idx + 1].getResolution();
+                    gridSet.getGrid(idx).getResolution() / 2
+                            - gridSet.getGrid(idx + 1).getResolution();
 
-            if (Math.abs(resolutionCheck)
-                    > gridSet.getGridLevels()[idx + 1].getResolution() * 0.025) {
+            if (Math.abs(resolutionCheck) > gridSet.getGrid(idx + 1).getResolution() * 0.025) {
                 throw new GeoWebCacheException(
                         "The resolution is not decreasing by a factor of two for "
                                 + this.getName());

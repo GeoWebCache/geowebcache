@@ -129,8 +129,20 @@ class PagePyramid {
     }
 
     public PageLevelInfo getPageInfo(final int zoomLevel) {
-        Assert.isTrue(zoomLevel >= zoomStart);
-        Assert.isTrue(zoomLevel <= zoomStop);
+        Assert.isTrue(
+                zoomLevel >= zoomStart,
+                "Zoom level must be greater or equal than "
+                        + zoomStart
+                        + " but was "
+                        + zoomLevel
+                        + " instead");
+        Assert.isTrue(
+                zoomLevel <= zoomStop,
+                "Zoom level must be lower or equal than "
+                        + zoomStop
+                        + " but was "
+                        + zoomLevel
+                        + " instead");
 
         final Integer key = Integer.valueOf(zoomLevel);
         PageLevelInfo levelInfo = pageInfo.get(key);
@@ -211,8 +223,8 @@ class PagePyramid {
     }
 
     public int[] pageIndexForTile(long x, long y, int level, int[] pageIndexTarget) {
-        Assert.notNull(pageIndexTarget);
-        Assert.isTrue(pageIndexTarget.length >= 3);
+        Assert.notNull(pageIndexTarget, "PageIndexTarget array must be non null");
+        Assert.isTrue(pageIndexTarget.length >= 3, "PageIndexTarget array size must be at least 3");
 
         PageLevelInfo levelInfo = getPageInfo(level);
         final int tilePageX = (int) ((x - levelInfo.coverageMinX) / levelInfo.tilesPerPageX);

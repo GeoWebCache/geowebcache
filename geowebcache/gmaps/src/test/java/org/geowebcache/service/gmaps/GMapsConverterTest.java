@@ -4,11 +4,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 import junit.framework.TestCase;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.RegexParameterFilter;
@@ -117,7 +119,8 @@ public class GMapsConverterTest extends TestCase {
 
         TileLayerDispatcher tld = new TileLayerDispatcherMock(wmsLayer);
 
-        GridSetBroker gsb = new GridSetBroker(true, true);
+        GridSetBroker gsb =
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
 
         wmsLayer.initialize(gsb);
 

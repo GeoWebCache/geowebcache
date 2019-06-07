@@ -20,7 +20,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.geowebcache.grid.BoundingBox;
-import org.geowebcache.grid.Grid;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetFactory;
 import org.geowebcache.grid.SRS;
@@ -93,43 +92,43 @@ public class XMLGridSet implements Serializable {
 
         setLevels(null);
         if (gset.isResolutionsPreserved()) {
-            setResolutions(resolutions(gset.getGridLevels()));
+            setResolutions(resolutions(gset));
             setScaleDenominators(null);
         } else {
             setResolutions(null);
-            setScaleDenominators(scaleDenominators(gset.getGridLevels()));
+            setScaleDenominators(scaleDenominators(gset));
         }
 
         setMetersPerUnit(gset.getMetersPerUnit());
         setName(gset.getName());
         setDescription(gset.getDescription());
         setPixelSize(gset.getPixelSize());
-        setScaleNames(scaleNames(gset.getGridLevels()));
+        setScaleNames(scaleNames(gset));
         setSrs(gset.getSrs());
         setTileWidth(gset.getTileWidth());
         setTileHeight(gset.getTileHeight());
     }
 
-    private static double[] resolutions(Grid[] grids) {
-        double[] resolutions = new double[grids.length];
+    private static double[] resolutions(GridSet gridSet) {
+        double[] resolutions = new double[gridSet.getNumLevels()];
         for (int i = 0; i < resolutions.length; i++) {
-            resolutions[i] = grids[i].getResolution();
+            resolutions[i] = gridSet.getGrid(i).getResolution();
         }
         return resolutions;
     }
 
-    private static double[] scaleDenominators(Grid[] grids) {
-        double[] scales = new double[grids.length];
+    private static double[] scaleDenominators(GridSet gridSet) {
+        double[] scales = new double[gridSet.getNumLevels()];
         for (int i = 0; i < scales.length; i++) {
-            scales[i] = grids[i].getScaleDenominator();
+            scales[i] = gridSet.getGrid(i).getScaleDenominator();
         }
         return scales;
     }
 
-    private static String[] scaleNames(Grid[] grids) {
-        String[] scaleNames = new String[grids.length];
+    private static String[] scaleNames(GridSet gridSet) {
+        String[] scaleNames = new String[gridSet.getNumLevels()];
         for (int i = 0; i < scaleNames.length; i++) {
-            scaleNames[i] = grids[i].getName();
+            scaleNames[i] = gridSet.getGrid(i).getName();
         }
         return scaleNames;
     }

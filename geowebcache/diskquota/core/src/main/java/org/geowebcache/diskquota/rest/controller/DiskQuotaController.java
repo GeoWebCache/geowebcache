@@ -126,9 +126,6 @@ public class DiskQuotaController {
             if (null != newConfig.getCacheCleanUpFrequency()) {
                 config.setCacheCleanUpFrequency(newConfig.getCacheCleanUpFrequency());
             }
-            if (null != newConfig.getDiskBlockSize()) {
-                config.setDiskBlockSize(newConfig.getDiskBlockSize());
-            }
             if (null != newConfig.getMaxConcurrentCleanUps()) {
                 config.setMaxConcurrentCleanUps(newConfig.getMaxConcurrentCleanUps());
             }

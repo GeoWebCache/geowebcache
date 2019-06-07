@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.util.MockLockProvider;
 import org.junit.Test;
@@ -42,7 +43,8 @@ public class GridSubSetTest {
         // Subsets table
         Hashtable<String, GridSubset> grids = new Hashtable<String, GridSubset>();
         // GridSetBroker to use for creating a GridSubSet to add to the table
-        GridSetBroker gridSetBroker = new GridSetBroker(false, false);
+        GridSetBroker gridSetBroker =
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
         // Creation of a GridSubSet with a non-zero zoomStart parameter
         GridSubset grid =

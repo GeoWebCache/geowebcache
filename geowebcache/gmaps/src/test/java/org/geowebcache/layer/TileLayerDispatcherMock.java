@@ -7,7 +7,7 @@ public class TileLayerDispatcherMock extends TileLayerDispatcher {
     private final TileLayer layer;
 
     public TileLayerDispatcherMock(TileLayer layer) {
-        super(null, null);
+        super(null);
         this.layer = layer;
     }
 

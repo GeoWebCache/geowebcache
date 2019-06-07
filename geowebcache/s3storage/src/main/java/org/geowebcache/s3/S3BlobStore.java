@@ -30,7 +30,6 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.base.Function;
-import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -158,7 +157,7 @@ public class S3BlobStore implements BlobStore {
         try {
             mimeType = MimeType.createFromFormat(blobFormat).getMimeType();
         } catch (MimeException me) {
-            throw Throwables.propagate(me);
+            throw new RuntimeException(me);
         }
         objectMetadata.setContentType(mimeType);
 
@@ -324,7 +323,7 @@ public class S3BlobStore implements BlobStore {
         try {
             layerExists = s3Ops.scheduleAsyncDelete(layerPrefix);
         } catch (GeoWebCacheException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         if (layerExists) {
             listeners.sendLayerDeleted(layerName);
@@ -345,7 +344,7 @@ public class S3BlobStore implements BlobStore {
         try {
             prefixExists = s3Ops.scheduleAsyncDelete(gridsetPrefix);
         } catch (GeoWebCacheException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         if (prefixExists) {
             listeners.sendGridSubsetDeleted(layerName, gridSetId);
@@ -404,7 +403,7 @@ public class S3BlobStore implements BlobStore {
         try {
             s3Ops.putProperties(resourceKey, properties);
         } catch (StorageException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -425,7 +424,7 @@ public class S3BlobStore implements BlobStore {
         try {
             s3Ops.putProperties(resourceKey, properties);
         } catch (StorageException e) {
-            Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -451,7 +450,7 @@ public class S3BlobStore implements BlobStore {
                                     try {
                                         return s3Ops.scheduleAsyncDelete(prefix);
                                     } catch (RuntimeException | GeoWebCacheException e) {
-                                        throw Throwables.propagate(e);
+                                        throw new RuntimeException(e);
                                     }
                                 })
                         .reduce(Boolean::logicalOr) // Don't use Stream.anyMatch as it would short

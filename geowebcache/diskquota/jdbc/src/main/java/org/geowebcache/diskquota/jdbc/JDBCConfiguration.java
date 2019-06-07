@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.GeoWebCacheExtensions;
@@ -54,15 +53,12 @@ public class JDBCConfiguration implements Serializable {
      * @throws IOException
      */
     public static JDBCConfiguration load(File sourceFile) throws ConfigurationException {
-        FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(sourceFile);
+
+        try (FileInputStream fis = new FileInputStream(sourceFile)) {
             return load(fis);
         } catch (IOException e) {
             throw new ConfigurationException(
                     "Failed to load the configuration from " + sourceFile.getAbsolutePath(), e);
-        } finally {
-            IOUtils.closeQuietly(fis);
         }
     }
 
@@ -112,16 +108,11 @@ public class JDBCConfiguration implements Serializable {
     }
 
     public static void store(JDBCConfiguration config, File file) throws ConfigurationException {
-
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(file);
+        try (FileOutputStream fos = new FileOutputStream(file)) {
             store(config, fos);
         } catch (IOException e) {
             throw new ConfigurationException(
                     "Failed to store the configuration into " + file.getAbsolutePath(), e);
-        } finally {
-            IOUtils.closeQuietly(fos);
         }
     }
 

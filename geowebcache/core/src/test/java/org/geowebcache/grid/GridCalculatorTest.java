@@ -1,7 +1,9 @@
 package org.geowebcache.grid;
 
 import java.util.Arrays;
+import java.util.Collections;
 import junit.framework.TestCase;
+import org.geowebcache.config.DefaultGridsets;
 
 /**
  * The GridCalculator is gone,
@@ -10,7 +12,8 @@ import junit.framework.TestCase;
  */
 public class GridCalculatorTest extends TestCase {
 
-    GridSetBroker gridSetBroker = new GridSetBroker(false, false);
+    GridSetBroker gridSetBroker =
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
     @Override
     protected void setUp() throws Exception {

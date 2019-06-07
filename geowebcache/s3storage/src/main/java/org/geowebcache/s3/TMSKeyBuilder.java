@@ -17,7 +17,6 @@ package org.geowebcache.s3;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -53,7 +52,7 @@ final class TMSKeyBuilder {
         try {
             layer = layers.getTileLayer(layerName);
         } catch (GeoWebCacheException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return layer.getId();
     }
@@ -63,7 +62,7 @@ final class TMSKeyBuilder {
         try {
             layer = layers.getTileLayer(layerName);
         } catch (GeoWebCacheException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return layer.getGridSubsets();
     }
@@ -73,7 +72,7 @@ final class TMSKeyBuilder {
         try {
             layer = layers.getTileLayer(layerName);
         } catch (GeoWebCacheException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         return layer.getMimeTypes()
                 .stream()
@@ -110,7 +109,7 @@ final class TMSKeyBuilder {
             shortFormat = mimeType.getFileExtension(); // png, png8, png24, etc
             extension = mimeType.getInternalName(); // png, jpeg, etc
         } catch (MimeException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
 
         // Key format, comprised of

@@ -10,30 +10,26 @@
  * <p>You should have received a copy of the GNU Lesser General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
- * @author Gabriel Roldan (OpenGeo) 2010
+ * @author Andrea Aime - GeoSolutions 2019
  */
-package org.geowebcache.diskquota.storage;
+package org.geowebcache.util;
 
-import org.springframework.util.Assert;
+import java.io.Closeable;
+import java.io.IOException;
 
-public class SystemUtils {
+/** IO related utility methods that common libraries won't provide */
+public class IOUtils {
 
-    private static SystemUtils INSTANCE = new SystemUtils();
-
-    public static void set(SystemUtils instance) {
-        Assert.notNull(instance, "SystemUtils instance must be non null");
-        INSTANCE = instance;
-    }
-
-    public static SystemUtils get() {
-        return INSTANCE;
-    }
-
-    public long currentTimeMillis() {
-        return System.currentTimeMillis();
-    }
-
-    public int currentTimeMinutes() {
-        return (int) (currentTimeMillis() / 1000 / 60);
+    /**
+     * A replacement for commons-io closeQuietly, for those rare cases in which the quiet closing
+     * behavior is actually needed and try-with-resources won't do the expected job
+     */
+    public static void closeQuietly(Closeable clo) {
+        if (clo != null) {
+            try {
+                clo.close();
+            } catch (IOException ignore) {
+            }
+        }
     }
 }

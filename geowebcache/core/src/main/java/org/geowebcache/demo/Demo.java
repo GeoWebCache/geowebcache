@@ -29,7 +29,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -662,7 +662,7 @@ public class Demo {
         doc.append("Modifiable Parameters:\n");
         doc.append("<table>\n");
         for (ParameterFilter pf : parameterFilters) {
-            Assert.notNull(pf);
+            Assert.notNull(pf, "The parameter filter must be non null");
             String key = pf.getKey();
             String defaultValue = pf.getDefaultValue();
             List<String> legalValues = pf.getLegalValues();

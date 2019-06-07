@@ -15,10 +15,12 @@
 package org.geowebcache.service.kml;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
@@ -43,7 +45,8 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
     // LogFactory.getLog(org.geowebcache.service.kml.KMLDebugGridLayer.class);
 
     // This is completely isolated anyway
-    private static GridSetBroker gridSetBroker = new GridSetBroker(false, false);
+    private static GridSetBroker gridSetBroker =
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
     private static KMLDebugGridLayer instance;
 

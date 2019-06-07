@@ -25,7 +25,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -53,6 +52,7 @@ import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.util.GWCVars;
+import org.geowebcache.util.IOUtils;
 
 /** A tile layer backed by a WMS server */
 public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
@@ -136,48 +136,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
      * @param wmsLayers
      * @param mimeFormats
      * @param subSets
-     * @param parameterFilters
-     * @param metaWidthHeight
-     * @param vendorParams
-     * @param queryable
-     * @deprecated 1.6.0
-     */
-    @Deprecated
-    public WMSLayer(
-            String layerName,
-            String[] wmsURL,
-            String wmsStyles,
-            String wmsLayers,
-            List<String> mimeFormats,
-            Map<String, GridSubset> subSets,
-            List<ParameterFilter> parameterFilters,
-            int[] metaWidthHeight,
-            String vendorParams,
-            boolean queryable) {
-        this(
-                layerName,
-                wmsURL,
-                wmsStyles,
-                wmsLayers,
-                mimeFormats,
-                subSets,
-                parameterFilters,
-                metaWidthHeight,
-                vendorParams,
-                queryable,
-                null);
-    }
-
-    /**
-     * Note XStream uses reflection, this is only used for testing and loading from getCapabilities
-     *
-     * @param layerName
-     * @param wmsURL
-     * @param wmsStyles
-     * @param wmsLayers
-     * @param mimeFormats
-     * @param subSets
-     * @param parameterFilters
+     * @param parameterFilters<
      * @param metaWidthHeight
      * @param vendorParams
      * @param queryable

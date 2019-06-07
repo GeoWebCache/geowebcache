@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,7 +96,8 @@ public class S3BlobStoreConfigStoreLoadTest {
         try {
             XMLConfiguration configLoad =
                     new XMLConfiguration(context, configDir.getAbsolutePath(), null);
-            GridSetBroker gridSetBroker = new GridSetBroker(true, true);
+            GridSetBroker gridSetBroker =
+                    new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
             configLoad.setGridSetBroker(gridSetBroker);
             configLoad.afterPropertiesSet();
             createFromSavedConfig(configLoad);
@@ -152,7 +154,8 @@ public class S3BlobStoreConfigStoreLoadTest {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         Mockito.when(webCtx.getBean("S3BlobStore")).thenReturn(provider, provider);
         providers.put("S3BlobStore", provider);
-        GridSetBroker gridSetBroker = new GridSetBroker(true, true);
+        GridSetBroker gridSetBroker =
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
         config = new XMLConfiguration(context, configDir.getAbsolutePath());
         config.setGridSetBroker(gridSetBroker);
         config.afterPropertiesSet();

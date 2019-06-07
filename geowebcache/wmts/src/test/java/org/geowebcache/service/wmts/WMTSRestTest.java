@@ -38,6 +38,7 @@ import org.apache.commons.io.FileUtils;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.config.legends.LegendInfo;
@@ -75,7 +76,8 @@ public class WMTSRestTest {
     // private static Map<String, String> namespaces = new HashMap<String, String>(0);
     private static XpathEngine xpath;
 
-    GridSetBroker broker = new GridSetBroker(true, true);
+    GridSetBroker broker =
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
     private WMTSService wmtsService;
     private StorageBroker storageBroker;
     private TileLayerDispatcher tileLayerDispatcher;

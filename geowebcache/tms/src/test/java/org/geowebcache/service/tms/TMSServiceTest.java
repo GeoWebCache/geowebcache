@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
 import org.geowebcache.GeoWebCacheDispatcher;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
@@ -57,7 +58,8 @@ public class TMSServiceTest extends TestCase {
         sb = mock(StorageBroker.class);
         tld = mock(TileLayerDispatcher.class);
         customTld = mock(TileLayerDispatcher.class);
-        gridsetBroker = new GridSetBroker(true, true);
+        gridsetBroker =
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
         httpsUrlMangler =
                 new URLMangler() {
 

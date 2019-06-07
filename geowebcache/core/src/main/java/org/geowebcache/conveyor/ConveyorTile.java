@@ -14,9 +14,6 @@
  */
 package org.geowebcache.conveyor;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.channels.Channels;
 import java.util.Collections;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
@@ -25,7 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.GridSubset;
-import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileResponseReceiver;
@@ -125,11 +121,6 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
                         layerId, idx, gridSetId, mimeType.getFormat(), filteringParameters);
     }
 
-    @Deprecated
-    public Map<String, String> getFullParameters() {
-        return getFilteringParameters();
-    }
-
     public Map<String, String> getFilteringParameters() {
         if (filteringParameters == null) {
             return Collections.emptyMap();
@@ -205,38 +196,8 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         this.gridSetId = gridSetId;
     }
 
-    /**
-     * @deprecated as of 1.2.4a, use {@link #getBlob()}, keeping it for backwards compatibility as
-     *     there are geoserver builds pegged at a given geoserver revision but building gwc from
-     *     trunk. Ok to remove at 1.2.5
-     */
-    @Deprecated
-    public byte[] getContent() {
-        Resource blob = getBlob();
-        if (blob instanceof ByteArrayResource) {
-            return ((ByteArrayResource) blob).getContents();
-        }
-        ByteArrayOutputStream out = new ByteArrayOutputStream((int) blob.getSize());
-        try {
-            blob.transferTo(Channels.newChannel(out));
-            return out.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public Resource getBlob() {
         return stObj.getBlob();
-    }
-
-    /**
-     * @deprecated as of 1.2.4a, use {@link #setBlob(Resource)}, keeping it for backwards
-     *     compatibility as there are geoserver builds pegged at a given geoserver revision but
-     *     building gwc from trunk. Ok to remove at 1.2.5
-     */
-    @Deprecated
-    public void setContent(byte[] payload) {
-        setBlob(new ByteArrayResource(payload));
     }
 
     public void setBlob(Resource payload) {

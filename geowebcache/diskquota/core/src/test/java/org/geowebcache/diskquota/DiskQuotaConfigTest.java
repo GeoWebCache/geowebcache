@@ -33,23 +33,10 @@ public class DiskQuotaConfigTest extends TestCase {
         assertEquals(
                 DiskQuotaConfig.DEFAULT_CLEANUP_FREQUENCY,
                 config.getCacheCleanUpFrequency().intValue());
-        assertEquals(DiskQuotaConfig.DEFAULT_DISK_BLOCK_SIZE, config.getDiskBlockSize().intValue());
         assertEquals(
                 DiskQuotaConfig.DEFAULT_MAX_CONCURRENT_CLEANUPS,
                 config.getMaxConcurrentCleanUps().intValue());
         assertEquals(DiskQuotaConfig.DEFAULT_CLEANUP_UNITS, config.getCacheCleanUpUnits());
-    }
-
-    public void testSetDiskBlockSize() {
-        try {
-            config.setDiskBlockSize(-1);
-            fail("Expected IAE");
-        } catch (IllegalArgumentException e) {
-            assertTrue(true);
-        }
-
-        config.setDiskBlockSize(4096);
-        assertEquals(4096, config.getDiskBlockSize().intValue());
     }
 
     public void testSetCacheCleanUpFrequency() {

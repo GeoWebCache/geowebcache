@@ -121,7 +121,6 @@ public interface BlobStore {
      *
      * @throws StorageException
      */
-    @Deprecated
     public void clear() throws StorageException;
 
     /** Destroy method for Spring */

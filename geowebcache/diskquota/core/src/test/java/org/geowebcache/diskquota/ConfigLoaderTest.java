@@ -126,7 +126,6 @@ public class ConfigLoaderTest extends TestCase {
         DiskQuotaConfig config = loader.loadConfig();
         assertNotNull(config);
         assertFalse(config.isEnabled());
-        assertEquals(4096, config.getDiskBlockSize().intValue());
         assertEquals(10, config.getCacheCleanUpFrequency().intValue());
         assertEquals(TimeUnit.SECONDS, config.getCacheCleanUpUnits());
         assertEquals(3, config.getMaxConcurrentCleanUps().intValue());

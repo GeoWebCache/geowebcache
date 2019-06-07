@@ -15,7 +15,7 @@
 package org.geowebcache.grid;
 
 import java.util.Arrays;
-import org.apache.commons.lang3.ObjectUtils;
+import java.util.Objects;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -141,7 +141,7 @@ public class GridSet implements Info {
      * @return the spatial bounding box in the coordinates of the SRS used by the GridSet
      */
     protected BoundingBox boundsFromRectangle(long[] rectangleExtent) {
-        Grid grid = getGridLevels()[(int) rectangleExtent[4]];
+        Grid grid = getGrid((int) rectangleExtent[4]);
 
         double width = grid.getResolution() * getTileWidth();
         double height = grid.getResolution() * getTileHeight();
@@ -171,8 +171,8 @@ public class GridSet implements Info {
         int bestLevel = -1;
         double bestResolution = -1.0;
 
-        for (int i = 0; i < getGridLevels().length; i++) {
-            Grid grid = getGridLevels()[i];
+        for (int i = 0; i < getNumLevels(); i++) {
+            Grid grid = getGrid(i);
 
             double error = Math.abs(wRes - grid.getResolution());
 
@@ -194,7 +194,7 @@ public class GridSet implements Info {
 
     protected long[] closestIndex(int level, BoundingBox tileBounds)
             throws GridAlignmentMismatchException {
-        Grid grid = getGridLevels()[level];
+        Grid grid = getGrid(level);
 
         double width = grid.getResolution() * getTileWidth();
         double height = grid.getResolution() * getTileHeight();
@@ -228,8 +228,8 @@ public class GridSet implements Info {
         int bestLevel = -1;
 
         // Now we loop over the resolutions until
-        for (int i = 0; i < getGridLevels().length; i++) {
-            Grid grid = getGridLevels()[i];
+        for (int i = 0; i < getNumLevels(); i++) {
+            Grid grid = getGrid(i);
 
             double countX = rectWidth / (grid.getResolution() * getTileWidth());
             double countY = rectHeight / (grid.getResolution() * getTileHeight());
@@ -257,7 +257,7 @@ public class GridSet implements Info {
      *     level}
      */
     protected long[] closestRectangle(int level, BoundingBox rectangeBounds) {
-        Grid grid = getGridLevels()[level];
+        Grid grid = getGrid(level);
 
         double width = grid.getResolution() * getTileWidth();
         double height = grid.getResolution() * getTileHeight();
@@ -287,15 +287,15 @@ public class GridSet implements Info {
         if (this == other) return true;
 
         boolean equals =
-                ObjectUtils.equals(getSrs(), other.getSrs())
-                        && ObjectUtils.equals(getName(), other.getName())
-                        && ObjectUtils.equals(getDescription(), other.getDescription())
-                        && ObjectUtils.equals(getTileWidth(), other.getTileWidth())
-                        && ObjectUtils.equals(getTileHeight(), other.getTileHeight())
-                        && ObjectUtils.equals(isTopLeftAligned(), other.isTopLeftAligned())
-                        && ObjectUtils.equals(isyCoordinateFirst(), other.isyCoordinateFirst())
-                        && ObjectUtils.equals(getOriginalExtent(), other.getOriginalExtent())
-                        && Arrays.equals(getGridLevels(), other.getGridLevels());
+                Objects.equals(getSrs(), other.getSrs())
+                        && Objects.equals(getName(), other.getName())
+                        && Objects.equals(getDescription(), other.getDescription())
+                        && Objects.equals(getTileWidth(), other.getTileWidth())
+                        && Objects.equals(getTileHeight(), other.getTileHeight())
+                        && Objects.equals(isTopLeftAligned(), other.isTopLeftAligned())
+                        && Objects.equals(isyCoordinateFirst(), other.isyCoordinateFirst())
+                        && Objects.equals(getOriginalExtent(), other.getOriginalExtent())
+                        && Arrays.equals(gridLevels, other.gridLevels);
 
         return equals;
     }
@@ -310,17 +310,17 @@ public class GridSet implements Info {
         int i;
         long tilesWide, tilesHigh;
 
-        for (i = (getGridLevels().length - 1); i > 0; i--) {
-            tilesWide = getGridLevels()[i].getNumTilesWide();
-            tilesHigh = getGridLevels()[i].getNumTilesHigh();
+        for (i = (getNumLevels() - 1); i > 0; i--) {
+            tilesWide = getGrid(i).getNumTilesWide();
+            tilesHigh = getGrid(i).getNumTilesHigh();
 
             if (tilesWide == 1 && tilesHigh == 0) {
                 break;
             }
         }
 
-        tilesWide = getGridLevels()[i].getNumTilesWide();
-        tilesHigh = getGridLevels()[i].getNumTilesHigh();
+        tilesWide = getGrid(i).getNumTilesWide();
+        tilesHigh = getGrid(i).getNumTilesHigh();
         long[] ret = {0, 0, tilesWide - 1, tilesHigh - 1, i};
 
         return boundsFromRectangle(ret);
@@ -344,7 +344,7 @@ public class GridSet implements Info {
             leftTop[1] = tileOrigin()[1];
         } else {
             // We don't actually store the top coordinate, need to calculate it
-            Grid grid = getGridLevels()[gridIndex];
+            Grid grid = getGrid(gridIndex);
 
             double dTileHeight = getTileHeight();
             double dGridExtent = grid.getNumTilesHigh();
@@ -401,17 +401,12 @@ public class GridSet implements Info {
         return gridLevels.length;
     }
 
-    /**
-     * @return the gridLevels
-     * @deprecated use {@link #getGrid(int)}
-     */
-    @Deprecated
-    public Grid[] getGridLevels() {
-        return gridLevels;
-    }
-
     public Grid getGrid(final int zLevel) {
         return gridLevels[zLevel];
+    }
+
+    public void setGrid(final int zLevel, final Grid grid) {
+        gridLevels[zLevel] = grid;
     }
 
     /** @param gridLevels the gridLevels to set */
@@ -527,9 +522,9 @@ public class GridSet implements Info {
      *
      * <p>The rule is, if any of the following properties differ: {@link #getBounds()}, {@link
      * #isTopLeftAligned()}, {@link #getTileHeight()}, {@link #getTileWidth()}, {@link #getSrs()},
-     * OR none of the previously mentiond properties differ and {@link #getGridLevels()} are
-     * different, except if both the grids of {@code another} are a superset of the grids of this
-     * gridset (i.e. they are all the same but {@code another} just has more zoom levels}.
+     * OR none of the previously mentiond properties differ and the grid levels are different,
+     * except if both the grids of {@code another} are a superset of the grids of this gridset (i.e.
+     * they are all the same but {@code another} just has more zoom levels}.
      *
      * @param another
      * @return {@code true} if
@@ -545,13 +540,11 @@ public class GridSet implements Info {
             return true;
         }
         // now check the zoom levels
-        Grid[] myGrids = getGridLevels();
-        Grid[] otherGrids = another.getGridLevels();
-        if (myGrids.length > otherGrids.length) {
+        if (getNumLevels() > another.getNumLevels()) {
             return true;
         }
-        for (int i = 0; i < myGrids.length; i++) {
-            if (!myGrids[i].equals(otherGrids[i])) {
+        for (int i = 0; i < getNumLevels(); i++) {
+            if (!getGrid(i).equals(another.getGrid(i))) {
                 return true;
             }
         }

@@ -18,6 +18,9 @@ package org.geowebcache;
 public class GeoWebCache {
 
     /** @return current the GWC version */
+    @SuppressWarnings(
+            "deprecation") // Package.getPackage is deprecated in java 11 but replacement is not
+    // available in Java 8
     public static String getVersion() {
         Package versionInfo = Package.getPackage("org.geowebcache");
         String version = versionInfo.getSpecificationVersion();
@@ -25,6 +28,9 @@ public class GeoWebCache {
     }
 
     /** @return the current build revision number/hash */
+    @SuppressWarnings(
+            "deprecation") // Package.getPackage is deprecated in java 11 but replacement is not
+    // available in Java 8
     public static String getBuildRevision() {
         Package versionInfo = Package.getPackage("org.geowebcache");
         String build = versionInfo.getImplementationVersion();

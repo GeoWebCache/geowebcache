@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +86,8 @@ public class XMLConfigurationTest {
                         XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
         FileUtils.copyURLToFile(source, configFile);
 
-        gridSetBroker = new GridSetBroker(true, true);
+        gridSetBroker =
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
         config.setGridSetBroker(gridSetBroker);
         config.afterPropertiesSet();
@@ -512,7 +514,8 @@ public class XMLConfigurationTest {
         }
 
         XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
-        config2.setGridSetBroker(new GridSetBroker(true, true));
+        config2.setGridSetBroker(
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true))));
         config2.afterPropertiesSet();
         config2.getLayerCount();
 
@@ -535,7 +538,8 @@ public class XMLConfigurationTest {
         configFile = new File(configDir, "geowebcache.xml");
         FileUtils.copyURLToFile(source, configFile);
 
-        gridSetBroker = new GridSetBroker(true, true);
+        gridSetBroker =
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
         config.setGridSetBroker(gridSetBroker);
         config.afterPropertiesSet();

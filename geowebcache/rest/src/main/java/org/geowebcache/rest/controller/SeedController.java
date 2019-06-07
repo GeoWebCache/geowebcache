@@ -29,12 +29,13 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.DefaultingConfiguration;
-import org.geowebcache.rest.exception.RestException;
 import org.geowebcache.rest.service.FormService;
 import org.geowebcache.rest.service.SeedService;
 import org.geowebcache.seed.TileBreeder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
@@ -52,18 +53,17 @@ public class SeedController {
 
     @Autowired protected DefaultingConfiguration xmlConfig;
 
-    @ExceptionHandler(RestException.class)
-    public ResponseEntity<?> handleRestException(RestException ex) {
-        return new ResponseEntity<Object>(ex.toString(), ex.getStatus());
-    }
-
     /**
      * GET method for querying running GWC tasks
      *
      * @param req
      * @return
      */
-    @RequestMapping(value = "/seed.json", method = RequestMethod.GET)
+    @RequestMapping(
+        value = "/seed.json",
+        method = RequestMethod.GET,
+        produces = {MediaType.APPLICATION_JSON_VALUE}
+    )
     public ResponseEntity<?> doGet(HttpServletRequest req) {
         return seedService.getRunningTasks(req);
     }
@@ -75,7 +75,11 @@ public class SeedController {
      * @param layer
      * @return
      */
-    @RequestMapping(value = "/seed/{layer}.json", method = RequestMethod.GET)
+    @RequestMapping(
+        value = "/seed/{layer}.json",
+        method = RequestMethod.GET,
+        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE}
+    )
     public ResponseEntity<?> doGet(HttpServletRequest req, @PathVariable String layer) {
         return seedService.getRunningLayerTasks(req, layer);
     }
@@ -104,7 +108,9 @@ public class SeedController {
         if (response.equalsIgnoreCase("error")) {
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         } else {
-            return new ResponseEntity<String>(response, HttpStatus.OK);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.TEXT_PLAIN);
+            return new ResponseEntity<String>(response, headers, HttpStatus.OK);
         }
     }
 
@@ -134,18 +140,28 @@ public class SeedController {
                     Map<String, String> formMap = splitToMap(URLDecoder.decode(body, "UTF-8"));
                     params.putAll(formMap);
                 }
-                return formService.handleFormPost(layer, params);
-            } catch (GeoWebCacheException e) {
-                return new ResponseEntity<Object>("error", HttpStatus.INTERNAL_SERVER_ERROR);
+                return handleFormPostInternal(layer, params);
             } catch (UnsupportedEncodingException e) {
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.TEXT_PLAIN);
                 return new ResponseEntity<Object>(
-                        "Unable to parse form result.", HttpStatus.BAD_REQUEST);
+                        "Unable to parse form result.", headers, HttpStatus.BAD_REQUEST);
             }
 
         } else {
             String extension = layer.substring(layer.indexOf(".") + 1);
             String layerName = layer.substring(0, layer.indexOf("."));
             return seedService.doSeeding(request, layerName, extension, body);
+        }
+    }
+
+    private ResponseEntity<?> handleFormPostInternal(String layer, Map<String, String> params) {
+        try {
+            return formService.handleFormPost(layer, params);
+        } catch (GeoWebCacheException e) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.TEXT_PLAIN);
+            return new ResponseEntity<Object>("error", headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

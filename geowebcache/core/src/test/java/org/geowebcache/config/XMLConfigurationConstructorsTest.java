@@ -69,7 +69,7 @@ public class XMLConfigurationConstructorsTest {
         appContext = createMock(WebApplicationContext.class);
         svltContext = createMock(ServletContext.class);
         storageFinder = createMock(DefaultStorageFinder.class);
-        broker = new GridSetBroker(false, false);
+        broker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
         expect(provider.getApplicationContext()).andStubReturn(appContext);
         expect(appContext.getServletContext()).andStubReturn(svltContext);

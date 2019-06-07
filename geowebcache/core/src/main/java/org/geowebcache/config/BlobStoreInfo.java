@@ -17,7 +17,6 @@ package org.geowebcache.config;
 import java.io.Serializable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.storage.BlobStore;
@@ -61,17 +60,6 @@ public abstract class BlobStoreInfo implements Serializable, Cloneable, Info {
     }
 
     /**
-     * @return the unique identifier for the blob store; which {@link TileLayer#getBlobStoreId()}
-     *     refers to.
-     * @deprecated Please use {@link #getName()} to retrieve the unique name.
-     * @see #getName()
-     */
-    @Deprecated
-    public String getId() {
-        return getName();
-    }
-
-    /**
      * Returns this {@link Info Info}s name. For now, this just returns this BlobStoreInfo's ID.
      *
      * @return A String representing the name of this Info implementation.
@@ -82,14 +70,11 @@ public abstract class BlobStoreInfo implements Serializable, Cloneable, Info {
     }
 
     /**
-     * Set this BlobStoreInfo's unique id.
-     *
-     * @param id The unique id to set.
-     * @deprecated Please use {@link #setName(java.lang.String)} to set the unique name.
+     * @return the unique identifier for the blob store; which {@link TileLayer#getBlobStoreId()}
+     *     refers to.
      */
-    @Deprecated
-    void setId(String id) {
-        setName(id);
+    public String getId() {
+        return getName();
     }
 
     /**
@@ -100,6 +85,16 @@ public abstract class BlobStoreInfo implements Serializable, Cloneable, Info {
     public void setName(String name) {
         this.name = name;
     }
+
+    /**
+     * Set this BlobStoreInfo's unique id.
+     *
+     * @param id The unique id to set.
+     */
+    void setId(String id) {
+        setName(id);
+    }
+
     /** @return whether the blob store is enabled ({@code true}) or not. */
     public boolean isEnabled() {
         return enabled;
