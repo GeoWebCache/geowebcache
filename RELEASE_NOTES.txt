@@ -1,3 +1,12 @@
+GeoWebCache 1.14.4 (2019-06-09)
+-------------------------------
+
+Maintenance release fro 1.14 branch.
+
+Improvements:
++++++++++++++
+- Uses GeoTools 20.4
+
 GeoWebCache 1.14.3 (2019-03-20)
 -------------------------------
 
