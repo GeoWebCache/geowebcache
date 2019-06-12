@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.DefaultingConfiguration;
-import org.geowebcache.rest.exception.RestException;
 import org.geowebcache.rest.service.FormService;
 import org.geowebcache.rest.service.SeedService;
 import org.geowebcache.seed.TileBreeder;
@@ -51,11 +50,6 @@ public class SeedController {
     @Autowired FormService formService;
 
     @Autowired protected DefaultingConfiguration xmlConfig;
-
-    @ExceptionHandler(RestException.class)
-    public ResponseEntity<?> handleRestException(RestException ex) {
-        return new ResponseEntity<Object>(ex.toString(), ex.getStatus());
-    }
 
     /**
      * GET method for querying running GWC tasks

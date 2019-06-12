@@ -1,3 +1,17 @@
+/**
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @author Fernando Mino (Geosolutions), 2019
+ */
 package org.geowebcache.rest.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -22,7 +36,7 @@ import org.springframework.web.context.WebApplicationContext;
     "file:../web/src/main/webapp/WEB-INF/geowebcache-rest-context.xml",
     "file:../web/src/main/webapp/WEB-INF/geowebcache-core-context.xml"
 })
-public class BlobStoreControllerTest {
+public class BoundsControllerMVCTest {
 
     @Autowired private WebApplicationContext wac;
 
@@ -35,9 +49,9 @@ public class BlobStoreControllerTest {
 
     /** Checks correct media type for RestException response handling. GET method. */
     @Test
-    public void testBlobstoresGetContentType() throws Exception {
+    public void testBoundsGetContentType() throws Exception {
         mockMvc.perform(
-                        get("/rest/blobstores/{blobStoreName}", "xxxp4z85")
+                        get("/rest/bounds/{layer}/{srs}/{type}", "xxxp4z85", "4326", "nothanks")
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(status().is4xxClientError());

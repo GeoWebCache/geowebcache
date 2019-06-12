@@ -45,11 +45,6 @@ public class ReloadController {
 
     @Autowired TileLayerDispatcher layerDispatcher;
 
-    @ExceptionHandler(RestException.class)
-    public ResponseEntity<?> handleRestException(RestException ex) {
-        return new ResponseEntity<Object>(ex.toString(), ex.getStatus());
-    }
-
     @RequestMapping(value = "/reload", method = RequestMethod.POST)
     public @ResponseBody ResponseEntity<?> doPost(
             HttpServletRequest request,

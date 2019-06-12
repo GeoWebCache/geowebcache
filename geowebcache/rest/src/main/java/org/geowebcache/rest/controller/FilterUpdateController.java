@@ -39,11 +39,6 @@ public class FilterUpdateController extends GWCController {
 
     @Autowired TileLayerDispatcher tld;
 
-    @ExceptionHandler(RestException.class)
-    public ResponseEntity<?> handleRestException(RestException ex) {
-        return new ResponseEntity<Object>(ex.toString(), ex.getStatus());
-    }
-
     @RequestMapping(value = "/filter/{filterName}/update/{updateType}", method = RequestMethod.POST)
     public ResponseEntity<?> doPost(
             HttpServletRequest request,
