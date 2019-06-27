@@ -5,7 +5,7 @@
   <groupId>org.geowebcache</groupId>
   <artifactId>geowebcache</artifactId>
   <packaging>pom</packaging>
-  <version>1.15.2</version><!-- GWC VERSION -->
+  <version>1.15-SNAPSHOT</version><!-- GWC VERSION -->
   <name>geowebcache</name>
   <url>http://geowebcache.org</url>
 
@@ -619,7 +619,7 @@
             <descriptor>release/war.xml</descriptor>
             <descriptor>release/doc.xml</descriptor>
           </descriptors>
-          <finalName>geowebcache-1.15.2</finalName>
+          <finalName>geowebcache-1.15-SNAPSHOT</finalName>
           <outputDirectory>${project.build.directory}/release</outputDirectory>
         </configuration>
       </plugin>
