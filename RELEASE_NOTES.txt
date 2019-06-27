@@ -1,3 +1,17 @@
+GeoWebCache 1.15.2 (2019-06-27)
+-------------------------------
+
+Stable release of 1.15 branch.
+
+Improvements:
++++++++++++++
+ - Updated to imageio-ext-1.2.2
+ - Updated to Jackson 2.9.9
+ - Updated to commons-fileupload 1.3.3
+ - Updated to jai-ext 1.1.10
+ - HTML content-type header and encoding improvements
+ - Support TMS FlipY
+
 GeoWebCache 1.15.1 (2019-04-25)
 -------------------------------
 
