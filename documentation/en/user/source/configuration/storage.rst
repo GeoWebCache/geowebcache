@@ -277,6 +277,122 @@ GeoServer ``topp:states`` sample layer on a fictitious ``my-geowebcache-bucket``
         zoom: 2
       })
     });
+    
+
+Microsoft Azure Blob Store
++++++++++++++++++++++++++++++++++++++++++++++
+
+The following documentation assumes you're familiar with the `Azure BLOB storage <https://azure.microsoft.com/services/storage/blobs/>`_.
+
+This blob store allows to configure a cache for layers on an Azure container with the following `TMS <http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification>`_-like
+key structure:
+
+    [prefix]/<layer id>/<gridset id>/<format id>/<parameters hash | "default">/<z>/<x>/<y>.<extension>
+    
+* prefix: if provided in the configuration, it will be used as the "root path" for tile keys. Otherwise the keys will be built starting at the bucket's root.
+* layer id: the unique identifier for the layer. Note it equals to the layer name for standalone configured layers, but to the geoserver catalog's object id for GeoServer tile layers.
+* gridset id: the name of the gridset of the tile
+* format id: the gwc internal name for the tile format. E.g.: ``png``, ``png8``, ``jpeg``, etc.
+* parameters hash: if the request that originated that tiles included parameter filters, a unique hash code of the set of parameter filters, otherwise the constant ``default``.
+* z: the z ordinate of the tile in the gridset space.
+* x: the x ordinate of the tile in the gridset space.
+* y: the y ordinate of the tile in the gridset space.
+* extension: the file extension associated to the tile format. E.g. ``png``, ``jpeg``, etc. (Note the extension is the same for the ``png`` and ``png8`` formats, for example).
+
+Configuration example:
+
+.. code-block:: xml
+
+    <AzureBlobStore default="false">
+      <id>myAzureCache</id>
+      <enabled>false</enabled>
+      <container>put-your-actual-container-name-here</container>
+      <prefix>test-cache</prefix>
+      <accountName>putYourActualAccountNameHere</accountName>
+      <accountKey>putYourActualAccountKeyHere</accountKey>
+      <maxConnections>100</maxConnections>
+      <useHTTPS>true</useHTTPS>
+      <serviceURL>http://putYourServerEndpointHereOrLeaveOutIfUsing.blob.core.windows.net</serviceURL>
+      <proxyHost></proxyHost>
+      <proxyPort></proxyPort>
+      <proxyUsername></proxyUsername>
+      <proxyPassword></proxyPassword>
+    </AzureBlobStore>
+
+
+Properties:
+
+* **container**: Mandatory. The name of the Azure container where to store tiles. The code will try to create it if missing.
+* **prefix**: Optional. A prefix path to use as the "root folder" to store tiles at. For example, if the container is ``gwc.example`` and 
+  prefix is "mycache", all tiles will be stored under ``gwc.example/mycache/{layer name}`` instead of ``gwc.example/{layer name}``.
+* **accountName**: Mandatory. The account name used to connect to Azure storage (found in the archiving account, choose the account, and then access keys).
+* **accountKey**: Mandatory. The secret key the client uses to connect to S3.
+* **maxConnections**: Optional, default: ``100``. Maximum number of concurrent HTTP connections the client may use. The more the merrier, as Azure REST API does not have support for bulk deletes, so each tile needs to be deleted in a separate request on cleanup.
+* **useHTTPS**: Optional, default: ``true``. Whether to use HTTPS when connecting to Azure or not.
+* **serviceURL**: Optional. The full service URL, in case the default one is not suitable. The default is build using the account name, e.g. ``https://accountName.blob.core.windows.net`` 
+* **proxyHost**: Optional. The proxy host the client will connect through.
+* **proxyPort**: Optional. The proxy port the client will connect through.
+* **proxyUsername**: Optional. The proxy user name to use if connecting through a proxy.
+* **proxyPassword**: Optional. The proxy password to use when connecting through a proxy.
+
+Unlike S3, access level in Azure can be set at the container level only, so if you desired to pre-seed
+a publicly available cache, please create a container that has "public" or "BLOB" access level.
+The access level can be modified also after the container creation.
+
+Additional Information:
+```````````````````````
+
+The Azure objects for tiles are created with public visibility to allow for "standalone" pre-seeded caches to be used directly from Azure without GeoWebCache
+as middleware. If 
+
+**Beware of Azure services costs**. Especially in terms of bandwidth usage when serving tiles out of the Azure cloud, and Azure storage prices. **We haven't conducted
+a thorough assessment of costs associated to seeding and serving caches**. Yet we can provide some general purpose advise:
+
+* Do not seed at high zoom levels (except if you know what you're doing). The number of tiles grow exponentially as the zoom level increases.
+* Use the tile format that produces the smalles possible tiles. For instance, png8 is a great compromise for quality/size. Keep in mind that the smaller the tiles
+  the bigger the size difference between two identical caches on Azure vs a regular file system. The Azure cache takes less space because the actual space used for each
+  tile is not padded to a file system block size.
+* Use in-memory caching. When serving Azure Blob tiles from GeoWebcache, you can greatly reduce the number of GET requests to Azure by configuring an in-memory cache as
+  described in the "In-Memory caching" section below. This will allow for frequently requested tiles to be kept in memory instead of retrieved from Azure on each
+  call.
+
+The following is an example OpenLayers 3 HTML/JavaScript to set up a map that fetches tiles from a pre-seeded geowebcache layer directly from Azure, assuming that
+ the container access level has been set to "public" or "blob", so that direct access to the blobs is possible. We're using the typical
+GeoServer ``topp:states`` sample layer on a fictitious ``my-geowebcache-container`` bucket, using ``test-cache`` as the cache prefix, png8 tile format, and EPSG:4326 CRS.
+
+.. code-block:: html
+
+    <div class="row-fluid">
+      <div class="span12">
+        <div id="map" class="map"></div>
+      </div>
+    </div>
+
+.. code-block:: javascript
+
+    var map = new ol.Map({
+      target: 'map',
+      controls: ol.control.defaults(),
+      layers: [
+        new ol.layer.Tile({
+          source: new ol.source.XYZ({
+            projection: "EPSG:4326",
+            url: 'https://<accountNameHere>.blob.core.windows.net/<containerNameHere>/<prefixIfAny>/<layerId>/EPSG:4326/png8/default/{z}/{x}/{-y}.png'
+          })
+        })
+      ],
+      view: new ol.View({
+        projection: "EPSG:4326",
+        center: [-104, 39],
+        zoom: 2
+      })
+    });
+    
+The ``prefix`` needs to be filled only if used otherwise that part of the path should be empty.
+The ``layerId`` is the layer identifier. In GWC it has been hand-assigned during configuration,
+if using GWC inside GeoServer it will be the internal layer identifier, e.g., 
+something like ``LayerInfoImpl--5f036b28:16bbda57c0e:-7ffc`` which can be retrieved by checking the 
+GeoServer configuration files for the layer in question.
 
 MBTiles Blob Store
 ++++++++++++++++++
