@@ -7,7 +7,7 @@
   -->
 
 <AzureBlobStore default="true">
-  <id>S3-BlobStore</id>
+  <id>Azure-BlobStore</id>
   <enabled>${ENABLED}</enabled>
   <container>${CONTAINER}</container>
   <accountName>myname</accountName>

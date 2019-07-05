@@ -31,7 +31,7 @@ import org.geowebcache.locks.LockProvider;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.StorageException;
 
-/** Plain old java object representing the configuration for an S3 blob store. */
+/** Plain old java object representing the configuration for an Azure blob store. */
 public class AzureBlobStoreInfo extends BlobStoreInfo {
 
     /**
@@ -73,12 +73,12 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
         super(id);
     }
 
-    /** @return the name of the AWS S3 bucket where to store tiles */
+    /** @return the name of the Azure container where to store tiles */
     public String getContainer() {
         return container;
     }
 
-    /** Sets the name of the AWS S3 bucket where to store tiles */
+    /** Sets the name of the Azure container where to store tiles */
     public void setContainer(String container) {
         this.container = container;
     }
@@ -109,7 +109,7 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
 
     /**
      * Returns the base prefix, which is a prefix path to use as the root to store tiles under the
-     * bucket.
+     * container.
      *
      * @return optional string for a "base prefix"
      */
@@ -132,12 +132,14 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
         this.maxConnections = maxConnections;
     }
 
-    /** @return whether to use HTTPS (true) or HTTP (false) when talking to S3 (defaults to true) */
+    /**
+     * @return whether to use HTTPS (true) or HTTP (false) when talking to Azure (defaults to true)
+     */
     public Boolean isUseHTTPS() {
         return useHTTPS;
     }
 
-    /** @param useHTTPS whether to use HTTPS (true) or HTTP (false) when talking to S3 */
+    /** @param useHTTPS whether to use HTTPS (true) or HTTP (false) when talking to Azure */
     public void setUseHTTPS(Boolean useHTTPS) {
         this.useHTTPS = useHTTPS;
     }
@@ -241,18 +243,18 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
         checkState(getName() != null);
         checkState(
                 isEnabled(),
-                "Can't call S3BlobStoreConfig.createInstance() is blob store is not enabled");
+                "Can't call AzureBlobStoreConfig.createInstance() is blob store is not enabled");
         return new AzureBlobStore(this, layers, lockProvider);
     }
 
     @Override
     public String getLocation() {
-        String bucket = this.getContainer();
+        String container = this.getContainer();
         String prefix = this.getPrefix();
         if (prefix == null) {
-            return String.format("container: %s", bucket);
+            return String.format("container: %s", container);
         } else {
-            return String.format("container: %s prefix: %s", bucket, prefix);
+            return String.format("container: %s prefix: %s", container, prefix);
         }
     }
 
