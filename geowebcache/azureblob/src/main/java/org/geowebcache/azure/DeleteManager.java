@@ -258,7 +258,7 @@ class DeleteManager implements Closeable {
             long count = 0L;
             try {
                 checkInterrupted();
-                AzureBlobStore.log.info(
+                log.info(
                         String.format(
                                 "Running bulk delete on '%s/%s':%d",
                                 client.getContainerName(), prefix, timestamp));
@@ -290,13 +290,13 @@ class DeleteManager implements Closeable {
                     }
                 }
             } catch (InterruptedException | IllegalStateException e) {
-                AzureBlobStore.log.info(
+                log.info(
                         String.format(
                                 "Azure bulk delete aborted for '%s/%s'. Will resume on next startup.",
                                 client.getContainerName(), prefix));
                 throw e;
             } catch (Exception e) {
-                AzureBlobStore.log.warn(
+                log.warn(
                         String.format(
                                 "Unknown error performing bulk Azure blobs delete of '%s/%s'",
                                 client.getContainerName(), prefix),
@@ -304,7 +304,7 @@ class DeleteManager implements Closeable {
                 throw e;
             }
 
-            AzureBlobStore.log.info(
+            log.info(
                     String.format(
                             "Finished bulk delete on '%s/%s':%d. %d objects deleted",
                             client.getContainerName(), prefix, timestamp, count));
@@ -370,11 +370,13 @@ class DeleteManager implements Closeable {
             long count = 0L;
             try {
                 checkInterrupted();
-                AzureBlobStore.log.info(
-                        String.format(
-                                "Running delete delete on list of items on '%s':%s ... (only the first 100 items listed)",
-                                client.getContainerName(),
-                                keys.subList(0, Math.min(keys.size(), 100))));
+                if (log.isTraceEnabled()) {
+                    log.trace(
+                            String.format(
+                                    "Running delete delete on list of items on '%s':%s ... (only the first 100 items listed)",
+                                    client.getContainerName(),
+                                    keys.subList(0, Math.min(keys.size(), 100))));
+                }
 
                 ContainerURL container = client.getContainer();
 
@@ -382,14 +384,14 @@ class DeleteManager implements Closeable {
                     deleteItems(container, keys.subList(i, Math.min(i + PAGE_SIZE, keys.size())));
                 }
             } catch (InterruptedException | IllegalStateException e) {
-                AzureBlobStore.log.info("Azure bulk delete aborted", e);
+                log.info("Azure bulk delete aborted", e);
                 throw e;
             } catch (Exception e) {
-                AzureBlobStore.log.warn("Unknown error performing bulk Azure delete", e);
+                log.warn("Unknown error performing bulk Azure delete", e);
                 throw e;
             }
 
-            AzureBlobStore.log.info(
+            log.info(
                     String.format(
                             "Finished bulk delete on %s, %d objects deleted",
                             client.getContainerName(), count));
