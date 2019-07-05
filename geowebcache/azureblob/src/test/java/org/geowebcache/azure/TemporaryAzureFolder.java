@@ -26,7 +26,7 @@ import org.junit.rules.ExternalResource;
 import org.springframework.http.HttpStatus;
 
 /**
- * The TemporaryAzureFolder provides a path prefix for S3 storage and deletes all resources under
+ * The TemporaryAzureFolder provides a path prefix for Azure storage and deletes all resources under
  * the given prefix at shutdown.
  */
 public class TemporaryAzureFolder extends ExternalResource {

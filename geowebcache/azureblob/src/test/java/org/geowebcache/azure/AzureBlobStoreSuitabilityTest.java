@@ -99,7 +99,7 @@ public class AzureBlobStoreSuitabilityTest extends BlobStoreSuitabilityTest {
     }
 
     // Sorry, this bit of evil makes the Theories runner gracefully ignore the
-    // tests if S3 is unavailable.  There's probably a better way to do this.
+    // tests if Azure is unavailable.  There's probably a better way to do this.
     public static class MyTheories extends Theories {
 
         public MyTheories(Class<?> klass) throws InitializationError {

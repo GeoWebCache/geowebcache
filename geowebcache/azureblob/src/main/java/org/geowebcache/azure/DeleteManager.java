@@ -229,7 +229,7 @@ class DeleteManager implements Closeable {
             } else {
                 log.info(
                         String.format(
-                                "bulk delete finished but there's a newer one ongoing for bucket '%s/%s'",
+                                "bulk delete finished but there's a newer one ongoing for container '%s/%s'",
                                 client.getContainerName(), prefix));
             }
         } catch (StorageException e) {
@@ -298,7 +298,7 @@ class DeleteManager implements Closeable {
             } catch (Exception e) {
                 AzureBlobStore.log.warn(
                         String.format(
-                                "Unknown error performing bulk S3 delete of '%s/%s'",
+                                "Unknown error performing bulk Azure blobs delete of '%s/%s'",
                                 client.getContainerName(), prefix),
                         e);
                 throw e;
