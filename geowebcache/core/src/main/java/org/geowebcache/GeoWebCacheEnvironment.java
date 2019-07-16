@@ -14,7 +14,9 @@
  */
 package org.geowebcache;
 
+import java.util.Optional;
 import java.util.Properties;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -146,5 +148,45 @@ public class GeoWebCacheEnvironment {
         }
 
         return value;
+    }
+
+    private String resolveValueIfEnabled(String value) {
+        if (ALLOW_ENV_PARAMETRIZATION) return (String) resolveValue(value);
+        else return value;
+    }
+
+    private boolean validateBoolean(String value) {
+        value = value.trim();
+        return "true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value);
+    }
+
+    /**
+     * Resolve placeholders for a String parameter if enabled on configurations.
+     *
+     * @param value String value with optional placeholders.
+     * @param type Data Type to return.
+     * @return Optional resolved value.
+     */
+    public <T extends Object> Optional<T> resolveValueIfEnabled(final String value, Class<T> type) {
+        if (StringUtils.isBlank(value)) return Optional.empty();
+        final String resultValue = resolveValueIfEnabled(value);
+        if (type.isAssignableFrom(String.class)) {
+            return (Optional) Optional.of(resultValue);
+        } else if (type.isAssignableFrom(Integer.class)) {
+            try {
+                Integer intValue = Integer.valueOf(resultValue);
+                return (Optional) Optional.of(intValue);
+            } catch (NumberFormatException ex) {
+                throw new IllegalArgumentException(
+                        "Illegal String parameter: Resolved value is not an integer.", ex);
+            }
+        } else if (type.isAssignableFrom(Boolean.class)) {
+            if (!validateBoolean(resultValue))
+                throw new IllegalArgumentException(
+                        "Illegal String parameter: Resolved value is not a boolean.");
+            Boolean boolValue = Boolean.valueOf(value);
+            return (Optional) Optional.of(boolValue);
+        }
+        throw new IllegalArgumentException("No type convertion available for " + type);
     }
 }
