@@ -10,32 +10,30 @@
  * <p>You should have received a copy of the GNU Lesser General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
- * @author Andrea Aime, GeoSolutions, Copyright 2019
+ * @author Fernando Mino, GeoSolutions, Copyright 2019
  */
 package org.geowebcache.azure;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
-import com.thoughtworks.xstream.XStream;
+import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class AzureBlobStoreConfigProviderTest {
+public class AzureBlobStoreDataTest {
 
     @Before
     public void setUp() throws Exception {
         System.setProperty("CONTAINER", "MYCONTAINER");
-        System.setProperty("MYKEY", "99942777gfa+");
+        System.setProperty("ACCOUNT_NAME", "MYNAME");
+        System.setProperty("ACCOUNT_KEY", "MYKEY");
         System.setProperty("CONNECTIONS", "30");
-        System.setProperty("ENABLED", "true");
         System.setProperty("ALLOW_ENV_PARAMETRIZATION", "true");
         ClassPathXmlApplicationContext context =
                 new ClassPathXmlApplicationContext("appContextTestAzure.xml");
-
         GeoWebCacheExtensions gse = new GeoWebCacheExtensions();
         gse.setApplicationContext(context);
     }
@@ -43,24 +41,26 @@ public class AzureBlobStoreConfigProviderTest {
     @After
     public void tearDown() throws Exception {
         System.clearProperty("CONTAINER");
-        System.clearProperty("MYKEY");
         System.clearProperty("CONNECTIONS");
-        System.clearProperty("ENABLED");
+        System.clearProperty("ACCOUNT_NAME");
+        System.clearProperty("ACCOUNT_KEY");
         System.clearProperty("ALLOW_ENV_PARAMETRIZATION");
     }
 
     @Test
-    public void testValuesFromEnvironment() {
-        AzureBlobStoreConfigProvider provider = new AzureBlobStoreConfigProvider();
-        XStream stream = new XStream();
-        stream = provider.getConfiguredXStream(stream);
-        Object config = stream.fromXML(getClass().getResourceAsStream("blobstore.xml"));
-        assertTrue(config instanceof AzureBlobStoreInfo);
-        AzureBlobStoreInfo abConfig = (AzureBlobStoreInfo) config;
-        assertEquals("${CONTAINER}", abConfig.getContainer());
-        assertEquals("myname", abConfig.getAccountName());
-        assertEquals("${MYKEY}", abConfig.getAccountKey());
-        assertEquals("30", abConfig.getMaxConnections());
-        assertEquals(true, abConfig.isEnabled());
+    public void testEnvironmentProperties() {
+        GeoWebCacheEnvironment typedEnvironment =
+                GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
+        final AzureBlobStoreInfo storeInfo = new AzureBlobStoreInfo("info1");
+        storeInfo.setContainer("${CONTAINER}");
+        storeInfo.setAccountName("${ACCOUNT_NAME}");
+        storeInfo.setAccountKey("${ACCOUNT_KEY}");
+        storeInfo.setMaxConnections("${CONNECTIONS}");
+        storeInfo.setEnabled(true);
+        final AzureBlobStoreData storeData = new AzureBlobStoreData(storeInfo, typedEnvironment);
+        assertEquals(Integer.valueOf(30), storeData.getMaxConnections());
+        assertEquals("MYCONTAINER", storeData.getContainer());
+        assertEquals("MYNAME", storeData.getAccountName());
+        assertEquals("MYKEY", storeData.getAccountKey());
     }
 }

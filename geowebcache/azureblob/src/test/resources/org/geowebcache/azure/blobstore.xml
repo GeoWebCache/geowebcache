@@ -8,9 +8,9 @@
 
 <AzureBlobStore default="true">
   <id>Azure-BlobStore</id>
-  <enabled>${ENABLED}</enabled>
+  <enabled>true</enabled>
   <container>${CONTAINER}</container>
   <accountName>myname</accountName>
-  <accountKey>mykey</accountKey>
-  <maxConnections>${CONNECTIONS}</maxConnections>
+  <accountKey>${MYKEY}</accountKey>
+  <maxConnections>30</maxConnections>
 </AzureBlobStore>

@@ -17,14 +17,14 @@ package org.geowebcache.azure;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.net.InetSocketAddress;
-import java.net.Proxy;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheEnvironment;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
@@ -51,13 +51,13 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
 
     private String accountKey;
 
-    private Integer maxConnections;
+    private String maxConnections;
 
     private Boolean useHTTPS = true;
 
     private String proxyHost;
 
-    private Integer proxyPort;
+    private String proxyPort;
 
     private String proxyUsername;
 
@@ -123,12 +123,12 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
     }
 
     /** @return The maximum number of allowed open HTTP connections. */
-    public Integer getMaxConnections() {
-        return maxConnections == null ? DEFAULT_CONNECTIONS : maxConnections;
+    public String getMaxConnections() {
+        return maxConnections == null ? String.valueOf(DEFAULT_CONNECTIONS) : maxConnections;
     }
 
     /** Sets the maximum number of allowed open HTTP connections. */
-    public void setMaxConnections(Integer maxConnections) {
+    public void setMaxConnections(String maxConnections) {
         this.maxConnections = maxConnections;
     }
 
@@ -168,7 +168,7 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
      *
      * @return The proxy port the client will connect through.
      */
-    public Integer getProxyPort() {
+    public String getProxyPort() {
         return proxyPort;
     }
 
@@ -177,7 +177,7 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
      *
      * @param proxyPort The proxy port the client will connect through.
      */
-    public void setProxyPort(Integer proxyPort) {
+    public void setProxyPort(String proxyPort) {
         this.proxyPort = proxyPort;
     }
 
@@ -238,13 +238,17 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
     @Override
     public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider)
             throws StorageException {
-
         checkNotNull(layers);
         checkState(getName() != null);
         checkState(
                 isEnabled(),
                 "Can't call AzureBlobStoreConfig.createInstance() is blob store is not enabled");
-        return new AzureBlobStore(this, layers, lockProvider);
+        if (log.isDebugEnabled())
+            log.debug("Creating Azure Blob Store instance [name=" + getName() + "]");
+        final AzureBlobStoreData storeData =
+                new AzureBlobStoreData(
+                        this, GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class));
+        return new AzureBlobStore(storeData, layers, lockProvider);
     }
 
     @Override
@@ -256,14 +260,5 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
         } else {
             return String.format("container: %s prefix: %s", container, prefix);
         }
-    }
-
-    Proxy getProxy() {
-        if (proxyHost != null) {
-            return new Proxy(
-                    Proxy.Type.HTTP,
-                    new InetSocketAddress(proxyHost, proxyPort != null ? proxyPort : 8888));
-        }
-        return null;
     }
 }

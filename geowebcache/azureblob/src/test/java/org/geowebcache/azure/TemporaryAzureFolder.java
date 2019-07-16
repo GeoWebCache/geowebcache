@@ -77,9 +77,9 @@ public class TemporaryAzureFolder extends ExternalResource {
         return client;
     }
 
-    public AzureBlobStoreInfo getConfig() {
+    public AzureBlobStoreData getConfig() {
         checkState(isConfigured(), "Azure connection not configured.");
-        AzureBlobStoreInfo config = new AzureBlobStoreInfo();
+        AzureBlobStoreData config = new AzureBlobStoreData();
         config.setContainer(container);
         config.setAccountName(accountName);
         config.setAccountKey(accountKey);

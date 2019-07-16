@@ -53,10 +53,10 @@ import org.springframework.http.HttpStatus;
 class AzureClient implements Closeable {
 
     private final NettyClient.Factory factory;
-    private AzureBlobStoreInfo configuration;
+    private AzureBlobStoreData configuration;
     private final ContainerURL container;
 
-    public AzureClient(AzureBlobStoreInfo configuration) throws StorageException {
+    public AzureClient(AzureBlobStoreData configuration) throws StorageException {
         this.configuration = configuration;
         try {
             SharedKeyCredentials creds =
@@ -113,7 +113,7 @@ class AzureClient implements Closeable {
         }
     }
 
-    public String getServiceURL(AzureBlobStoreInfo configuration) {
+    public String getServiceURL(AzureBlobStoreData configuration) {
         String serviceURL = configuration.getServiceURL();
         if (serviceURL == null) {
             // default to account name based location

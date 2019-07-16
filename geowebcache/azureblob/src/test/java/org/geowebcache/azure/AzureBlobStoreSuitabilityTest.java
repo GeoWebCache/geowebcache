@@ -82,7 +82,7 @@ public class AzureBlobStoreSuitabilityTest extends BlobStoreSuitabilityTest {
 
     @Override
     public BlobStore create(Object dir) throws Exception {
-        AzureBlobStoreInfo info = tempFolder.getConfig();
+        AzureBlobStoreData info = tempFolder.getConfig();
         for (String path : (String[]) dir) {
             String fullPath = info.getPrefix() + "/" + path;
             ByteBuffer byteBuffer = ByteBuffer.wrap("testAbc".getBytes());

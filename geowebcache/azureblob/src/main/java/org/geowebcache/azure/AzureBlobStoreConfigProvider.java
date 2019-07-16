@@ -14,90 +14,16 @@
  */
 package org.geowebcache.azure;
 
-import com.google.common.base.Strings;
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.converters.SingleValueConverter;
-import com.thoughtworks.xstream.converters.basic.BooleanConverter;
-import com.thoughtworks.xstream.converters.basic.IntConverter;
-import com.thoughtworks.xstream.converters.basic.StringConverter;
-import org.geowebcache.GeoWebCacheEnvironment;
-import org.geowebcache.GeoWebCacheExtensions;
-import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.config.Info;
 import org.geowebcache.config.XMLConfigurationProvider;
 
 public class AzureBlobStoreConfigProvider implements XMLConfigurationProvider {
 
-    private static GeoWebCacheEnvironment gwcEnvironment = null;
-
-    private static SingleValueConverter EnvironmentNullableIntConverter =
-            new IntConverter() {
-
-                @Override
-                public Object fromString(String str) {
-                    str = resolveFromEnv(str);
-                    if (Strings.isNullOrEmpty(str)) {
-                        return null;
-                    }
-                    return super.fromString(str);
-                }
-            };
-
-    private static SingleValueConverter EnvironmentNullableBooleanConverter =
-            new BooleanConverter() {
-
-                @Override
-                public Object fromString(String str) {
-                    str = resolveFromEnv(str);
-                    if (Strings.isNullOrEmpty(str)) {
-                        return null;
-                    }
-                    return super.fromString(str);
-                }
-            };
-
-    private static SingleValueConverter EnvironmentStringConverter =
-            new StringConverter() {
-                @Override
-                public Object fromString(String str) {
-                    str = resolveFromEnv(str);
-                    if (Strings.isNullOrEmpty(str)) {
-                        return null;
-                    }
-                    return str;
-                }
-            };
-
-    private static String resolveFromEnv(String str) {
-        if (gwcEnvironment == null) {
-            gwcEnvironment = GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
-        }
-        if (gwcEnvironment != null
-                && str != null
-                && GeoWebCacheEnvironment.ALLOW_ENV_PARAMETRIZATION) {
-            Object result = gwcEnvironment.resolveValue(str);
-            if (result == null) {
-                return null;
-            }
-            return result.toString();
-        }
-        return str;
-    }
-
     @Override
     public XStream getConfiguredXStream(XStream xs) {
         Class<AzureBlobStoreInfo> clazz = AzureBlobStoreInfo.class;
         xs.alias("AzureBlobStore", clazz);
-        xs.registerLocalConverter(clazz, "maxConnections", EnvironmentNullableIntConverter);
-        xs.registerLocalConverter(clazz, "proxyPort", EnvironmentNullableIntConverter);
-        xs.registerLocalConverter(clazz, "useHTTPS", EnvironmentNullableBooleanConverter);
-        xs.registerLocalConverter(clazz, "container", EnvironmentStringConverter);
-        xs.registerLocalConverter(clazz, "accountName", EnvironmentStringConverter);
-        xs.registerLocalConverter(clazz, "accountKey", EnvironmentStringConverter);
-        xs.registerLocalConverter(clazz, "prefix", EnvironmentStringConverter);
-        xs.registerLocalConverter(clazz, "proxyHost", EnvironmentStringConverter);
-        xs.registerLocalConverter(
-                BlobStoreInfo.class, "enabled", EnvironmentNullableBooleanConverter);
         xs.aliasField("id", clazz, "name");
         return xs;
     }
