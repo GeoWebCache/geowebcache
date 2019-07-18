@@ -70,7 +70,7 @@ public class AzureBlobStore implements BlobStore {
     private volatile boolean shutDown = false;
 
     public AzureBlobStore(
-            AzureBlobStoreInfo configuration, TileLayerDispatcher layers, LockProvider lockProvider)
+            AzureBlobStoreData configuration, TileLayerDispatcher layers, LockProvider lockProvider)
             throws StorageException {
         this.client = new AzureClient(configuration);
 

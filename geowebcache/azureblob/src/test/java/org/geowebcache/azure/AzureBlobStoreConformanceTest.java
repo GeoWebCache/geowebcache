@@ -43,7 +43,7 @@ public class AzureBlobStoreConformanceTest extends AbstractBlobStoreTest<AzureBl
     @Override
     public void createTestUnit() throws Exception {
         Assume.assumeTrue(tempFolder.isConfigured());
-        AzureBlobStoreInfo config = tempFolder.getConfig();
+        AzureBlobStoreData config = tempFolder.getConfig();
 
         TileLayerDispatcher layers = createMock(TileLayerDispatcher.class);
         LockProvider lockProvider = new NoOpLockProvider();

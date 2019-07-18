@@ -81,11 +81,11 @@ public abstract class AbstractAzureBlobStoreIntegrationTest {
 
     private AzureBlobStore blobStore;
 
-    protected abstract AzureBlobStoreInfo getConfiguration();
+    protected abstract AzureBlobStoreData getConfiguration();
 
     @Before
     public void before() throws Exception {
-        AzureBlobStoreInfo config = getConfiguration();
+        AzureBlobStoreData config = getConfiguration();
 
         TileLayerDispatcher layers = mock(TileLayerDispatcher.class);
         LockProvider lockProvider = new NoOpLockProvider();
