@@ -149,31 +149,38 @@ $ git push origin --tags
 don't forget to add the --tags option so the new tag is pushed to the mainstream repo
 
 
-
-
 Publishing
 ----------
 
-This requires credentials for the GWC web site, and a Sourceforge account with access to the GWC project.
+This requires credentials for the GWC web site (S3), and a Sourceforge account with access to the GWC project.
 
 Create a new directory for the version in the files section on SourceForge.  Upload the four zip files in release/ to it.  
 
 If it's the new stable release, bring up the info dialog for the war zip and set it to be the default download for all platforms and the name of the download to "GeoWebCache <version>"
 
-Use SSH/SCP to connect to the web server.  The root of the site is at /var/www/geowebcache.org/htdocs The following paths are relative to this.
+Use the AWS CLI to copy files to the web site. The root of the site is at geowebcache.org The following paths are relative to this.
 
-Upload the doc zip to ./docs/ and unzip the doc subdirectory from within it.  Rename the new directory to the version number.
+Unzip the doc zip and upload the contents to ./docs/$VERSION.
 
-If it's the new stable release, update the 'current' symlink to point to the new docs dir.
+$ unzip geowebcache-$VERSION-doc.zip
+$ cd geowebcache-$VERSION/doc
+$ aws s3 cp --recursive . s3://geowebcache.org/docs/$VERSION/
+
+If it's the new stable release, also upload the contents to 'current'.
+
+$ aws s3 cp --recursive . s3://geowebcache.org/docs/current/
 
 Update ./docs/index.html
 
-Create the directory ./schema/<VERSION>/ and upload geowebcache.xsd and geowebcache_diskquota.xsd to it.
+Upload geowebcache.xsd and geowebcache_diskquota.xsd to ./schema/$VERSION/
+
+$ cd <project root>/geowebcache
+$ aws s3 cp geowebcache-$VERSION/core/src/main/resources/org/geowebcache/config/geowebcache.xsd s3://geowebcache.org/schema/$VERSION/geowebcache.xsd
+$ aws s3 cp geowebcache-$VERSION/diskquota/core/src/main/resources/org/geowebcache/config/geowebcache-diskquota.xsd s3://geowebcache.org/schema/$VERSION/geowebcache-diskquota.xsd
 
 Update ./index.html  Add a notice at the top of the page and provide a link to the files on Sourceforge.
 
 Post emails to the Dev and User mailing lists.
-
 
 
 Other notes
