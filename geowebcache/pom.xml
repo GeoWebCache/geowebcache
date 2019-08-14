@@ -41,7 +41,7 @@
     <fmt.action>format</fmt.action>
     <fmt.skip>false</fmt.skip>
     <jackson.version>2.9.9</jackson.version>
-    <jetty.version>9.4.12.v20180830</jetty.version>
+    <jetty.version>9.4.18.v20190429</jetty.version>
     <errorProneFlags></errorProneFlags>
     <errorProne.version>2.3.2</errorProne.version>
     <javac.version>9+181-r4173-1</javac.version>
