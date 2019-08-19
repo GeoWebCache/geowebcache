@@ -13,7 +13,7 @@ notifications:
     on_failure: never
 matrix:
   include:
-    - jdk: oraclejdk8
+    - jdk: openjdk8
       env: ARGS="-Dfmt.skip=true"
     - jdk: openjdk11
       env: ARGS="-Dfmt.skip=true"
