@@ -1,3 +1,9 @@
+GeoWebCache 1.16.0 (2019-09-18)
+-------------------------------
+
+First stable release of the 1.16.x series. No changes since 1.16-RC
+
+
 GeoWebCache 1.16-RC (2019-08-23)
 --------------------------------
 
