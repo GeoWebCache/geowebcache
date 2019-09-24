@@ -125,4 +125,20 @@ class TruncateTask extends GWCTask {
     protected void dispose() {
         // do nothing
     }
+
+    @Override
+    public String toString() {
+        return new StringBuilder("[")
+                .append(getTaskId())
+                .append(": ")
+                .append(getLayerName())
+                .append(", ")
+                .append(getType())
+                .append(", ")
+                .append(tr.toString())
+                .append(", ")
+                .append(getState())
+                .append("]")
+                .toString();
+    }
 }

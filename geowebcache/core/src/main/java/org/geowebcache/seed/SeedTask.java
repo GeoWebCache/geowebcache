@@ -339,4 +339,20 @@ class SeedTask extends GWCTask {
             ((WMSLayer) tl).cleanUpThreadLocals();
         }
     }
+
+    @Override
+    public String toString() {
+        return new StringBuilder("[")
+                .append(getTaskId())
+                .append(": ")
+                .append(getLayerName())
+                .append(", ")
+                .append(getType())
+                .append(", ")
+                .append(trIter.getTileRange().toString())
+                .append(", ")
+                .append(getState())
+                .append("]")
+                .toString();
+    }
 }

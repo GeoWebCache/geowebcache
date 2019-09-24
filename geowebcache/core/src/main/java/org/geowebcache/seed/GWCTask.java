@@ -84,7 +84,7 @@ public abstract class GWCTask {
                         (System.currentTimeMillis() - (double) groupStartTime) / 1000;
                 log.info(
                         "Thread group finished "
-                                + parsedType
+                                + toString()
                                 + " task after "
                                 + groupTotalTimeSecs
                                 + " seconds");

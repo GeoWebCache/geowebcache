@@ -163,4 +163,34 @@ public class TileRange {
         }
         return zlevelBounds;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("tile range on ");
+        sb.append(gridSetId);
+        sb.append(" for mime type ");
+        sb.append(getMimeType().getMimeType());
+        sb.append(" [");
+
+        for (int z = zoomStart; z <= zoomStop; z++) {
+            long[] rB = rangeBounds((int) z);
+            sb.append("{zoom: ");
+            sb.append(z);
+            sb.append(", minx: ");
+            sb.append(rB[0]);
+            sb.append(", miny: ");
+            sb.append(rB[1]);
+            sb.append(", maxx: ");
+            sb.append(rB[2]);
+            sb.append(", maxy: ");
+            sb.append(rB[3]);
+            sb.append("}");
+            if (z < zoomStop) {
+                sb.append(", ");
+            }
+        }
+        sb.append("]");
+        return sb.toString();
+    }
 }
