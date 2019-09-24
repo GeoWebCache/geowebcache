@@ -21,6 +21,9 @@ public class TextMime extends MimeType {
     public static final TextMime txtHtml =
             new TextMime("text/html", "txt.html", "html", "text/html", true);
 
+    public static final TextMime txtMapml =
+            new TextMime("text/mapml", "mapml", "mapml", "text/mapml", true);
+
     public static final TextMime txtXml = new TextMime("text/xml", "xml", "xml", "text/xml", true);
 
     public static final TextMime txtCss = new TextMime("text/css", "css", "css", "text/css", true);
@@ -43,6 +46,8 @@ public class TextMime extends MimeType {
                 return txt;
             } else if (formatStr.startsWith("text/html")) {
                 return txtHtml;
+            } else if (formatStr.startsWith("text/mapml")) {
+                return txtMapml;
             } else if (formatStr.startsWith("text/xml")) {
                 return txtXml;
             } else if (formatStr.startsWith("text/css")) {
@@ -62,6 +67,8 @@ public class TextMime extends MimeType {
             return txtHtml;
         } else if (fileExtension.equalsIgnoreCase("html")) {
             return txtHtml;
+        } else if (fileExtension.equalsIgnoreCase("mapml")) {
+            return txtMapml;
         } else if (fileExtension.equalsIgnoreCase("xml")) {
             return txtXml;
         } else if (fileExtension.equalsIgnoreCase("css")) {
