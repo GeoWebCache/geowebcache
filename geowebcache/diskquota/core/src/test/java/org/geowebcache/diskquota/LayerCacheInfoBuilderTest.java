@@ -22,12 +22,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import junit.framework.TestCase;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.TileObject;
+import org.geowebcache.storage.blobstore.file.DefaultFilePathGenerator;
 import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 
 public class LayerCacheInfoBuilderTest extends TestCase {
@@ -41,7 +43,7 @@ public class LayerCacheInfoBuilderTest extends TestCase {
     private ExecutorService threadPool;
 
     FilePathGenerator pathGenerator =
-            new FilePathGenerator("") {
+            new DefaultFilePathGenerator("") {
                 protected String getParametersId(
                         String base, java.util.Map<String, String> parameters) throws IOException {
                     // we assume no collisions for these tests
@@ -124,7 +126,7 @@ public class LayerCacheInfoBuilderTest extends TestCase {
      * @throws IOException
      */
     private void mockSeed(TileLayer layer, int numFiles, int fileSize)
-            throws MimeException, IOException {
+            throws GeoWebCacheException, IOException {
         final String layerName = layer.getName();
 
         final GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());

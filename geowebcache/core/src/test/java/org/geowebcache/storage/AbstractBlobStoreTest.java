@@ -39,15 +39,18 @@ import java.util.Map;
 import java.util.Objects;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
+import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.filter.parameters.StringParameterFilter;
+import org.geowebcache.grid.Grid;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.mime.ImageMime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Test to do */
 public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
 
     protected TestClass store;
@@ -1207,5 +1210,100 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         assertNoTile(layerName, 0, 0, 0, gridset, format, params1);
         assertTile(layerName, 0, 0, 0, gridset, format, params2, "keep param");
         assertTile(layerName, 0, 0, 0, gridset, format, null, "keep default");
+    }
+
+    @Test
+    public void testDeleteRangeSingleLevel() throws StorageException {
+        TileLayer layer = EasyMock.createMock("layer", TileLayer.class);
+        final String layerName = "testLayer";
+        EasyMock.expect(layer.getName()).andStubReturn(layerName);
+        GridSet gridSet = new DefaultGridsets(true, false).worldEpsg4326();
+        final String format = ImageMime.png.getFormat();
+        String content = "sample";
+        String gridsetId = gridSet.getName();
+
+        // store full world coverage for zoom levels 0, 1, 2
+        setupFullCoverage(layerName, gridSet, format, content, gridsetId, 0, 2);
+
+        // delete sub-range at zoom level 2
+        TileRange range =
+                new TileRange(
+                        layerName,
+                        gridsetId,
+                        2,
+                        2,
+                        new long[][] {{0, 0, 2, 2, 2}},
+                        ImageMime.png,
+                        null);
+        store.delete(range);
+
+        // check tiles in range have have been deleted, but others are there
+        assertTileRangeEmpty(layerName, gridSet, format, range);
+        assertTile(layerName, 0, 0, 0, gridsetId, format, null, content);
+        assertTile(layerName, 1, 0, 0, gridsetId, format, null, content);
+        assertTile(layerName, 0, 0, 1, gridsetId, format, null, content);
+    }
+
+    @Test
+    public void testDeleteRangeMultiLevel() throws StorageException {
+        TileLayer layer = EasyMock.createMock("layer", TileLayer.class);
+        final String layerName = "testLayer";
+        EasyMock.expect(layer.getName()).andStubReturn(layerName);
+        GridSet gridSet = new DefaultGridsets(true, false).worldEpsg4326();
+        final String format = ImageMime.png.getFormat();
+        String content = "sample";
+        String gridsetId = gridSet.getName();
+
+        // store full world coverage for zoom levels 0, 1, 2
+        setupFullCoverage(layerName, gridSet, format, content, gridsetId, 0, 2);
+
+        // delete sub-range at zoom level 2
+        TileRange range =
+                new TileRange(
+                        layerName,
+                        gridsetId,
+                        1,
+                        2,
+                        new long[][] {{0, 0, 2, 2, 1}, {0, 0, 2, 2, 2}},
+                        ImageMime.png,
+                        null);
+        store.delete(range);
+
+        // check tiles in range have have been deleted, but others are there
+        assertTileRangeEmpty(layerName, gridSet, format, range);
+        assertTile(layerName, 0, 0, 0, gridsetId, format, null, content);
+        assertTile(layerName, 1, 0, 0, gridsetId, format, null, content);
+    }
+
+    public void setupFullCoverage(
+            String layerName,
+            GridSet gridSet,
+            String format,
+            String content,
+            String gridsetId,
+            int minZ,
+            int maxZ)
+            throws StorageException {
+        for (int z = minZ; z <= maxZ; z++) {
+            Grid grid = gridSet.getGrid(z);
+            for (int x = 0; x < grid.getNumTilesWide(); x++) {
+                for (int y = 0; y < grid.getNumTilesHigh(); y++) {
+                    cacheTile(layerName, x, y, z, gridsetId, format, null, content);
+                }
+            }
+        }
+    }
+
+    public void assertTileRangeEmpty(
+            String layerName, GridSet gridSet, String format, TileRange range)
+            throws StorageException {
+        for (int z = range.getZoomStart(); z <= range.getZoomStop(); z++) {
+            long[] bounds = range.rangeBounds(z);
+            for (long x = bounds[0]; x <= bounds[2]; x++) {
+                for (long y = bounds[1]; y < bounds[2]; y++) {
+                    assertNoTile(layerName, x, y, z, gridSet.getName(), format, null);
+                }
+            }
+        }
     }
 }

@@ -15,22 +15,34 @@
 package org.geowebcache.storage.blobstore.file;
 
 import java.io.File;
-import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.mime.MimeType;
-import org.geowebcache.storage.StorageException;
-import org.geowebcache.storage.TileObject;
-import org.geowebcache.storage.TileRange;
 
-/** Encapsulates the generation of file paths and their visit on the file system */
-public interface FilePathGenerator {
-
-    /** Generates a file path for the given tile in the desired format */
-    File tilePath(TileObject tile, MimeType mimeType) throws GeoWebCacheException;
+/**
+ * Visitor for a hierarchy of tile files. Roughly inspired by Java own {@link
+ * java.nio.file.FileVisitor}
+ */
+public interface TileFileVisitor {
 
     /**
-     * Visits a directory containing a layer, hitting all tiles matching the tile range, and
-     * invoking the visitor on them.
+     * Invoked before visitng a directory
+     *
+     * @param dir
      */
-    void visitRange(File layerDirectory, TileRange range, TileFileVisitor visitor)
-            throws StorageException;
+    default void preVisitDirectory(File dir) {};
+
+    /**
+     * Invoked on a specific tile file
+     *
+     * @param tile
+     * @param x
+     * @param y
+     * @param z
+     */
+    public void visitFile(File tile, long x, long y, int z);
+
+    /**
+     * Invoked on a directory post file visit
+     *
+     * @param dir
+     */
+    default void postVisitDirectory(File dir) {};
 }

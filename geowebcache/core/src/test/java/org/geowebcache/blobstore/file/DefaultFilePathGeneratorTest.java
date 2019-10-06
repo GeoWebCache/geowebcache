@@ -9,12 +9,12 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.storage.TileObject;
+import org.geowebcache.storage.blobstore.file.DefaultFilePathGenerator;
 import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 
-public class FilePathGeneratorTest extends TestCase {
+public class DefaultFilePathGeneratorTest extends TestCase {
 
     FilePathGenerator generator;
-    FilePathGenerator collisionGenerator;
     File testRoot;
 
     @Override
@@ -26,8 +26,7 @@ public class FilePathGeneratorTest extends TestCase {
         }
         testRoot.mkdir();
 
-        generator = new FilePathGenerator(testRoot.getPath());
-        collisionGenerator = new FilePathGenerator(testRoot.getPath());
+        generator = new DefaultFilePathGenerator(testRoot.getPath());
     }
 
     public void testPathNoParams() throws Exception {
