@@ -72,7 +72,7 @@ public class DefaultFilePathFilter implements FilenameFilter {
             ret = acceptFileName(parent, fileName);
         } else if (!parent.getName().equals(layerPrefix)) {
             // not a sibling of the gridset prefix (e.g. another gridset), so an intermediate
-            ret = acceptIntermediateDir(fileName);
+            ret = acceptIntermediateDir(parent, fileName);
         }
 
         // System.out.println(ret + " " + name);
@@ -106,14 +106,29 @@ public class DefaultFilePathFilter implements FilenameFilter {
         }
     }
 
-    private boolean acceptIntermediateDir(String name) {
-        // if(bounds == null) {
-        // return true;
-        // }
+    private boolean acceptIntermediateDir(File parent, String name) {
+        int z = findZoomLevel(gridSetPrefix, parent.getName());
 
-        // For now we'll do all of them,
-        // otherwise we have to extract zoomlevel from path
-        return true;
+        // the folder contains a square subset of tiles across X and Y, see
+        // DefaultFilePathGenerator#tilePath for the splitting logic
+        String[] parts = name.split("_");
+        long halfX = Long.parseLong(parts[0]);
+        long halfY = Long.parseLong(parts[1]);
+        long shift = z / 2;
+        long half = 2 << shift;
+        long minX = halfX * half;
+        long minY = halfY * half;
+        long maxX = minX + half;
+        long maxY = minY + half;
+
+        long[] rangeBounds = tr.rangeBounds(z);
+        long trMinX = rangeBounds[0];
+        long trMaxX = rangeBounds[2];
+        long trMinY = rangeBounds[1];
+        long trMaxY = rangeBounds[3];
+
+        // range intersection in X anx Y
+        return trMinX <= maxX && trMaxX >= minX && trMinY <= maxY && trMaxY >= minY;
     }
 
     private boolean acceptFileName(File parent, String name) {

@@ -7,8 +7,14 @@ import java.util.Map;
 import junit.framework.TestCase;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.DefaultGridsets;
+import org.geowebcache.grid.Grid;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.storage.TileObject;
+import org.geowebcache.storage.TileRange;
+import org.geowebcache.storage.blobstore.file.DefaultFilePathFilter;
 import org.geowebcache.storage.blobstore.file.DefaultFilePathGenerator;
 import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 
@@ -27,6 +33,11 @@ public class DefaultFilePathGeneratorTest extends TestCase {
         testRoot.mkdir();
 
         generator = new DefaultFilePathGenerator(testRoot.getPath());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        FileUtils.deleteDirectory(testRoot);
     }
 
     public void testPathNoParams() throws Exception {
@@ -76,5 +87,60 @@ public class DefaultFilePathGeneratorTest extends TestCase {
             throws IOException {
         File expected = new File(testRoot, "states/EPSG_2163_00_" + parameterId + "/0_0/00_00.png");
         assertEquals(expected.getPath(), path.getPath());
+    }
+
+    public void testPathGeneratorFilterConsistency4326() throws GeoWebCacheException, IOException {
+        GridSet gridSet4326 = new DefaultGridsets(true, true).worldEpsg4326();
+        assertPathGeneratorFilterConsistency(gridSet4326);
+    }
+
+    public void testPathGeneratorFilterConsistency3857() throws GeoWebCacheException, IOException {
+        GridSet gridSet3857 = new DefaultGridsets(true, true).worldEpsg3857();
+        assertPathGeneratorFilterConsistency(gridSet3857);
+    }
+
+    public void assertPathGeneratorFilterConsistency(GridSet gridSet4326)
+            throws GeoWebCacheException, IOException {
+        // scan a few zoom levels, odd and even
+        for (int z = 0; z < 5; z++) {
+            Grid grid = gridSet4326.getGrid(z);
+            for (int y = 0; y < grid.getNumTilesHigh(); y++) {
+                for (int x = 0; x < grid.getNumTilesWide(); x++) {
+                    TileObject tile =
+                            TileObject.createCompleteTileObject(
+                                    "states",
+                                    new long[] {x, y, z},
+                                    gridSet4326.getName(),
+                                    "png",
+                                    null,
+                                    null);
+                    File file = generator.tilePath(tile, ImageMime.png);
+                    // create the file
+                    if (!file.getParentFile().exists()) {
+                        assertTrue(file.getParentFile().mkdirs());
+                    }
+                    assertTrue(file.createNewFile());
+                    TileRange tr =
+                            new TileRange(
+                                    "states",
+                                    gridSet4326.getName(),
+                                    z,
+                                    z,
+                                    new long[][] {{x, y, x, y, z}},
+                                    ImageMime.png,
+                                    null);
+                    DefaultFilePathFilter filter = new DefaultFilePathFilter(tr);
+                    // assert the file and its parents are accepted
+                    File gridsetFolder = file.getParentFile().getParentFile();
+                    assertTrue(
+                            filter.accept(gridsetFolder.getParentFile(), gridsetFolder.getName()));
+                    File intermediateFolder = file.getParentFile();
+                    assertTrue(
+                            filter.accept(
+                                    intermediateFolder.getParentFile(), gridsetFolder.getName()));
+                    assertTrue(filter.accept(file.getParentFile(), file.getName()));
+                }
+            }
+        }
     }
 }
