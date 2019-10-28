@@ -127,4 +127,29 @@ public class RegexParameterFilter extends CaseNormalizingParameterFilter {
     public List<String> getValues() {
         return null;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((regex == null) ? 0 : regex.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!super.equals(obj)) return false;
+        if (getClass() != obj.getClass()) return false;
+        RegexParameterFilter other = (RegexParameterFilter) obj;
+        if (regex == null) {
+            if (other.regex != null) return false;
+        } else if (!regex.equals(other.regex)) return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "RegexParameterFilter [regex=" + regex + ", " + super.toString() + "]";
+    }
 }

@@ -15,10 +15,6 @@
 package org.geowebcache.config;
 
 import java.io.Serializable;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.grid.BoundingBox;
@@ -144,21 +140,6 @@ public class XMLGridSubset implements Serializable, Cloneable {
         this.zoomStop = zoomStop;
     }
 
-    @Override
-    public String toString() {
-        return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
-    }
-
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return EqualsBuilder.reflectionEquals(this, o);
-    }
-
     public Integer getMinCachedLevel() {
         return minCachedLevel;
     }
@@ -173,5 +154,62 @@ public class XMLGridSubset implements Serializable, Cloneable {
 
     public void setMaxCachedLevel(Integer maxCachedLevel) {
         this.maxCachedLevel = maxCachedLevel;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((extent == null) ? 0 : extent.hashCode());
+        result = prime * result + ((gridSetName == null) ? 0 : gridSetName.hashCode());
+        result = prime * result + ((maxCachedLevel == null) ? 0 : maxCachedLevel.hashCode());
+        result = prime * result + ((minCachedLevel == null) ? 0 : minCachedLevel.hashCode());
+        result = prime * result + ((zoomStart == null) ? 0 : zoomStart.hashCode());
+        result = prime * result + ((zoomStop == null) ? 0 : zoomStop.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        XMLGridSubset other = (XMLGridSubset) obj;
+        if (extent == null) {
+            if (other.extent != null) return false;
+        } else if (!extent.equals(other.extent)) return false;
+        if (gridSetName == null) {
+            if (other.gridSetName != null) return false;
+        } else if (!gridSetName.equals(other.gridSetName)) return false;
+        if (maxCachedLevel == null) {
+            if (other.maxCachedLevel != null) return false;
+        } else if (!maxCachedLevel.equals(other.maxCachedLevel)) return false;
+        if (minCachedLevel == null) {
+            if (other.minCachedLevel != null) return false;
+        } else if (!minCachedLevel.equals(other.minCachedLevel)) return false;
+        if (zoomStart == null) {
+            if (other.zoomStart != null) return false;
+        } else if (!zoomStart.equals(other.zoomStart)) return false;
+        if (zoomStop == null) {
+            if (other.zoomStop != null) return false;
+        } else if (!zoomStop.equals(other.zoomStop)) return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "XMLGridSubset [gridSetName="
+                + gridSetName
+                + ", extent="
+                + extent
+                + ", zoomStart="
+                + zoomStart
+                + ", zoomStop="
+                + zoomStop
+                + ", minCachedLevel="
+                + minCachedLevel
+                + ", maxCachedLevel="
+                + maxCachedLevel
+                + "]";
     }
 }

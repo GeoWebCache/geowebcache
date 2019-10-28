@@ -25,9 +25,6 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.S3ClientOptions;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.BlobStoreInfo;
@@ -326,21 +323,6 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
     }
 
     @Override
-    public boolean equals(Object o) {
-        return EqualsBuilder.reflectionEquals(this, o);
-    }
-
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this);
-    }
-
-    @Override
     public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider)
             throws StorageException {
 
@@ -414,5 +396,122 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
             };
         }
         return new DefaultAWSCredentialsProviderChain();
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((access == null) ? 0 : access.hashCode());
+        result = prime * result + ((awsAccessKey == null) ? 0 : awsAccessKey.hashCode());
+        result = prime * result + ((awsSecretKey == null) ? 0 : awsSecretKey.hashCode());
+        result = prime * result + ((bucket == null) ? 0 : bucket.hashCode());
+        result = prime * result + ((endpoint == null) ? 0 : endpoint.hashCode());
+        result = prime * result + ((maxConnections == null) ? 0 : maxConnections.hashCode());
+        result = prime * result + ((prefix == null) ? 0 : prefix.hashCode());
+        result = prime * result + ((proxyDomain == null) ? 0 : proxyDomain.hashCode());
+        result = prime * result + ((proxyHost == null) ? 0 : proxyHost.hashCode());
+        result = prime * result + ((proxyPassword == null) ? 0 : proxyPassword.hashCode());
+        result = prime * result + ((proxyPort == null) ? 0 : proxyPort.hashCode());
+        result = prime * result + ((proxyUsername == null) ? 0 : proxyUsername.hashCode());
+        result = prime * result + ((proxyWorkstation == null) ? 0 : proxyWorkstation.hashCode());
+        result = prime * result + ((useGzip == null) ? 0 : useGzip.hashCode());
+        result = prime * result + ((useHTTPS == null) ? 0 : useHTTPS.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!super.equals(obj)) return false;
+        if (getClass() != obj.getClass()) return false;
+        S3BlobStoreInfo other = (S3BlobStoreInfo) obj;
+        if (access != other.access) return false;
+        if (awsAccessKey == null) {
+            if (other.awsAccessKey != null) return false;
+        } else if (!awsAccessKey.equals(other.awsAccessKey)) return false;
+        if (awsSecretKey == null) {
+            if (other.awsSecretKey != null) return false;
+        } else if (!awsSecretKey.equals(other.awsSecretKey)) return false;
+        if (bucket == null) {
+            if (other.bucket != null) return false;
+        } else if (!bucket.equals(other.bucket)) return false;
+        if (endpoint == null) {
+            if (other.endpoint != null) return false;
+        } else if (!endpoint.equals(other.endpoint)) return false;
+        if (maxConnections == null) {
+            if (other.maxConnections != null) return false;
+        } else if (!maxConnections.equals(other.maxConnections)) return false;
+        if (prefix == null) {
+            if (other.prefix != null) return false;
+        } else if (!prefix.equals(other.prefix)) return false;
+        if (proxyDomain == null) {
+            if (other.proxyDomain != null) return false;
+        } else if (!proxyDomain.equals(other.proxyDomain)) return false;
+        if (proxyHost == null) {
+            if (other.proxyHost != null) return false;
+        } else if (!proxyHost.equals(other.proxyHost)) return false;
+        if (proxyPassword == null) {
+            if (other.proxyPassword != null) return false;
+        } else if (!proxyPassword.equals(other.proxyPassword)) return false;
+        if (proxyPort == null) {
+            if (other.proxyPort != null) return false;
+        } else if (!proxyPort.equals(other.proxyPort)) return false;
+        if (proxyUsername == null) {
+            if (other.proxyUsername != null) return false;
+        } else if (!proxyUsername.equals(other.proxyUsername)) return false;
+        if (proxyWorkstation == null) {
+            if (other.proxyWorkstation != null) return false;
+        } else if (!proxyWorkstation.equals(other.proxyWorkstation)) return false;
+        if (useGzip == null) {
+            if (other.useGzip != null) return false;
+        } else if (!useGzip.equals(other.useGzip)) return false;
+        if (useHTTPS == null) {
+            if (other.useHTTPS != null) return false;
+        } else if (!useHTTPS.equals(other.useHTTPS)) return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "S3BlobStoreInfo [bucket="
+                + bucket
+                + ", prefix="
+                + prefix
+                + ", awsAccessKey="
+                + awsAccessKey
+                + ", awsSecretKey="
+                + awsSecretKey
+                + ", access="
+                + access
+                + ", maxConnections="
+                + maxConnections
+                + ", useHTTPS="
+                + useHTTPS
+                + ", proxyDomain="
+                + proxyDomain
+                + ", proxyWorkstation="
+                + proxyWorkstation
+                + ", proxyHost="
+                + proxyHost
+                + ", proxyPort="
+                + proxyPort
+                + ", proxyUsername="
+                + proxyUsername
+                + ", proxyPassword="
+                + proxyPassword
+                + ", useGzip="
+                + useGzip
+                + ", endpoint="
+                + endpoint
+                + ", getName()="
+                + getName()
+                + ", getId()="
+                + getId()
+                + ", isEnabled()="
+                + isEnabled()
+                + ", isDefault()="
+                + isDefault()
+                + "]";
     }
 }

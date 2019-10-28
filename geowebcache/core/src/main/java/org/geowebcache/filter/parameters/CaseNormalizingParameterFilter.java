@@ -19,7 +19,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 public abstract class CaseNormalizingParameterFilter extends ParameterFilter {
-
+    private static final long serialVersionUID = 1761619452677321350L;
     private CaseNormalizer normalize;
 
     public CaseNormalizingParameterFilter() {
@@ -56,5 +56,34 @@ public abstract class CaseNormalizingParameterFilter extends ParameterFilter {
         } else {
             return Lists.transform(values, getNormalize());
         }
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((normalize == null) ? 0 : normalize.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!super.equals(obj)) return false;
+        if (getClass() != obj.getClass()) return false;
+        CaseNormalizingParameterFilter other = (CaseNormalizingParameterFilter) obj;
+        if (normalize == null) {
+            if (other.normalize != null) return false;
+        } else if (!normalize.equals(other.normalize)) return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "CaseNormalizingParameterFilter [normalize="
+                + normalize
+                + ", "
+                + super.toString()
+                + "]";
     }
 }
