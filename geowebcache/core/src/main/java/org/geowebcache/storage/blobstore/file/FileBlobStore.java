@@ -16,7 +16,6 @@ package org.geowebcache.storage.blobstore.file;
 
 import static org.geowebcache.storage.blobstore.file.FilePathUtils.filteredGridSetId;
 import static org.geowebcache.storage.blobstore.file.FilePathUtils.filteredLayerName;
-import static org.geowebcache.storage.blobstore.file.FilePathUtils.findZoomLevel;
 import static org.geowebcache.util.FileUtils.listFilesNullSafe;
 
 import com.google.common.base.Preconditions;
@@ -44,11 +43,13 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.io.FileResource;
@@ -97,8 +98,12 @@ public class FileBlobStore implements BlobStore {
     }
 
     public FileBlobStore(String rootPath) throws StorageException {
+        this(rootPath, new DefaultFilePathGenerator(rootPath));
+    }
+
+    public FileBlobStore(String rootPath, FilePathGenerator pathGenerator) throws StorageException {
         this.path = rootPath;
-        pathGenerator = new FilePathGenerator(this.path);
+        this.pathGenerator = pathGenerator;
 
         // prepare the root
         File fh = new File(path);
@@ -389,7 +394,6 @@ public class FileBlobStore implements BlobStore {
 
     /** Delete tiles within a range. */
     public boolean delete(TileRange trObj) throws StorageException {
-        int count = 0;
 
         String prefix = path + File.separator + filteredLayerName(trObj.getLayerName());
 
@@ -405,54 +409,41 @@ public class FileBlobStore implements BlobStore {
             throw new StorageException(prefix + " does is not a directory or is not writable.");
         }
 
-        final FilePathFilter tileFinder = new FilePathFilter(trObj);
-
         final String layerName = trObj.getLayerName();
         final String gridSetId = trObj.getGridSetId();
         final String blobFormat = trObj.getMimeType().getFormat();
         final String parametersId = trObj.getParametersId();
 
-        File[] srsZoomDirs = listFilesNullSafe(layerPath, tileFinder);
+        AtomicLong count = new AtomicLong();
+        pathGenerator.visitRange(
+                layerPath,
+                trObj,
+                new TileFileVisitor() {
 
-        final String gridsetPrefix = filteredGridSetId(gridSetId);
-        for (File srsZoomParamId : srsZoomDirs) {
-            int zoomLevel = findZoomLevel(gridsetPrefix, srsZoomParamId.getName());
-            File[] intermediates = listFilesNullSafe(srsZoomParamId, tileFinder);
-
-            for (File imd : intermediates) {
-                File[] tiles = listFilesNullSafe(imd, tileFinder);
-                long length;
-
-                for (File tile : tiles) {
-                    length = tile.length();
-                    boolean deleted = tile.delete();
-                    if (deleted) {
-                        String[] coords = tile.getName().split("\\.")[0].split("_");
-                        long x = Long.parseLong(coords[0]);
-                        long y = Long.parseLong(coords[1]);
-                        listeners.sendTileDeleted(
-                                layerName,
-                                gridSetId,
-                                blobFormat,
-                                parametersId,
-                                x,
-                                y,
-                                zoomLevel,
-                                padSize(length));
-                        count++;
+                    @Override
+                    public void visitFile(File tile, long x, long y, int z) {
+                        long length = tile.length();
+                        boolean deleted = tile.delete();
+                        if (deleted) {
+                            listeners.sendTileDeleted(
+                                    layerName,
+                                    gridSetId,
+                                    blobFormat,
+                                    parametersId,
+                                    x,
+                                    y,
+                                    z,
+                                    padSize(length));
+                            count.incrementAndGet();
+                        }
                     }
-                }
 
-                // Try deleting the directory (will be done only if the directory is empty)
-                imd.delete();
-            }
-
-            // Try deleting the zoom directory (will be done only if the directory is empty)
-            if (srsZoomParamId.delete()) {
-                count++;
-                // listeners.sendDirectoryDeleted(layerName);
-            }
-        }
+                    @Override
+                    public void postVisitDirectory(File dir) {
+                        // will delete only if empty
+                        dir.delete();
+                    }
+                });
 
         log.info("Truncated " + count + " tiles");
 
@@ -516,7 +507,12 @@ public class FileBlobStore implements BlobStore {
             throw new RuntimeException(me);
         }
 
-        final File tilePath = pathGenerator.tilePath(stObj, mimeType);
+        final File tilePath;
+        try {
+            tilePath = pathGenerator.tilePath(stObj, mimeType);
+        } catch (GeoWebCacheException e) {
+            throw new StorageException("Failed to compute file path", e);
+        }
 
         if (create) {
             File parent = tilePath.getParentFile();

@@ -21,7 +21,9 @@ import org.geowebcache.locks.LockProvider;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.StorageException;
+import org.geowebcache.storage.blobstore.file.DefaultFilePathGenerator;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
+import org.geowebcache.storage.blobstore.file.XYZFilePathGenerator;
 
 /**
  * Configuration and factory for {@link FileBlobStore}.
@@ -31,11 +33,19 @@ import org.geowebcache.storage.blobstore.file.FileBlobStore;
  */
 public class FileBlobStoreInfo extends BlobStoreInfo {
 
+    public static enum PathGeneratorType {
+        DEFAULT,
+        TMS,
+        SLIPPY
+    };
+
     private static final long serialVersionUID = -6470560864068854508L;
 
     private String baseDirectory;
 
     private int fileSystemBlockSize;
+
+    private PathGeneratorType pathGeneratorType = PathGeneratorType.DEFAULT;
 
     public FileBlobStoreInfo() {
         super();
@@ -87,6 +97,20 @@ public class FileBlobStoreInfo extends BlobStoreInfo {
         this.fileSystemBlockSize = fileSystemBlockSize;
     }
 
+    /**
+     * Returns the path generator for this blob store, by default, it's
+     *
+     * @return
+     */
+    public PathGeneratorType getPathGeneratorType() {
+        return pathGeneratorType;
+    }
+
+    /** Sets the path generator for this bob store. */
+    public void setPathGeneratorType(PathGeneratorType pathGeneratorType) {
+        this.pathGeneratorType = pathGeneratorType;
+    }
+
     @Override
     public String toString() {
         return new StringBuilder("FileBlobStore[id:")
@@ -114,7 +138,23 @@ public class FileBlobStoreInfo extends BlobStoreInfo {
                 fileSystemBlockSize >= 0,
                 "fileSystemBlockSize must be a positive integer: %s",
                 fileSystemBlockSize);
-        FileBlobStore fileBlobStore = new FileBlobStore(baseDirectory);
+        FileBlobStore fileBlobStore;
+        if (pathGeneratorType == null || pathGeneratorType == PathGeneratorType.DEFAULT) {
+            fileBlobStore =
+                    new FileBlobStore(baseDirectory, new DefaultFilePathGenerator(baseDirectory));
+        } else if (pathGeneratorType == PathGeneratorType.TMS) {
+            fileBlobStore =
+                    new FileBlobStore(
+                            baseDirectory,
+                            new XYZFilePathGenerator(
+                                    baseDirectory, layers, XYZFilePathGenerator.Convention.TMS));
+        } else {
+            fileBlobStore =
+                    new FileBlobStore(
+                            baseDirectory,
+                            new XYZFilePathGenerator(
+                                    baseDirectory, layers, XYZFilePathGenerator.Convention.XYZ));
+        }
         if (fileSystemBlockSize > 0) {
             fileBlobStore.setBlockSize(fileSystemBlockSize);
         }

@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.storage.blobstore.file.DefaultFilePathGenerator;
 import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 
 /**
@@ -48,7 +49,7 @@ public class TransientCache {
      * A path generator that uses the key set as its key to build keys suitable for usage in the in
      * memory transient cache
      */
-    private static FilePathGenerator keyGenerator = new FilePathGenerator("");
+    private static FilePathGenerator keyGenerator = new DefaultFilePathGenerator("");
 
     private Map<String, CachedResource> cache =
             new LinkedHashMap<String, CachedResource>() {

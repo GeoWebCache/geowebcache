@@ -15,6 +15,7 @@
 package org.geowebcache.storage.blobstore.memory;
 
 import org.geowebcache.storage.AbstractBlobStoreTest;
+import org.geowebcache.storage.StorageException;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -71,5 +72,19 @@ public class MemoryBlobStoreComformanceTest extends AbstractBlobStoreTest<Memory
     @Test // Memory store can be more relaxed about this. It would be nice to pass this though
     public void testPurgeOrphansWithDefault() throws Exception {
         super.testPurgeOrphansWithDefault();
+    }
+
+    @Override
+    @Ignore
+    @Test // Memory store can be more relaxed about this. It would be nice to pass this though
+    public void testDeleteRangeSingleLevel() throws StorageException {
+        super.testDeleteRangeSingleLevel();
+    }
+
+    @Override
+    @Ignore
+    @Test // Memory store can be more relaxed about this. It would be nice to pass this though
+    public void testDeleteRangeMultiLevel() throws StorageException {
+        super.testDeleteRangeMultiLevel();
     }
 }

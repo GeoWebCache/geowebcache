@@ -27,9 +27,11 @@ import java.util.Optional;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.storage.blobstore.file.DefaultFilePathGenerator;
 import org.geowebcache.storage.blobstore.file.FilePathGenerator;
 import org.geowebcache.storage.blobstore.file.FilePathUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -63,7 +65,7 @@ public class MetastoreRemover {
                 // maybe we should make this optional?
                 boolean migrateCreationDates = Boolean.getBoolean("MIGRATE_CREATION_DATES");
                 if (migrateCreationDates) {
-                    migrateTileDates(template, new FilePathGenerator(root.getPath()));
+                    migrateTileDates(template, new DefaultFilePathGenerator(root.getPath()));
                 }
                 migrateParameters(template, root);
                 // remove all the tiles from storage to avoid further migration attempts
@@ -252,6 +254,8 @@ public class MetastoreRemover {
                                     "Failed to locate mime type for format '"
                                             + format
                                             + "', this should never happen!");
+                        } catch (GeoWebCacheException e) {
+                            log.error("Failed to compute tile path", e);
                         }
 
                         count++;
