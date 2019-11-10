@@ -42,7 +42,7 @@ public class IntegerParameterFilter extends ParameterFilter {
         values = new ArrayList<Integer>(0);
     }
 
-    protected Object readResolve() {
+    protected @Override Object readResolve() {
         super.readResolve();
         if (values == null) {
             values = new ArrayList<Integer>(0);

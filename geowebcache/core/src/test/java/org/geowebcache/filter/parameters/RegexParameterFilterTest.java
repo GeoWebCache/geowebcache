@@ -308,13 +308,21 @@ public class RegexParameterFilterTest {
 
     @Test
     public void testCloneable() throws Exception {
-        filter.setNormalize(new CaseNormalizer(Case.UPPER, Locale.ENGLISH));
         RegexParameterFilter clone = filter.clone();
         assertThat(clone.getDefaultValue(), equalTo(filter.getDefaultValue()));
         assertThat(clone.getRegex(), equalTo(filter.getRegex()));
+        assertThat(clone.normalize, equalTo(filter.normalize));
+
+        filter.setNormalize(new CaseNormalizer(Case.UPPER, Locale.ENGLISH));
+
+        clone = filter.clone();
+        assertThat(clone.getDefaultValue(), equalTo(filter.getDefaultValue()));
+        assertThat(clone.getRegex(), equalTo(filter.getRegex()));
+        assertNotSame(filter.normalize, clone.normalize);
+        assertThat(clone.normalize, equalTo(filter.normalize));
         assertThat(
-                clone.getNormalize().getConfiguredLocale(),
-                equalTo(filter.getNormalize().getConfiguredLocale()));
-        assertThat(clone.getNormalize().getCase(), equalTo(filter.getNormalize().getCase()));
+                clone.normalize.getConfiguredLocale(),
+                equalTo(filter.normalize.getConfiguredLocale()));
+        assertThat(clone.normalize.getCase(), equalTo(filter.normalize.getCase()));
     }
 }

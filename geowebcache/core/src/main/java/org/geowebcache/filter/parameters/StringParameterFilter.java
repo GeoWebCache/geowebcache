@@ -31,13 +31,13 @@ public class StringParameterFilter extends CaseNormalizingParameterFilter {
     private List<String> values;
 
     public StringParameterFilter() {
-        values = new ArrayList<String>(0);
+        values = new ArrayList<String>();
     }
 
-    protected Object readResolve() {
+    protected @Override Object readResolve() {
         super.readResolve();
         if (values == null) {
-            values = new ArrayList<String>(0);
+            values = new ArrayList<String>();
         }
         for (String value : values) {
             Preconditions.checkNotNull(value, "Value list included a null pointer.");
@@ -95,7 +95,9 @@ public class StringParameterFilter extends CaseNormalizingParameterFilter {
         if (values != null) {
             clone.values = new ArrayList<String>(values);
         }
-        clone.setNormalize(getNormalize().clone());
+        if (normalize != null) {
+            clone.setNormalize(normalize.clone());
+        }
         return clone;
     }
 

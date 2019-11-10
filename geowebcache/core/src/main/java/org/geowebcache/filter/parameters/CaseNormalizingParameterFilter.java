@@ -16,11 +16,12 @@ package org.geowebcache.filter.parameters;
 
 import com.google.common.collect.Lists;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 public abstract class CaseNormalizingParameterFilter extends ParameterFilter {
     private static final long serialVersionUID = 1761619452677321350L;
-    private CaseNormalizer normalize;
+    protected CaseNormalizer normalize;
 
     public CaseNormalizingParameterFilter() {
         super();
@@ -34,6 +35,11 @@ public abstract class CaseNormalizingParameterFilter extends ParameterFilter {
 
     public CaseNormalizingParameterFilter(String key) {
         super(key);
+    }
+
+    protected @Override Object readResolve() {
+        super.readResolve();
+        return this;
     }
 
     public CaseNormalizer getNormalize() {
@@ -62,7 +68,8 @@ public abstract class CaseNormalizingParameterFilter extends ParameterFilter {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + ((normalize == null) ? 0 : normalize.hashCode());
+        // hashCode based on getNormalize() as it provides an transient default value when null
+        result = prime * result + getNormalize().hashCode();
         return result;
     }
 
@@ -72,10 +79,8 @@ public abstract class CaseNormalizingParameterFilter extends ParameterFilter {
         if (!super.equals(obj)) return false;
         if (getClass() != obj.getClass()) return false;
         CaseNormalizingParameterFilter other = (CaseNormalizingParameterFilter) obj;
-        if (normalize == null) {
-            if (other.normalize != null) return false;
-        } else if (!normalize.equals(other.normalize)) return false;
-        return true;
+        // equals based on getNormalize() as it provides an transient default value when null
+        return Objects.equals(getNormalize(), other.getNormalize());
     }
 
     @Override
