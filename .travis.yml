@@ -15,6 +15,7 @@ matrix:
   include:
     - jdk: oraclejdk8
       env: ARGS="-Dfmt.skip=true"
+      dist: trusty
     - jdk: oraclejdk11
       env: ARGS="-Dfmt.skip=true"
     - jdk: oraclejdk11
