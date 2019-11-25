@@ -18,6 +18,7 @@ import com.google.common.base.Function;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 /**
@@ -26,6 +27,8 @@ import javax.annotation.Nullable;
  * @author Kevin Smith, Boundless
  */
 public class CaseNormalizer implements Function<String, String>, Serializable, Cloneable {
+    private static final long serialVersionUID = -4175693577236472098L;
+
     /**
      * Ways to normalize case
      *
@@ -151,5 +154,28 @@ public class CaseNormalizer implements Function<String, String>, Serializable, C
     @Override
     public CaseNormalizer clone() {
         return new CaseNormalizer(kase, locale);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((kase == null) ? 0 : kase.hashCode());
+        result = prime * result + ((locale == null) ? 0 : locale.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        CaseNormalizer other = (CaseNormalizer) obj;
+        return Objects.equals(kase, other.kase) && Objects.equals(locale, other.locale);
+    }
+
+    @Override
+    public String toString() {
+        return "CaseNormalizer [kase=" + kase + ", locale=" + locale + "]";
     }
 }

@@ -28,6 +28,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 @XStreamAlias("integerParameterFilter")
 public class IntegerParameterFilter extends ParameterFilter {
+    private static final long serialVersionUID = 659566920877534621L;
 
     private static Integer DEFAULT_THRESHOLD = Integer.valueOf(1);
 
@@ -41,7 +42,7 @@ public class IntegerParameterFilter extends ParameterFilter {
         values = new ArrayList<Integer>(0);
     }
 
-    protected Object readResolve() {
+    protected @Override Object readResolve() {
         super.readResolve();
         if (values == null) {
             values = new ArrayList<Integer>(0);
@@ -154,5 +155,40 @@ public class IntegerParameterFilter extends ParameterFilter {
         }
         clone.setThreshold(this.threshold);
         return clone;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((threshold == null) ? 0 : threshold.hashCode());
+        result = prime * result + ((values == null) ? 0 : values.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!super.equals(obj)) return false;
+        if (getClass() != obj.getClass()) return false;
+        IntegerParameterFilter other = (IntegerParameterFilter) obj;
+        if (threshold == null) {
+            if (other.threshold != null) return false;
+        } else if (!threshold.equals(other.threshold)) return false;
+        if (values == null) {
+            if (other.values != null) return false;
+        } else if (!values.equals(other.values)) return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "IntegerParameterFilter [values="
+                + values
+                + ", threshold="
+                + threshold
+                + ", "
+                + super.toString()
+                + "]";
     }
 }

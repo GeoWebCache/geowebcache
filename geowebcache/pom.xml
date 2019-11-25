@@ -19,7 +19,6 @@
     <commons-logging.version>1.1.1</commons-logging.version>
     <commons-io.version>2.6</commons-io.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
-    <commons-lang.version>3.8.1</commons-lang.version>
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-codec.version>1.10</commons-codec.version>
     <commons-text.version>1.4</commons-text.version>
@@ -141,11 +140,6 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>${commons-io.version}</version>
-    </dependency>
-    <dependency>
-     <groupId>org.apache.commons</groupId>
-     <artifactId>commons-lang3</artifactId>
-     <version>${commons-lang.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>

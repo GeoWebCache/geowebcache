@@ -20,6 +20,7 @@ import org.geowebcache.config.BlobStoreInfo;
 
 /** Holder for the common properties needed to configure a sqlite based blob store. */
 public abstract class SqliteInfo extends BlobStoreInfo {
+    private static final long serialVersionUID = 2300159159094621077L;
 
     public SqliteInfo() {
         this(UUID.randomUUID().toString());
@@ -130,5 +131,41 @@ public abstract class SqliteInfo extends BlobStoreInfo {
             connectionManager = new SqliteConnectionManager(this);
         }
         return connectionManager;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + (int) (columnRangeCount ^ (columnRangeCount >>> 32));
+        result = prime * result + (eagerDelete ? 1231 : 1237);
+        result = prime * result + (int) (poolReaperIntervalMs ^ (poolReaperIntervalMs >>> 32));
+        result = prime * result + (int) (poolSize ^ (poolSize >>> 32));
+        result = prime * result + ((rootDirectory == null) ? 0 : rootDirectory.hashCode());
+        result = prime * result + (int) (rowRangeCount ^ (rowRangeCount >>> 32));
+        result = prime * result + ((templatePath == null) ? 0 : templatePath.hashCode());
+        result = prime * result + (useCreateTime ? 1231 : 1237);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!super.equals(obj)) return false;
+        if (getClass() != obj.getClass()) return false;
+        SqliteInfo other = (SqliteInfo) obj;
+        if (columnRangeCount != other.columnRangeCount) return false;
+        if (eagerDelete != other.eagerDelete) return false;
+        if (poolReaperIntervalMs != other.poolReaperIntervalMs) return false;
+        if (poolSize != other.poolSize) return false;
+        if (rootDirectory == null) {
+            if (other.rootDirectory != null) return false;
+        } else if (!rootDirectory.equals(other.rootDirectory)) return false;
+        if (rowRangeCount != other.rowRangeCount) return false;
+        if (templatePath == null) {
+            if (other.templatePath != null) return false;
+        } else if (!templatePath.equals(other.templatePath)) return false;
+        if (useCreateTime != other.useCreateTime) return false;
+        return true;
     }
 }

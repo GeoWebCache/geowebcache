@@ -21,10 +21,6 @@ import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 
 /** A filter for a WMS parameter that ensure that it fits within a finite set of defined values. */
 @ParametersAreNonnullByDefault
@@ -131,21 +127,6 @@ public abstract class ParameterFilter implements Serializable, Cloneable {
         this.defaultValue = defaultValue;
     }
 
-    @Override
-    public String toString() {
-        return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return EqualsBuilder.reflectionEquals(this, o);
-    }
-
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-
     protected Object readResolve() {
         // Make sure XStream found a Key
         Preconditions.checkNotNull(key);
@@ -175,5 +156,29 @@ public abstract class ParameterFilter implements Serializable, Cloneable {
         } catch (ParameterException ex) {
             return false;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
+        result = prime * result + ((key == null) ? 0 : key.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        ParameterFilter other = (ParameterFilter) obj;
+        if (defaultValue == null) {
+            if (other.defaultValue != null) return false;
+        } else if (!defaultValue.equals(other.defaultValue)) return false;
+        if (key == null) {
+            if (other.key != null) return false;
+        } else if (!key.equals(other.key)) return false;
+        return true;
     }
 }
