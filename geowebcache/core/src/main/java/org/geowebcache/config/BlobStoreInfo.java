@@ -15,6 +15,8 @@
 package org.geowebcache.config;
 
 import java.io.Serializable;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.storage.BlobStore;
@@ -131,6 +133,16 @@ public abstract class BlobStoreInfo implements Serializable, Cloneable, Info {
     public abstract String toString();
 
     @Override
+    public boolean equals(Object o) {
+        return EqualsBuilder.reflectionEquals(this, o);
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
     public Object clone() {
         try {
             return super.clone();
@@ -161,28 +173,4 @@ public abstract class BlobStoreInfo implements Serializable, Cloneable, Info {
      * @return String representation of this BlobStoreInfo's location.
      */
     public abstract String getLocation();
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (_default ? 1231 : 1237);
-        result = prime * result + (enabled ? 1231 : 1237);
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
-        BlobStoreInfo other = (BlobStoreInfo) obj;
-        if (_default != other._default) return false;
-        if (enabled != other.enabled) return false;
-        if (name == null) {
-            if (other.name != null) return false;
-        } else if (!name.equals(other.name)) return false;
-        return true;
-    }
 }

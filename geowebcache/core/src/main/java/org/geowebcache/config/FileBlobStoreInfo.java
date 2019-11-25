@@ -166,26 +166,4 @@ public class FileBlobStoreInfo extends BlobStoreInfo {
     public String getLocation() {
         return getBaseDirectory();
     }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((baseDirectory == null) ? 0 : baseDirectory.hashCode());
-        result = prime * result + fileSystemBlockSize;
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!super.equals(obj)) return false;
-        if (getClass() != obj.getClass()) return false;
-        FileBlobStoreInfo other = (FileBlobStoreInfo) obj;
-        if (baseDirectory == null) {
-            if (other.baseDirectory != null) return false;
-        } else if (!baseDirectory.equals(other.baseDirectory)) return false;
-        if (fileSystemBlockSize != other.fileSystemBlockSize) return false;
-        return true;
-    }
 }

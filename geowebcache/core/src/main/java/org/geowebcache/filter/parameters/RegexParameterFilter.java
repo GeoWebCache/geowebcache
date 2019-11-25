@@ -33,11 +33,10 @@ public class RegexParameterFilter extends CaseNormalizingParameterFilter {
 
     private String regex = DEFAULT_EXPRESSION;
 
-    private transient Pattern pat;
+    private transient Pattern pat = compile(regex, getNormalize().getCase());
 
     public RegexParameterFilter() {
         super();
-        pat = compile(regex, getNormalize().getCase());
     }
 
     /**
@@ -59,10 +58,10 @@ public class RegexParameterFilter extends CaseNormalizingParameterFilter {
         return Pattern.compile(regex, flags);
     }
 
-    protected @Override Object readResolve() {
+    protected Object readResolve() {
         super.readResolve();
         Preconditions.checkNotNull(regex);
-        this.pat = compile(regex, getNormalize().getCase());
+        this.pat = Pattern.compile(regex);
         return this;
     }
 
@@ -120,39 +119,12 @@ public class RegexParameterFilter extends CaseNormalizingParameterFilter {
         clone.setDefaultValue(getDefaultValue());
         clone.setKey(getKey());
         clone.regex = regex;
-        if (super.normalize != null) {
-            clone.setNormalize(super.normalize.clone());
-        }
+        clone.setNormalize(getNormalize().clone());
         return clone;
     }
 
     @Override
     public List<String> getValues() {
         return null;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((regex == null) ? 0 : regex.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!super.equals(obj)) return false;
-        if (getClass() != obj.getClass()) return false;
-        RegexParameterFilter other = (RegexParameterFilter) obj;
-        if (regex == null) {
-            if (other.regex != null) return false;
-        } else if (!regex.equals(other.regex)) return false;
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "RegexParameterFilter [regex=" + regex + ", " + super.toString() + "]";
     }
 }

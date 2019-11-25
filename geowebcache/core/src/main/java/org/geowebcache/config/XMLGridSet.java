@@ -15,7 +15,10 @@
 package org.geowebcache.config;
 
 import java.io.Serializable;
-import java.util.Arrays;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetFactory;
@@ -345,101 +348,17 @@ public class XMLGridSet implements Serializable {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((alignTopLeft == null) ? 0 : alignTopLeft.hashCode());
-        result = prime * result + ((description == null) ? 0 : description.hashCode());
-        result = prime * result + ((extent == null) ? 0 : extent.hashCode());
-        result = prime * result + ((levels == null) ? 0 : levels.hashCode());
-        result = prime * result + ((metersPerUnit == null) ? 0 : metersPerUnit.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((pixelSize == null) ? 0 : pixelSize.hashCode());
-        result = prime * result + Arrays.hashCode(resolutions);
-        result = prime * result + Arrays.hashCode(scaleDenominators);
-        result = prime * result + Arrays.hashCode(scaleNames);
-        result = prime * result + ((srs == null) ? 0 : srs.hashCode());
-        result = prime * result + ((tileHeight == null) ? 0 : tileHeight.hashCode());
-        result = prime * result + ((tileWidth == null) ? 0 : tileWidth.hashCode());
-        result = prime * result + ((yCoordinateFirst == null) ? 0 : yCoordinateFirst.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
-        XMLGridSet other = (XMLGridSet) obj;
-        if (alignTopLeft == null) {
-            if (other.alignTopLeft != null) return false;
-        } else if (!alignTopLeft.equals(other.alignTopLeft)) return false;
-        if (description == null) {
-            if (other.description != null) return false;
-        } else if (!description.equals(other.description)) return false;
-        if (extent == null) {
-            if (other.extent != null) return false;
-        } else if (!extent.equals(other.extent)) return false;
-        if (levels == null) {
-            if (other.levels != null) return false;
-        } else if (!levels.equals(other.levels)) return false;
-        if (metersPerUnit == null) {
-            if (other.metersPerUnit != null) return false;
-        } else if (!metersPerUnit.equals(other.metersPerUnit)) return false;
-        if (name == null) {
-            if (other.name != null) return false;
-        } else if (!name.equals(other.name)) return false;
-        if (pixelSize == null) {
-            if (other.pixelSize != null) return false;
-        } else if (!pixelSize.equals(other.pixelSize)) return false;
-        if (!Arrays.equals(resolutions, other.resolutions)) return false;
-        if (!Arrays.equals(scaleDenominators, other.scaleDenominators)) return false;
-        if (!Arrays.equals(scaleNames, other.scaleNames)) return false;
-        if (srs == null) {
-            if (other.srs != null) return false;
-        } else if (!srs.equals(other.srs)) return false;
-        if (tileHeight == null) {
-            if (other.tileHeight != null) return false;
-        } else if (!tileHeight.equals(other.tileHeight)) return false;
-        if (tileWidth == null) {
-            if (other.tileWidth != null) return false;
-        } else if (!tileWidth.equals(other.tileWidth)) return false;
-        if (yCoordinateFirst == null) {
-            if (other.yCoordinateFirst != null) return false;
-        } else if (!yCoordinateFirst.equals(other.yCoordinateFirst)) return false;
-        return true;
-    }
-
-    @Override
     public String toString() {
-        return "XMLGridSet [name="
-                + name
-                + ", description="
-                + description
-                + ", srs="
-                + srs
-                + ", extent="
-                + extent
-                + ", alignTopLeft="
-                + alignTopLeft
-                + ", resolutions="
-                + Arrays.toString(resolutions)
-                + ", scaleDenominators="
-                + Arrays.toString(scaleDenominators)
-                + ", levels="
-                + levels
-                + ", metersPerUnit="
-                + metersPerUnit
-                + ", pixelSize="
-                + pixelSize
-                + ", scaleNames="
-                + Arrays.toString(scaleNames)
-                + ", tileHeight="
-                + tileHeight
-                + ", tileWidth="
-                + tileWidth
-                + ", yCoordinateFirst="
-                + yCoordinateFirst
-                + "]";
+        return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return EqualsBuilder.reflectionEquals(this, o);
     }
 }

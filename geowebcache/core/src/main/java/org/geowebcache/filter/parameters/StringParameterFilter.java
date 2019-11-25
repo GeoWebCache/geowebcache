@@ -31,13 +31,13 @@ public class StringParameterFilter extends CaseNormalizingParameterFilter {
     private List<String> values;
 
     public StringParameterFilter() {
-        values = new ArrayList<String>();
+        values = new ArrayList<String>(0);
     }
 
-    protected @Override Object readResolve() {
+    protected Object readResolve() {
         super.readResolve();
         if (values == null) {
-            values = new ArrayList<String>();
+            values = new ArrayList<String>(0);
         }
         for (String value : values) {
             Preconditions.checkNotNull(value, "Value list included a null pointer.");
@@ -95,34 +95,7 @@ public class StringParameterFilter extends CaseNormalizingParameterFilter {
         if (values != null) {
             clone.values = new ArrayList<String>(values);
         }
-        if (normalize != null) {
-            clone.setNormalize(normalize.clone());
-        }
+        clone.setNormalize(getNormalize().clone());
         return clone;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((values == null) ? 0 : values.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!super.equals(obj)) return false;
-        if (getClass() != obj.getClass()) return false;
-        StringParameterFilter other = (StringParameterFilter) obj;
-        if (values == null) {
-            if (other.values != null) return false;
-        } else if (!values.equals(other.values)) return false;
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "StringParameterFilter [values=" + values + ", " + super.toString() + "]";
     }
 }

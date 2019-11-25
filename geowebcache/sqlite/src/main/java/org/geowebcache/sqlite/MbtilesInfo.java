@@ -21,7 +21,6 @@ import org.geowebcache.storage.StorageException;
 
 /** Holder for the properties needed to configure a mbtiles blob store. */
 public class MbtilesInfo extends SqliteInfo {
-    private static final long serialVersionUID = -6618985107587790155L;
 
     public MbtilesInfo() {
         super();
@@ -70,35 +69,5 @@ public class MbtilesInfo extends SqliteInfo {
     @Override
     public String toString() {
         return "MBTiles BlobStore";
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + executorConcurrency;
-        result = prime * result + ((gzipVector == null) ? 0 : gzipVector.hashCode());
-        result =
-                prime * result
-                        + ((mbtilesMetadataDirectory == null)
-                                ? 0
-                                : mbtilesMetadataDirectory.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!super.equals(obj)) return false;
-        if (getClass() != obj.getClass()) return false;
-        MbtilesInfo other = (MbtilesInfo) obj;
-        if (executorConcurrency != other.executorConcurrency) return false;
-        if (gzipVector == null) {
-            if (other.gzipVector != null) return false;
-        } else if (!gzipVector.equals(other.gzipVector)) return false;
-        if (mbtilesMetadataDirectory == null) {
-            if (other.mbtilesMetadataDirectory != null) return false;
-        } else if (!mbtilesMetadataDirectory.equals(other.mbtilesMetadataDirectory)) return false;
-        return true;
     }
 }

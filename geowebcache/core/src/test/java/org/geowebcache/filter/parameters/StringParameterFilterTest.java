@@ -336,15 +336,13 @@ public class StringParameterFilterTest {
 
     @Test
     public void testCloneable() throws Exception {
+        filter.setNormalize(new CaseNormalizer(Case.UPPER, Locale.ENGLISH));
         StringParameterFilter clone = filter.clone();
         assertThat(clone.getDefaultValue(), equalTo(filter.getDefaultValue()));
         assertThat(clone.getValues(), equalTo(filter.getValues()));
-        assertThat(clone.normalize, equalTo(filter.normalize));
-
-        filter.setNormalize(new CaseNormalizer(Case.UPPER, Locale.ENGLISH));
-        clone = filter.clone();
-        assertThat(clone.getDefaultValue(), equalTo(filter.getDefaultValue()));
-        assertThat(clone.getValues(), equalTo(filter.getValues()));
-        assertThat(clone.normalize, equalTo(filter.normalize));
+        assertThat(
+                clone.getNormalize().getConfiguredLocale(),
+                equalTo(filter.getNormalize().getConfiguredLocale()));
+        assertThat(clone.getNormalize().getCase(), equalTo(filter.getNormalize().getCase()));
     }
 }

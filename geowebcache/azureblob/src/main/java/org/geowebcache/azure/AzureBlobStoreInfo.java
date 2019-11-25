@@ -18,6 +18,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheEnvironment;
@@ -30,7 +33,6 @@ import org.geowebcache.storage.StorageException;
 
 /** Plain old java object representing the configuration for an Azure blob store. */
 public class AzureBlobStoreInfo extends BlobStoreInfo {
-    private static final long serialVersionUID = -8068069256598987874L;
 
     /**
      * Max number of connections used inside the Netty HTTP client. Might seem a lot, but when
@@ -219,6 +221,21 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
     }
 
     @Override
+    public boolean equals(Object o) {
+        return EqualsBuilder.reflectionEquals(this, o);
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
+    }
+
+    @Override
     public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider)
             throws StorageException {
         checkNotNull(layers);
@@ -243,100 +260,5 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
         } else {
             return String.format("container: %s prefix: %s", container, prefix);
         }
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((accountKey == null) ? 0 : accountKey.hashCode());
-        result = prime * result + ((accountName == null) ? 0 : accountName.hashCode());
-        result = prime * result + ((container == null) ? 0 : container.hashCode());
-        result = prime * result + ((maxConnections == null) ? 0 : maxConnections.hashCode());
-        result = prime * result + ((prefix == null) ? 0 : prefix.hashCode());
-        result = prime * result + ((proxyHost == null) ? 0 : proxyHost.hashCode());
-        result = prime * result + ((proxyPassword == null) ? 0 : proxyPassword.hashCode());
-        result = prime * result + ((proxyPort == null) ? 0 : proxyPort.hashCode());
-        result = prime * result + ((proxyUsername == null) ? 0 : proxyUsername.hashCode());
-        result = prime * result + ((serviceURL == null) ? 0 : serviceURL.hashCode());
-        result = prime * result + ((useHTTPS == null) ? 0 : useHTTPS.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!super.equals(obj)) return false;
-        if (getClass() != obj.getClass()) return false;
-        AzureBlobStoreInfo other = (AzureBlobStoreInfo) obj;
-        if (accountKey == null) {
-            if (other.accountKey != null) return false;
-        } else if (!accountKey.equals(other.accountKey)) return false;
-        if (accountName == null) {
-            if (other.accountName != null) return false;
-        } else if (!accountName.equals(other.accountName)) return false;
-        if (container == null) {
-            if (other.container != null) return false;
-        } else if (!container.equals(other.container)) return false;
-        if (maxConnections == null) {
-            if (other.maxConnections != null) return false;
-        } else if (!maxConnections.equals(other.maxConnections)) return false;
-        if (prefix == null) {
-            if (other.prefix != null) return false;
-        } else if (!prefix.equals(other.prefix)) return false;
-        if (proxyHost == null) {
-            if (other.proxyHost != null) return false;
-        } else if (!proxyHost.equals(other.proxyHost)) return false;
-        if (proxyPassword == null) {
-            if (other.proxyPassword != null) return false;
-        } else if (!proxyPassword.equals(other.proxyPassword)) return false;
-        if (proxyPort == null) {
-            if (other.proxyPort != null) return false;
-        } else if (!proxyPort.equals(other.proxyPort)) return false;
-        if (proxyUsername == null) {
-            if (other.proxyUsername != null) return false;
-        } else if (!proxyUsername.equals(other.proxyUsername)) return false;
-        if (serviceURL == null) {
-            if (other.serviceURL != null) return false;
-        } else if (!serviceURL.equals(other.serviceURL)) return false;
-        if (useHTTPS == null) {
-            if (other.useHTTPS != null) return false;
-        } else if (!useHTTPS.equals(other.useHTTPS)) return false;
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "AzureBlobStoreInfo [container="
-                + container
-                + ", prefix="
-                + prefix
-                + ", accountName="
-                + accountName
-                + ", accountKey="
-                + accountKey
-                + ", maxConnections="
-                + maxConnections
-                + ", useHTTPS="
-                + useHTTPS
-                + ", proxyHost="
-                + proxyHost
-                + ", proxyPort="
-                + proxyPort
-                + ", proxyUsername="
-                + proxyUsername
-                + ", proxyPassword="
-                + proxyPassword
-                + ", serviceURL="
-                + serviceURL
-                + ", getName()="
-                + getName()
-                + ", getId()="
-                + getId()
-                + ", isEnabled()="
-                + isEnabled()
-                + ", isDefault()="
-                + isDefault()
-                + "]";
     }
 }
