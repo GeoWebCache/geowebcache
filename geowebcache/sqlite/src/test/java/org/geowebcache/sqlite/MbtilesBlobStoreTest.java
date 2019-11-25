@@ -420,7 +420,7 @@ public final class MbtilesBlobStoreTest extends TestSupport {
                         foundMetadata.add(tuple(resultSet.getString(1), resultSet.getString(2)));
                     }
                     // let's see if we have the expected metadata
-                    assertThat(foundMetadata.size(), is(9));
+                    assertThat(foundMetadata.size(), is(10));
                     // the provided minZoom and maxZoom are ignored (geotools computes the real
                     // values)
                     assertThat(
