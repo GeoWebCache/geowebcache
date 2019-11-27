@@ -62,6 +62,11 @@ final class Utils {
         public int hashCode() {
             return Objects.hash(first, second);
         }
+
+        @Override
+        public String toString() {
+            return "Tuple{" + "first=" + first + ", second=" + second + '}';
+        }
     }
 
     @SafeVarargs

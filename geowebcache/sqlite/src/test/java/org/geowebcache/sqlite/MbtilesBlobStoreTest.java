@@ -434,7 +434,8 @@ public final class MbtilesBlobStoreTest extends TestSupport {
                                     tuple("format", "png"),
                                     tuple("bounds", "-180.0,-90.0,180.0,90.0"),
                                     tuple("minzoom", "5"),
-                                    tuple("maxzoom", "5")));
+                                    tuple("maxzoom", "5"),
+                                    tuple("json", "null")));
                     return null;
                 },
                 "SELECT name, value FROM metadata;");
