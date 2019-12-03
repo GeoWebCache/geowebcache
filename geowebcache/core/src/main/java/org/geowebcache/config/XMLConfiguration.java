@@ -75,6 +75,7 @@ import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.seed.SeedRequest;
+import org.geowebcache.seed.TruncateAllRequest;
 import org.geowebcache.seed.TruncateLayerRequest;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.UnsuitableStorageException;
@@ -461,6 +462,7 @@ public class XMLConfiguration
         xs.omitField(ServiceInformation.class, "citeCompliant");
 
         xs.processAnnotations(TruncateLayerRequest.class);
+        xs.processAnnotations(TruncateAllRequest.class);
 
         if (context != null) {
             /*
