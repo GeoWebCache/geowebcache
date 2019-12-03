@@ -151,6 +151,8 @@ public class Demo {
                                 + "<p>You can reload the configuration by pressing the following button. "
                                 + "The username / password is configured in WEB-INF/user.properties, or the admin "
                                 + " user in GeoServer if you are using the plugin.</p>\n"
+                                + "<strong>Truncate All Layers:</strong><br />\n"
+                                + "<p>You can truncate all layers by pressing <a href=\"rest/masstruncate/all\">Empty GWC Cache</a></p>\n "
                                 + "<form form id=\"kill\" action=\"")
                 .append(reloadPath)
                 .append(
