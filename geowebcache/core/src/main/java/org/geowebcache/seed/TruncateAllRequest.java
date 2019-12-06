@@ -24,6 +24,9 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
+import org.geowebcache.util.ServletUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 /** @author ImranR */
 @XStreamAlias("truncateAll")
@@ -41,26 +44,34 @@ public class TruncateAllRequest implements MassTruncateRequest, Serializable {
             throws StorageException, GeoWebCacheException {
         Iterator<TileLayer> iterator = breeder.getLayers().iterator();
         TileLayer toTruncate;
+        Iterator<String> gridSetIterator;
+        String gridSetId = "";
         boolean truncated = false;
         while (iterator.hasNext()) {
             toTruncate = iterator.next();
-            truncated = sb.delete(toTruncate.getName());
-            if (!truncated) {
-                // did we hit a layer that has nothing on storage, or a layer that is not there?
-                try {
-                    breeder.findTileLayer(toTruncate.getName());
-                } catch (GeoWebCacheException e) {
-                    throw new IllegalArgumentException(
-                            "Could not find layer " + toTruncate.getName());
-                }
-            } else {
-                log.info("Truncate All Job: Finished deleting layer " + toTruncate.getName());
-                if (getTrucatedLayers().length() > 0) getTrucatedLayers().append(",");
+            // get all grid sets
+            gridSetIterator = toTruncate.getGridSubsets().iterator();
+            while (gridSetIterator.hasNext()) {
+                gridSetId = gridSetIterator.next();
+                truncated = sb.deleteByGridSetId(toTruncate.getName(), gridSetId);
+                log.info("Layer: " + toTruncate.getName() + ",Truncated Gridset :" + gridSetId);
+            }
+            if (truncated) {
+                if (getTrucatedLayers().length() > 0) trucatedLayers.append(",");
                 getTrucatedLayers().append(toTruncate.getName());
             }
         }
 
         return true;
+    }
+
+    @Override
+    public ResponseEntity<String> getResponse(String contentType) {
+        // for gui send page
+        // for others stay legacy
+        if (contentType.equalsIgnoreCase("application/x-www-form-urlencoded")) {
+            return new ResponseEntity<String>(getResponsePage().toString(), HttpStatus.OK);
+        } else return MassTruncateRequest.super.getResponse(contentType);
     }
 
     public StringBuilder getTrucatedLayers() {
@@ -72,5 +83,23 @@ public class TruncateAllRequest implements MassTruncateRequest, Serializable {
     public String getTrucatedLayersList() {
         if (getTrucatedLayers().length() == 0) return "No Layers were truncated";
         else return getTrucatedLayers().toString();
+    }
+
+    private StringBuilder getResponsePage() {
+        StringBuilder doc = new StringBuilder();
+        String content =
+                "<p>Truncated All Layers</p>\n"
+                        + "<p>Truncated Layers:"
+                        + getTrucatedLayersList().toString()
+                        + "</p>";
+
+        doc.append(
+                "<html>\n"
+                        + ServletUtils.gwcHtmlHeader("../", "GWC Seed Form")
+                        + "<body>\n"
+                        + ServletUtils.gwcHtmlLogoLink("../"));
+        doc.append("<p>" + content + "</p> ");
+        doc.append("<p><a href=\"../demo\">Go back</a></p>");
+        return doc;
     }
 }

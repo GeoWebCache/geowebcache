@@ -15,7 +15,6 @@
 package org.geowebcache.rest.seed;
 
 import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
@@ -28,7 +27,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.MockConfigurationResourceProvider;
@@ -74,15 +76,25 @@ public class MassTruncateControllerTest {
 
     @Test
     public void testTruncateLayer() throws Exception {
+        Set<String> layer1GridSet = new HashSet<String>(Arrays.asList("test_grid1", "test_grid2"));
         String layerName = "test";
+        TileLayer tl1 = createMock(TileLayer.class);
+        expect(tl1.getGridSubsets()).andReturn(layer1GridSet).anyTimes();
         String requestBody =
                 "<truncateLayer><layerName>" + layerName + "</layerName></truncateLayer>";
 
+        TileBreeder tb = createMock(TileBreeder.class);
+        expect(tb.findTileLayer(layerName)).andReturn(tl1);
+
         StorageBroker sb = createMock(StorageBroker.class);
-        expect(sb.delete(eq(layerName))).andReturn(true);
+        for (String grid : layer1GridSet)
+            expect(sb.deleteByGridSetId(layerName, grid)).andReturn(true);
+        replay(tl1);
         replay(sb);
+        replay(tb);
 
         mtc.setStorageBroker(sb);
+        mtc.setTileBreeder(tb);
 
         this.mockMvc
                 .perform(
@@ -96,18 +108,23 @@ public class MassTruncateControllerTest {
 
     @Test
     public void testTruncateLayerTwice() throws Exception {
+        Set<String> layer1GridSet = new HashSet<String>(Arrays.asList("test_grid1", "test_grid2"));
         String layerName = "test";
+        TileLayer tileLayer = createMock(TileLayer.class);
+        expect(tileLayer.getName()).andReturn(layerName).anyTimes();
+        expect(tileLayer.getGridSubsets()).andReturn(layer1GridSet);
+        expect(tileLayer.getGridSubsets()).andReturn(new HashSet<String>());
+        replay(tileLayer);
         String requestBody =
                 "<truncateLayer><layerName>" + layerName + "</layerName></truncateLayer>";
 
         StorageBroker sb = createMock(StorageBroker.class);
-        expect(sb.delete(eq(layerName))).andReturn(true);
-        expect(sb.delete(eq(layerName))).andReturn(false);
+        for (String grid : layer1GridSet)
+            expect(sb.deleteByGridSetId(layerName, grid)).andReturn(true);
         replay(sb);
 
         TileBreeder tb = createMock(TileBreeder.class);
-        TileLayer tileLayer = createMock(TileLayer.class);
-        expect(tb.findTileLayer(layerName)).andReturn(tileLayer); // just do not throw an
+        expect(tb.findTileLayer(layerName)).andReturn(tileLayer).times(2); // just do not throw an
         replay(tb);
 
         mtc.setStorageBroker(sb);
@@ -139,7 +156,6 @@ public class MassTruncateControllerTest {
                 "<truncateLayer><layerName>" + layerName + "</layerName></truncateLayer>";
 
         StorageBroker sb = createMock(StorageBroker.class);
-        expect(sb.delete(eq(layerName))).andReturn(false);
         replay(sb);
 
         TileBreeder tb = createMock(TileBreeder.class);
@@ -178,6 +194,11 @@ public class MassTruncateControllerTest {
 
     @Test
     public void testTruncateAllLayers() throws Exception {
+        Set<String> layer1GridSet =
+                new HashSet<String>(Arrays.asList("test1_grid1", "test1_grid2"));
+        Set<String> layer2GridSet =
+                new HashSet<String>(Arrays.asList("test22_grid1", "test22_grid2"));
+
         String layerName = "test11";
         String layerName2 = "test22";
         // setting up calls
@@ -185,7 +206,10 @@ public class MassTruncateControllerTest {
         TileLayer tl2 = createMock(TileLayer.class);
 
         expect(tl1.getName()).andReturn(layerName).anyTimes();
+        expect(tl1.getGridSubsets()).andReturn(layer1GridSet).anyTimes();
+
         expect(tl2.getName()).andReturn(layerName2).anyTimes();
+        expect(tl2.getGridSubsets()).andReturn(layer2GridSet).anyTimes();
 
         replay(tl1);
         replay(tl2);
@@ -200,8 +224,12 @@ public class MassTruncateControllerTest {
         expect(tb.getLayers()).andReturn(mockList);
 
         StorageBroker sb = createMock(StorageBroker.class);
-        expect(sb.delete(layerName)).andReturn(true);
-        expect(sb.delete(layerName2)).andReturn(true);
+
+        for (String grid : layer1GridSet)
+            expect(sb.deleteByGridSetId(layerName, grid)).andReturn(true);
+
+        for (String grid : layer2GridSet)
+            expect(sb.deleteByGridSetId(layerName2, grid)).andReturn(true);
 
         replay(sb);
         replay(tb);
@@ -220,7 +248,12 @@ public class MassTruncateControllerTest {
     }
 
     @Test
-    public void testTruncateAllLayersWithGET() throws Exception {
+    public void testTruncateAllLayersFromHTMLForm() throws Exception {
+        Set<String> layer1GridSet =
+                new HashSet<String>(Arrays.asList("test1_grid1", "test1_grid2"));
+        Set<String> layer2GridSet =
+                new HashSet<String>(Arrays.asList("test2_grid1", "test2_grid2"));
+
         String layerName = "test1";
         String layerName2 = "test2";
         // setting up calls
@@ -228,7 +261,10 @@ public class MassTruncateControllerTest {
         TileLayer tl2 = createMock(TileLayer.class);
 
         expect(tl1.getName()).andReturn(layerName).anyTimes();
+        expect(tl1.getGridSubsets()).andReturn(layer1GridSet).anyTimes();
+
         expect(tl2.getName()).andReturn(layerName2).anyTimes();
+        expect(tl2.getGridSubsets()).andReturn(layer2GridSet).anyTimes();
 
         replay(tl1);
         replay(tl2);
@@ -241,18 +277,26 @@ public class MassTruncateControllerTest {
         expect(tb.getLayers()).andReturn(mockList);
 
         StorageBroker sb = createMock(StorageBroker.class);
-        expect(sb.delete(layerName)).andReturn(true);
-        expect(sb.delete(layerName2)).andReturn(true);
+        for (String grid : layer1GridSet)
+            expect(sb.deleteByGridSetId(layerName, grid)).andReturn(true);
+
+        for (String grid : layer2GridSet)
+            expect(sb.deleteByGridSetId(layerName2, grid)).andReturn(true);
 
         replay(sb);
         replay(tb);
 
         mtc.setStorageBroker(sb);
         mtc.setTileBreeder(tb);
+        String requestBody = "<truncateAll>=</truncateAll>";
 
         MvcResult result =
                 this.mockMvc
-                        .perform(get("/rest/masstruncate/all").contextPath(""))
+                        .perform(
+                                post("/rest/masstruncate")
+                                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                                        .content(requestBody)
+                                        .contextPath(""))
                         .andExpect(status().is2xxSuccessful())
                         .andReturn();
         assertTrue(

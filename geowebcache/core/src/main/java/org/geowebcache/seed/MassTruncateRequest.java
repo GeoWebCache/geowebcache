@@ -17,6 +17,8 @@ package org.geowebcache.seed;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 /**
  * Represents a requests to truncate multiple gridsets or layers at once
@@ -35,4 +37,8 @@ public interface MassTruncateRequest {
      */
     public boolean doTruncate(StorageBroker sb, TileBreeder breeder)
             throws StorageException, GeoWebCacheException;
+
+    public default ResponseEntity<String> getResponse(String contentType) {
+        return new ResponseEntity<String>(HttpStatus.OK);
+    }
 }
