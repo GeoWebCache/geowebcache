@@ -21,6 +21,7 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,7 +37,6 @@ import org.geowebcache.seed.*;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.ApplicationContextProvider;
-import org.geowebcache.util.ServletUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -78,8 +78,7 @@ public class MassTruncateController extends GWCSeedingController {
         TruncateLayerRequest.class,
         TruncateParametersRequest.class,
         TruncateOrphansRequest.class,
-        TruncateBboxRequest.class,
-        TruncateAllRequest.class
+        TruncateBboxRequest.class
     };
 
     Class<?>[] requestTypes;
@@ -127,6 +126,8 @@ public class MassTruncateController extends GWCSeedingController {
             obj = xs.fromXML(reqData);
         } else if (contentType.equalsIgnoreCase("json")) {
             obj = xs.fromXML(convertJson(reqData));
+        } else if (contentType.equalsIgnoreCase("application/x-www-form-urlencoded")) {
+            obj = xs.fromXML(URLDecoder.decode(reqData, Charset.defaultCharset().name()));
         } else {
             throw new RestException(
                     "Format extension unknown or not specified: " + contentType,
@@ -145,46 +146,7 @@ public class MassTruncateController extends GWCSeedingController {
         } catch (GeoWebCacheException e) {
             throw new RestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<String>(HttpStatus.OK);
-    }
-
-    /** Issue a mass truncate request on layers */
-    @RequestMapping(value = "/masstruncate/all", method = RequestMethod.GET)
-    public ResponseEntity<?> doMassTruncateAllGet(HttpServletRequest req) throws IOException {
-        //        String contentType = req.getContentType();
-        //
-        //        if (contentType == null || contentType.equalsIgnoreCase("text/xml")) {
-        //
-        //       ///     obj = xs.fromXML(reqData);
-        //        } else if (contentType.equalsIgnoreCase("json")) {
-        //         //   obj = xs.fromXML(convertJson(reqData));
-        //        } else {
-        //            throw new RestException(
-        //                    "Format extension unknown or not specified: " + contentType,
-        //                    HttpStatus.BAD_REQUEST);
-        //        }
-        log.info("Received request to mass truncate All GWC layers");
-        TruncateAllRequest mtr = new TruncateAllRequest();
-        try {
-            if (!mtr.doTruncate(broker, breeder)) {
-                throw new RestException(
-                        "Truncation of All layers failed", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        } catch (IllegalArgumentException e) {
-            throw new RestException(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (StorageException e) {
-            throw new RestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (GeoWebCacheException e) {
-            throw new RestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        String responseContent =
-                "<p>Truncated All Layers</p>\n"
-                        + "<p>Truncated Layers:"
-                        + mtr.getTrucatedLayersList().toString()
-                        + "</p>";
-        return new ResponseEntity<String>(
-                getResponsePage(responseContent).toString(), HttpStatus.OK);
+        return mtr.getResponse(contentType);
     }
 
     protected void handleRequest(HttpServletRequest req, HttpServletResponse resp, Object obj) {
@@ -212,18 +174,5 @@ public class MassTruncateController extends GWCSeedingController {
         xs = super.configXStream(xs);
         xs.processAnnotations(getRequestTypes());
         return xs;
-    }
-
-    private StringBuilder getResponsePage(final String content) {
-        StringBuilder doc = new StringBuilder();
-
-        doc.append(
-                "<html>\n"
-                        + ServletUtils.gwcHtmlHeader("../../", "GWC Seed Form")
-                        + "<body>\n"
-                        + ServletUtils.gwcHtmlLogoLink("../../"));
-        doc.append("<p>" + content + "</p> ");
-        doc.append("<p><a href=\"../../demo\">Go back</a></p>");
-        return doc;
     }
 }
