@@ -119,6 +119,7 @@ public class Demo {
             TileLayerDispatcher tileLayerDispatcher, GridSetBroker gridSetBroker)
             throws GeoWebCacheException {
         String reloadPath = "rest/reload";
+        String truncatePath = "rest/masstruncate";
 
         StringBuffer buf = new StringBuffer();
 
@@ -158,6 +159,14 @@ public class Demo {
                                 + "<input type=\"hidden\" name=\"reload_configuration\"  value=\"1\" />"
                                 + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;\"type=\"submit\" value=\"Reload TileLayerConfiguration\"></span>"
                                 + "</form>"
+                                + "<br /><strong>Truncate All Layers:</strong><br />\n"
+                                + "<p>Truncate all layers"
+                                + "<form form id=\"truncate\" action=\"")
+                .append(truncatePath)
+                .append(
+                        "\" method=\"post\"><input type=\"hidden\" name=\"<truncateAll>\" value=\"</truncateAll>\"/>"
+                                + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;background-color:LightCoral;\"type=\"submit\" value=\"Clear GWC\"></span>"
+                                + "</form><br />"
                                 + "</body></html>");
 
         return buf.toString();

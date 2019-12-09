@@ -35,3 +35,8 @@ Reload configuration
 --------------------
 
 There is also a button to :ref:`Reload Configuration <configuration.reload>`.  Click this to make any configuration changes known to GeoWebCache.  You will have to :ref:`authenticate <configuration.security>` as an administrator first.
+
+Clear GWC Cache
+--------------------
+
+There is also a button to wipe the GWC cache clean. This will internally truncate all layers. 

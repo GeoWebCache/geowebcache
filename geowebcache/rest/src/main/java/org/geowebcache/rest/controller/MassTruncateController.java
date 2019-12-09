@@ -21,6 +21,7 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Set;
@@ -125,6 +126,8 @@ public class MassTruncateController extends GWCSeedingController {
             obj = xs.fromXML(reqData);
         } else if (contentType.equalsIgnoreCase("json")) {
             obj = xs.fromXML(convertJson(reqData));
+        } else if (contentType.equalsIgnoreCase("application/x-www-form-urlencoded")) {
+            obj = xs.fromXML(URLDecoder.decode(reqData, Charset.defaultCharset().name()));
         } else {
             throw new RestException(
                     "Format extension unknown or not specified: " + contentType,
@@ -143,7 +146,7 @@ public class MassTruncateController extends GWCSeedingController {
         } catch (GeoWebCacheException e) {
             throw new RestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<String>(HttpStatus.OK);
+        return mtr.getResponse(contentType);
     }
 
     protected void handleRequest(HttpServletRequest req, HttpServletResponse resp, Object obj) {
