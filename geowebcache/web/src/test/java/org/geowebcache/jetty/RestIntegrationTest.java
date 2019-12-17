@@ -892,7 +892,7 @@ public class RestIntegrationTest {
         JSONObject jsonObject = getResponseEntityAsJSONObject(response);
         jsonObject = jsonObject.getJSONObject("gridSet");
         assertEquals("EPSG:2163", jsonObject.get("name"));
-        assertEquals("2163", jsonObject.getJSONObject("srs").getString("number"));
+        assertEquals(2163, jsonObject.getJSONObject("srs").get("number"));
         assertEquals(
                 "[-2495667.977678598,-2223677.196231552,3291070.6104286816,959189.3312465074]",
                 jsonObject.getJSONObject("extent").get("coords").toString());
