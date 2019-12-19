@@ -1,3 +1,13 @@
+GeoWebCache 1.15.4 (2019-12-19)
+-------------------------------
+
+Maintenance release of 1.15 branch.
+
+Improvements:
++++++++++++++
+- Upgrading jackson to 2.9.10
+
+
 GeoWebCache 1.15.3 (2019-09-20)
 -------------------------------
 
