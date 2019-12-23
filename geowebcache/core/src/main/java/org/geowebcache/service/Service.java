@@ -130,9 +130,8 @@ public abstract class Service {
         int size = (int) data.getSize();
         response.setContentLength(size);
 
-        try {
-            OutputStream os = response.getOutputStream();
-            WritableByteChannel channel = Channels.newChannel(os);
+        try (OutputStream os = response.getOutputStream();
+                WritableByteChannel channel = Channels.newChannel(os)) {
             data.transferTo(channel);
 
             if (stats != null) {

@@ -75,6 +75,7 @@ public class FilterUpdateController extends GWCController {
         try {
             if (updateType.equalsIgnoreCase("xml")) {
                 // Parse the input using XStream
+                @SuppressWarnings("PMD.CloseResource") // managed by servlet container
                 InputStream input = request.getInputStream();
                 XmlFilterUpdate fu = XMLConfiguration.parseXMLFilterUpdate(input);
 

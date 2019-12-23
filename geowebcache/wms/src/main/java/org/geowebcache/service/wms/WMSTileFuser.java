@@ -748,6 +748,7 @@ public class WMSTileFuser {
         renderCanvas();
         scaleRaster();
 
+        @SuppressWarnings("PMD.CloseResource") // wraps OS managed by servlet container
         AccountingOutputStream aos = null;
         RenderedImage finalImage = null;
         try {
@@ -757,6 +758,7 @@ public class WMSTileFuser {
             response.setContentType(this.outputFormat.getMimeType());
             response.setCharacterEncoding("UTF-8");
 
+            @SuppressWarnings("PMD.CloseResource") // managed by servlet container
             ServletOutputStream os = response.getOutputStream();
             aos = new AccountingOutputStream(os);
 

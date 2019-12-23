@@ -52,7 +52,12 @@ import org.geowebcache.service.HttpErrorCodeException;
 import org.geowebcache.service.OWSException;
 import org.geowebcache.service.Service;
 import org.geowebcache.stats.RuntimeStats;
-import org.geowebcache.storage.*;
+import org.geowebcache.storage.BlobStore;
+import org.geowebcache.storage.BlobStoreAggregator;
+import org.geowebcache.storage.CompositeBlobStore;
+import org.geowebcache.storage.DefaultStorageBroker;
+import org.geowebcache.storage.DefaultStorageFinder;
+import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.blobstore.memory.CacheStatistics;
 import org.geowebcache.storage.blobstore.memory.MemoryBlobStore;
 import org.geowebcache.util.ResponseUtils;
@@ -220,14 +225,11 @@ public class GeoWebCacheDispatcher extends AbstractController {
     }
 
     private void loadBlankTile(Resource blankTile, URL source) throws IOException {
-        InputStream inputStream = source.openStream();
-        ReadableByteChannel ch = Channels.newChannel(inputStream);
-        try {
+        try (InputStream inputStream = source.openStream();
+                ReadableByteChannel ch = Channels.newChannel(inputStream)) {
             blankTile.transferFrom(ch);
         } catch (IOException e) {
             log.error("Failed to load blank tile", e);
-        } finally {
-            ch.close();
         }
     }
 

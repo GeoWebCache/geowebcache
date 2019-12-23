@@ -115,8 +115,7 @@ public class WMTSGetCapabilities {
 
         stats.log(data.length, CacheResult.OTHER);
 
-        try {
-            OutputStream os = response.getOutputStream();
+        try (OutputStream os = response.getOutputStream()) {
             os.write(data);
             os.flush();
         } catch (IOException ioe) {

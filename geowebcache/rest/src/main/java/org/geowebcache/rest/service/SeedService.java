@@ -292,11 +292,11 @@ public class SeedService {
      */
     protected String convertJson(String entityText) throws IOException {
         HierarchicalStreamDriver driver = new JettisonMappedXmlDriver();
-        StringReader reader = new StringReader(entityText);
-        HierarchicalStreamReader hsr = driver.createReader(reader);
-        StringWriter writer = new StringWriter();
-        new HierarchicalStreamCopier().copy(hsr, new PrettyPrintWriter(writer));
-        writer.close();
-        return writer.toString();
+        try (StringReader reader = new StringReader(entityText);
+                StringWriter writer = new StringWriter()) {
+            HierarchicalStreamReader hsr = driver.createReader(reader);
+            new HierarchicalStreamCopier().copy(hsr, new PrettyPrintWriter(writer));
+            return writer.toString();
+        }
     }
 }

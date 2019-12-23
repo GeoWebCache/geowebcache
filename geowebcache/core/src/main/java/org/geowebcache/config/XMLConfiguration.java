@@ -805,15 +805,16 @@ public class XMLConfiguration
         // TODO dont know why this one suddenly failed to look up, revert to
         // XMLConstants.W3C_XML_SCHEMA_NS_URI
         SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
-        InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd");
+        try (InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd")) {
 
-        Schema schema = factory.newSchema(new StreamSource(is));
-        Validator validator = schema.newValidator();
+            Schema schema = factory.newSchema(new StreamSource(is));
+            Validator validator = schema.newValidator();
 
-        // debugPrint(rootNode);
+            // debugPrint(rootNode);
 
-        DOMSource domSrc = new DOMSource(rootNode);
-        validator.validate(domSrc);
+            DOMSource domSrc = new DOMSource(rootNode);
+            validator.validate(domSrc);
+        }
     }
 
     static String getCurrentSchemaVersion() {
@@ -836,16 +837,19 @@ public class XMLConfiguration
         DOMResult result = new DOMResult();
         Transformer transformer;
 
-        InputStream is = XMLConfiguration.class.getResourceAsStream(xslFilename);
+        try (InputStream is = XMLConfiguration.class.getResourceAsStream(xslFilename)) {
 
-        try {
-            transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(is));
-            transformer.transform(new DOMSource(oldRootNode), result);
-        } catch (TransformerFactoryConfigurationError | TransformerException e) {
-            log.debug(e);
+            try {
+                transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(is));
+                transformer.transform(new DOMSource(oldRootNode), result);
+            } catch (TransformerFactoryConfigurationError | TransformerException e) {
+                log.debug(e);
+            }
+
+            return result.getNode();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-
-        return result.getNode();
     }
 
     public void afterPropertiesSet() throws GeoWebCacheException {

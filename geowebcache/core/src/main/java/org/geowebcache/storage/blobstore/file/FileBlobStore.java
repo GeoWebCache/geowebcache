@@ -782,6 +782,7 @@ public class FileBlobStore implements BlobStore {
         if (!layerPath.exists()) {
             return Stream.of();
         }
+        @SuppressWarnings("PMD.CloseResource") // wrapped and closed in the return value
         final DirectoryStream<Path> layerDirStream =
                 Files.newDirectoryStream(layerPath.toPath(), filter);
         return StreamSupport.stream(layerDirStream.spliterator(), false)

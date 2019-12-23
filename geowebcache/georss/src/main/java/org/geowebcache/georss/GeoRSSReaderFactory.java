@@ -16,7 +16,6 @@ package org.geowebcache.georss;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
@@ -69,8 +68,11 @@ class GeoRSSReaderFactory {
             contentEncoding = "UTF-8";
         }
 
-        InputStream in = getMethod.getResponseBodyAsStream();
-        Reader reader = new BufferedReader(new InputStreamReader(in, contentEncoding));
+        @SuppressWarnings("PMD.CloseResource") // The stream will be kept open to get new events
+        Reader reader =
+                new BufferedReader(
+                        new InputStreamReader(
+                                getMethod.getResponseBodyAsStream(), contentEncoding));
         if (log.isDebugEnabled()) {
             log.debug("GeoRSS reader created, returning.");
         }

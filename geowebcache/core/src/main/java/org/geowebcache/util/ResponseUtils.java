@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
 import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
@@ -265,10 +266,9 @@ public final class ResponseUtils {
 
         response.setContentLength((int) contentLength);
         if (resource != null) {
-            try {
-                OutputStream os = response.getOutputStream();
-                resource.transferTo(Channels.newChannel(os));
-
+            try (OutputStream os = response.getOutputStream();
+                    WritableByteChannel channel = Channels.newChannel(os)) {
+                resource.transferTo(channel);
                 runtimeStats.log(contentLength, cacheRes);
 
             } catch (IOException ioe) {
@@ -321,14 +321,11 @@ public final class ResponseUtils {
     }
 
     private static void loadBlankTile(Resource blankTile, URL source) throws IOException {
-        InputStream inputStream = source.openStream();
-        ReadableByteChannel ch = Channels.newChannel(inputStream);
-        try {
+        try (InputStream inputStream = source.openStream();
+                ReadableByteChannel ch = Channels.newChannel(inputStream)) {
             blankTile.transferFrom(ch);
         } catch (IOException e) {
             log.debug(e);
-        } finally {
-            ch.close();
         }
     }
 

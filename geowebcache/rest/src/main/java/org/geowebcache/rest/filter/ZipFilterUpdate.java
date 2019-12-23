@@ -39,9 +39,7 @@ public class ZipFilterUpdate {
 
     public void runUpdate(RequestFilter filter, TileLayer tl) throws RestException {
 
-        try {
-            ZipInputStream zis = new ZipInputStream(is);
-
+        try (ZipInputStream zis = new ZipInputStream(is)) {
             ZipEntry ze = zis.getNextEntry();
 
             while (ze != null) {

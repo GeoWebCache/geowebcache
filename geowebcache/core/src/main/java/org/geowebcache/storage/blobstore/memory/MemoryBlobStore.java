@@ -502,15 +502,15 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
                 LOG.debug("Resource is not a Byte Array, data must be transferred");
             }
             // Else the result is written to a new WritableByteChannel
-            final ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-            WritableByteChannel wChannel = Channels.newChannel(bOut);
-            try {
+            try (ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+                    WritableByteChannel wChannel = Channels.newChannel(bOut)) {
                 blob.transferTo(wChannel);
+                finalBlob = new ByteArrayResource(bOut.toByteArray());
             } catch (IOException e) {
                 throw new StorageException(e.getLocalizedMessage(), e);
             }
-            finalBlob = new ByteArrayResource(bOut.toByteArray());
         }
+
         finalBlob.setLastModified(blob.getLastModified());
         // Creation of a new Resource
         TileObject cached =

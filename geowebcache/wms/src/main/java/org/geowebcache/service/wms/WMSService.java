@@ -460,6 +460,7 @@ public class WMSService extends Service {
 
         try {
             tile.servletResp.setContentType(mimeType.getMimeType());
+            @SuppressWarnings("PMD.CloseResource") // managed by servlet container
             ServletOutputStream outputStream = tile.servletResp.getOutputStream();
             data.transferTo(Channels.newChannel(outputStream));
             outputStream.flush();
