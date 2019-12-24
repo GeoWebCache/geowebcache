@@ -111,6 +111,7 @@ public class WMTSGetFeatureInfo {
         stats.log(size, CacheResult.OTHER);
 
         try {
+            @SuppressWarnings("PMD.CloseResource") // managed by servlet container
             OutputStream os = convTile.servletResp.getOutputStream();
             data.transferTo(Channels.newChannel(os));
             os.flush();

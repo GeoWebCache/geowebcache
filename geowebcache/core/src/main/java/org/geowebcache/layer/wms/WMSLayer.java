@@ -52,7 +52,6 @@ import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.util.GWCVars;
-import org.geowebcache.util.IOUtils;
 
 /** A tile layer backed by a WMS server */
 public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
@@ -807,7 +806,6 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         String serverStr = getWMSurl()[0];
 
         HttpMethodBase method = null;
-        InputStream is = null;
         try {
             URL url;
             if (serverStr.contains("?")) {
@@ -825,25 +823,24 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
             method =
                     ((WMSHttpHelper) helper)
                             .executeRequest(url, null, getBackendTimeout(), getHttpRequestMode());
-            is = method.getResponseBodyAsStream();
+            try (InputStream is = method.getResponseBodyAsStream()) {
+                HttpServletResponse response = tile.servletResp;
+                response.setCharacterEncoding(method.getResponseCharSet());
+                Header contentType = method.getResponseHeader("Content-Type");
+                if (contentType != null) {
+                    response.setContentType(contentType.getValue());
+                }
 
-            HttpServletResponse response = tile.servletResp;
-            response.setCharacterEncoding(method.getResponseCharSet());
-            Header contentType = method.getResponseHeader("Content-Type");
-            if (contentType != null) {
-                response.setContentType(contentType.getValue());
-            }
+                int read = 0;
+                byte[] data = new byte[1024];
 
-            int read = 0;
-            byte[] data = new byte[1024];
-
-            while (read > -1) {
-                read = is.read(data);
-                if (read > -1) {
-                    response.getOutputStream().write(data, 0, read);
+                while (read > -1) {
+                    read = is.read(data);
+                    if (read > -1) {
+                        response.getOutputStream().write(data, 0, read);
+                    }
                 }
             }
-
         } catch (IOException ioe) {
             tile.servletResp.setStatus(500);
             log.error(ioe.getMessage());
@@ -851,7 +848,6 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
             if (method != null) {
                 method.releaseConnection();
             }
-            IOUtils.closeQuietly(is);
         }
     }
 

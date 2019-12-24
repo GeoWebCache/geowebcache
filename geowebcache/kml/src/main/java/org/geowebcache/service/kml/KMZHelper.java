@@ -171,6 +171,7 @@ public class KMZHelper {
         if (data != null) {
             ZipEntry zeData = new ZipEntry("data_" + namePfx + "." + formatExtension);
             zipos.putNextEntry(zeData);
+            @SuppressWarnings("PMD.CloseResource") // memory channel, does not need closing
             WritableByteChannel outch = Channels.newChannel(zipos);
             data.transferTo(outch);
         }

@@ -740,8 +740,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
             gtMetadata.setType(existingMetadata.getType());
             gtMetadata.setVersion(existingMetadata.getVersion());
         }
-        MBTilesFile mbtiles = GeoToolsMbtilesUtils.getMBTilesFile(connection, file);
-        try {
+        try (MBTilesFile mbtiles = GeoToolsMbtilesUtils.getMBTilesFile(connection, file)) {
             mbtiles.saveMetaData(gtMetadata);
         } catch (Exception exception) {
             throw Utils.exception(exception, "Error storing metadata on file '%s'.", file);

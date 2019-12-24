@@ -61,6 +61,7 @@ public class KMLSiteMap {
     }
 
     private void writeSiteMapIndex() throws IOException {
+        @SuppressWarnings("PMD.CloseResource") // managed by servlet container
         OutputStream os = tile.servletResp.getOutputStream();
 
         String header =
@@ -75,6 +76,7 @@ public class KMLSiteMap {
     }
 
     private void writeSiteMapIndexLoop() throws IOException {
+        @SuppressWarnings("PMD.CloseResource") // managed by servlet container
         OutputStream os = tile.servletResp.getOutputStream();
         String urlPrefix = tile.getUrlPrefix();
 
@@ -145,6 +147,7 @@ public class KMLSiteMap {
     }
 
     public void writeSiteMapLoop(long[] gridLoc) throws GeoWebCacheException, IOException {
+        @SuppressWarnings("PMD.CloseResource") // managed by servlet container
         OutputStream os = tile.servletResp.getOutputStream();
         TileLayer tileLayer = tile.getLayer();
         String urlPrefix = tile.getUrlPrefix();

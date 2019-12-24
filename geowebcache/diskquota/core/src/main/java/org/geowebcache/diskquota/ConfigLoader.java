@@ -30,7 +30,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -267,15 +266,12 @@ public class ConfigLoader {
     private DiskQuotaConfig loadConfiguration(final InputStream configStream)
             throws XStreamException {
         XStream xstream = getConfiguredXStream(new GeoWebCacheXStream());
-        Reader reader;
-        try {
-            reader = new InputStreamReader(configStream, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
+        try (Reader reader = new InputStreamReader(configStream, "UTF-8")) {
+            DiskQuotaConfig fromXML = loadConfiguration(reader, xstream);
+            return fromXML;
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        DiskQuotaConfig fromXML = loadConfiguration(reader, xstream);
-        return fromXML;
     }
 
     public static DiskQuotaConfig loadConfiguration(final Reader reader, XStream xstream) {

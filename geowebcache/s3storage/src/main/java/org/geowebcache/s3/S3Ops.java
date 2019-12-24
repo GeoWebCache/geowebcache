@@ -281,13 +281,14 @@ class S3Ops {
 
     @Nullable
     public byte[] getBytes(String key) throws StorageException {
-        S3Object object = getObject(key);
-        if (object == null) {
-            return null;
-        }
-        try (S3ObjectInputStream in = object.getObjectContent()) {
-            byte[] bytes = IOUtils.toByteArray(in);
-            return bytes;
+        try (S3Object object = getObject(key)) {
+            if (object == null) {
+                return null;
+            }
+            try (S3ObjectInputStream in = object.getObjectContent()) {
+                byte[] bytes = IOUtils.toByteArray(in);
+                return bytes;
+            }
         } catch (IOException e) {
             throw new StorageException("Error getting " + key, e);
         }

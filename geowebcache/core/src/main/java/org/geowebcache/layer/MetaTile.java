@@ -15,8 +15,7 @@
 package org.geowebcache.layer;
 
 import it.geosolutions.jaiext.BufferedImageAdapter;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -257,8 +256,10 @@ public class MetaTile implements TileResponseReceiver {
         Assert.isTrue(buffer.getSize() > 0, "WMSMetaTile.setImageBytes() received empty contents");
 
         try {
-            ImageInputStream imgStream;
-            imgStream = new ResourceImageInputStream(((ByteArrayResource) buffer).getInputStream());
+            // ImageIO.read closes the stream, and the stream throws exception on second close call
+            @SuppressWarnings("PMD.CloseResource")
+            ImageInputStream imgStream =
+                    new ResourceImageInputStream(((ByteArrayResource) buffer).getInputStream());
             RenderedImage metaTiledImage = ImageIO.read(imgStream); // read closes the stream for us
             setImage(metaTiledImage);
         } catch (IOException ioe) {
@@ -378,14 +379,12 @@ public class MetaTile implements TileResponseReceiver {
         if (this.formatModifier != null) {
             param = formatModifier.adjustImageWriteParam(param);
         }
-        OutputStream outputStream = target.getOutputStream();
-        ImageOutputStream imgOut = new MemoryCacheImageOutputStream(outputStream);
-        writer.setOutput(imgOut);
-        IIOImage image = new IIOImage(tile, null, null);
-        try {
+        try (OutputStream outputStream = target.getOutputStream();
+                ImageOutputStream imgOut = new MemoryCacheImageOutputStream(outputStream); ) {
+            writer.setOutput(imgOut);
+            IIOImage image = new IIOImage(tile, null, null);
             writer.write(null, image, param);
         } finally {
-            imgOut.close();
             writer.dispose();
         }
 
@@ -560,6 +559,7 @@ public class MetaTile implements TileResponseReceiver {
             RenderedOp op = (RenderedOp) pi;
             for (Object param : op.getParameterBlock().getParameters()) {
                 if (param instanceof ImageInputStream) {
+                    @SuppressWarnings("PMD.CloseResource") // doing the closing here...
                     ImageInputStream iis = (ImageInputStream) param;
                     try {
                         iis.close();

@@ -199,14 +199,13 @@ public class S3BlobStore implements BlobStore {
         if (blob instanceof ByteArrayResource) {
             bytes = ((ByteArrayResource) blob).getContents();
         } else {
-            ByteArrayOutputStream out = new ByteArrayOutputStream((int) blob.getSize());
-            WritableByteChannel channel = Channels.newChannel(out);
-            try {
+            try (ByteArrayOutputStream out = new ByteArrayOutputStream((int) blob.getSize());
+                    WritableByteChannel channel = Channels.newChannel(out)) {
                 blob.transferTo(channel);
+                bytes = out.toByteArray();
             } catch (IOException e) {
                 throw new StorageException("Error copying blob contents", e);
             }
-            bytes = out.toByteArray();
         }
         ByteArrayInputStream input = new ByteArrayInputStream(bytes);
         return input;
@@ -215,15 +214,16 @@ public class S3BlobStore implements BlobStore {
     @Override
     public boolean get(TileObject obj) throws StorageException {
         final String key = keyBuilder.forTile(obj);
-        final S3Object object = s3Ops.getObject(key);
-        if (object == null) {
-            return false;
-        }
-        try (S3ObjectInputStream in = object.getObjectContent()) {
-            byte[] bytes = ByteStreams.toByteArray(in);
-            obj.setBlobSize(bytes.length);
-            obj.setBlob(new ByteArrayResource(bytes));
-            obj.setCreated(object.getObjectMetadata().getLastModified().getTime());
+        try (S3Object object = s3Ops.getObject(key)) {
+            if (object == null) {
+                return false;
+            }
+            try (S3ObjectInputStream in = object.getObjectContent()) {
+                byte[] bytes = ByteStreams.toByteArray(in);
+                obj.setBlobSize(bytes.length);
+                obj.setBlob(new ByteArrayResource(bytes));
+                obj.setCreated(object.getObjectMetadata().getLastModified().getTime());
+            }
         } catch (IOException e) {
             throw new StorageException("Error getting " + key, e);
         }

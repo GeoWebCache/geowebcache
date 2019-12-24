@@ -155,18 +155,20 @@ public class DiskQuotaController {
         xStream = ConfigLoader.getConfiguredXStream(xStream);
 
         DiskQuotaConfig configuration;
-        StringReader reader = new StringReader(text);
-        configuration = ConfigLoader.loadConfiguration(reader, xStream);
-        return configuration;
+        try (StringReader reader = new StringReader(text)) {
+            configuration = ConfigLoader.loadConfiguration(reader, xStream);
+            return configuration;
+        }
     }
 
     private DiskQuotaConfig fromXML(String entity) throws IOException {
 
         final String text = entity;
-        StringReader reader = new StringReader(text);
-        XStream xstream = ConfigLoader.getConfiguredXStream(new GeoWebCacheXStream());
-        DiskQuotaConfig diskQuotaConfig = ConfigLoader.loadConfiguration(reader, xstream);
-        return diskQuotaConfig;
+        try (StringReader reader = new StringReader(text)) {
+            XStream xstream = ConfigLoader.getConfiguredXStream(new GeoWebCacheXStream());
+            DiskQuotaConfig diskQuotaConfig = ConfigLoader.loadConfiguration(reader, xstream);
+            return diskQuotaConfig;
+        }
     }
 
     /**

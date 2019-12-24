@@ -257,17 +257,13 @@ public class WMSHttpHelper extends WMSSourceHelper {
 
             // Read the actual data
             if (responseCode != 204) {
-                try {
-                    InputStream inStream = method.getResponseBodyAsStream();
+                try (InputStream inStream = method.getResponseBodyAsStream()) {
                     if (inStream == null) {
                         String uri = method.getURI().getURI();
                         log.error("No response for " + method.getName() + " " + uri);
                     } else {
-                        ReadableByteChannel channel = Channels.newChannel(inStream);
-                        try {
+                        try (ReadableByteChannel channel = Channels.newChannel(inStream)) {
                             target.transferFrom(channel);
-                        } finally {
-                            channel.close();
                         }
                     }
                     if (responseLength > 0) {

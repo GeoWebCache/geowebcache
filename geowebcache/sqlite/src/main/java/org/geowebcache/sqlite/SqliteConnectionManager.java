@@ -209,6 +209,8 @@ public final class SqliteConnectionManager {
                 readOnly
                         ? pooledConnection.getReadLockOnValidConnection()
                         : pooledConnection.getWriteLockOnValidConnection();
+        // the PooledConnection seems to  manage the actual connection
+        @SuppressWarnings("PMD.CloseResource")
         ExtendedConnection connection = pooledConnection.getExtendedConnection();
         try {
             // do the work
