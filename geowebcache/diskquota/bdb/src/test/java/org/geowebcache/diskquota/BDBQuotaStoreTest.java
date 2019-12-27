@@ -614,6 +614,7 @@ public class BDBQuotaStoreTest {
             Matcher<Double> doubleMatcher = Matchers.closeTo((double) f, (double) epsilon);
 
             @Override
+            @SuppressWarnings("SelfAssignment") // this actually changes its fp representation
             public boolean matches(Object item) {
                 if (item instanceof Float) {
                     item = (double) (float) item;
