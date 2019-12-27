@@ -77,7 +77,7 @@ Sample response:
  < HTTP/1.1 200 OK
 
 
-Here's a more complete xml fragment for a seed request, including parameter filters:
+Here's a more complete xml fragment for a seed request, including parameter filters and failure handling policies:
 
 .. code-block:: xml
 
@@ -117,6 +117,10 @@ Here's a more complete xml fragment for a seed request, including parameter filt
        <string>TOTPOP > 10000</string>
      </entry>
    </parameters>
+
+   <tileFailureRetryCount>2</tileFailureRetryCount>
+   <tileFailureRetryWaitTime>1000</tileFailureRetryWaitTime>
+   <totalFailuresBeforeAborting>10000</totalFailuresBeforeAborting>
  </seedRequest>
 
 

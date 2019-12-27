@@ -18,8 +18,20 @@
  */
 package org.geowebcache.rest.service;
 
+import static org.geowebcache.seed.TileBreeder.TILE_FAILURE_RETRY_COUNT_DEFAULT;
+import static org.geowebcache.seed.TileBreeder.TILE_FAILURE_RETRY_WAIT_TIME_DEFAULT;
+import static org.geowebcache.seed.TileBreeder.TOTAL_FAILURES_BEFORE_ABORTING_DEFAULT;
+import static org.geowebcache.seed.TileBreeder.createTileRange;
+
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import javax.servlet.http.HttpServletRequest;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
@@ -220,13 +232,24 @@ public class FormService {
                         type,
                         fullParameters);
 
-        TileRange tr = TileBreeder.createTileRange(sr, tl);
+        int tileFailureRetryCount = (int) getOptionalLongParam(form, "tileFailureRetryCount", 0);
+        long tileFailureRetryWaitTime = getOptionalLongParam(form, "tileFailureRetryWaitTime", 0);
+        long totalFailuresBeforeAborting =
+                getOptionalLongParam(form, "totalFailuresBeforeAborting", 0);
+        TileRange tr = createTileRange(sr, tl);
 
         GWCTask[] tasks;
         try {
             tasks =
                     seeder.createTasks(
-                            tr, tl, sr.getType(), sr.getThreadCount(), sr.getFilterUpdate());
+                            tr,
+                            tl,
+                            sr.getType(),
+                            sr.getThreadCount(),
+                            sr.getFilterUpdate(),
+                            tileFailureRetryCount,
+                            tileFailureRetryWaitTime,
+                            totalFailuresBeforeAborting);
         } catch (GeoWebCacheException e) {
             throw new RestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -242,6 +265,12 @@ public class FormService {
         }
 
         return new ResponseEntity<Object>(this.makeResponsePage(tl), getHeaders(), HttpStatus.OK);
+    }
+
+    private long getOptionalLongParam(Map<String, String> form, String key, long defaultValue) {
+        String value = form.get(key);
+        if (value == null) return defaultValue;
+        return Long.parseLong(value);
     }
 
     private static double parseDouble(Map<String, String> form, String key) throws RestException {
@@ -302,6 +331,8 @@ public class FormService {
         makeModifiableParameters(doc, tl);
 
         makeBboxFields(doc);
+
+        makeFailureHandlingPolicies(doc);
 
         makeSubmit(doc);
 
@@ -404,7 +435,7 @@ public class FormService {
         doc.append("<tr><td>Number of tasks to use:</td><td>\n");
         Map<String, String> keysValues = new TreeMap<String, String>();
 
-        for (int i = 1; i < 17; i++) {
+        for (int i = 1; i < 129; i++) {
             if (i < 10) {
                 keysValues.put("0" + Integer.toString(i), "0" + Integer.toString(i));
             } else {
@@ -421,8 +452,32 @@ public class FormService {
         makeTextInput(doc, "minY", 6);
         makeTextInput(doc, "maxX", 6);
         makeTextInput(doc, "maxY", 6);
-        doc.append("</br>These are optional, approximate values are fine.");
+        doc.append(
+                "</br><span style=\"font-size:80%\">These are optional, approximate values are fine.</span>");
         doc.append("</td></tr>\n");
+    }
+
+    private void makeFailureHandlingPolicies(StringBuilder doc) {
+        doc.append("<tr><td valign=\"top\">Tile failure retries:</td><td>");
+        makeTextInput(
+                doc, "tileFailureRetryCount", 6, String.valueOf(TILE_FAILURE_RETRY_COUNT_DEFAULT));
+        doc.append(
+                "</br><span style=\"font-size:80%\">Set to -1 to disable retries and stop seed thread on the first failure.</span>");
+        doc.append("</td></tr>");
+        doc.append("<tr><td valign=\"top\">Pause before retry (ms):</td><td>");
+        makeTextInput(
+                doc,
+                "tileFailureRetryWaitTime",
+                6,
+                String.valueOf(TILE_FAILURE_RETRY_WAIT_TIME_DEFAULT));
+        doc.append("</td></tr>");
+        doc.append("<tr><td valign=\"top\">Total failures before aborting:</td><td>");
+        makeTextInput(
+                doc,
+                "totalFailuresBeforeAborting",
+                6,
+                String.valueOf(TOTAL_FAILURES_BEFORE_ABORTING_DEFAULT));
+        doc.append("</td></tr>");
     }
 
     private void makeBboxHints(StringBuilder doc, TileLayer tl) {
@@ -439,7 +494,18 @@ public class FormService {
     }
 
     private void makeTextInput(StringBuilder doc, String id, int size) {
-        doc.append("<input name=\"" + id + "\" type=\"text\" size=\"" + size + "\" />\n");
+        makeTextInput(doc, id, size, "");
+    }
+
+    private void makeTextInput(StringBuilder doc, String id, int size, String defaultValue) {
+        doc.append(
+                "<input name=\""
+                        + id
+                        + "\" type=\"text\" size=\""
+                        + size
+                        + "\" value=\""
+                        + defaultValue
+                        + "\"/>");
     }
 
     private void makeSubmit(StringBuilder doc) {

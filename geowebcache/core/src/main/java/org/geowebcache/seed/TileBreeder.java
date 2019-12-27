@@ -111,17 +111,20 @@ public class TileBreeder implements ApplicationContextAware {
 
     private StorageBroker storageBroker;
 
-    /** How many retries per failed tile. 0 = don't retry, 1 = retry once if failed, etc */
-    private int tileFailureRetryCount = 0;
+    /**
+     * How many retries per failed tile. -1: disable checks, 0 = don't retry, 1 = retry once if
+     * failed, etc
+     */
+    public static int TILE_FAILURE_RETRY_COUNT_DEFAULT = 0;
 
     /** How much (in milliseconds) to wait before trying again a failed tile */
-    private long tileFailureRetryWaitTime = 100;
+    public static long TILE_FAILURE_RETRY_WAIT_TIME_DEFAULT = 100;
 
     /**
      * How many failures to tolerate before aborting the seed task. Value is shared between all the
      * threads of the same run.
      */
-    private long totalFailuresBeforeAborting = 1000;
+    public static long TOTAL_FAILURES_BEFORE_ABORTING_DEFAULT = 1000;
 
     private Map<Long, SubmittedTask> currentPool = new TreeMap<Long, SubmittedTask>();
 
@@ -157,13 +160,12 @@ public class TileBreeder implements ApplicationContextAware {
         String retryWait = GWCVars.findEnvVar(applicationContext, GWC_SEED_RETRY_WAIT);
         String abortLimit = GWCVars.findEnvVar(applicationContext, GWC_SEED_ABORT_LIMIT);
 
-        tileFailureRetryCount = (int) toLong(GWC_SEED_RETRY_COUNT, retryCount, 0);
-        tileFailureRetryWaitTime = toLong(GWC_SEED_RETRY_WAIT, retryWait, 100);
-        totalFailuresBeforeAborting = toLong(GWC_SEED_ABORT_LIMIT, abortLimit, 1000);
+        TILE_FAILURE_RETRY_COUNT_DEFAULT = (int) toLong(GWC_SEED_RETRY_COUNT, retryCount, -1);
+        TILE_FAILURE_RETRY_WAIT_TIME_DEFAULT = toLong(GWC_SEED_RETRY_WAIT, retryWait, 100);
+        TOTAL_FAILURES_BEFORE_ABORTING_DEFAULT = toLong(GWC_SEED_ABORT_LIMIT, abortLimit, 1000);
 
-        checkPositive(tileFailureRetryCount, GWC_SEED_RETRY_COUNT);
-        checkPositive(tileFailureRetryWaitTime, GWC_SEED_RETRY_WAIT);
-        checkPositive(totalFailuresBeforeAborting, GWC_SEED_ABORT_LIMIT);
+        checkPositive(TILE_FAILURE_RETRY_WAIT_TIME_DEFAULT, GWC_SEED_RETRY_WAIT);
+        checkPositive(TOTAL_FAILURES_BEFORE_ABORTING_DEFAULT, GWC_SEED_ABORT_LIMIT);
     }
 
     @SuppressWarnings("serial")
@@ -235,6 +237,20 @@ public class TileBreeder implements ApplicationContextAware {
         return createTasks(tr, tileLayer, type, threadCount, filterUpdate);
     }
 
+    public GWCTask[] createTasks(
+            TileRange tr, TileLayer tl, GWCTask.TYPE type, int threadCount, boolean filterUpdate)
+            throws GeoWebCacheException {
+        return createTasks(
+                tr,
+                tl,
+                type,
+                threadCount,
+                filterUpdate,
+                TILE_FAILURE_RETRY_COUNT_DEFAULT,
+                TILE_FAILURE_RETRY_WAIT_TIME_DEFAULT,
+                TOTAL_FAILURES_BEFORE_ABORTING_DEFAULT);
+    }
+
     /**
      * Create tasks to manipulate the cache (Seed, truncate, etc). They will still need to be
      * dispatched.
@@ -244,11 +260,22 @@ public class TileBreeder implements ApplicationContextAware {
      * @param type The type of task(s) to create
      * @param threadCount The number of threads to use, forced to 1 if type is TRUNCATE
      * @param filterUpdate // TODO: What does this do?
+     * @param tileFailureRetryCount Number of retries for a single tile
+     * @param tileFailureRetryWaitTime Time to wait between retries
+     * @param totalFailuresBeforeAborting Total number of failures, across all threads, before
+     *     aborting seeding
      * @return Array of tasks. Will have length threadCount or 1.
      * @throws GeoWebCacheException
      */
     public GWCTask[] createTasks(
-            TileRange tr, TileLayer tl, GWCTask.TYPE type, int threadCount, boolean filterUpdate)
+            TileRange tr,
+            TileLayer tl,
+            GWCTask.TYPE type,
+            int threadCount,
+            boolean filterUpdate,
+            int tileFailureRetryCount,
+            long tileFailureRetryWaitTime,
+            long totalFailuresBeforeAborting)
             throws GeoWebCacheException {
 
         if (threadCount < 1) {

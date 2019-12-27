@@ -249,16 +249,16 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         str.append("ConveyorTile[");
         long[] idx = stObj.getXYZ();
 
-        if (idx != null && idx.length == 3) {
-            str.append("{" + idx[0] + "," + idx[1] + "," + idx[2] + "} ");
-        }
-
-        if (getLayer() != null) {
+        if (getLayerId() != null) {
             str.append(getLayerId()).append(" ");
         }
 
         if (this.gridSetId != null) {
             str.append(gridSetId).append(" ");
+        }
+
+        if (idx != null && idx.length == 3) {
+            str.append("{" + idx[0] + "," + idx[1] + "," + idx[2] + "} ");
         }
 
         if (this.mimeType != null) {
