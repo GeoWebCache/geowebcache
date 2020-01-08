@@ -51,6 +51,12 @@ public class SeedRequest {
 
     private Boolean filterUpdate = null;
 
+    private int tileFailureRetryCount = TileBreeder.TILE_FAILURE_RETRY_COUNT_DEFAULT;
+
+    private long tileFailureRetryWaitTime = TileBreeder.TILE_FAILURE_RETRY_WAIT_TIME_DEFAULT;
+
+    private long totalFailuresBeforeAborting = TileBreeder.TOTAL_FAILURES_BEFORE_ABORTING_DEFAULT;
+
     public SeedRequest() {
         // do nothing, i guess
     }
@@ -210,5 +216,44 @@ public class SeedRequest {
      */
     public Map<String, String> getParameters() {
         return parameters;
+    }
+
+    /**
+     * Number of retries to build a tile before giving up on it. -1 disables also the wait and total
+     * failures counters.
+     *
+     * @return
+     */
+    public int getTileFailureRetryCount() {
+        return tileFailureRetryCount;
+    }
+
+    public void setTileFailureRetryCount(int tileFailureRetryCount) {
+        this.tileFailureRetryCount = tileFailureRetryCount;
+    }
+
+    /**
+     * Time to wait between tile computation failures, in milliseconds
+     *
+     * @return
+     */
+    public long getTileFailureRetryWaitTime() {
+        return tileFailureRetryWaitTime;
+    }
+
+    public void setTileFailureRetryWaitTime(long tileFailureRetryWaitTime) {
+        this.tileFailureRetryWaitTime = tileFailureRetryWaitTime;
+    }
+
+    /**
+     * Total amount of failures before stopping the seeding process, computed across all threads in
+     * the seed request.
+     */
+    public long getTotalFailuresBeforeAborting() {
+        return totalFailuresBeforeAborting;
+    }
+
+    public void setTotalFailuresBeforeAborting(long totalFailuresBeforeAborting) {
+        this.totalFailuresBeforeAborting = totalFailuresBeforeAborting;
     }
 }

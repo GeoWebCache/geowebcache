@@ -148,7 +148,7 @@ class SeedTask extends GWCTask {
                 } catch (Exception e) {
                     // if GWC_SEED_RETRY_COUNT was not set then none of the settings have effect, in
                     // order to keep backwards compatibility with the old behaviour
-                    if (tileFailureRetryCount == 0) {
+                    if (tileFailureRetryCount < 0) {
                         if (e instanceof GeoWebCacheException) {
                             throw (GeoWebCacheException) e;
                         }
@@ -181,10 +181,11 @@ class SeedTask extends GWCTask {
                             waitToRetry();
                         }
                     } else {
-                        log.info(
+                        log.warn(
                                 logMsg
-                                        + " Skipping and continuing with next tile. Original error: "
-                                        + e.getMessage());
+                                        + " Skipping and continuing with next tile. Total failure count across threads is at: "
+                                        + sharedFailureCount,
+                                e);
                     }
                 }
             }

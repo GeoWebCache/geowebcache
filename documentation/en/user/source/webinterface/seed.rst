@@ -36,6 +36,14 @@ To create a new seed task, fill out the form with the following information:
      - The final/maximum zoom level for the seed task.
    * - :guilabel:`Bounding box`
      - An optional subset of the layer's maximum extent, useful for seeding only certain (more important) areas.  Values are given in the units of the grid set.  If ommitted, the layer's maximum exten will be assumed.
+   * - :guilabel:`Tile failure retries`
+     - Number of times a tile creation should be retried, before giving up. Defaults to zero. Set it to -1 to have the seeding thread stop all its activities at the first failure.
+   * - :guilabel:`Pause before retry (ms)`
+     - Time, in milliseconds, GeoWebCache will wait before retrying to compute a failed tile. This allows the system to recover to temporary/contextual failures.
+   * - :guilabel:`Total failures before aborting`
+     - Time, in milliseconds, GeoWebCache will wait before retrying to compute a failed tile. This allows the system to recover to temporary/contextual failures.
+
+  
 
 When ready to start the task, click :guilabel:`Submit`.
 
