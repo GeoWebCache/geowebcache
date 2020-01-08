@@ -140,7 +140,9 @@ class SeedTask extends GWCTask {
                             null,
                             null);
 
-            for (int fetchAttempt = 0; fetchAttempt <= tileFailureRetryCount; fetchAttempt++) {
+            for (int fetchAttempt = 0;
+                    fetchAttempt <= tileFailureRetryCount || tileFailureRetryCount < 0;
+                    fetchAttempt++) {
                 try {
                     checkInterrupted();
                     tl.seedTile(tile, tryCache);
