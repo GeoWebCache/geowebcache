@@ -549,6 +549,7 @@ public class Demo {
                 "var view = new ol.View({\n"
                         + "  center: [0, 0],\n"
                         + "  zoom: 2,\n"
+                        + "  resolutions: resolutions,\n"
                         + "  projection: projection,\n");
         buf.append("  extent: [").append(bbox.toString()).append("]\n");
         buf.append(
