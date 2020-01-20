@@ -1,3 +1,18 @@
+GeoWebCache 1.16.2 (2020-01-20)
+-------------------------------
+
+Third stable release of the 1.16.x series.
+
+Improvements:
++++++++++++++
+- Upgraded Jackson dependency to 2.10.1
+- Make sure reference to Maven central use HTTPS in maven pom files
+
+Fixes:
+++++++
+- GwC preview shows blurry tiles, #812
+
+
 Stable release of 1.16 branch.
 
 Improvements:
