@@ -1,0 +1,57 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <!-- mvn -Dtest=StorageBrokerTest -Dmaven.test.jvmargs='-XX:+HeapDumpOnOutOfMemoryError -Xms32m -Xmx32m' test -->
+    <modelVersion>4.0.0</modelVersion>
+    <properties>
+        <jclouds.version>2.2.0</jclouds.version>
+    </properties>
+
+    <parent>
+        <groupId>org.geowebcache</groupId>
+        <artifactId>geowebcache</artifactId>
+        <version>1.17-SNAPSHOT</version><!-- GWC VERSION -->
+    </parent>
+
+    <groupId>org.geowebcache</groupId>
+    <artifactId>gwc-swift</artifactId>
+    <packaging>jar</packaging>
+    <name>Swift Storage</name>
+    <url>http://geowebcache.org</url>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.geowebcache</groupId>
+            <artifactId>gwc-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- jclouds OpenStack dependencies -->
+        <dependency>
+            <groupId>org.apache.jclouds.api</groupId>
+            <artifactId>openstack-swift</artifactId>
+            <version>${jclouds.version}</version>
+        </dependency>
+        <!-- 3rd party dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>3.2.4</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+        </plugins>
+    </build>
+</project>
