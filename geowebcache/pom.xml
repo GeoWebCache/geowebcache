@@ -891,9 +891,10 @@
     <module>web</module>
     <module>diskquota</module>
     <module>arcgiscache</module>
-	<module>distributed</module>
+    <module>distributed</module>
     <module>s3storage</module>
     <module>sqlite</module>
     <module>azureblob</module>
+    <module>swiftblob</module>
   </modules>
 </project>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+  <description>
+   Bean configuration file for the gwc-swift module
+  </description>
+
+  <bean id="SwiftBlobStoreConfigProvider" class="org.geowebcache.swift.SwiftBlobStoreConfigProvider" depends-on="geoWebCacheEnvironment">
+    <description>
+      Contributes XStream configuration settings to org.geowebcache.config.XMLConfiguration to encode SwiftBlobStoreConfig instances
+    </description>
+  </bean>
+</beans>

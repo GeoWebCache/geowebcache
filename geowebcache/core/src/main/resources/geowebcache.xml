@@ -43,7 +43,27 @@
       <baseDirectory>/tmp/defaultCache</baseDirectory>
       <fileSystemBlockSize>4096</fileSystemBlockSize>
     </FileBlobStore>
-    <!-- A sample AWS S3 blob store configuration.   -->
+
+    <!-- A sample Swift blob store configuration.   
+    <SwiftBlobStore default="true">
+        <id>ObjectStorageCache</id>
+        <enabled>true</enabled>
+        <bucket>put-your-actual-bucket-name-here</bucket>
+        <prefix>test-cache</prefix>
+        <maxConnections>200</maxConnections>
+        <useHTTPS>false</useHTTPS>
+        <endpoint>endpoint</endpoint>
+        <jcloudsProvider>openstack-swift</jcloudsProvider>
+        <jcloudsRegion>put-region-here</jcloudsRegion>
+        <jcloudsKeystoneVersion>3</jcloudsKeystoneVersion>
+        <jcloudsKeystoneScope>project</jcloudsKeystoneScope>
+        <jcloudsKeystoneDomainName>Default</jcloudsKeystoneDomainName>
+        <jcloudsIdentity>Default:put-username-here</jcloudsIdentity>
+        <jcloudsCredential>password</jcloudsCredential>
+        <useGzip>false</useGzip>
+    </SwiftBlobStore> -->
+
+   <!-- A sample AWS S3 blob store configuration.   -->
     <!-- 
     <S3BlobStore>
       <id>myS3Cache</id>
@@ -80,6 +100,7 @@
       <mbtilesMetadataDirectory>/tmp/gwc-mbtiles/layersMetadata</mbtilesMetadataDirectory>
     </MbtilesBlobStore>
     -->
+
   </blobStores>
 
   <gridSets>
