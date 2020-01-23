@@ -15,7 +15,11 @@
 package org.geowebcache.seed;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import java.util.Iterator;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.layer.TileLayer;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
 
@@ -27,17 +31,23 @@ import org.geowebcache.storage.StorageException;
 @XStreamAlias("truncateLayer")
 public class TruncateLayerRequest implements MassTruncateRequest {
 
+    private static final Log log = LogFactory.getLog(TruncateLayerRequest.class);
+
     String layerName;
 
     public boolean doTruncate(StorageBroker sb, TileBreeder breeder) throws StorageException {
-        boolean truncated = sb.delete(layerName);
-        if (!truncated) {
-            // did we hit a layer that has nothing on storage, or a layer that is not there?
-            try {
-                breeder.findTileLayer(layerName);
-            } catch (GeoWebCacheException e) {
-                throw new IllegalArgumentException("Could not find layer " + layerName);
+        try {
+            TileLayer tLayer = breeder.findTileLayer(layerName);
+            Iterator<String> gridSetIterator = tLayer.getGridSubsets().iterator();
+            String gridSetId;
+            while (gridSetIterator.hasNext()) {
+                gridSetId = gridSetIterator.next();
+                sb.deleteByGridSetId(layerName, gridSetId);
+                log.info("Layer: " + layerName + ",Truncated Gridset :" + gridSetId);
             }
+        } catch (GeoWebCacheException e) {
+            // did we hit a layer that has nothing on storage, or a layer that is not there?
+            throw new IllegalArgumentException("Could not find layer " + layerName);
         }
         return true;
     }

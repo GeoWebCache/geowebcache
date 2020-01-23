@@ -158,3 +158,12 @@ Checks the layer ``points`` for cached tiles that are not accessible to its curr
      </entry>
    </parameters>
  </truncateParameters>
+
+Truncate All Layers
+++++++++++++++++++++++++++++++++++++
+
+To clear the entire GWC cache.
+
+.. code-block:: xml 
+
+	<truncateAll></truncateAll>
