@@ -116,10 +116,7 @@ public class RegexParameterFilter extends CaseNormalizingParameterFilter {
 
     @Override
     public RegexParameterFilter clone() {
-        RegexParameterFilter clone = new RegexParameterFilter();
-        clone.setDefaultValue(getDefaultValue());
-        clone.setKey(getKey());
-        clone.regex = regex;
+        RegexParameterFilter clone = (RegexParameterFilter) super.clone();
         if (super.normalize != null) {
             clone.setNormalize(super.normalize.clone());
         }

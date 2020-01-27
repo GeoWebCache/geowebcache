@@ -147,13 +147,10 @@ public class FloatParameterFilter extends ParameterFilter {
 
     @Override
     public FloatParameterFilter clone() {
-        FloatParameterFilter clone = new FloatParameterFilter();
-        clone.setDefaultValue(getDefaultValue());
-        clone.setKey(getKey());
+        FloatParameterFilter clone = (FloatParameterFilter) super.clone();
         if (values != null) {
-            clone.values = new ArrayList<Float>(values);
+            clone.values = new ArrayList<>(values);
         }
-        clone.setThreshold(this.threshold);
         return clone;
     }
 

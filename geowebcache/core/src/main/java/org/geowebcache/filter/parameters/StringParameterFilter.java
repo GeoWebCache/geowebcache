@@ -89,14 +89,12 @@ public class StringParameterFilter extends CaseNormalizingParameterFilter {
 
     @Override
     public StringParameterFilter clone() {
-        StringParameterFilter clone = new StringParameterFilter();
-        clone.setDefaultValue(getDefaultValue());
-        clone.setKey(getKey());
+        StringParameterFilter clone = (StringParameterFilter) super.clone();
         if (values != null) {
-            clone.values = new ArrayList<String>(values);
+            clone.values = new ArrayList<>(values);
         }
-        if (normalize != null) {
-            clone.setNormalize(normalize.clone());
+        if (super.normalize != null) {
+            clone.setNormalize(super.normalize.clone());
         }
         return clone;
     }
