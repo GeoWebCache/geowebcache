@@ -73,7 +73,13 @@ public abstract class ParameterFilter implements Serializable, Cloneable {
     }
 
     @Override
-    public abstract ParameterFilter clone();
+    public ParameterFilter clone() {
+        try {
+            return (ParameterFilter) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * Checks whether a given parameter value applies to this filter.

@@ -147,13 +147,10 @@ public class IntegerParameterFilter extends ParameterFilter {
 
     @Override
     public IntegerParameterFilter clone() {
-        IntegerParameterFilter clone = new IntegerParameterFilter();
-        clone.setDefaultValue(getDefaultValue());
-        clone.setKey(getKey());
+        IntegerParameterFilter clone = (IntegerParameterFilter) super.clone();
         if (values != null) {
-            clone.values = new ArrayList<Integer>(values);
+            clone.values = new ArrayList<>(values);
         }
-        clone.setThreshold(this.threshold);
         return clone;
     }
 
