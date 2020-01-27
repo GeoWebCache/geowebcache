@@ -324,8 +324,5 @@ public class RegexParameterFilterTest {
                 clone.normalize.getConfiguredLocale(),
                 equalTo(filter.normalize.getConfiguredLocale()));
         assertThat(clone.normalize.getCase(), equalTo(filter.normalize.getCase()));
-        // actual regex application test
-        assertTrue(filter.applies("Bar"));
-        assertTrue(clone.applies("Bar"));
     }
 }

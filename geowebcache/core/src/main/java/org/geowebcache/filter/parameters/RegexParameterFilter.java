@@ -123,7 +123,6 @@ public class RegexParameterFilter extends CaseNormalizingParameterFilter {
         if (super.normalize != null) {
             clone.setNormalize(super.normalize.clone());
         }
-        clone.pat = compile(regex, clone.getNormalize().getCase());
         return clone;
     }
 
