@@ -13,9 +13,9 @@
     <gt.version>22-SNAPSHOT</gt.version>
     <jts.version>1.16.1</jts.version>
     <jaiext.version>1.1.12</jaiext.version>
-    <spring.version>5.1.1.RELEASE</spring.version>
+    <spring.version>5.1.13.RELEASE</spring.version>
     <xstream.version>1.4.11.1</xstream.version>
-    <spring.security.version>5.1.1.RELEASE</spring.security.version>
+    <spring.security.version>5.1.8.RELEASE</spring.security.version>
     <commons-logging.version>1.1.1</commons-logging.version>
     <commons-io.version>2.6</commons-io.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
