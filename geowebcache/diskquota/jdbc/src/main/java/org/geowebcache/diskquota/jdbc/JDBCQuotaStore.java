@@ -100,38 +100,22 @@ public class JDBCQuotaStore implements QuotaStore {
         this.executor = Executors.newFixedThreadPool(1);
     }
 
-    /**
-     * Gets the SQL dialect used by this quota store
-     *
-     * @return
-     */
+    /** Gets the SQL dialect used by this quota store */
     public SQLDialect getDialect() {
         return dialect;
     }
 
-    /**
-     * Returns the SQL dialect used by this quota store
-     *
-     * @return
-     */
+    /** Returns the SQL dialect used by this quota store */
     public void setDialect(SQLDialect dialect) {
         this.dialect = dialect;
     }
 
-    /**
-     * Returns he database schema used by this store
-     *
-     * @return
-     */
+    /** Returns he database schema used by this store */
     public String getSchema() {
         return schema;
     }
 
-    /**
-     * Sets the database schema used by this store
-     *
-     * @param schema
-     */
+    /** Sets the database schema used by this store */
     public void setSchema(String schema) {
         this.schema = schema;
     }
@@ -287,9 +271,6 @@ public class JDBCQuotaStore implements QuotaStore {
 
     /**
      * Return a empty quota object in case a null value is passed, otherwise return the passed value
-     *
-     * @param optionalQuota
-     * @return
      */
     private Quota nonNullQuota(Quota optionalQuota) {
         if (optionalQuota == null) {
@@ -585,12 +566,7 @@ public class JDBCQuotaStore implements QuotaStore {
                 });
     }
 
-    /**
-     * Sorts the payloads by page key
-     *
-     * @param tileCountDiffs
-     * @return
-     */
+    /** Sorts the payloads by page key */
     protected List<PageStatsPayload> sortPayloads(Collection<PageStatsPayload> tileCountDiffs) {
         List<PageStatsPayload> result = new ArrayList<PageStatsPayload>(tileCountDiffs);
         Collections.sort(

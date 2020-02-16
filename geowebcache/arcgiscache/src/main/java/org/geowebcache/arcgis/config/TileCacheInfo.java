@@ -85,11 +85,7 @@ public class TileCacheInfo {
         return DPI;
     }
 
-    /**
-     * New in ArcGIS 10.1+
-     *
-     * @return
-     */
+    /** New in ArcGIS 10.1+ */
     public int getPreciseDPI() {
         return PreciseDPI;
     }

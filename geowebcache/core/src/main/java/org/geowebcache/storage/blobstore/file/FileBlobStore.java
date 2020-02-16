@@ -281,7 +281,6 @@ public class FileBlobStore implements BlobStore {
     }
 
     /**
-     * @throws StorageException
      * @see org.geowebcache.storage.BlobStore#deleteByGridsetId(java.lang.String, java.lang.String)
      */
     public boolean deleteByGridsetId(final String layerName, final String gridSetId)
@@ -594,9 +593,6 @@ public class FileBlobStore implements BlobStore {
     /**
      * This method will recursively create the missing directories and call the listeners
      * directoryCreated method for each created directory.
-     *
-     * @param path
-     * @return
      */
     private boolean mkdirs(File path, TileObject stObj) {
         /* If the terminal directory already exists, answer false */

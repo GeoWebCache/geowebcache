@@ -264,7 +264,6 @@ public class MemoryBlobStoreTest {
      * * Private method for creating a {@link FileBlobStore}
      *
      * @return a new FileBlobStore
-     * @throws Exception
      */
     private BlobStore setup() throws Exception {
         File fh = new File(StorageBrokerTest.findTempDir() + File.separator + TEST_BLOB_DIR_NAME);

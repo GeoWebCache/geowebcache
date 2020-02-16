@@ -45,12 +45,7 @@ public class BlobStoreAggregator {
     private ServiceInformation serviceInformation;
     private TileLayerDispatcher layers;
 
-    /**
-     * Used to delegate calls to {@link BlobStoreConfiguration} objects
-     *
-     * @param configs
-     * @param layers
-     */
+    /** Used to delegate calls to {@link BlobStoreConfiguration} objects */
     public BlobStoreAggregator(List<BlobStoreConfiguration> configs, TileLayerDispatcher layers) {
         this.configs = configs == null ? new ArrayList<BlobStoreConfiguration>() : configs;
         this.layers = layers;
@@ -276,7 +271,6 @@ public class BlobStoreAggregator {
      *
      * @param oldName The name of the existing blob store
      * @param newName The name to rename the blob store to
-     * @throws IllegalArgumentException
      */
     public synchronized void renameBlobStore(final String oldName, final String newName)
             throws NoSuchElementException, IllegalArgumentException {
@@ -297,7 +291,6 @@ public class BlobStoreAggregator {
      * configuration.
      *
      * @param bs The blob store to modify
-     * @throws IllegalArgumentException
      */
     public synchronized void modifyBlobStore(final BlobStoreInfo bs)
             throws IllegalArgumentException {
@@ -312,7 +305,6 @@ public class BlobStoreAggregator {
      *
      * @param bs BlobStoreInfo for this configuration
      * @return The BlobStoreConfiguration for BlobStoreInfo
-     * @throws IllegalArgumentException
      */
     public BlobStoreConfiguration getConfiguration(BlobStoreInfo bs)
             throws IllegalArgumentException {
@@ -323,10 +315,6 @@ public class BlobStoreAggregator {
     /**
      * Returns the BlobStoreConfiguration for the given Blob Store Name, if found in list of blob
      * store configurations.
-     *
-     * @param blobStoreName
-     * @return
-     * @throws IllegalArgumentException
      */
     public BlobStoreConfiguration getConfiguration(final String blobStoreName)
             throws IllegalArgumentException {
@@ -364,11 +352,7 @@ public class BlobStoreAggregator {
         }
     }
 
-    /**
-     * Get a list of all the configurations that are being aggregated.
-     *
-     * @return
-     */
+    /** Get a list of all the configurations that are being aggregated. */
     protected List<BlobStoreConfiguration> getConfigs() {
         return configs;
     }

@@ -145,8 +145,6 @@ public abstract class BlobStoreInfo implements Serializable, Cloneable, Info {
      *
      * <p>May only be called if {@link #isEnabled() == true}.
      *
-     * @param layers
-     * @param lockProvider
      * @return A BlobStore implementation.
      * @throws StorageException if the blob store can't be created with this configuration settings
      * @throws IllegalStateException if {@link #isEnabled() isEnabled() == false} or {@link #getId()

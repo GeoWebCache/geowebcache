@@ -28,14 +28,7 @@ public interface ImageDecoder {
     /** Returns the list of the supported mimetypes */
     public List<String> getSupportedMimeTypes();
 
-    /**
-     * Decodes the selected input object.
-     *
-     * @param input
-     * @param aggressiveInputStreamOptimization
-     * @param map
-     * @return
-     */
+    /** Decodes the selected input object. */
     public BufferedImage decode(
             Object input, boolean aggressiveInputStreamOptimization, Map<String, Object> map)
             throws Exception;

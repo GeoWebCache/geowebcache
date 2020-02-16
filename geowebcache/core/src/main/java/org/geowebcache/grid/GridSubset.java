@@ -189,11 +189,7 @@ public class GridSubset {
         return ret;
     }
 
-    /**
-     * Convert pixel size to dots per inch
-     *
-     * @return
-     */
+    /** Convert pixel size to dots per inch */
     public double getDotsPerInch() {
         return (0.0254 / this.gridSet.getPixelSize());
     }
@@ -391,8 +387,6 @@ public class GridSubset {
     /**
      * WMTS is indexed from top left hand corner. We will still return {minx,miny,maxx,maxy}, but
      * note that the y positions have been reversed
-     *
-     * @return
      */
     // TODO: this is specific to WMTS, move it somewhere on the wmts module
     // TODO: Does this need to be public?
@@ -443,11 +437,7 @@ public class GridSubset {
         return maxCachedZoom;
     }
 
-    /**
-     * Whether the Grid Subset equals or exceeds the extent of the Grid Set
-     *
-     * @return
-     */
+    /** Whether the Grid Subset equals or exceeds the extent of the Grid Set */
     public boolean fullGridSetCoverage() {
         return fullGridSetCoverage;
     }

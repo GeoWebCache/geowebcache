@@ -107,8 +107,6 @@ class PagePyramid {
     /**
      * @param gridSubsetCoverages grid subset coverage per level, as per {@link
      *     GridSubset#getCoverages()}
-     * @param zoomStop
-     * @param zoomStart
      */
     public PagePyramid(final long[][] gridSubsetCoverages, int zoomStart, int zoomStop) {
         this.gridSubsetCoverages = new TreeMap<Integer, long[]>();
@@ -240,9 +238,6 @@ class PagePyramid {
     /**
      * Returns a grid subset coverage range suitable for {@link TileRange}
      *
-     * @param pageX
-     * @param pageY
-     * @param level
      * @return {@code [minTileX, minTileY, maxTileX, maxTileY, zoomlevel]}
      */
     public long[][] toGridCoverage(int pageX, int pageY, int level) {

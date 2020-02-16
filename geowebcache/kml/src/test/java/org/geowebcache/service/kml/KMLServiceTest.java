@@ -8,11 +8,7 @@ public class KMLServiceTest extends TestCase {
         super.setUp();
     }
 
-    /**
-     * Tests
-     *
-     * @throws Exception
-     */
+    /** Tests */
     public void test1ParseRequest() throws Exception {
         String[] retVals = KMLService.parseRequest("/kml/topp:states.kml");
 

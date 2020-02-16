@@ -194,7 +194,6 @@ public class TileLayerDispatcher
      *
      * @param oldName The name of the existing layer
      * @param newName The name to rename the layer to
-     * @throws IllegalArgumentException
      */
     public synchronized void rename(final String oldName, final String newName)
             throws NoSuchElementException, IllegalArgumentException {
@@ -206,7 +205,6 @@ public class TileLayerDispatcher
      * Replaces the given layer and returns the Layer's configuration, saving the configuration.
      *
      * @param tl The layer to modify
-     * @throws IllegalArgumentException
      */
     public synchronized void modify(final TileLayer tl) throws IllegalArgumentException {
         TileLayerConfiguration config = getConfiguration(tl);

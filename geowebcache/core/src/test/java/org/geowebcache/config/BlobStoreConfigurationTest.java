@@ -576,7 +576,6 @@ public abstract class BlobStoreConfigurationTest
      * Set up the configuration for a modify test with an info named "test".
      *
      * @return an info named "test" with a different value
-     * @throws Exception
      */
     protected BlobStoreInfo prepForModify() throws Exception {
         BlobStoreInfo goodInfo = this.getGoodInfo("test", 1);
@@ -670,7 +669,6 @@ public abstract class BlobStoreConfigurationTest
      * Set up the configuration for a rename test with an info named "test".
      *
      * @return an info named "test2"
-     * @throws Exception
      */
     protected BlobStoreInfo prepForRename() throws Exception {
         BlobStoreInfo goodInfo = this.getGoodInfo("test", 1);
@@ -785,7 +783,6 @@ public abstract class BlobStoreConfigurationTest
      * Set up the configuration for a remove test with an info named "test".
      *
      * @return the info that was added
-     * @throws Exception
      */
     protected BlobStoreInfo prepForRemove() throws Exception {
         BlobStoreInfo goodInfo = this.getGoodInfo("test", 1);

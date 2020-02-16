@@ -635,10 +635,6 @@ public class RestIntegrationTest {
     /**
      * Check that the given request gives a 401 Forbidden when not authenticated, and otherwise has
      * a response matching the given matcher
-     *
-     * @param request
-     * @param authenticatedStatus
-     * @throws Exception
      */
     protected void testSecured(HttpUriRequest request, Matcher<Integer> authenticatedStatus)
             throws Exception {

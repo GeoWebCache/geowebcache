@@ -80,19 +80,10 @@ public abstract class TileLayer implements Info {
      */
     public abstract void addLayerListener(TileLayerListener listener);
 
-    /**
-     * Removes a layer listener from this layer's set of listeners
-     *
-     * @param listener
-     * @return
-     */
+    /** Removes a layer listener from this layer's set of listeners */
     public abstract boolean removeLayerListener(TileLayerListener listener);
 
-    /**
-     * The unique identifier for the layer.
-     *
-     * @return
-     */
+    /** The unique identifier for the layer. */
     public abstract String getId();
 
     /**
@@ -104,11 +95,7 @@ public abstract class TileLayer implements Info {
 
     public abstract void setBlobStoreId(@Nullable String blobStoreId);
 
-    /**
-     * Then name of the layer
-     *
-     * @return
-     */
+    /** Then name of the layer */
     public abstract String getName();
 
     /** @return {@code true} if the layer is enabled, {@code false} otherwise */
@@ -129,11 +116,7 @@ public abstract class TileLayer implements Info {
     /** @param transientLayer whether to set this layer as transient */
     public abstract void setTransientLayer(boolean transientLayer);
 
-    /**
-     * Layer meta information
-     *
-     * @return
-     */
+    /** Layer meta information */
     public abstract LayerMetaInformation getMetaInformation();
 
     /**
@@ -156,42 +139,20 @@ public abstract class TileLayer implements Info {
     /** @return possibly empty list of update sources for this layer */
     public abstract List<UpdateSourceDefinition> getUpdateSources();
 
-    /**
-     * Whether to use ETags for this layer
-     *
-     * @return
-     */
+    /** Whether to use ETags for this layer */
     public abstract boolean useETags();
 
     /**
      * The normal way of getting a single tile from the layer. Under the hood, this may result in
      * several tiles being requested and stored before returning.
-     *
-     * @param tile
-     * @return
-     * @throws GeoWebCacheException
-     * @throws IOException
-     * @throws OutsideCoverageException
      */
     public abstract ConveyorTile getTile(ConveyorTile tile)
             throws GeoWebCacheException, IOException, OutsideCoverageException;
 
-    /**
-     * Makes a non-metatiled request to backend, bypassing the cache before and after
-     *
-     * @param tile
-     * @return
-     * @throws GeoWebCacheException
-     * @throws IOException
-     */
+    /** Makes a non-metatiled request to backend, bypassing the cache before and after */
     public abstract ConveyorTile getNoncachedTile(ConveyorTile tile) throws GeoWebCacheException;
 
-    /**
-     * @param tile
-     * @param tryCache
-     * @throws GeoWebCacheException
-     * @throws IOException
-     */
+    /** */
     public abstract void seedTile(ConveyorTile tile, boolean tryCache)
             throws GeoWebCacheException, IOException;
 
@@ -199,10 +160,6 @@ public abstract class TileLayer implements Info {
      * This is a more direct way of requesting a tile without invoking metatiling, and should not be
      * used in general. The method was exposed to let the KML service traverse the tree ahead of the
      * client, to avoid linking to empty tiles.
-     *
-     * @param tile
-     * @return
-     * @throws GeoWebCacheException
      */
     public abstract ConveyorTile doNonMetatilingRequest(ConveyorTile tile)
             throws GeoWebCacheException;
@@ -309,13 +266,7 @@ public abstract class TileLayer implements Info {
         return matches.isEmpty() ? matches : Collections.unmodifiableList(matches);
     }
 
-    /**
-     * Whether the layer supports the given format string
-     *
-     * @param strFormat
-     * @return
-     * @throws GeoWebCacheException
-     */
+    /** Whether the layer supports the given format string */
     public boolean supportsFormat(String strFormat) throws GeoWebCacheException {
         if (strFormat == null) {
             return true; // what the heck?!
@@ -332,18 +283,7 @@ public abstract class TileLayer implements Info {
                 "Format " + strFormat + " is not supported by " + this.getName());
     }
 
-    /**
-     * GetFeatureInfo template, throws exception, subclasses must override if supported.
-     *
-     * @param convTile
-     * @param bbox
-     * @param height
-     * @param width
-     * @param x
-     * @param y
-     * @return
-     * @throws GeoWebCacheException
-     */
+    /** GetFeatureInfo template, throws exception, subclasses must override if supported. */
     public Resource getFeatureInfo(
             ConveyorTile convTile, BoundingBox bbox, int height, int width, int x, int y)
             throws GeoWebCacheException {
@@ -351,10 +291,7 @@ public abstract class TileLayer implements Info {
                 "GetFeatureInfo is not supported by this layer (" + getName() + ")");
     }
 
-    /**
-     * @param gridSetId
-     * @return the resolutions (units/pixel) for the layer
-     */
+    /** @return the resolutions (units/pixel) for the layer */
     public double[] getResolutions(String gridSetId) throws GeoWebCacheException {
         return getGridSubset(gridSetId).getResolutions();
     }
@@ -382,11 +319,7 @@ public abstract class TileLayer implements Info {
         return null;
     }
 
-    /**
-     * The default MIME type is the first one in the configuration
-     *
-     * @return
-     */
+    /** The default MIME type is the first one in the configuration */
     public MimeType getDefaultMimeType() {
         return getMimeTypes().get(0);
     }
@@ -394,34 +327,18 @@ public abstract class TileLayer implements Info {
     /**
      * Converts the given bounding box into the closest location on the grid supported by the
      * reference system.
-     *
-     * @param gridSetId
-     * @param tileBounds
-     * @return
-     * @throws GeoWebCacheException
-     * @throws GeoWebCacheException
-     * @throws GridMismatchException
      */
     public long[] indexFromBounds(String gridSetId, BoundingBox tileBounds)
             throws GridMismatchException {
         return getGridSubset(gridSetId).closestIndex(tileBounds);
     }
 
-    /**
-     * @param gridSetId
-     * @param gridLoc
-     * @return
-     * @throws GeoWebCacheException
-     */
+    /** */
     public BoundingBox boundsFromIndex(String gridSetId, long[] gridLoc) {
         return getGridSubset(gridSetId).boundsFromIndex(gridLoc);
     }
 
-    /**
-     * Uses the HTTP 1.1 spec to set expiration headers
-     *
-     * @param response
-     */
+    /** Uses the HTTP 1.1 spec to set expiration headers */
     public void setExpirationHeader(HttpServletResponse response, int zoomLevel) {
         int expireValue = getExpireClients(zoomLevel);
 
@@ -448,12 +365,7 @@ public abstract class TileLayer implements Info {
         }
     }
 
-    /**
-     * Loops over all the request filters and applies them successively.
-     *
-     * @param convTile
-     * @throws RequestFilterException
-     */
+    /** Loops over all the request filters and applies them successively. */
     public void applyRequestFilters(ConveyorTile convTile) throws RequestFilterException {
         List<RequestFilter> requestFilters = getRequestFilters();
         if (requestFilters == null) return;
@@ -576,13 +488,7 @@ public abstract class TileLayer implements Info {
         return buffer;
     }
 
-    /**
-     * Loops over the gridPositions, generates cache keys and saves to cache
-     *
-     * @param metaTile
-     * @param tileProto
-     * @param requestTime
-     */
+    /** Loops over the gridPositions, generates cache keys and saves to cache */
     protected void saveTiles(MetaTile metaTile, ConveyorTile tileProto, long requestTime)
             throws GeoWebCacheException {
 

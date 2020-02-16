@@ -113,14 +113,6 @@ public class XYZFilePathGenerator implements FilePathGenerator {
      * This method abstract going from internal tile grid (TMS) to storage tile grid (could be
      * slippy). One method is all it needs only because the TMS vs Slippy conventions have
      * symmetrical map, e.g., the same extact operation goes both directions
-     *
-     * @param layerName
-     * @param gridSetId
-     * @param x
-     * @param y
-     * @param z
-     * @return
-     * @throws GeoWebCacheException
      */
     protected long getY(String layerName, String gridSetId, long x, long y, int z)
             throws GeoWebCacheException {

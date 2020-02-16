@@ -40,7 +40,6 @@ public abstract class SetSingletonRule<T> extends ExternalResource {
      * @param set Setter for the singleton value
      * @param newValue Supplier for value to set the value to on start. Do not set on test start if
      *     null.
-     * @return
      */
     public static <T> SetSingletonRule<T> create(
             Supplier<T> get, Consumer<T> set, @Nullable Supplier<T> newValue) {
@@ -61,7 +60,6 @@ public abstract class SetSingletonRule<T> extends ExternalResource {
     /**
      * @param get Getter for the singleton value
      * @param set Setter for the singleton value
-     * @return
      */
     public static <T> SetSingletonRule<T> create(Supplier<T> get, Consumer<T> set) {
         return create(get, set, null);
@@ -90,11 +88,7 @@ public abstract class SetSingletonRule<T> extends ExternalResource {
     /** Getter for the singleton value */
     public abstract T getValue();
 
-    /**
-     * Get the old value of the singleton
-     *
-     * @return
-     */
+    /** Get the old value of the singleton */
     public T getOldValue() {
         return oldValue;
     }

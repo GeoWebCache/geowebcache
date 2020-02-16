@@ -222,13 +222,7 @@ public abstract class RasterFilter extends RequestFilter {
         }
     }
 
-    /**
-     * Performs a lookup against an internal raster.
-     *
-     * @param grid
-     * @param idx
-     * @return
-     */
+    /** Performs a lookup against an internal raster. */
     private boolean lookup(GridSubset grid, long[] idx) {
         BufferedImage mat = matrices.get(grid.getName())[(int) idx[2]];
 
@@ -244,10 +238,6 @@ public abstract class RasterFilter extends RequestFilter {
     /**
      * Performs a lookup against an internal raster. The sampling is actually done against 4 pixels,
      * idx should already have been modified to use one level higher than strictly necessary.
-     *
-     * @param grid
-     * @param idx
-     * @return
      */
     private boolean lookupQuad(GridSubset grid, long[] idx) {
         BufferedImage mat = matrices.get(grid.getName())[(int) idx[2]];
@@ -373,7 +363,6 @@ public abstract class RasterFilter extends RequestFilter {
      * This function will load the matrix from the appropriate source.
      *
      * @param layer Access to the layer, to make the object simpler
-     * @param gridSetId
      * @param z (zoom level)
      * @param replace Whether to update if a matrix exists
      */
@@ -405,14 +394,7 @@ public abstract class RasterFilter extends RequestFilter {
         }
     }
 
-    /**
-     * Helper function for calculating width and height
-     *
-     * @param grid
-     * @param z
-     * @return
-     * @throws GeoWebCacheException
-     */
+    /** Helper function for calculating width and height */
     protected int[] calculateWidthHeight(GridSubset grid, int z) throws GeoWebCacheException {
         long[] bounds = grid.getCoverage(z);
 

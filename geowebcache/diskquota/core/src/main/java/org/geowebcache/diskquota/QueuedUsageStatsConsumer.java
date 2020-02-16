@@ -73,10 +73,7 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
         }
     }
 
-    /**
-     * @param quotaStore
-     * @param queue
-     */
+    /** */
     public QueuedUsageStatsConsumer(
             final QuotaStore quotaStore,
             final BlockingQueue<UsageStats> queue,
@@ -154,7 +151,6 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
     /**
      * @param requestedTile represents a single tile that was requested and for which its tile page
      *     needs to be looked up and updated
-     * @throws InterruptedException
      */
     private void performAggregatedUpdate(final UsageStats requestedTile)
             throws InterruptedException {

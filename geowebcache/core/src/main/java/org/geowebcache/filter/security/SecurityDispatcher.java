@@ -41,7 +41,6 @@ public class SecurityDispatcher implements ApplicationContextAware {
     /**
      * Apply security filters to a conveyor.
      *
-     * @param tile
      * @throws SecurityException if any of the filter throw it
      */
     public void checkSecurity(final ConveyorTile tile)
@@ -64,9 +63,6 @@ public class SecurityDispatcher implements ApplicationContextAware {
     /**
      * Apply all filters to a bounding box within a layer
      *
-     * @param layer
-     * @param extent
-     * @param srs
      * @throws SecurityException if any of the filter throw it
      */
     public void checkSecurity(TileLayer layer, @Nullable BoundingBox extent, @Nullable SRS srs)

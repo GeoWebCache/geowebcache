@@ -331,9 +331,6 @@ public class GridSet implements Info {
      * idea)
      *
      * <p>Used for WMTS GetCapabilities
-     *
-     * @param gridIndex
-     * @return
      */
     public double[] getOrderedTopLeftCorner(int gridIndex) {
         // First we will find the x,y pair, then we'll flip it if necessary
@@ -526,7 +523,6 @@ public class GridSet implements Info {
      * except if both the grids of {@code another} are a superset of the grids of this gridset (i.e.
      * they are all the same but {@code another} just has more zoom levels}.
      *
-     * @param another
      * @return {@code true} if
      */
     public boolean shouldTruncateIfChanged(final GridSet another) {

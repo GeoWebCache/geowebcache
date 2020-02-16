@@ -54,8 +54,6 @@ public class MockExtensionRule extends ExternalResource {
      * If true this rule will modify the static context used by GeoWebCacheExtensions by default.
      * Otherwise only the context produced by this rule will be affected. Only one rule affecting
      * the static context can be active at one time.
-     *
-     * @param staticContext
      */
     public MockExtensionRule(boolean staticContext) {
         super();
@@ -90,13 +88,7 @@ public class MockExtensionRule extends ExternalResource {
                         new ContextInvocationHandler());
     }
 
-    /**
-     * Register a mock extension bean
-     *
-     * @param name
-     * @param bean
-     * @param classes
-     */
+    /** Register a mock extension bean */
     public void addBean(String name, Object bean, Class<?>... classes) {
         for (Class<?> clazz : classes) {
             Collection<String> c = types.getOrDefault(clazz, new ArrayList<>());
@@ -122,11 +114,7 @@ public class MockExtensionRule extends ExternalResource {
         }
     }
 
-    /**
-     * Get the mock ApplicationContext that contains the mock extension beans
-     *
-     * @return
-     */
+    /** Get the mock ApplicationContext that contains the mock extension beans */
     public ApplicationContext getMockContext() {
         if (Objects.isNull(mockContext)) {
             throw new IllegalStateException("Mock context only available while rule is active");

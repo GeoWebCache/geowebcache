@@ -26,18 +26,7 @@ public class WMSMetaTile extends MetaTile {
 
     protected Map<String, String> fullParameters;
 
-    /**
-     * Used for requests by clients
-     *
-     * @param layer
-     * @param gridSubset
-     * @param responseFormat
-     * @param formatModifier
-     * @param tileGridPosition
-     * @param metaX
-     * @param metaY
-     * @param fullParameters
-     */
+    /** Used for requests by clients */
     protected WMSMetaTile(
             WMSLayer layer,
             GridSubset gridSubset,

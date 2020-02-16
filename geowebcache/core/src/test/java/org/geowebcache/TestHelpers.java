@@ -118,12 +118,7 @@ public class TestHelpers {
         return req;
     }
 
-    /**
-     * Matcher for an {@link HttpServletResponse} that checks its status.
-     *
-     * @param expected
-     * @return
-     */
+    /** Matcher for an {@link HttpServletResponse} that checks its status. */
     public static Matcher<HttpServletResponse> hasStatus(HttpStatus expected) {
         return new BaseMatcher<HttpServletResponse>() {
 

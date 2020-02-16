@@ -244,7 +244,6 @@ public class ImageEncoderImpl implements ImageEncoder {
      * @param destination Destination object where the image is written.
      * @param aggressiveOutputStreamOptimization Parameter used if aggressive outputStream
      *     optimization must be used.
-     * @throws IOException
      */
     public void encode(
             RenderedImage image,
@@ -311,11 +310,7 @@ public class ImageEncoderImpl implements ImageEncoder {
         }
     }
 
-    /**
-     * Returns the ImageSpiWriter associated to
-     *
-     * @return
-     */
+    /** Returns the ImageSpiWriter associated to */
     ImageWriterSpi getWriterSpi() {
         return spi;
     }
@@ -342,10 +337,6 @@ public class ImageEncoderImpl implements ImageEncoder {
     /**
      * Creates a new Instance of ImageEncoder supporting or not OutputStream optimization, with the
      * defined MimeTypes and Spi classes.
-     *
-     * @param aggressiveOutputStreamOptimization
-     * @param supportedMimeTypes
-     * @param writerSpi
      */
     public ImageEncoderImpl(
             boolean aggressiveOutputStreamOptimization,

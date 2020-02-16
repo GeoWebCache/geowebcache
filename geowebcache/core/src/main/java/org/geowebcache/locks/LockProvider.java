@@ -23,11 +23,7 @@ import org.geowebcache.GeoWebCacheException;
  */
 public interface LockProvider {
 
-    /**
-     * Acquires a exclusive lock on the specified key
-     *
-     * @param lockKey
-     */
+    /** Acquires a exclusive lock on the specified key */
     public Lock getLock(String lockKey) throws GeoWebCacheException;
 
     public interface Lock {

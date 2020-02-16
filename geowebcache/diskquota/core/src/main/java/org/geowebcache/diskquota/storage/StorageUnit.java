@@ -68,24 +68,12 @@ public enum StorageUnit {
         return target.fromBytes(toBytes(value));
     }
 
-    /**
-     * Returns the most appropriate storage unit to represent the given amount
-     *
-     * @param value
-     * @param units
-     * @return
-     */
+    /** Returns the most appropriate storage unit to represent the given amount */
     public static StorageUnit bestFit(double value, StorageUnit units) {
         return bestFit(BigDecimal.valueOf(value), units);
     }
 
-    /**
-     * Returns the most appropriate storage unit to represent the given amount
-     *
-     * @param value
-     * @param units
-     * @return
-     */
+    /** Returns the most appropriate storage unit to represent the given amount */
     public static StorageUnit bestFit(BigDecimal value, StorageUnit units) {
         BigDecimal bytes = new BigDecimal(units.toBytes(value));
         // use compareTo because BigDecimal.equals does not consider 1.0 and 1.00 to be equal, so

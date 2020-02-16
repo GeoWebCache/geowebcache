@@ -134,7 +134,6 @@ public class ServerConfigurationPOJO implements ServerConfiguration {
      * LockProvider} bean. If the passed lockProvider is not a bean, sets the bean name to null.
      *
      * @param lockProvider The lock provider bean
-     * @throws IOException
      */
     @Override
     public void setLockProvider(LockProvider lockProvider) throws IOException {

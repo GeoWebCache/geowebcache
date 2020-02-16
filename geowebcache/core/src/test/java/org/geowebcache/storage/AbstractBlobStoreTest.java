@@ -61,11 +61,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
     @Before
     public abstract void createTestUnit() throws Exception;
 
-    /**
-     * Override and add tear down assertions after calling super
-     *
-     * @throws Exception
-     */
+    /** Override and add tear down assertions after calling super */
     @After
     public void destroyTestUnit() throws Exception {
         // Might be null if an Assumption failed during createTestUnit

@@ -90,11 +90,7 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
         this.bytes = units.toBytes(value);
     }
 
-    /**
-     * Supports initialization of instance variables during XStream deserialization
-     *
-     * @return
-     */
+    /** Supports initialization of instance variables during XStream deserialization */
     private Object readResolve() {
         if (this.bytes == null) {
             this.bytes = BigInteger.ZERO;
@@ -112,11 +108,7 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
                 .toString();
     }
 
-    /**
-     * Adds {@code bytes} bytes to this quota
-     *
-     * @param bytes
-     */
+    /** Adds {@code bytes} bytes to this quota */
     public void add(BigInteger bytes) {
         this.bytes = this.bytes.add(bytes);
     }
@@ -136,11 +128,7 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
         this.bytes = this.bytes.add(quota.getBytes());
     }
 
-    /**
-     * Subtracts {@code bytes} bytes from this quota
-     *
-     * @param bytes
-     */
+    /** Subtracts {@code bytes} bytes from this quota */
     public void subtract(final BigInteger bytes) {
         this.bytes = this.bytes.subtract(bytes);
     }
@@ -155,12 +143,7 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
         subtract(units.toBytes(amount));
     }
 
-    /**
-     * Returns the difference between this quota and the argument one, in this quota's units
-     *
-     * @param quota
-     * @return
-     */
+    /** Returns the difference between this quota and the argument one, in this quota's units */
     public Quota difference(Quota quota) {
         BigInteger difference = this.bytes.subtract(quota.getBytes());
         return new Quota(difference);
@@ -168,8 +151,6 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
 
     /**
      * Returns a more user friendly string representation of this quota, like in 1.1GB, 0.75MB, etc.
-     *
-     * @return
      */
     public String toNiceString() {
         StorageUnit bestFit = StorageUnit.bestFit(bytes);
@@ -197,12 +178,7 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
         return bytes.compareTo(o.getBytes());
     }
 
-    /**
-     * Shorthand for {@code setBytes(unit.convertTo(value, StorageUnit.B).toBigInteger())}
-     *
-     * @param value
-     * @param unit
-     */
+    /** Shorthand for {@code setBytes(unit.convertTo(value, StorageUnit.B).toBigInteger())} */
     public void setValue(double value, StorageUnit unit) {
         setBytes(unit.convertTo(value, StorageUnit.B).toBigInteger());
     }

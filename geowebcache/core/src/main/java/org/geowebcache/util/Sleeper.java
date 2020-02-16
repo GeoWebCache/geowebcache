@@ -21,10 +21,6 @@ package org.geowebcache.util;
  */
 @FunctionalInterface
 public interface Sleeper {
-    /**
-     * @see Thread#sleep(long)
-     * @param millis
-     * @throws InterruptedException
-     */
+    /** @see Thread#sleep(long) */
     public void sleep(long millis) throws InterruptedException;
 }

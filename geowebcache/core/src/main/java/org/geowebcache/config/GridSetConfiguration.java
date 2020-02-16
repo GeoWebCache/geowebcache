@@ -27,8 +27,6 @@ public interface GridSetConfiguration extends BaseConfiguration {
     /**
      * Get a GridSet by name
      *
-     * @param name
-     * @return
      * @throw NoSuchElementException if the named gridset is not available.
      */
     Optional<GridSet> getGridSet(final String name);
@@ -55,7 +53,6 @@ public interface GridSetConfiguration extends BaseConfiguration {
     /**
      * Removes an existing gridset from the configuration
      *
-     * @param gridSetName
      * @throws NoSuchElementException If there is no existing gridset by that name.
      * @throws UnsupportedOperationException if removing this gridset is not supported
      */

@@ -141,11 +141,7 @@ public class ByteArrayResource implements Resource, Serializable {
         return new SeekableInputStream(this);
     }
 
-    /**
-     * Get the contents of the resource.
-     *
-     * @return
-     */
+    /** Get the contents of the resource. */
     public byte[] getContents() {
         if (data == null || length == 0) {
             return null;

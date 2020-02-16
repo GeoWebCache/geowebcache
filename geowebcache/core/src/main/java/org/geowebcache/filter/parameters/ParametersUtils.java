@@ -35,9 +35,6 @@ public class ParametersUtils {
      * This should be treated as an opaque Identifier and should not be parsed, it is used to to
      * maintain compatibility with old caches. For any other uses, {@link #getKvp(Map)} is preferred
      * as it uses safe escaping of values.
-     *
-     * @param parameters
-     * @return
      */
     public static String getLegacyParametersKvp(Map<String, String> parameters) {
         StringBuilder sb = new StringBuilder();
@@ -84,12 +81,7 @@ public class ParametersUtils {
         return (t1, t2) -> derivation.apply(t1).compareTo(derivation.apply(t2));
     }
 
-    /**
-     * Turns the parameter list into a sorted KVP string
-     *
-     * @param parameters
-     * @return
-     */
+    /** Turns the parameter list into a sorted KVP string */
     public static String getKvp(Map<String, String> parameters) {
         return parameters
                 .entrySet()
@@ -104,9 +96,6 @@ public class ParametersUtils {
      *
      * <p>This should only be used for parsing strings created by {@link #getKvp(Map)} not for
      * parsing raw query strings
-     *
-     * @param kvp
-     * @return
      */
     public static Map<String, String> getMap(String kvp) {
         return Arrays.stream(kvp.split("&"))
@@ -115,12 +104,7 @@ public class ParametersUtils {
                 .collect(Collectors.toMap(p -> decUTF8(p[0]), p -> decUTF8(p[1])));
     }
 
-    /**
-     * Returns the parameters identifier for the given parameters map
-     *
-     * @param parameters
-     * @return
-     */
+    /** Returns the parameters identifier for the given parameters map */
     public static String getId(Map<String, String> parameters) {
         if (parameters == null || parameters.size() == 0) {
             return null;

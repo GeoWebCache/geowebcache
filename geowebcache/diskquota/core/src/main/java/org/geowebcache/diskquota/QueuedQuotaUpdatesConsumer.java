@@ -217,10 +217,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long> {
         return null;
     }
 
-    /**
-     * @param updateData
-     * @throws InterruptedException
-     */
+    /** */
     private void performAggregatedUpdate(final QuotaUpdate updateData) throws InterruptedException {
 
         final TileSet tileSet = updateData.getTileSet();
@@ -237,11 +234,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long> {
         accumulatedUpdate.add(updateData);
     }
 
-    /**
-     * Makes sure no cached updates are held for too long before synchronizing with the store
-     *
-     * @throws InterruptedException
-     */
+    /** Makes sure no cached updates are held for too long before synchronizing with the store */
     private void checkAggregatedTimeouts() throws InterruptedException {
         if (aggregatedDelayedUpdates.size() == 0) {
             return;
@@ -272,10 +265,8 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long> {
      * store, either because it's been held for too long, or because too many updates have happened
      * on it since the last time it was saved to the store.
      *
-     * @param timedUpadte
      * @return {@code true} if it's ok to prune the timedUpdate from the {@link
      *     #aggregatedDelayedUpdates local cache}
-     * @throws InterruptedException
      */
     private boolean checkAggregatedTimeout(TimedQuotaUpdate timedUpadte)
             throws InterruptedException {

@@ -152,7 +152,6 @@ public class TileRange {
     /**
      * Returns the range bounds for the given level, as a <code>minx,miny,maxx,maxy</code> array
      *
-     * @param zoomLevel
      * @return The bounds
      * @throws IllegalArgumentException if the given z level is not between zoomstart and zoomStop
      */

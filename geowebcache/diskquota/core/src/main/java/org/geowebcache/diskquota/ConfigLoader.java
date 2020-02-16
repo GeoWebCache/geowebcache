@@ -50,7 +50,6 @@ import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;
-import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.springframework.util.Assert;
 
@@ -86,7 +85,6 @@ public class ConfigLoader {
      *     file
      * @param tld used only to validate the presence of a layer at {@link #loadConfig()} and ignore
      *     the layer quota definition if the {@link TileLayer} does not exist
-     * @throws IOException
      */
     public ConfigLoader(
             final DefaultStorageFinder storageFinder,
@@ -105,7 +103,6 @@ public class ConfigLoader {
      * @param storageFinder used to get the location of the cache directory
      * @param tld used only to validate the presence of a layer at {@link #loadConfig()} and ignore
      *     the layer quota definition if the {@link TileLayer} does not exist
-     * @throws IOException
      */
     public ConfigLoader(
             final ConfigurationResourceProvider resourceProvider,
@@ -117,13 +114,7 @@ public class ConfigLoader {
         this.tileLayerDispatcher = tld;
     }
 
-    /**
-     * Saves the configuration to the root cache directory
-     *
-     * @param config
-     * @throws IOException
-     * @throws ConfigurationException
-     */
+    /** Saves the configuration to the root cache directory */
     public void saveConfig(DiskQuotaConfig config) throws IOException, ConfigurationException {
         if (!resourceProvider.hasOutput()) {
             log.error("Unable to save DiskQuota to resource :" + resourceProvider.getLocation());
@@ -302,14 +293,7 @@ public class ConfigLoader {
         return xs;
     }
 
-    /**
-     * Opens an output stream for a file relative to the cache storage folder
-     *
-     * @param fileNameRelPath
-     * @return
-     * @throws IOException
-     * @throws ConfigurationException
-     */
+    /** Opens an output stream for a file relative to the cache storage folder */
     public OutputStream getStorageOutputStream(String... fileNameRelPath)
             throws IOException, ConfigurationException {
         File rootCacheDir = getFileStorageDir(fileNameRelPath);
@@ -322,9 +306,7 @@ public class ConfigLoader {
      * Opens a stream over an existing file relative to the cache storage folder
      *
      * @param fileNameRelPath the file name relative to the cache storage folder to open
-     * @return
      * @throws IOException if {@code fileName} doesn't exist
-     * @throws ConfigurationException
      */
     public InputStream getStorageInputStream(String... fileNameRelPath)
             throws IOException, ConfigurationException {
@@ -337,8 +319,6 @@ public class ConfigLoader {
     /**
      * @param fileNameRelPath file path relative to the cache storage directory, where the last
      *     entry is the file name and any previous one directory names
-     * @return
-     * @throws StorageException
      */
     private File getFileStorageDir(String[] fileNameRelPath) throws ConfigurationException {
         File parentDir = getRootCacheDir();

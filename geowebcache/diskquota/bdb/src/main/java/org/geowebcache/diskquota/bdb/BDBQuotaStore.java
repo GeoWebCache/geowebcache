@@ -125,10 +125,7 @@ public class BDBQuotaStore implements QuotaStore {
         this.diskQuotaEnabled = !disabled;
     }
 
-    /**
-     * @throws InterruptedException
-     * @see {@link #close()}
-     */
+    /** @see {@link #close()} */
     public void startUp() throws InterruptedException, IOException {
         if (!diskQuotaEnabled) {
             log.info(

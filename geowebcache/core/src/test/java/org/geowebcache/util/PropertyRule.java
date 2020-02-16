@@ -13,42 +13,24 @@ public class PropertyRule extends SetSingletonRule<String> {
 
     final String name;
 
-    /**
-     * Create a rule to override a system property
-     *
-     * @param name
-     * @return
-     */
+    /** Create a rule to override a system property */
     public static PropertyRule system(String name) {
         return new PropertyRule(System.getProperties(), name);
     }
 
-    /**
-     * Create a rule to override a property in the given Properties
-     *
-     * @param name
-     * @return
-     */
+    /** Create a rule to override a property in the given Properties */
     public PropertyRule(Properties props, String name) {
         super();
         this.props = props;
         this.name = name;
     }
 
-    /**
-     * Set the original value of the property
-     *
-     * @return
-     */
+    /** Set the original value of the property */
     public String getOldValue() {
         return oldValue;
     }
 
-    /**
-     * Set the value of the property
-     *
-     * @return
-     */
+    /** Set the value of the property */
     public void setValue(String value) {
         if (Objects.nonNull(value)) {
             props.setProperty(name, value);
@@ -57,20 +39,12 @@ public class PropertyRule extends SetSingletonRule<String> {
         }
     }
 
-    /**
-     * Get the name of the property
-     *
-     * @return
-     */
+    /** Get the name of the property */
     public String getName() {
         return name;
     }
 
-    /**
-     * Set the current value of the property
-     *
-     * @return
-     */
+    /** Set the current value of the property */
     @Override
     public String getValue() {
         return props.getProperty(name);

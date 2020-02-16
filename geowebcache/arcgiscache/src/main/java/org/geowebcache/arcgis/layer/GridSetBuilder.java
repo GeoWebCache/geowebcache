@@ -33,14 +33,7 @@ import org.springframework.util.Assert;
  */
 class GridSetBuilder {
 
-    /**
-     * Creates a {@link GridSet} out of a ArcGIS tiling scheme
-     *
-     * @param layerName
-     * @param info
-     * @param layerBounds
-     * @return
-     */
+    /** Creates a {@link GridSet} out of a ArcGIS tiling scheme */
     public GridSet buildGridset(
             final String layerName, final CacheInfo info, final BoundingBox layerBounds) {
 

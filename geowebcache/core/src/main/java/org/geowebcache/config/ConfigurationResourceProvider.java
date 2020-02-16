@@ -25,28 +25,13 @@ import java.io.OutputStream;
  */
 public interface ConfigurationResourceProvider {
 
-    /**
-     * Create inputstream
-     *
-     * @return
-     * @throws IOException
-     * @throws ConfigurationException
-     */
+    /** Create inputstream */
     public InputStream in() throws IOException;
 
-    /**
-     * Create outputstream
-     *
-     * @throws IOException
-     * @throws ConfigurationException
-     */
+    /** Create outputstream */
     public OutputStream out() throws IOException;
 
-    /**
-     * Make a backup
-     *
-     * @throws IOException
-     */
+    /** Make a backup */
     public void backup() throws IOException;
 
     /** @return identifier for this resource */

@@ -123,14 +123,6 @@ public class MetaTile implements TileResponseReceiver {
      * <p>The response format is what the tiles are actually saved as. The primary example is to use
      * image/png or image/tiff for backend requests, and then save the resulting tiles to JPEG to
      * avoid loss of quality.
-     *
-     * @param gridSubset
-     * @param responseFormat
-     * @param formatModifier
-     * @param tileGridPosition
-     * @param metaX
-     * @param metaY
-     * @param gutter
      */
     public MetaTile(
             GridSubset gridSubset,
@@ -286,7 +278,6 @@ public class MetaTile implements TileResponseReceiver {
      *
      * @param tileWidth width of each tile
      * @param tileHeight height of each tile
-     * @return
      */
     private Rectangle[] createTiles(int tileHeight, int tileWidth) {
         int tileCount = metaX * metaY;
@@ -353,7 +344,6 @@ public class MetaTile implements TileResponseReceiver {
      * @param tileIdx the index of the tile relative to the internal array
      * @param target the resource
      * @return true if no error was encountered
-     * @throws IOException
      */
     public boolean writeTileToStream(final int tileIdx, Resource target) throws IOException {
         if (tiles == null) {
@@ -412,10 +402,6 @@ public class MetaTile implements TileResponseReceiver {
      * To get the BBOX you need to add one tilewidth to the top and right.
      *
      * <p>It also updates metaX and metaY to the actual metatiling factors
-     *
-     * @param coverage
-     * @param tileIdx
-     * @return
      */
     private long[] calculateMetaTileGridBounds(long[] coverage, long[] tileIdx) {
         long[] metaGridCov = new long[5];
@@ -452,21 +438,13 @@ public class MetaTile implements TileResponseReceiver {
         return tilesGridPos;
     }
 
-    /**
-     * The bottom left grid position and zoomlevel for this metatile, used for locking.
-     *
-     * @return
-     */
+    /** The bottom left grid position and zoomlevel for this metatile, used for locking. */
     public long[] getMetaGridPos() {
         long[] gridPos = {metaGridCov[0], metaGridCov[1], metaGridCov[4]};
         return gridPos;
     }
 
-    /**
-     * The bounds for the metatile
-     *
-     * @return
-     */
+    /** The bounds for the metatile */
     public long[] getMetaTileGridBounds() {
         return metaGridCov;
     }

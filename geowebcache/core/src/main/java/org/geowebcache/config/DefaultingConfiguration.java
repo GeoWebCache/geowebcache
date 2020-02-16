@@ -23,8 +23,6 @@ public interface DefaultingConfiguration extends BaseConfiguration {
      * TileLayerConfiguration objects lacking their own defaults can delegate to this. Should set
      * values in the default geowebcache.xml to the TileLayer configuration, and fall back on
      * implemented default values if missing.
-     *
-     * @param layer
      */
     void setDefaultValues(TileLayer layer);
 }

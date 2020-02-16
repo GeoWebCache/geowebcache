@@ -96,12 +96,7 @@ public class WMTSService extends Service {
             this.hasStyle = hasStyle;
         }
 
-        /**
-         * Returns the parsed KVP, or null if the path does not match the request pattern
-         *
-         * @param request
-         * @return
-         */
+        /** Returns the parsed KVP, or null if the path does not match the request pattern */
         public Map<String, String> toKVP(HttpServletRequest request) {
             final Matcher matcher = pattern.matcher(request.getPathInfo());
             if (!matcher.matches()) {

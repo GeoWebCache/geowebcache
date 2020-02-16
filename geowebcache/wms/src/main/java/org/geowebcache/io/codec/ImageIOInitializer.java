@@ -55,7 +55,6 @@ public class ImageIOInitializer {
      * Static initializer for the {@link ImageIOInitializer} class.
      *
      * @param excludedSpis List of the Spis to exclude.
-     * @return
      */
     public static synchronized ImageIOInitializer getInstance(ArrayList<String> excludedSpis) {
         if (instance == null) {
@@ -118,11 +117,7 @@ public class ImageIOInitializer {
         return excludedSpis;
     }
 
-    /**
-     * Sets the list of the SPI names to deregister
-     *
-     * @param excludedSpis
-     */
+    /** Sets the list of the SPI names to deregister */
     public void setExcludedSpis(List<String> excludedSpis) {
         this.excludedSpis = excludedSpis;
     }

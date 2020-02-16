@@ -122,7 +122,6 @@ public class CacheCleaner implements DisposableBean {
      *
      * @param layerNames the layers to expire tile pages from
      * @param quotaResolver live limit and used quota to monitor until it reaches its limit
-     * @throws InterruptedException
      * @see {@link org.geowebcache.diskquota.ExpirationPolicy#expireByLayerNames}
      */
     public void expireByLayerNames(

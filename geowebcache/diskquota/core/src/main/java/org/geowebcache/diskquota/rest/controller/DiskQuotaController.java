@@ -110,8 +110,6 @@ public class DiskQuotaController {
     /**
      * Applies the set values in {@code newConfig} (the non null ones) to {@code config}
      *
-     * @param config
-     * @param newConfig
      * @throws IllegalArgumentException as per {@link DiskQuotaConfig#setCacheCleanUpFrequency},
      *     {@link DiskQuotaConfig#setDiskBlockSize}, {@link
      *     DiskQuotaConfig#setMaxConcurrentCleanUps} , {@link DiskQuotaConfig#setCacheCleanUpUnits}
@@ -174,9 +172,7 @@ public class DiskQuotaController {
     /**
      * Private method for retunring a JSON representation of the Statistics
      *
-     * @param config
      * @return a {@link ResponseEntity} object
-     * @throws JSONException
      */
     private ResponseEntity<?> getJsonRepresentation(DiskQuotaConfig config) throws JSONException {
         XStream xs =
@@ -191,9 +187,7 @@ public class DiskQuotaController {
     /**
      * Private method for retunring an XML representation of the Statistics
      *
-     * @param config
      * @return a {@link ResponseEntity} object
-     * @throws JSONException
      */
     private ResponseEntity<?> getXmlRepresentation(DiskQuotaConfig config) {
         XStream xStream = getConfiguredXStream(new GeoWebCacheXStream());
@@ -205,7 +199,6 @@ public class DiskQuotaController {
     /**
      * This method adds to the input {@link XStream} an alias for the CacheStatistics
      *
-     * @param xs
      * @return an updated XStream
      */
     public static XStream getConfiguredXStream(XStream xs) {

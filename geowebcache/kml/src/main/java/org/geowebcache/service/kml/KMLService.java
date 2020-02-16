@@ -93,7 +93,6 @@ public class KMLService extends Service {
      * /kml/layername/tilekey.format.extension (kml or kmz, overlay) Example 3:
      * /kml/layername/tilekey.format (data)
      *
-     * @param pathInfo
      * @return {layername, tilekey, format, wrapperformat}
      */
     protected static String[] parseRequest(String pathInfo) {
@@ -284,11 +283,7 @@ public class KMLService extends Service {
         return new String(requestUrl.substring(0, endOffset - 1));
     }
 
-    /**
-     * Creates a superoverlay, ie. a short description and network links to the first overlays.
-     *
-     * @param tile
-     */
+    /** Creates a superoverlay, ie. a short description and network links to the first overlays. */
     private void handleSuperOverlay(ConveyorKMLTile tile) throws GeoWebCacheException {
         TileLayer layer = tile.getLayer();
 
@@ -364,14 +359,7 @@ public class KMLService extends Service {
         writeTileResponse(tile, true, stats, mimeStr);
     }
 
-    /**
-     * Creates a network link to the first tile in the pyramid
-     *
-     * @param superString
-     * @param bbox
-     * @param url
-     * @return
-     */
+    /** Creates a network link to the first tile in the pyramid */
     private static String superOverlayNetworLink(String superString, BoundingBox bbox, String url) {
         String xml =
                 "\n<NetworkLink><name>Super-overlay: "
@@ -506,11 +494,7 @@ public class KMLService extends Service {
      * Creates an overlay element: 1) Header 2) Network links to regions where we have more data 3)
      * Overlay (link to data) 4) Footer
      *
-     * @param tile
-     * @param isPackaged
      * @return The html for the overlay element
-     * @throws ServiceException
-     * @throws GeoWebCacheException
      */
     private String createOverlay(ConveyorKMLTile tile, boolean isPackaged)
             throws ServiceException, GeoWebCacheException {
@@ -621,12 +605,7 @@ public class KMLService extends Service {
         return buf.toString();
     }
 
-    /**
-     * This creates the header for the overlay
-     *
-     * @param bbox
-     * @return
-     */
+    /** This creates the header for the overlay */
     private static String createOverlayHeader(BoundingBox bbox, boolean setMaxLod) {
         int maxLodPixels = -1;
         if (setMaxLod) {
@@ -647,12 +626,6 @@ public class KMLService extends Service {
     /**
      * For KML features / vector data OR for the next level
      *
-     * @param layer
-     * @param bbox
-     * @param gridLocUrl
-     * @param tileIdx
-     * @param maxLodPixels
-     * @param refreshTags
      * @return The network link element html
      */
     private static String createNetworkLinkElement(
@@ -687,15 +660,7 @@ public class KMLService extends Service {
         return xml;
     }
 
-    /**
-     * Used for linking to a raster image
-     *
-     * @param gridLoc
-     * @param urlStr
-     * @param bbox
-     * @param formatExtension
-     * @return
-     */
+    /** Used for linking to a raster image */
     private static String createGroundOverLayElement(
             long[] gridLoc,
             String urlStr,

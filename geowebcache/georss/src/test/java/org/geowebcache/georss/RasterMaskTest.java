@@ -53,8 +53,6 @@ public class RasterMaskTest extends TestCase {
     /**
      * Once the matrix is built, test the expected tiles are marked as covered by the consumed
      * geometries
-     *
-     * @throws Exception
      */
     public void testTileIsPresent() throws Exception {
         GeometryRasterMaskBuilder mask =

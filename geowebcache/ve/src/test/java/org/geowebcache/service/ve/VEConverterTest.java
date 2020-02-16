@@ -14,8 +14,6 @@ public class VEConverterTest extends TestCase {
      * Remember, quadkeys look like this: 0 1 2 3
      *
      * <p>And the "most zoomed out" is level 1,
-     *
-     * @throws Exception
      */
     public void testVEConverter() throws Exception {
         /* Check origin location */

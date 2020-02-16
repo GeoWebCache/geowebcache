@@ -68,11 +68,7 @@ public class GeoRSSTileRangeBuilderTest extends TestCase {
                 layer.getGridSubset(gridsetId).getCoverages().length, tileRangeMask.getNumLevels());
     }
 
-    /**
-     * Test for {@link GeometryRasterMaskBuilder#getCoveredBounds(int)}
-     *
-     * @throws Exception
-     */
+    /** Test for {@link GeometryRasterMaskBuilder#getCoveredBounds(int)} */
     public void testCoveredBounds() throws Exception {
         GeometryRasterMaskBuilder tileRangeMask = buildSampleFilterMatrix(layer, gridsetId);
 

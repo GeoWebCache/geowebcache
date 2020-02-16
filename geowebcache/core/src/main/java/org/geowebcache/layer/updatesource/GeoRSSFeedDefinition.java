@@ -39,8 +39,6 @@ public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
     /**
      * The maximum zoom level which to create a backing tile mask for to track the tiles affected by
      * the feed geometries; defaults to {@code 10}
-     *
-     * @return
      */
     public int getMaxMaskLevel() {
         return maxMaskLevel == null ? 10 : maxMaskLevel.intValue();
@@ -65,8 +63,6 @@ public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
     /**
      * Number of threads to spawn to seed based on the results of the GeoRSS feed; default to {@code
      * 1} if not set
-     *
-     * @return
      */
     public int getSeedingThreads() {
         return seedingThreads == null ? 1 : seedingThreads.intValue();
@@ -76,8 +72,6 @@ public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
      * The URL to the feed. I think we should use templating for parameters, so in the initial
      * implementation we search the string for {lastEntryId} and replace any occurrences with the
      * actual last entry id.
-     *
-     * @return
      */
     public String getFeedUrl() {
         return feedUrl;
@@ -86,8 +80,6 @@ public class GeoRSSFeedDefinition extends UpdateSourceDefinition {
     /**
      * The format for which to truncate / reseed. If you omit this parameter all supported formats
      * will be truncated / reseeded.
-     *
-     * @return
      */
     public String getFormat() {
         return format;

@@ -86,8 +86,6 @@ final class LayerCacheInfoBuilder {
      * <p>Note the cache information gathering is performed asynchronously and hence this method
      * returns immediately. To check whether the information collect for a given layer has finished
      * use the {@link #isRunning(String) isRunning(layerName)} method.
-     *
-     * @param tileLayer
      */
     public void buildCacheInfo(final TileLayer tileLayer) {
 
@@ -317,7 +315,6 @@ final class LayerCacheInfoBuilder {
      * Returns whether cache information is still being gathered for the layer named after {@code
      * layerName}.
      *
-     * @param layerName
      * @return {@code true} if the cache information gathering for {@code layerName} is not finished
      */
     public boolean isRunning(String layerName) {

@@ -912,8 +912,6 @@ public class WMTSServiceTest {
      * Generates a layer with "elevation" and "time" dimensions and mime types "image/png" ,
      * "image/jpeg" , "text/plain" , "text/html" , "application/vnd.ogc.gml" then checks if in the
      * capabilities documents each <ResourceURL> elements contains both the dimensions components.
-     *
-     * @throws Exception
      */
     @SuppressWarnings("unchecked")
     @Test

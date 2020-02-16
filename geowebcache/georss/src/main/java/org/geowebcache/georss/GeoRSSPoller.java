@@ -50,7 +50,6 @@ public class GeoRSSPoller {
      * interval} polls the layers feed for change sets and if changes are found spawns a reseed
      * process on the tiles affected by the change set.
      *
-     * @param seeder
      * @param startUpDelaySecs seconds to wait before start polling the layers
      */
     public GeoRSSPoller(final TileBreeder seeder, final int startUpDelaySecs) {

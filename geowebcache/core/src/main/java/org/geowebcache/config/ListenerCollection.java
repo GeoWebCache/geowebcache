@@ -31,22 +31,14 @@ public class ListenerCollection<Listener> {
 
     List<Listener> listeners = new LinkedList<>();
 
-    /**
-     * Add a listener
-     *
-     * @param listener
-     */
+    /** Add a listener */
     public synchronized void add(Listener listener) {
         if (!listeners.contains(listener)) {
             listeners.add(listener);
         }
     }
 
-    /**
-     * Remove a listener
-     *
-     * @param listener
-     */
+    /** Remove a listener */
     public synchronized void remove(Listener listener) {
         listeners.remove(listener);
     }
@@ -61,10 +53,6 @@ public class ListenerCollection<Listener> {
      * execute. If more than one exception is thrown, the last will be the one propagated, with the
      * others added as suppressed exceptions. If an Error is thrown, it will be propagated
      * immediately.
-     *
-     * @param method
-     * @throws GeoWebCacheException
-     * @throws IOException
      */
     public synchronized void safeForEach(HandlerMethod<Listener> method)
             throws GeoWebCacheException, IOException {

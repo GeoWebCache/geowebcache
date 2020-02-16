@@ -34,11 +34,7 @@ public class GridSubSetTest {
         assertNotNull(result);
     }
 
-    /**
-     * Creation of a PNG test Layer with a non-zero zoomStart parameter for the test.
-     *
-     * @return
-     */
+    /** Creation of a PNG test Layer with a non-zero zoomStart parameter for the test. */
     private static WMSLayer createWMSLayer() {
         // Subsets table
         Hashtable<String, GridSubset> grids = new Hashtable<String, GridSubset>();

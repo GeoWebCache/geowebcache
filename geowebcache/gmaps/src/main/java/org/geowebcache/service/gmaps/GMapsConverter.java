@@ -147,11 +147,6 @@ public class GMapsConverter extends Service {
      * Convert Google's tiling coordinates into an {x,y,x}
      *
      * <p>see http://code.google.com/apis/maps/documentation/overlays.html#Custom_Map_Types
-     *
-     * @param zoomLevel
-     * @param x
-     * @param y
-     * @return
      */
     public static long[] convert(long zoomLevel, long x, long y) throws ServiceException {
         // Extent is the total number of tiles in y direction

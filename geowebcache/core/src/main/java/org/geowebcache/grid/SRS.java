@@ -78,9 +78,6 @@ public class SRS implements Comparable<SRS>, Serializable {
      * looked up that has an alias defined for the given code, and if found the alias is returned.
      * If no SRS is registered nor an alias is found, a new SRS for this code is registered and
      * returned.
-     *
-     * @param epsgCode
-     * @return
      */
     public static SRS getSRS(final int epsgCode) {
         final Integer code = Integer.valueOf(epsgCode);

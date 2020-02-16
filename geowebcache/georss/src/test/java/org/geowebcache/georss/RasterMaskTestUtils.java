@@ -80,8 +80,6 @@ public class RasterMaskTestUtils {
      *   <li>A Point at {@code 0, 45}
      *   <li>A LineString at {@code -90 -45, -90 45}
      * </ul>
-     *
-     * @return
      */
     private static Geometry[] createSampleEntries() throws Exception {
         Geometry[] entries = { //

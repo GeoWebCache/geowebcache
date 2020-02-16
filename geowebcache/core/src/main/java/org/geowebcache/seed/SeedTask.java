@@ -57,15 +57,7 @@ class SeedTask extends GWCTask {
 
     @VisibleForTesting Sleeper sleeper = Thread::sleep;
 
-    /**
-     * Constructs a SeedTask
-     *
-     * @param sb
-     * @param trIter
-     * @param tl
-     * @param reseed
-     * @param doFilterUpdate
-     */
+    /** Constructs a SeedTask */
     public SeedTask(
             StorageBroker sb,
             TileRangeIterator trIter,
@@ -253,7 +245,6 @@ class SeedTask extends GWCTask {
     /**
      * helper for counting the number of tiles
      *
-     * @param tr
      * @return -1 if too many
      */
     private long tileCount(TileRange tr) {
@@ -283,13 +274,7 @@ class SeedTask extends GWCTask {
         return count;
     }
 
-    /**
-     * Helper method to update the members tracking thread progress.
-     *
-     * @param layer
-     * @param tilesCount
-     * @param start_time
-     */
+    /** Helper method to update the members tracking thread progress. */
     private void updateStatusInfo(TileLayer layer, long tilesCount, long start_time) {
 
         // working on tile

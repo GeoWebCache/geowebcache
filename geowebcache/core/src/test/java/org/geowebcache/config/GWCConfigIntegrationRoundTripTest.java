@@ -34,8 +34,6 @@ public class GWCConfigIntegrationRoundTripTest {
      * Tests {@link XMLConfiguration} persistence by initializing a configuration, constructing a
      * new configuration from the resulting geowebcache.xml, and validating some basic assumptions
      * about the new config.
-     *
-     * @throws Exception
      */
     @Test
     public void testXMLConfiguration() throws Exception {

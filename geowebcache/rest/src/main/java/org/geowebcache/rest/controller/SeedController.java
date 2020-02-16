@@ -53,12 +53,7 @@ public class SeedController {
 
     @Autowired protected DefaultingConfiguration xmlConfig;
 
-    /**
-     * GET method for querying running GWC tasks
-     *
-     * @param req
-     * @return
-     */
+    /** GET method for querying running GWC tasks */
     @RequestMapping(
         value = "/seed.json",
         method = RequestMethod.GET,
@@ -68,13 +63,7 @@ public class SeedController {
         return seedService.getRunningTasks(req);
     }
 
-    /**
-     * GET method for querying running tasks for the provided layer
-     *
-     * @param req
-     * @param layer
-     * @return
-     */
+    /** GET method for querying running tasks for the provided layer */
     @RequestMapping(
         value = "/seed/{layer}.json",
         method = RequestMethod.GET,
@@ -84,24 +73,13 @@ public class SeedController {
         return seedService.getRunningLayerTasks(req, layer);
     }
 
-    /**
-     * GET method for displaying the GeoWebCache UI form.
-     *
-     * @param request
-     * @param layer
-     * @return
-     */
+    /** GET method for displaying the GeoWebCache UI form. */
     @RequestMapping(value = "/seed/{layer}", method = RequestMethod.GET)
     public ResponseEntity<?> doFormGet(HttpServletRequest request, @PathVariable String layer) {
         return formService.handleGet(request, layer);
     }
 
-    /**
-     * POST method to kill [all, running, pending] tasks
-     *
-     * @param request
-     * @return
-     */
+    /** POST method to kill [all, running, pending] tasks */
     @RequestMapping(value = "/seed", method = RequestMethod.POST)
     public ResponseEntity doPost(HttpServletRequest request) {
         String response = seedService.handleKillAllThreads(request, null);
@@ -117,10 +95,7 @@ public class SeedController {
     /**
      * POST method for Seeding and Truncating
      *
-     * @param request
-     * @param layer
      * @param params Query parameters, including urlencoded form values
-     * @return
      */
     @RequestMapping(value = "/seed/{layer:.+}", method = RequestMethod.POST)
     public ResponseEntity<?> doPost(

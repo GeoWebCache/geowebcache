@@ -53,24 +53,14 @@ public class TileLayerController extends GWCController {
     DO GET
      */
 
-    /**
-     * Get List of layers as xml
-     *
-     * @param request
-     * @return
-     */
+    /** Get List of layers as xml */
     @RequestMapping(value = "/layers", method = RequestMethod.GET)
     public XStreamListAliasWrapper layersGet(HttpServletRequest request) {
         return new XStreamListAliasWrapper(
                 layerDispatcher.getLayerNames(), "layer", Set.class, this.getClass());
     }
 
-    /**
-     * Get layer by name and requested output {xml, json}
-     *
-     * @param layer
-     * @return
-     */
+    /** Get layer by name and requested output {xml, json} */
     @RequestMapping(value = "/layers/{layer}", method = RequestMethod.GET)
     public TileLayer layerGet(@PathVariable String layer) {
         return findTileLayer(layer, layerDispatcher);

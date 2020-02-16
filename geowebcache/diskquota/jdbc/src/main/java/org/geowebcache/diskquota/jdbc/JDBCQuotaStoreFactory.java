@@ -245,13 +245,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         return store;
     }
 
-    /**
-     * Prepares a simple data source for the embedded H2
-     *
-     * @param cacheDirFinder
-     * @return
-     * @throws ConfigurationException
-     */
+    /** Prepares a simple data source for the embedded H2 */
     private DataSource getH2DataSource(DefaultStorageFinder cacheDirFinder)
             throws ConfigurationException {
         File storeDirectory = new File(cacheDirFinder.getDefaultPath(), "diskquota_page_store_h2");

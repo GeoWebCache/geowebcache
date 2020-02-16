@@ -38,11 +38,7 @@ public class FileMatchers {
         throw new IllegalStateException();
     };
 
-    /**
-     * Matcher for a file that exists
-     *
-     * @return
-     */
+    /** Matcher for a file that exists */
     public static Matcher<File> exists() {
         return new BaseMatcher<File>() {
 
@@ -73,11 +69,7 @@ public class FileMatchers {
         };
     }
 
-    /**
-     * Matcher for a regular (non-directory) file
-     *
-     * @return
-     */
+    /** Matcher for a regular (non-directory) file */
     public static Matcher<File> file() {
         return new BaseMatcher<File>() {
 
@@ -113,11 +105,7 @@ public class FileMatchers {
         };
     }
 
-    /**
-     * Matcher for a directory
-     *
-     * @return
-     */
+    /** Matcher for a directory */
     public static Matcher<File> directory() {
         return new BaseMatcher<File>() {
 
@@ -153,11 +141,7 @@ public class FileMatchers {
         };
     }
 
-    /**
-     * Matcher for a directory's contents
-     *
-     * @return
-     */
+    /** Matcher for a directory's contents */
     public static Matcher<File> directoryContaining(Matcher<Iterable<File>> filesMatcher) {
         return new BaseMatcher<File>() {
 
@@ -201,12 +185,7 @@ public class FileMatchers {
         return directoryContaining(Matchers.emptyIterableOf(File.class));
     }
 
-    /**
-     * Matcher for last modified time
-     *
-     * @param timeMatcher
-     * @return
-     */
+    /** Matcher for last modified time */
     public static Matcher<File> lastModified(final Matcher<Long> timeMatcher) {
         return new BaseMatcher<File>() {
 
@@ -244,12 +223,7 @@ public class FileMatchers {
         };
     }
 
-    /**
-     * Matcher for file with a particular name
-     *
-     * @param timeMatcher
-     * @return
-     */
+    /** Matcher for file with a particular name */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static Matcher<File> named(String name) {
         return both(instanceOf(File.class)).and((Matcher) hasProperty("name", equalTo(name)));
@@ -258,10 +232,6 @@ public class FileMatchers {
     /**
      * Executes the given {@link Callable} and then returns a matcher for values of {@link
      * System#currentTimeMillis()} during the execution.
-     *
-     * @param stuffToDo
-     * @return
-     * @throws Exception
      */
     public static Matcher<Long> whileRunning(Callable<Void> stuffToDo) throws Exception {
         final long start = System.currentTimeMillis();

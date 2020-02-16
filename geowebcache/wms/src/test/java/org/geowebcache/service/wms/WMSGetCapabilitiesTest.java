@@ -194,9 +194,6 @@ public class WMSGetCapabilitiesTest {
     /**
      * Returns an XPath expression equivalent to the given string which can safely include both "
      * and ' characters.
-     *
-     * @param s
-     * @return
      */
     String xpathString(String s) {
         StringBuilder b = new StringBuilder();

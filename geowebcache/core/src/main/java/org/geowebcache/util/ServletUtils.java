@@ -50,8 +50,6 @@ public class ServletUtils {
     /**
      * Case insensitive lookup
      *
-     * @param map
-     * @param key
      * @return all matchings string
      */
     public static String[] stringsFromMap(Map<String, String[]> map, String encoding, String key) {
@@ -72,13 +70,7 @@ public class ServletUtils {
         return null;
     }
 
-    /**
-     * Case insensitive lookup
-     *
-     * @param map
-     * @param key
-     * @return
-     */
+    /** Case insensitive lookup */
     public static String stringFromMap(Map<String, String[]> map, String encoding, String key) {
         String[] strArray = stringsFromMap(map, encoding, key);
         if (strArray != null) {
@@ -87,13 +79,7 @@ public class ServletUtils {
         return null;
     }
 
-    /**
-     * Case insensitive lookup for a couple of strings, drops everything else
-     *
-     * @param map
-     * @param keys
-     * @return
-     */
+    /** Case insensitive lookup for a couple of strings, drops everything else */
     public static String[][] selectedStringArraysFromMap(
             Map<String, String[]> map, String encoding, String[] keys) {
         String[][] retAr = new String[keys.length][];
@@ -117,8 +103,6 @@ public class ServletUtils {
     /**
      * Case insensitive lookup for a couple of strings, drops everything else
      *
-     * @param map
-     * @param keys
      * @return map subset containing (URL decoded) values for {@code keys}, with keys normalized to
      *     upper case
      */
@@ -142,7 +126,6 @@ public class ServletUtils {
     /**
      * Extracts the cache control header
      *
-     * @param cacheControlHeader
      * @return Long representing expiration time in seconds
      */
     // public static Long extractHeaderMaxAge(URLConnection backendCon) {
@@ -171,7 +154,6 @@ public class ServletUtils {
      * @param bufferHint hint for the total buffer, -1 = 10240
      * @param tmpBufferSize how many bytes to read at a time, -1 = 1024
      * @return a compacted buffer with all the data
-     * @throws IOException
      */
     public static byte[] readStream(InputStream is, int bufferHint, int tmpBufferSize)
             throws IOException {
@@ -228,9 +210,6 @@ public class ServletUtils {
      * Makes HTTP Expire header value
      *
      * <p>Has to be synchronized due to the shared Calendar objects
-     *
-     * @param seconds
-     * @return
      */
     public static String makeExpiresHeader(int seconds) {
         return formatTimestamp(System.currentTimeMillis() + seconds * 1000L);
@@ -251,12 +230,7 @@ public class ServletUtils {
         return ret;
     }
 
-    /**
-     * Returns the expiration time in milliseconds from now
-     *
-     * @param expiresHeader
-     * @return
-     */
+    /** Returns the expiration time in milliseconds from now */
     public static long parseExpiresHeader(String expiresHeader) {
         if (expiresHeader == null) {
             return -1;
@@ -293,12 +267,7 @@ public class ServletUtils {
         return str.toString();
     }
 
-    /**
-     * Converts a byte to a hex String
-     *
-     * @param aByte
-     * @return
-     */
+    /** Converts a byte to a hex String */
     public static String hexOfByte(byte aByte) {
         char[] str = new char[2];
 
@@ -415,12 +384,7 @@ public class ServletUtils {
         return ret;
     }
 
-    /**
-     * Replaces occurrences of &gt; and &lt; with HTML equivalents
-     *
-     * @param str
-     * @return
-     */
+    /** Replaces occurrences of &gt; and &lt; with HTML equivalents */
     public static String disableHTMLTags(String str) {
         if (str == null) {
             return "null";
@@ -467,12 +431,7 @@ public class ServletUtils {
         }
     }
 
-    /**
-     * Generate the context path of the request, less the specified trailing path
-     *
-     * @param req
-     * @param trailingPath
-     */
+    /** Generate the context path of the request, less the specified trailing path */
     public static String getServletContextPath(
             HttpServletRequest req, String trailingPath, String servletPrefix) {
         String reqUrl = req.getRequestURL().toString();
@@ -486,12 +445,7 @@ public class ServletUtils {
         return context;
     }
 
-    /**
-     * Generate the context path of the request, try the specified trailing path
-     *
-     * @param req
-     * @param trailingPaths
-     */
+    /** Generate the context path of the request, try the specified trailing path */
     public static String getServletContextPath(
             HttpServletRequest req, String[] trailingPaths, String servletPrefix) {
         String context = "";

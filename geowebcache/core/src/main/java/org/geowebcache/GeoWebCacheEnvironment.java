@@ -136,9 +136,6 @@ public class GeoWebCacheEnvironment {
      *
      * <p>The method first looks for System variables which take precedence on local ones, then into
      * internal props injected through the applicationContext.
-     *
-     * @param value
-     * @return
      */
     public Object resolveValue(Object value) {
         if (value != null) {

@@ -69,11 +69,7 @@ public class MemoryCacheController {
         this.context = context;
     }
 
-    /**
-     * Setter for the BlobStore
-     *
-     * @param store
-     */
+    /** Setter for the BlobStore */
     public void setBlobStore(BlobStore store) {
         this.store = store;
     }
@@ -122,9 +118,7 @@ public class MemoryCacheController {
     /**
      * Private method for retunring a JSON representation of the Statistics
      *
-     * @param stats
      * @return a {@link ResponseEntity} object
-     * @throws JSONException
      */
     private ResponseEntity<?> getJsonRepresentation(CacheStatistics stats) throws JSONException {
         XStream xs =
@@ -139,9 +133,7 @@ public class MemoryCacheController {
     /**
      * Private method for retunring an XML representation of the Statistics
      *
-     * @param stats
      * @return a {@link ResponseEntity} object
-     * @throws JSONException
      */
     private ResponseEntity<?> getXmlRepresentation(CacheStatistics stats) {
         XStream xStream = getConfiguredXStream(new GeoWebCacheXStream());
@@ -153,7 +145,6 @@ public class MemoryCacheController {
     /**
      * This method adds to the input {@link XStream} an alias for the CacheStatistics
      *
-     * @param xs
      * @return an updated XStream
      */
     public static XStream getConfiguredXStream(XStream xs) {

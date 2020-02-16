@@ -38,21 +38,12 @@ public interface BaseConfiguration
      */
     String getLocation();
 
-    /**
-     * Priority for sorting against other configurations of the specified type.
-     *
-     * @param clazz
-     * @return
-     */
+    /** Priority for sorting against other configurations of the specified type. */
     default int getPriority(Class<? extends BaseConfiguration> clazz) {
         return BASE_PRIORITY;
     }
 
-    /**
-     * Priority for sorting against other priority extensions.
-     *
-     * @return
-     */
+    /** Priority for sorting against other priority extensions. */
     @Override
     default int getPriority() {
         return getPriority(BaseConfiguration.class);

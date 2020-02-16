@@ -423,11 +423,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         }
     }
 
-    /**
-     * Setter for the store to wrap
-     *
-     * @param store
-     */
+    /** Setter for the store to wrap */
     public void setStore(BlobStore store) {
         blobStoreStateLock.lock();
         try {
@@ -456,11 +452,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         }
     }
 
-    /**
-     * Setter for the cacheProvider to use
-     *
-     * @param cache
-     */
+    /** Setter for the cacheProvider to use */
     public void setCacheProvider(CacheProvider cache) {
         blobStoreStateLock.lock();
         try {
@@ -481,9 +473,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
      * * This method is used for converting a {@link TileObject} {@link Resource} into a {@link
      * ByteArrayResource}.
      *
-     * @param obj
      * @return a TileObject with resource stored in a Byte Array
-     * @throws StorageException
      */
     private TileObject getByteResourceTile(TileObject obj) throws StorageException {
         // Get TileObject resource
@@ -527,8 +517,6 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     /**
      * Setter for the Cache Provider name, note that this cannot be used in combination with the
      * setCacheProvider method in the application Context initialization
-     *
-     * @param cacheBeanName
      */
     public void setCacheBeanName(String cacheBeanName) {
         blobStoreStateLock.lock();
@@ -783,10 +771,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         /**
          * Executes an operation defined by the Enum.
          *
-         * @param store
-         * @param objs
          * @return operation result
-         * @throws StorageException
          */
         public abstract boolean executeOperation(BlobStore store, Object... objs)
                 throws StorageException;

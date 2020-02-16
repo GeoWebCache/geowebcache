@@ -26,9 +26,6 @@ public interface SecurityFilter {
      * Check that the the specified extent is allowed for the specified layer and throw an exception
      * if not.
      *
-     * @param layer
-     * @param extent
-     * @param srs
      * @throws SecurityException if the request is not allowed.
      */
     public void checkSecurity(TileLayer layer, @Nullable BoundingBox extent, @Nullable SRS srs)

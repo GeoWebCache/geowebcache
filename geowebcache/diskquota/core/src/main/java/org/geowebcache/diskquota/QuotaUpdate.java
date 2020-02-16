@@ -25,13 +25,8 @@ public class QuotaUpdate {
     private long[] tileIndex;
 
     /**
-     * @param layerName
-     * @param gridsetId
-     * @param blobFormat
-     * @param parametersId
      * @param size bytes to add or subtract from a quota: positive value increase quota, negative
      *     value decreases it
-     * @param tileIndex
      */
     public QuotaUpdate(
             String layerName,
