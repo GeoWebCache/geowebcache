@@ -72,9 +72,6 @@ public final class ResponseUtils {
      * @param tileLayerDispatcher tiles dispatcher
      * @param defaultStorageFinder storage finder
      * @param runtimeStats runtime statistics
-     * @throws GeoWebCacheException
-     * @throws RequestFilterException
-     * @throws IOException
      */
     public static void writeTile(
             SecurityDispatcher secDispatcher,

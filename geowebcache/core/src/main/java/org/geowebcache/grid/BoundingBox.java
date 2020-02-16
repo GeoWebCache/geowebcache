@@ -128,11 +128,7 @@ public class BoundingBox implements Serializable {
         return coords[3] - coords[1];
     }
 
-    /**
-     * Sets from an array of strings
-     *
-     * @param BBOX
-     */
+    /** Sets from an array of strings */
     public void setFromStringArray(String[] BBOX) {
         setFromStringArray(BBOX, 0);
     }
@@ -151,11 +147,7 @@ public class BoundingBox implements Serializable {
         }
     }
 
-    /**
-     * Parses the BBOX parameters from a comma separted value list
-     *
-     * @param BBOX
-     */
+    /** Parses the BBOX parameters from a comma separted value list */
     public void setFromBBOXString(String BBOX, int recWatch) {
         String[] tokens = BBOX.split(DELIMITER);
         setFromStringArray(tokens, recWatch + 1);
@@ -228,7 +220,6 @@ public class BoundingBox implements Serializable {
     /**
      * Comparing whether the differences between the bounding boxes can be ignored.
      *
-     * @param obj
      * @return whether the boxes are equal
      */
     @Override
@@ -250,7 +241,6 @@ public class BoundingBox implements Serializable {
     /**
      * Check whether this bbox contains the bbox
      *
-     * @param other
      * @return whether other is contained by this
      */
     public boolean contains(BoundingBox other) {

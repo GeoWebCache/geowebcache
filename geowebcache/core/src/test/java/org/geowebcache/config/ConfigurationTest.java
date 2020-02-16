@@ -294,13 +294,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         assertThat(retrieved, isPresent(not(infoEquals(2))));
     }
 
-    /**
-     * Modify an existing info object.
-     *
-     * @param info
-     * @param rand
-     * @throws Exception
-     */
+    /** Modify an existing info object. */
     protected abstract void doModifyInfo(I info, int rand) throws Exception;
 
     @Test
@@ -474,7 +468,6 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
      *
      * @param id ID for the GridSet
      * @param rand GridSets created with different values should not be equal to one another.
-     * @return
      */
     protected abstract I getGoodInfo(String id, int rand) throws Exception;
 
@@ -484,49 +477,30 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
      *
      * @param id ID for the GridSet
      * @param rand GridSets created with different values should not be equal to one another.
-     * @return
      */
     protected abstract I getBadInfo(String id, int rand) throws Exception;
 
     /**
      * Get an ID for a pre-existing GridSet. Throw AssumptionViolatedException if this this
      * configuration does not have existing GridSets.
-     *
-     * @return
      */
     protected abstract String getExistingInfo();
 
-    /**
-     * Create a GridSetConfiguration to test.
-     *
-     * @return
-     * @throws Exception
-     */
+    /** Create a GridSetConfiguration to test. */
     protected abstract C getConfig() throws Exception;
     /**
      * Create a second config from the same persistence source or throw AssumptionViolatedException
      * if this is a non-persistent configuration.
-     *
-     * @return
-     * @throws Exception
      */
     protected abstract C getSecondConfig() throws Exception;
 
     /**
      * Check that two GridSets created by calls to getGoodGridSet, which may have been persisted and
      * depersisted, are equal if and only if they had the same rand value.
-     *
-     * @param expected
-     * @return
      */
     protected abstract Matcher<I> infoEquals(final I expected);
 
-    /**
-     * Check that an info has the specified test value.
-     *
-     * @param rand
-     * @return
-     */
+    /** Check that an info has the specified test value. */
     protected abstract Matcher<I> infoEquals(final int rand);
 
     protected abstract void addInfo(C config, I info) throws Exception;

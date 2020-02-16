@@ -107,11 +107,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
                                     .map(StoreSuitabilityCheck::valueOf)
                                     .orElse(StoreSuitabilityCheck.EXISTING));
 
-    /**
-     * Specifies how new blob stores should check the existing content of their persistence.
-     *
-     * @return
-     */
+    /** Specifies how new blob stores should check the existing content of their persistence. */
     public static StoreSuitabilityCheck getStoreSuitabilityCheck() {
         return storeSuitability.get();
     }
@@ -126,7 +122,6 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
      *     blob store when no {@link BlobStoreInfo#isDefault() default blob store} is given
      * @param blobStoreAggregator the configuration as read from {@code geowebcache.xml} containing
      *     the configured {@link BlobStoreAggregator#getBlobStores() blob stores}
-     * @param serverConfiguration
      * @throws ConfigurationException if there's a configuration error like a store confing having
      *     no id, or two store configs having the same id, or more than one store config being
      *     marked as the default one, or the default store is not {@link BlobStoreInfo#isEnabled()
@@ -611,8 +606,6 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
      *
      * @param stores The blobStores map to update
      * @param config The new default blob store
-     * @throws StorageException
-     * @throws ConfigurationException
      */
     private void loadBlobStoreOverwritingDefault(
             Map<String, LiveStore> stores, BlobStoreInfo config)
@@ -641,7 +634,6 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
      * @param location Location of the storage for heuman readable error messages
      * @param exists The storage is already a GWC cache
      * @param empty The storage is empty
-     * @throws UnsuitableStorageException
      */
     public static void checkSuitability(String location, final boolean exists, boolean empty)
             throws UnsuitableStorageException {

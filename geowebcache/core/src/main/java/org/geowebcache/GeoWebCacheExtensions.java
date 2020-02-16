@@ -198,8 +198,6 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
      * Return a list of configurations in priority order.
      *
      * @param extensionPoint The extension point of the configuration, may affect priority.
-     * @param context
-     * @return
      */
     public static <T extends BaseConfiguration> List<T> configurations(
             Class<T> extensionPoint, ApplicationContext context) {
@@ -217,18 +215,12 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
      * Return a list of configurations in priority order.
      *
      * @param extensionPoint The extension point of the configuration, may affect priority.
-     * @return
      */
     public static <T extends BaseConfiguration> List<T> configurations(Class<T> extensionPoint) {
         return configurations(extensionPoint, context);
     }
 
-    /**
-     * Reinitialize all reinitializable beans in the context.
-     *
-     * @param context
-     * @throws GeoWebCacheException
-     */
+    /** Reinitialize all reinitializable beans in the context. */
     public static void reinitialize(ApplicationContext context) {
         List<ReinitializingBean> extensions = extensions(ReinitializingBean.class, context);
         for (ReinitializingBean bean : extensions) {
@@ -266,12 +258,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
         }
     }
 
-    /**
-     * Returns a specific bean given its name
-     *
-     * @param name
-     * @return
-     */
+    /** Returns a specific bean given its name */
     public static final Object bean(String name) {
         return bean(name, context);
     }

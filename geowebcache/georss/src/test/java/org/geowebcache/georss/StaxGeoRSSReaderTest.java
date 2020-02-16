@@ -96,8 +96,6 @@ public class StaxGeoRSSReaderTest extends TestCase {
      * @param fileName file name to create the java.io.Reader for, located at {@code <this
      *     package>/test-data/<fileName>}
      * @return a reader over {@code test-data/fileName}
-     * @throws FileNotFoundException
-     * @throws UnsupportedEncodingException
      */
     private Reader reader(final String fileName)
             throws FileNotFoundException, UnsupportedEncodingException {

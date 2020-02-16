@@ -35,9 +35,6 @@ public class TileRangeIterator {
     /**
      * Note that the bounds of the tile range must already be expanded to the meta tile factors for
      * this to work.
-     *
-     * @param tr
-     * @param metaTilingFactors
      */
     public TileRangeIterator(TileRange tr, int[] metaTilingFactors) {
         this.tr = tr;
@@ -51,11 +48,7 @@ public class TileRangeIterator {
         }
     }
 
-    /**
-     * Returns the underlying tile range
-     *
-     * @return
-     */
+    /** Returns the underlying tile range */
     public TileRange getTileRange() {
         return tr;
     }
@@ -126,14 +119,7 @@ public class TileRangeIterator {
         return null;
     }
 
-    /**
-     * Calculates the number of tiles covered by the meta tile for this grid location.
-     *
-     * @param x
-     * @param y
-     * @param levelBounds
-     * @return
-     */
+    /** Calculates the number of tiles covered by the meta tile for this grid location. */
     private int tilesForLocation(long x, long y, long[] levelBounds) {
         long boundsMaxX = levelBounds[2];
         long boundsMaxY = levelBounds[3];
@@ -148,9 +134,6 @@ public class TileRangeIterator {
     /**
      * Checks whether this grid location, or any on the same meta tile, should be included according
      * to the DiscontinuousTileRange
-     *
-     * @param gridLoc
-     * @return
      */
     private boolean checkGridLocation(long[] gridLoc) {
         if (dtr == null) {

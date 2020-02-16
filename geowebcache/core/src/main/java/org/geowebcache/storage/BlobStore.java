@@ -48,10 +48,7 @@ public interface BlobStore {
     /**
      * Delete the cache for the named gridset and layer
      *
-     * @param layerName
-     * @param gridSetId
      * @return {@literal true} if successful, {@literal false} otherwise
-     * @throws StorageException
      */
     public boolean deleteByGridsetId(final String layerName, final String gridSetId)
             throws StorageException;
@@ -59,10 +56,8 @@ public interface BlobStore {
     /**
      * Delete the cache for the named layer and parameters.
      *
-     * @param layerName
      * @param parameters Complete filtered parameters to generate the ID
      * @return {@literal true} if successful, {@literal false} otherwise
-     * @throws StorageException
      */
     public default boolean deleteByParameters(
             final String layerName, final Map<String, String> parameters) throws StorageException {
@@ -72,10 +67,7 @@ public interface BlobStore {
     /**
      * Delete the cache for the named layer and parameters id.
      *
-     * @param layerName
-     * @param parametersId
      * @return {@literal true} if successful, {@literal false} otherwise
-     * @throws StorageException
      */
     public boolean deleteByParametersId(final String layerName, String parametersId)
             throws StorageException;
@@ -84,9 +76,7 @@ public interface BlobStore {
      * Delete the cached blob associated with the specified TileObject. The passed in object itself
      * will not be modified.
      *
-     * @param obj
      * @return {@literal true} if successful, {@literal false} otherwise
-     * @throws StorageException
      */
     public boolean delete(TileObject obj) throws StorageException;
 
@@ -95,32 +85,20 @@ public interface BlobStore {
      *
      * @param obj the range of tiles.
      * @return {@literal true} if successful, {@literal false} otherwise
-     * @throws StorageException
      */
     public boolean delete(TileRange obj) throws StorageException;
 
     /**
      * Retrieves a tile from the storage, filling its metadata too
      *
-     * @param obj
      * @return {@literal true} if successful, {@literal false} otherwise
-     * @throws StorageException
      */
     public boolean get(TileObject obj) throws StorageException;
 
-    /**
-     * Store blob. Calls getBlob() on passed object, does not modify the object.
-     *
-     * @param obj
-     * @throws StorageException
-     */
+    /** Store blob. Calls getBlob() on passed object, does not modify the object. */
     public void put(TileObject obj) throws StorageException;
 
-    /**
-     * Wipes the entire storage. Should only be invoked during testing.
-     *
-     * @throws StorageException
-     */
+    /** Wipes the entire storage. Should only be invoked during testing. */
     public void clear() throws StorageException;
 
     /** Destroy method for Spring */
@@ -129,7 +107,6 @@ public interface BlobStore {
     /**
      * Add an event listener
      *
-     * @param listener
      * @see BlobStoreListener
      */
     public void addListener(BlobStoreListener listener);
@@ -137,18 +114,12 @@ public interface BlobStore {
     /**
      * Remove an event listener
      *
-     * @param listener
      * @return {@literal true} if successful, {@literal false} otherwise
      * @see BlobStoreListener
      */
     public boolean removeListener(BlobStoreListener listener);
 
-    /**
-     * Get the cached parameter maps for a layer
-     *
-     * @param layerName
-     * @return
-     */
+    /** Get the cached parameter maps for a layer */
     public default Set<Map<String, String>> getParameters(String layerName)
             throws StorageException {
         return getParametersMapping(layerName)
@@ -165,9 +136,6 @@ public interface BlobStore {
      * <p>Stores that predate 1.12 should implement this to provide any parameters for which maps
      * are not available. Stores not using {@link ParametersUtils#getId(Map)} or which have more
      * efficient ways to provide it should also implement it.
-     *
-     * @param layerName
-     * @return
      */
     public default Set<String> getParameterIds(String layerName) throws StorageException {
         return getParametersMapping(layerName).keySet();
@@ -211,12 +179,7 @@ public interface BlobStore {
      */
     Map<String, Optional<Map<String, String>>> getParametersMapping(String layerName);
 
-    /**
-     * If the given layer is cached, remove
-     *
-     * @param layer
-     * @throws StorageException
-     */
+    /** If the given layer is cached, remove */
     public default boolean purgeOrphans(TileLayer layer) throws StorageException {
         // TODO maybe do purging based on gridset and format
         try {

@@ -101,8 +101,6 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
     /**
      * @param configLoader loads and saves the layers quota config and usage status
      * @param tld provides access to the layers configured for disk quota insurance quota usage
-     * @throws IOException
-     * @throws ConfigurationException
      */
     public DiskQuotaMonitor(
             final DefaultStorageFinder storageFinder,
@@ -139,11 +137,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         return quotaStoreProvider;
     }
 
-    /**
-     * Returns the quota store monitored by this class
-     *
-     * @return
-     */
+    /** Returns the quota store monitored by this class */
     public QuotaStore getQuotaStore() {
         return quotaStore;
     }
@@ -210,7 +204,6 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      *   <li>{@link #isRunning() == true}
      * </ul>
      *
-     * @throws ConfigurationException
      * @see {@link #shutDown(int)}
      */
     public void startUp() throws ConfigurationException, IOException {
@@ -329,8 +322,6 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      * <ul>
      *   <li>{@link #isEnabled() == true}
      * </ul>
-     *
-     * @param config
      */
     public void saveConfig(DiskQuotaConfig config) {
         Assert.isTrue(diskQuotaEnabled, "called saveConfig but DiskQuota is disabled!");
@@ -346,12 +337,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         }
     }
 
-    /**
-     * Reloads the configuration from disk
-     *
-     * @throws IOException
-     * @throws ConfigurationException
-     */
+    /** Reloads the configuration from disk */
     public void reloadConfig() throws ConfigurationException, IOException {
         DiskQuotaConfig config = configLoader.loadConfig();
         this.quotaConfig.setFrom(config);
@@ -365,9 +351,6 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
     /**
      * Launches a background task to traverse the cache and compute the disk usage of each layer
      * that has no {@link LayerQuota#getUsedQuota() used quota} already loaded.
-     *
-     * @return
-     * @throws InterruptedException
      */
     private LayerCacheInfoBuilder launchCacheInfoGatheringThreads() throws InterruptedException {
 
@@ -438,8 +421,6 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      * Sets the {@link LayerQuota#setExpirationPolicy(ExpirationPolicy) expiration policy} to all
      * the configured layer quotas based on their {@link LayerQuota#getExpirationPolicyName()
      * declared expiration policy name}
-     *
-     * @throws ConfigurationException
      */
     private void attachConfiguredLayers() throws ConfigurationException {
 

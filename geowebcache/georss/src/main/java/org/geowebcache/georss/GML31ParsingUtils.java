@@ -120,9 +120,6 @@ class GML31ParsingUtils {
      *
      * <p>Postcondition: reader gets positioned at the end tag of the element it started parsing the
      * geometry at
-     *
-     * @return
-     * @throws XMLStreamException
      */
     public Geometry parseGeometry(final XMLStreamReader reader) throws XMLStreamException {
 
@@ -166,8 +163,6 @@ class GML31ParsingUtils {
      *
      * <p>Postcondition: reader positioned at the {@link GML#MultiPoint MultiPoint} end tag of the
      * starting tag
-     *
-     * @throws XMLStreamException
      */
     private Geometry parseMultiPoint(XMLStreamReader reader, int dimension)
             throws XMLStreamException {
@@ -217,8 +212,6 @@ class GML31ParsingUtils {
      *
      * <p>Postcondition: reader positioned at the {@link GML#MultiLineString MultiLineString} end
      * tag of the starting tag
-     *
-     * @throws XMLStreamException
      */
     private MultiLineString parseMultiLineString(XMLStreamReader reader, int dimension)
             throws XMLStreamException {
@@ -259,8 +252,6 @@ class GML31ParsingUtils {
      *
      * <p>Postcondition: reader positioned at the {@link GML#MultiSurface MultiSurface} end tag of
      * the starting tag
-     *
-     * @param reader
      */
     private Geometry parseMultiSurface(XMLStreamReader reader, int dimension)
             throws XMLStreamException {
@@ -335,11 +326,6 @@ class GML31ParsingUtils {
      *
      * <p>Postcondition: reader positioned at the {@link GML#Polygon Polygon} end tag of the
      * starting tag
-     *
-     * @param reader
-     * @param dimension
-     * @return
-     * @throws XMLStreamException
      */
     private Polygon parsePolygon(XMLStreamReader reader, int dimension) throws XMLStreamException {
         Polygon geom;

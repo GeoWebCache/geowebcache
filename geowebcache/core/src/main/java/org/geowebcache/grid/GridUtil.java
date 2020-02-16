@@ -19,11 +19,6 @@ import java.util.List;
 public class GridUtil {
 
     /**
-     * @param reqBounds
-     * @param crsMatchingGridSubsets
-     * @param expectedTileWidth
-     * @param expectedTileHeight
-     * @param matchingTileIndexTarget
      * @return null if none matches, the gridset with a tile index closest to the requested bounds
      *     and dimensions otherwise
      */

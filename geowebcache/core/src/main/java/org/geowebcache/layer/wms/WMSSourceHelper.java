@@ -134,29 +134,17 @@ public abstract class WMSSourceHelper {
         return target;
     }
 
-    /**
-     * The levels of concurrent requests this source helper is allowing
-     *
-     * @return
-     */
+    /** The levels of concurrent requests this source helper is allowing */
     public int getConcurrency() {
         return concurrency;
     }
 
-    /**
-     * Sets the maximum amount of concurrent requests this source helper will issue
-     *
-     * @param concurrency
-     */
+    /** Sets the maximum amount of concurrent requests this source helper will issue */
     public void setConcurrency(int concurrency) {
         this.concurrency = concurrency;
     }
 
-    /**
-     * Sets the backend timeout for HTTP calls
-     *
-     * @param backendTimeout
-     */
+    /** Sets the backend timeout for HTTP calls */
     public void setBackendTimeout(int backendTimeout) {
         this.backendTimetout = backendTimeout;
     }

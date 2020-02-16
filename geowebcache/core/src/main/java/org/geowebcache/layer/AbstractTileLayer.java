@@ -131,12 +131,7 @@ public abstract class AbstractTileLayer extends TileLayer {
         listeners.addListener(listener);
     }
 
-    /**
-     * Removes a layer listener from this layer's set of listeners
-     *
-     * @param listener
-     * @return
-     */
+    /** Removes a layer listener from this layer's set of listeners */
     @Override
     public boolean removeLayerListener(TileLayerListener listener) {
         return listeners == null ? false : listeners.removeListener(listener);
@@ -164,11 +159,7 @@ public abstract class AbstractTileLayer extends TileLayer {
         this.blobStoreId = blobStoreId;
     }
 
-    /**
-     * Then name of the layer
-     *
-     * @return
-     */
+    /** Then name of the layer */
     @Override
     public String getName() {
         return this.name;
@@ -204,11 +195,7 @@ public abstract class AbstractTileLayer extends TileLayer {
         this.transientLayer = transientLayer;
     }
 
-    /**
-     * Layer meta information
-     *
-     * @return
-     */
+    /** Layer meta information */
     @Override
     public LayerMetaInformation getMetaInformation() {
         return this.metaInformation;
@@ -219,11 +206,7 @@ public abstract class AbstractTileLayer extends TileLayer {
         return metadataURLs == null ? null : new ArrayList<MetadataURL>(metadataURLs);
     }
 
-    /**
-     * Retrieves a list of Grids for this layer
-     *
-     * @return
-     */
+    /** Retrieves a list of Grids for this layer */
     @Override
     public Set<String> getGridSubsets() {
         return Collections.unmodifiableSet(this.subSets.keySet());
@@ -363,11 +346,7 @@ public abstract class AbstractTileLayer extends TileLayer {
         return sources;
     }
 
-    /**
-     * Whether to use ETags for this layer
-     *
-     * @return
-     */
+    /** Whether to use ETags for this layer */
     @Override
     public boolean useETags() {
         return useETags == null ? false : useETags.booleanValue();

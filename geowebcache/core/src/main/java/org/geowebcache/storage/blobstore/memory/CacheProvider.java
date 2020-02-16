@@ -31,25 +31,13 @@ public interface CacheProvider {
     /** Returns the {@link TileObject} for the selected id */
     public TileObject getTileObj(TileObject obj);
 
-    /**
-     * Insert a {@link TileObject} in cache.
-     *
-     * @param obj
-     */
+    /** Insert a {@link TileObject} in cache. */
     public void putTileObj(TileObject obj);
 
-    /**
-     * Removes a {@link TileObject} from cache.
-     *
-     * @param obj
-     */
+    /** Removes a {@link TileObject} from cache. */
     public void removeTileObj(TileObject obj);
 
-    /**
-     * Removes all the {@link TileObject}s for the related layer from cache.
-     *
-     * @param layername
-     */
+    /** Removes all the {@link TileObject}s for the related layer from cache. */
     public void removeLayer(String layername);
 
     /** Removes all the cached {@link TileObject}s */
@@ -61,31 +49,18 @@ public interface CacheProvider {
     /** Returns a {@link CacheStatistics} object containing the current cache statistics. */
     public CacheStatistics getStatistics();
 
-    /**
-     * Sets the CacheConfiguration to use
-     *
-     * @param configuration
-     */
+    /** Sets the CacheConfiguration to use */
     void configure(CacheConfiguration configuration);
 
-    /**
-     * Add a new Layer that should not be cached
-     *
-     * @param layername
-     */
+    /** Add a new Layer that should not be cached */
     public void addUncachedLayer(String layername);
 
-    /**
-     * Remove a Layer so that it can be cached again
-     *
-     * @param layername
-     */
+    /** Remove a Layer so that it can be cached again */
     public void removeUncachedLayer(String layername);
 
     /**
      * Checks if the Layer must be cached or not
      *
-     * @param layername
      * @return true if the Layer should not be cached
      */
     public boolean containsUncachedLayer(String layername);

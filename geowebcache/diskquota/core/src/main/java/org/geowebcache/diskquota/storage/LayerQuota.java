@@ -40,11 +40,7 @@ public final class LayerQuota implements Serializable {
         readResolve();
     }
 
-    /**
-     * Supports initialization of instance variables during XStream deserialization
-     *
-     * @return
-     */
+    /** Supports initialization of instance variables during XStream deserialization */
     private Object readResolve() {
         return this;
     }

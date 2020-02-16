@@ -63,12 +63,7 @@ public class ImageMime extends MimeType {
     public static final ImageMime jpeg =
             new ImageMime("image/jpeg", "jpeg", "jpeg", "image/jpeg", true, false, false) {
 
-                /**
-                 * Shave off the alpha band, JPEG cannot write it out
-                 *
-                 * @param ri
-                 * @return
-                 */
+                /** Shave off the alpha band, JPEG cannot write it out */
                 @Override
                 public RenderedImage preprocess(RenderedImage ri) {
                     if (ri.getColorModel().hasAlpha()) {
@@ -99,12 +94,7 @@ public class ImageMime extends MimeType {
     public static final ImageMime png8 =
             new ImageMime("image/png", "png8", "png", "image/png8", true, false, true) {
 
-                /**
-                 * Quantize if the source did not do so already
-                 *
-                 * @param canvas
-                 * @return
-                 */
+                /** Quantize if the source did not do so already */
                 @Override
                 public RenderedImage preprocess(RenderedImage canvas) {
                     if (!(canvas.getColorModel() instanceof IndexColorModel)) {
@@ -263,12 +253,7 @@ public class ImageMime extends MimeType {
         return writer;
     }
 
-    /**
-     * Preprocesses the image to optimize it for the write about to happen
-     *
-     * @param tile
-     * @return
-     */
+    /** Preprocesses the image to optimize it for the write about to happen */
     public RenderedImage preprocess(RenderedImage tile) {
         return tile;
     }
@@ -296,9 +281,6 @@ public class ImageMime extends MimeType {
          * without any actual transparency use). This code is duplicated in GeoServer
          * JpegPngRenderedImageMapOutputFormat. Unfortunately gwc-core does not depend on GeoTools,
          * so we don't have an easy place to share it. On the bright side, it's small.
-         *
-         * @param renderedImage
-         * @return
          */
         boolean isBestFormatJpeg(RenderedImage renderedImage) {
             int numBands = renderedImage.getSampleModel().getNumBands();

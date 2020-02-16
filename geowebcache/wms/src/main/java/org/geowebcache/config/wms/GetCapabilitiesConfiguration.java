@@ -134,11 +134,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
         this.cachedParameters = cachedParameters;
     }
 
-    /**
-     * Optionally used by Spring
-     *
-     * @param backendTimeout
-     */
+    /** Optionally used by Spring */
     public void setBackendTimeout(int backendTimeout) {
         this.backendTimeout = backendTimeout;
     }
@@ -191,9 +187,6 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     /**
      * Finds URL to WMS service and attempts to slice away the service parameter, since we will add
      * that anyway.
-     *
-     * @param wms
-     * @return
      */
     private String getWMSUrl(WebMapServer wms) {
         // // http://sigma.openplans.org:8080/geoserver/wms?SERVICE=WMS&

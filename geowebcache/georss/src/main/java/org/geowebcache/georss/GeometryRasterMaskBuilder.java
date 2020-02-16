@@ -314,7 +314,6 @@ public class GeometryRasterMaskBuilder {
     /**
      * Returns the tile range of the mask bounding box at a specific zoom level.
      *
-     * @param level
      * @return the bounds of the set tiles for the given level, or {@code null} if none is set
      */
     public synchronized long[] getCoveredBounds(final int level) {
@@ -352,11 +351,7 @@ public class GeometryRasterMaskBuilder {
         return coveredBounds;
     }
 
-    /**
-     * Package visible method for testing purposes only!
-     *
-     * @return
-     */
+    /** Package visible method for testing purposes only! */
     public BufferedImage[] getByLevelMasks() {
         final int numMaskedLevels = Math.min(getNumLevels(), maxMaskLevel + 1);
         BufferedImage[] maskedLevels = new BufferedImage[numMaskedLevels];

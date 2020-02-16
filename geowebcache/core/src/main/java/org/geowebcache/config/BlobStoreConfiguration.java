@@ -118,17 +118,11 @@ public interface BlobStoreConfiguration extends BaseConfiguration {
      */
     boolean containsBlobStore(String name);
 
-    /**
-     * Adds a {@link BlobStoreConfigurationListener} to this configuration.
-     *
-     * @param listener
-     */
+    /** Adds a {@link BlobStoreConfigurationListener} to this configuration. */
     void addBlobStoreListener(BlobStoreConfigurationListener listener);
 
     /**
      * Removes a {@link BlobStoreConfigurationListener} from this configuration, if it is present.
-     *
-     * @param listener
      */
     void removeBlobStoreListener(BlobStoreConfigurationListener listener);
 }

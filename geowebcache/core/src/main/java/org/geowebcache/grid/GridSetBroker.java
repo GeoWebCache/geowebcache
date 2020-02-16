@@ -136,9 +136,6 @@ public class GridSetBroker
      *
      * <p>This method doesn't check whether there's any layer referencing the gridset nor removes it
      * from the {@link XMLConfiguration}.
-     *
-     * @param gridSetName
-     * @return
      */
     public synchronized GridSet remove(final String gridSetName) {
         return getGridSet(gridSetName)

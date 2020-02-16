@@ -54,8 +54,6 @@ public class CacheStorageInfo {
     /**
      * The storage format defined in the config file, defaults to {@link #EXPLODED_FORMAT_CODE
      * exploded format}
-     *
-     * @return
      */
     public String getStorageFormat() {
         return storageFormat;

@@ -119,10 +119,6 @@ public interface TileLayerConfiguration extends BaseConfiguration {
      */
     boolean canSave(TileLayer tl);
 
-    /**
-     * Set the GridSetBroker
-     *
-     * @param broker
-     */
+    /** Set the GridSetBroker */
     void setGridSetBroker(GridSetBroker broker);
 }

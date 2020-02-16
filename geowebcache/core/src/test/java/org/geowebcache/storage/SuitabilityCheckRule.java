@@ -31,33 +31,19 @@ public class SuitabilityCheckRule extends PropertyRule {
         super(props, CompositeBlobStore.GEOWEBCACHE_BLOBSTORE_SUITABILITY_CHECK);
     }
 
-    /**
-     * Create a rule to override the system property
-     *
-     * @param name
-     * @return
-     */
+    /** Create a rule to override the system property */
     public static SuitabilityCheckRule system() {
         return new SuitabilityCheckRule(System.getProperties());
     }
 
-    /**
-     * Create a rule to override the system property
-     *
-     * @param name
-     * @return
-     */
+    /** Create a rule to override the system property */
     public static SuitabilityCheckRule system(CompositeBlobStore.StoreSuitabilityCheck value) {
         SuitabilityCheckRule rule = new SuitabilityCheckRule(System.getProperties());
         rule.initial = value;
         return rule;
     }
 
-    /**
-     * Set the StoreSuitabilityCheck property
-     *
-     * @param value
-     */
+    /** Set the StoreSuitabilityCheck property */
     public void setValue(CompositeBlobStore.StoreSuitabilityCheck value) {
         setValue(value.name());
     }

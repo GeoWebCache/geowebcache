@@ -49,17 +49,6 @@ public class GridSetFactory {
     /**
      * Note that you should provide EITHER resolutions or scales. Providing both will cause a
      * precondition violation exception.
-     *
-     * @param name
-     * @param srs
-     * @param extent
-     * @param resolutions
-     * @param scaleDenoms
-     * @param tileWidth
-     * @param tileHeight
-     * @param pixelSize
-     * @param yCoordinateFirst
-     * @return
      */
     public static GridSet createGridSet(
             final String name,

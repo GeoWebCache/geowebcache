@@ -26,15 +26,7 @@ import org.geowebcache.mime.MimeType;
  */
 public interface ImageEncoder {
 
-    /**
-     * Encodes the selected image
-     *
-     * @param image
-     * @param destination
-     * @param aggressiveOutputStreamOptimization
-     * @param type
-     * @param option
-     */
+    /** Encodes the selected image */
     public void encode(
             RenderedImage image,
             Object destination,

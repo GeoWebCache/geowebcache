@@ -102,11 +102,7 @@ public class MetastoreRemover {
         }
     }
 
-    /**
-     * Drop all the tiles to prevent a future migration
-     *
-     * @param template
-     */
+    /** Drop all the tiles to prevent a future migration */
     private void removeTiles(JdbcTemplate template) {
         template.execute("delete from tiles");
     }
@@ -181,9 +177,6 @@ public class MetastoreRemover {
                     /**
                      * Parses the param list stored in the db to a parameter list (since this is
                      * coming from the database the assumption is that the contents are sane)
-                     *
-                     * @param paramsKvp
-                     * @return
                      */
                     private Map<String, String> toMap(String paramsKvp) {
                         // TODO: wondering, shall we URL decode the values??

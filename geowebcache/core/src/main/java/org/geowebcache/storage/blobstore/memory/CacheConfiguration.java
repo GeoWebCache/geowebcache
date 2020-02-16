@@ -72,11 +72,7 @@ public class CacheConfiguration implements Serializable {
         return hardMemoryLimit;
     }
 
-    /**
-     * Sets the cache memory limit
-     *
-     * @param hardMemoryLimit
-     */
+    /** Sets the cache memory limit */
     public void setHardMemoryLimit(long hardMemoryLimit) {
         this.hardMemoryLimit = hardMemoryLimit;
     }
@@ -86,11 +82,7 @@ public class CacheConfiguration implements Serializable {
         return policy;
     }
 
-    /**
-     * Sets the Cache eviction policy
-     *
-     * @param policy
-     */
+    /** Sets the Cache eviction policy */
     public void setPolicy(EvictionPolicy policy) {
         this.policy = policy;
     }
@@ -100,11 +92,7 @@ public class CacheConfiguration implements Serializable {
         return concurrencyLevel;
     }
 
-    /**
-     * Sets the cache concurrency level
-     *
-     * @param concurrencyLevel
-     */
+    /** Sets the cache concurrency level */
     public void setConcurrencyLevel(int concurrencyLevel) {
         this.concurrencyLevel = concurrencyLevel;
     }
@@ -114,11 +102,7 @@ public class CacheConfiguration implements Serializable {
         return evictionTime;
     }
 
-    /**
-     * Sets the cache eviction time
-     *
-     * @param evictionTime
-     */
+    /** Sets the cache eviction time */
     public void setEvictionTime(long evictionTime) {
         this.evictionTime = evictionTime;
     }

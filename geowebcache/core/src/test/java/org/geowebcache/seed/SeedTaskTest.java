@@ -73,8 +73,6 @@ public class SeedTaskTest extends TestCase {
     /**
      * For a metatiled seed request over a given zoom level, make sure the correct wms calls are
      * issued
-     *
-     * @throws Exception
      */
     @SuppressWarnings("serial")
     public void testSeedWMSRequests() throws Exception {
@@ -158,8 +156,6 @@ public class SeedTaskTest extends TestCase {
     /**
      * For a metatiled seed request over a given zoom level, make sure the correct wms calls are
      * issued
-     *
-     * @throws Exception
      */
     public void testSeedRetries() throws Exception {
         WMSLayer tl = createWMSLayer("image/png");
@@ -258,8 +254,6 @@ public class SeedTaskTest extends TestCase {
     /**
      * Make sure when seeding a given zoom level, the correct tiles are sent to the {@link
      * StorageBroker}
-     *
-     * @throws Exception
      */
     @SuppressWarnings("serial")
     public void testSeedStoredTiles() throws Exception {

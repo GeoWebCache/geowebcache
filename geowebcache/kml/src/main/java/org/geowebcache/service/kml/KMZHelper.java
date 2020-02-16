@@ -57,7 +57,6 @@ public class KMZHelper {
      * @param mime Mime type of the WMS request (image format)
      * @param linkGridLocs The grid location to filer
      * @return The filtered grid location
-     * @throws GeoWebCacheException
      */
     public static long[][] filterGridLocs(
             StorageBroker sb,
@@ -122,14 +121,7 @@ public class KMZHelper {
         return linkGridLocs;
     }
 
-    /**
-     * @param namePfx
-     * @param overlayXml
-     * @param dataXml
-     * @param response
-     * @return
-     * @throws ServiceException
-     */
+    /** */
     protected static byte[] createZippedKML(
             String namePfx, String formatExtension, byte[] overlayXml, Resource dataXml)
             throws ServiceException {
@@ -149,10 +141,6 @@ public class KMZHelper {
      * Writes two byte[] into a zip -> like a zipfile with two files
      *
      * @param namePfx prefix for files inside file
-     * @param overlay
-     * @param data
-     * @param out
-     * @throws IOException
      */
     private static void writeZippedKML(
             String namePfx, String formatExtension, byte[] overlay, Resource data, OutputStream out)

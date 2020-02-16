@@ -252,20 +252,12 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
         return clone;
     }
 
-    /**
-     * Returns the quota store name
-     *
-     * @return
-     */
+    /** Returns the quota store name */
     public String getQuotaStore() {
         return quotaStore;
     }
 
-    /**
-     * Sets the quota store name
-     *
-     * @param quotaStore
-     */
+    /** Sets the quota store name */
     public void setQuotaStore(String quotaStore) {
         this.quotaStore = quotaStore;
     }

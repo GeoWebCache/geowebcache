@@ -31,18 +31,10 @@ public interface QuotaStoreFactory {
      * cannot be handled
      *
      * @param ctx the application context, should the store depend on other beans
-     * @param quotaStoreName
-     * @return
-     * @throws ConfigurationException
-     * @throws Exception
      */
     public QuotaStore getQuotaStore(ApplicationContext ctx, String quotaStoreName)
             throws IOException, ConfigurationException;
 
-    /**
-     * Lists the quota store names supported by this factory
-     *
-     * @return
-     */
+    /** Lists the quota store names supported by this factory */
     List<String> getSupportedStoreNames();
 }

@@ -26,7 +26,6 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
-import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.blobstore.file.DefaultFilePathGenerator;
@@ -117,14 +116,7 @@ public class LayerCacheInfoBuilderTest extends TestCase {
      *
      * assertEquals(0L, usedQuota.difference(expectedUsedQuota).getBytes().longValue()); }
      */
-    /**
-     * Seeds {@code numFiles} fake tiles of {@code fileSize} each at random tile indices
-     *
-     * @param layer
-     * @param numFiles
-     * @throws MimeException
-     * @throws IOException
-     */
+    /** Seeds {@code numFiles} fake tiles of {@code fileSize} each at random tile indices */
     private void mockSeed(TileLayer layer, int numFiles, int fileSize)
             throws GeoWebCacheException, IOException {
         final String layerName = layer.getName();

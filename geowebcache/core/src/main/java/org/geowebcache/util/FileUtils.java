@@ -65,7 +65,6 @@ public class FileUtils {
      *
      * <p>
      *
-     * @param path
      * @param filter used to implement the visitor pattern. The accept method may contain any
      *     desired logic, it will be called for all files and directories inside {@code path},
      *     recursively
@@ -175,12 +174,7 @@ public class FileUtils {
         }
     }
 
-    /**
-     * Prints the provided file tree structure onto the returned string
-     *
-     * @param dir
-     * @return
-     */
+    /** Prints the provided file tree structure onto the returned string */
     public static String printFileTree(File dir) {
         StringBuilder sb = new StringBuilder();
         sb.append(dir.getPath()).append("\n");

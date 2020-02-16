@@ -52,11 +52,6 @@ public class ImageDecoderImpl implements ImageDecoder {
     /**
      * Creates a new Instance of ImageEncoder supporting or not OutputStream optimization, with the
      * defined MimeTypes and Spi classes.
-     *
-     * @param aggressiveInputStreamOptimization
-     * @param supportedMimeTypes
-     * @param readerSpi
-     * @param initializer
      */
     public ImageDecoderImpl(
             boolean aggressiveInputStreamOptimization,
@@ -91,8 +86,6 @@ public class ImageDecoderImpl implements ImageDecoder {
      * @param source Source object to read
      * @param aggressiveInputStreamOptimization Parameter used if aggressive outputStream
      *     optimization must be used.
-     * @param map
-     * @throws IOException
      */
     public BufferedImage decode(
             Object source, boolean aggressiveInputStreamOptimization, Map<String, Object> map)
@@ -160,11 +153,7 @@ public class ImageDecoderImpl implements ImageDecoder {
         return null;
     }
 
-    /**
-     * Returns the ImageSpiReader associated to
-     *
-     * @return
-     */
+    /** Returns the ImageSpiReader associated to */
     ImageReaderSpi getReaderSpi() {
         return spi;
     }

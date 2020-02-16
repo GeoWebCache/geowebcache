@@ -33,10 +33,6 @@ public class FilePathUtils {
     /**
      * Silly way to pad numbers with leading zeros, since I don't know a fast way of doing this in
      * Java.
-     *
-     * @param number
-     * @param order
-     * @return
      */
     public static void zeroPadder(long number, int order, StringBuilder padding) {
         int numberOrder = 1;

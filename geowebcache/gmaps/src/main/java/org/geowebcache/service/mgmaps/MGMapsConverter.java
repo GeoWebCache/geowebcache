@@ -138,11 +138,6 @@ public class MGMapsConverter extends Service {
      * <p>see http://code.google.com/apis/maps/documentation/overlays.html#Custom_Map_Types
      *
      * <p>Modified by JaakL for mgmaps zoom understanding: zoom = 17 - zoom
-     *
-     * @param zoomLevel
-     * @param x
-     * @param y
-     * @return
      */
     public static long[] convert(long zoomLevel, long x, long y) throws ServiceException {
         if (zoomLevel > 17) {

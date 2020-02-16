@@ -22,11 +22,7 @@ import java.nio.channels.WritableByteChannel;
 
 public interface Resource {
 
-    /**
-     * The size of the resource in bytes.
-     *
-     * @return
-     */
+    /** The size of the resource in bytes. */
     public long getSize();
 
     /**
@@ -34,7 +30,6 @@ public interface Resource {
      *
      * @param channel the channel to write too
      * @return The number of bytes written
-     * @throws IOException
      */
     public long transferTo(WritableByteChannel channel) throws IOException;
 
@@ -43,31 +38,19 @@ public interface Resource {
      *
      * @param channel the channel to read from
      * @return The number of bytes read
-     * @throws IOException
      */
     public long transferFrom(ReadableByteChannel channel) throws IOException;
 
-    /**
-     * An InputStream backed by the resource.
-     *
-     * @return
-     * @throws IOException
-     */
+    /** An InputStream backed by the resource. */
     public InputStream getInputStream() throws IOException;
 
-    /**
-     * An OutputStream backed by the resource. Writes are appended to the resource.
-     *
-     * @return
-     * @throws IOException
-     */
+    /** An OutputStream backed by the resource. Writes are appended to the resource. */
     public OutputStream getOutputStream() throws IOException;
 
     /**
      * The time the resource was last modified.
      *
      * @see java.lang.System#currentTimeMillis
-     * @return
      */
     public long getLastModified();
 }

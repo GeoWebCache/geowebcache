@@ -134,7 +134,6 @@ public class VEConverter extends Service {
     /**
      * Convert a quadkey into the internal representation {x,y,z} of a grid location
      *
-     * @param strQuadKey
      * @return internal representation
      */
     @SuppressWarnings("PMD.EmptyIfStmt")

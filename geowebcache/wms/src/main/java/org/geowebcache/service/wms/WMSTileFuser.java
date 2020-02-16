@@ -787,23 +787,14 @@ public class WMSTileFuser {
         }
     }
 
-    /**
-     * Setting of the ApplicationContext associated for extracting the related beans
-     *
-     * @param context
-     * @throws BeansException
-     */
+    /** Setting of the ApplicationContext associated for extracting the related beans */
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         applicationContext = context;
         decoderMap = applicationContext.getBean(ImageDecoderContainer.class);
         encoderMap = applicationContext.getBean(ImageEncoderContainer.class);
     }
 
-    /**
-     * Setting of the hints configuration taken from the WMSService
-     *
-     * @param hintsConfig
-     */
+    /** Setting of the hints configuration taken from the WMSService */
     public void setHintsConfiguration(String hintsConfig) {
         if (hints == null) {
             hints = HintsLevel.getHintsForMode(hintsConfig).getRenderingHints();

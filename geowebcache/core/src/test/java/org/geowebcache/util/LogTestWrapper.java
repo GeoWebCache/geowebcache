@@ -35,22 +35,14 @@ public abstract class LogTestWrapper extends SetSingletonRule<Log> implements Lo
 
     private Optional<Level> level;
 
-    /**
-     * Create a wrapper that overrides the log level
-     *
-     * @param level
-     */
+    /** Create a wrapper that overrides the log level */
     public LogTestWrapper(Level level) {
         super();
         setNewValue(() -> this);
         this.level = Optional.of(level);
     }
 
-    /**
-     * Create a wrapper
-     *
-     * @param level
-     */
+    /** Create a wrapper */
     public LogTestWrapper() {
         super();
         setNewValue(() -> this);
@@ -143,32 +135,17 @@ public abstract class LogTestWrapper extends SetSingletonRule<Log> implements Lo
 
     List<LogEntry> entries = new LinkedList<>();
 
-    /**
-     * Get the entries that have been logged by the wrapper
-     *
-     * @return
-     */
+    /** Get the entries that have been logged by the wrapper */
     public List<LogEntry> getEntries() {
         return entries;
     }
 
-    /**
-     * Add an entry to the log
-     *
-     * @param level
-     * @param message
-     * @param thrown
-     */
+    /** Add an entry to the log */
     protected void log(Level level, Object message, Throwable thrown) {
         entries.add(new LogEntry(level, message, thrown));
     }
 
-    /**
-     * Add an entry to the log
-     *
-     * @param level
-     * @param message
-     */
+    /** Add an entry to the log */
     protected void log(Level level, Object message) {
         entries.add(new LogEntry(level, message));
     }
@@ -245,45 +222,24 @@ public abstract class LogTestWrapper extends SetSingletonRule<Log> implements Lo
         getOldValue().fatal(message, t);
     }
 
-    /**
-     * Matcher for the level of an entry
-     *
-     * @param level
-     * @return
-     */
+    /** Matcher for the level of an entry */
     public static Matcher<LogEntry> level(Level level) {
         return Matchers.describedAs(
                 "Log entry at level %0", hasProperty("level", is(level)), level);
     }
 
-    /**
-     * Matcher for the message of an entry
-     *
-     * @param match
-     * @return
-     */
+    /** Matcher for the message of an entry */
     public static Matcher<LogEntry> message(Matcher<String> match) {
         return Matchers.describedAs(
                 "Log entry with message %0", hasProperty("message", match), match);
     }
 
-    /**
-     * Matcher for the exception causing the log entry
-     *
-     * @param match
-     * @return
-     */
+    /** Matcher for the exception causing the log entry */
     public static Matcher<LogEntry> thrown(Matcher<Throwable> match) {
         return Matchers.describedAs("Log entry with cause", hasProperty("thrown", match), match);
     }
 
-    /**
-     * Create a log wrapper using the given injector methods
-     *
-     * @param get
-     * @param set
-     * @return
-     */
+    /** Create a log wrapper using the given injector methods */
     public static LogTestWrapper wrap(Supplier<Log> get, Consumer<Log> set) {
         return new LogTestWrapper() {
 
@@ -299,14 +255,7 @@ public abstract class LogTestWrapper extends SetSingletonRule<Log> implements Lo
         };
     }
 
-    /**
-     * Create a log wrapper using the given injector methods and level
-     *
-     * @param get
-     * @param set
-     * @param level
-     * @return
-     */
+    /** Create a log wrapper using the given injector methods and level */
     public static LogTestWrapper wrap(Supplier<Log> get, Consumer<Log> set, Level level) {
         return new LogTestWrapper(level) {
 

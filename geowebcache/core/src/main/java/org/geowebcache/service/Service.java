@@ -37,11 +37,7 @@ public abstract class Service {
         this.pathName = pathName;
     }
 
-    /**
-     * Whether this service can handle the given request
-     *
-     * @return
-     */
+    /** Whether this service can handle the given request */
     public boolean handlesRequest(HttpServletRequest request) {
         return request.getPathInfo().equalsIgnoreCase(pathName);
     }

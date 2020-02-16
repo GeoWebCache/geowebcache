@@ -34,11 +34,7 @@ public interface ServerConfiguration extends BaseConfiguration {
      */
     ServiceInformation getServiceInformation();
 
-    /**
-     * Used to set the service information for this configuration.
-     *
-     * @param serviceInfo
-     */
+    /** Used to set the service information for this configuration. */
     void setServiceInformation(ServiceInformation serviceInfo) throws IOException;
 
     /**
@@ -50,11 +46,7 @@ public interface ServerConfiguration extends BaseConfiguration {
      */
     Boolean isRuntimeStatsEnabled();
 
-    /**
-     * Set if runtime statistics is enabled for this configuration, True or False.
-     *
-     * @param isEnabled
-     */
+    /** Set if runtime statistics is enabled for this configuration, True or False. */
     void setRuntimeStatsEnabled(Boolean isEnabled) throws IOException;
 
     /**
@@ -64,11 +56,7 @@ public interface ServerConfiguration extends BaseConfiguration {
      */
     LockProvider getLockProvider();
 
-    /**
-     * Set the lock provider for this configuration.
-     *
-     * @param lockProvider
-     */
+    /** Set the lock provider for this configuration. */
     void setLockProvider(LockProvider lockProvider) throws IOException;
 
     /**
@@ -78,11 +66,7 @@ public interface ServerConfiguration extends BaseConfiguration {
      */
     Boolean isFullWMS();
 
-    /**
-     * Used to set fullWMS is parameter for this configuration if present.
-     *
-     * @param isFullWMS
-     */
+    /** Used to set fullWMS is parameter for this configuration if present. */
     void setFullWMS(Boolean isFullWMS) throws IOException;
 
     /**
@@ -110,10 +94,7 @@ public interface ServerConfiguration extends BaseConfiguration {
      */
     Integer getBackendTimeout();
 
-    /**
-     * @param backendTimeout
-     * @throws IOException
-     */
+    /** */
     void setBackendTimeout(Integer backendTimeout) throws IOException;
 
     /**
@@ -124,16 +105,9 @@ public interface ServerConfiguration extends BaseConfiguration {
      */
     Boolean isCacheBypassAllowed();
 
-    /**
-     * @param cacheBypassAllowed
-     * @throws IOException
-     */
+    /** */
     void setCacheBypassAllowed(Boolean cacheBypassAllowed) throws IOException;
 
-    /**
-     * The version number should match the XSD namespace and the version of GWC
-     *
-     * @return
-     */
+    /** The version number should match the XSD namespace and the version of GWC */
     String getVersion();
 }

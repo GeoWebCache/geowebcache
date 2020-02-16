@@ -147,11 +147,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         return tileLayer;
     }
 
-    /**
-     * The time that the stored tile resource was created
-     *
-     * @return
-     */
+    /** The time that the stored tile resource was created */
     public long getTSCreated() {
         return stObj.getCreated();
     }

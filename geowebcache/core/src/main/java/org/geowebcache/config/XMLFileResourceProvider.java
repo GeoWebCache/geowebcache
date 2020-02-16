@@ -122,8 +122,6 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
      * storageDirFinder}
      *
      * @param appCtx use to lookup {@link XMLConfigurationProvider} extenions, may be {@code null}
-     * @param storageDirFinder
-     * @throws ConfigurationException
      */
     public XMLFileResourceProvider(
             final String configFileName,
@@ -142,8 +140,6 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
      * storageDirFinder}
      *
      * @param appCtx use to lookup {@link XMLConfigurationProvider} extenions, may be {@code null}
-     * @param storageDirFinder
-     * @throws ConfigurationException
      */
     public XMLFileResourceProvider(
             final String configFileName,

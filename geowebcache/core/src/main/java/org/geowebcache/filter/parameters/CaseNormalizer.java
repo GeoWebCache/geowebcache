@@ -61,7 +61,6 @@ public class CaseNormalizer implements Function<String, String>, Serializable, C
          *
          * @param input string to normalize
          * @param loc locale to use for case changes
-         * @return
          */
         public abstract String apply(String input, Locale loc);
     }
@@ -91,18 +90,13 @@ public class CaseNormalizer implements Function<String, String>, Serializable, C
     /**
      * Apply normalisation to given string. Guaranteed to be idempotent.
      *
-     * @param input
      * @return The normalised string.
      */
     public String apply(String input) {
         return getCase().apply(input, getLocale());
     }
 
-    /**
-     * Get the case
-     *
-     * @return
-     */
+    /** Get the case */
     public Case getCase() {
         if (kase == null) {
             return Case.NONE;
@@ -111,20 +105,12 @@ public class CaseNormalizer implements Function<String, String>, Serializable, C
         }
     }
 
-    /**
-     * Set the case
-     *
-     * @param kase
-     */
+    /** Set the case */
     public void setCase(Case kase) {
         this.kase = kase;
     }
 
-    /**
-     * Get the locale. If unset, the default locale will be returned.
-     *
-     * @return
-     */
+    /** Get the locale. If unset, the default locale will be returned. */
     public Locale getLocale() {
         if (locale == null) {
             return Locale.getDefault();
@@ -133,11 +119,7 @@ public class CaseNormalizer implements Function<String, String>, Serializable, C
         }
     }
 
-    /**
-     * Get the locale. If unset, returns {@code null}.
-     *
-     * @return
-     */
+    /** Get the locale. If unset, returns {@code null}. */
     public @Nullable Locale getConfiguredLocale() {
         return locale;
     }

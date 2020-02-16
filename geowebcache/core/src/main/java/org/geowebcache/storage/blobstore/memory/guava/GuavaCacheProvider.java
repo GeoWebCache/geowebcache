@@ -133,11 +133,7 @@ public class GuavaCacheProvider implements CacheProvider {
         configure(config);
     }
 
-    /**
-     * This method is used for creating a new cache object, from the defined configuration.
-     *
-     * @param configuration
-     */
+    /** This method is used for creating a new cache object, from the defined configuration. */
     private void initCache(CacheConfiguration configuration) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Building new Cache");
@@ -514,7 +510,6 @@ public class GuavaCacheProvider implements CacheProvider {
     /**
      * * Static method for generating the {@link TileObject} cache key to use for caching.
      *
-     * @param obj
      * @return {@link TileObject} key
      */
     public static String generateTileKey(TileObject obj) {
@@ -652,12 +647,7 @@ public class GuavaCacheProvider implements CacheProvider {
             readLock = lock.readLock();
         }
 
-        /**
-         * Insertion of a {@link TileObject} key in the map for the associated Layer.
-         *
-         * @param layer
-         * @param id
-         */
+        /** Insertion of a {@link TileObject} key in the map for the associated Layer. */
         // not sure why locking is used on top of concurrent structures to start with... just
         // ignoring to move on, but imho all locks should be removed and concurrent structure
         // be used as intended (e.g., putIfAbsent and the like
@@ -708,12 +698,7 @@ public class GuavaCacheProvider implements CacheProvider {
             }
         }
 
-        /**
-         * Removal of a {@link TileObject} key in the map for the associated Layer.
-         *
-         * @param layer
-         * @param id
-         */
+        /** Removal of a {@link TileObject} key in the map for the associated Layer. */
         public void removeTile(String layer, String id) {
             // ReadLock is used because we are only accessing the map
             readLock.lock();
@@ -750,7 +735,6 @@ public class GuavaCacheProvider implements CacheProvider {
         /**
          * Removes a layer {@link Set} and returns it to the cache.
          *
-         * @param layer
          * @return the keys associated to the Layer
          */
         public Set<String> removeLayer(String layer) {

@@ -36,8 +36,6 @@ public class HttpClientTest extends TestCase {
      *
      * <p>Core i7 , Java 1.6 values: 1 000 000 in 559 ms 1 00 000 in 267 ms 10 000 in 186 ms 1 000
      * in 134 ms
-     *
-     * @throws Exception
      */
     public void testHttpClientConstruction() throws Exception {
         if (RUN_PERFORMANCE_TEST) {

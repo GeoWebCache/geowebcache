@@ -113,11 +113,7 @@ public class HazelcastLoader implements InitializingBean {
         return instance != null;
     }
 
-    /**
-     * Setter for the Hazelcast instance
-     *
-     * @param instance
-     */
+    /** Setter for the Hazelcast instance */
     public void setInstance(HazelcastInstance instance) {
         this.instance = instance;
     }

@@ -125,11 +125,7 @@ public class SQLDialect {
                 }
             };
 
-    /**
-     * Checks if the database schema is present, if missing it generates it
-     *
-     * @param template
-     */
+    /** Checks if the database schema is present, if missing it generates it */
     public void initializeTables(String schema, SimpleJdbcTemplate template) {
         String prefix;
         if (schema == null) {
@@ -147,13 +143,7 @@ public class SQLDialect {
         }
     }
 
-    /**
-     * Checks if the specified table exists
-     *
-     * @param template
-     * @param tableName
-     * @return
-     */
+    /** Checks if the specified table exists */
     private boolean tableExists(
             SimpleJdbcTemplate template, final String schema, final String tableName) {
         try {
@@ -287,8 +277,6 @@ public class SQLDialect {
     /**
      * Whatever source table to use when there is not a real table to use as the source, e.g.,
      * "select 1" vs "select 1 from dual". For most databases not adding anything is just fine.
-     *
-     * @param sb
      */
     protected void addEmtpyTableReference(StringBuilder sb) {
         // nothing to do
@@ -417,12 +405,6 @@ public class SQLDialect {
     /**
      * Updates the fill factor in a page provided the old fill factor is still the one we read from
      * the db, otherwise updates nothing
-     *
-     * @param schema
-     * @param keyParam
-     * @param newfillFactorParam
-     * @param oldFillFactorParam
-     * @return
      */
     public String conditionalUpdatePageStatsFillFactor(
             String schema, String keyParam, String newfillFactorParam, String oldFillFactorParam) {
@@ -438,14 +420,7 @@ public class SQLDialect {
         return sb.toString();
     }
 
-    /**
-     * Forces the fill factor in a page to the desired value
-     *
-     * @param schema
-     * @param keyParam
-     * @param newfillFactorParam
-     * @return
-     */
+    /** Forces the fill factor in a page to the desired value */
     public String updatePageStatsFillFactor(
             String schema, String keyParam, String newfillFactorParam) {
         StringBuilder sb = new StringBuilder("UPDATE ");
@@ -461,12 +436,6 @@ public class SQLDialect {
     /**
      * Updates the fill factor in a page provided the old fill factor is still the one we read from
      * the db, otherwise updates nothing
-     *
-     * @param schema
-     * @param keyParam
-     * @param newFrequencyParam
-     * @param oldFrequencyParam
-     * @return
      */
     public String updatePageStats(
             String schema,

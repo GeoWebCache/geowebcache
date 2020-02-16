@@ -160,10 +160,6 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
      * QuotaUpdate} payload to {@link #queuedUpdates} so that the consumer thread performs the
      * update without blocking the calling thread.
      *
-     * @param layerName
-     * @param gridSetId
-     * @param blobFormat
-     * @param parametersId
      * @param amount positive to signal a quota increase, negative to signal a quota decrease
      * @param tileIndex tile index
      */

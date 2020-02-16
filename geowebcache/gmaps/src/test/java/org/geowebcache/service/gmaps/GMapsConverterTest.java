@@ -29,11 +29,7 @@ public class GMapsConverterTest extends TestCase {
         super.setUp();
     }
 
-    /**
-     * see http://code.google.com/apis/maps/documentation/overlays.html# Custom_Map_Types
-     *
-     * @throws Exception
-     */
+    /** see http://code.google.com/apis/maps/documentation/overlays.html# Custom_Map_Types */
     public void testGMapsConverter() throws Exception {
         /* Check origin location */
         int x = 0;

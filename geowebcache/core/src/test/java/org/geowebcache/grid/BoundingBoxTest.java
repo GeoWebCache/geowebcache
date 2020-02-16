@@ -15,8 +15,6 @@ public class BoundingBoxTest extends TestCase {
      * strings.
      *
      * <p>Ff not you should figure out where it is used.
-     *
-     * @throws Exception
      */
     public void testBBOX() throws Exception {
         BoundingBox bbox = new BoundingBox(-180.0, -90.0, 180.0, 90.0);
@@ -54,11 +52,7 @@ public class BoundingBoxTest extends TestCase {
         assertTrue(Arrays.equals(new double[] {5, 5, 10, 10}, intersection.getCoords()));
     }
 
-    /**
-     * Two bboxes don't intersect, BoundingBox.intersection()'s result should be the empty bbox
-     *
-     * @throws Exception
-     */
+    /** Two bboxes don't intersect, BoundingBox.intersection()'s result should be the empty bbox */
     public void testIntersectionNonIntersecting() throws Exception {
         BoundingBox bb1 = new BoundingBox(0, 0, 10, 10);
         BoundingBox bb2 = new BoundingBox(11, 11, 20, 20);

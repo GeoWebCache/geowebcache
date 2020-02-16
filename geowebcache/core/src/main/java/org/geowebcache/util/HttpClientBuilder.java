@@ -57,11 +57,6 @@ public class HttpClientBuilder {
      *
      * @param url The server url, or null if no authentication is required or if the client is going
      *     to be used against a single server only
-     * @param backendTimeout
-     * @param httpUsername
-     * @param httpPassword
-     * @param proxyUrl
-     * @param concurrency
      */
     public HttpClientBuilder(
             URL url,
@@ -125,8 +120,6 @@ public class HttpClientBuilder {
     /**
      * parses a proxyUrl parameter and configures (if possible) the builder to set a proxy when
      * generating a httpClient and (if possible) proxy authentication.
-     *
-     * @param proxyUrl
      */
     public void setProxy(URL proxyUrl) {
         this.proxyUrl = proxyUrl;
@@ -182,8 +175,6 @@ public class HttpClientBuilder {
     /**
      * returns true if this builder was configured to pass HTTP credentials to the generated
      * HttpClient.
-     *
-     * @return
      */
     public boolean isDoAuthentication() {
         return doAuthentication;

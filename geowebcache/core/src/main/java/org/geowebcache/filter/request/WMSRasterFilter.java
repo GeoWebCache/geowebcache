@@ -169,15 +169,7 @@ public class WMSRasterFilter extends RasterFilter {
         return img;
     }
 
-    /**
-     * Generates the URL used to create the lookup raster
-     *
-     * @param layer
-     * @param gridSubset
-     * @param z
-     * @param widthHeight
-     * @return
-     */
+    /** Generates the URL used to create the lookup raster */
     protected Map<String, String> wmsParams(
             WMSLayer layer, GridSubset gridSubset, int z, int[] widthHeight)
             throws GeoWebCacheException {

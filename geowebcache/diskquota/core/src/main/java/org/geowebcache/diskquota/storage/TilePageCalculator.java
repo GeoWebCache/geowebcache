@@ -90,7 +90,6 @@ public class TilePageCalculator {
     /**
      * Returns a grid subset coverage range suitable for {@link TileRange}
      *
-     * @param page
      * @return {@code [minTileX, minTileY, maxTileX, maxTileY, zoomlevel]}
      */
     public long[][] toGridCoverage(TileSet tileSet, TilePage page) {

@@ -93,10 +93,7 @@ public class XMLConfigurationConstructorsTest {
         FileUtils.copyURLToFile(source, configFile);
     }
 
-    /**
-     * @param dir
-     * @return
-     */
+    /** */
     protected File configFile(File dir) {
         return new File(dir, XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME);
     }

@@ -232,8 +232,6 @@ public class BDBQuotaStoreTest {
     /**
      * Combined test for {@link BDBQuotaStore#addToQuotaAndTileCounts(TileSet, Quota, Collection)}
      * and {@link BDBQuotaStore#addHitsAndSetAccesTime(Collection)}
-     *
-     * @throws Exception
      */
     @Test
     public void testPageStatsGathering() throws Exception {

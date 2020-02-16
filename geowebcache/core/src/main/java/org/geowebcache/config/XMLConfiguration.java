@@ -131,7 +131,6 @@ public class XMLConfiguration
      * Base Constructor with custom ConfiguratioNResourceProvider
      *
      * @param appCtx use to lookup {@link XMLConfigurationProvider} extensions, may be {@code null}
-     * @param inFac
      */
     public XMLConfiguration(
             final ApplicationContextProvider appCtx, final ConfigurationResourceProvider inFac) {
@@ -143,9 +142,6 @@ public class XMLConfiguration
      * File System based Constructor
      *
      * @param appCtx use to lookup {@link XMLConfigurationProvider} extensions, may be {@code null}
-     * @param configFileDirectory
-     * @param storageDirFinder
-     * @throws ConfigurationException
      */
     public XMLConfiguration(
             final ApplicationContextProvider appCtx,
@@ -167,8 +163,6 @@ public class XMLConfiguration
      * storageDirFinder}
      *
      * @param appCtx use to lookup {@link XMLConfigurationProvider} extenions, may be {@code null}
-     * @param storageDirFinder
-     * @throws ConfigurationException
      */
     public XMLConfiguration(
             final ApplicationContextProvider appCtx, final DefaultStorageFinder storageDirFinder)
@@ -182,10 +176,6 @@ public class XMLConfiguration
 
     /**
      * Constructor that will accept an absolute or relative path for finding {@code geowebcache.xml}
-     *
-     * @param appCtx
-     * @param configFileDirectory
-     * @throws ConfigurationException
      */
     public XMLConfiguration(
             final ApplicationContextProvider appCtx, final String configFileDirectory)
@@ -193,19 +183,12 @@ public class XMLConfiguration
         this(appCtx, configFileDirectory, null);
     }
 
-    /**
-     * Path to template to use when there is no config file.
-     *
-     * @param template
-     */
+    /** Path to template to use when there is no config file. */
     public void setTemplate(String template) {
         resourceProvider.setTemplate(template);
     }
 
-    /**
-     * @return The root path where configuration is stored
-     * @throws ConfigurationException
-     */
+    /** @return The root path where configuration is stored */
     public String getConfigLocation() throws ConfigurationException {
         try {
             return resourceProvider.getLocation();
@@ -223,10 +206,7 @@ public class XMLConfiguration
         }
     }
 
-    /**
-     * @see ServerConfiguration#setRuntimeStatsEnabled(Boolean)
-     * @param isEnabled
-     */
+    /** @see ServerConfiguration#setRuntimeStatsEnabled(Boolean) */
     public void setRuntimeStatsEnabled(Boolean isEnabled) throws IOException {
         getGwcConfig().setRuntimeStats(isEnabled);
         save();
@@ -237,20 +217,13 @@ public class XMLConfiguration
         return getGwcConfig().getServiceInformation();
     }
 
-    /**
-     * @see ServerConfiguration#setServiceInformation(ServiceInformation);
-     * @param serviceInfo
-     */
+    /** @see ServerConfiguration#setServiceInformation(ServiceInformation); */
     public void setServiceInformation(ServiceInformation serviceInfo) throws IOException {
         getGwcConfig().setServiceInformation(serviceInfo);
         save();
     }
 
-    /**
-     * TileLayerConfiguration objects lacking their own defaults can delegate to this
-     *
-     * @param layer
-     */
+    /** TileLayerConfiguration objects lacking their own defaults can delegate to this */
     @Override
     public void setDefaultValues(TileLayer layer) {
         // Additional values that can have defaults set
@@ -545,7 +518,6 @@ public class XMLConfiguration
 
     /**
      * @param tl the layer to add to this configuration
-     * @return
      * @throws IllegalArgumentException if a layer named the same than {@code tl} already exists
      * @see TileLayerConfiguration#addLayer(org.geowebcache.layer.TileLayer)
      */
@@ -579,7 +551,6 @@ public class XMLConfiguration
      * Method responsible for modifying an existing layer.
      *
      * @param tl the new layer to overwrite the existing layer
-     * @throws NoSuchElementException
      * @see TileLayerConfiguration#modifyLayer(org.geowebcache.layer.TileLayer)
      */
     public synchronized void modifyLayer(TileLayer tl) throws NoSuchElementException {
@@ -647,10 +618,7 @@ public class XMLConfiguration
         }
     }
 
-    /**
-     * @param gridSet
-     * @throws GeoWebCacheException
-     */
+    /** */
     private synchronized void addOrReplaceGridSet(final XMLGridSet gridSet)
             throws IllegalArgumentException {
         final String gridsetName = gridSet.getName();
@@ -991,10 +959,7 @@ public class XMLConfiguration
         return null;
     }
 
-    /**
-     * @see ServerConfiguration#setFullWMS(Boolean)
-     * @param isFullWMS
-     */
+    /** @see ServerConfiguration#setFullWMS(Boolean) */
     @Override
     public void setFullWMS(Boolean isFullWMS) throws IOException {
         getGwcConfig().setFullWMS(isFullWMS);
@@ -1296,10 +1261,7 @@ public class XMLConfiguration
         return getGwcConfig().getLockProvider();
     }
 
-    /**
-     * @see ServerConfiguration#setLockProvider(LockProvider)
-     * @param lockProvider
-     */
+    /** @see ServerConfiguration#setLockProvider(LockProvider) */
     @Override
     public void setLockProvider(LockProvider lockProvider) throws IOException {
         getGwcConfig().setLockProvider(lockProvider);

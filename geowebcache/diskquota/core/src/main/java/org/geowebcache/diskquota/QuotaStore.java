@@ -34,16 +34,13 @@ public interface QuotaStore {
      * Returns the globally used quota
      *
      * @return A Quota object (may be null)
-     * @throws InterruptedException
      */
     public abstract Quota getGloballyUsedQuota() throws InterruptedException;
 
     /**
      * Returns the quota used by the specified tileSetId
      *
-     * @param tileSetId
      * @return A Quota object (never null)
-     * @throws InterruptedException
      */
     public abstract Quota getUsedQuotaByTileSetId(final String tileSetId)
             throws InterruptedException;
@@ -54,10 +51,8 @@ public interface QuotaStore {
             throws InterruptedException;
 
     /**
-     * @param layerName
      * @return the used quota for the given layer, may need to create a new one before returning if
      *     no quota usage information for that layer already exists
-     * @throws InterruptedException
      */
     public abstract Quota getUsedQuotaByLayerName(final String layerName)
             throws InterruptedException;
@@ -75,10 +70,6 @@ public interface QuotaStore {
     /**
      * Adds the {@link TilePage#getNumPresentTilesInPage() number of tiles} present in each of the
      * argument pages
-     *
-     * @param quotaDiff
-     * @param tileCountDiffs
-     * @throws InterruptedException
      */
     public abstract void addToQuotaAndTileCounts(
             final TileSet tileSet,
@@ -92,26 +83,15 @@ public interface QuotaStore {
      * values for the stored versions of the page statistics using {@link
      * PageStats#addHitsAndAccessTime(long, int, int)}; these values are influenced by the {@code
      * PageStats}' {@link PageStats#getFillFactor() fillFactor}.
-     *
-     * @param statsUpdates
-     * @return
      */
     public abstract Future<List<PageStats>> addHitsAndSetAccesTime(
             final Collection<PageStatsPayload> statsUpdates);
 
-    /**
-     * @param layerNames
-     * @return
-     * @throws InterruptedException
-     */
+    /** */
     public abstract TilePage getLeastFrequentlyUsedPage(final Set<String> layerNames)
             throws InterruptedException;
 
-    /**
-     * @param layerNames
-     * @return
-     * @throws InterruptedException
-     */
+    /** */
     public abstract TilePage getLeastRecentlyUsedPage(final Set<String> layerNames)
             throws InterruptedException;
 
@@ -121,10 +101,6 @@ public interface QuotaStore {
 
     public abstract void deleteParameters(String layerName, String parametersId);
 
-    /**
-     * Closes the quota store, releasing any resources the store might be depending onto
-     *
-     * @throws Exception
-     */
+    /** Closes the quota store, releasing any resources the store might be depending onto */
     public abstract void close() throws Exception;
 }

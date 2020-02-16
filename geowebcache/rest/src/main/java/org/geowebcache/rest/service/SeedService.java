@@ -72,12 +72,7 @@ public class SeedService {
         context = appCtx.getApplicationContext();
     }
 
-    /**
-     * GET method for querying running GWC tasks
-     *
-     * @param request
-     * @return
-     */
+    /** GET method for querying running GWC tasks */
     public ResponseEntity<?> getRunningTasks(HttpServletRequest request) {
         try {
             XStream xs = new GeoWebCacheXStream(new JsonHierarchicalStreamDriver());
@@ -95,13 +90,7 @@ public class SeedService {
         }
     }
 
-    /**
-     * GET method for querying running tasks for the provided layer
-     *
-     * @param request
-     * @param layer
-     * @return
-     */
+    /** GET method for querying running tasks for the provided layer */
     public ResponseEntity<?> getRunningLayerTasks(HttpServletRequest request, String layer) {
         try {
             XStream xs = new GeoWebCacheXStream(new JsonHierarchicalStreamDriver());
@@ -132,13 +121,7 @@ public class SeedService {
         }
     }
 
-    /**
-     * Method to kill running tasks for all of GWC or just the provided layer.
-     *
-     * @param request
-     * @param layer
-     * @return
-     */
+    /** Method to kill running tasks for all of GWC or just the provided layer. */
     public String handleKillAllThreads(HttpServletRequest request, String layer) {
         final TileLayer tl;
         if (layer != null) {
@@ -212,14 +195,7 @@ public class SeedService {
         }
     }
 
-    /**
-     * Method to do the seeding and truncating.
-     *
-     * @param request
-     * @param extension
-     * @param layer
-     * @return
-     */
+    /** Method to do the seeding and truncating. */
     public ResponseEntity<?> doSeeding(
             HttpServletRequest request, String layer, String extension, String body) {
         XStream xs = configXStream(new GeoWebCacheXStream(new DomDriver()));
@@ -247,12 +223,7 @@ public class SeedService {
         }
     }
 
-    /**
-     * METHOD that handles the seeding/truncating task from the POST method.
-     *
-     * @param layerName
-     * @param obj
-     */
+    /** METHOD that handles the seeding/truncating task from the POST method. */
     protected void handleRequest(String layerName, Object obj) {
         final SeedRequest sr = (SeedRequest) obj;
         try {

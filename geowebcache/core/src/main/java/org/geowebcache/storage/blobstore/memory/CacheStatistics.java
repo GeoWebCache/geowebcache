@@ -74,11 +74,7 @@ public class CacheStatistics implements Serializable {
         return hitCount;
     }
 
-    /**
-     * Setter for cache hit count
-     *
-     * @param hitCount
-     */
+    /** Setter for cache hit count */
     public void setHitCount(long hitCount) {
         this.hitCount = hitCount;
     }
@@ -88,11 +84,7 @@ public class CacheStatistics implements Serializable {
         return missCount;
     }
 
-    /**
-     * Setter for cache miss count
-     *
-     * @param missCount
-     */
+    /** Setter for cache miss count */
     public void setMissCount(long missCount) {
         this.missCount = missCount;
     }
@@ -102,11 +94,7 @@ public class CacheStatistics implements Serializable {
         return evictionCount;
     }
 
-    /**
-     * Setter for cache eviction count
-     *
-     * @param evictionCount
-     */
+    /** Setter for cache eviction count */
     public void setEvictionCount(long evictionCount) {
         this.evictionCount = evictionCount;
     }
@@ -116,11 +104,7 @@ public class CacheStatistics implements Serializable {
         return totalCount;
     }
 
-    /**
-     * Setter for cache total count
-     *
-     * @param totalCount
-     */
+    /** Setter for cache total count */
     public void setTotalCount(long totalCount) {
         this.totalCount = totalCount;
     }
@@ -130,11 +114,7 @@ public class CacheStatistics implements Serializable {
         return hitRate;
     }
 
-    /**
-     * Setter for cache hit rate
-     *
-     * @param hitRate
-     */
+    /** Setter for cache hit rate */
     public void setHitRate(double hitRate) {
         this.hitRate = hitRate;
     }
@@ -144,11 +124,7 @@ public class CacheStatistics implements Serializable {
         return missRate;
     }
 
-    /**
-     * Setter for cache miss rate
-     *
-     * @param missRate
-     */
+    /** Setter for cache miss rate */
     public void setMissRate(double missRate) {
         this.missRate = missRate;
     }
@@ -158,11 +134,7 @@ public class CacheStatistics implements Serializable {
         return currentMemoryOccupation;
     }
 
-    /**
-     * Setter for cache memory occupation
-     *
-     * @param currentMemoryOccupation
-     */
+    /** Setter for cache memory occupation */
     public void setCurrentMemoryOccupation(double currentMemoryOccupation) {
         this.currentMemoryOccupation = currentMemoryOccupation;
     }
@@ -172,11 +144,7 @@ public class CacheStatistics implements Serializable {
         return totalSize;
     }
 
-    /**
-     * Setter for cache total size
-     *
-     * @param totalSize
-     */
+    /** Setter for cache total size */
     public void setTotalSize(long totalSize) {
         this.totalSize = totalSize;
     }
@@ -186,11 +154,7 @@ public class CacheStatistics implements Serializable {
         return actualSize;
     }
 
-    /**
-     * Setter for cache actual size
-     *
-     * @param actualSize
-     */
+    /** Setter for cache actual size */
     public void setActualSize(long actualSize) {
         this.actualSize = actualSize;
     }

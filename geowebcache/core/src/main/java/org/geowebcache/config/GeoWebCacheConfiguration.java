@@ -222,7 +222,6 @@ public class GeoWebCacheConfiguration {
      * Returns the chosen lock provider
      *
      * @see ServerConfiguration#getLockProvider()
-     * @return
      */
     public LockProvider getLockProvider() {
         if (lockProviderInstance == null) {

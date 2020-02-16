@@ -24,10 +24,6 @@ public class ExceptionUtils {
     /**
      * Returns true if the provided throwable is of the specified class, or if any of those is
      * suppresses is.
-     *
-     * @param e
-     * @param klazz
-     * @return
      */
     public static <T extends Throwable> boolean isOrSuppresses(T e, Class<? extends T> klazz) {
         return Streams.concat(Stream.of(e), Arrays.stream(e.getSuppressed()))

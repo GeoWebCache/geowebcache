@@ -39,7 +39,6 @@ public class XYZFilePathFilter implements FilenameFilter {
      * Create a filter for stored tiles that are within a particular range.
      *
      * @param trObj the range to find
-     * @throws StorageException
      */
     public XYZFilePathFilter(TileRange trObj, XYZFilePathGenerator generator)
             throws StorageException {
@@ -112,13 +111,7 @@ public class XYZFilePathFilter implements FilenameFilter {
         return dirName.substring(prefix.length() + 1);
     }
 
-    /**
-     * Can only check the zoom levels
-     *
-     * @param parent
-     * @param fileName
-     * @return
-     */
+    /** Can only check the zoom levels */
     private boolean acceptIntermediateDir(File parent, String fileName) {
         try {
             if (acceptGridsetDir(parent.getName())) {

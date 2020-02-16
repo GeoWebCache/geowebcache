@@ -31,13 +31,7 @@ class GeoRSSParsingUtils {
         return dateTime;
     }
 
-    /**
-     * Being at a start element tag, returns its coalesced text value
-     *
-     * @param reader
-     * @return
-     * @throws XMLStreamException
-     */
+    /** Being at a start element tag, returns its coalesced text value */
     public static String text(XMLStreamReader reader) throws XMLStreamException {
         reader.require(START_ELEMENT, null, null);
         StringBuilder sb = new StringBuilder();
@@ -56,10 +50,6 @@ class GeoRSSParsingUtils {
     /**
      * Consumes the current element (given by tagName) until it's end element is fount (assuming
      * there's no nested element called the same)
-     *
-     * @param reader
-     * @param tagName
-     * @throws XMLStreamException
      */
     public static void consume(XMLStreamReader reader, QName tagName) throws XMLStreamException {
 
@@ -77,10 +67,6 @@ class GeoRSSParsingUtils {
     /**
      * Safely advances until the next tag element (either start or end element) and returns its
      * name, or {@code null} in case the end of document is reached before any tag
-     *
-     * @param reader
-     * @return
-     * @throws XMLStreamException
      */
     public static QName nextTag(XMLStreamReader reader) throws XMLStreamException {
 

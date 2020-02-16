@@ -97,11 +97,7 @@ public class FileBlobStoreInfo extends BlobStoreInfo {
         this.fileSystemBlockSize = fileSystemBlockSize;
     }
 
-    /**
-     * Returns the path generator for this blob store, by default, it's
-     *
-     * @return
-     */
+    /** Returns the path generator for this blob store, by default, it's */
     public PathGeneratorType getPathGeneratorType() {
         return pathGeneratorType;
     }

@@ -10,11 +10,7 @@ public class MGMapsConverterTest extends TestCase {
         super.setUp();
     }
 
-    /**
-     * see Modified for MGMaps API
-     *
-     * @throws Exception
-     */
+    /** see Modified for MGMaps API */
     public void testMGMapsConverter() throws Exception {
         /* Check origin location */
         int x = 0;

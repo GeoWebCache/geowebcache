@@ -124,20 +124,12 @@ public class SpatialReference {
         return WKID;
     }
 
-    /**
-     * New in ArcGIS 10.1+
-     *
-     * @return
-     */
+    /** New in ArcGIS 10.1+ */
     public int getLatestWKID() {
         return LatestWKID;
     }
 
-    /**
-     * Seems to be in ArcGIS 9.2 format only?
-     *
-     * @return
-     */
+    /** Seems to be in ArcGIS 9.2 format only? */
     public double getLeftLongitude() {
         return LeftLongitude;
     }

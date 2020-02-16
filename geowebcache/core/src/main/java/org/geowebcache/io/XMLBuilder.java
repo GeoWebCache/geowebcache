@@ -60,8 +60,6 @@ public class XMLBuilder {
     /**
      * Append the given string without escaping
      *
-     * @param s
-     * @return
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
     public XMLBuilder appendUnescaped(@Nullable String s) throws IOException {
@@ -73,7 +71,6 @@ public class XMLBuilder {
      * Start an XML Element on a new line indented for its depth
      *
      * @param name name of the element
-     * @return
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
     public XMLBuilder indentElement(String name) throws IOException {
@@ -84,7 +81,6 @@ public class XMLBuilder {
      * Start an XML Element
      *
      * @param name name of the element
-     * @return
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
     public XMLBuilder startElement(String name, boolean indent) throws IOException {
@@ -110,7 +106,6 @@ public class XMLBuilder {
      * Start an XML Element
      *
      * @param name name of the element
-     * @return
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
     public XMLBuilder startElement(String name) throws IOException {
@@ -120,7 +115,6 @@ public class XMLBuilder {
     /**
      * End an XML element
      *
-     * @return
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
     public XMLBuilder endElement() throws IOException {
@@ -131,7 +125,6 @@ public class XMLBuilder {
      *
      * @param name if not null and assertions are enabled, will check that the element being closed
      *     has this name.
-     * @return
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
     public XMLBuilder endElement(@Nullable String name) throws IOException {
@@ -157,7 +150,6 @@ public class XMLBuilder {
     /**
      * Append an element that contains only text.
      *
-     * @return
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
     public XMLBuilder simpleElement(String name, @Nullable String text, boolean indent)
@@ -168,8 +160,6 @@ public class XMLBuilder {
     /**
      * Add text to the body of the element.
      *
-     * @param str
-     * @return
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
     public XMLBuilder text(@Nullable String str) throws IOException {
@@ -184,8 +174,6 @@ public class XMLBuilder {
     /**
      * Append the string, escaping special characters.
      *
-     * @param str
-     * @return
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
     public XMLBuilder appendEscaped(@Nullable String str) throws IOException {
@@ -208,8 +196,6 @@ public class XMLBuilder {
     /**
      * Add an entity to the text.
      *
-     * @param name
-     * @return
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
     public XMLBuilder entity(String name) throws IOException {
@@ -223,9 +209,6 @@ public class XMLBuilder {
     /**
      * Add an attribute to the current element. Must be called before any text is added.
      *
-     * @param name
-     * @param value
-     * @return
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
     public XMLBuilder attribute(String name, String value) throws IOException {
@@ -240,16 +223,7 @@ public class XMLBuilder {
         return this;
     }
 
-    /**
-     * Add minx, miny, maxx, and maxy attributes
-     *
-     * @param minx
-     * @param miny
-     * @param maxx
-     * @param maxy
-     * @return
-     * @throws IOException
-     */
+    /** Add minx, miny, maxx, and maxy attributes */
     public <T> XMLBuilder bboxAttributes(T minx, T miny, T maxx, T maxy) throws IOException {
         return attribute("minx", minx.toString())
                 .attribute("miny", miny.toString())
@@ -257,17 +231,7 @@ public class XMLBuilder {
                 .attribute("maxy", maxy.toString());
     }
 
-    /**
-     * Add a BoundingBox element
-     *
-     * @param srs
-     * @param minx
-     * @param miny
-     * @param maxx
-     * @param maxy
-     * @return
-     * @throws IOException
-     */
+    /** Add a BoundingBox element */
     public <T> XMLBuilder boundingBox(@Nullable String srs, T minx, T miny, T maxx, T maxy)
             throws IOException {
         indentElement("BoundingBox");
@@ -277,30 +241,14 @@ public class XMLBuilder {
         return this;
     }
 
-    /**
-     * Add a LatLonBoundingBox element
-     *
-     * @param minx
-     * @param miny
-     * @param maxx
-     * @param maxy
-     * @return
-     * @throws IOException
-     */
+    /** Add a LatLonBoundingBox element */
     public <T> XMLBuilder latLonBoundingBox(T minx, T miny, T maxx, T maxy) throws IOException {
         return indentElement("LatLonBoundingBox")
                 .bboxAttributes(minx, miny, maxx, maxy)
                 .endElement();
     }
 
-    /**
-     * Append an XML header
-     *
-     * @param version
-     * @param charset
-     * @return
-     * @throws IOException
-     */
+    /** Append an XML header */
     public XMLBuilder header(String version, @Nullable String charset) throws IOException {
         Preconditions.checkNotNull(version);
         appendUnescaped("<?xml version=\"").appendEscaped(version).appendUnescaped("\"");
@@ -310,14 +258,7 @@ public class XMLBuilder {
         appendUnescaped("?>\n");
         return this;
     }
-    /**
-     * Append an XML header
-     *
-     * @param version
-     * @param charset
-     * @return
-     * @throws IOException
-     */
+    /** Append an XML header */
     public XMLBuilder header(String version, @Nullable Charset charset) throws IOException {
         String charsetName = charset.name();
         return header(version, charsetName);

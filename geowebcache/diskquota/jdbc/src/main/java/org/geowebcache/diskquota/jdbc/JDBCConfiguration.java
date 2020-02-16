@@ -47,10 +47,6 @@ public class JDBCConfiguration implements Serializable {
     /**
      * Loads a XML configuration from the specified file. The file must adhere to the {@code
      * geowebcache-diskquota-jdbc.xsd} schema.
-     *
-     * @param sourceFile
-     * @return
-     * @throws IOException
      */
     public static JDBCConfiguration load(File sourceFile) throws ConfigurationException {
 
@@ -67,8 +63,6 @@ public class JDBCConfiguration implements Serializable {
      * geowebcache-diskquota-jdbc.xsd} schema.
      *
      * @param is InputStream to load the configuration from
-     * @return
-     * @throws IOException
      */
     public static JDBCConfiguration load(InputStream is) throws ConfigurationException {
         XStream xs = getXStream();
@@ -363,10 +357,7 @@ public class JDBCConfiguration implements Serializable {
         }
     }
 
-    /**
-     * @param allowEnvParametrization
-     * @return
-     */
+    /** */
     public JDBCConfiguration clone(boolean allowEnvParametrization) {
 
         JDBCConfiguration conf = (JDBCConfiguration) SerializationUtils.clone(this);

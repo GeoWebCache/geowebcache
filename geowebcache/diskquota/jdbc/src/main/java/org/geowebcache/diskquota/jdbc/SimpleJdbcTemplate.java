@@ -37,11 +37,6 @@ public class SimpleJdbcTemplate extends NamedParameterJdbcTemplate {
     /**
      * Queries the template for a single object, but makes the result optial, it is ok not to find
      * any object in the db
-     *
-     * @param sql
-     * @param rowMapper
-     * @param params
-     * @return
      */
     public <T> T queryForOptionalObject(String sql, RowMapper<T> rowMapper, Map params) {
         try {

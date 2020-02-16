@@ -45,21 +45,12 @@ public class MimeType {
         this.supportsTiling = supportsTiling;
     }
 
-    /**
-     * The MIME identifier string for this format.
-     *
-     * @return
-     */
+    /** The MIME identifier string for this format. */
     public String getMimeType() {
         return mimeType;
     }
 
-    /**
-     * The MIME identifier string for this format.
-     *
-     * @return
-     * @throws IOException
-     */
+    /** The MIME identifier string for this format. */
     public String getMimeType(Resource resource) throws IOException {
         return mimeType;
     }
@@ -76,11 +67,7 @@ public class MimeType {
         return mimeType;
     }
 
-    /**
-     * The conventional file extension most commonly used with this format.
-     *
-     * @return
-     */
+    /** The conventional file extension most commonly used with this format. */
     public String getFileExtension() {
         return fileExtension;
     }
@@ -112,12 +99,7 @@ public class MimeType {
         return false;
     }
 
-    /**
-     * Get the MIME type object for a given MIME type string
-     *
-     * @param formatStr
-     * @return
-     */
+    /** Get the MIME type object for a given MIME type string */
     public static MimeType createFromFormat(String formatStr) throws MimeException {
         MimeType mimeType = null;
         if (formatStr == null) {
@@ -145,12 +127,7 @@ public class MimeType {
         throw new MimeException("Unsupported format request: " + formatStr);
     }
 
-    /**
-     * Get the MIME type object for a given file extension
-     *
-     * @param fileExtension
-     * @return
-     */
+    /** Get the MIME type object for a given file extension */
     public static MimeType createFromExtension(String fileExtension) throws MimeException {
         MimeType mimeType = null;
 

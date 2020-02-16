@@ -178,7 +178,6 @@ public class TMSService extends Service {
     /**
      * Split the TMS parameters out of the given request
      *
-     * @param request
      * @return A map of the parameters with keys {@literal "layerId"}, {@literal "gridSetId"},
      *     {@literal "x"}, {@literal "y"}, {@literal "z"}, and {@literal "fileExtension"}.
      *     Optionally also {@literal "gridSetId"} and {@literal "format"}. Returns an empty Optional

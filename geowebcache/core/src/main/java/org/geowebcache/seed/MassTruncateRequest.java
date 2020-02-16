@@ -33,7 +33,6 @@ public interface MassTruncateRequest {
      * @param sb The storage broker managing the cache
      * @param breeder The tile breeder storing information about the affected layers
      * @return {@literal true} if successful, {@literal false} otherwise
-     * @throws StorageException
      */
     public boolean doTruncate(StorageBroker sb, TileBreeder breeder)
             throws StorageException, GeoWebCacheException;
