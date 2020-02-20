@@ -1,3 +1,18 @@
+GeoWebCache 1.15.5 (2020-02-20)
+-------------------------------
+
+Maintenance release of the 1.15.x branch.
+
+Improvements:
++++++++++++++
+- Update Spring and Spring security to the latest 5.1.x bugfix release
+
+Fixes:
+++++++
+- GWC preview shows blurry tiles, fixed
+- Use HTTPS connecting to maven repositories
+
+
 GeoWebCache 1.15.4 (2019-12-19)
 -------------------------------
 
