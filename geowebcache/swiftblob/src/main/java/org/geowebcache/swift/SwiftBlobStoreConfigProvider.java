@@ -19,7 +19,6 @@ import com.google.common.base.Strings;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 import com.thoughtworks.xstream.converters.basic.BooleanConverter;
-import com.thoughtworks.xstream.converters.basic.IntConverter;
 import com.thoughtworks.xstream.converters.basic.StringConverter;
 import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.GeoWebCacheExtensions;
@@ -34,19 +33,6 @@ import org.geowebcache.config.XMLConfigurationProvider;
 public class SwiftBlobStoreConfigProvider implements XMLConfigurationProvider {
 
     private static GeoWebCacheEnvironment gwcEnvironment = null;
-
-    private static SingleValueConverter EnvironmentNullableIntConverter =
-            new IntConverter() {
-
-                @Override
-                public Object fromString(String str) {
-                    str = resolveFromEnv(str);
-                    if (Strings.isNullOrEmpty(str)) {
-                        return null;
-                    }
-                    return super.fromString(str);
-                }
-            };
 
     private static SingleValueConverter EnvironmentNullableBooleanConverter =
             new BooleanConverter() {
