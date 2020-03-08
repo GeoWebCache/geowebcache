@@ -56,7 +56,7 @@
         <keystoneVersion>3</keystoneVersion>
         <keystoneScope>project</keystoneScope>
         <keystoneDomainName>Default</keystoneDomainName>
-        <identity>Default:put-username-here</identity>
+        <identity>tenant-name-here:put-username-here</identity>
         <password>put-password-here</password>
     </SwiftBlobStore> -->
 

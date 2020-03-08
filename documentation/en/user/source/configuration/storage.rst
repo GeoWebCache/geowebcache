@@ -791,3 +791,63 @@ In this section are described other available configuration parameters to config
 		
 		.. note:: A value of *max-size* bigger or equal to Integer.MAX_VALUE cannot be used in order to avoid an uncontrollable growth of the cache size.
 
+OpenStack Swift (Swift) Blob Store
++++++++++++++++++++++++++++++++++++++++++++++
+
+The following documentation assumes you're familiar with the `Openstack Swift Documentation <https://docs.openstack.org/swift/latest/>`_.
+
+This blob store allows to configure a cache for layers using a Swift container with the following `TMS <http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification>`_-like
+key structure:
+
+    [prefix]/<layer id>/<gridset id>/<format id>/<parameters hash | "default">/<z>/<x>/<y>.<extension>
+    
+* prefix: if provided in the configuration, it will be used as the "root path" for tile keys. Otherwise the keys will be built starting at the bucket's root.
+* layer id: the unique identifier for the layer. Note it equals to the layer name for standalone configured layers, but to the geoserver catalog's object id for GeoServer tile layers.
+* gridset id: the name of the gridset of the tile
+* format id: the gwc internal name for the tile format. E.g.: ``png``, ``png8``, ``jpeg``, etc.
+* parameters hash: if the request that originated that tiles included parameter filters, a unique hash code of the set of parameter filters, otherwise the constant ``default``.
+* z: the z ordinate of the tile in the gridset space.
+* x: the x ordinate of the tile in the gridset space.
+* y: the y ordinate of the tile in the gridset space.
+* extension: the file extension associated to the tile format. E.g. ``png``, ``jpeg``, etc. (Note the extension is the same for the ``png`` and ``png8`` formats, for example).
+
+Configuration example:
+
+.. code-block:: xml
+
+    <SwiftBlobStore default="true">
+        <id>ObjectStorageCache</id>
+        <enabled>true</enabled>
+        <container>put-your-actual-container-name-here</container>
+        <prefix>test-cache</prefix>
+        <endpoint>endpoint</endpoint>
+        <provider>openstack-swift</provider>
+        <region>put-region-here</region>
+        <keystoneVersion>3</keystoneVersion>
+        <keystoneScope>project</keystoneScope>
+        <keystoneDomainName>Default</keystoneDomainName>
+        <identity>put-tenant-name-here:put-username-here</identity>
+        <password>put-password-here</password>
+    </SwiftBlobStore>
+
+Properties:
+
+* **container**: Mandatory. The name of the Swift container where to store tiles.
+* **prefix**: Optional. A prefix path to use as the "root folder" to store tiles at. For example, if the bucket is ``bucket.gwc.example`` and 
+  prefix is "mycache", all tiles will be stored under ``bucket.gwc.example/mycache/{layer name}`` instead of ``bucket.gwc.example/{layer name}``.
+* **endpoint**: Manditory. Endpoint of the server
+* **provider**: Mandatory. Jclouds provider (shouldn't need modifying)
+* **region**: Mandatory. Swift region for container.
+* **keystoneVersion**: Mandatory. Keystone version
+* **keystoneScope**: Optional. For scoped keystone authorization (project or domain scoped)
+* **keystoneDomainName**: Optional. Keystone domain name (if different than the user domain)
+* **identity**: Mandatory. Identity used to authenticate with the swift API (format - tenantName:username)
+* **password**: Mandatory. Password used to authenticate with the swift API.
+
+Additional Information:
+```````````````````````
+**Some links that might be useful:**
+
+* The package makes use of the open source multi-cloud toolkit `jclouds <https://jclouds.apache.org/>`_ 
+* Jclouds documentation for `getting started with Openstack <https://jclouds.apache.org/guides/openstack/>`_
+* Jclouds documentation for `OpenStack Keystone V3 Support <https://jclouds.apache.org/blog/2018/01/16/keystone-v3/>`_ used in config 
