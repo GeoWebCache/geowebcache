@@ -47,9 +47,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * Unit testing for the Swift Blobstore class
- */
+/** Unit testing for the Swift Blobstore class */
 public class SwiftBlobStoreTest {
 
     private SwiftBlobStore swiftBlobStore;
