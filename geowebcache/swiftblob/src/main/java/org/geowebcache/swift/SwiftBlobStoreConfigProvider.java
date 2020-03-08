@@ -28,7 +28,8 @@ import org.geowebcache.config.Info;
 import org.geowebcache.config.XMLConfigurationProvider;
 
 /**
- * Reads Swift Blobstore configuration from geowebcache.xml and creates a SwiftBlobStoreInfo object representing this information.
+ * Reads Swift Blobstore configuration from geowebcache.xml and creates a SwiftBlobStoreInfo object
+ * representing this information.
  */
 public class SwiftBlobStoreConfigProvider implements XMLConfigurationProvider {
 
@@ -92,29 +93,16 @@ public class SwiftBlobStoreConfigProvider implements XMLConfigurationProvider {
     public XStream getConfiguredXStream(XStream xs) {
         xs.alias("SwiftBlobStore", SwiftBlobStoreInfo.class);
         xs.registerLocalConverter(
-                SwiftBlobStoreInfo.class, "maxConnections", EnvironmentNullableIntConverter);
+                SwiftBlobStoreInfo.class, "container", EnvironmentStringConverter);
+        xs.registerLocalConverter(SwiftBlobStoreInfo.class, "provider", EnvironmentStringConverter);
+        xs.registerLocalConverter(SwiftBlobStoreInfo.class, "region", EnvironmentStringConverter);
         xs.registerLocalConverter(
-                SwiftBlobStoreInfo.class, "proxyPort", EnvironmentNullableIntConverter);
+                SwiftBlobStoreInfo.class, "keystoneVersion", EnvironmentStringConverter);
         xs.registerLocalConverter(
-                SwiftBlobStoreInfo.class, "useHTTPS", EnvironmentNullableBooleanConverter);
-        xs.registerLocalConverter(
-                SwiftBlobStoreInfo.class, "useGzip", EnvironmentNullableBooleanConverter);
-        xs.registerLocalConverter(SwiftBlobStoreInfo.class, "bucket", EnvironmentStringConverter);
-        xs.registerLocalConverter(
-                SwiftBlobStoreInfo.class, "jcloudsProvider", EnvironmentStringConverter);
-        xs.registerLocalConverter(
-                SwiftBlobStoreInfo.class, "jcloudsRegion", EnvironmentStringConverter);
-        xs.registerLocalConverter(
-                SwiftBlobStoreInfo.class, "jcloudsKeystoneVersion", EnvironmentStringConverter);
-        xs.registerLocalConverter(
-                SwiftBlobStoreInfo.class, "jcloudsKeystoneScope", EnvironmentStringConverter);
-        xs.registerLocalConverter(
-                SwiftBlobStoreInfo.class, "jcloudsIdentity", EnvironmentStringConverter);
-        xs.registerLocalConverter(
-                SwiftBlobStoreInfo.class, "jcloudsCredential", EnvironmentStringConverter);
+                SwiftBlobStoreInfo.class, "keystoneScope", EnvironmentStringConverter);
+        xs.registerLocalConverter(SwiftBlobStoreInfo.class, "identity", EnvironmentStringConverter);
+        xs.registerLocalConverter(SwiftBlobStoreInfo.class, "password", EnvironmentStringConverter);
         xs.registerLocalConverter(SwiftBlobStoreInfo.class, "prefix", EnvironmentStringConverter);
-        xs.registerLocalConverter(
-                SwiftBlobStoreInfo.class, "proxyHost", EnvironmentStringConverter);
         xs.registerLocalConverter(
                 BlobStoreInfo.class, "enabled", EnvironmentNullableBooleanConverter);
         xs.aliasField("id", SwiftBlobStoreInfo.class, "name");

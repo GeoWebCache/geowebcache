@@ -35,7 +35,10 @@ import org.jclouds.openstack.swift.v1.SwiftApi;
 import org.jclouds.openstack.swift.v1.blobstore.RegionScopedBlobStoreContext;
 import org.jclouds.openstack.swift.v1.features.ContainerApi;
 
-/** Plain old java object representing the configuration for an Swift blob store. */
+/**
+ * Java object representing the configuration for an Swift blob store. Contains methods for building
+ * instance of JClouds API and Blobstore.
+ */
 @SuppressWarnings("deprecation")
 public class SwiftBlobStoreInfo extends BlobStoreInfo {
 
@@ -43,29 +46,23 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
 
     private static final long serialVersionUID = 9072751143836460389L;
 
-    private String bucket;
+    private String container;
 
     private String prefix;
 
-    private Integer maxConnections;
+    private String provider;
 
-    private Boolean useHTTPS = true;
+    private String region;
 
-    private String jcloudsProvider;
+    private String keystoneVersion;
 
-    private String jcloudsRegion;
+    private String keystoneScope;
 
-    private String jcloudsKeystoneVersion;
+    private String keystoneDomainName;
 
-    private String jcloudsKeystoneScope;
+    private String identity;
 
-    private String jcloudsKeystoneDomainName;
-
-    private String jcloudsIdentity;
-
-    private String jcloudsCredential;
-
-    private Boolean useGzip;
+    private String password;
 
     private String endpoint;
 
@@ -78,23 +75,8 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
     }
 
     /** @return the name of the Swift bucket where to store tiles */
-    public String getBucket() {
-        return bucket;
-    }
-
-    /** Sets the name of the Swift bucket where to store tiles */
-    public void setBucket(String bucket) {
-        this.bucket = bucket;
-    }
-
-    /** @return the Swift endpoint */
-    public String getEndpoint() {
-        return endpoint;
-    }
-
-    /** Sets the Swift endpoint */
-    public void setEndpoint(String host) {
-        this.endpoint = host;
+    public String getContainer() {
+        return container;
     }
 
     @Override
@@ -120,104 +102,8 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
         return prefix;
     }
 
-    public void setPrefix(String prefix) {
-        this.prefix = prefix;
-    }
-
-    /** @return The maximum number of allowed open HTTP connections. */
-    public Integer getMaxConnections() {
-        return maxConnections;
-    }
-
-    /** Sets the maximum number of allowed open HTTP connections. */
-    public void setMaxConnections(Integer maxConnections) {
-        this.maxConnections = maxConnections;
-    }
-
-    /**
-     * @return whether to use HTTPS (true) or HTTP (false) when talking to Swift (defaults to true)
-     */
-    public Boolean isUseHTTPS() {
-        return useHTTPS;
-    }
-
-    /** @param useHTTPS whether to use HTTPS (true) or HTTP (false) when talking to Swift */
-    public void setUseHTTPS(Boolean useHTTPS) {
-        this.useHTTPS = useHTTPS;
-    }
-
-    /**
-     * Checks if gzip compression is used
-     *
-     * @return if gzip compression is used
-     */
-    public Boolean isUseGzip() {
-        return useGzip;
-    }
-
-    /**
-     * Sets whether gzip compression should be used
-     *
-     * @param use whether gzip compression should be used
-     */
-    public void setUseGzip(Boolean use) {
-        this.useGzip = use;
-    }
-
-    public String getJcloudsProvider() {
-        return jcloudsProvider;
-    }
-
-    public void setJcloudsProvider(String jcloudsProvider) {
-        this.jcloudsProvider = jcloudsProvider;
-    }
-
-    public String getJcloudsRegion() {
-        return jcloudsRegion;
-    }
-
-    public void setJcloudsRegion(String jcloudsRegion) {
-        this.jcloudsRegion = jcloudsRegion;
-    }
-
-    public String getJcloudsKeystoneVersion() {
-        return jcloudsKeystoneVersion;
-    }
-
-    public void setJcloudsKeystoneVersion(String jcloudsKeystoneVersion) {
-        this.jcloudsKeystoneVersion = jcloudsKeystoneVersion;
-    }
-
-    public String getJcloudsKeystoneScope() {
-        return jcloudsKeystoneScope;
-    }
-
-    public void setJcloudsKeystoneScope(String jcloudsKeystoneScope) {
-        this.jcloudsKeystoneScope = jcloudsKeystoneScope;
-    }
-
-    public String getJcloudsKeystoneDomainName() {
-        return jcloudsKeystoneDomainName;
-    }
-
-    public void setJcloudsKeystoneDomainName(String jcloudsKeystoneDomainName) {
-        this.jcloudsKeystoneDomainName = jcloudsKeystoneDomainName;
-    }
-
-    public String getJcloudsIdentity() {
-        return jcloudsIdentity;
-    }
-
-    public void setJcloudsIdentity(String jcloudsIdentity) {
-        this.jcloudsIdentity = jcloudsIdentity;
-    }
-
-    public String getJcloudsCredential() {
-        return jcloudsCredential;
-    }
-
-    public void setJcloudsCredential(String jcloudsCredential) {
-        this.jcloudsCredential = jcloudsCredential;
+    public String getRegion() {
+        return region;
     }
 
     @Override
@@ -239,13 +125,13 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
     public SwiftApi buildApi() {
 
         final Properties overrides = new Properties();
-        overrides.put(KeystoneProperties.KEYSTONE_VERSION, jcloudsKeystoneVersion);
-        overrides.put(KeystoneProperties.SCOPE, jcloudsKeystoneScope);
-        overrides.put(KeystoneProperties.PROJECT_DOMAIN_NAME, jcloudsKeystoneDomainName);
+        overrides.put(KeystoneProperties.KEYSTONE_VERSION, keystoneVersion);
+        overrides.put(KeystoneProperties.SCOPE, keystoneScope);
+        overrides.put(KeystoneProperties.PROJECT_DOMAIN_NAME, keystoneDomainName);
 
-        String provider = jcloudsProvider;
-        String identity = jcloudsIdentity;
-        String credential = jcloudsCredential;
+        String provider = this.provider;
+        String identity = this.identity;
+        String credential = this.password;
 
         SwiftApi context =
                 ContextBuilder.newBuilder(provider)
@@ -254,11 +140,11 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
                         .overrides(overrides)
                         .buildApi(SwiftApi.class);
 
-        ContainerApi containerApi = context.getContainerApi(jcloudsRegion);
+        ContainerApi containerApi = context.getContainerApi(region);
 
         // Creates bucket if it doesn't already exist
-        if (containerApi.get(bucket) == null) {
-            containerApi.create(bucket);
+        if (containerApi.get(container) == null) {
+            containerApi.create(container);
         }
 
         return context;
@@ -268,13 +154,13 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
     public RegionScopedBlobStoreContext getBlobStore() {
 
         final Properties overrides = new Properties();
-        overrides.put(KeystoneProperties.KEYSTONE_VERSION, jcloudsKeystoneVersion);
-        overrides.put(KeystoneProperties.SCOPE, jcloudsKeystoneScope);
-        overrides.put(KeystoneProperties.PROJECT_DOMAIN_NAME, jcloudsKeystoneDomainName);
+        overrides.put(KeystoneProperties.KEYSTONE_VERSION, keystoneVersion);
+        overrides.put(KeystoneProperties.SCOPE, keystoneScope);
+        overrides.put(KeystoneProperties.PROJECT_DOMAIN_NAME, keystoneDomainName);
 
-        String provider = jcloudsProvider;
-        String identity = jcloudsIdentity;
-        String credential = jcloudsCredential;
+        String provider = this.provider;
+        String identity = this.identity;
+        String credential = this.password;
 
         ContextBuilder builder =
                 ContextBuilder.newBuilder(provider)
@@ -287,7 +173,7 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
 
     @Override
     public String getLocation() {
-        String bucket = this.getBucket();
+        String bucket = this.getContainer();
         String prefix = this.getPrefix();
         if (prefix == null) {
             return String.format("bucket: %s", bucket);

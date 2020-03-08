@@ -48,19 +48,16 @@
     <SwiftBlobStore default="true">
         <id>ObjectStorageCache</id>
         <enabled>true</enabled>
-        <bucket>put-your-actual-bucket-name-here</bucket>
+        <container>put-your-actual-container-name-here</container>
         <prefix>test-cache</prefix>
-        <maxConnections>200</maxConnections>
-        <useHTTPS>false</useHTTPS>
         <endpoint>endpoint</endpoint>
-        <jcloudsProvider>openstack-swift</jcloudsProvider>
-        <jcloudsRegion>put-region-here</jcloudsRegion>
-        <jcloudsKeystoneVersion>3</jcloudsKeystoneVersion>
-        <jcloudsKeystoneScope>project</jcloudsKeystoneScope>
-        <jcloudsKeystoneDomainName>Default</jcloudsKeystoneDomainName>
-        <jcloudsIdentity>Default:put-username-here</jcloudsIdentity>
-        <jcloudsCredential>password</jcloudsCredential>
-        <useGzip>false</useGzip>
+        <provider>openstack-swift</provider>
+        <region>put-region-here</region>
+        <keystoneVersion>3</keystoneVersion>
+        <keystoneScope>project</keystoneScope>
+        <keystoneDomainName>Default</keystoneDomainName>
+        <identity>Default:put-username-here</identity>
+        <password>put-password-here</password>
     </SwiftBlobStore> -->
 
    <!-- A sample AWS S3 blob store configuration.   -->
