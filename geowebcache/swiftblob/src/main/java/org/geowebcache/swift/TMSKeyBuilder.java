@@ -17,10 +17,12 @@ package org.geowebcache.swift;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Strings;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.layer.TileLayer;
@@ -30,6 +32,9 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 
+/**
+ * Provides methods to retrieve path information for tile objects.
+ */
 final class TMSKeyBuilder {
 
     private static final String DELIMITER = "/";
@@ -190,7 +195,7 @@ final class TMSKeyBuilder {
 
     /**
      * @return the key prefix up to the coordinates (i.e. {@code
-     *     "<prefix>/<layer>/<gridset>/<format>/<parametersId>"})
+     * "<prefix>/<layer>/<gridset>/<format>/<parametersId>"})
      */
     public String coordinatesPrefix(TileRange obj) {
         checkNotNull(obj.getLayerName());
