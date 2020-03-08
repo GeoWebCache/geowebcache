@@ -22,9 +22,11 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
+
 import java.io.IOException;
 import java.util.*;
 import javax.annotation.Nullable;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.io.ByteArrayResource;
@@ -45,6 +47,9 @@ import org.jclouds.openstack.swift.v1.features.BulkApi;
 import org.jclouds.openstack.swift.v1.features.ObjectApi;
 import org.jclouds.openstack.swift.v1.options.ListContainerOptions;
 
+/**
+ * Blobstore class compatatble with Openstack Swift.
+ */
 public class SwiftBlobStore implements BlobStore {
 
     static Log log = LogFactory.getLog(SwiftBlobStore.class);
@@ -57,13 +62,19 @@ public class SwiftBlobStore implements BlobStore {
 
     private volatile boolean shutDown;
 
-    /** JClouds Swift API */
+    /**
+     * JClouds Swift API
+     */
     private SwiftApi swiftApi;
 
-    /** Swift Object API */
+    /**
+     * Swift Object API
+     */
     private ObjectApi objectApi;
 
-    /** Swift Bulk API */
+    /**
+     * Swift Bulk API
+     */
     private BulkApi bulkApi;
 
     private RegionScopedBlobStoreContext blobStoreContext;
@@ -84,9 +95,7 @@ public class SwiftBlobStore implements BlobStore {
         bulkApi = this.swiftApi.getBulkApi(config.getJcloudsRegion());
 
         blobStoreContext = config.getBlobStore();
-        blobStore =
-                (RegionScopedSwiftBlobStore)
-                        blobStoreContext.getBlobStore(config.getJcloudsRegion());
+        blobStore = (RegionScopedSwiftBlobStore) blobStoreContext.getBlobStore(config.getJcloudsRegion());
     }
 
     @Override
@@ -239,32 +248,24 @@ public class SwiftBlobStore implements BlobStore {
             return false;
         }
 
-        final Iterator<long[]> tileLocations =
-                new AbstractIterator<long[]>() {
+        final Iterator<long[]> tileLocations = new AbstractIterator<long[]>() {
 
-                    // TileRange iterator with 1x1 meta tiling factor
-                    private TileRangeIterator trIter =
-                            new TileRangeIterator(
-                                    tileRange,
-                                    new int[] {
-                                        1, 1
-                                    }); // This depends on the tile range which I assume
+            // TileRange iterator with 1x1 meta tiling factor
+            private TileRangeIterator trIter = new TileRangeIterator(tileRange, new int[]{1, 1});
 
-                    @Override
-                    protected long[] computeNext() {
-                        long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
-                        return gridLoc == null ? endOfData() : gridLoc;
-                    }
-                };
+            @Override
+            protected long[] computeNext() {
+                long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
+                return gridLoc == null ? endOfData() : gridLoc;
+            }
+        };
 
         if (listeners.isEmpty()) {
 
             // if there are no listeners, don't bother requesting every tile
             // metadata to notify the listeners
-            Iterator<List<long[]>> partition =
-                    Iterators.partition(
-                            tileLocations, // Iterator
-                            1000); // this breaks a list into a lump of 1000s of items per sublist
+            Iterator<List<long[]>> partition = Iterators.partition(tileLocations, // Iterator
+                    1000); // this breaks a list into a lump of 1000s of items per sublist
 
             final TileToKey tileToKey = new TileToKey(coordsPrefix, tileRange.getMimeType());
 
@@ -284,9 +285,7 @@ public class SwiftBlobStore implements BlobStore {
             while (tileLocations.hasNext()) {
                 xyz = tileLocations.next();
 
-                TileObject tile =
-                        TileObject.createQueryTileObject(
-                                layerName, xyz, gridSetId, format, parameters);
+                TileObject tile = TileObject.createQueryTileObject(layerName, xyz, gridSetId, format, parameters);
                 tile.setParametersId(tileRange.getParametersId());
 
                 // Delete each tile object in the range given
@@ -309,11 +308,10 @@ public class SwiftBlobStore implements BlobStore {
         }
 
         return deletionSuccessful;
-    };
+    }
 
     @Override
-    public boolean deleteByGridsetId(final String layerName, final String gridSetId)
-            throws StorageException {
+    public boolean deleteByGridsetId(final String layerName, final String gridSetId) throws StorageException {
         checkNotNull(layerName, "layerName");
         checkNotNull(gridSetId, "gridSetId");
 
@@ -398,10 +396,6 @@ public class SwiftBlobStore implements BlobStore {
         this.objectApi.updateMetadata(layerName, metaData);
     }
 
-    /**
-     * @return {@code true} if the blobstore has a layer named {@code layerName} in use, {@code
-     *     false} otherwise
-     */
     @Override
     public boolean layerExists(String layerName) {
         return this.objectApi.get(layerName) != null;
@@ -422,27 +416,24 @@ public class SwiftBlobStore implements BlobStore {
     }
 
     @Override
-    public boolean deleteByParametersId(String layerName, String parametersId)
-            throws StorageException {
+    public boolean deleteByParametersId(String layerName, String parametersId) throws StorageException {
         checkNotNull(layerName, "layerName");
         checkNotNull(parametersId, "parametersId");
 
-        boolean deletionSuccessful =
-                keyBuilder
-                        // Gets some parameters - probably some iterable
-                        .forParameters(layerName, parametersId)
-                        // Creates a stream from this data
-                        .stream()
-                        // Maps the stream to whether the object has been successfully deleted.
-                        .map(
-                                path -> {
-                                    return this.deleteByPath(path);
-                                })
-                        // Checks if all the entries were true - meaning everything was deleted
-                        // successfully.
-                        .reduce(Boolean::logicalAnd)
-                        // If reduce is not successful then return false.
-                        .orElse(false);
+        boolean deletionSuccessful = keyBuilder
+                // Gets some parameters - probably some iterable
+                .forParameters(layerName, parametersId)
+                // Creates a stream from this data
+                .stream()
+                // Maps the stream to whether the object has been successfully deleted.
+                .map(path -> {
+                    return this.deleteByPath(path);
+                })
+                // Checks if all the entries were true - meaning everything was deleted
+                // successfully.
+                .reduce(Boolean::logicalAnd)
+                // If reduce is not successful then return false.
+                .orElse(false);
 
         // If deletion was successful then tell the listeners.
         if (deletionSuccessful) {
@@ -454,8 +445,7 @@ public class SwiftBlobStore implements BlobStore {
 
     protected boolean deleteByPath(String path) {
 
-        org.jclouds.blobstore.options.ListContainerOptions options =
-                new org.jclouds.blobstore.options.ListContainerOptions();
+        org.jclouds.blobstore.options.ListContainerOptions options = new org.jclouds.blobstore.options.ListContainerOptions();
         options.prefix(path);
         options.recursive();
 

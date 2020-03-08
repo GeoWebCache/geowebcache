@@ -27,6 +27,9 @@ import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.config.Info;
 import org.geowebcache.config.XMLConfigurationProvider;
 
+/**
+ * Reads Swift Blobstore configuration from geowebcache.xml and creates a SwiftBlobStoreInfo object representing this information.
+ */
 public class SwiftBlobStoreConfigProvider implements XMLConfigurationProvider {
 
     private static GeoWebCacheEnvironment gwcEnvironment = null;
