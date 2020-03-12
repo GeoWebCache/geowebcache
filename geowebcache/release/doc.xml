@@ -1,0 +1,16 @@
+<assembly>
+	<id>doc</id>
+	<formats>
+		<format>zip</format>
+	</formats>
+	<includeBaseDirectory>false</includeBaseDirectory>
+	<fileSets>
+		<fileSet>
+			<directory>../documentation/en/user/build/html</directory>
+			<outputDirectory>geowebcache-<!-- GWC VERSION -->1.17-SNAPSHOT<!-- /GWC VERSION -->/doc</outputDirectory>
+			<includes>
+				<include>**/*</include>
+			</includes>
+		</fileSet>
+	</fileSets>
+</assembly>
