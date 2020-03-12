@@ -1,3 +1,73 @@
+GeoWebCache 1.17-RC (2020-03-11)
+--------------------------------
+
+Release candidate 1.17 branch.
+
+New featuers:
++++++++++++++
+
+- Mass truncate added support to clear entire GWC cache through REST and GUI
+
+Improvements:
++++++++++++++
+
+- Updated HTTPComponents to 4.5.11
+- Upgrade Spring framework to 5.1.13.RELEASE
+- Upgrade spring security to 5.1.8.RELEASE
+
+Build improvements:
++++++++++++++++++++
+- Use of https to resolve maven dependencies
+- Use of maven checkstyle 3.1.1.
+- Windows and macOS builds checked using github workflows
+
+GeoWebCache 1.16.2 (2020-01-20)
+-------------------------------
+
+Third stable release of the 1.16.x series.
+
+Improvements:
++++++++++++++
+- Upgraded Jackson dependency to 2.10.1
+- Make sure reference to Maven central use HTTPS in maven pom files
+
+Fixes:
+++++++
+- GwC preview shows blurry tiles, #812
+
+GeoWebCache 1.16.1 (2019-11-21)
+-------------------------------
+
+Stable release of the 1.16.x series.
+
+Improvements:
++++++++++++++
+- Upgrade to Jackson to 2.9.10
+
+GeoWebCache 1.16.0 (2019-09-18)
+-------------------------------
+
+First stable release of the 1.16.x series. No changes since 1.16-RC
+
+
+GeoWebCache 1.16-RC (2019-08-23)
+--------------------------------
+
+Release candidate for 1.6 series
+
+Improvements:
++++++++++++++
+- Runtime Parameterization of Azure Blobstore
+- MapML support
+- Faster 8 bit image quantization 
+- JAI-ext 1.1.12
+- Jetty 9.4.18
+- XStream 1.4.11.1
+
+Fixes:
+++++++
+- Prevent focus stealing on MacOS
+
 GeoWebCache 1.15.2 (2019-06-27)
 -------------------------------
 
