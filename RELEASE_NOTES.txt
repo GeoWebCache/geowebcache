@@ -7,6 +7,8 @@ New featuers:
 +++++++++++++
 
 - Mass truncate added support to clear entire GWC cache through REST and GUI
+- Support for TMS and XYZ tile layouts on file system (for seed and static serve use case)
+- Exposing better control of failures on seeding jobs, so that seeding threads won't die at the first failed tile (GUI and REST)
 
 Improvements:
 +++++++++++++
@@ -14,11 +16,12 @@ Improvements:
 - Updated HTTPComponents to 4.5.11
 - Upgrade Spring framework to 5.1.13.RELEASE
 - Upgrade spring security to 5.1.8.RELEASE
+- Improved concurrency and performance of config classes equals/hashcode
 
 Build improvements:
 +++++++++++++++++++
 - Use of https to resolve maven dependencies
-- Use of maven checkstyle 3.1.1.
+- Use of maven checkstyle 3.1.1 cleaned up Javadoc undocumented paramters/returns/throws
 - Windows and macOS builds checked using github workflows
 
 GeoWebCache 1.16.2 (2020-01-20)
