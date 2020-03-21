@@ -57,7 +57,7 @@ public class GridSet implements Info {
 
     /**
      * {@code true} if the resolutions are preserved and the scaleDenominators calculated, {@code
-     * false} if the resolutions are calculated based on the sacale denominators.
+     * false} if the resolutions are calculated based on the scale denominators.
      */
     private boolean resolutionsPreserved;
 
@@ -94,7 +94,7 @@ public class GridSet implements Info {
 
     /**
      * @return {@code true} if the resolutions are preserved and the scaleDenominators calculated,
-     *     {@code false} if the resolutions are calculated based on the sacale denominators.
+     *     {@code false} if the resolutions are calculated based on the scale denominators.
      */
     public boolean isResolutionsPreserved() {
         return resolutionsPreserved;
@@ -103,7 +103,7 @@ public class GridSet implements Info {
     /**
      * @param resolutionsPreserved {@code true} if the resolutions are preserved and the
      *     scaleDenominators calculated, {@code false} if the resolutions are calculated based on
-     *     the sacale denominators.
+     *     the scale denominators.
      */
     void setResolutionsPreserved(boolean resolutionsPreserved) {
         this.resolutionsPreserved = resolutionsPreserved;
@@ -412,7 +412,7 @@ public class GridSet implements Info {
     }
 
     /**
-     * The base cordinates in x/y order, used to map tile indexes to coordinate bounding boxes.
+     * The base coordinates in x/y order, used to map tile indexes to coordinate bounding boxes.
      * These can either be top left or bottom left, so must be kept private.
      *
      * <p>This is a derived property of {@link #getOriginalExtent()} and {@link
