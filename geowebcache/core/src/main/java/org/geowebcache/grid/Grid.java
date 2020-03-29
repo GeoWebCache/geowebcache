@@ -15,6 +15,8 @@
 package org.geowebcache.grid;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /** @author groldan */
@@ -22,15 +24,24 @@ public class Grid implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 1L;
 
+    // Width of the matrix (number of tiles in width)
     private long numTilesWide;
 
+    // Height of the matrix (number of tiles in height)
     private long numTilesHigh;
 
     private double resolution;
 
     private double scaleDenom;
 
+    // The identifier for the Grid
     private String name;
+
+    private List<String> keywords = new ArrayList<>();
+
+    private String abstractText;
+
+    private String title;
 
     @Override
     public boolean equals(Object obj) {
@@ -53,6 +64,11 @@ public class Grid implements Serializable, Cloneable {
         return Objects.hash(numTilesWide, numTilesHigh, resolution, scaleDenom, name);
     }
 
+    /**
+     * Returns the identifier for the Grid
+     *
+     * @return the identifier
+     */
     public String getName() {
         return name;
     }
@@ -76,7 +92,11 @@ public class Grid implements Serializable, Cloneable {
         this.scaleDenom = scaleDenom;
     }
 
-    /** @param name the name to set */
+    /**
+     * Sets the identifier for the Grid
+     *
+     * @param name the identifier to set
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -99,6 +119,61 @@ public class Grid implements Serializable, Cloneable {
     /** @param numTilesHigh the numTilesHigh to set */
     public void setNumTilesHigh(long numTilesHigh) {
         this.numTilesHigh = numTilesHigh;
+    }
+
+    /**
+     * Gets the keywords for the Grid
+     *
+     * @return the keywords
+     */
+    public List<String> getKeywords() {
+        return keywords;
+    }
+
+    /**
+     * Sets the keywords for the Grid
+     *
+     * @param keywords the keywords to set
+     */
+    public void setKeywords(List<String> keywords) {
+        this.keywords = keywords;
+    }
+
+    /**
+     * Gets the abstract for this Grid
+     *
+     * @return the abstract text
+     */
+    public String getAbstractText() {
+        return abstractText;
+    }
+
+    /**
+     * Sets the abstract for this Grid
+     *
+     * @param abstractText the text to set as the abstract
+     */
+    public void setAbstractText(String abstractText) {
+        this.abstractText = abstractText;
+    }
+
+    /**
+     * Gets the title for the Grid. Use {@link #getName()} to get the identifier
+     *
+     * @return the title for the grid
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * Sets the title for the Grid. This is different to the identifier which should be set using
+     * {@link #setName(String)}
+     *
+     * @param title the title to set
+     */
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     @Override
