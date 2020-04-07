@@ -56,6 +56,10 @@
       <id>osgeo-release</id>
       <name>OSGeo Repository</name>
       <url>https://repo.osgeo.org/repository/release/</url>
+      <!-- Contains releases for OSGeo projects: GeoTools, GeoWebCache, GeoServer, ...     -->
+      <!-- Includs third-party-dependences, and caches of:                                 -->
+      <!-- ucar (https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases) -->
+      <!-- geosolutions (http://maven.geo-solutions.it/)                                   -->
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
@@ -67,10 +71,6 @@
       <id>osgeo-snapshot</id>
       <name>OSGeo Repository</name>
       <url>https://repo.osgeo.org/repository/snapshot/</url>
-      <!-- Contains releases for OSGeo projects: GeoTools, GeoWebCache, GeoServer, ...     -->
-      <!-- Includs third-party-dependences, and caches of:                                 -->
-      <!-- ucar (https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases) -->
-      <!-- geosolutions (http://maven.geo-solutions.it/)                                   -->
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
