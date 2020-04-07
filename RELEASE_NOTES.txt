@@ -1,3 +1,11 @@
+GeoWebCache 1.18.0
+-------------------
+
+Improvements:
++++++++++++++
+
+- Use of repo.osgeo.org
+
 GeoWebCache 1.17-RC (2020-03-11)
 --------------------------------
 
