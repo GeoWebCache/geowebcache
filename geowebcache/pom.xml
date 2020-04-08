@@ -68,18 +68,11 @@
   </repositories>
  
   <distributionManagement>
-    <repository>
-      <id>boundless</id>
-      <name>Boundless</name>
-      <url>https://repo.boundlessgeo.com/release/</url>
-      <uniqueVersion>false</uniqueVersion>
-    </repository>
-    <snapshotRepository>
-      <id>boundless</id>
-      <uniqueVersion>false</uniqueVersion>
-      <name>Boundless Maven Repository</name>
-      <url>https://repo.boundlessgeo.com/snapshot/</url>
-     </snapshotRepository>
+      <repository>
+       <uniqueVersion>false</uniqueVersion>
+       <id>geosolutions</id>
+       <url>ftp://demo.geo-solutions.it</url>
+      </repository>
   </distributionManagement>
 
  <dependencyManagement>
@@ -676,6 +669,11 @@
     <artifactId>wagon-webdav</artifactId>
     <version>1.0-beta-2</version>
       </extension>
+    <extension>
+     <groupId>org.apache.maven.wagon</groupId>
+     <artifactId>wagon-ftp</artifactId>
+     <version>1.0-beta-2</version>
+    </extension>
     </extensions>
     
     <pluginManagement>
@@ -885,6 +883,16 @@
           </plugin>
         </plugins>
       </build>  
+    </profile>
+    <profile>
+      <id>deploygeosolutions</id>
+       <distributionManagement> 
+        <repository>
+         <uniqueVersion>false</uniqueVersion>
+         <id>geosolutions</id>
+         <url>ftp://demo.geo-solutions.it</url>
+        </repository>
+      </distributionManagement>
     </profile>
   </profiles>
   
