@@ -1,10 +1,13 @@
-GeoWebCache 1.17.0
--------------------
+GeoWebCache 1.17.0 (2020-04-14)
+-------------------------------
+
+<Release Description>
 
 Improvements:
 +++++++++++++
-
 - Use of repo.osgeo.org
+- Upgraded jai-ext to 1.1.14
+
 
 GeoWebCache 1.17-RC (2020-03-11)
 --------------------------------
