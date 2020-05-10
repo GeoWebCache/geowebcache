@@ -24,9 +24,12 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,7 +38,13 @@ import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.collections.map.CaseInsensitiveMap;
+import org.apache.commons.io.FileUtils;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.Validator;
 import org.custommonkey.xmlunit.XMLUnit;
@@ -43,6 +52,7 @@ import org.custommonkey.xmlunit.XpathEngine;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.DefaultGridsets;
+import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.config.legends.LegendInfo;
 import org.geowebcache.config.legends.LegendInfoBuilder;
@@ -58,6 +68,7 @@ import org.geowebcache.filter.security.SecurityDispatcher;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSetFactory;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.io.ByteArrayResource;
@@ -88,12 +99,74 @@ public class WMTSServiceTest {
 
     private GridSetBroker gridsetBroker;
 
+    private String customDescription;
+    private String customTitle;
+
+    private ArrayList<String> keywordList;
+
+    protected File configDir;
+    protected File configFile;
+
+    protected XMLConfiguration config;
+
     @Before
     public void setUp() throws Exception {
+
+        configDir = Files.createTempDirectory("gwc").toFile();
+        configFile = new File(configDir, "geowebcache.xml");
+        configDir.deleteOnExit();
+
+        if (configFile != null) {
+            File source = new File(getClass().getResource("/geowebcache_empty.xml").toURI());
+            FileUtils.copyFile(source, configFile);
+        }
+
+        config = new XMLConfiguration(null, configDir.getAbsolutePath());
+        gridsetBroker = new GridSetBroker(Arrays.asList(new DefaultGridsets(true, true), config));
+        config.setGridSetBroker(gridsetBroker);
+        config.deinitialize();
+        config.reinitialize();
+
         sb = mock(StorageBroker.class);
         tld = mock(TileLayerDispatcher.class);
-        gridsetBroker =
-                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
+
+        // Add a non-default gridset
+        GridSet customGridset =
+                GridSetFactory.createGridSet(
+                        "customGridSet",
+                        SRS.getSRS("EPSG:28992"),
+                        new BoundingBox(2, 45, 7, 52),
+                        true,
+                        18,
+                        1.0,
+                        GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                        256,
+                        256,
+                        true);
+
+        keywordList = new ArrayList<>();
+        keywordList.add("Keyword1");
+        keywordList.add("Keyword 2");
+        keywordList.add("Keyword-3");
+        customGridset.setKeywords(keywordList);
+
+        customDescription =
+                "This is a custom description containing UTF-8 characters, like 世界 ('world' in chinese), to ensure correct encoding into GetCapabilities";
+        customGridset.setDescription(customDescription);
+
+        customTitle = "Custom TileMatrix";
+        customGridset.setTitle(customTitle);
+
+        // Set a title, abstract and keyword for each grid
+        for (int i = 0; i < customGridset.getNumLevels(); i++) {
+            ArrayList<String> keywords = new ArrayList<>();
+            keywords.add("Key" + i);
+            customGridset.getGrid(i).setKeywords(keywords);
+            customGridset.getGrid(i).setAbstractText("Abstract for grid " + i);
+            customGridset.getGrid(i).setTitle("Grid Title " + i);
+        }
+
+        gridsetBroker.put(customGridset);
     }
 
     private TileLayer mockTileLayer(
@@ -384,6 +457,96 @@ public class WMTSServiceTest {
                                 + WMTSService.REST_PATH
                                 + "/WMTSCapabilities.xml'])",
                         doc));
+
+        // Check the customgrid and that it has the right values set
+        // print(doc);
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        "count(//wmts:Contents/wmts:TileMatrixSet[ows:Identifier[text()=\"customGridSet\"]])",
+                        doc));
+        assertEquals(
+                customDescription,
+                xpath.evaluate(
+                        "//wmts:Contents/wmts:TileMatrixSet[ows:Identifier[text()=\"customGridSet\"]]/ows:Abstract[text()]",
+                        doc));
+        assertEquals(
+                customTitle,
+                xpath.evaluate(
+                        "//wmts:Contents/wmts:TileMatrixSet[ows:Identifier[text()=\"customGridSet\"]]/ows:Title[text()]",
+                        doc));
+        assertEquals(
+                "urn:ogc:def:crs:EPSG::28992",
+                xpath.evaluate(
+                        "//wmts:Contents/wmts:TileMatrixSet[ows:Identifier[text()=\"customGridSet\"]]/ows:SupportedCRS[text()]",
+                        doc));
+
+        // Check that the TileMatrixSet keywords have been set and that they are correct
+        assertEquals(
+                Integer.toString(keywordList.size()),
+                xpath.evaluate(
+                        " count(//wmts:Contents/wmts:TileMatrixSet[ows:Identifier[text()=\"customGridSet\"]]/ows:Keywords/ows:Keyword)",
+                        doc));
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        " count(//wmts:Contents/wmts:TileMatrixSet[ows:Identifier[text()=\"customGridSet\"]]/ows:Keywords/ows:Keyword[text()=\""
+                                + keywordList.get(0)
+                                + "\"])",
+                        doc));
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        " count(//wmts:Contents/wmts:TileMatrixSet[ows:Identifier[text()=\"customGridSet\"]]/ows:Keywords/ows:Keyword[text()=\""
+                                + keywordList.get(1)
+                                + "\"])",
+                        doc));
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        " count(//wmts:Contents/wmts:TileMatrixSet[ows:Identifier[text()=\"customGridSet\"]]/ows:Keywords/ows:Keyword[text()=\""
+                                + keywordList.get(2)
+                                + "\"])",
+                        doc));
+
+        // Check each tilematrix has the right values set
+        for (int i = 1; i <= 18; i++) {
+            assertEquals(
+                    "1",
+                    xpath.evaluate(
+                            "count(//wmts:Contents/wmts:TileMatrixSet[ows:Identifier[text()=\"customGridSet\"]]/wmts:TileMatrix["
+                                    + i
+                                    + "]/ows:Keywords/ows:Keyword)",
+                            doc));
+            assertEquals(
+                    "1",
+                    xpath.evaluate(
+                            "count(//wmts:Contents/wmts:TileMatrixSet[ows:Identifier[text()=\"customGridSet\"]]/wmts:TileMatrix["
+                                    + i
+                                    + "]/ows:Abstract[text()=\"Abstract for grid "
+                                    + (i - 1)
+                                    + "\"])",
+                            doc));
+
+            assertEquals(
+                    "1",
+                    xpath.evaluate(
+                            "count(//wmts:Contents/wmts:TileMatrixSet[ows:Identifier[text()=\"customGridSet\"]]/wmts:TileMatrix["
+                                    + i
+                                    + "]/ows:Title[text()=\"Grid Title "
+                                    + (i - 1)
+                                    + "\"])",
+                            doc));
+            assertEquals(
+                    "1",
+                    xpath.evaluate(
+                            "count(//wmts:Contents/wmts:TileMatrixSet[ows:Identifier[text()=\"customGridSet\"]]/wmts:TileMatrix["
+                                    + i
+                                    + "]/ows:Keywords/ows:Keyword[text()=\"Key"
+                                    + (i - 1)
+                                    + "\"])",
+                            doc));
+        }
     }
 
     @Test
@@ -1294,5 +1457,23 @@ public class WMTSServiceTest {
         } catch (SecurityException ex) {
             assertThat(resp.getContentAsString(), not(containsString("TEST FEATURE INFO")));
         }
+    }
+
+    /** Utility method to print out a dom. */
+    protected void print(Document dom) throws Exception {
+        TransformerFactory txFactory = TransformerFactory.newInstance();
+        try {
+            txFactory.setAttribute(
+                    "{http://xml.apache.org/xalan}indent-number", Integer.valueOf(2));
+        } catch (Exception e) {
+            // some
+        }
+
+        Transformer tx = txFactory.newTransformer();
+        tx.setOutputProperty(OutputKeys.METHOD, "xml");
+        tx.setOutputProperty(OutputKeys.INDENT, "yes");
+
+        tx.transform(
+                new DOMSource(dom), new StreamResult(new OutputStreamWriter(System.out, "utf-8")));
     }
 }

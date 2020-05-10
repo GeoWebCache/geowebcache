@@ -300,9 +300,8 @@ public class WMTSGetCapabilities {
 
             if (servInfo != null && servInfo.getKeywords() != null) {
                 xml.indentElement("ows:Keywords");
-                Iterator<String> keywordIter = servInfo.getKeywords().iterator();
-                while (keywordIter.hasNext()) {
-                    appendTag(xml, "ows:Keyword", keywordIter.next(), null);
+                for (String s : servInfo.getKeywords()) {
+                    appendTag(xml, "ows:Keyword", s, null);
                 }
                 xml.endElement();
             }
@@ -763,12 +762,28 @@ public class WMTSGetCapabilities {
 
     private void tileMatrixSet(XMLBuilder xml, GridSet gridSet) throws IOException {
         xml.indentElement("TileMatrixSet");
+
+        if (gridSet.getTitle() != null) {
+            xml.simpleElement("ows:Title", gridSet.getTitle(), true);
+        }
+        if (gridSet.getDescription() != null) {
+            xml.simpleElement("ows:Abstract", gridSet.getDescription(), true);
+        }
+        if (!gridSet.getKeywords().isEmpty()) {
+            xml.indentElement("ows:Keywords");
+            for (String s : gridSet.getKeywords()) {
+                appendTag(xml, "ows:Keyword", s, null);
+            }
+            xml.endElement();
+        }
+
         xml.simpleElement("ows:Identifier", gridSet.getName(), true);
         // If the following is not good enough, please get in touch and we will try to fix it :)
         xml.simpleElement(
                 "ows:SupportedCRS", "urn:ogc:def:crs:EPSG::" + gridSet.getSrs().getNumber(), true);
         // TODO detect these str.append("
         // <WellKnownScaleSet>urn:ogc:def:wkss:GlobalCRS84Pixel</WellKnownScaleSet>\n");
+
         for (int i = 0; i < gridSet.getNumLevels(); i++) {
             double[] tlCoordinates = gridSet.getOrderedTopLeftCorner(i);
             tileMatrix(
@@ -790,6 +805,7 @@ public class WMTSGetCapabilities {
             int tileHeight,
             boolean scaleWarning)
             throws IOException {
+
         xml.indentElement("TileMatrix");
         if (scaleWarning) {
             xml.simpleElement(
@@ -797,7 +813,24 @@ public class WMTSGetCapabilities {
                     "The grid was not well-defined, the scale therefore assumes 1m per map unit.",
                     true);
         }
+
+        if (grid.getTitle() != null) {
+            xml.simpleElement("ows:Title", grid.getTitle(), true);
+        }
+        if (grid.getAbstractText() != null) {
+            xml.simpleElement("ows:Abstract", grid.getAbstractText(), true);
+        }
+
+        if (!grid.getKeywords().isEmpty()) {
+            xml.indentElement("ows:Keywords");
+            for (String s : grid.getKeywords()) {
+                appendTag(xml, "ows:Keyword", s, null);
+            }
+            xml.endElement();
+        }
+
         xml.simpleElement("ows:Identifier", grid.getName(), true);
+
         xml.simpleElement("ScaleDenominator", Double.toString(grid.getScaleDenominator()), true);
         xml.indentElement("TopLeftCorner")
                 .text(Double.toString(tlCoordinates[0]))

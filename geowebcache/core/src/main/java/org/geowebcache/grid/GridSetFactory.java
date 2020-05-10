@@ -47,8 +47,30 @@ public class GridSetFactory {
     }
 
     /**
-     * Note that you should provide EITHER resolutions or scales. Providing both will cause a
-     * precondition violation exception.
+     * Creates a gridset and automatically calculates the grids (scale sets) based on either
+     * resolutions or on scaleDenoms .Note that you should provide EITHER resolutions or scales.
+     * Providing both will cause a precondition violation exception.
+     *
+     * @param extent the bounding box for the gridset
+     * @param resolutions the resolutions of each grid. Set to {@code null} if grids should be
+     *     calculated using scaleDenoms instead. Resolutions should be in metres per pixel
+     * @param scaleDenoms the scale Denominators of each grid. Set to {@code null} if grids should
+     *     be calculated using resolutions instead
+     * @param pixelSize the size of a pixel in meters. Used when calculating grids using scale
+     *     denominators
+     * @param scaleNames the names of each grid
+     * @param tileWidth the width of each tile in pixels
+     * @param tileHeight the height of each tile in pixels
+     * @param alignTopLeft Indicates how the matrix should be aligned within the extent, where
+     *     {@code true} means that the matrix should be aligned with the top left of the extent and
+     *     {@code false} means that it should be aligned with the bottom left.
+     * @param metersPerUnit the number of meters per unit in the scale denominator. e.g. if the
+     *     scale is 1/28000, then this should be set to 1.0 and the relevant scaleDenom will be
+     *     28000
+     * @param name the name to be applied to the gridset
+     * @param srs the srs associated with this gridset
+     * @param yCoordinateFirst used to set the {@link GridSet#setyCoordinateFirst} value
+     * @return the created Gridset
      */
     public static GridSet createGridSet(
             final String name,
@@ -184,6 +206,26 @@ public class GridSetFactory {
         return gridSet;
     }
 
+    /**
+     * Creates a gridset with grids based on the extent and number of levels required.
+     *
+     * @param name the name to be applied to the gridset
+     * @param srs the srs associated with this gridset
+     * @param extent the bounding box for the gridset
+     * @param alignTopLeft Indicates how the matrix should be aligned within the extent, where
+     *     {@code true} means that the matrix should be aligned with the top left of the extent and
+     *     {@code false} means that it should be aligned with the bottom left.
+     * @param levels the number of levels that the gridset should have
+     * @param metersPerUnit the number of meters per unit in the scale denominator. e.g. if the
+     *     scale is 1/28000, then this should be set to 1.0 and the relevant scaleDenom will be
+     *     28000
+     * @param pixelSize the size of a pixel in meters. Used when calculating grids using scale
+     *     denominators
+     * @param tileWidth the width of each tile in pixels
+     * @param tileHeight the height of each tile in pixels
+     * @param yCoordinateFirst used to set the {@link GridSet#setyCoordinateFirst} value
+     * @return the created GridSet
+     */
     public static GridSet createGridSet(
             final String name,
             final SRS srs,

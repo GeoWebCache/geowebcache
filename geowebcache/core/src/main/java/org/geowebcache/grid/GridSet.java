@@ -14,7 +14,9 @@
  */
 package org.geowebcache.grid;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -24,6 +26,7 @@ import org.geowebcache.config.Info;
 /** A grid set configuration */
 public class GridSet implements Info {
 
+    // The identifier for the GridSet
     private String name;
 
     private SRS srs;
@@ -55,9 +58,13 @@ public class GridSet implements Info {
 
     private String description;
 
+    private List<String> keywords = new ArrayList<>();
+
+    private String title;
+
     /**
      * {@code true} if the resolutions are preserved and the scaleDenominators calculated, {@code
-     * false} if the resolutions are calculated based on the sacale denominators.
+     * false} if the resolutions are calculated based on the scale denominators.
      */
     private boolean resolutionsPreserved;
 
@@ -80,6 +87,8 @@ public class GridSet implements Info {
         this.gridLevels = g.gridLevels;
         this.description = g.description;
         this.resolutionsPreserved = g.resolutionsPreserved;
+        this.keywords = g.keywords;
+        this.title = g.title;
     }
 
     /** @return the originalExtent */
@@ -94,7 +103,7 @@ public class GridSet implements Info {
 
     /**
      * @return {@code true} if the resolutions are preserved and the scaleDenominators calculated,
-     *     {@code false} if the resolutions are calculated based on the sacale denominators.
+     *     {@code false} if the resolutions are calculated based on the scale denominators.
      */
     public boolean isResolutionsPreserved() {
         return resolutionsPreserved;
@@ -103,7 +112,7 @@ public class GridSet implements Info {
     /**
      * @param resolutionsPreserved {@code true} if the resolutions are preserved and the
      *     scaleDenominators calculated, {@code false} if the resolutions are calculated based on
-     *     the sacale denominators.
+     *     the scale denominators.
      */
     void setResolutionsPreserved(boolean resolutionsPreserved) {
         this.resolutionsPreserved = resolutionsPreserved;
@@ -412,7 +421,7 @@ public class GridSet implements Info {
     }
 
     /**
-     * The base cordinates in x/y order, used to map tile indexes to coordinate bounding boxes.
+     * The base coordinates in x/y order, used to map tile indexes to coordinate bounding boxes.
      * These can either be top left or bottom left, so must be kept private.
      *
      * <p>This is a derived property of {@link #getOriginalExtent()} and {@link
@@ -464,12 +473,20 @@ public class GridSet implements Info {
         this.pixelSize = pixelSize;
     }
 
-    /** @return the name */
+    /**
+     * Returns the identifier for the GridSet
+     *
+     * @return the identifier
+     */
     public String getName() {
         return name;
     }
 
-    /** @param name the name to set */
+    /**
+     * Sets the identifier for the GridSet
+     *
+     * @param name the identifier to set
+     */
     void setName(String name) {
         this.name = name;
     }
@@ -513,7 +530,44 @@ public class GridSet implements Info {
     }
 
     /**
-     * Evaluates wheter this GridSet is different enough from {@code another} so that if this
+     * Gets the keywords for the GridSet
+     *
+     * @return the keywords
+     */
+    public List<String> getKeywords() {
+        return keywords;
+    }
+
+    /**
+     * Sets the keywords for the GridSet
+     *
+     * @param keywords the keywords to set
+     */
+    public void setKeywords(List<String> keywords) {
+        this.keywords = keywords;
+    }
+
+    /**
+     * Gets the title for the GridSet. Use {@link #getName()} to get the identifier
+     *
+     * @return the title for the gridset
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * Sets the title for the Gridset. This is different to the identifier which should be set using
+     * {@link #setName(String)}
+     *
+     * @param title the title to set
+     */
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    /**
+     * Evaluates whether this GridSet is different enough from {@code another} so that if this
      * GridSet were replaced by {@code another} all layers referencing this GridSet should be
      * truncated.
      *
