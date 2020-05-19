@@ -1,10 +1,14 @@
-GeoWebCache 1.16.3
--------------------
+GeoWebCache 1.16.3 (2020-05-19)
+-------------------------------
 
 Improvements:
 +++++++++++++
 
 - Use of repo.osgeo.org
+- Updated JAI-EXT to 1.1.14
+- Updated HTTPClient 4 to 4.5.11
+- Updated Spring to 5.1.13.RELEASE and Spring security to 5.1.8.RELEASE
+- Mass truncate operations backported from master 
 
 GeoWebCache 1.16.2 (2020-01-20)
 -------------------------------
