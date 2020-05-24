@@ -34,7 +34,7 @@ public class SwiftBlobStoreConfigProvider implements XMLConfigurationProvider {
 
     private static GeoWebCacheEnvironment gwcEnvironment = null;
 
-    private static SingleValueConverter EnvironmentNullableBooleanConverter =
+    private static final SingleValueConverter EnvironmentNullableBooleanConverter =
             new BooleanConverter() {
 
                 @Override
@@ -47,7 +47,7 @@ public class SwiftBlobStoreConfigProvider implements XMLConfigurationProvider {
                 }
             };
 
-    private static SingleValueConverter EnvironmentStringConverter =
+    private static final SingleValueConverter EnvironmentStringConverter =
             new StringConverter() {
                 @Override
                 public Object fromString(String str) {

@@ -15,28 +15,26 @@
 package org.geowebcache.swift;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.jclouds.io.Payloads.newInputStreamPayload;
 
 import com.google.common.base.Function;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.io.ByteArrayResource;
-import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.*;
-import org.jclouds.http.HttpResponseException;
-import org.jclouds.io.MutableContentMetadata;
 import org.jclouds.io.Payload;
-import org.jclouds.io.payloads.BaseMutableContentMetadata;
 import org.jclouds.openstack.swift.v1.SwiftApi;
 import org.jclouds.openstack.swift.v1.blobstore.RegionScopedBlobStoreContext;
 import org.jclouds.openstack.swift.v1.blobstore.RegionScopedSwiftBlobStore;
@@ -48,28 +46,31 @@ import org.jclouds.openstack.swift.v1.options.ListContainerOptions;
 /** Blobstore class compatatble with Openstack Swift. */
 public class SwiftBlobStore implements BlobStore {
 
-    static Log log = LogFactory.getLog(SwiftBlobStore.class);
+    static final Log log = LogFactory.getLog(SwiftBlobStore.class);
 
     private final BlobStoreListenerList listeners = new BlobStoreListenerList();
 
-    private String containerName;
+    private final String containerName;
 
     private final TMSKeyBuilder keyBuilder;
 
     private volatile boolean shutDown;
 
     /** JClouds Swift API */
-    private SwiftApi swiftApi;
+    private final SwiftApi swiftApi;
 
     /** Swift Object API */
-    private ObjectApi objectApi;
+    private final ObjectApi objectApi;
 
     /** Swift Bulk API */
-    private BulkApi bulkApi;
+    private final BulkApi bulkApi;
 
-    private RegionScopedBlobStoreContext blobStoreContext;
+    private final RegionScopedBlobStoreContext blobStoreContext;
 
-    private RegionScopedSwiftBlobStore blobStore;
+    private final RegionScopedSwiftBlobStore blobStore;
+
+    private final ThreadPoolExecutor executor;
+    private final BlockingQueue<Runnable> uploadQueue;
 
     public SwiftBlobStore(SwiftBlobStoreInfo config, TileLayerDispatcher layers) {
 
@@ -86,6 +87,16 @@ public class SwiftBlobStore implements BlobStore {
 
         blobStoreContext = config.getBlobStore();
         blobStore = (RegionScopedSwiftBlobStore) blobStoreContext.getBlobStore(config.getRegion());
+
+        uploadQueue = new LinkedBlockingQueue<>(1000);
+        executor =
+                new ThreadPoolExecutor(
+                        2,
+                        32,
+                        10L,
+                        TimeUnit.SECONDS,
+                        uploadQueue,
+                        new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
     @Override
@@ -112,75 +123,14 @@ public class SwiftBlobStore implements BlobStore {
 
     @Override
     public void put(TileObject obj) throws StorageException {
-        final Resource blob = obj.getBlob();
-        checkNotNull(blob, "Object Blob is null");
-
-        MutableContentMetadata contentMetadata = new BaseMutableContentMetadata();
-
-        // Set content length
-        final String key = keyBuilder.forTile(obj);
-        contentMetadata.setContentLength(blob.getSize());
-
-        // Set content type
-        checkNotNull(obj.getBlobFormat(), "Object Blob Format is null");
-        String blobFormat = obj.getBlobFormat();
-        String mimeType;
         try {
-            mimeType = MimeType.createFromFormat(blobFormat).getMimeType();
-        } catch (MimeException me) {
-            throw new RuntimeException(me);
-        }
-        contentMetadata.setContentType(mimeType);
+            final SwiftTile tile = new SwiftTile(obj);
+            final String key = keyBuilder.forTile(obj);
 
-        // don't bother for the extra call if there are no listeners
-        final boolean existed;
-        SwiftObject oldObj;
-        if (listeners.isEmpty()) {
-            existed = false;
-            oldObj = null;
-        } else {
-            oldObj = this.objectApi.get(key);
-            existed = oldObj != null;
-        }
-
-        log.trace("Storing " + obj.getLayerName());
-
-        // Upload the payload to object storage
-        try {
-            Payload payload = newInputStreamPayload(blob.getInputStream());
-            payload.setContentMetadata(contentMetadata);
-
-            // Retry logic in case upload fails
-            long failures = 0;
-            boolean retry = true;
-            while (retry && failures < 3) {
-                try {
-                    this.objectApi.put(key, payload);
-                    retry = false;
-                } catch (HttpResponseException e) {
-                    failures += 1;
-                } finally {
-                    payload.close();
-                }
-            }
-
-            if (failures > 0) {
-                log.debug("Some attempts to upload layer " + obj.getLayerName() + " have failed.");
-                log.debug("Failures count: " + failures);
-            }
+            executor.execute(new SwiftUploadTask(key, tile, listeners, objectApi));
+            log.debug("Added request to upload queue. Queue length is now " + uploadQueue.size());
         } catch (IOException e) {
-            log.debug("Error getting payload.");
-            log.debug(e.getMessage());
-        }
-
-        // This is important because listeners may be tracking tile existence
-        if (!listeners.isEmpty()) {
-            if (existed) {
-                long oldSize = oldObj.getMetadata().size(); // Assuming this is correct
-                listeners.sendTileUpdated(obj, oldSize);
-            } else {
-                listeners.sendTileStored(obj);
-            }
+            throw new StorageException("Could not process tile object for upload.");
         }
     }
 
@@ -194,10 +144,12 @@ public class SwiftBlobStore implements BlobStore {
         }
 
         try (Payload in = object.getPayload()) {
-            byte[] bytes = ByteStreams.toByteArray(in.openStream());
-            obj.setBlobSize(bytes.length);
-            obj.setBlob(new ByteArrayResource(bytes));
-            obj.setCreated(object.getLastModified().getTime());
+            try (InputStream inStream = in.openStream()) {
+                byte[] bytes = ByteStreams.toByteArray(inStream);
+                obj.setBlobSize(bytes.length);
+                obj.setBlob(new ByteArrayResource(bytes));
+                obj.setCreated(object.getLastModified().getTime());
+            }
         } catch (IOException e) {
             throw new StorageException("Error getting " + key, e);
         }
@@ -205,7 +157,7 @@ public class SwiftBlobStore implements BlobStore {
         return true;
     }
 
-    private class TileToKey implements Function<long[], String> {
+    private static class TileToKey implements Function<long[], String> {
 
         private final String coordsPrefix;
 
@@ -230,7 +182,7 @@ public class SwiftBlobStore implements BlobStore {
     }
 
     @Override
-    public boolean delete(final TileRange tileRange) throws StorageException {
+    public boolean delete(final TileRange tileRange) {
 
         final String coordsPrefix = keyBuilder.coordinatesPrefix(tileRange);
 
@@ -242,7 +194,7 @@ public class SwiftBlobStore implements BlobStore {
                 new AbstractIterator<long[]>() {
 
                     // TileRange iterator with 1x1 meta tiling factor
-                    private TileRangeIterator trIter =
+                    private final TileRangeIterator trIter =
                             new TileRangeIterator(tileRange, new int[] {1, 1});
 
                     @Override
@@ -285,14 +237,14 @@ public class SwiftBlobStore implements BlobStore {
                 tile.setParametersId(tileRange.getParametersId());
 
                 // Delete each tile object in the range given
-                this.delete((TileObject) tile);
+                this.delete(tile);
             }
         }
         return true;
     }
 
     @Override
-    public boolean delete(String layerName) throws StorageException {
+    public boolean delete(String layerName) {
 
         checkNotNull(layerName, "layerName");
 
@@ -307,8 +259,7 @@ public class SwiftBlobStore implements BlobStore {
     }
 
     @Override
-    public boolean deleteByGridsetId(final String layerName, final String gridSetId)
-            throws StorageException {
+    public boolean deleteByGridsetId(final String layerName, final String gridSetId) {
         checkNotNull(layerName, "layerName");
         checkNotNull(gridSetId, "gridSetId");
 
@@ -326,7 +277,7 @@ public class SwiftBlobStore implements BlobStore {
     }
 
     @Override
-    public boolean delete(TileObject obj) throws StorageException {
+    public boolean delete(TileObject obj) {
         final String objName = obj.getLayerName();
 
         checkNotNull(objName, "Object Name");
@@ -346,7 +297,7 @@ public class SwiftBlobStore implements BlobStore {
     }
 
     @Override
-    public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
+    public boolean rename(String oldLayerName, String newLayerName) {
         log.debug("No need to rename layers, SwiftBlobStore uses layer id as key root");
         if (objectApi.get(oldLayerName) != null) {
             listeners.sendLayerRenamed(oldLayerName, newLayerName);
@@ -413,8 +364,7 @@ public class SwiftBlobStore implements BlobStore {
     }
 
     @Override
-    public boolean deleteByParametersId(String layerName, String parametersId)
-            throws StorageException {
+    public boolean deleteByParametersId(String layerName, String parametersId) {
         checkNotNull(layerName, "layerName");
         checkNotNull(parametersId, "parametersId");
 
@@ -425,10 +375,7 @@ public class SwiftBlobStore implements BlobStore {
                         // Creates a stream from this data
                         .stream()
                         // Maps the stream to whether the object has been successfully deleted.
-                        .map(
-                                path -> {
-                                    return this.deleteByPath(path);
-                                })
+                        .map(path -> this.deleteByPath(path))
                         // Checks if all the entries were true - meaning everything was deleted
                         // successfully.
                         .reduce(Boolean::logicalAnd)

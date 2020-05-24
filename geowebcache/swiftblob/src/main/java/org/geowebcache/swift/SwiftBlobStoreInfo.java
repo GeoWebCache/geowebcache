@@ -28,7 +28,7 @@ import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.storage.BlobStore;
-import org.geowebcache.storage.StorageException;
+import org.jclouds.Constants;
 import org.jclouds.ContextBuilder;
 import org.jclouds.openstack.keystone.config.KeystoneProperties;
 import org.jclouds.openstack.swift.v1.SwiftApi;
@@ -39,7 +39,6 @@ import org.jclouds.openstack.swift.v1.features.ContainerApi;
  * Java object representing the configuration for an Swift blob store. Contains methods for building
  * instance of JClouds API and Blobstore.
  */
-@SuppressWarnings("deprecation")
 public class SwiftBlobStoreInfo extends BlobStoreInfo {
 
     static Log log = LogFactory.getLog(SwiftBlobStoreInfo.class);
@@ -80,8 +79,7 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
     }
 
     @Override
-    public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider)
-            throws StorageException {
+    public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider) {
 
         checkNotNull(layers);
         checkState(getName() != null);
@@ -128,6 +126,8 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
         overrides.put(KeystoneProperties.KEYSTONE_VERSION, keystoneVersion);
         overrides.put(KeystoneProperties.SCOPE, keystoneScope);
         overrides.put(KeystoneProperties.PROJECT_DOMAIN_NAME, keystoneDomainName);
+        overrides.put(Constants.PROPERTY_MAX_CONNECTIONS_PER_CONTEXT, 32);
+        overrides.put(Constants.PROPERTY_MAX_RETRIES, 0);
 
         String provider = this.provider;
         String identity = this.identity;

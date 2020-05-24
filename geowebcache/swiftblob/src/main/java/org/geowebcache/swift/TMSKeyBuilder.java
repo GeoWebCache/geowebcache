@@ -39,9 +39,9 @@ final class TMSKeyBuilder {
     public static final String PARAMETERS_METADATA_OBJECT_PREFIX = "parameters-";
     public static final String PARAMETERS_METADATA_OBJECT_SUFFIX = ".properties";
 
-    private String prefix;
+    private final String prefix;
 
-    private TileLayerDispatcher layers;
+    private final TileLayerDispatcher layers;
 
     public TMSKeyBuilder(final String prefix, TileLayerDispatcher layers) {
         this.prefix = prefix;
@@ -116,18 +116,16 @@ final class TMSKeyBuilder {
         // Key format, comprised of
         // {@code <prefix>/<layer name>/<gridset id>/<format id>/<parameters
         // hash>/<z>/<x>/<y>.<extension>}
-        String key =
-                join(
-                        false,
-                        prefix,
-                        layer,
-                        gridset,
-                        shortFormat,
-                        parametersId,
-                        z,
-                        x,
-                        y + "." + extension);
-        return key;
+        return join(
+                false,
+                prefix,
+                layer,
+                gridset,
+                shortFormat,
+                parametersId,
+                z,
+                x,
+                y + "." + extension);
     }
 
     public String forLayer(final String layerName) {
@@ -215,8 +213,7 @@ final class TMSKeyBuilder {
         }
         shortFormat = mimeType.getFileExtension(); // png, png8, png24, etc
 
-        String key = join(true, prefix, layer, gridset, shortFormat, parametersId);
-        return key;
+        return join(true, prefix, layer, gridset, shortFormat, parametersId);
     }
 
     public String pendingDeletes() {
