@@ -23,6 +23,7 @@ import static org.geowebcache.seed.TileBreeder.TILE_FAILURE_RETRY_WAIT_TIME_DEFA
 import static org.geowebcache.seed.TileBreeder.TOTAL_FAILURES_BEFORE_ABORTING_DEFAULT;
 import static org.geowebcache.seed.TileBreeder.createTileRange;
 
+import java.nio.charset.Charset;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -861,7 +862,7 @@ public class FormService {
 
     private HttpHeaders getHeaders() {
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.TEXT_HTML);
+        headers.setContentType(new MediaType(MediaType.TEXT_HTML, Charset.forName("utf8")));
         return headers;
     }
 }
