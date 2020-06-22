@@ -49,6 +49,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 /** Unit testing for the Swift Blobstore class */
 public class SwiftBlobStoreTest {
 
+    private String TEST_KEY = "test/key";
+
     private SwiftBlobStore swiftBlobStore;
 
     @Mock private ObjectApi objectApi;
@@ -157,92 +159,69 @@ public class SwiftBlobStoreTest {
         assertTrue(testListeners.isEmpty());
     }
 
-    @Test
-    public void put() {
+    private Resource createTestResource(Long contentLen) {
         Resource testResource = mock(Resource.class);
-        String testKey = "test/key";
-        Long contentLen = 3L;
+        when(testResource.getSize()).thenReturn(contentLen);
+        return testResource;
+    }
 
+    private TileObject createMockTileObject(Resource testResource) {
         // Using a mock object here to control methods and test method calls
         TileObject testTileObject = mock(TileObject.class);
+        when(testTileObject.getBlob()).thenReturn(testResource);
+        doReturn(TEST_KEY).when(this.keyBuilder).forTile(testTileObject);
+
+        return testTileObject;
+    }
+
+    @Test
+    public void testPutWhenFormatNull() {
+        Resource testResource = createTestResource(3L);
+        TileObject testTileObject = createMockTileObject(testResource);
+        when(testTileObject.getBlobFormat()).thenReturn(null);
+
+        try {
+            this.swiftBlobStore.put(testTileObject);
+            fail("Null check when tile format is null failed");
+        } catch (NullPointerException e) {
+            assertThat(e.getMessage(), is("Object Blob Format must not be null."));
+        } catch (StorageException e) {
+            fail("Should be throwing a NullPointerException.\n" + e);
+        }
+
+        verify(this.keyBuilder, times(0)).forTile(testTileObject);
+    }
+
+    @Test
+    public void testPutWhenBlobIsNull() {
+        TileObject testTileObject = createMockTileObject(mock(Resource.class));
         when(testTileObject.getBlob()).thenReturn(null);
-        doReturn(testKey).when(this.keyBuilder).forTile(testTileObject);
 
         // Test when blob is null
         try {
             this.swiftBlobStore.put(testTileObject);
-            fail("Null check for grid check id failed");
+            fail("Null check when blob is null failed");
         } catch (NullPointerException e) {
             verify(testTileObject, times(1)).getBlob();
-            assertThat(e.getMessage(), is("Object Blob is null"));
+            assertThat(e.getMessage(), is("Object Blob must not be null."));
         } catch (StorageException e) {
             fail("Should be throwing a NullPointerException.\n" + e);
         }
 
-        // Test when when object.getBlobFormat() is null
-        when(testTileObject.getBlobFormat()).thenReturn(null);
-        when(testTileObject.getBlob()).thenReturn(testResource);
-        try {
-            this.swiftBlobStore.put(testTileObject);
-            fail("Null check for grid check id failed");
-        } catch (NullPointerException e) {
-            verify(testTileObject, times(2)).getBlob();
-            assertThat(e.getMessage(), is("Object Blob Format is null"));
-        } catch (StorageException e) {
-            fail("Should be throwing a NullPointerException.\n" + e);
-        }
+        verify(this.keyBuilder, times(0)).forTile(testTileObject);
+    }
 
+    @Test(expected = RuntimeException.class)
+    public void testPutWhenBlobIsAnInvalidMimeType() {
+        Resource testResource = createTestResource(3L);
+        TileObject testTileObject = createMockTileObject(testResource);
         // Test when a blob format is an invalid mime type
         when(testTileObject.getBlobFormat()).thenReturn("invalid mime type");
         try {
             this.swiftBlobStore.put(testTileObject);
             fail("Null check for grid check id failed");
-        } catch (RuntimeException e) {
-            verify(testTileObject, times(3)).getBlob();
         } catch (StorageException e) {
             fail("Should be throwing a RuntimeException caused by a MimeException.\n" + e);
-        }
-
-        // Test when blob format is a valid mime type
-        when(testTileObject.getBlobFormat()).thenReturn("image/jpeg");
-        when(testResource.getSize()).thenReturn(contentLen);
-        when(testTileObject.getXYZ()).thenReturn(new long[] {1L, 2L, 3L});
-        try {
-            InputStream testInputStream = mock(InputStream.class);
-            when(testResource.getInputStream()).thenReturn(testInputStream);
-            this.swiftBlobStore.put(testTileObject);
-            verify(testTileObject, times(4)).getBlob();
-            verify(keyBuilder, times(3)).forTile(testTileObject);
-
-            // Test if listeners are empty
-            verify(objectApi, times(0)).get(testKey);
-
-            // Verify put call and arguments
-            // verify(objectApi, times(1)).put(testKey, new InputStreamPayload(testInputStream));
-
-            // Test if listeners are not empty
-            BlobStoreListener testListener = mock(BlobStoreListener.class);
-            testListeners.addListener(testListener);
-
-            // When old obj is null
-            when(objectApi.get(testKey)).thenReturn(null);
-            this.swiftBlobStore.put(testTileObject);
-            verify(testTileObject, times(5)).getBlob();
-            verify(this.keyBuilder, times(4)).forTile(testTileObject);
-            // verify(this.objectApi, times(1)).get(testKey);
-
-            // When old obj is not null
-            SwiftObject testSwiftObject = mock(SwiftObject.class);
-            when(objectApi.get(testKey)).thenReturn(testSwiftObject);
-
-            this.swiftBlobStore.put(testTileObject);
-            verify(testTileObject, times(6)).getBlob();
-            verify(this.keyBuilder, times(5)).forTile(testTileObject);
-            verify(this.objectApi, times(2)).get(testKey);
-            verify(testSwiftObject, times(1)).getMetadata();
-
-        } catch (IOException e) {
-            fail(e.getMessage());
         }
     }
 
@@ -293,22 +272,18 @@ public class SwiftBlobStoreTest {
     public void deleteByLayerName() {
 
         // Test with valid layer name
-        try {
-            // Test when deletion is successful
-            doReturn(true).when(this.swiftBlobStore).deleteByPath(VALID_TEST_LAYER_NAME);
-            boolean result = this.swiftBlobStore.delete(VALID_TEST_LAYER_NAME);
-            verify(this.swiftBlobStore, times(1)).deleteByPath(VALID_TEST_LAYER_NAME);
-            verify(this.testListeners, times(1)).sendLayerDeleted(VALID_TEST_LAYER_NAME);
-            assertTrue(result);
+        // Test when deletion is successful
+        doReturn(true).when(this.swiftBlobStore).deleteByPath(VALID_TEST_LAYER_NAME);
+        boolean result = this.swiftBlobStore.delete(VALID_TEST_LAYER_NAME);
+        verify(this.swiftBlobStore, times(1)).deleteByPath(VALID_TEST_LAYER_NAME);
+        verify(this.testListeners, times(1)).sendLayerDeleted(VALID_TEST_LAYER_NAME);
+        assertTrue(result);
 
-            // Test when deletion is not successful
-            doReturn(false).when(this.swiftBlobStore).deleteByPath(VALID_TEST_LAYER_NAME);
-            result = this.swiftBlobStore.delete(VALID_TEST_LAYER_NAME);
-            verify(this.swiftBlobStore, times(2)).deleteByPath(VALID_TEST_LAYER_NAME);
-            assertFalse(result);
-        } catch (StorageException e) {
-            fail("Storage exception should not be thrown.\n" + e);
-        }
+        // Test when deletion is not successful
+        doReturn(false).when(this.swiftBlobStore).deleteByPath(VALID_TEST_LAYER_NAME);
+        result = this.swiftBlobStore.delete(VALID_TEST_LAYER_NAME);
+        verify(this.swiftBlobStore, times(2)).deleteByPath(VALID_TEST_LAYER_NAME);
+        assertFalse(result);
 
         // Test when layer name is null
         try {
@@ -317,8 +292,6 @@ public class SwiftBlobStoreTest {
         } catch (NullPointerException e) {
             verify(this.swiftBlobStore, times(2)).deleteByPath(VALID_TEST_LAYER_NAME);
             verify(this.testListeners, times(0)).sendLayerDeleted(null);
-        } catch (StorageException e) {
-            fail("Should be throwing a NullPointerException.\n" + e);
         }
     }
 
@@ -349,44 +322,40 @@ public class SwiftBlobStoreTest {
         doReturn(testCoordinatesPrefix).when(this.keyBuilder).coordinatesPrefix(testTileRange);
         doReturn("layer_id").when(this.keyBuilder).layerId(VALID_TEST_LAYER_NAME);
 
-        try {
-            // Test when object is null from the objectApi
-            when(this.objectApi.get(testCoordinatesPrefix)).thenReturn(null);
-            boolean outcome = this.swiftBlobStore.delete(testTileRange);
-            verify(keyBuilder, times(1)).coordinatesPrefix(testTileRange);
-            verify(objectApi, times(1)).get(testCoordinatesPrefix);
-            assertFalse(outcome);
+        // Test when object is null from the objectApi
+        when(this.objectApi.get(testCoordinatesPrefix)).thenReturn(null);
+        boolean outcome = this.swiftBlobStore.delete(testTileRange);
+        verify(keyBuilder, times(1)).coordinatesPrefix(testTileRange);
+        verify(objectApi, times(1)).get(testCoordinatesPrefix);
+        assertFalse(outcome);
 
-            // Test when object is valid and listeners are empty
-            when(this.objectApi.get(any())).thenReturn(testSwiftObject);
-            outcome = this.swiftBlobStore.delete(realTestTileRange);
-            verify(keyBuilder, times(1)).coordinatesPrefix(realTestTileRange);
+        // Test when object is valid and listeners are empty
+        when(this.objectApi.get(any())).thenReturn(testSwiftObject);
+        outcome = this.swiftBlobStore.delete(realTestTileRange);
+        verify(keyBuilder, times(1)).coordinatesPrefix(realTestTileRange);
 
-            // Test that keybuilder is outputting the correct path
-            verify(objectApi, times(1)).get("test_prefix/layer_id/test_gridset_id/test_param_id/");
+        // Test that keybuilder is outputting the correct path
+        verify(objectApi, times(1)).get("test_prefix/layer_id/test_gridset_id/test_param_id/");
 
-            // Based on the tile range above this should be the resulting keys which should be
-            // called with bulk delete.
-            List<String> expectedKeys =
-                    Arrays.asList(
-                            // Zoom level 1
-                            "test_prefix/layer_id/test_gridset_id/test_param_id/1/1/2.png",
-                            // Zoom level 2
-                            "test_prefix/layer_id/test_gridset_id/test_param_id/2/1/2.png");
-            verify(this.bulkApi, times(1)).bulkDelete(expectedKeys);
-            assertTrue(outcome);
+        // Based on the tile range above this should be the resulting keys which should be
+        // called with bulk delete.
+        List<String> expectedKeys =
+                Arrays.asList(
+                        // Zoom level 1
+                        "test_prefix/layer_id/test_gridset_id/test_param_id/1/1/2.png",
+                        // Zoom level 2
+                        "test_prefix/layer_id/test_gridset_id/test_param_id/2/1/2.png");
+        verify(this.bulkApi, times(1)).bulkDelete(expectedKeys);
+        assertTrue(outcome);
 
-            // Test when object is valid and listeners are not empty
-            BlobStoreListener testListener = mock(BlobStoreListener.class);
-            testListeners.addListener(testListener);
-            outcome = this.swiftBlobStore.delete(realTestTileRange);
+        // Test when object is valid and listeners are not empty
+        BlobStoreListener testListener = mock(BlobStoreListener.class);
+        testListeners.addListener(testListener);
+        outcome = this.swiftBlobStore.delete(realTestTileRange);
 
-            // Verify number of times called
-            verify(this.swiftBlobStore, times(2)).delete((TileObject) any());
-            assertTrue(outcome);
-        } catch (StorageException e) {
-            fail(e.getMessage());
-        }
+        // Verify number of times called
+        verify(this.swiftBlobStore, times(2)).delete((TileObject) any());
+        assertTrue(outcome);
     }
 
     @Test
@@ -398,28 +367,24 @@ public class SwiftBlobStoreTest {
                 .forGridset(VALID_TEST_LAYER_NAME, testGridSetID);
 
         // Test with a valid layer name and prefix
-        try {
-            // Test with a valid layer name and prefix and deletion unsuccessful
-            doReturn(false).when(this.swiftBlobStore).deleteByPath(testGridsetPrefix);
-            boolean outcome =
-                    this.swiftBlobStore.deleteByGridsetId(VALID_TEST_LAYER_NAME, testGridSetID);
-            verify(this.keyBuilder, times(1)).forGridset(VALID_TEST_LAYER_NAME, testGridSetID);
-            verify(this.swiftBlobStore, times(1)).deleteByPath(testGridsetPrefix);
-            verify(this.testListeners, times(0))
-                    .sendGridSubsetDeleted(VALID_TEST_LAYER_NAME, testGridSetID);
-            assertFalse(outcome);
+        // Test with a valid layer name and prefix and deletion unsuccessful
+        doReturn(false).when(this.swiftBlobStore).deleteByPath(testGridsetPrefix);
+        boolean outcome =
+                this.swiftBlobStore.deleteByGridsetId(VALID_TEST_LAYER_NAME, testGridSetID);
+        verify(this.keyBuilder, times(1)).forGridset(VALID_TEST_LAYER_NAME, testGridSetID);
+        verify(this.swiftBlobStore, times(1)).deleteByPath(testGridsetPrefix);
+        verify(this.testListeners, times(0))
+                .sendGridSubsetDeleted(VALID_TEST_LAYER_NAME, testGridSetID);
+        assertFalse(outcome);
 
-            // Test with a valid layer name and prefix and deletion successful
-            doReturn(true).when(this.swiftBlobStore).deleteByPath(testGridsetPrefix);
-            outcome = this.swiftBlobStore.deleteByGridsetId(VALID_TEST_LAYER_NAME, testGridSetID);
-            verify(this.keyBuilder, times(2)).forGridset(VALID_TEST_LAYER_NAME, testGridSetID);
-            verify(this.swiftBlobStore, times(2)).deleteByPath(testGridsetPrefix);
-            verify(this.testListeners, times(1))
-                    .sendGridSubsetDeleted(VALID_TEST_LAYER_NAME, testGridSetID);
-            assertTrue(outcome);
-        } catch (StorageException e) {
-            fail("Storage exception should not be thrown.\n" + e);
-        }
+        // Test with a valid layer name and prefix and deletion successful
+        doReturn(true).when(this.swiftBlobStore).deleteByPath(testGridsetPrefix);
+        outcome = this.swiftBlobStore.deleteByGridsetId(VALID_TEST_LAYER_NAME, testGridSetID);
+        verify(this.keyBuilder, times(2)).forGridset(VALID_TEST_LAYER_NAME, testGridSetID);
+        verify(this.swiftBlobStore, times(2)).deleteByPath(testGridsetPrefix);
+        verify(this.testListeners, times(1))
+                .sendGridSubsetDeleted(VALID_TEST_LAYER_NAME, testGridSetID);
+        assertTrue(outcome);
 
         // Test when layer name is null
         try {
@@ -428,8 +393,6 @@ public class SwiftBlobStoreTest {
         } catch (NullPointerException e) {
             verify(this.keyBuilder, times(0)).forGridset(null, testGridSetID);
             verify(this.testListeners, times(0)).sendGridSubsetDeleted(null, testGridSetID);
-        } catch (StorageException e) {
-            fail("Should be throwing a NullPointerException.\n" + e);
         }
 
         // Test when grid set id is null
@@ -439,8 +402,6 @@ public class SwiftBlobStoreTest {
         } catch (NullPointerException e) {
             verify(this.keyBuilder, times(0)).forGridset(VALID_TEST_LAYER_NAME, null);
             verify(this.testListeners, times(0)).sendGridSubsetDeleted(VALID_TEST_LAYER_NAME, null);
-        } catch (StorageException e) {
-            fail("Should be throwing a NullPointerException.\n" + e);
         }
     }
 
@@ -458,58 +419,48 @@ public class SwiftBlobStoreTest {
             fail("Null check for grid check id failed");
         } catch (NullPointerException e) {
             assertThat(e.getMessage(), is("Object Name"));
-        } catch (StorageException e) {
-            fail("Should be throwing a NullPointerException.\n" + e);
         }
 
-        try {
-            // Test when listeners are empty
-            boolean result = this.swiftBlobStore.delete(sampleTileObject);
-            verify(this.swiftBlobStore, times(1)).deleteByPath(VALID_TEST_LAYER_NAME);
-            assertTrue(result);
+        // Test when listeners are empty
+        boolean result = this.swiftBlobStore.delete(sampleTileObject);
+        verify(this.swiftBlobStore, times(1)).deleteByPath(VALID_TEST_LAYER_NAME);
+        assertTrue(result);
 
-            // Make listeners not empty
-            BlobStoreListener testListener = mock(BlobStoreListener.class);
-            testListeners.addListener(testListener);
+        // Make listeners not empty
+        BlobStoreListener testListener = mock(BlobStoreListener.class);
+        testListeners.addListener(testListener);
 
-            // Test when deletion successful
-            result = this.swiftBlobStore.delete(sampleTileObject);
-            verify(this.swiftBlobStore, times(2)).deleteByPath(VALID_TEST_LAYER_NAME);
-            verify(this.testListeners, times(1)).sendTileDeleted(sampleTileObject);
-            assertTrue(result);
+        // Test when deletion successful
+        result = this.swiftBlobStore.delete(sampleTileObject);
+        verify(this.swiftBlobStore, times(2)).deleteByPath(VALID_TEST_LAYER_NAME);
+        verify(this.testListeners, times(1)).sendTileDeleted(sampleTileObject);
+        assertTrue(result);
 
-            // Test when deletion unsuccessful
-            when(objectApi.get(VALID_TEST_LAYER_NAME)).thenReturn(mock(SwiftObject.class));
-            doReturn(false).when(this.swiftBlobStore).deleteByPath(VALID_TEST_LAYER_NAME);
-            result = this.swiftBlobStore.delete(sampleTileObject);
-            verify(this.swiftBlobStore, times(3)).deleteByPath(VALID_TEST_LAYER_NAME);
-            verify(this.testListeners, times(1)).sendTileDeleted(sampleTileObject);
-            assertFalse(result);
-        } catch (StorageException e) {
-            fail("Should not throw an exception error.\n" + e);
-        }
+        // Test when deletion unsuccessful
+        when(objectApi.get(VALID_TEST_LAYER_NAME)).thenReturn(mock(SwiftObject.class));
+        doReturn(false).when(this.swiftBlobStore).deleteByPath(VALID_TEST_LAYER_NAME);
+        result = this.swiftBlobStore.delete(sampleTileObject);
+        verify(this.swiftBlobStore, times(3)).deleteByPath(VALID_TEST_LAYER_NAME);
+        verify(this.testListeners, times(1)).sendTileDeleted(sampleTileObject);
+        assertFalse(result);
     }
 
     @Test
     public void rename() {
-        try {
-            // When old layer is null
-            boolean result = this.swiftBlobStore.rename(VALID_TEST_LAYER_NAME, "NewLayerName");
-            verify(objectApi, times(1)).get(VALID_TEST_LAYER_NAME);
-            verify(this.testListeners, times(0))
-                    .sendLayerRenamed(VALID_TEST_LAYER_NAME, "NewLayerName");
-            assertTrue(result);
+        // When old layer is null
+        boolean result = this.swiftBlobStore.rename(VALID_TEST_LAYER_NAME, "NewLayerName");
+        verify(objectApi, times(1)).get(VALID_TEST_LAYER_NAME);
+        verify(this.testListeners, times(0))
+                .sendLayerRenamed(VALID_TEST_LAYER_NAME, "NewLayerName");
+        assertTrue(result);
 
-            // When old layer is not null
-            when(this.objectApi.get(VALID_TEST_LAYER_NAME)).thenReturn(mock(SwiftObject.class));
-            result = this.swiftBlobStore.rename(VALID_TEST_LAYER_NAME, "NewLayerName");
-            verify(objectApi, times(2)).get(VALID_TEST_LAYER_NAME);
-            verify(this.testListeners, times(1))
-                    .sendLayerRenamed(VALID_TEST_LAYER_NAME, "NewLayerName");
-            assertTrue(result);
-        } catch (StorageException e) {
-            fail(e.getMessage());
-        }
+        // When old layer is not null
+        when(this.objectApi.get(VALID_TEST_LAYER_NAME)).thenReturn(mock(SwiftObject.class));
+        result = this.swiftBlobStore.rename(VALID_TEST_LAYER_NAME, "NewLayerName");
+        verify(objectApi, times(2)).get(VALID_TEST_LAYER_NAME);
+        verify(this.testListeners, times(1))
+                .sendLayerRenamed(VALID_TEST_LAYER_NAME, "NewLayerName");
+        assertTrue(result);
     }
 
     @Test
@@ -666,8 +617,6 @@ public class SwiftBlobStoreTest {
             fail("Null check for layer name failed");
         } catch (NullPointerException e) {
             assertThat(e.getMessage(), is("layerName"));
-        } catch (StorageException e) {
-            fail(e.toString());
         }
 
         // Test when parameters id is null
@@ -676,8 +625,6 @@ public class SwiftBlobStoreTest {
             fail("Null check for parameters id failed");
         } catch (NullPointerException e) {
             assertThat(e.getMessage(), is("parametersId"));
-        } catch (StorageException e) {
-            fail(e.toString());
         }
 
         Set<String> dummyParamsPrefixes = new HashSet<>(Arrays.asList("prefix/one", "prefix/two"));
@@ -685,31 +632,24 @@ public class SwiftBlobStoreTest {
                 .when(this.keyBuilder)
                 .forParameters(VALID_TEST_LAYER_NAME, testParametersId);
 
-        try {
-            // Test outcome when all deletions are successful
-            doReturn(true).when(this.swiftBlobStore).deleteByPath("prefix/one");
-            doReturn(true).when(this.swiftBlobStore).deleteByPath("prefix/two");
-            boolean outcome =
-                    this.swiftBlobStore.deleteByParametersId(
-                            VALID_TEST_LAYER_NAME, testParametersId);
-            verify(this.swiftBlobStore, times(1)).deleteByPath("prefix/one");
-            verify(this.swiftBlobStore, times(1)).deleteByPath("prefix/two");
-            verify(this.testListeners, times(1))
-                    .sendParametersDeleted(VALID_TEST_LAYER_NAME, testParametersId);
-            assertTrue(outcome);
+        // Test outcome when all deletions are successful
+        doReturn(true).when(this.swiftBlobStore).deleteByPath("prefix/one");
+        doReturn(true).when(this.swiftBlobStore).deleteByPath("prefix/two");
+        boolean outcome =
+                this.swiftBlobStore.deleteByParametersId(VALID_TEST_LAYER_NAME, testParametersId);
+        verify(this.swiftBlobStore, times(1)).deleteByPath("prefix/one");
+        verify(this.swiftBlobStore, times(1)).deleteByPath("prefix/two");
+        verify(this.testListeners, times(1))
+                .sendParametersDeleted(VALID_TEST_LAYER_NAME, testParametersId);
+        assertTrue(outcome);
 
-            // Test outcome when one of the deletion fails
-            doReturn(false).when(this.swiftBlobStore).deleteByPath("prefix/one");
-            outcome =
-                    this.swiftBlobStore.deleteByParametersId(
-                            VALID_TEST_LAYER_NAME, testParametersId);
-            verify(this.swiftBlobStore, times(2)).deleteByPath("prefix/one");
-            verify(this.swiftBlobStore, times(2)).deleteByPath("prefix/two");
-            verify(this.testListeners, times(1))
-                    .sendParametersDeleted(VALID_TEST_LAYER_NAME, testParametersId);
-            assertFalse(outcome);
-        } catch (StorageException e) {
-            fail(e.toString());
-        }
+        // Test outcome when one of the deletion fails
+        doReturn(false).when(this.swiftBlobStore).deleteByPath("prefix/one");
+        outcome = this.swiftBlobStore.deleteByParametersId(VALID_TEST_LAYER_NAME, testParametersId);
+        verify(this.swiftBlobStore, times(2)).deleteByPath("prefix/one");
+        verify(this.swiftBlobStore, times(2)).deleteByPath("prefix/two");
+        verify(this.testListeners, times(1))
+                .sendParametersDeleted(VALID_TEST_LAYER_NAME, testParametersId);
+        assertFalse(outcome);
     }
 }
