@@ -50,7 +50,6 @@
     <lint>deprecation</lint>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <jclouds.version>2.2.0</jclouds.version>
-    <mockito.version>3.2.4</mockito.version>
   </properties>
   
   <repositories>
