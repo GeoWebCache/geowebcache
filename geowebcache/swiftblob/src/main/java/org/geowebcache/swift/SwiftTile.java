@@ -28,7 +28,7 @@ public class SwiftTile {
     private final long y;
     private final int z;
 
-    private final long outputLenght;
+    private final long outputLength;
 
     private boolean existed = false;
     private long oldSize = 0L;
@@ -54,12 +54,12 @@ public class SwiftTile {
             data = ByteStreams.toByteArray(stream);
         }
 
-        this.outputLenght = data.length;
+        this.outputLength = data.length;
     }
 
     private BaseMutableContentMetadata getMetadata() {
         BaseMutableContentMetadata metadata = new BaseMutableContentMetadata();
-        metadata.setContentLength(outputLenght);
+        metadata.setContentLength(outputLength);
         try {
             metadata.setContentType(MimeType.createFromFormat(blobFormat).getMimeType());
         } catch (MimeException e) {
@@ -80,24 +80,16 @@ public class SwiftTile {
         this.oldSize = oldSize;
     }
 
-    public long getContentLength() {
-        return this.outputLenght;
-    }
-
     public void notifyListeners(BlobStoreListenerList listeners) {
         boolean hasListeners = !listeners.isEmpty();
 
         if (hasListeners && existed) {
             listeners.sendTileUpdated(
-                    layerName, gridSetId, blobFormat, parametersId, x, y, z, outputLenght, oldSize);
+                    layerName, gridSetId, blobFormat, parametersId, x, y, z, outputLength, oldSize);
         } else if (hasListeners) {
             listeners.sendTileStored(
-                    layerName, gridSetId, blobFormat, parametersId, x, y, z, outputLenght);
+                    layerName, gridSetId, blobFormat, parametersId, x, y, z, outputLength);
         }
-    }
-
-    public long length_bytes() {
-        return outputLenght;
     }
 
     public String toString() {

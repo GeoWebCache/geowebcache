@@ -56,11 +56,6 @@ public class SwiftTileTest extends TestCase {
         testListeners = spy(new BlobStoreListenerList());
     }
 
-    // TODO: There must be a better way of achieving this: there needs to be some handing of the
-    // IOExceptions from getInputStream()
-    //       and SwiftTile constructor. Throwing the exception does not work with the expected
-    // exception while putting try/catch seems
-    //       messy. Not sure if there is a better way of achieving this though?
     @Test(expected = IOException.class)
     public void testSwiftTileWhenBlobInputStreamThrowsIOException() {
         Resource invalidResource = mock(Resource.class);
