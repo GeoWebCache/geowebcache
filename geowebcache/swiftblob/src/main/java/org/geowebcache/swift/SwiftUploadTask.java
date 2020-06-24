@@ -49,12 +49,15 @@ public class SwiftUploadTask implements Runnable {
         LocalDateTime time = LocalDateTime.now();
         long getWithoutBody = System.nanoTime();
         SwiftObject object = objectApi.getWithoutBody(key);
-        log.info(
-                String.format(
-                        logStr,
-                        time.format(DateTimeFormatter.ISO_DATE_TIME),
-                        "HEAD",
-                        (System.nanoTime() - getWithoutBody) / 1000000));
+
+        if (log.isDebugEnabled()) {
+            log.debug(
+                    String.format(
+                            logStr,
+                            time.format(DateTimeFormatter.ISO_DATE_TIME),
+                            "HEAD",
+                            (System.nanoTime() - getWithoutBody) / 1000000));
+        }
         if (object == null) {
             return;
         }
@@ -77,13 +80,16 @@ public class SwiftUploadTask implements Runnable {
             LocalDateTime time = LocalDateTime.now();
             long upload = System.nanoTime();
             objectApi.put(key, payload);
-            log.debug(
-                    String.format(
-                            localLogStr,
-                            time.format(DateTimeFormatter.ISO_DATE_TIME),
-                            "PUT",
-                            (System.nanoTime() - upload) / 1000000,
-                            payload.getContentMetadata().getContentLength()));
+
+            if (log.isDebugEnabled()) {
+                log.debug(
+                        String.format(
+                                localLogStr,
+                                time.format(DateTimeFormatter.ISO_DATE_TIME),
+                                "PUT",
+                                (System.nanoTime() - upload) / 1000000,
+                                payload.getContentMetadata().getContentLength()));
+            }
             tile.notifyListeners(listeners);
         } catch (HttpResponseException e) {
             log.warn(e.getMessage());
