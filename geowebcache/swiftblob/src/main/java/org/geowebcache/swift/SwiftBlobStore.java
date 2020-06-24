@@ -11,6 +11,7 @@
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Dana Lambert, Catalyst IT Ltd NZ, Copyright 2020
+ * @author Tobias Schulmann, Catalyst IT Ltd NZ, Copyright 2020
  */
 package org.geowebcache.swift;
 

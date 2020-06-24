@@ -366,7 +366,6 @@ public class SwiftBlobStoreTest {
                 .when(this.keyBuilder)
                 .forGridset(VALID_TEST_LAYER_NAME, testGridSetID);
 
-        // Test with a valid layer name and prefix
         // Test with a valid layer name and prefix and deletion unsuccessful
         doReturn(false).when(this.swiftBlobStore).deleteByPath(testGridsetPrefix);
         boolean outcome =
