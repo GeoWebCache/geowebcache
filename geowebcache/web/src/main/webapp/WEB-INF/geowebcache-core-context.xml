@@ -114,7 +114,7 @@
   </bean -->
   
   <bean id="gwcStorageBroker" class="org.geowebcache.storage.DefaultStorageBroker" destroy-method="destroy">
-    <constructor-arg ref="gwcBlobStore" />
+    <constructor-arg ref="gwcCacheSingleColorBlobStore" />
     <constructor-arg ref="gwcTransientCache" />
   </bean>
   
@@ -223,6 +223,10 @@
     <property name="store" ref="gwcBlobStore" />
     <!--property name="cacheProvider" ref="guavaCacheProvider" /-->
     <!-- property name="cacheBeanName" value="guavaCacheProvider" /-->
+  </bean>
+
+  <bean id="gwcCacheSingleColorBlobStore" class="org.geowebcache.storage.blobstore.equivtiles.CacheSingleColorBlobStore" destroy-method="destroy">
+    <property name="store" ref="gwcBlobStore" />
   </bean>
   
   <bean id="gwcNullBlobStore" class="org.geowebcache.storage.blobstore.memory.NullBlobStore" destroy-method="destroy"/>

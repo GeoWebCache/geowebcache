@@ -18,11 +18,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.jclouds.io.Payloads.newInputStreamPayload;
 
 import com.google.common.base.Function;
-import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
+import com.google.common.collect.*;
 import com.google.common.io.ByteStreams;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import javax.annotation.Nullable;
 import org.apache.commons.logging.Log;
@@ -37,6 +37,7 @@ import org.jclouds.http.HttpResponseException;
 import org.jclouds.io.MutableContentMetadata;
 import org.jclouds.io.Payload;
 import org.jclouds.io.payloads.BaseMutableContentMetadata;
+import org.jclouds.io.payloads.InputStreamPayload;
 import org.jclouds.openstack.swift.v1.SwiftApi;
 import org.jclouds.openstack.swift.v1.blobstore.RegionScopedBlobStoreContext;
 import org.jclouds.openstack.swift.v1.blobstore.RegionScopedSwiftBlobStore;
@@ -44,9 +45,10 @@ import org.jclouds.openstack.swift.v1.domain.SwiftObject;
 import org.jclouds.openstack.swift.v1.features.BulkApi;
 import org.jclouds.openstack.swift.v1.features.ObjectApi;
 import org.jclouds.openstack.swift.v1.options.ListContainerOptions;
+import org.jclouds.openstack.swift.v1.options.PutOptions;
 
-/** Blobstore class compatatble with Openstack Swift. */
-public class SwiftBlobStore implements BlobStore {
+/** Blobstore class compatible with Openstack Swift. */
+public class SwiftBlobStore implements BlobStoreSingleColorTiles {
 
     static Log log = LogFactory.getLog(SwiftBlobStore.class);
 
@@ -182,6 +184,50 @@ public class SwiftBlobStore implements BlobStore {
                 listeners.sendTileStored(obj);
             }
         }
+    }
+
+    /**
+     * Creates and return an alternate path used to save single color tiles.
+     *
+     * @param tile The single color tile object.
+     * @param color The color of the tile object.
+     * @return The single color path.
+     */
+    private String getSingleColorPath(TileObject tile, String color) {
+        String gridSetPrefix = keyBuilder.forGridset(tile.getLayerName(), tile.getGridSetId());
+        return String.format("%s" + "simpleTiles/%s", gridSetPrefix, color);
+    }
+
+    @Override
+    public void putSymlink(TileObject tile, String singleColourTileRef) {
+        String originalPath = keyBuilder.forTile(tile);
+        ListMultimap<String, String> objectHeaders = ArrayListMultimap.create();
+        String singleColorPath = getSingleColorPath(tile, singleColourTileRef);
+        objectHeaders.put("X-Object-Manifest", this.containerName + "/" + singleColorPath);
+
+        try (InputStream empty = new ByteArrayInputStream(new byte[0])) {
+            try (Payload payload = new InputStreamPayload(empty)) {
+                objectApi.put(originalPath, payload, PutOptions.Builder.headers(objectHeaders));
+            }
+        } catch (IOException e) {
+            log.error("An error occurred while uploading the symlink.");
+        }
+    }
+
+    @Override
+    public boolean tileExistsInStorage(TileObject tile, String singleColourTileRef) {
+        String singleColorPath = getSingleColorPath(tile, singleColourTileRef);
+        String manifestPath = this.containerName + "/" + singleColorPath;
+        return !this.blobStore.blobExists(this.containerName, manifestPath);
+    }
+
+    @Override
+    public void saveSingleColourTile(TileObject tile, String singleColourTileRef)
+            throws IOException {
+        String singleColorPath = getSingleColorPath(tile, singleColourTileRef);
+        SwiftTile swiftTile = new SwiftTile(tile);
+
+        objectApi.put(singleColorPath, swiftTile.getPayload());
     }
 
     @Override

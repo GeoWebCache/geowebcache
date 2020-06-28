@@ -17,6 +17,7 @@ package org.geowebcache.storage;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -52,7 +53,7 @@ import org.geowebcache.storage.blobstore.file.FileBlobStore;
  *
  * @since 1.8
  */
-public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationListener {
+public class CompositeBlobStore implements BlobStoreSingleColorTiles, BlobStoreConfigurationListener {
 
     static final String GEOWEBCACHE_BLOBSTORE_SUITABILITY_CHECK =
             "GEOWEBCACHE_BLOBSTORE_SUITABILITY_CHECK";
@@ -79,9 +80,9 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
     static final class LiveStore {
         BlobStoreInfo config;
 
-        BlobStore liveInstance;
+        BlobStoreSingleColorTiles liveInstance;
 
-        public LiveStore(BlobStoreInfo config, @Nullable BlobStore store) {
+        public LiveStore(BlobStoreInfo config, @Nullable BlobStoreSingleColorTiles store) {
             Preconditions.checkArgument(config.isEnabled() == (store != null));
             this.config = config;
             this.liveInstance = store;
@@ -282,6 +283,39 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
                                                         && bs.liveInstance.layerExists(layerName)));
     }
 
+    @Override
+    public void putSymlink(TileObject tileObject, String singleColourTileRef) {
+        try {
+            LiveStore liveStore = defaultStore();
+            liveStore.liveInstance.putSymlink(tileObject, singleColourTileRef);
+        } catch (StorageException e) {
+            log.error("Error storing the symlink.");
+        }
+    }
+
+    @Override
+    public boolean tileExistsInStorage(TileObject tile, String singleColourTileRef) {
+        try {
+            LiveStore liveStore = defaultStore();
+            return liveStore.liveInstance.tileExistsInStorage(tile, singleColourTileRef);
+        } catch (StorageException e) {
+            log.error("Error storing the symlink.");
+        }
+
+        return false;
+    }
+
+    @Override
+    public void saveSingleColourTile(TileObject tile, String singleColourTileRef)
+            throws IOException {
+        try {
+            LiveStore liveStore = defaultStore();
+            liveStore.liveInstance.saveSingleColourTile(tile, singleColourTileRef);
+        } catch (StorageException e) {
+            log.error("Error storing the symlink.");
+        }
+    }
+
     private BlobStore store(String layerId) throws StorageException {
 
         LiveStore store;
@@ -381,7 +415,8 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
                 store = new FileBlobStore(config.getBaseDirectory());
 
                 stores.put(
-                        CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID, new LiveStore(config, store));
+                        CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID,
+                        new LiveStore(config, (BlobStoreSingleColorTiles) store));
             }
         } catch (ConfigurationException | StorageException e) {
             destroy(stores);
@@ -431,7 +466,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
             store = config.createInstance(layers, lockProvider);
         }
 
-        LiveStore liveStore = new LiveStore(config, store);
+        LiveStore liveStore = new LiveStore(config, (BlobStoreSingleColorTiles) store);
         stores.put(config.getName(), liveStore);
 
         if (config.isDefault()) {
@@ -440,7 +475,6 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
                     throw new ConfigurationException(
                             "The default blob store can't be disabled: " + config.getName());
                 }
-
                 stores.put(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID, liveStore);
             } else {
                 throw new ConfigurationException(
