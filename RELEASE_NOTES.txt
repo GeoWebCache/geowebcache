@@ -1,3 +1,28 @@
+GeoWebCache 1.16.4 (2020-06-30)
+-------------------------------
+
+Maintenance release of the 1.16.x series.
+
+Improvements:
++++++++++++++
+- Upgraded Spring to 5.1.16 and Spring Security to 5.1.11
+- Upgraded PostgreSQL driver to 42.2.14
+- Upgraded JAI-EXT dependencies to 1.1.15
+
+GeoWebCache 1.16.4 (2020-06-30)
+-------------------------------
+
+<Release Description>
+
+Improvements:
++++++++++++++
+- <New feature>
+
+Fixes:
+++++++
+- <Bug fix>
+
+
 GeoWebCache 1.16.3 (2020-05-19)
 -------------------------------
 
