@@ -25,10 +25,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Vector;
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
+import javax.imageio.*;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
@@ -544,6 +541,9 @@ public class MetaTile implements TileResponseReceiver {
                     } catch (IOException e) {
                         // fine, we tried
                     }
+                } else if (param instanceof ImageReader) {
+                    ImageReader reader = (ImageReader) param;
+                    reader.dispose();
                 }
             }
         }
