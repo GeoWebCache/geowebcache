@@ -22,8 +22,7 @@
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-storage-blob</artifactId>
-            <!-- at the time of writing 11.0.1 was available but pom on repoes was corrupted -->
-            <version>11.0.0</version>
+            <version>12.7.0</version>
         </dependency>
 
         <dependency>
