@@ -190,8 +190,6 @@ public class WMTSService extends Service {
         extensions.addAll(GeoWebCacheExtensions.extensions(WMTSExtension.class));
         if (getMainConfiguration() != null) {
             tld.setServiceInformation(getMainConfiguration().getServiceInformation());
-        } else {
-
         }
     }
 
