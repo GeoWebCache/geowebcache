@@ -151,6 +151,11 @@ public class TileLayerDispatcher
         return this.serviceInformation;
     }
 
+    /** @param serviceInformation the serviceInformation to set */
+    public void setServiceInformation(ServiceInformation serviceInformation) {
+        this.serviceInformation = serviceInformation;
+    }
+
     /** @see org.springframework.beans.factory.DisposableBean#destroy() */
     public void destroy() throws Exception {
         //
