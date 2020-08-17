@@ -49,6 +49,7 @@
     <qa>false</qa>
     <lint>deprecation</lint>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <jclouds.version>2.2.0</jclouds.version>
   </properties>
   
   <repositories>

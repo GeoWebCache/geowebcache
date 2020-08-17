@@ -2,9 +2,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <!-- mvn -Dtest=StorageBrokerTest -Dmaven.test.jvmargs='-XX:+HeapDumpOnOutOfMemoryError -Xms32m -Xmx32m' test -->
     <modelVersion>4.0.0</modelVersion>
-    <properties>
-        <jclouds.version>2.2.0</jclouds.version>
-    </properties>
 
     <parent>
         <groupId>org.geowebcache</groupId>
@@ -17,7 +14,6 @@
     <packaging>jar</packaging>
     <name>Swift Storage</name>
     <url>http://geowebcache.org</url>
-
 
     <dependencies>
         <dependency>
@@ -50,8 +46,4 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-        </plugins>
-    </build>
 </project>
