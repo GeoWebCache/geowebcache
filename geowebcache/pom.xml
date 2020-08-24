@@ -86,11 +86,11 @@
       <name>OSGeo GeoServer Release Repository</name>
       <url>https://repo.osgeo.org/repository/Geoserver-releases/</url>
     </repository>
-    <snapshotRepository>
+    <!--snapshotRepository>
       <id>nexus</id>
       <name>OSGeo GeoServer Snapshot Repository</name>
       <url>https://repo.osgeo.org/repository/geoserver-snapshots/</url>
-     </snapshotRepository>
+     </snapshotRepository-->
   </distributionManagement>
 
  <dependencyManagement>
