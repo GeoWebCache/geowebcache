@@ -709,14 +709,4 @@ public class GeoWebCacheDispatcher extends AbstractController {
     public void setSecurityDispatcher(SecurityDispatcher secDispatcher) {
         this.securityDispatcher = secDispatcher;
     }
-
-    /** @return the mainConfiguration */
-    public BaseConfiguration getMainConfiguration() {
-        return mainConfiguration;
-    }
-
-    /** @param mainConfiguration the mainConfiguration to set */
-    public void setMainConfiguration(BaseConfiguration mainConfiguration) {
-        this.mainConfiguration = mainConfiguration;
-    }
 }

@@ -31,7 +31,6 @@ import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.ServerConfiguration;
-import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterException;
@@ -182,15 +181,11 @@ public class WMTSService extends Service {
 
         this.sb = sb;
         this.tld = tld;
-
         this.gsb = gsb;
         this.stats = stats;
         this.urlMangler = urlMangler;
         this.controller = controller;
         extensions.addAll(GeoWebCacheExtensions.extensions(WMTSExtension.class));
-        if (getMainConfiguration() != null) {
-            tld.setServiceInformation(getMainConfiguration().getServiceInformation());
-        }
     }
 
     @Override
@@ -537,14 +532,8 @@ public class WMTSService extends Service {
         ConveyorTile tile = (ConveyorTile) conv;
 
         String servletPrefix = null;
+        if (controller != null) servletPrefix = controller.getServletPrefix();
 
-        if (controller != null) {
-            servletPrefix = controller.getServletPrefix();
-            XMLConfiguration mainConfiguration2 =
-                    (XMLConfiguration) controller.getMainConfiguration();
-            if (mainConfiguration2 != null)
-                tld.setServiceInformation(mainConfiguration2.getServiceInformation());
-        }
         String servletBase = ServletUtils.getServletBaseURL(conv.servletReq, servletPrefix);
         String context =
                 ServletUtils.getServletContextPath(

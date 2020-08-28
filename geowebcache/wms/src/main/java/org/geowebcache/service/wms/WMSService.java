@@ -302,14 +302,7 @@ public class WMSService extends Service {
         ConveyorTile tile = (ConveyorTile) conv;
 
         String servletPrefix = null;
-
-        if (controller != null) {
-            servletPrefix = controller.getServletPrefix();
-            XMLConfiguration mainConfiguration2 =
-                    (XMLConfiguration) controller.getMainConfiguration();
-            if (mainConfiguration2 != null)
-                tld.setServiceInformation(mainConfiguration2.getServiceInformation());
-        }
+        if (controller != null) servletPrefix = controller.getServletPrefix();
 
         String servletBase = ServletUtils.getServletBaseURL(conv.servletReq, servletPrefix);
         String context =

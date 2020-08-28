@@ -24,6 +24,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
@@ -36,13 +37,18 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
+import org.apache.commons.io.FileUtils;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.Validator;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.ConfigurationResourceProvider;
 import org.geowebcache.config.DefaultGridsets;
+import org.geowebcache.config.GridSetConfiguration;
+import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.config.XMLFileResourceProvider;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.config.legends.LegendInfo;
 import org.geowebcache.config.legends.LegendInfoBuilder;
@@ -72,10 +78,14 @@ import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+import org.springframework.context.ApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.web.context.WebApplicationContext;
 import org.w3c.dom.Document;
 
 public class WMTSServiceTest {
@@ -88,12 +98,59 @@ public class WMTSServiceTest {
 
     private GridSetBroker gridsetBroker;
 
+    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    private File configDir;
+    private File configFile;
+
     @Before
     public void setUp() throws Exception {
         sb = mock(StorageBroker.class);
         tld = mock(TileLayerDispatcher.class);
         gridsetBroker =
                 new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
+    }
+
+    private TileLayerDispatcher mockTileLayerDispatcher() throws Exception {
+        XMLConfiguration config2 = getConfig();
+        ApplicationContext appContext = mock(ApplicationContext.class);
+        final HashMap<String, GridSetConfiguration> beans = new HashMap<>(2);
+        GridSetConfiguration defaultGridSets = new DefaultGridsets(true, true);
+        beans.put("defaultGridSets", defaultGridSets);
+        beans.put("xmlConfig", config2);
+        when(appContext.getBeansOfType(GridSetConfiguration.class)).thenReturn(beans);
+        when(appContext.getBean("defaultGridSets")).thenReturn(defaultGridSets);
+        when(appContext.getBean("xmlConfig")).thenReturn(config2);
+        when(appContext.getBean(XMLConfiguration.class)).thenReturn(config2);
+
+        TileLayerDispatcher tldx = new TileLayerDispatcher(gridsetBroker);
+        tldx.setApplicationContext(appContext);
+        tldx.afterPropertiesSet();
+        return tldx;
+    }
+
+    protected XMLConfiguration getConfig() throws Exception {
+        if (configFile == null) {
+            // create a temp XML config
+            configDir = temp.getRoot();
+            configFile = temp.newFile(XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME);
+            // copy the example XML to the temp config file
+            URL source = this.getClass().getResource("geowebcache_190.xml");
+            assertNotNull(source);
+            FileUtils.copyURLToFile(source, configFile);
+        }
+        // initialize the config with an XMLFileResourceProvider that uses the temp config file
+        gridsetBroker =
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
+        ConfigurationResourceProvider configProvider =
+                new XMLFileResourceProvider(
+                        XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
+                        (WebApplicationContext) null,
+                        configDir.getAbsolutePath(),
+                        null);
+        XMLConfiguration config = new XMLConfiguration(null, configProvider);
+        ((XMLConfiguration) config).setGridSetBroker(gridsetBroker);
+        config.afterPropertiesSet();
+        return config;
     }
 
     private TileLayer mockTileLayer(
@@ -546,6 +603,90 @@ public class WMTSServiceTest {
         // checking that layer extra metadata was encoded
         xpath.evaluate(
                 "count(//wmts:Contents/wmts:Layer[wmts:extra-layer-metadata='metadatada'])", doc);
+    }
+
+    @Test
+    public void testGetCapServiceInfo() throws Exception {
+        TileLayerDispatcher tldx = mockTileLayerDispatcher();
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+
+        service = new WMTSService(sb, tldx, null, mock(RuntimeStats.class));
+
+        @SuppressWarnings("unchecked")
+        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        kvp.put("service", new String[] {"WMTS"});
+        kvp.put("version", new String[] {"1.0.0"});
+        kvp.put("request", new String[] {"GetCapabilities"});
+
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+        when(req.getCharacterEncoding()).thenReturn("UTF-8");
+        when(req.getParameterMap()).thenReturn(kvp);
+
+        {
+            List<String> gridSetNames =
+                    Arrays.asList(
+                            "GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326", "EPSG:900913");
+
+            TileLayer tileLayer =
+                    mockTileLayer(
+                            "mockLayer", gridSetNames, Collections.<ParameterFilter>emptyList());
+            TileLayer tileLayerUn =
+                    mockTileLayer(
+                            "mockLayerUnadv",
+                            gridSetNames,
+                            Collections.<ParameterFilter>emptyList(),
+                            false);
+            when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer, tileLayerUn));
+            GridSubset wgs84Subset = mock(GridSubset.class);
+            when(wgs84Subset.getOriginalExtent()).thenReturn(new BoundingBox(-42d, -24d, 40d, 50d));
+            GridSubset googleSubset = mock(GridSubset.class);
+            when(googleSubset.getOriginalExtent())
+                    .thenReturn(new BoundingBox(1_000_000d, 2_000_000d, 1_000_000d, 2_000_000d));
+            when(tileLayer.getGridSubsetForSRS(SRS.getEPSG4326())).thenReturn(wgs84Subset);
+            when(tileLayer.getGridSubsetForSRS(SRS.getEPSG900913())).thenReturn(googleSubset);
+        }
+
+        Conveyor conv = service.getConveyor(req, resp);
+        assertNotNull(conv);
+
+        final String layerName = conv.getLayerId();
+        assertNull(layerName);
+
+        assertEquals(Conveyor.RequestHandler.SERVICE, conv.reqHandler);
+        WMTSGetCapabilities wmsCap =
+                new WMTSGetCapabilities(
+                        tldx,
+                        gridsetBroker,
+                        conv.servletReq,
+                        "http://localhost:8080",
+                        "/geowebcache",
+                        new NullURLMangler());
+        wmsCap.writeResponse(conv.servletResp, mock(RuntimeStats.class));
+        assertTrue(resp.containsHeader("content-disposition"));
+        assertEquals(
+                "inline;filename=wmts-getcapabilities.xml", resp.getHeader("content-disposition"));
+
+        // System.out.println(resp.getContentAsString());
+
+        String result = resp.getContentAsString();
+
+        assertTrue(result.contains("ServiceContact"));
+
+        // Validator validator = new Validator(result);
+        // validator.useXMLSchema(true);
+        // validator.assertIsValid();
+
+        Document doc = XMLUnit.buildTestDocument(result);
+        Map<String, String> namespaces = new HashMap<String, String>();
+        namespaces.put("xlink", "http://www.w3.org/1999/xlink");
+        namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+        namespaces.put("ows", "http://www.opengis.net/ows/1.1");
+        namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
+        XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
+        XpathEngine xpath = XMLUnit.newXpathEngine();
+        assertEquals("John Smith", xpath.evaluate("//ows:IndividualName", doc));
     }
 
     @Test

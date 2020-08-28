@@ -31,7 +31,9 @@ import java.util.stream.StreamSupport;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.ConfigurationAggregator;
+import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.TileLayerConfiguration;
+import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -307,6 +309,12 @@ public class TileLayerDispatcher
         this.configs =
                 GeoWebCacheExtensions.configurations(
                         TileLayerConfiguration.class, applicationContext);
+
+        XMLConfiguration config = applicationContext.getBean(XMLConfiguration.class);
+        if (config instanceof XMLConfiguration) {
+            ServerConfiguration gwcXMLconfig = (ServerConfiguration) config;
+            setServiceInformation(gwcXMLconfig.getServiceInformation());
+        }
     }
 
     @Override
