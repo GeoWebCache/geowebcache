@@ -311,7 +311,7 @@ public class TileLayerDispatcher
                         TileLayerConfiguration.class, applicationContext);
 
         XMLConfiguration config = applicationContext.getBean(XMLConfiguration.class);
-        if (config instanceof XMLConfiguration) {
+        if (config != null) {
             ServerConfiguration gwcXMLconfig = (ServerConfiguration) config;
             setServiceInformation(gwcXMLconfig.getServiceInformation());
         }
