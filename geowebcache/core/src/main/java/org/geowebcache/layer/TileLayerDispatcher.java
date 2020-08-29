@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,10 +32,10 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
+import org.geowebcache.config.BaseConfiguration;
 import org.geowebcache.config.ConfigurationAggregator;
 import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.TileLayerConfiguration;
-import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -310,10 +312,15 @@ public class TileLayerDispatcher
                 GeoWebCacheExtensions.configurations(
                         TileLayerConfiguration.class, applicationContext);
 
-        XMLConfiguration config = applicationContext.getBean(XMLConfiguration.class);
-        if (config != null) {
-            ServerConfiguration gwcXMLconfig = (ServerConfiguration) config;
-            setServiceInformation(gwcXMLconfig.getServiceInformation());
+        Map<String, BaseConfiguration> config =
+                applicationContext.getBeansOfType(BaseConfiguration.class);
+        if (config != null && !config.isEmpty()) {
+            for (Entry<String, BaseConfiguration> e : config.entrySet()) {
+                if (ServerConfiguration.class.isAssignableFrom(e.getValue().getClass())) {
+                    setServiceInformation(
+                            ((ServerConfiguration) e.getValue()).getServiceInformation());
+                }
+            }
         }
     }
 

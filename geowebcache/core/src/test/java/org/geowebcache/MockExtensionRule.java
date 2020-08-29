@@ -133,7 +133,7 @@ public class MockExtensionRule extends ExternalResource {
                             .orElseThrow(() -> new NoSuchBeanDefinitionException((String) args[0]));
                 } else if (method.getParameterTypes()[0].equals(Class.class)) {
                     for (Entry<String, Object> pair : beans.entrySet()) {
-                        if (pair.getValue().getClass().isAssignableFrom((Class) args[0])) {
+                        if (((Class) args[0]).isAssignableFrom(pair.getValue().getClass())) {
                             return pair.getValue();
                         }
                         throw new NoSuchBeanDefinitionException((Class) args[0]);

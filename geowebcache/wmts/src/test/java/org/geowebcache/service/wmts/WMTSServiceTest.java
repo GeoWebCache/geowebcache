@@ -44,6 +44,7 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.BaseConfiguration;
 import org.geowebcache.config.ConfigurationResourceProvider;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.GridSetConfiguration;
@@ -120,8 +121,9 @@ public class WMTSServiceTest {
         when(appContext.getBeansOfType(GridSetConfiguration.class)).thenReturn(beans);
         when(appContext.getBean("defaultGridSets")).thenReturn(defaultGridSets);
         when(appContext.getBean("xmlConfig")).thenReturn(config2);
-        when(appContext.getBean(XMLConfiguration.class)).thenReturn(config2);
-
+        when(appContext.getBean(BaseConfiguration.class)).thenReturn(config2);
+        when(appContext.getBeansOfType(BaseConfiguration.class))
+                .thenReturn(Collections.singletonMap("xmlConfig", config2));
         TileLayerDispatcher tldx = new TileLayerDispatcher(gridsetBroker);
         tldx.setApplicationContext(appContext);
         tldx.afterPropertiesSet();
