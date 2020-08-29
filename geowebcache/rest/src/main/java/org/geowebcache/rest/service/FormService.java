@@ -24,14 +24,7 @@ import static org.geowebcache.seed.TileBreeder.TOTAL_FAILURES_BEFORE_ABORTING_DE
 import static org.geowebcache.seed.TileBreeder.createTileRange;
 
 import java.text.NumberFormat;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
@@ -861,7 +854,8 @@ public class FormService {
 
     private HttpHeaders getHeaders() {
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.TEXT_HTML);
+        Map<String, String> utf8 = Collections.singletonMap("charset", "utf-8");
+        headers.setContentType(new MediaType(MediaType.TEXT_HTML, utf8));
         return headers;
     }
 }
