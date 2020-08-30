@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
@@ -130,7 +131,15 @@ public class MockExtensionRule extends ExternalResource {
                 if (method.getParameterTypes()[0].equals(String.class)) {
                     return Optional.ofNullable(beans.get(args[0]))
                             .orElseThrow(() -> new NoSuchBeanDefinitionException((String) args[0]));
+                } else if (method.getParameterTypes()[0].equals(Class.class)) {
+                    for (Entry<String, Object> pair : beans.entrySet()) {
+                        if (((Class) args[0]).isAssignableFrom(pair.getValue().getClass())) {
+                            return pair.getValue();
+                        }
+                        throw new NoSuchBeanDefinitionException((Class) args[0]);
+                    }
                 }
+
             } else if (method.getName().equals("getBeansOfType")) {
                 return types.getOrDefault(args[0], Collections.emptySet())
                         .stream()

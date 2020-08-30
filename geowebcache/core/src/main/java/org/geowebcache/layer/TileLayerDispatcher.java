@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,7 +32,9 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
+import org.geowebcache.config.BaseConfiguration;
 import org.geowebcache.config.ConfigurationAggregator;
+import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.grid.GridSet;
@@ -149,6 +153,11 @@ public class TileLayerDispatcher
 
     public ServiceInformation getServiceInformation() {
         return this.serviceInformation;
+    }
+
+    /** @param serviceInformation the serviceInformation to set */
+    public void setServiceInformation(ServiceInformation serviceInformation) {
+        this.serviceInformation = serviceInformation;
     }
 
     /** @see org.springframework.beans.factory.DisposableBean#destroy() */
@@ -302,6 +311,17 @@ public class TileLayerDispatcher
         this.configs =
                 GeoWebCacheExtensions.configurations(
                         TileLayerConfiguration.class, applicationContext);
+
+        Map<String, BaseConfiguration> config =
+                applicationContext.getBeansOfType(BaseConfiguration.class);
+        if (config != null && !config.isEmpty()) {
+            for (Entry<String, BaseConfiguration> e : config.entrySet()) {
+                if (ServerConfiguration.class.isAssignableFrom(e.getValue().getClass())) {
+                    setServiceInformation(
+                            ((ServerConfiguration) e.getValue()).getServiceInformation());
+                }
+            }
+        }
     }
 
     @Override
