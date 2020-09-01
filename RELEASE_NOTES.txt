@@ -1,3 +1,52 @@
+GeoWebCache 1.18-RC (2020-09-01)
+--------------------------------
+
+Release candidate.
+
+Improvements:
+
+* Include the default ServiceInfo into the WMS & WMTS GetCapabilities document
+* Use of JTS 1.17.1
+
+GeoWebCache 1.17.2 (2020-07-19)
+-------------------------------
+
+Stable release of 1.17.x series.
+
+Improvements:
++++++++++++++
+- Upgrade to PostgreSQL driver 42.2.14
+- Upgrade to jai-ext 1.1.15
+- Upgrade to spring-framework to 5.1.16 and spring-security to 5.1.11
+
+GeoWebCache 1.17.1 (2020-06-01)
+-------------------------------
+
+Stable release of 1.17.x series.
+
+Improvements:
++++++++++++++
+- Upgrade to GeoTools 23.1.
+
+GeoWebCache 1.17.0 (2020-04-14)
+-------------------------------
+
+Initial release of 1.17.x series.
+
+Improvements:
++++++++++++++
+- Use of repo.osgeo.org
+- Upgraded jai-ext to 1.1.14
+
+Improvements:
++++++++++++++
+- <New feature>
+
+Fixes:
+++++++
+- <Bug fix>
+
+
 GeoWebCache 1.18.0
 -------------------
 
