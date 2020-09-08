@@ -26,8 +26,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.channels.FileChannel;
@@ -47,6 +49,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -75,6 +79,10 @@ public class FileBlobStore implements BlobStore {
             LogFactory.getLog(org.geowebcache.storage.blobstore.file.FileBlobStore.class);
 
     static final int DEFAULT_DISK_BLOCK_SIZE = 4096;
+
+    static final String METADATA_GZIP_EXTENSION = ".gz";
+
+    static final int METADATA_MAX_RW_ATTEMPTS = 10;
 
     public static final int BUFFER_SIZE = 32768;
 
@@ -364,7 +372,7 @@ public class FileBlobStore implements BlobStore {
 
     /** Delete a particular tile */
     public boolean delete(TileObject stObj) throws StorageException {
-        File fh = getFileHandleTile(stObj, false);
+        File fh = getFileHandleTile(stObj, null);
         boolean ret = false;
         // we call fh.length() here to check wthether the file exists and its length in a single
         // operation cause lots of calls to exists() may raise the file system cache usage to the
@@ -456,7 +464,7 @@ public class FileBlobStore implements BlobStore {
      * @return true if successful, false otherwise
      */
     public boolean get(TileObject stObj) throws StorageException {
-        File fh = getFileHandleTile(stObj, false);
+        File fh = getFileHandleTile(stObj, null);
         if (!fh.exists()) {
             stObj.setStatus(Status.MISS);
             return false;
@@ -471,9 +479,16 @@ public class FileBlobStore implements BlobStore {
 
     /** Store a tile. */
     public void put(TileObject stObj) throws StorageException {
-        final File fh = getFileHandleTile(stObj, true);
+
+        // An update to ParameterMap file is required !!!
+        Runnable upm =
+                () -> {
+                    this.persistParameterMap(stObj);
+                };
+        final File fh = getFileHandleTile(stObj, upm);
         final long oldSize = fh.length();
         final boolean existed = oldSize > 0;
+
         writeFile(fh, stObj, existed);
 
         // mark the last modification as the tile creation time if set, otherwise
@@ -497,7 +512,7 @@ public class FileBlobStore implements BlobStore {
         }
     }
 
-    private File getFileHandleTile(TileObject stObj, boolean create) throws StorageException {
+    private File getFileHandleTile(TileObject stObj, Runnable upmFunction) throws StorageException {
         final MimeType mimeType;
         try {
             mimeType = MimeType.createFromFormat(stObj.getBlobFormat());
@@ -513,9 +528,12 @@ public class FileBlobStore implements BlobStore {
             throw new StorageException("Failed to compute file path", e);
         }
 
-        if (create) {
+        // If an update to ParameterMap is required, then folder has to be created
+        if (upmFunction != null) {
+            log.debug("Creating parent tile folder and updating ParameterMap");
             File parent = tilePath.getParentFile();
             mkdirs(parent, stObj);
+            upmFunction.run();
         }
 
         return tilePath;
@@ -554,7 +572,6 @@ public class FileBlobStore implements BlobStore {
                 }
             }
 
-            persistParameterMap(stObj);
         } finally {
 
             if (temp != null) {
@@ -644,27 +661,104 @@ public class FileBlobStore implements BlobStore {
      *     java.lang.String)
      */
     public void putLayerMetadata(final String layerName, final String key, final String value) {
-        Properties metadata = getLayerMetadata(layerName);
+        // Get current metadataFile
+        final File metadataFile = getMetadataFile(layerName);
+        // Get last modification time for metadata file
+        long lastModDate = metadataFile.lastModified();
+        // Get metadata content from current metadataFile
+        Properties metadata = getLayerMetadata(metadataFile);
+
+        // Evaluate updating key arg related values (remove/add/update or skip)
+        boolean skipUpdate = false;
+        // Note: since we want to avoid writing metadata file if nothing changed, then we need to
+        // check if it's required
+        // or not (flag skipUpdate). That is reason not to use metadata.merge method instead of
+        // using setProperty
         if (null == value) {
             metadata.remove(key);
         } else {
+            String currValue = metadata.getProperty(key);
+            String encodedValue = null;
             try {
-                metadata.setProperty(key, URLEncoder.encode(value, "UTF-8"));
+                encodedValue = URLEncoder.encode(value, "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 throw new RuntimeException(e);
             }
+            skipUpdate =
+                    currValue != null && encodedValue != null && currValue.equals(encodedValue);
+            // If existing value for key is the same as value arg, then avoid to write it
+            if (!skipUpdate) {
+                metadata.setProperty(key, encodedValue);
+            } else {
+                skipUpdate = true;
+            }
         }
 
-        final File metadataFile = getMetadataFile(layerName);
+        // We call to save metadata only if has changed
+        if (!skipUpdate) {
+            // Write metadata in a temp file
+            File tempFile = null;
+            try {
+                tempFile = writeTempMetadataFile(metadata);
+            } catch (IOException e) {
+                log.error("Cannot create temporary file for " + metadataFile.getPath());
+                throw new UncheckedIOException(e);
+            }
+            // Attempt to rename tmp file to metadata file
+            int tryagain = 0;
+            while (tryagain < FileBlobStore.METADATA_MAX_RW_ATTEMPTS) {
+                // Read current metadatafile date modification (currentModTime)
+                long currentModDate = metadataFile.lastModified();
+                if (lastModDate == 0 || lastModDate == currentModDate) {
+                    if (!metadataFile.getParentFile().exists()) {
+                        metadataFile.getParentFile().mkdirs();
+                    }
+                    // atomic rename of temporary metadata file with getMetadataFilename
+                    // file, in such case we'll just eliminate this one
+                    if (FileUtils.renameFile(tempFile, metadataFile)) {
+                        tempFile = null;
+                    } else {
+                        // Renaming failed !
+                        log.error("Error while renaming metadata file " + metadataFile.getPath());
+                    }
+                    tryagain = FileBlobStore.METADATA_MAX_RW_ATTEMPTS;
+                } else {
+                    // Try again since some other GWC updated the file in middle of writing process
+                    ++tryagain;
+                    log.debug("Reattempting to write metadata file since timestamp changed");
+                }
+            }
+        }
+    }
 
+    private File writeTempMetadataFile(Properties metadata) throws IOException {
+        tmp.mkdirs();
+        final File metadataFile =
+                File.createTempFile("tmp", FileBlobStore.METADATA_GZIP_EXTENSION, tmp);
+        return this.writeMetadataFile(metadata, metadataFile);
+    }
+
+    /**
+     * Writes a Metadatafile with metadata parameter content
+     *
+     * @param metadata
+     * @return temporal file or null if failed
+     * @throws IOException
+     */
+    private File writeMetadataFile(Properties metadata, File metadataFile) throws IOException {
         final String lockObj = metadataFile.getAbsolutePath().intern();
         synchronized (lockObj) {
             if (!metadataFile.getParentFile().exists()) {
                 metadataFile.getParentFile().mkdirs();
             }
-            try (OutputStream out = new FileOutputStream(metadataFile)) {
+            try (OutputStream out = new FileOutputStream(metadataFile);
+                    Writer writer = new OutputStreamWriter(new GZIPOutputStream(out), "UTF-8"); ) {
+
                 String comments = "auto generated file, do not edit by hand";
-                metadata.store(out, comments);
+                // Save as a gzip file
+                metadata.store(writer, comments);
+                return metadataFile;
+
             } catch (FileNotFoundException e) {
                 throw new UncheckedIOException(e);
             } catch (Exception e) {
@@ -673,8 +767,7 @@ public class FileBlobStore implements BlobStore {
         }
     }
 
-    private Properties getLayerMetadata(final String layerName) {
-        final File metadataFile = getMetadataFile(layerName);
+    private Properties getUncompressedLayerMetadata(final File metadataFile) {
         Properties properties = new Properties();
         final String lockObj = metadataFile.getAbsolutePath().intern();
         synchronized (lockObj) {
@@ -682,7 +775,7 @@ public class FileBlobStore implements BlobStore {
                 FileInputStream in;
                 try {
                     in = new FileInputStream(metadataFile);
-                } catch (FileNotFoundException e) {
+                } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
                 try {
@@ -696,15 +789,108 @@ public class FileBlobStore implements BlobStore {
                         log.warn(e.getMessage(), e);
                     }
                 }
+            } else {
+                log.error(
+                        "Uncompressed metadata file does not exists: " + metadataFile.getPath());
             }
         }
         return properties;
     }
 
+    private Properties getLayerMetadata(final File metadataFile) {
+        Properties properties = new Properties();
+        long lastModified = metadataFile.lastModified();
+        final String lockObj = metadataFile.getAbsolutePath().intern();
+        synchronized (lockObj) {
+            if (metadataFile.exists()) {
+                FileInputStream in;
+                GZIPInputStream gzipIn;
+                try {
+                    in = new FileInputStream(metadataFile);
+                    gzipIn = new GZIPInputStream(in);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+                try {
+                	int tryagain = 0;
+                    while (tryagain < FileBlobStore.METADATA_MAX_RW_ATTEMPTS) {
+                        // Read current metadatafile date modification (currentModTime)
+                        long currentModDate = metadataFile.lastModified();
+	                	if (lastModified == currentModDate) {
+	                		properties.load(gzipIn);
+	                		tryagain = FileBlobStore.METADATA_MAX_RW_ATTEMPTS;
+	                    } else {
+	                        // Try again since some other GWC updated the file in middle of writing process
+	                        ++tryagain;
+	                        log.debug("Reattempting to read metadata file since timestamp changed");
+	                    }
+                    }
+                    
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    try {
+                        gzipIn.close();
+                        in.close();
+                    } catch (IOException e) {
+                        log.warn(e.getMessage(), e);
+                    }
+                }
+            } else {
+                log.error("Metadata file does not exists: " + metadataFile.getPath());
+            }
+        }
+        return properties;
+    }
+
+    private Properties getLayerMetadata(final String layerName) {
+        final File metadataFile = getMetadataFile(layerName);
+        return this.getLayerMetadata(metadataFile);
+    }
+
+    private String getMetadataFilename(boolean compressedName) {
+        String metadataFilename = "metadata.properties";
+        if (compressedName) {
+            metadataFilename += FileBlobStore.METADATA_GZIP_EXTENSION;
+        }
+        return metadataFilename;
+    }
+
+    /**
+     * Returns the File related to metadata.properties
+     *
+     * @param layerName
+     * @return metadata file (compressed or not, depending if it's present uncompressed)
+     */
     private File getMetadataFile(final String layerName) {
         File layerPath = getLayerPath(layerName);
-        File metadataFile = new File(layerPath, "metadata.properties");
-        return metadataFile;
+        String metadataFilename = this.getMetadataFilename(true);
+        File metadataFile = new File(layerPath, metadataFilename);
+
+        // At this point we backport uncompressed metadata.properties files to compressed version
+        String oldMetadataFilename = this.getMetadataFilename(false);
+        File oldMetadataFile = new File(layerPath, oldMetadataFilename);
+        if (oldMetadataFile.exists()) {
+            // Uncompressed file exists, then it will be required to move to the new compressed
+            // format
+            // then continue process using that compressed file
+            Properties oldProperties = this.getUncompressedLayerMetadata(oldMetadataFile);
+            try {
+                File compressedNewFile = this.writeMetadataFile(oldProperties, metadataFile);
+                // Remove the older format
+                oldMetadataFile.delete();
+                return compressedNewFile;
+            } catch (IOException e) {
+                log.error(
+                        "Backporting metadata.properties - Failure creating new compressed file or deleting uncompressed one "
+                                + metadataFile.getPath()
+                                + '-'
+                                + e.getMessage());
+                throw new UncheckedIOException(e);
+            }
+        } else {
+            return metadataFile;
+        }
     }
 
     @Override
