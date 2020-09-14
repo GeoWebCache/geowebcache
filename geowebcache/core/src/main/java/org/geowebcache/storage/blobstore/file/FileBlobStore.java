@@ -512,7 +512,8 @@ public class FileBlobStore implements BlobStore {
         }
     }
 
-    private File getFileHandleTile(TileObject stObj, Runnable upmFunction) throws StorageException {
+    private File getFileHandleTile(TileObject stObj, Runnable onTileFolderCreation)
+            throws StorageException {
         final MimeType mimeType;
         try {
             mimeType = MimeType.createFromFormat(stObj.getBlobFormat());
@@ -528,12 +529,12 @@ public class FileBlobStore implements BlobStore {
             throw new StorageException("Failed to compute file path", e);
         }
 
-        // If an update to ParameterMap is required, then folder has to be created
-        if (upmFunction != null) {
+        // Check if it's required to create tile folder
+        if (onTileFolderCreation != null) {
             log.debug("Creating parent tile folder and updating ParameterMap");
             File parent = tilePath.getParentFile();
             mkdirs(parent, stObj);
-            upmFunction.run();
+            onTileFolderCreation.run();
         }
 
         return tilePath;
@@ -670,10 +671,7 @@ public class FileBlobStore implements BlobStore {
 
         // Evaluate updating key arg related values (remove/add/update or skip)
         boolean skipUpdate = false;
-        // Note: since we want to avoid writing metadata file if nothing changed, then we need to
-        // check if it's required
-        // or not (flag skipUpdate). That is reason not to use metadata.merge method instead of
-        // using setProperty
+        // We want to avoid writing metadata file if nothing changed, need to check if required
         if (null == value) {
             metadata.remove(key);
         } else {
@@ -689,44 +687,49 @@ public class FileBlobStore implements BlobStore {
             // If existing value for key is the same as value arg, then avoid to write it
             if (!skipUpdate) {
                 metadata.setProperty(key, encodedValue);
-            } else {
-                skipUpdate = true;
             }
         }
 
         // We call to save metadata only if has changed
         if (!skipUpdate) {
-            // Write metadata in a temp file
-            File tempFile = null;
-            try {
-                tempFile = writeTempMetadataFile(metadata);
-            } catch (IOException e) {
-                log.error("Cannot create temporary file for " + metadataFile.getPath());
-                throw new UncheckedIOException(e);
-            }
-            // Attempt to rename tmp file to metadata file
-            int tryagain = 0;
-            while (tryagain < FileBlobStore.METADATA_MAX_RW_ATTEMPTS) {
-                // Read current metadatafile date modification (currentModTime)
-                long currentModDate = metadataFile.lastModified();
-                if (lastModDate == 0 || lastModDate == currentModDate) {
-                    if (!metadataFile.getParentFile().exists()) {
-                        metadataFile.getParentFile().mkdirs();
-                    }
-                    // atomic rename of temporary metadata file with getMetadataFilename
-                    // file, in such case we'll just eliminate this one
-                    if (FileUtils.renameFile(tempFile, metadataFile)) {
-                        tempFile = null;
-                    } else {
-                        // Renaming failed !
-                        log.error("Error while renaming metadata file " + metadataFile.getPath());
-                    }
-                    tryagain = FileBlobStore.METADATA_MAX_RW_ATTEMPTS;
+            writeMetadataOptimisticLock(metadataFile, lastModDate, metadata);
+        }
+    }
+
+    private void writeMetadataOptimisticLock(
+            final File metadataFile, long lastModDate, Properties metadata) {
+        // Write metadata in a temp file
+        File tempFile = null;
+        try {
+            tempFile = writeTempMetadataFile(metadata);
+        } catch (IOException e) {
+            log.error("Cannot create temporary file for " + metadataFile.getPath());
+            throw new UncheckedIOException(e);
+        }
+        // Attempt to rename tmp file to metadata file
+        int attempts = 0;
+        while (attempts < FileBlobStore.METADATA_MAX_RW_ATTEMPTS) {
+            // Read current metadatafile date modification (currentModTime)
+            long currentModDate = metadataFile.lastModified();
+            // Note: lastModData == 0 then file does not existed when getting lastModified
+            if (lastModDate == 0 || lastModDate == currentModDate) {
+                metadataFile.getParentFile().mkdirs();
+                // atomic rename of temporary metadata file with getMetadataFilename
+                // file, in such case we'll just eliminate this one
+                if (FileUtils.renameFile(tempFile, metadataFile)) {
+                    log.debug("Temporary file renamed successfully");
+                    break;
                 } else {
-                    // Try again since some other GWC updated the file in middle of writing process
-                    ++tryagain;
-                    log.debug("Reattempting to write metadata file since timestamp changed");
+                    // Renaming failed !
+                    attempts++;
+                    log.debug(
+                            "Reattempting to write metadata file, because an error while renaming metadata file "
+                                    + metadataFile.getPath());
                 }
+            } else {
+                // Try again since some other GWC updated the file in middle of writing process
+                attempts++;
+                log.debug("Reattempting to write metadata file since timestamp changed");
             }
         }
     }
@@ -769,6 +772,7 @@ public class FileBlobStore implements BlobStore {
 
     private Properties getUncompressedLayerMetadata(final File metadataFile) {
         Properties properties = new Properties();
+        long lastModified = metadataFile.lastModified();
         final String lockObj = metadataFile.getAbsolutePath().intern();
         synchronized (lockObj) {
             if (metadataFile.exists()) {
@@ -778,20 +782,30 @@ public class FileBlobStore implements BlobStore {
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
-                try {
-                    properties.load(in);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                } finally {
+                int attempts = 0;
+                while (attempts < FileBlobStore.METADATA_MAX_RW_ATTEMPTS) {
                     try {
-                        in.close();
-                    } catch (IOException e) {
-                        log.warn(e.getMessage(), e);
+                        properties.load(in);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    // Read current metadatafile date modification (currentModTime)
+                    long currentModDate = metadataFile.lastModified();
+                    if (lastModified == currentModDate) {
+                        break;
+                    } else {
+                        // Try again since some other GWC updated the file
+                        attempts++;
+                        log.debug("Reattempting to read metadata file since timestamp changed");
                     }
                 }
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    log.warn(e.getMessage(), e);
+                }
             } else {
-                log.error(
-                        "Uncompressed metadata file does not exists: " + metadataFile.getPath());
+                log.debug("Uncompressed metadata file does not exists: " + metadataFile.getPath());
             }
         }
         return properties;
@@ -811,33 +825,31 @@ public class FileBlobStore implements BlobStore {
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
-                try {
-                	int tryagain = 0;
-                    while (tryagain < FileBlobStore.METADATA_MAX_RW_ATTEMPTS) {
-                        // Read current metadatafile date modification (currentModTime)
-                        long currentModDate = metadataFile.lastModified();
-	                	if (lastModified == currentModDate) {
-	                		properties.load(gzipIn);
-	                		tryagain = FileBlobStore.METADATA_MAX_RW_ATTEMPTS;
-	                    } else {
-	                        // Try again since some other GWC updated the file in middle of writing process
-	                        ++tryagain;
-	                        log.debug("Reattempting to read metadata file since timestamp changed");
-	                    }
-                    }
-                    
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                } finally {
+                int attempts = 0;
+                while (attempts < FileBlobStore.METADATA_MAX_RW_ATTEMPTS) {
                     try {
-                        gzipIn.close();
-                        in.close();
-                    } catch (IOException e) {
-                        log.warn(e.getMessage(), e);
+                        properties.load(gzipIn);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    // Read current metadatafile date modification (currentModTime)
+                    long currentModDate = metadataFile.lastModified();
+                    if (lastModified == currentModDate) {
+                        break;
+                    } else {
+                        // Try again since some other GWC updated the file
+                        attempts++;
+                        log.debug("Reattempting to read metadata file since timestamp changed");
                     }
                 }
+                try {
+                    gzipIn.close();
+                    in.close();
+                } catch (IOException e) {
+                    log.warn(e.getMessage(), e);
+                }
             } else {
-                log.error("Metadata file does not exists: " + metadataFile.getPath());
+                log.debug("Metadata file does not exists: " + metadataFile.getPath());
             }
         }
         return properties;
@@ -864,16 +876,19 @@ public class FileBlobStore implements BlobStore {
      */
     private File getMetadataFile(final String layerName) {
         File layerPath = getLayerPath(layerName);
+        // Get compressed metadata filename
         String metadataFilename = this.getMetadataFilename(true);
         File metadataFile = new File(layerPath, metadataFilename);
-
-        // At this point we backport uncompressed metadata.properties files to compressed version
+        // If compressed metadata exists then avoid backwards compatibility work
+        if (metadataFile.exists()) {
+            return metadataFile;
+        }
+        // Backwards compatibility: move uncompressed metadata.properties files to compressed
+        // version
         String oldMetadataFilename = this.getMetadataFilename(false);
         File oldMetadataFile = new File(layerPath, oldMetadataFilename);
         if (oldMetadataFile.exists()) {
-            // Uncompressed file exists, then it will be required to move to the new compressed
-            // format
-            // then continue process using that compressed file
+            // Uncompressed file exists, move to the compressed format file
             Properties oldProperties = this.getUncompressedLayerMetadata(oldMetadataFile);
             try {
                 File compressedNewFile = this.writeMetadataFile(oldProperties, metadataFile);
@@ -888,9 +903,8 @@ public class FileBlobStore implements BlobStore {
                                 + e.getMessage());
                 throw new UncheckedIOException(e);
             }
-        } else {
-            return metadataFile;
         }
+        return metadataFile;
     }
 
     @Override

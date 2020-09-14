@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.geowebcache.storage.AbstractBlobStoreTest;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -70,6 +71,40 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
     }
 
     @Test
+    public void testConcurrentMetadataBasedOnCores() throws InterruptedException {
+        assertThat(store.getLayerMetadata("testLayer", "testKey"), nullValue());
+        // Number of threads based on cores * 2
+        int numberOfThreads = Runtime.getRuntime().availableProcessors() * 2;
+        ExecutorService service = Executors.newFixedThreadPool(numberOfThreads);
+        CountDownLatch latch = new CountDownLatch(numberOfThreads);
+        for (int i = 0; i < numberOfThreads; i++) {
+            final int key = i;
+            service.submit(
+                    () -> {
+                        // Sleep thread randomly before adding information into metadata file.
+                        try {
+                            long sleep = Math.round((Math.random() * numberOfThreads * 200) + 1);
+                            Thread.sleep(sleep);
+                        } catch (InterruptedException e) {
+                            // Handle exception
+                        }
+                        store.putLayerMetadata(
+                                "testLayer",
+                                "testKey" + String.valueOf(key),
+                                "testValue" + String.valueOf(key));
+                        latch.countDown();
+                    });
+        }
+        latch.await();
+        for (int i = 0; i < numberOfThreads; i++) {
+            assertThat(
+                    store.getLayerMetadata("testLayer", "testKey" + String.valueOf(i)),
+                    equalTo("testValue" + String.valueOf(i)));
+        }
+    }
+
+    @Ignore // Could take a long time, useful to have for development and eventual double checks
+    @Test
     public void testConcurrentMassiveMetadataKeys() throws InterruptedException {
         assertThat(store.getLayerMetadata("testLayer", "testKey"), nullValue());
         int numberOfThreads = 50;
@@ -81,7 +116,7 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
                     () -> {
                         // Sleep thread randomly before adding information into metadata file.
                         try {
-                        	long sleep = Math.round((Math.random() * numberOfThreads * 500) + 1);
+                            long sleep = Math.round((Math.random() * numberOfThreads * 500) + 1);
                             Thread.sleep(sleep);
                         } catch (InterruptedException e) {
                             // Handle exception
