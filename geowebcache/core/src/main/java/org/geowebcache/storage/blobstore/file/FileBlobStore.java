@@ -776,33 +776,22 @@ public class FileBlobStore implements BlobStore {
         final String lockObj = metadataFile.getAbsolutePath().intern();
         synchronized (lockObj) {
             if (metadataFile.exists()) {
-                FileInputStream in;
-                try {
-                    in = new FileInputStream(metadataFile);
+                try (FileInputStream in = new FileInputStream(metadataFile); ) {
+                    int attempts = 0;
+                    while (attempts < FileBlobStore.METADATA_MAX_RW_ATTEMPTS) {
+                        properties.load(in);
+                        // Read current metadatafile date modification (currentModTime)
+                        long currentModDate = metadataFile.lastModified();
+                        if (lastModified == currentModDate) {
+                            break;
+                        } else {
+                            // Try again since some other GWC updated the file
+                            attempts++;
+                            log.debug("Reattempting to read metadata file since timestamp changed");
+                        }
+                    }
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
-                }
-                int attempts = 0;
-                while (attempts < FileBlobStore.METADATA_MAX_RW_ATTEMPTS) {
-                    try {
-                        properties.load(in);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                    // Read current metadatafile date modification (currentModTime)
-                    long currentModDate = metadataFile.lastModified();
-                    if (lastModified == currentModDate) {
-                        break;
-                    } else {
-                        // Try again since some other GWC updated the file
-                        attempts++;
-                        log.debug("Reattempting to read metadata file since timestamp changed");
-                    }
-                }
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    log.warn(e.getMessage(), e);
                 }
             } else {
                 log.debug("Uncompressed metadata file does not exists: " + metadataFile.getPath());
@@ -817,36 +806,27 @@ public class FileBlobStore implements BlobStore {
         final String lockObj = metadataFile.getAbsolutePath().intern();
         synchronized (lockObj) {
             if (metadataFile.exists()) {
-                FileInputStream in;
-                GZIPInputStream gzipIn;
-                try {
-                    in = new FileInputStream(metadataFile);
-                    gzipIn = new GZIPInputStream(in);
+                try (FileInputStream in = new FileInputStream(metadataFile);
+                        GZIPInputStream gzipIn = new GZIPInputStream(in); ) {
+                    int attempts = 0;
+                    while (attempts < FileBlobStore.METADATA_MAX_RW_ATTEMPTS) {
+                        try {
+                            properties.load(gzipIn);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                        // Read current metadatafile date modification (currentModTime)
+                        long currentModDate = metadataFile.lastModified();
+                        if (lastModified == currentModDate) {
+                            break;
+                        } else {
+                            // Try again since some other GWC updated the file
+                            attempts++;
+                            log.debug("Reattempting to read metadata file since timestamp changed");
+                        }
+                    }
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
-                }
-                int attempts = 0;
-                while (attempts < FileBlobStore.METADATA_MAX_RW_ATTEMPTS) {
-                    try {
-                        properties.load(gzipIn);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                    // Read current metadatafile date modification (currentModTime)
-                    long currentModDate = metadataFile.lastModified();
-                    if (lastModified == currentModDate) {
-                        break;
-                    } else {
-                        // Try again since some other GWC updated the file
-                        attempts++;
-                        log.debug("Reattempting to read metadata file since timestamp changed");
-                    }
-                }
-                try {
-                    gzipIn.close();
-                    in.close();
-                } catch (IOException e) {
-                    log.warn(e.getMessage(), e);
                 }
             } else {
                 log.debug("Metadata file does not exists: " + metadataFile.getPath());

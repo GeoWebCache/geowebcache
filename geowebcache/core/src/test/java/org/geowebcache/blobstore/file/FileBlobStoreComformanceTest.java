@@ -37,6 +37,32 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
         this.store = new FileBlobStore(temp.getRoot().getAbsolutePath());
     }
 
+    private void putLayerMetadataConcurrently(int numberOfThreads, int sleepVal)
+            throws InterruptedException {
+        ExecutorService service = Executors.newFixedThreadPool(numberOfThreads);
+        CountDownLatch latch = new CountDownLatch(numberOfThreads);
+        for (int i = 0; i < numberOfThreads; i++) {
+            final int key = i;
+            service.submit(
+                    () -> {
+                        // Sleep thread randomly before adding information into metadata file.
+                        try {
+                            long sleep =
+                                    Math.round((Math.random() * numberOfThreads * sleepVal) + 1);
+                            Thread.sleep(sleep);
+                        } catch (InterruptedException e) {
+                            // Handle exception
+                        }
+                        store.putLayerMetadata(
+                                "testLayer",
+                                "testKey" + String.valueOf(key),
+                                "testValue" + String.valueOf(key));
+                        latch.countDown();
+                    });
+        }
+        latch.await();
+    }
+
     @Test
     public void testMetadataWithPointInKey() throws Exception {
         assertThat(store.getLayerMetadata("testLayer", "test.Key"), nullValue());
@@ -75,27 +101,8 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
         assertThat(store.getLayerMetadata("testLayer", "testKey"), nullValue());
         // Number of threads based on cores * 2
         int numberOfThreads = Runtime.getRuntime().availableProcessors() * 2;
-        ExecutorService service = Executors.newFixedThreadPool(numberOfThreads);
-        CountDownLatch latch = new CountDownLatch(numberOfThreads);
-        for (int i = 0; i < numberOfThreads; i++) {
-            final int key = i;
-            service.submit(
-                    () -> {
-                        // Sleep thread randomly before adding information into metadata file.
-                        try {
-                            long sleep = Math.round((Math.random() * numberOfThreads * 200) + 1);
-                            Thread.sleep(sleep);
-                        } catch (InterruptedException e) {
-                            // Handle exception
-                        }
-                        store.putLayerMetadata(
-                                "testLayer",
-                                "testKey" + String.valueOf(key),
-                                "testValue" + String.valueOf(key));
-                        latch.countDown();
-                    });
-        }
-        latch.await();
+        this.putLayerMetadataConcurrently(numberOfThreads, 200);
+        // Check return values in Metadata file
         for (int i = 0; i < numberOfThreads; i++) {
             assertThat(
                     store.getLayerMetadata("testLayer", "testKey" + String.valueOf(i)),
@@ -108,27 +115,8 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
     public void testConcurrentMassiveMetadataKeys() throws InterruptedException {
         assertThat(store.getLayerMetadata("testLayer", "testKey"), nullValue());
         int numberOfThreads = 50;
-        ExecutorService service = Executors.newFixedThreadPool(numberOfThreads);
-        CountDownLatch latch = new CountDownLatch(numberOfThreads);
-        for (int i = 0; i < numberOfThreads; i++) {
-            final int key = i;
-            service.submit(
-                    () -> {
-                        // Sleep thread randomly before adding information into metadata file.
-                        try {
-                            long sleep = Math.round((Math.random() * numberOfThreads * 500) + 1);
-                            Thread.sleep(sleep);
-                        } catch (InterruptedException e) {
-                            // Handle exception
-                        }
-                        store.putLayerMetadata(
-                                "testLayer",
-                                "testKey" + String.valueOf(key),
-                                "testValue" + String.valueOf(key));
-                        latch.countDown();
-                    });
-        }
-        latch.await();
+        this.putLayerMetadataConcurrently(numberOfThreads, 500);
+        // Check return values in Metadata file
         for (int i = 0; i < numberOfThreads; i++) {
             assertThat(
                     store.getLayerMetadata("testLayer", "testKey" + String.valueOf(i)),
