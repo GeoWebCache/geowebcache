@@ -630,7 +630,12 @@ public class FileBlobStore implements BlobStore {
      * @see org.geowebcache.storage.BlobStore#getLayerMetadata(java.lang.String, java.lang.String)
      */
     public String getLayerMetadata(final String layerName, final String key) {
-        return layerMetadata.getEntry(layerName, key);
+        try {
+            return layerMetadata.getEntry(layerName, key);
+        } catch (IOException e) {
+            log.debug("Optimistic read of metadata key failed");
+        }
+        return null;
     }
 
     private static String urlDecUtf8(String value) {
@@ -651,6 +656,8 @@ public class FileBlobStore implements BlobStore {
             layerMetadata.putEntry(layerName, key, value);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
+        } catch (IOException e) {
+            log.debug("Optimistic read of metadata during writing process failed");
         }
     }
 
@@ -751,7 +758,13 @@ public class FileBlobStore implements BlobStore {
 
     @Override
     public Map<String, Optional<Map<String, String>>> getParametersMapping(String layerName) {
-        Map<String, String> p = layerMetadata.getLayerMetadata(layerName);
+        Map<String, String> p;
+        try {
+            p = layerMetadata.getLayerMetadata(layerName);
+        } catch (IOException e) {
+            log.debug("Optimistic read of metadata mappings failed");
+            return null;
+        }
         return getParameterIds(layerName)
                 .stream()
                 .collect(
