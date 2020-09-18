@@ -21,17 +21,11 @@ import static org.geowebcache.util.FileUtils.listFilesNullSafe;
 import com.google.common.base.Preconditions;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.channels.FileChannel;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -40,7 +34,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -49,8 +42,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -80,10 +71,6 @@ public class FileBlobStore implements BlobStore {
 
     static final int DEFAULT_DISK_BLOCK_SIZE = 4096;
 
-    static final String METADATA_GZIP_EXTENSION = ".gz";
-
-    static final int METADATA_MAX_RW_ATTEMPTS = 10;
-
     public static final int BUFFER_SIZE = 32768;
 
     private final File stagingArea;
@@ -99,6 +86,8 @@ public class FileBlobStore implements BlobStore {
     private File tmp;
 
     private ExecutorService deleteExecutorService;
+
+    private LayerMetadataStore layerMetadata;
 
     public FileBlobStore(DefaultStorageFinder defStoreFinder)
             throws StorageException, ConfigurationException {
@@ -152,6 +141,7 @@ public class FileBlobStore implements BlobStore {
         }
 
         stagingArea = new File(path, "_gwc_in_progress_deletes_");
+        layerMetadata = new LayerMetadataStore(path, tmp);
         createDeleteExecutorService();
         issuePendingDeletes();
     }
@@ -232,12 +222,12 @@ public class FileBlobStore implements BlobStore {
                 if (file.isDirectory()) {
                     deleteDirectory(file);
                 } else {
-                    if (!file.delete()) {
+                    if (!file.delete() && file.exists()) {
                         throw new IOException("Unable to delete " + file.getAbsolutePath());
                     }
                 }
             }
-            if (!directory.delete()) {
+            if (!directory.delete() && directory.exists()) {
                 String message = "Unable to delete directory " + directory + ".";
                 throw new IOException(message);
             }
@@ -374,7 +364,7 @@ public class FileBlobStore implements BlobStore {
     public boolean delete(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, null);
         boolean ret = false;
-        // we call fh.length() here to check wthether the file exists and its length in a single
+        // we call fh.length() here to check whether the file exists and its length in a single
         // operation cause lots of calls to exists() may raise the file system cache usage to the
         // ceiling. File.length() returns 0 if the file does not exist anyway
         final long length = fh.length();
@@ -480,7 +470,7 @@ public class FileBlobStore implements BlobStore {
     /** Store a tile. */
     public void put(TileObject stObj) throws StorageException {
 
-        // An update to ParameterMap file is required !!!
+        // an update to ParameterMap file is required !!!
         Runnable upm =
                 () -> {
                     this.persistParameterMap(stObj);
@@ -502,7 +492,7 @@ public class FileBlobStore implements BlobStore {
         }
 
         /*
-         * This is important because listeners may be tracking tile existence
+         * this is important because listeners may be tracking tile existence
          */
         stObj.setBlobSize((int) padSize(stObj.getBlobSize()));
         if (existed) {
@@ -529,7 +519,7 @@ public class FileBlobStore implements BlobStore {
             throw new StorageException("Failed to compute file path", e);
         }
 
-        // Check if it's required to create tile folder
+        // check if it's required to create tile folder
         if (onTileFolderCreation != null) {
             log.debug("Creating parent tile folder and updating ParameterMap");
             File parent = tilePath.getParentFile();
@@ -553,7 +543,7 @@ public class FileBlobStore implements BlobStore {
         File temp = new File(tmp, UUID.randomUUID().toString());
 
         try {
-            // Open the output stream and read the blob into the tile
+            // open the output stream and read the blob into the tile
             try (FileOutputStream fos = new FileOutputStream(temp);
                     FileChannel channel = fos.getChannel()) {
                 stObj.getBlob().transferTo(channel);
@@ -613,21 +603,21 @@ public class FileBlobStore implements BlobStore {
      * directoryCreated method for each created directory.
      */
     private boolean mkdirs(File path, TileObject stObj) {
-        /* If the terminal directory already exists, answer false */
+        /* if the terminal directory already exists, answer false */
         if (path.exists()) {
             return false;
         }
-        /* If the receiver can be created, answer true */
+        /* if the receiver can be created, answer true */
         if (path.mkdir()) {
             // listeners.sendDirectoryCreated(stObj);
             return true;
         }
         String parentDir = path.getParent();
-        /* If there is no parent and we were not created, answer false */
+        /* if there is no parent and we were not created, answer false */
         if (parentDir == null) {
             return false;
         }
-        /* Otherwise, try to create a parent directory and then this directory */
+        /* otherwise, try to create a parent directory and then this directory */
         mkdirs(new File(parentDir), stObj);
         if (path.mkdir()) {
             // listeners.sendDirectoryCreated(stObj);
@@ -640,12 +630,7 @@ public class FileBlobStore implements BlobStore {
      * @see org.geowebcache.storage.BlobStore#getLayerMetadata(java.lang.String, java.lang.String)
      */
     public String getLayerMetadata(final String layerName, final String key) {
-        Properties metadata = getLayerMetadata(layerName);
-        String value = metadata.getProperty(key);
-        if (value != null) {
-            value = urlDecUtf8(value);
-        }
-        return value;
+        return layerMetadata.getEntry(layerName, key);
     }
 
     private static String urlDecUtf8(String value) {
@@ -662,229 +647,11 @@ public class FileBlobStore implements BlobStore {
      *     java.lang.String)
      */
     public void putLayerMetadata(final String layerName, final String key, final String value) {
-        // Get current metadataFile
-        final File metadataFile = getMetadataFile(layerName);
-        // Get last modification time for metadata file
-        long lastModDate = metadataFile.lastModified();
-        // Get metadata content from current metadataFile
-        Properties metadata = getLayerMetadata(metadataFile);
-
-        // Evaluate updating key arg related values (remove/add/update or skip)
-        boolean skipUpdate = false;
-        // We want to avoid writing metadata file if nothing changed, need to check if required
-        if (null == value) {
-            metadata.remove(key);
-        } else {
-            String currValue = metadata.getProperty(key);
-            String encodedValue = null;
-            try {
-                encodedValue = URLEncoder.encode(value, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
-            skipUpdate =
-                    currValue != null && encodedValue != null && currValue.equals(encodedValue);
-            // If existing value for key is the same as value arg, then avoid to write it
-            if (!skipUpdate) {
-                metadata.setProperty(key, encodedValue);
-            }
-        }
-
-        // We call to save metadata only if has changed
-        if (!skipUpdate) {
-            writeMetadataOptimisticLock(metadataFile, lastModDate, metadata);
-        }
-    }
-
-    private void writeMetadataOptimisticLock(
-            final File metadataFile, long lastModDate, Properties metadata) {
-        // Write metadata in a temp file
-        File tempFile = null;
         try {
-            tempFile = writeTempMetadataFile(metadata);
-        } catch (IOException e) {
-            log.error("Cannot create temporary file for " + metadataFile.getPath());
-            throw new UncheckedIOException(e);
+            layerMetadata.putEntry(layerName, key, value);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
         }
-        // Attempt to rename tmp file to metadata file
-        int attempts = 0;
-        while (attempts < FileBlobStore.METADATA_MAX_RW_ATTEMPTS) {
-            // Read current metadatafile date modification (currentModTime)
-            long currentModDate = metadataFile.lastModified();
-            // Note: lastModData == 0 then file does not existed when getting lastModified
-            if (lastModDate == 0 || lastModDate == currentModDate) {
-                metadataFile.getParentFile().mkdirs();
-                // atomic rename of temporary metadata file with getMetadataFilename
-                // file, in such case we'll just eliminate this one
-                if (FileUtils.renameFile(tempFile, metadataFile)) {
-                    log.debug("Temporary file renamed successfully");
-                    break;
-                } else {
-                    // Renaming failed !
-                    attempts++;
-                    log.debug(
-                            "Reattempting to write metadata file, because an error while renaming metadata file "
-                                    + metadataFile.getPath());
-                }
-            } else {
-                // Try again since some other GWC updated the file in middle of writing process
-                attempts++;
-                log.debug("Reattempting to write metadata file since timestamp changed");
-            }
-        }
-    }
-
-    private File writeTempMetadataFile(Properties metadata) throws IOException {
-        tmp.mkdirs();
-        final File metadataFile =
-                File.createTempFile("tmp", FileBlobStore.METADATA_GZIP_EXTENSION, tmp);
-        return this.writeMetadataFile(metadata, metadataFile);
-    }
-
-    /**
-     * Writes a Metadatafile with metadata parameter content
-     *
-     * @param metadata
-     * @return temporal file or null if failed
-     * @throws IOException
-     */
-    private File writeMetadataFile(Properties metadata, File metadataFile) throws IOException {
-        final String lockObj = metadataFile.getAbsolutePath().intern();
-        synchronized (lockObj) {
-            if (!metadataFile.getParentFile().exists()) {
-                metadataFile.getParentFile().mkdirs();
-            }
-            try (OutputStream out = new FileOutputStream(metadataFile);
-                    Writer writer = new OutputStreamWriter(new GZIPOutputStream(out), "UTF-8"); ) {
-
-                String comments = "auto generated file, do not edit by hand";
-                // Save as a gzip file
-                metadata.store(writer, comments);
-                return metadataFile;
-
-            } catch (FileNotFoundException e) {
-                throw new UncheckedIOException(e);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    private Properties getUncompressedLayerMetadata(final File metadataFile) {
-        Properties properties = new Properties();
-        long lastModified = metadataFile.lastModified();
-        final String lockObj = metadataFile.getAbsolutePath().intern();
-        synchronized (lockObj) {
-            if (metadataFile.exists()) {
-                try (FileInputStream in = new FileInputStream(metadataFile); ) {
-                    int attempts = 0;
-                    while (attempts < FileBlobStore.METADATA_MAX_RW_ATTEMPTS) {
-                        properties.load(in);
-                        // Read current metadatafile date modification (currentModTime)
-                        long currentModDate = metadataFile.lastModified();
-                        if (lastModified == currentModDate) {
-                            break;
-                        } else {
-                            // Try again since some other GWC updated the file
-                            attempts++;
-                            log.debug("Reattempting to read metadata file since timestamp changed");
-                        }
-                    }
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            } else {
-                log.debug("Uncompressed metadata file does not exists: " + metadataFile.getPath());
-            }
-        }
-        return properties;
-    }
-
-    private Properties getLayerMetadata(final File metadataFile) {
-        Properties properties = new Properties();
-        long lastModified = metadataFile.lastModified();
-        final String lockObj = metadataFile.getAbsolutePath().intern();
-        synchronized (lockObj) {
-            if (metadataFile.exists()) {
-                try (FileInputStream in = new FileInputStream(metadataFile);
-                        GZIPInputStream gzipIn = new GZIPInputStream(in); ) {
-                    int attempts = 0;
-                    while (attempts < FileBlobStore.METADATA_MAX_RW_ATTEMPTS) {
-                        try {
-                            properties.load(gzipIn);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                        // Read current metadatafile date modification (currentModTime)
-                        long currentModDate = metadataFile.lastModified();
-                        if (lastModified == currentModDate) {
-                            break;
-                        } else {
-                            // Try again since some other GWC updated the file
-                            attempts++;
-                            log.debug("Reattempting to read metadata file since timestamp changed");
-                        }
-                    }
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            } else {
-                log.debug("Metadata file does not exists: " + metadataFile.getPath());
-            }
-        }
-        return properties;
-    }
-
-    private Properties getLayerMetadata(final String layerName) {
-        final File metadataFile = getMetadataFile(layerName);
-        return this.getLayerMetadata(metadataFile);
-    }
-
-    private String getMetadataFilename(boolean compressedName) {
-        String metadataFilename = "metadata.properties";
-        if (compressedName) {
-            metadataFilename += FileBlobStore.METADATA_GZIP_EXTENSION;
-        }
-        return metadataFilename;
-    }
-
-    /**
-     * Returns the File related to metadata.properties
-     *
-     * @param layerName
-     * @return metadata file (compressed or not, depending if it's present uncompressed)
-     */
-    private File getMetadataFile(final String layerName) {
-        File layerPath = getLayerPath(layerName);
-        // Get compressed metadata filename
-        String metadataFilename = this.getMetadataFilename(true);
-        File metadataFile = new File(layerPath, metadataFilename);
-        // If compressed metadata exists then avoid backwards compatibility work
-        if (metadataFile.exists()) {
-            return metadataFile;
-        }
-        // Backwards compatibility: move uncompressed metadata.properties files to compressed
-        // version
-        String oldMetadataFilename = this.getMetadataFilename(false);
-        File oldMetadataFile = new File(layerPath, oldMetadataFilename);
-        if (oldMetadataFile.exists()) {
-            // Uncompressed file exists, move to the compressed format file
-            Properties oldProperties = this.getUncompressedLayerMetadata(oldMetadataFile);
-            try {
-                File compressedNewFile = this.writeMetadataFile(oldProperties, metadataFile);
-                // Remove the older format
-                oldMetadataFile.delete();
-                return compressedNewFile;
-            } catch (IOException e) {
-                log.error(
-                        "Backporting metadata.properties - Failure creating new compressed file or deleting uncompressed one "
-                                + metadataFile.getPath()
-                                + '-'
-                                + e.getMessage());
-                throw new UncheckedIOException(e);
-            }
-        }
-        return metadataFile;
     }
 
     @Override
@@ -984,14 +751,14 @@ public class FileBlobStore implements BlobStore {
 
     @Override
     public Map<String, Optional<Map<String, String>>> getParametersMapping(String layerName) {
-        Properties p = getLayerMetadata(layerName);
+        Map<String, String> p = layerMetadata.getLayerMetadata(layerName);
         return getParameterIds(layerName)
                 .stream()
                 .collect(
                         Collectors.toMap(
                                 (id) -> id,
                                 (id) -> {
-                                    String kvp = p.getProperty("parameters." + id);
+                                    String kvp = p.get("parameters." + id);
                                     if (Objects.isNull(kvp)) {
                                         return Optional.empty();
                                     }

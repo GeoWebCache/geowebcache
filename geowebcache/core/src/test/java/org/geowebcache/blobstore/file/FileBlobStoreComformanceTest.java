@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.geowebcache.storage.AbstractBlobStoreTest;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
-import org.junit.Ignore;
+import org.geowebcache.storage.blobstore.file.LayerMetadataStore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -34,30 +34,29 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
 
     @Override
     public void createTestUnit() throws Exception {
+        System.setProperty(LayerMetadataStore.PROPERTY_METADATA_MAX_RW_ATTEMPTS, "20");
+        // org.apache.log4j.Logger.getRootLogger().setLevel(Level.DEBUG);
         this.store = new FileBlobStore(temp.getRoot().getAbsolutePath());
     }
 
-    private void putLayerMetadataConcurrently(int numberOfThreads, int sleepVal)
-            throws InterruptedException {
+    private void putLayerMetadataConcurrently(int numberOfThreads) throws InterruptedException {
         ExecutorService service = Executors.newFixedThreadPool(numberOfThreads);
         CountDownLatch latch = new CountDownLatch(numberOfThreads);
         for (int i = 0; i < numberOfThreads; i++) {
             final int key = i;
             service.submit(
                     () -> {
-                        // Sleep thread randomly before adding information into metadata file.
                         try {
-                            long sleep =
-                                    Math.round((Math.random() * numberOfThreads * sleepVal) + 1);
-                            Thread.sleep(sleep);
-                        } catch (InterruptedException e) {
-                            // Handle exception
+                            String threadKey = "testKey" + String.valueOf(key);
+                            String value = "testValue" + String.valueOf(key);
+                            // System.err.printf("Setting %s=%s%n", threadKey, value);
+                            store.putLayerMetadata("testLayer", threadKey, value);
+                        } catch (RuntimeException eh) {
+                            eh.printStackTrace();
+                            throw eh;
+                        } finally {
+                            latch.countDown();
                         }
-                        store.putLayerMetadata(
-                                "testLayer",
-                                "testKey" + String.valueOf(key),
-                                "testValue" + String.valueOf(key));
-                        latch.countDown();
                     });
         }
         latch.await();
@@ -80,12 +79,6 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
             final int key = i;
             service.submit(
                     () -> {
-                        // Sleep thread randomly before adding information into metadata file.
-                        try {
-                            Thread.sleep(Math.round((Math.random() * 500) + 1));
-                        } catch (InterruptedException e) {
-                            // Handle exception
-                        }
                         store.putLayerMetadata(
                                 "testLayer", "test.Key." + String.valueOf(key), "testValue");
                         latch.countDown();
@@ -99,10 +92,10 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
     @Test
     public void testConcurrentMetadataBasedOnCores() throws InterruptedException {
         assertThat(store.getLayerMetadata("testLayer", "testKey"), nullValue());
-        // Number of threads based on cores * 2
+        // number of threads based on cores * 2
         int numberOfThreads = Runtime.getRuntime().availableProcessors() * 2;
-        this.putLayerMetadataConcurrently(numberOfThreads, 200);
-        // Check return values in Metadata file
+        this.putLayerMetadataConcurrently(numberOfThreads);
+        // check return values in Metadata file
         for (int i = 0; i < numberOfThreads; i++) {
             assertThat(
                     store.getLayerMetadata("testLayer", "testKey" + String.valueOf(i)),
@@ -110,13 +103,13 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
         }
     }
 
-    @Ignore // Could take a long time, useful to have for development and eventual double checks
+    // @Ignore // could take a long time, useful to have for development and eventual double checks
     @Test
     public void testConcurrentMassiveMetadataKeys() throws InterruptedException {
         assertThat(store.getLayerMetadata("testLayer", "testKey"), nullValue());
-        int numberOfThreads = 50;
-        this.putLayerMetadataConcurrently(numberOfThreads, 500);
-        // Check return values in Metadata file
+        int numberOfThreads = 100;
+        this.putLayerMetadataConcurrently(numberOfThreads);
+        // check return values in Metadata file
         for (int i = 0; i < numberOfThreads; i++) {
             assertThat(
                     store.getLayerMetadata("testLayer", "testKey" + String.valueOf(i)),
