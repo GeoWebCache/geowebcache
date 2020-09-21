@@ -51,10 +51,16 @@ public class LayerMetadataStore {
             LogFactory.getLog(org.geowebcache.storage.blobstore.file.LayerMetadataStore.class);
 
     public static final String PROPERTY_METADATA_MAX_RW_ATTEMPTS =
-            "gwc.fileblobstore.maxRWAttempts";
+            "gwc.layermetadatastore.maxRWAttempts";
+
+    public static final String PROPERTY_WAIT_AFTER_RENAME =
+            "gwc.layermetadatastore.waitAfterRename";
 
     static final int METADATA_MAX_RW_ATTEMPTS =
-            Integer.parseInt(System.getProperty(PROPERTY_METADATA_MAX_RW_ATTEMPTS, "10"));
+            Integer.parseInt(System.getProperty(PROPERTY_METADATA_MAX_RW_ATTEMPTS, "50"));
+
+    static final int WAIT_AFTER_RENAME =
+            Integer.parseInt(System.getProperty(PROPERTY_WAIT_AFTER_RENAME, "50"));
 
     static final String METADATA_GZIP_EXTENSION = ".gz";
 
@@ -98,8 +104,6 @@ public class LayerMetadataStore {
             throws IOException {
         final File metadataFile = resolveMetadataFile(layerName);
         Properties metadata = loadLayerMetadata(metadataFile);
-        // Current last modification time
-        final long lastModDate = metadataFile.lastModified();
 
         boolean doUpdate;
         String encodedValue;
@@ -111,7 +115,7 @@ public class LayerMetadataStore {
             doUpdate = !Objects.equals(encodedValue, metadata.getProperty(key));
         }
         if (doUpdate) {
-            writeMetadataOptimisticLock(key, encodedValue, metadataFile, metadata, lastModDate);
+            writeMetadataOptimisticLock(key, encodedValue, metadataFile);
         }
     }
 
@@ -152,14 +156,11 @@ public class LayerMetadataStore {
      */
     @SuppressFBWarnings(value = "DLS_DEAD_LOCAL_STORE")
     private void writeMetadataOptimisticLock(
-            final String key,
-            final String value,
-            final File metadataFile,
-            Properties metadata,
-            long lastModified)
-            throws IOException {
+            final String key, final String value, final File metadataFile) throws IOException {
         final ReadWriteLock rwLock = getLock(metadataFile);
         final int maxAttempts = LayerMetadataStore.METADATA_MAX_RW_ATTEMPTS;
+        Properties metadata = loadLayerMetadata(metadataFile);
+        long lastModified = metadataFile.lastModified();
 
         log.debug("Start attempt to add key (key: " + key + ")");
 
@@ -173,6 +174,7 @@ public class LayerMetadataStore {
                     metadata.compute(key, (k, oldValue) -> value); // removes mapping if value==null
                     File tempFile = writeTempMetadataFile(metadata);
                     if (FileUtils.renameFile(tempFile, metadataFile)) {
+                        Thread.sleep(LayerMetadataStore.WAIT_AFTER_RENAME);
                         // compare content between renamed file and memory content
                         Properties metadataAfterRename = loadLayerMetadata(metadataFile);
                         if (!metadata.equals(metadataAfterRename)) {
@@ -193,6 +195,7 @@ public class LayerMetadataStore {
                         log.info(
                                 "Reattempting to write metadata file, because an error while renaming metadata file "
                                         + metadataFile.getPath());
+                        attempt++;
                     }
                     tempFile.delete();
                 } else {
@@ -216,6 +219,8 @@ public class LayerMetadataStore {
             if (maxAttempts == attempt) {
                 log.debug("Optimistic write reaches max number of attempts (" + maxAttempts + ")");
             }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         } finally {
             rwLock.writeLock().unlock();
         }
@@ -258,8 +263,9 @@ public class LayerMetadataStore {
     private void createParentIfNeeded(File metadataFile) {
         File parentDir = metadataFile.getParentFile();
         if (!parentDir.exists() && !parentDir.mkdirs()) {
-            throw new IllegalStateException(
-                    "Unable to create parent directory " + parentDir.getAbsolutePath());
+            if (!parentDir.exists())
+                throw new IllegalStateException(
+                        "Unable to create parent directory " + parentDir.getAbsolutePath());
         }
     }
 

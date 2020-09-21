@@ -36,6 +36,7 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
 
     @Override
     public void createTestUnit() throws Exception {
+        System.setProperty(LayerMetadataStore.PROPERTY_WAIT_AFTER_RENAME, "75");
         System.setProperty(LayerMetadataStore.PROPERTY_METADATA_MAX_RW_ATTEMPTS, "100");
         // org.apache.log4j.Logger.getRootLogger().setLevel(Level.DEBUG);
         this.store = new FileBlobStore(temp.getRoot().getAbsolutePath());
@@ -147,7 +148,7 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
 
         this.executeStoresConcurrently(numberOfStores, numberOfThreads);
 
-        System.err.println("Number of keys = " + numberOfStores * numberOfThreads);
+        // System.err.println("Number of keys = " + numberOfStores * numberOfThreads);
         // check return values in Metadata file
         for (int i = 0; i < numberOfStores; i++) {
             for (int j = 0; j < numberOfThreads; j++) {
