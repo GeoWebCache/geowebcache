@@ -115,7 +115,13 @@ public class GetCapabilitiesConfigurationTest {
 
         GetCapabilitiesConfiguration config =
                 new GetCapabilitiesConfiguration(
-                        broker, "http://test/wms", "image/png", "3x3", "", new HashMap(), "false") {
+                        broker,
+                        "http://test/wms",
+                        "image/png",
+                        "3x3",
+                        "",
+                        new HashMap<>(),
+                        "false") {
 
                     @Override
                     WebMapServer getWMS() {
@@ -170,6 +176,7 @@ public class GetCapabilitiesConfigurationTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked") // to be removed once we upgrade to Hamcrest 2, @SafeVarArgs
     public void testDelegateInitializingLayers() throws Exception {
         GridSetBroker broker =
                 new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));

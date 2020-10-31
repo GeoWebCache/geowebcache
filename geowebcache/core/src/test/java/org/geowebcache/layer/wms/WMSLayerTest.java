@@ -535,7 +535,8 @@ public class WMSLayerTest extends TileLayerTest {
 
         // six concurrent requests max
         ExecutorService requests = Executors.newFixedThreadPool(6);
-        ExecutorCompletionService completer = new ExecutorCompletionService(requests);
+        ExecutorCompletionService<ConveyorTile> completer =
+                new ExecutorCompletionService<>(requests);
 
         List<Future<ConveyorTile>> futures = new ArrayList<Future<ConveyorTile>>();
         while (gridLoc != null) {

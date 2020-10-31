@@ -181,7 +181,7 @@ public class DiskQuotaController {
                         context,
                         Context.REST);
         JSONObject obj = new JSONObject(xs.toXML(config));
-        return new ResponseEntity(obj.toString(), HttpStatus.OK);
+        return new ResponseEntity<>(obj.toString(), HttpStatus.OK);
     }
 
     /**
@@ -193,7 +193,7 @@ public class DiskQuotaController {
         XStream xStream = getConfiguredXStream(new GeoWebCacheXStream());
         String xmlText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + xStream.toXML(config);
 
-        return new ResponseEntity(xmlText, HttpStatus.OK);
+        return new ResponseEntity<>(xmlText, HttpStatus.OK);
     }
 
     /**

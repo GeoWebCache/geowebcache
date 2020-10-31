@@ -370,6 +370,7 @@ public final class MbtilesBlobStoreTest extends TestSupport {
     }
 
     @Test
+    @SuppressWarnings("unchecked") // TODO: remove when upgrading to Hamcrest 2
     public void testOpeningDatabaseFileWithMbtilesMetadata() throws Exception {
         // create and instantiate mbtiles metadata
         File mbtilesMetadataDirectory = buildRootFile("mbtiles-metadata");

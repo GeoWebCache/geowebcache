@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -248,7 +249,7 @@ public class AzureBlobStore implements BlobStore {
             String format = tileRange.getMimeType().getFormat();
             Map<String, String> parameters = tileRange.getParameters();
 
-            Iterator<Callable> tilesIterator =
+            Iterator<Callable<?>> tilesIterator =
                     Iterators.transform(
                             tileLocations,
                             xyz -> {
@@ -256,14 +257,14 @@ public class AzureBlobStore implements BlobStore {
                                         TileObject.createQueryTileObject(
                                                 layerName, xyz, gridSetId, format, parameters);
                                 tile.setParametersId(tileRange.getParametersId());
-                                return new Callable() {
+                                return new Callable<Object>() {
                                     @Override
                                     public Object call() throws Exception {
                                         return delete(tile);
                                     }
                                 };
                             });
-            Iterator<List<Callable>> partition =
+            Iterator<List<Callable<?>>> partition =
                     Iterators.partition(tilesIterator, DeleteManager.PAGE_SIZE);
 
             // once a page of callables is ready, run them in parallel on the delete manager
@@ -459,8 +460,15 @@ public class AzureBlobStore implements BlobStore {
         Map<String, Optional<Map<String, String>>> result = new HashMap<>();
         try {
             for (BlobItem item : items) {
+
                 Map<String, String> properties =
-                        (Map<String, String>) (Map<?, ?>) client.getProperties(item.name());
+                        client.getProperties(item.name())
+                                .entrySet()
+                                .stream()
+                                .collect(
+                                        Collectors.toMap(
+                                                e -> (String) e.getKey(),
+                                                e -> (String) e.getValue()));
                 result.put(ParametersUtils.getId(properties), Optional.of(properties));
             }
             return result;

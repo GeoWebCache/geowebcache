@@ -52,6 +52,7 @@ import java.util.TreeMap;
  */
 public class TreeMapConverter extends MapConverter {
 
+    @SuppressWarnings("unchecked")
     private static final class NullComparator extends Mapper.Null implements Comparator {
         public int compare(Object o1, Object o2) {
             Comparable c1 = (Comparable) o1;
@@ -88,10 +89,12 @@ public class TreeMapConverter extends MapConverter {
     }
 
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-        TreeMap result = null;
-        final Comparator comparator = unmarshalComparator(mapper(), reader, context, result);
+        TreeMap<Object, Object> result = null;
+        @SuppressWarnings("unchecked")
+        final Comparator<Object> comparator =
+                unmarshalComparator(mapper(), reader, context, result);
         if (result == null) {
-            result = comparator == null ? new TreeMap() : new TreeMap(comparator);
+            result = comparator == null ? new TreeMap<>() : new TreeMap<>(comparator);
         }
         populateTreeMap(reader, context, result, comparator);
         return result;
