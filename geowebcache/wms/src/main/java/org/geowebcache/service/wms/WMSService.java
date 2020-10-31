@@ -127,7 +127,7 @@ public class WMSService extends Service {
     public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response)
             throws GeoWebCacheException {
         final String encoding = request.getCharacterEncoding();
-        final Map requestParameterMap = request.getParameterMap();
+        final Map<String, String[]> requestParameterMap = request.getParameterMap();
 
         String[] keys = {"layers", "request", "tiled", "cached", "metatiled", "width", "height"};
         Map<String, String> values =

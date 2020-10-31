@@ -138,6 +138,7 @@ public class S3BlobStoreConfigStoreLoadTest {
         return store;
     }
 
+    @SuppressWarnings("unchecked") // @SafeVarArgs needed in Mockito, check upgrades
     private void setupXMLConfig() throws IOException, GeoWebCacheException {
         configDir = temp.getRoot();
         configFile = temp.newFile("geowebcache.xml");

@@ -481,7 +481,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
             return false;
         }
         // let's delete the tiles
-        CompletionService completionService = new ExecutorCompletionService(executorService);
+        CompletionService<Boolean> completionService =
+                new ExecutorCompletionService<>(executorService);
         int tasks = 0;
         for (Map.Entry<File, List<long[]>> entry : files.entrySet()) {
             // FIXME: should we tell something to the listeners ?
@@ -583,7 +584,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
             return false;
         }
         // asking the connection manager to remove the database files
-        CompletionService completionService = new ExecutorCompletionService(executorService);
+        CompletionService<Boolean> completionService =
+                new ExecutorCompletionService<>(executorService);
         int tasks = 0;
         for (File file : files) {
             completionService.submit(() -> connectionManager.delete(file), true);

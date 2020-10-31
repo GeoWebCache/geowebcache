@@ -354,6 +354,7 @@ public class SeedTaskTest extends TestCase {
 
         private T[] members;
 
+        @SafeVarargs
         public Tuple(T... members) {
             this.members = members;
         }

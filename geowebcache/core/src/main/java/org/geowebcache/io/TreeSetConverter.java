@@ -60,14 +60,16 @@ public class TreeSetConverter extends CollectionConverter {
         super.marshal(source, writer, context);
     }
 
+    @SuppressWarnings("unchecked")
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-        TreeSet result = null;
-        Comparator unmarshalledComparator =
+        TreeSet<Object> result = null;
+        @SuppressWarnings("unchecked")
+        Comparator<Object> unmarshalledComparator =
                 TreeMapConverter.unmarshalComparator(mapper(), reader, context, null);
         boolean inFirstElement = unmarshalledComparator instanceof Mapper.Null;
-        Comparator comparator = inFirstElement ? null : unmarshalledComparator;
+        Comparator<Object> comparator = inFirstElement ? null : unmarshalledComparator;
         final PresortedSet set = new PresortedSet(comparator);
-        result = comparator == null ? new TreeSet() : new TreeSet(comparator);
+        result = comparator == null ? new TreeSet<>() : new TreeSet<>(comparator);
         if (inFirstElement) {
             // we are already within the first element
             addCurrentElementToCollection(reader, context, result, set);

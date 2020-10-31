@@ -164,15 +164,16 @@ public class GeoWebCacheEnvironment {
      * @param type Data Type to return.
      * @return Optional resolved value.
      */
+    @SuppressWarnings("unchecked")
     public <T extends Object> Optional<T> resolveValueIfEnabled(final String value, Class<T> type) {
         if (StringUtils.isBlank(value)) return Optional.empty();
         final String resultValue = resolveValueIfEnabled(value);
         if (type.isAssignableFrom(String.class)) {
-            return (Optional) Optional.of(resultValue);
+            return (Optional<T>) Optional.of(resultValue);
         } else if (type.isAssignableFrom(Integer.class)) {
             try {
                 Integer intValue = Integer.valueOf(resultValue);
-                return (Optional) Optional.of(intValue);
+                return (Optional<T>) Optional.of(intValue);
             } catch (NumberFormatException ex) {
                 throw new IllegalArgumentException(
                         "Illegal String parameter: Resolved value is not an integer.", ex);
@@ -182,7 +183,7 @@ public class GeoWebCacheEnvironment {
                 throw new IllegalArgumentException(
                         "Illegal String parameter: Resolved value is not a boolean.");
             Boolean boolValue = Boolean.valueOf(value);
-            return (Optional) Optional.of(boolValue);
+            return (Optional<T>) Optional.of(boolValue);
         }
         throw new IllegalArgumentException("No type convertion available for " + type);
     }

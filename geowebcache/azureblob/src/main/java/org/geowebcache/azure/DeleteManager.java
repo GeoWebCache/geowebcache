@@ -103,9 +103,9 @@ class DeleteManager implements Closeable {
     /**
      * Executes the provided iterator of callables on the delete executor, returning their results
      */
-    public void executeParallel(List<Callable> callables) throws StorageException {
+    public void executeParallel(List<Callable<?>> callables) throws StorageException {
         List<Future> futures = new ArrayList<>();
-        for (Callable callable : callables) {
+        for (Callable<?> callable : callables) {
             futures.add(deleteExecutor.submit(callable));
         }
         for (Future future : futures) {

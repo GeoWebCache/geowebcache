@@ -73,6 +73,7 @@ public class SwiftBlobStoreTest {
     private static final String INVALID_TEST_LAYER_NAME = "NonExistentLayer";
 
     @Before
+    @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
 
         // Initialises the annotated mocks and spies
@@ -140,7 +141,7 @@ public class SwiftBlobStoreTest {
 
         // Check if the listener was added to the list successfully
         ArrayList<BlobStoreListener> blobStoreListenersResult =
-                (ArrayList) testListeners.getListeners();
+                (ArrayList<BlobStoreListener>) testListeners.getListeners();
         assertTrue(blobStoreListenersResult.contains(swiftListener));
     }
 
@@ -149,7 +150,8 @@ public class SwiftBlobStoreTest {
         // Add a listener to the test listeners list and test it exists in the list
         BlobStoreListener swiftListener = mock(BlobStoreListener.class);
         this.testListeners.addListener(swiftListener);
-        ArrayList<BlobStoreListener> testListenersList = (ArrayList) testListeners.getListeners();
+        ArrayList<BlobStoreListener> testListenersList =
+                (ArrayList<BlobStoreListener>) testListeners.getListeners();
         assertTrue(testListenersList.contains(swiftListener));
 
         // Call the blobstore method to delete the listener

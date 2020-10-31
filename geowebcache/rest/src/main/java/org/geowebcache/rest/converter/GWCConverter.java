@@ -97,6 +97,7 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected T readInternal(Class<? extends T> clazz, HttpInputMessage httpInputMessage)
             throws IOException, HttpMessageNotReadableException {
         MediaType contentType = httpInputMessage.getHeaders().getContentType();

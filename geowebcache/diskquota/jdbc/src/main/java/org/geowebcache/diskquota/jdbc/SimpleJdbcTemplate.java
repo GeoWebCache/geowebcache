@@ -38,7 +38,7 @@ public class SimpleJdbcTemplate extends NamedParameterJdbcTemplate {
      * Queries the template for a single object, but makes the result optial, it is ok not to find
      * any object in the db
      */
-    public <T> T queryForOptionalObject(String sql, RowMapper<T> rowMapper, Map params) {
+    public <T> T queryForOptionalObject(String sql, RowMapper<T> rowMapper, Map<String, ?> params) {
         try {
             List<T> results = query(sql, params, rowMapper);
             if (results.size() > 1) {
@@ -54,7 +54,7 @@ public class SimpleJdbcTemplate extends NamedParameterJdbcTemplate {
     }
 
     @Override
-    public int update(String sql, Map params) throws DataAccessException {
+    public int update(String sql, Map<String, ?> params) throws DataAccessException {
         try {
             return super.update(sql, params);
         } catch (DataAccessException e) {
