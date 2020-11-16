@@ -15,7 +15,7 @@
     <jaiext.version>1.1.17</jaiext.version>
     <spring.version>5.1.16.RELEASE</spring.version>
     <spring.security.version>5.1.11.RELEASE</spring.security.version>
-    <xstream.version>1.4.11.1</xstream.version>
+    <xstream.version>1.4.13-java7</xstream.version>
     <commons-logging.version>1.1.1</commons-logging.version>
     <commons-io.version>2.6</commons-io.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
