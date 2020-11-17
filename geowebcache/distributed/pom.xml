@@ -19,8 +19,8 @@
   <repositories>
     <repository>
       <id>central</id>
-      <name>Central Maven Repository</name>
-      <url>http://repo1.maven.org/maven2</url>
+      <name>Central Maven repository https</name>
+      <url>https://repo.maven.apache.org/maven2</url>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>

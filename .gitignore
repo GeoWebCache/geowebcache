@@ -8,3 +8,6 @@ target
 # Intellij
 .idea/
 *.iml
+
+# build
+release.rb
