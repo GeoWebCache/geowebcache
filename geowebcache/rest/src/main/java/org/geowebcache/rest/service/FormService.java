@@ -297,7 +297,7 @@ public class FormService {
                 makeFormPage(tl, listAllTasks), getHeaders(), HttpStatus.OK);
     }
 
-    private String makeFormPage(TileLayer tl, boolean listAllTasks) {
+    protected String makeFormPage(TileLayer tl, boolean listAllTasks) {
 
         StringBuilder doc = new StringBuilder();
 
@@ -426,7 +426,7 @@ public class FormService {
 
     private void makeThreadCountPullDown(StringBuilder doc) {
         doc.append("<tr><td>Number of tasks to use:</td><td>\n");
-        Map<String, String> keysValues = new TreeMap<String, String>();
+        Map<String, String> keysValues = new LinkedHashMap<>();
 
         for (int i = 1; i < 129; i++) {
             if (i < 10) {
