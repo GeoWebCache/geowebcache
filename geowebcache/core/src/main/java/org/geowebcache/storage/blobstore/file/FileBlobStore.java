@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
@@ -88,6 +87,8 @@ public class FileBlobStore implements BlobStore {
     private ExecutorService deleteExecutorService;
 
     private LayerMetadataStore layerMetadata;
+
+    private TempFileNameGenerator tmpGenerator = new TempFileNameGenerator();
 
     public FileBlobStore(DefaultStorageFinder defStoreFinder)
             throws StorageException, ConfigurationException {
@@ -540,7 +541,7 @@ public class FileBlobStore implements BlobStore {
     private void writeFile(File target, TileObject stObj, boolean existed) throws StorageException {
         // first write to temp file
         tmp.mkdirs();
-        File temp = new File(tmp, UUID.randomUUID().toString());
+        File temp = new File(tmp, tmpGenerator.newName());
 
         try {
             // open the output stream and read the blob into the tile
