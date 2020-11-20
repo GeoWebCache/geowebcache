@@ -25,12 +25,13 @@ public class BoundingBox implements Serializable {
 
     private static final long serialVersionUID = -2555598825074884627L;
 
-    private static NumberFormat COORD_FORMATTER = NumberFormat.getNumberInstance(Locale.ENGLISH);
+    private NumberFormat getCoordinateFormatter() {
+        NumberFormat COORD_FORMATTER = NumberFormat.getNumberInstance(Locale.ENGLISH);
 
-    static {
         COORD_FORMATTER.setMinimumFractionDigits(1);
         COORD_FORMATTER.setGroupingUsed(false);
         COORD_FORMATTER.setMaximumFractionDigits(16);
+        return COORD_FORMATTER;
     }
 
     private static Log log = LogFactory.getLog(org.geowebcache.grid.BoundingBox.class);
@@ -172,14 +173,15 @@ public class BoundingBox implements Serializable {
     /** Returns a comma separated value String suitable for URL output */
     @Override
     public String toString() {
+        NumberFormat formatter = getCoordinateFormatter();
         StringBuilder buff = new StringBuilder(40);
-        buff.append(COORD_FORMATTER.format(coords[0]));
+        buff.append(formatter.format(coords[0]));
         buff.append(',');
-        buff.append(COORD_FORMATTER.format(coords[1]));
+        buff.append(formatter.format(coords[1]));
         buff.append(',');
-        buff.append(COORD_FORMATTER.format(coords[2]));
+        buff.append(formatter.format(coords[2]));
         buff.append(',');
-        buff.append(COORD_FORMATTER.format(coords[3]));
+        buff.append(formatter.format(coords[3]));
         return buff.toString();
     }
 
