@@ -6,7 +6,7 @@ env:
   MAVEN_OPTS: -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 -Dmaven.wagon.http.retryHandler.count=3 -Xmx512m -Djava.awt.headless=true -Dorg.slf4j.simpleLogger.showDateTime=true -Dorg.slf4j.simpleLogger.dateTimeFormat=HH:mm:ss,SSS
 
 jobs:
-  openjdk1.8:
+  openjdk8:
     runs-on: [ubuntu-18.04]
     steps:
     - uses: actions/checkout@v2
