@@ -17,6 +17,8 @@ package org.geowebcache.swift;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -45,19 +47,19 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
 
     private static final long serialVersionUID = 9072751143836460389L;
 
+    private static final String provider = "openstack-swift";
+
+    private static final String keystoneDomainName = "Default";
+
     private String container;
 
     private String prefix;
-
-    private String provider;
 
     private String region;
 
     private String keystoneVersion;
 
     private String keystoneScope;
-
-    private String keystoneDomainName;
 
     private String identity;
 
@@ -129,14 +131,10 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
         overrides.put(Constants.PROPERTY_MAX_CONNECTIONS_PER_CONTEXT, 32);
         overrides.put(Constants.PROPERTY_MAX_RETRIES, 0);
 
-        String provider = this.provider;
-        String identity = this.identity;
-        String credential = this.password;
-
         SwiftApi context =
                 ContextBuilder.newBuilder(provider)
                         .endpoint(endpoint)
-                        .credentials(identity, credential)
+                        .credentials(identity, password)
                         .overrides(overrides)
                         .buildApi(SwiftApi.class);
 
@@ -158,14 +156,10 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
         overrides.put(KeystoneProperties.SCOPE, keystoneScope);
         overrides.put(KeystoneProperties.PROJECT_DOMAIN_NAME, keystoneDomainName);
 
-        String provider = this.provider;
-        String identity = this.identity;
-        String credential = this.password;
-
         ContextBuilder builder =
                 ContextBuilder.newBuilder(provider)
                         .endpoint(endpoint)
-                        .credentials(identity, credential)
+                        .credentials(identity, password)
                         .overrides(overrides);
 
         return builder.build(RegionScopedBlobStoreContext.class);
@@ -180,5 +174,21 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
         } else {
             return String.format("bucket: %s prefix: %s", bucket, prefix);
         }
+    }
+
+    public boolean isValid() {
+        final List<String> fields =
+                Arrays.asList(
+                        new String[] {
+                            endpoint,
+                            identity,
+                            password,
+                            region,
+                            container,
+                            keystoneVersion,
+                            keystoneScope
+                        });
+
+        return !(fields.contains(null) || fields.contains(""));
     }
 }
