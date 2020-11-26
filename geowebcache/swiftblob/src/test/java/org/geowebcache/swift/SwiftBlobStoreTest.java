@@ -23,7 +23,9 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -43,6 +45,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -94,6 +100,8 @@ public class SwiftBlobStoreTest {
 
     @Mock private RegionScopedSwiftBlobStore blobStore;
 
+    @Mock private PageSet pageSet;
+
     private static final String VALID_TEST_LAYER_NAME = "TestLayer";
     private static final String INVALID_TEST_LAYER_NAME = "NonExistentLayer";
 
@@ -113,16 +121,18 @@ public class SwiftBlobStoreTest {
                 TileObject.createCompleteTileObject(
                         VALID_TEST_LAYER_NAME, xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
 
-        when(swiftApi.getObjectApi(null, null)).thenReturn(objectApi);
-        when(swiftApi.getBulkApi(null)).thenReturn(bulkApi);
-        when(blobStoreContext.getBlobStore(null)).thenReturn(blobStore);
+        when(swiftApi.getObjectApi(any(), any())).thenReturn(objectApi);
+        when(swiftApi.getBulkApi(any())).thenReturn(bulkApi);
+        when(blobStoreContext.getBlobStore(any())).thenReturn(blobStore);
 
-        when(blobStore.list(any(), any())).thenReturn(mock(PageSet.class));
+        when(blobStore.list(anyString(), any())).thenReturn(pageSet);
 
         // Creating config
         SwiftBlobStoreInfo config = mock(SwiftBlobStoreInfo.class);
         when(config.buildApi()).thenReturn(swiftApi);
         when(config.getBlobStore()).thenReturn(blobStoreContext);
+        when(config.getContainer()).thenReturn("TestContainer");
+        when(config.isValid()).thenReturn(true);
 
         // Creating spy object for swift blob store, keybuilder and keylisteners
         swiftBlobStore = spy(new SwiftBlobStore(config, mock(TileLayerDispatcher.class)));
@@ -134,7 +144,6 @@ public class SwiftBlobStoreTest {
         // Setting private class properties to be able to check state in tests
         ReflectionTestUtils.setField(swiftBlobStore, "keyBuilder", keyBuilder);
         ReflectionTestUtils.setField(swiftBlobStore, "listeners", testListeners);
-        ReflectionTestUtils.setField(swiftBlobStore, "containerName", "TestContainer");
     }
 
     @After
@@ -297,38 +306,35 @@ public class SwiftBlobStoreTest {
     }
 
     @Test
-    public void deleteByLayerName() {
+    public void deleteByLayerName() throws InterruptedException {
+        String layerPrefix = "layerPrefix";
+        doReturn(layerPrefix).when(this.keyBuilder).forLayer(VALID_TEST_LAYER_NAME);
+        doReturn(true).when(pageSet).isEmpty();
 
-        // Test with valid layer name
-        // Test when deletion is successful
-        doReturn(true).when(this.swiftBlobStore).deleteByPath(VALID_TEST_LAYER_NAME);
-        boolean result = this.swiftBlobStore.delete(VALID_TEST_LAYER_NAME);
-        verify(this.swiftBlobStore, times(1)).deleteByPath(VALID_TEST_LAYER_NAME);
+        verify(this.swiftBlobStore, times(0)).deleteByPath(eq(layerPrefix), any());
+        verify(this.testListeners, times(0)).sendLayerDeleted(VALID_TEST_LAYER_NAME);
+        assertTrue(this.swiftBlobStore.delete(VALID_TEST_LAYER_NAME));
+        Thread.sleep(1500);
+        verify(this.swiftBlobStore, times(1)).deleteByPath(eq(layerPrefix), any());
         verify(this.testListeners, times(1)).sendLayerDeleted(VALID_TEST_LAYER_NAME);
-        assertTrue(result);
-
-        // Test when deletion is not successful
-        doReturn(false).when(this.swiftBlobStore).deleteByPath(VALID_TEST_LAYER_NAME);
-        result = this.swiftBlobStore.delete(VALID_TEST_LAYER_NAME);
-        verify(this.swiftBlobStore, times(2)).deleteByPath(VALID_TEST_LAYER_NAME);
-        assertFalse(result);
 
         // Test when layer name is null
         try {
             this.swiftBlobStore.delete((String) null);
             fail("Null check for layer name failed");
         } catch (NullPointerException e) {
-            verify(this.swiftBlobStore, times(2)).deleteByPath(VALID_TEST_LAYER_NAME);
+            Thread.sleep(1500);
+            verify(this.swiftBlobStore, times(0)).deleteByPath(eq(null), any());
             verify(this.testListeners, times(0)).sendLayerDeleted(null);
         }
     }
 
     @Test
-    public void deleteByTileRange() {
+    public void deleteByTileRange() throws InterruptedException {
         TileRange testTileRange = mock(TileRange.class);
         MimeType mimeType = mock(MimeType.class);
         when(mimeType.getInternalName()).thenReturn("png");
-        when(mimeType.getFormat()).thenReturn("png");
+        when(mimeType.getFormat()).thenReturn("image/png");
         when(testTileRange.getMimeType()).thenReturn(mock(MimeType.class));
 
         // Range bounds format: {{minx, maxx, miny, maxy, zoomLevel}, ...}
@@ -354,14 +360,14 @@ public class SwiftBlobStoreTest {
 
         // Test when object is null from the objectApi
         when(this.objectApi.get(testCoordinatesPrefix)).thenReturn(null);
-        boolean outcome = this.swiftBlobStore.delete(testTileRange);
+        assertFalse(this.swiftBlobStore.delete(testTileRange));
         verify(keyBuilder, times(1)).coordinatesPrefix(testTileRange, true);
         verify(objectApi, times(1)).get(testCoordinatesPrefix);
-        assertFalse(outcome);
 
         // Test when object is valid and listeners are empty
         when(this.objectApi.get(any())).thenReturn(testSwiftObject);
-        outcome = this.swiftBlobStore.delete(realTestTileRange);
+        assertTrue(this.swiftBlobStore.delete(realTestTileRange));
+        Thread.sleep(500);
         verify(keyBuilder, times(1)).coordinatesPrefix(realTestTileRange, true);
 
         // Test that keybuilder is outputting the correct path
@@ -376,20 +382,19 @@ public class SwiftBlobStoreTest {
                         // Zoom level 2
                         "test_prefix/layer_id/test_gridset_id/test_param_id/2/1/2.png");
         verify(this.bulkApi, times(1)).bulkDelete(expectedKeys);
-        assertTrue(outcome);
 
         // Test when object is valid and listeners are not empty
         BlobStoreListener testListener = mock(BlobStoreListener.class);
         testListeners.addListener(testListener);
-        outcome = this.swiftBlobStore.delete(realTestTileRange);
+        assertTrue(this.swiftBlobStore.delete(realTestTileRange));
+        Thread.sleep(500);
 
         // Verify number of times called
-        verify(this.swiftBlobStore, times(2)).delete((TileObject) any());
-        assertTrue(outcome);
+        verify(this.swiftBlobStore, times(2)).delete(any(TileObject.class));
     }
 
     @Test
-    public void deleteByGridsetId() {
+    public void deleteByGridsetId() throws InterruptedException {
         String testGridSetID = "TestGridSetID";
         String testGridsetPrefix = "test/gridset/prefix";
         doReturn(testGridsetPrefix)
@@ -397,23 +402,22 @@ public class SwiftBlobStoreTest {
                 .forGridset(VALID_TEST_LAYER_NAME, testGridSetID);
 
         // Test with a valid layer name and prefix and deletion unsuccessful
-        doReturn(false).when(this.swiftBlobStore).deleteByPath(testGridsetPrefix);
-        boolean outcome =
-                this.swiftBlobStore.deleteByGridsetId(VALID_TEST_LAYER_NAME, testGridSetID);
+        doReturn(false).when(pageSet).isEmpty();
+        assertTrue(this.swiftBlobStore.deleteByGridsetId(VALID_TEST_LAYER_NAME, testGridSetID));
         verify(this.keyBuilder, times(1)).forGridset(VALID_TEST_LAYER_NAME, testGridSetID);
-        verify(this.swiftBlobStore, times(1)).deleteByPath(testGridsetPrefix);
+        verify(this.swiftBlobStore, times(1)).deleteByPath(eq(testGridsetPrefix), any());
+        Thread.sleep(500);
         verify(this.testListeners, times(0))
                 .sendGridSubsetDeleted(VALID_TEST_LAYER_NAME, testGridSetID);
-        assertFalse(outcome);
 
         // Test with a valid layer name and prefix and deletion successful
-        doReturn(true).when(this.swiftBlobStore).deleteByPath(testGridsetPrefix);
-        outcome = this.swiftBlobStore.deleteByGridsetId(VALID_TEST_LAYER_NAME, testGridSetID);
+        doReturn(true).when(pageSet).isEmpty();
+        assertTrue(this.swiftBlobStore.deleteByGridsetId(VALID_TEST_LAYER_NAME, testGridSetID));
         verify(this.keyBuilder, times(2)).forGridset(VALID_TEST_LAYER_NAME, testGridSetID);
-        verify(this.swiftBlobStore, times(2)).deleteByPath(testGridsetPrefix);
+        verify(this.swiftBlobStore, times(2)).deleteByPath(eq(testGridsetPrefix), any());
+        Thread.sleep(500);
         verify(this.testListeners, times(1))
                 .sendGridSubsetDeleted(VALID_TEST_LAYER_NAME, testGridSetID);
-        assertTrue(outcome);
 
         // Test when layer name is null
         try {
@@ -435,43 +439,44 @@ public class SwiftBlobStoreTest {
     }
 
     @Test
-    public void deleteByTileObject() {
+    public void deleteByTileObject() throws InterruptedException {
 
         TileObject tileObjectWithNullName = mock(TileObject.class);
         when(tileObjectWithNullName.getLayerName()).thenReturn(null);
-
-        doReturn(true).when(this.swiftBlobStore).deleteByPath(VALID_TEST_LAYER_NAME);
 
         // Test when layer name is null
         try {
             this.swiftBlobStore.delete(tileObjectWithNullName);
             fail("Null check for grid check id failed");
         } catch (NullPointerException e) {
-            assertThat(e.getMessage(), is("Object Name"));
         }
 
+        String tilePrefix = "tilePrefix";
+        doReturn(tilePrefix).when(this.keyBuilder).forTile(sampleTileObject);
+
         // Test when listeners are empty
-        boolean result = this.swiftBlobStore.delete(sampleTileObject);
-        verify(this.swiftBlobStore, times(1)).deleteByPath(VALID_TEST_LAYER_NAME);
-        assertTrue(result);
+        assertTrue(this.swiftBlobStore.delete(sampleTileObject));
+        Thread.sleep(500);
+        verify(this.swiftBlobStore, times(1)).deleteByPath(eq(tilePrefix), any());
 
         // Make listeners not empty
         BlobStoreListener testListener = mock(BlobStoreListener.class);
         testListeners.addListener(testListener);
 
         // Test when deletion successful
-        result = this.swiftBlobStore.delete(sampleTileObject);
-        verify(this.swiftBlobStore, times(2)).deleteByPath(VALID_TEST_LAYER_NAME);
+        doReturn(true).when(pageSet).isEmpty();
+        assertTrue(this.swiftBlobStore.delete(sampleTileObject));
+        Thread.sleep(500);
+        verify(this.swiftBlobStore, times(2)).deleteByPath(eq(tilePrefix), any());
         verify(this.testListeners, times(1)).sendTileDeleted(sampleTileObject);
-        assertTrue(result);
 
         // Test when deletion unsuccessful
         when(objectApi.get(VALID_TEST_LAYER_NAME)).thenReturn(mock(SwiftObject.class));
-        doReturn(false).when(this.swiftBlobStore).deleteByPath(VALID_TEST_LAYER_NAME);
-        result = this.swiftBlobStore.delete(sampleTileObject);
-        verify(this.swiftBlobStore, times(3)).deleteByPath(VALID_TEST_LAYER_NAME);
+        doReturn(false).when(pageSet).isEmpty();
+        assertTrue(this.swiftBlobStore.delete(sampleTileObject));
+        Thread.sleep(500);
+        verify(this.swiftBlobStore, times(3)).deleteByPath(eq(tilePrefix), any());
         verify(this.testListeners, times(1)).sendTileDeleted(sampleTileObject);
-        assertFalse(result);
     }
 
     @Test
@@ -680,5 +685,69 @@ public class SwiftBlobStoreTest {
         verify(this.testListeners, times(1))
                 .sendParametersDeleted(VALID_TEST_LAYER_NAME, testParametersId);
         assertFalse(outcome);
+    }
+
+    @Test
+    public void deleteWhenUploadExists() throws Exception {
+        BlockingQueue<Runnable> taskQueue = spy(new LinkedBlockingQueue<>(1000));
+        ThreadPoolExecutor executor =
+                spy(
+                        new ThreadPoolExecutor(
+                                1,
+                                1,
+                                60L,
+                                TimeUnit.SECONDS,
+                                taskQueue,
+                                new ThreadPoolExecutor.CallerRunsPolicy()));
+
+        // Must create three runnables
+        //    1) consumed immediately which blocks for a time
+        //    2) a mock upload to cancel when we delete the path being uploaded to
+        //    3) a mock upload to proceed as its not on the same path
+        Runnable mockUpload1 =
+                () -> {
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                    }
+                };
+        SwiftUploadTask mockUpload2 = mock(SwiftUploadTask.class);
+        SwiftUploadTask mockUpload3 = mock(SwiftUploadTask.class);
+
+        // Matching upload where getKey() returns a file in the delete path
+        when(mockUpload2.getKey()).thenReturn("path/tile.png");
+
+        // Non-matching upload where getKey() returns a different path
+        when(mockUpload3.getKey()).thenReturn("anotherpath/tile.png");
+
+        ReflectionTestUtils.setField(swiftBlobStore, "taskQueue", taskQueue);
+        ReflectionTestUtils.setField(swiftBlobStore, "executor", executor);
+
+        // Ensure queue is empty and no tasks have been run
+        verify(executor, times(0)).execute(any(Runnable.class));
+        assertTrue(taskQueue.isEmpty());
+
+        // Queue runnables
+        executor.execute(mockUpload1);
+        executor.execute(mockUpload2);
+        executor.execute(mockUpload3);
+
+        // Ensure first task is consumed while second is waiting
+        assertEquals(2, taskQueue.size());
+        assertFalse(taskQueue.contains(mockUpload1)); // Should be executing
+        assertTrue(taskQueue.contains(mockUpload2)); // Should be enqueued
+        assertTrue(taskQueue.contains(mockUpload3)); // Should be enqueued
+
+        // Deletion routine which cancels upload tasks destined for the same path
+        swiftBlobStore.deleteByPath("path");
+
+        // Assert mockUpload2 is cancelled but mockUpload3 is not
+        verify(taskQueue, times(1)).remove(eq(mockUpload2));
+        verify(taskQueue, times(0)).remove(eq(mockUpload3));
+        verify(executor, times(1)).execute(any(SwiftDeleteTask.class));
+        assertEquals(2, taskQueue.size()); // mockUpload3 and a SwiftDeleteTask as above
+        assertFalse(taskQueue.contains(mockUpload1));
+        assertFalse(taskQueue.contains(mockUpload2));
+        assertTrue(taskQueue.contains(mockUpload3));
     }
 }

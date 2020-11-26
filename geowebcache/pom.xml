@@ -87,7 +87,7 @@
     <qa>false</qa>
     <lint>deprecation,unchecked</lint>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <jclouds.version>2.2.0</jclouds.version>
+    <jclouds.version>2.3.0</jclouds.version>
     <mockito.version>3.8.0</mockito.version>
   </properties>
 

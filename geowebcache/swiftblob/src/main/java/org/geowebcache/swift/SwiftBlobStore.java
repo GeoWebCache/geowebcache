@@ -63,53 +63,59 @@ public class SwiftBlobStore implements BlobStore {
 
     private final BlobStoreListenerList listeners = new BlobStoreListenerList();
 
-    private final String containerName;
+    private final SwiftBlobStoreInfo config;
 
     private final TMSKeyBuilder keyBuilder;
 
     private volatile boolean shutDown;
 
     /** JClouds Swift API */
-    private final SwiftApi swiftApi;
+    private SwiftApi swiftApi;
 
     /** Swift Object API */
-    private final ObjectApi objectApi;
+    private ObjectApi objectApi;
 
     /** Swift Bulk API */
-    private final BulkApi bulkApi;
+    private BulkApi bulkApi;
 
-    private final RegionScopedBlobStoreContext blobStoreContext;
+    private RegionScopedBlobStoreContext blobStoreContext;
 
-    private final RegionScopedSwiftBlobStore blobStore;
+    private RegionScopedSwiftBlobStore blobStore;
 
-    private final ThreadPoolExecutor executor;
-    private final BlockingQueue<Runnable> uploadQueue;
+    private ThreadPoolExecutor executor;
+    private BlockingQueue<Runnable> taskQueue;
 
     public SwiftBlobStore(SwiftBlobStoreInfo config, TileLayerDispatcher layers) {
 
         checkNotNull(config);
         checkNotNull(layers);
 
-        String prefix = config.getPrefix() == null ? "" : config.getPrefix();
-        this.keyBuilder = new TMSKeyBuilder(prefix, layers);
-        this.containerName = config.getContainer();
+        final String prefix = config.getPrefix();
+        this.keyBuilder = new TMSKeyBuilder(prefix == null ? "" : prefix, layers);
+        this.config = config;
 
-        swiftApi = config.buildApi();
-        objectApi = swiftApi.getObjectApi(config.getRegion(), containerName);
-        bulkApi = this.swiftApi.getBulkApi(config.getRegion());
-
-        blobStoreContext = config.getBlobStore();
-        blobStore = (RegionScopedSwiftBlobStore) blobStoreContext.getBlobStore(config.getRegion());
-
-        uploadQueue = new LinkedBlockingQueue<>(1000);
+        taskQueue = new LinkedBlockingQueue<>(1000);
         executor =
                 new ThreadPoolExecutor(
                         2,
                         32,
                         10L,
                         TimeUnit.SECONDS,
-                        uploadQueue,
+                        taskQueue,
                         new ThreadPoolExecutor.CallerRunsPolicy());
+
+        initApis();
+    }
+
+    private void initApis() {
+        if (config.isValid()) {
+            swiftApi = config.buildApi();
+            objectApi = swiftApi.getObjectApi(config.getRegion(), config.getContainer());
+            bulkApi = swiftApi.getBulkApi(config.getRegion());
+            blobStoreContext = config.getBlobStore();
+            blobStore =
+                    (RegionScopedSwiftBlobStore) blobStoreContext.getBlobStore(config.getRegion());
+        }
     }
 
     @Override
@@ -141,7 +147,8 @@ public class SwiftBlobStore implements BlobStore {
             final String key = keyBuilder.forTile(obj);
 
             executor.execute(new SwiftUploadTask(key, tile, listeners, objectApi));
-            log.debug("Added request to upload queue. Queue length is now " + uploadQueue.size());
+            log.debug(
+                    "Added upload request to task queue. Queue length is now " + taskQueue.size());
         } catch (IOException e) {
             throw new StorageException("Could not process tile object for upload.");
         }
@@ -183,14 +190,8 @@ public class SwiftBlobStore implements BlobStore {
 
         @Override
         public String apply(long[] loc) {
-            long z = loc[2];
-            long x = loc[0];
-            long y = loc[1];
-            StringBuilder sb = new StringBuilder(coordsPrefix);
-
-            // builds the path to the tile
-            sb.append(z).append('/').append(x).append('/').append(y).append('.').append(extension);
-            return sb.toString();
+            // String in format "<prefix><z>/<x>/<y>.<ext>"
+            return String.format("%s%d/%d/%d.%s", coordsPrefix, loc[2], loc[0], loc[1], extension);
         }
     }
 
@@ -261,12 +262,10 @@ public class SwiftBlobStore implements BlobStore {
 
         checkNotNull(layerName, "layerName");
 
-        boolean deletionSuccessful = this.deleteByPath(layerName);
+        final String layerPrefix = keyBuilder.forLayer(layerName);
 
-        // If the layer has been deleted successfully update the listeners
-        if (deletionSuccessful) {
-            listeners.sendLayerDeleted(layerName);
-        }
+        boolean deletionSuccessful =
+                this.deleteByPath(layerPrefix, () -> listeners.sendLayerDeleted(layerName));
 
         return deletionSuccessful;
     }
@@ -278,12 +277,9 @@ public class SwiftBlobStore implements BlobStore {
 
         final String gridsetPrefix = keyBuilder.forGridset(layerName, gridSetId);
 
-        boolean deletedSuccessfully = this.deleteByPath(gridsetPrefix);
-
-        // If the layer has been deleted successfully update the listeners
-        if (deletedSuccessfully) {
-            listeners.sendGridSubsetDeleted(layerName, gridSetId);
-        }
+        boolean deletedSuccessfully =
+                this.deleteByPath(
+                        gridsetPrefix, () -> listeners.sendGridSubsetDeleted(layerName, gridSetId));
 
         // return if the layer has been successfully deleted
         return deletedSuccessfully;
@@ -291,20 +287,8 @@ public class SwiftBlobStore implements BlobStore {
 
     @Override
     public boolean delete(TileObject obj) {
-        final String objName = obj.getLayerName();
-
-        checkNotNull(objName, "Object Name");
-
-        // don't bother for the extra call if there are no listeners
-        if (listeners.isEmpty()) {
-            return this.deleteByPath(objName);
-        }
-
-        boolean deleted = this.deleteByPath(objName);
-
-        if (deleted) {
-            listeners.sendTileDeleted(obj);
-        }
+        final String tilePrefix = keyBuilder.forTile(obj);
+        final boolean deleted = this.deleteByPath(tilePrefix, () -> listeners.sendTileDeleted(obj));
 
         return deleted;
     }
@@ -402,17 +386,35 @@ public class SwiftBlobStore implements BlobStore {
         return deletionSuccessful;
     }
 
+    protected boolean deleteByPath(String path, IBlobStoreListenerNotifier notifier) {
+        // Cancel all pending uploads to this path
+        for (Object task : taskQueue.toArray()) {
+            // Only cancel uploads. Leave all existing SwiftDeletionTask objects in queue
+            if (task instanceof SwiftUploadTask) {
+                String key = ((SwiftUploadTask) task).getKey(); // path to tile image
+
+                // Cancel upload if image path will be deleted by this operation
+                if (key.startsWith(path)) {
+                    log.debug(
+                            taskQueue.remove(task)
+                                    ? "Cancelled upload of " + key
+                                    : "Failed to cancel upload of " + key);
+                }
+            }
+        }
+
+        // Create task to delete this path and add it to the executor queue
+        executor.execute(new SwiftDeleteTask(blobStore, path, config.getContainer(), notifier));
+
+        log.debug(String.format("Deleting Swift tile cache at %s/%s", config.getContainer(), path));
+
+        // This operation can take a long time to complete and can
+        // lead to timeout errors for the end-user when handled as a blocking
+        // request. To conform with the GWC API, assume a successful response
+        return true;
+    }
+
     protected boolean deleteByPath(String path) {
-
-        org.jclouds.blobstore.options.ListContainerOptions options =
-                new org.jclouds.blobstore.options.ListContainerOptions();
-        options.prefix(path);
-        options.recursive();
-
-        this.blobStore.clearContainer(this.containerName, options);
-
-        // NOTE: this is messy but it seems to work.
-        // there might be a more effecient way of doing this.
-        return this.blobStore.list(this.containerName, options).isEmpty();
+        return deleteByPath(path, null);
     }
 }
