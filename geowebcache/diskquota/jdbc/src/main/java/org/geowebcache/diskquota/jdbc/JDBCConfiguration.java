@@ -360,7 +360,7 @@ public class JDBCConfiguration implements Serializable {
     /** */
     public JDBCConfiguration clone(boolean allowEnvParametrization) {
 
-        JDBCConfiguration conf = (JDBCConfiguration) SerializationUtils.clone(this);
+        JDBCConfiguration conf = SerializationUtils.clone(this);
 
         final GeoWebCacheEnvironment gwcEnvironment =
                 GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
@@ -373,8 +373,7 @@ public class JDBCConfiguration implements Serializable {
             ConnectionPoolConfiguration connectionPoolConfig = getConnectionPool();
             if (connectionPoolConfig != null) {
                 ConnectionPoolConfiguration expConnectionPoolConfig =
-                        (ConnectionPoolConfiguration)
-                                SerializationUtils.clone(connectionPoolConfig);
+                        SerializationUtils.clone(connectionPoolConfig);
                 expConnectionPoolConfig.setDriver(
                         (String) gwcEnvironment.resolveValue(connectionPoolConfig.getDriver()));
                 expConnectionPoolConfig.setUrl(

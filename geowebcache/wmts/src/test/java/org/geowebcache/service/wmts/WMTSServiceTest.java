@@ -150,7 +150,7 @@ public class WMTSServiceTest {
                         configDir.getAbsolutePath(),
                         null);
         XMLConfiguration config = new XMLConfiguration(null, configProvider);
-        ((XMLConfiguration) config).setGridSetBroker(gridsetBroker);
+        config.setGridSetBroker(gridsetBroker);
         config.afterPropertiesSet();
         return config;
     }
@@ -1202,7 +1202,7 @@ public class WMTSServiceTest {
                                             hasEntry(
                                                     equalToIgnoringCase("styles"),
                                                     arrayContaining(equalToIgnoringCase("Bar")))),
-                            (String) any()))
+                            any()))
                     .thenReturn(Collections.unmodifiableMap(map));
             when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
         }

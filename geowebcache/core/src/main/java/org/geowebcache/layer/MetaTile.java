@@ -213,7 +213,7 @@ public class MetaTile implements TileResponseReceiver {
     }
 
     public void setStatus(int status) {
-        this.status = (long) status;
+        this.status = status;
     }
 
     public boolean getError() {

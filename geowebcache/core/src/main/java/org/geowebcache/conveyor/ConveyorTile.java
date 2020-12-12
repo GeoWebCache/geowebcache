@@ -157,7 +157,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     }
 
     public void setStatus(int status) {
-        this.status = (long) status;
+        this.status = status;
     }
 
     public String getErrorMessage() {
@@ -169,7 +169,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     }
 
     public Map<String, String> getParameters() {
-        return ((TileObject) stObj).getParameters();
+        return stObj.getParameters();
     }
 
     public long[] getTileIndex() {
@@ -206,7 +206,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
 
     public boolean persist() throws GeoWebCacheException {
         try {
-            return storageBroker.put((TileObject) stObj);
+            return storageBroker.put(stObj);
         } catch (StorageException e) {
             throw new GeoWebCacheException(e);
         }
@@ -215,11 +215,11 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     public boolean retrieve(long maxAge) throws GeoWebCacheException {
         try {
             if (isMetaTileCacheOnly) {
-                boolean cached = storageBroker.getTransient((TileObject) stObj);
+                boolean cached = storageBroker.getTransient(stObj);
                 this.setCacheResult(cached ? CacheResult.HIT : CacheResult.MISS);
                 return cached;
             }
-            boolean ret = storageBroker.get((TileObject) stObj);
+            boolean ret = storageBroker.get(stObj);
 
             // Do we use expiration, and if so, is the tile recent enough ?
             if (ret && maxAge > 0 && stObj.getCreated() + maxAge < System.currentTimeMillis()) {

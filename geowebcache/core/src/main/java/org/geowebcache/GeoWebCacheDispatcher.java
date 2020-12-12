@@ -283,7 +283,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
                     runtimeStats);
         } catch (RequestFilterException e) {
 
-            RequestFilterException reqE = (RequestFilterException) e;
+            RequestFilterException reqE = e;
             reqE.setHttpInfoHeader(response);
 
             ResponseUtils.writeFixedResponse(
@@ -433,7 +433,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
 
         // E.g. /wms/test -> /wms
-        Service service = (Service) services.get(serviceStr);
+        Service service = services.get(serviceStr);
         if (service == null) {
             if (serviceStr == null || serviceStr.length() == 0) {
                 serviceStr = ", try service/&lt;name of service&gt;";

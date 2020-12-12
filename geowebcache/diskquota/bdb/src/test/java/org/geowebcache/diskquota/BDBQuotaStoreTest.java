@@ -609,7 +609,7 @@ public class BDBQuotaStoreTest {
 
     static Matcher<Float> closeTo(float f, float epsilon) {
         return new BaseMatcher<Float>() {
-            Matcher<Double> doubleMatcher = Matchers.closeTo((double) f, (double) epsilon);
+            Matcher<Double> doubleMatcher = Matchers.closeTo(f, epsilon);
 
             @Override
             @SuppressWarnings("SelfAssignment") // this actually changes its fp representation

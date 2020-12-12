@@ -126,7 +126,7 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
                 "ArcGISCacheLayer matching "
                         + expected.getName()
                         + " with "
-                        + ((ArcGISCacheLayer) expected).getBackendTimeout()) {
+                        + expected.getBackendTimeout()) {
 
             @Override
             public boolean matches(Object item) {
@@ -157,7 +157,7 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
 
     @Override
     protected void doModifyInfo(TileLayer info, int rand) throws Exception {
-        ((ArcGISCacheLayer) info).setBackendTimeout(rand);
+        info.setBackendTimeout(rand);
     }
 
     @Override

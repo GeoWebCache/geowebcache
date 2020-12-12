@@ -293,7 +293,7 @@ final class LayerCacheInfoBuilder {
             final long y = Long.valueOf(path.substring(1 + coordSepIdx, dotIdx));
 
             this.quotaUsageMonitor.tileStored(
-                    layerName, gridSetId, blobFormat, parametersId, x, y, (int) tileZ, length);
+                    layerName, gridSetId, blobFormat, parametersId, x, y, tileZ, length);
             stats.numTiles++;
             stats.collectedQuota.addBytes(length);
             return true;

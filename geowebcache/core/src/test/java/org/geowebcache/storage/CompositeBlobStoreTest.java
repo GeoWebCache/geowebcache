@@ -108,7 +108,7 @@ public class CompositeBlobStoreTest {
 
         defaultLayer = mock(TileLayer.class);
         when(layers.getTileLayer(eq(DEFAULT_LAYER))).thenReturn(defaultLayer);
-        when(layers.getTileLayer((String) argThat(new NotEq<>(DEFAULT_LAYER))))
+        when(layers.getTileLayer(argThat(new NotEq<>(DEFAULT_LAYER))))
                 .thenThrow(new GeoWebCacheException("layer not found"));
     }
 
@@ -428,7 +428,7 @@ public class CompositeBlobStoreTest {
 
     private TileObject queryTile(
             String layer, String gridset, String extension, long x, long y, int z) {
-        return queryTile(layer, gridset, extension, x, y, z, (Map<String, String>) null);
+        return queryTile(layer, gridset, extension, x, y, z, null);
     }
 
     private TileObject queryTile(

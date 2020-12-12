@@ -19,9 +19,9 @@ public class ByteUtilsTest extends TestCase {
     }
 
     private void basicConversion(int number) throws Exception {
-        byte[] testB = ByteUtils.uIntLongToByteWord((long) number);
+        byte[] testB = ByteUtils.uIntLongToByteWord(number);
         long testL = ByteUtils.bytesToUIntLong(testB, 0);
 
-        assertEquals((long) number, testL);
+        assertEquals(number, testL);
     }
 }

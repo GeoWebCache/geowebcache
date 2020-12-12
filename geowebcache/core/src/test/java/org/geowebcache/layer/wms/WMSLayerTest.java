@@ -725,7 +725,7 @@ public class WMSLayerTest extends TileLayerTest {
         }
 
         private void installMockBroker() throws Exception {
-            expect(storageBroker.getTransient((TileObject) anyObject()))
+            expect(storageBroker.getTransient(anyObject()))
                     .andAnswer(
                             new IAnswer<Boolean>() {
 
@@ -777,7 +777,7 @@ public class WMSLayerTest extends TileLayerTest {
                                             })))
                     .andReturn(true)
                     .anyTimes();
-            expect(storageBroker.get((TileObject) anyObject()))
+            expect(storageBroker.get(anyObject()))
                     .andAnswer(
                             new IAnswer<Boolean>() {
                                 public Boolean answer() throws Throwable {

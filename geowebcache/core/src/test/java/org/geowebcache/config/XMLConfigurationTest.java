@@ -401,9 +401,7 @@ public class XMLConfigurationTest {
 
         XMLConfiguration config2 = new XMLConfiguration(null, configDir.getAbsolutePath());
         GridSetBroker gridSetBroker2 =
-                new GridSetBroker(
-                        Arrays.asList(
-                                new DefaultGridsets(true, true), (GridSetConfiguration) config2));
+                new GridSetBroker(Arrays.asList(new DefaultGridsets(true, true), config2));
         config2.setGridSetBroker(gridSetBroker2);
         config2.afterPropertiesSet();
         config2.getLayerCount();

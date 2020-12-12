@@ -74,10 +74,8 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
             @Override
             public boolean matches(Object item) {
                 return item instanceof GridSet
-                        && ((GridSet) item).getName().equals(((GridSet) expected).getName())
-                        && ((GridSet) item)
-                                .getDescription()
-                                .equals(((GridSet) expected).getDescription());
+                        && ((GridSet) item).getName().equals(expected.getName())
+                        && ((GridSet) item).getDescription().equals(expected.getDescription());
             }
         };
     }

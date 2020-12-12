@@ -71,7 +71,7 @@ public class TestXMLConfigurationSource {
         XMLConfiguration config =
                 new XMLConfiguration(extensions.getContextProvider(), configProvider);
         extensions.addBean("XMLConfiguration", config, XMLConfiguration.class.getInterfaces());
-        ((XMLConfiguration) config).setGridSetBroker(gridSetBroker);
+        config.setGridSetBroker(gridSetBroker);
         config.afterPropertiesSet();
         defaultGridsets.afterPropertiesSet();
         gridSetBroker.afterPropertiesSet();
