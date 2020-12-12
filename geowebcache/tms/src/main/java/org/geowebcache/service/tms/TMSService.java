@@ -165,7 +165,7 @@ public class TMSService extends Service {
         Enumeration<String> parameterNames = request.getParameterNames();
         if (parameterNames != null) {
             while (parameterNames.hasMoreElements()) {
-                String name = (String) parameterNames.nextElement();
+                String name = parameterNames.nextElement();
                 if (FLIP_Y.equalsIgnoreCase(name)) {
                     String flipY = request.getParameter(name);
                     return Boolean.parseBoolean(flipY);

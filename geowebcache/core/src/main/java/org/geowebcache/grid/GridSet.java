@@ -203,9 +203,9 @@ public class GridSet implements Info {
 
         double y = (tileBounds.getMinY() - tileOrigin()[1]) / height;
 
-        long posX = (long) Math.round(x);
+        long posX = Math.round(x);
 
-        long posY = (long) Math.round(y);
+        long posY = Math.round(y);
 
         if (Math.abs(x - posX) > 0.1 || Math.abs(y - posY) > 0.1) {
             throw new GridAlignmentMismatchException(x, posX, y, posY);

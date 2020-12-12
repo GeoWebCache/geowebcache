@@ -71,7 +71,7 @@ public class HttpClientRule extends ExternalResource {
     }
 
     public static HttpClientRule anonymous(String clientName) {
-        return new HttpClientRule((CredentialsProvider) null, clientName);
+        return new HttpClientRule(null, clientName);
     }
 
     public static HttpClientRule anonymous() {

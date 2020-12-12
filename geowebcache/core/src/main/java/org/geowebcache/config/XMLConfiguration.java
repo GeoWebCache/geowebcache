@@ -338,13 +338,11 @@ public class XMLConfiguration
     }
 
     public XStream getConfiguredXStream(XStream xs) {
-        return getConfiguredXStreamWithContext(
-                xs, this.context, (ContextualConfigurationProvider.Context) null);
+        return getConfiguredXStreamWithContext(xs, this.context, null);
     }
 
     public static XStream getConfiguredXStream(XStream xs, WebApplicationContext context) {
-        return getConfiguredXStreamWithContext(
-                xs, context, (ContextualConfigurationProvider.Context) null);
+        return getConfiguredXStreamWithContext(xs, context, null);
     }
 
     public XStream getConfiguredXStreamWithContext(

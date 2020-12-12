@@ -25,6 +25,7 @@ import java.math.RoundingMode;
  *
  * <p>The information provided by this class drives the expiration policies of the disk quota module
  */
+@SuppressWarnings("PMD.AvoidDecimalLiteralsInBigDecimalConstructor")
 public class PageStats implements Serializable {
 
     private static final long serialVersionUID = 719776699585233200L;

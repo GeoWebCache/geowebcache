@@ -166,7 +166,7 @@ public class BlobStoreAggregator {
                 new ArrayList<Iterable<BlobStoreInfo>>(getConfigs().size());
 
         for (BlobStoreConfiguration config : getConfigs()) {
-            perConfigBlobStores.add((Iterable<BlobStoreInfo>) config.getBlobStores());
+            perConfigBlobStores.add(config.getBlobStores());
         }
 
         return new CompositeIterable<BlobStoreInfo>(perConfigBlobStores);

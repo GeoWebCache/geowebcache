@@ -124,8 +124,8 @@ public class SeedTaskTest extends TestCase {
          * Create a mock storage broker that does nothing
          */
         final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
-        expect(mockStorageBroker.put((TileObject) anyObject())).andReturn(true).anyTimes();
-        expect(mockStorageBroker.get((TileObject) anyObject())).andReturn(false).anyTimes();
+        expect(mockStorageBroker.put(anyObject())).andReturn(true).anyTimes();
+        expect(mockStorageBroker.get(anyObject())).andReturn(false).anyTimes();
         replay(mockStorageBroker);
 
         boolean reseed = false;
@@ -212,8 +212,8 @@ public class SeedTaskTest extends TestCase {
          * Create a mock storage broker that does nothing
          */
         final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
-        expect(mockStorageBroker.put((TileObject) anyObject())).andReturn(true).anyTimes();
-        expect(mockStorageBroker.get((TileObject) anyObject())).andReturn(false).anyTimes();
+        expect(mockStorageBroker.put(anyObject())).andReturn(true).anyTimes();
+        expect(mockStorageBroker.get(anyObject())).andReturn(false).anyTimes();
         replay(mockStorageBroker);
 
         long tileFailureRetryWaitTime = 10;
@@ -289,7 +289,7 @@ public class SeedTaskTest extends TestCase {
                     }
                 };
         expect(mockStorageBroker.put(capture(storedObjects))).andReturn(true).anyTimes();
-        expect(mockStorageBroker.get((TileObject) anyObject())).andReturn(false).anyTimes();
+        expect(mockStorageBroker.get(anyObject())).andReturn(false).anyTimes();
         replay(mockStorageBroker);
 
         TileRange tr = TileBreeder.createTileRange(req, tl);

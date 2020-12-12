@@ -101,7 +101,7 @@ public class TileRange {
 
         if (z >= getZoomStart() && z <= getZoomStop()) {
 
-            long[] rB = rangeBounds((int) z);
+            long[] rB = rangeBounds(z);
 
             if (rB[0] <= x && rB[2] >= x && rB[1] <= y && rB[3] >= y) {
                 return true;

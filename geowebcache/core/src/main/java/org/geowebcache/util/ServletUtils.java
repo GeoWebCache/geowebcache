@@ -53,7 +53,7 @@ public class ServletUtils {
      * @return all matchings string
      */
     public static String[] stringsFromMap(Map<String, String[]> map, String encoding, String key) {
-        String[] strArray = (String[]) map.get(key);
+        String[] strArray = map.get(key);
 
         if (strArray != null) {
             return strArray;
@@ -272,7 +272,7 @@ public class ServletUtils {
         char[] str = new char[2];
 
         for (int i = 0; i < 2; i++) {
-            int temp = (int) aByte;
+            int temp = aByte;
             if (temp < 0) {
                 temp += 256;
             }

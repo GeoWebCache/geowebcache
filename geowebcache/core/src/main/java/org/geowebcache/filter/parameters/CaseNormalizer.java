@@ -72,12 +72,12 @@ public class CaseNormalizer implements Function<String, String>, Serializable, C
 
     /** Create a Case Normalizer with default case and locale */
     public CaseNormalizer() {
-        this((Case) null);
+        this(null);
     }
 
     /** Create a Case Normalizer with the given case and default locale */
     public CaseNormalizer(Case kase) {
-        this(kase, (Locale) null);
+        this(kase, null);
     }
 
     /** Create a Case Normalizer with the given case and locale */

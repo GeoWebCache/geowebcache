@@ -261,7 +261,7 @@ public final class ResponseUtils {
         response.setStatus(httpCode);
         response.setContentType(contentType);
 
-        response.setContentLength((int) contentLength);
+        response.setContentLength(contentLength);
         if (resource != null) {
             try (OutputStream os = response.getOutputStream();
                     WritableByteChannel channel = Channels.newChannel(os)) {

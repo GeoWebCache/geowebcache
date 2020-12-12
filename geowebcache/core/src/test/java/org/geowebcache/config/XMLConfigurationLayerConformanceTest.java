@@ -151,7 +151,7 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
             @Override
             public boolean matches(Object item) {
                 return item instanceof WMSLayer
-                        && ((WMSLayer) item).getId().equals(((WMSLayer) expected).getId())
+                        && ((WMSLayer) item).getId().equals(expected.getId())
                         && ((WMSLayer) item)
                                 .getWmsLayers()
                                 .equals(((WMSLayer) expected).getWmsLayers());

@@ -129,14 +129,13 @@ final class SqlitlePerf {
         for (int i = 0; i < tiles.length; i++) {
             long[] tile = tiles[i];
             executor.submit(
-                    (Runnable)
-                            () ->
-                                    connectionManager.doWork(
-                                            databaseFile,
-                                            true,
-                                            connection -> {
-                                                getTile(connection, tile);
-                                            }));
+                    () ->
+                            connectionManager.doWork(
+                                    databaseFile,
+                                    true,
+                                    connection -> {
+                                        getTile(connection, tile);
+                                    }));
             if (i != 0 && i % 10000 == 0) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(String.format("Submitted %d select tasks.", i));
@@ -193,18 +192,16 @@ final class SqlitlePerf {
         for (int i = 0; i < tiles.length; i++) {
             long[] tile = tiles[i];
             executor.submit(
-                    (Runnable)
-                            () -> {
-                                TileObject mbtile =
-                                        TileObject.createQueryTileObject(
-                                                "layer", tile, "grid", "image/png", null);
-                                try {
-                                    mbtilesBlobStore.get(mbtile);
-                                } catch (Exception exception) {
-                                    throw Utils.exception(
-                                            exception, "Error retrieving tile '%s'.", mbtile);
-                                }
-                            });
+                    () -> {
+                        TileObject mbtile =
+                                TileObject.createQueryTileObject(
+                                        "layer", tile, "grid", "image/png", null);
+                        try {
+                            mbtilesBlobStore.get(mbtile);
+                        } catch (Exception exception) {
+                            throw Utils.exception(exception, "Error retrieving tile '%s'.", mbtile);
+                        }
+                    });
             if (i != 0 && i % 10000 == 0) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(String.format("Submitted %d select tasks.", i));
@@ -249,18 +246,16 @@ final class SqlitlePerf {
         for (int i = 0; i < tiles.length; i++) {
             long[] tile = tiles[i];
             executor.submit(
-                    (Runnable)
-                            () -> {
-                                TileObject mbtile =
-                                        TileObject.createQueryTileObject(
-                                                "layer", tile, "grid", "image/png", null);
-                                try {
-                                    fileBlobStore.get(mbtile);
-                                } catch (Exception exception) {
-                                    throw Utils.exception(
-                                            exception, "Error retrieving tile '%s'.", mbtile);
-                                }
-                            });
+                    () -> {
+                        TileObject mbtile =
+                                TileObject.createQueryTileObject(
+                                        "layer", tile, "grid", "image/png", null);
+                        try {
+                            fileBlobStore.get(mbtile);
+                        } catch (Exception exception) {
+                            throw Utils.exception(exception, "Error retrieving tile '%s'.", mbtile);
+                        }
+                    });
             if (i != 0 && i % 10000 == 0) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(String.format("Submitted %d read tasks.", i));

@@ -110,7 +110,7 @@ public abstract class Service {
 
         response.setCharacterEncoding("utf-8");
 
-        response.setStatus((int) conv.getStatus());
+        response.setStatus(conv.getStatus());
 
         TileLayer layer = conv.getLayer();
         if (layer != null) {

@@ -812,26 +812,23 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
 
     public Map<String, Optional<Map<String, String>>> getParametersMapping(String layerName) {
         try {
-            return (Map<String, Optional<Map<String, String>>>)
-                    connectionManager.executeQuery(
-                            metadataFile,
-                            resultSet -> {
-                                try {
-                                    Map<String, Optional<Map<String, String>>> result =
-                                            new HashMap<>();
-                                    while (resultSet.next()) {
-                                        Map<String, String> params =
-                                                ParametersUtils.getMap(resultSet.getString(1));
-                                        result.put(
-                                                ParametersUtils.getId(params), Optional.of(params));
-                                    }
-                                    return result;
-                                } catch (Exception exception) {
-                                    throw Utils.exception(exception, "Error reading result set.");
-                                }
-                            },
-                            "SELECT value FROM metadata WHERE layerName = ? AND key like 'parameters.%';",
-                            layerName);
+            return connectionManager.executeQuery(
+                    metadataFile,
+                    resultSet -> {
+                        try {
+                            Map<String, Optional<Map<String, String>>> result = new HashMap<>();
+                            while (resultSet.next()) {
+                                Map<String, String> params =
+                                        ParametersUtils.getMap(resultSet.getString(1));
+                                result.put(ParametersUtils.getId(params), Optional.of(params));
+                            }
+                            return result;
+                        } catch (Exception exception) {
+                            throw Utils.exception(exception, "Error reading result set.");
+                        }
+                    },
+                    "SELECT value FROM metadata WHERE layerName = ? AND key like 'parameters.%';",
+                    layerName);
         } catch (Exception exception) {
             // probably because the metadata table doesn't exists
             if (LOGGER.isErrorEnabled()) {
