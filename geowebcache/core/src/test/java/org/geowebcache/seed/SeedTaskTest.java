@@ -335,15 +335,15 @@ public class SeedTaskTest extends TestCase {
 
         assertEquals(expectedSavedTileCount, seededTileCount);
 
-        Set<Tuple<Long>> tileKeys = new TreeSet<Tuple<Long>>();
-        Set<Tuple<Long>> expectedTiles = new TreeSet<Tuple<Long>>();
+        Set<Tuple<Long>> tileKeys = new TreeSet<>();
+        Set<Tuple<Long>> expectedTiles = new TreeSet<>();
         for (long x = startx; x <= coveredGridLevels[2]; x++) {
             for (long y = starty; y <= coveredGridLevels[3]; y++) {
-                expectedTiles.add(new Tuple<Long>(x, y, (long) zoomLevel));
+                expectedTiles.add(new Tuple<>(x, y, (long) zoomLevel));
             }
         }
         for (TileObject obj : storedTiles) {
-            tileKeys.add(new Tuple<Long>(obj.getXYZ()[0], obj.getXYZ()[1], obj.getXYZ()[2]));
+            tileKeys.add(new Tuple<>(obj.getXYZ()[0], obj.getXYZ()[1], obj.getXYZ()[2]));
         }
 
         assertEquals(expectedTiles, tileKeys);

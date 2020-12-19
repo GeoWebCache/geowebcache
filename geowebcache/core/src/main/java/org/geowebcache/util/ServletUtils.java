@@ -398,7 +398,7 @@ public class ServletUtils {
             return Collections.emptyMap();
         }
         String[] params = queryString.split("&");
-        Map<String, String> ret = new HashMap<String, String>();
+        Map<String, String> ret = new HashMap<>();
         for (String kvp : params) {
             String[] split = kvp.split("=");
             if (split[0].length() > 0) {

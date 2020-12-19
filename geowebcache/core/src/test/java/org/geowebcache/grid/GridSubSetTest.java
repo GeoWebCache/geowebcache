@@ -37,7 +37,7 @@ public class GridSubSetTest {
     /** Creation of a PNG test Layer with a non-zero zoomStart parameter for the test. */
     private static WMSLayer createWMSLayer() {
         // Subsets table
-        Hashtable<String, GridSubset> grids = new Hashtable<String, GridSubset>();
+        Hashtable<String, GridSubset> grids = new Hashtable<>();
         // GridSetBroker to use for creating a GridSubSet to add to the table
         GridSetBroker gridSetBroker =
                 new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));

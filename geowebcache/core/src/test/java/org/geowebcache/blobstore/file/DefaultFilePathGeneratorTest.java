@@ -51,7 +51,7 @@ public class DefaultFilePathGeneratorTest extends TestCase {
     }
 
     public void testPathWithParams() throws Exception {
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         params.put("style", "population");
         TileObject tile =
                 TileObject.createCompleteTileObject(

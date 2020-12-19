@@ -127,7 +127,7 @@ public class GuavaCacheProvider implements CacheProvider {
 
     public GuavaCacheProvider(CacheConfiguration config) {
         // Initialization of the Layer set and of the Atomic parameters
-        layers = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+        layers = Collections.newSetFromMap(new ConcurrentHashMap<>());
         configured = new AtomicBoolean(false);
         actualOperations = new AtomicLong(0);
         configure(config);
@@ -637,8 +637,7 @@ public class GuavaCacheProvider implements CacheProvider {
         private final ReadLock readLock;
 
         /** MultiMap containing the {@link TileObject} keys for the Layers */
-        private final ConcurrentHashMap<String, Set<String>> layerMap =
-                new ConcurrentHashMap<String, Set<String>>();
+        private final ConcurrentHashMap<String, Set<String>> layerMap = new ConcurrentHashMap<>();
 
         public LayerMap() {
             // Lock initialization
@@ -677,7 +676,7 @@ public class GuavaCacheProvider implements CacheProvider {
                         }
                         // If no key is present then a new KeySet is created and then added to the
                         // multimap
-                        tileKeys = new ConcurrentSkipListSet<String>();
+                        tileKeys = new ConcurrentSkipListSet<>();
                         layerMap.put(layer, tileKeys);
                     }
                     // Downgrade by acquiring read lock before releasing write lock

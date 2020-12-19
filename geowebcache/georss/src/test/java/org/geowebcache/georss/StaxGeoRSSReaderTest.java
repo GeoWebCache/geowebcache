@@ -84,7 +84,7 @@ public class StaxGeoRSSReaderTest extends TestCase {
     }
 
     private List<Entry> read(final StaxGeoRSSReader reader) throws IOException {
-        List<Entry> entries = new ArrayList<Entry>();
+        List<Entry> entries = new ArrayList<>();
         Entry e;
         while ((e = reader.nextEntry()) != null) {
             entries.add(e);

@@ -51,14 +51,14 @@ public class LayerMetaInformation {
 
     public synchronized List<String> getKeywords() {
         if (keywords == null) {
-            keywords = new LinkedList<String>();
+            keywords = new LinkedList<>();
         }
         return keywords;
     }
 
     public synchronized List<ContactInformation> getContacts() {
         if (contacts == null) {
-            contacts = new LinkedList<ContactInformation>();
+            contacts = new LinkedList<>();
         }
         return contacts;
     }

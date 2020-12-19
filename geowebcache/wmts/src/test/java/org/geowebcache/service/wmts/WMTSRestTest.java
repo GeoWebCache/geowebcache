@@ -342,8 +342,8 @@ public class WMTSRestTest {
         final MimeType infoMimeType3 = MimeType.createFromFormat("application/vnd.ogc.gml");
         when(tileLayer.getInfoMimeTypes())
                 .thenReturn(Arrays.asList(infoMimeType1, infoMimeType2, infoMimeType3));
-        Map<String, GridSubset> subsets = new HashMap<String, GridSubset>();
-        Map<SRS, List<GridSubset>> bySrs = new HashMap<SRS, List<GridSubset>>();
+        Map<String, GridSubset> subsets = new HashMap<>();
+        Map<SRS, List<GridSubset>> bySrs = new HashMap<>();
 
         for (String gsetName : gridSetNames) {
             GridSet gridSet = broker.get(gsetName);
@@ -355,7 +355,7 @@ public class WMTSRestTest {
 
             List<GridSubset> list = bySrs.get(gridSet.getSrs());
             if (list == null) {
-                list = new ArrayList<GridSubset>();
+                list = new ArrayList<>();
                 bySrs.put(gridSet.getSrs(), list);
             }
             list.add(gridSubSet);

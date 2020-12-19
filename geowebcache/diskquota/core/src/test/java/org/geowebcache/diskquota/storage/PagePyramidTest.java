@@ -200,7 +200,7 @@ public class PagePyramidTest extends TestCase {
     }
 
     private List<Long> asList(long... coverage) {
-        List<Long> list = new ArrayList<Long>();
+        List<Long> list = new ArrayList<>();
         for (long l : coverage) {
             list.add(Long.valueOf(l));
         }

@@ -230,7 +230,7 @@ public class TileRangeIteratorTest extends TestCase {
 
         final TileRangeIterator tri = new TileRangeIterator(tileRange, metaTilingFactors);
 
-        Collection<Callable<Long>> tasks = new ArrayList<Callable<Long>>(nThreads);
+        Collection<Callable<Long>> tasks = new ArrayList<>(nThreads);
         for (int taskN = 0; taskN < nThreads; taskN++) {
             tasks.add(new TileRangeIteratorConsumer(tri));
         }

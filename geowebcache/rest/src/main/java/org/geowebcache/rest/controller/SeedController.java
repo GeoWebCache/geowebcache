@@ -88,7 +88,7 @@ public class SeedController {
         } else {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.TEXT_PLAIN);
-            return new ResponseEntity<String>(response, headers, HttpStatus.OK);
+            return new ResponseEntity<>(response, headers, HttpStatus.OK);
         }
     }
 

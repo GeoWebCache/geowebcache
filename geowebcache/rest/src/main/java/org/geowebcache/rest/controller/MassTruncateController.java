@@ -92,7 +92,7 @@ public class MassTruncateController extends GWCSeedingController {
         // Not worth the trouble of messing with XStream for the output so just assemble some XML.
 
         StringBuilder sb = new StringBuilder();
-        Set<String> result = new HashSet<String>();
+        Set<String> result = new HashSet<>();
         sb.append("<massTruncateRequests href=\"").append(req.getRequestURL()).append("\">");
 
         for (Class<?> requestType : getRequestTypes()) {

@@ -34,7 +34,7 @@ public class ClassMetadataBuilder {
 
     private PrimaryKeyMetadata primaryKey;
 
-    private List<SecondaryKeyMetadata> secondaryKeys = new ArrayList<SecondaryKeyMetadata>();
+    private List<SecondaryKeyMetadata> secondaryKeys = new ArrayList<>();
 
     public void entity(Class type) {
         this.entityClass = type;
@@ -92,7 +92,7 @@ public class ClassMetadataBuilder {
         }
 
         // setup the fields
-        List<FieldMetadata> fields = new ArrayList<FieldMetadata>();
+        List<FieldMetadata> fields = new ArrayList<>();
         for (Field field : type.getDeclaredFields()) {
             int modifiers = field.getModifiers();
             // skip non persistent fields
@@ -106,8 +106,7 @@ public class ClassMetadataBuilder {
         }
 
         // create the class metadata
-        Map<String, SecondaryKeyMetadata> secondaryKeyMap =
-                new HashMap<String, SecondaryKeyMetadata>();
+        Map<String, SecondaryKeyMetadata> secondaryKeyMap = new HashMap<>();
         if (secondaryKeys != null) {
             for (SecondaryKeyMetadata metadata : secondaryKeys) {
                 secondaryKeyMap.put(metadata.getName(), metadata);

@@ -92,12 +92,12 @@ public class ByteStreamController {
 
         // Just to make sure we don't allow access to arbitrary resources
         if (UNSAFE_RESOURCE.matcher(filename).find()) {
-            return new ResponseEntity<Object>(HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
         URL resource = getResource(filename);
         if (resource == null) {
-            return new ResponseEntity<Object>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
         String[] filenameParts = filename.split("\\.");
@@ -121,6 +121,6 @@ public class ByteStreamController {
             return new ResponseEntity<Object>("Internal error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseEntity<Object>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

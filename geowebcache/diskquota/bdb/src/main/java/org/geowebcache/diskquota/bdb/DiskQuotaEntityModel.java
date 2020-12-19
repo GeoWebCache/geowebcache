@@ -33,9 +33,9 @@ import org.geowebcache.diskquota.storage.TileSet;
  */
 public class DiskQuotaEntityModel extends AnnotationModel {
 
-    private Map<String, ClassMetadata> classes = new HashMap<String, ClassMetadata>();
+    private Map<String, ClassMetadata> classes = new HashMap<>();
 
-    private Map<String, EntityMetadata> entities = new HashMap<String, EntityMetadata>();
+    private Map<String, EntityMetadata> entities = new HashMap<>();
 
     public DiskQuotaEntityModel() {
         try {

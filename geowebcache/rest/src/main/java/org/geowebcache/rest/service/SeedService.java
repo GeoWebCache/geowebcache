@@ -104,8 +104,7 @@ public class SeedService {
                 } catch (GeoWebCacheException e) {
                     HttpHeaders headers = new HttpHeaders();
                     headers.setContentType(MediaType.TEXT_PLAIN);
-                    return new ResponseEntity<String>(
-                            e.getMessage(), headers, HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<>(e.getMessage(), headers, HttpStatus.BAD_REQUEST);
                 }
                 list = seeder.getStatusList(layer);
             }
@@ -159,8 +158,8 @@ public class SeedService {
                                     + "'. One of all|running|pending is expected.",
                             HttpStatus.BAD_REQUEST);
                 }
-                List<GWCTask> terminatedTasks = new LinkedList<GWCTask>();
-                List<GWCTask> nonTerminatedTasks = new LinkedList<GWCTask>();
+                List<GWCTask> terminatedTasks = new LinkedList<>();
+                List<GWCTask> nonTerminatedTasks = new LinkedList<>();
                 while (tasks.hasNext()) {
                     GWCTask task = tasks.next();
                     String layerName = task.getLayerName();
@@ -215,11 +214,11 @@ public class SeedService {
             handleRequest(layer, obj);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.TEXT_PLAIN);
-            return new ResponseEntity<Object>(headers, HttpStatus.OK);
+            return new ResponseEntity<>(headers, HttpStatus.OK);
         } catch (IOException e) {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.TEXT_PLAIN);
-            return new ResponseEntity<Object>(headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

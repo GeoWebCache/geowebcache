@@ -175,7 +175,7 @@ public class WMSRasterFilter extends RasterFilter {
             throws GeoWebCacheException {
         BoundingBox bbox = gridSubset.getCoverageBounds(z);
 
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         params.put("SERVICE", "WMS");
         params.put("REQUEST", "GetMap");
         params.put("VERSION", "1.1.1");

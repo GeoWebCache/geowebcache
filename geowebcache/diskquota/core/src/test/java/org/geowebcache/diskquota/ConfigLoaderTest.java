@@ -99,7 +99,7 @@ public class ConfigLoaderTest extends TestCase {
                 .andReturn(raster)
                 .anyTimes();
 
-        List<TileLayer> tileLayers = new ArrayList<TileLayer>();
+        List<TileLayer> tileLayers = new ArrayList<>();
         tileLayers.add(toppStates);
         tileLayers.add(raster);
         EasyMock.expect(tld.getLayerList()).andReturn(tileLayers).anyTimes();
@@ -151,7 +151,7 @@ public class ConfigLoaderTest extends TestCase {
 
     public void testSaveConfig() throws ConfigurationException, IOException {
         DiskQuotaConfig config = new DiskQuotaConfig();
-        List<LayerQuota> quotas = new ArrayList<LayerQuota>();
+        List<LayerQuota> quotas = new ArrayList<>();
         LayerQuota lq = new LayerQuota("topp:states", LRU, new Quota(10, StorageUnit.MiB));
         quotas.add(lq);
         config.addLayerQuota(lq);

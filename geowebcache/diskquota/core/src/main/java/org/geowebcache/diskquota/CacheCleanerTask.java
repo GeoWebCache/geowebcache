@@ -54,7 +54,7 @@ class CacheCleanerTask implements Runnable {
     public CacheCleanerTask(final DiskQuotaMonitor monitor, final ExecutorService executor) {
         this.monitor = monitor;
         this.cleanUpExecutorService = executor;
-        this.perLayerRunningCleanUps = new HashMap<String, Future<?>>();
+        this.perLayerRunningCleanUps = new HashMap<>();
     }
 
     /**
@@ -94,7 +94,7 @@ class CacheCleanerTask implements Runnable {
 
         final Set<String> allLayerNames = monitor.getLayerNames();
         final Set<String> configuredLayerNames = quotaConfig.layerNames();
-        final Set<String> globallyManagedLayerNames = new HashSet<String>(allLayerNames);
+        final Set<String> globallyManagedLayerNames = new HashSet<>(allLayerNames);
 
         globallyManagedLayerNames.removeAll(configuredLayerNames);
 

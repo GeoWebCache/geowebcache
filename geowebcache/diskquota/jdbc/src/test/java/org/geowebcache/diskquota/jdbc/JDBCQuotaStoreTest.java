@@ -100,8 +100,7 @@ public abstract class JDBCQuotaStoreTest {
             EasyMock.replay(cacheDirFinder);
 
             XMLConfiguration xmlConfig = loadXMLConfig();
-            LinkedList<TileLayerConfiguration> configList =
-                    new LinkedList<TileLayerConfiguration>();
+            LinkedList<TileLayerConfiguration> configList = new LinkedList<>();
             extensions.addBean(
                     "xmlConfig",
                     xmlConfig,
@@ -580,7 +579,7 @@ public abstract class JDBCQuotaStoreTest {
     @Test
     public void testVisitor() throws Exception {
         Set<TileSet> tileSets1 = store.getTileSets();
-        final Set<TileSet> tileSets2 = new HashSet<TileSet>();
+        final Set<TileSet> tileSets2 = new HashSet<>();
         store.accept(
                 new TileSetVisitor() {
 
@@ -610,7 +609,7 @@ public abstract class JDBCQuotaStoreTest {
     public void testGetUsedQuotaByLayerName() throws Exception {
         String layerName = "topp:states2";
         List<TileSet> tileSets;
-        tileSets = new ArrayList<TileSet>(tilePageCalculator.getTileSetsFor(layerName));
+        tileSets = new ArrayList<>(tilePageCalculator.getTileSetsFor(layerName));
 
         Quota expected = new Quota();
         for (TileSet tset : tileSets) {
@@ -628,9 +627,9 @@ public abstract class JDBCQuotaStoreTest {
     public void testGetUsedQuotaByTileSetId() throws Exception {
         String layerName = "topp:states2";
         List<TileSet> tileSets;
-        tileSets = new ArrayList<TileSet>(tilePageCalculator.getTileSetsFor(layerName));
+        tileSets = new ArrayList<>(tilePageCalculator.getTileSetsFor(layerName));
 
-        Map<String, Quota> expectedById = new HashMap<String, Quota>();
+        Map<String, Quota> expectedById = new HashMap<>();
 
         for (TileSet tset : tileSets) {
             Quota quotaDiff = new Quota(10D * Math.random(), StorageUnit.MiB);

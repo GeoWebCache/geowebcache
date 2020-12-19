@@ -63,11 +63,9 @@ public abstract class TileLayer implements Info {
 
     private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayer.class);
 
-    protected static final ThreadLocal<ByteArrayResource> WMS_BUFFER =
-            new ThreadLocal<ByteArrayResource>();
+    protected static final ThreadLocal<ByteArrayResource> WMS_BUFFER = new ThreadLocal<>();
 
-    protected static final ThreadLocal<ByteArrayResource> WMS_BUFFER2 =
-            new ThreadLocal<ByteArrayResource>();
+    protected static final ThreadLocal<ByteArrayResource> WMS_BUFFER2 = new ThreadLocal<>();
 
     // cached default parameter filter values
     protected transient Map<String, String> defaultParameterFilterValues;
@@ -258,7 +256,7 @@ public abstract class TileLayer implements Info {
             SRS gridSetSRS = gridSubset.getSRS();
             if (gridSetSRS.equals(srs)) {
                 if (matches.isEmpty()) {
-                    matches = new ArrayList<GridSubset>(2);
+                    matches = new ArrayList<>(2);
                 }
                 matches.add(gridSubset);
             }
@@ -387,7 +385,7 @@ public abstract class TileLayer implements Info {
             if (parameterFilters == null || parameterFilters.size() == 0) {
                 defaultParameterFilterValues = Collections.emptyMap();
             } else {
-                Map<String, String> defaults = new HashMap<String, String>();
+                Map<String, String> defaults = new HashMap<>();
                 for (ParameterFilter parameterFilter : parameterFilters) {
                     String key = parameterFilter.getKey().toUpperCase();
                     String defaultValue = decodeDimensionValue(parameterFilter.getDefaultValue());
@@ -413,7 +411,7 @@ public abstract class TileLayer implements Info {
             return Collections.emptyMap();
         }
 
-        Map<String, String> fullParameters = new HashMap<String, String>();
+        Map<String, String> fullParameters = new HashMap<>();
 
         final String[] keys =
                 parameterFilters.stream().map(ParameterFilter::getKey).toArray(i -> new String[i]);

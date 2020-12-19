@@ -47,7 +47,7 @@ public class BlobStoreAggregator {
 
     /** Used to delegate calls to {@link BlobStoreConfiguration} objects */
     public BlobStoreAggregator(List<BlobStoreConfiguration> configs, TileLayerDispatcher layers) {
-        this.configs = configs == null ? new ArrayList<BlobStoreConfiguration>() : configs;
+        this.configs = configs == null ? new ArrayList<>() : configs;
         this.layers = layers;
         initialize();
     }
@@ -65,7 +65,7 @@ public class BlobStoreAggregator {
      */
     public void addConfiguration(BlobStoreConfiguration config) {
         initialize(config);
-        List<BlobStoreConfiguration> newList = new ArrayList<BlobStoreConfiguration>(getConfigs());
+        List<BlobStoreConfiguration> newList = new ArrayList<>(getConfigs());
         newList.add(config);
         this.configs = newList;
     }
@@ -120,7 +120,7 @@ public class BlobStoreAggregator {
     public void reInit() {
         List<BlobStoreConfiguration> extensions =
                 GeoWebCacheExtensions.extensions(BlobStoreConfiguration.class);
-        this.configs = new ArrayList<BlobStoreConfiguration>(extensions);
+        this.configs = new ArrayList<>(extensions);
         this.layers = GeoWebCacheExtensions.bean(TileLayerDispatcher.class);
         initialize();
     }
@@ -162,14 +162,13 @@ public class BlobStoreAggregator {
      */
     @SuppressWarnings("unchecked")
     public Iterable<BlobStoreInfo> getBlobStores() {
-        List<Iterable<BlobStoreInfo>> perConfigBlobStores =
-                new ArrayList<Iterable<BlobStoreInfo>>(getConfigs().size());
+        List<Iterable<BlobStoreInfo>> perConfigBlobStores = new ArrayList<>(getConfigs().size());
 
         for (BlobStoreConfiguration config : getConfigs()) {
             perConfigBlobStores.add(config.getBlobStores());
         }
 
-        return new CompositeIterable<BlobStoreInfo>(perConfigBlobStores);
+        return new CompositeIterable<>(perConfigBlobStores);
     }
 
     private void initialize() {

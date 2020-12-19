@@ -48,7 +48,7 @@ public class PNGImageEncoder extends ImageEncoderImpl {
     private final float quality;
 
     static {
-        supportedMimeTypes = new ArrayList<String>();
+        supportedMimeTypes = new ArrayList<>();
         supportedMimeTypes.add(ImageMime.png.getMimeType());
         supportedMimeTypes.add(ImageMime.png8.getMimeType());
         supportedMimeTypes.add(ImageMime.png24.getMimeType());

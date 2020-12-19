@@ -20,10 +20,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class BlobStoreListenerList {
 
-    private List<BlobStoreListener> listeners = new CopyOnWriteArrayList<BlobStoreListener>();
+    private List<BlobStoreListener> listeners = new CopyOnWriteArrayList<>();
 
     public Iterable<BlobStoreListener> getListeners() {
-        return new ArrayList<BlobStoreListener>(listeners);
+        return new ArrayList<>(listeners);
     }
 
     public boolean isEmpty() {

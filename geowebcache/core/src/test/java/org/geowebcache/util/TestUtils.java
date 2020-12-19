@@ -70,7 +70,7 @@ public class TestUtils {
         String[] urls = {"http://localhost:38080/wms"};
         List<String> formatList = Collections.singletonList(format);
 
-        Hashtable<String, GridSubset> grids = new Hashtable<String, GridSubset>();
+        Hashtable<String, GridSubset> grids = new Hashtable<>();
 
         GridSubset grid =
                 GridSubsetFactory.createGridSubSet(

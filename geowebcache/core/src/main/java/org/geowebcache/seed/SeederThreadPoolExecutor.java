@@ -30,13 +30,7 @@ public class SeederThreadPoolExecutor extends ThreadPoolExecutor implements Disp
     private static final ThreadFactory tf = new CustomizableThreadFactory("GWC Seeder Thread-");
 
     public SeederThreadPoolExecutor(int corePoolSize, int maxPoolSize) {
-        super(
-                corePoolSize,
-                maxPoolSize,
-                60,
-                TimeUnit.SECONDS,
-                new LinkedBlockingQueue<Runnable>(),
-                tf);
+        super(corePoolSize, maxPoolSize, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), tf);
     }
 
     /**

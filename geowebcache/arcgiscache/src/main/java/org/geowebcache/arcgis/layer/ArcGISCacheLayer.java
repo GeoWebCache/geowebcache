@@ -243,7 +243,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         GridSubset subSet =
                 GridSubsetFactory.createGridSubSet(gridSet, this.layerBounds, zoomStart, zoomStop);
 
-        Hashtable<String, GridSubset> subsets = new Hashtable<String, GridSubset>();
+        Hashtable<String, GridSubset> subsets = new Hashtable<>();
         subsets.put(gridSet.getName(), subSet);
         return subsets;
     }

@@ -67,7 +67,7 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
         private int numAggregations;
 
         public TimedUsageUpdate() {
-            this.pages = new HashMap<String, PageStatsPayload>();
+            this.pages = new HashMap<>();
             this.lastCommitTime = System.currentTimeMillis();
             numAggregations = 0;
         }
@@ -221,7 +221,7 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
 
     private void commit() {
         Collection<PageStatsPayload> pendingCommits;
-        pendingCommits = new ArrayList<PageStatsPayload>(aggregatedPendingUpdates.pages.values());
+        pendingCommits = new ArrayList<>(aggregatedPendingUpdates.pages.values());
         quotaStore.addHitsAndSetAccesTime(pendingCommits);
         aggregatedPendingUpdates.lastCommitTime = System.currentTimeMillis();
         aggregatedPendingUpdates.numAggregations = 0;

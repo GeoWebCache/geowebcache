@@ -96,7 +96,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
         this.url = url;
         this.mimeTypes = mimeTypes;
         this.metaTiling = metaTiling;
-        this.layers = new HashMap<String, TileLayer>();
+        this.layers = new HashMap<>();
         if (Boolean.parseBoolean(allowCacheBypass)) {
             this.allowCacheBypass = true;
         }
@@ -115,7 +115,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
         this.mimeTypes = mimeTypes;
         this.metaTiling = metaTiling;
         this.vendorParameters = vendorParameters;
-        this.layers = new HashMap<String, TileLayer>();
+        this.layers = new HashMap<>();
         if (Boolean.parseBoolean(allowCacheBypass)) {
             this.allowCacheBypass = true;
         }
@@ -204,7 +204,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
 
     private List<TileLayer> getLayers(WebMapServer wms, String wmsUrl, String urlVersion)
             throws GeoWebCacheException {
-        List<TileLayer> layers = new LinkedList<TileLayer>();
+        List<TileLayer> layers = new LinkedList<>();
 
         WMSCapabilities capabilities = wms.getCapabilities();
         if (capabilities == null) {
@@ -233,7 +233,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
 
             if (name != null) {
 
-                LinkedList<ParameterFilter> paramFilters = new LinkedList<ParameterFilter>();
+                LinkedList<ParameterFilter> paramFilters = new LinkedList<>();
                 List<StyleImpl> styles = layer.getStyles();
 
                 StringBuffer buf = new StringBuffer();
@@ -332,7 +332,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
                     List<org.geotools.ows.wms.xml.MetadataURL> metadataURLs =
                             layer.getMetadataURL();
                     if (metadataURLs != null && !metadataURLs.isEmpty()) {
-                        List<MetadataURL> convertedMetadataURLs = new ArrayList<MetadataURL>();
+                        List<MetadataURL> convertedMetadataURLs = new ArrayList<>();
                         for (org.geotools.ows.wms.xml.MetadataURL metadataURL : metadataURLs) {
                             convertedMetadataURLs.add(
                                     new MetadataURL(
@@ -409,7 +409,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
             List<ParameterFilter> paramFilters)
             throws GeoWebCacheException {
 
-        Hashtable<String, GridSubset> grids = new Hashtable<String, GridSubset>(2);
+        Hashtable<String, GridSubset> grids = new Hashtable<>(2);
         grids.put(
                 gridSetBroker.getWorldEpsg4326().getName(),
                 GridSubsetFactory.createGridSubSet(
@@ -460,14 +460,14 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
         List<String> mimeFormats = null;
         if (this.mimeTypes != null) {
             String[] mimeFormatArray = this.mimeTypes.split(",");
-            mimeFormats = new ArrayList<String>(mimeFormatArray.length);
+            mimeFormats = new ArrayList<>(mimeFormatArray.length);
 
             // This is stupid... but oh well, we're only doing it once
             for (int i = 0; i < mimeFormatArray.length; i++) {
                 mimeFormats.add(mimeFormatArray[i]);
             }
         } else {
-            mimeFormats = new ArrayList<String>(3);
+            mimeFormats = new ArrayList<>(3);
             mimeFormats.add("image/png");
             mimeFormats.add("image/png8");
             mimeFormats.add("image/jpeg");
@@ -565,7 +565,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
 
     /** @see TileLayerConfiguration#getLayerNames() */
     public Set<String> getLayerNames() {
-        return new HashSet<String>(layers.keySet());
+        return new HashSet<>(layers.keySet());
     }
 
     /** @see TileLayerConfiguration#containsLayer(java.lang.String) */

@@ -70,7 +70,7 @@ public class TruncateAllRequest implements MassTruncateRequest, Serializable {
         // for gui send page
         // for others stay legacy
         if (contentType.equalsIgnoreCase("application/x-www-form-urlencoded")) {
-            return new ResponseEntity<String>(getResponsePage().toString(), HttpStatus.OK);
+            return new ResponseEntity<>(getResponsePage().toString(), HttpStatus.OK);
         } else return MassTruncateRequest.super.getResponse(contentType);
     }
 

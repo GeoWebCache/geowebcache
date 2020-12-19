@@ -59,7 +59,7 @@ public class GetCapabilitiesConfigurationTest {
         req = createNiceMock(WMSRequest.class);
         gcOpType = createNiceMock(OperationType.class);
         globalConfig = createNiceMock(DefaultingConfiguration.class);
-        layerCapture = new Capture<TileLayer>(CaptureType.LAST);
+        layerCapture = new Capture<>(CaptureType.LAST);
         broker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
         expect(server.getCapabilities()).andStubReturn(cap);
@@ -77,7 +77,7 @@ public class GetCapabilitiesConfigurationTest {
         Layer l = new Layer();
         l.setName("Foo");
         l.setLatLonBoundingBox(new CRSEnvelope());
-        List<Layer> layers = new LinkedList<Layer>();
+        List<Layer> layers = new LinkedList<>();
         layers.add(l);
         expect(cap.getLayerList()).andReturn(layers);
 
@@ -109,7 +109,7 @@ public class GetCapabilitiesConfigurationTest {
         Layer l = new Layer();
         l.setName("Foo");
         l.setLatLonBoundingBox(new CRSEnvelope());
-        List<Layer> layers = new LinkedList<Layer>();
+        List<Layer> layers = new LinkedList<>();
         layers.add(l);
         expect(cap.getLayerList()).andReturn(layers);
 
@@ -146,11 +146,11 @@ public class GetCapabilitiesConfigurationTest {
         Layer l = new Layer();
         l.setName("Foo");
         l.setLatLonBoundingBox(new CRSEnvelope());
-        List<Layer> layers = new LinkedList<Layer>();
+        List<Layer> layers = new LinkedList<>();
         layers.add(l);
         expect(cap.getLayerList()).andReturn(layers);
 
-        HashMap<String, String> cachedParams = new HashMap<String, String>();
+        HashMap<String, String> cachedParams = new HashMap<>();
         cachedParams.put("", "");
 
         GetCapabilitiesConfiguration config =
@@ -184,7 +184,7 @@ public class GetCapabilitiesConfigurationTest {
         String mimeTypes = "image/png";
         String vendorParameters = "map=/osgeo/mapserver/msautotest/world/world.map";
 
-        HashMap<String, String> cachedParams = new HashMap<String, String>();
+        HashMap<String, String> cachedParams = new HashMap<>();
 
         cachedParams.put("angle", "");
         cachedParams.put("CQL_FILTER", "1=1");
@@ -209,7 +209,7 @@ public class GetCapabilitiesConfigurationTest {
 
         expect(cap.getVersion()).andStubReturn("1.1.1");
 
-        List<Layer> layers = new LinkedList<Layer>();
+        List<Layer> layers = new LinkedList<>();
 
         Layer l = new Layer();
         l.setName("Foo");

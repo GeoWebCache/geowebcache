@@ -95,11 +95,11 @@ public class GeoWebCacheConfiguration {
                 xmlns + " http://geowebcache.org/schema/" + getVersion() + "/geowebcache.xsd";
 
         if (layers == null) {
-            layers = new ArrayList<TileLayer>();
+            layers = new ArrayList<>();
         }
 
         if (gridSets == null) {
-            gridSets = new ArrayList<XMLGridSet>();
+            gridSets = new ArrayList<>();
         }
 
         if (blobStores == null) {

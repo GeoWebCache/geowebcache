@@ -67,7 +67,7 @@ public class GridSubsetFactory {
             zoomStop = maxLevel;
         }
 
-        Map<Integer, GridCoverage> coverages = new TreeMap<Integer, GridCoverage>();
+        Map<Integer, GridCoverage> coverages = new TreeMap<>();
         for (int z = zoomStart; z <= zoomStop; z++) {
 
             Grid level = gridSet.getGrid(z);

@@ -127,7 +127,7 @@ public class WMSLayerTest extends TileLayerTest {
         layer.setLockProvider(lockProvider);
 
         final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
-        Capture<TileObject> captured = new Capture<TileObject>();
+        Capture<TileObject> captured = new Capture<>();
         expect(mockStorageBroker.put(EasyMock.capture(captured))).andReturn(true).anyTimes();
         replay(mockStorageBroker);
 
@@ -264,7 +264,7 @@ public class WMSLayerTest extends TileLayerTest {
         layer.setLockProvider(lockProvider);
 
         final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
-        Capture<TileObject> captured = new Capture<TileObject>(CaptureType.ALL);
+        Capture<TileObject> captured = new Capture<>(CaptureType.ALL);
         expect(mockStorageBroker.put(EasyMock.capture(captured)))
                 .andAnswer(tileVerifier)
                 .anyTimes();
@@ -538,7 +538,7 @@ public class WMSLayerTest extends TileLayerTest {
         ExecutorCompletionService<ConveyorTile> completer =
                 new ExecutorCompletionService<>(requests);
 
-        List<Future<ConveyorTile>> futures = new ArrayList<Future<ConveyorTile>>();
+        List<Future<ConveyorTile>> futures = new ArrayList<>();
         while (gridLoc != null) {
             Map<String, String> fullParameters = tr.getParameters();
 
@@ -569,7 +569,7 @@ public class WMSLayerTest extends TileLayerTest {
         }
 
         // these assertions could be externalized
-        List<ConveyorTile> results = new ArrayList<ConveyorTile>();
+        List<ConveyorTile> results = new ArrayList<>();
         for (int i = 0; i < futures.size(); i++) {
             ConveyorTile get = futures.get(i).get();
             if (get != null) {
@@ -762,7 +762,7 @@ public class WMSLayerTest extends TileLayerTest {
                             }));
             expectLastCall().anyTimes();
 
-            final HashSet<String> puts = new HashSet<String>();
+            final HashSet<String> puts = new HashSet<>();
             expect(
                             storageBroker.put(
                                     capture(

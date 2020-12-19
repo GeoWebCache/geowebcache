@@ -93,8 +93,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
         this.enabled = other.enabled;
         this.globalExpirationPolicyName = other.globalExpirationPolicyName;
         this.globalQuota = other.globalQuota;
-        this.layerQuotas =
-                other.layerQuotas == null ? null : new ArrayList<LayerQuota>(other.layerQuotas);
+        this.layerQuotas = other.layerQuotas == null ? null : new ArrayList<>(other.layerQuotas);
         this.maxConcurrentCleanUps = other.maxConcurrentCleanUps;
         this.quotaStore = other.quotaStore;
     }
@@ -131,18 +130,18 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
 
     /** @return the configured layer quotas, or {@code null} if not set */
     public List<LayerQuota> getLayerQuotas() {
-        return layerQuotas == null ? null : new ArrayList<LayerQuota>(layerQuotas);
+        return layerQuotas == null ? null : new ArrayList<>(layerQuotas);
     }
 
     public void setLayerQuotas(List<LayerQuota> layerQuotas) {
-        this.layerQuotas = layerQuotas == null ? null : new ArrayList<LayerQuota>(layerQuotas);
+        this.layerQuotas = layerQuotas == null ? null : new ArrayList<>(layerQuotas);
     }
 
     public void addLayerQuota(LayerQuota quota) {
         Assert.notNull(quota, "Quota must be non null");
         Assert.notNull(quota.getQuota(), "Quota must be non null");
         if (layerQuotas == null) {
-            layerQuotas = new ArrayList<LayerQuota>();
+            layerQuotas = new ArrayList<>();
         }
         this.layerQuotas.add(quota);
     }
@@ -229,7 +228,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
     }
 
     public Set<String> layerNames() {
-        Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<>();
         if (null != getLayerQuotas()) {
             for (LayerQuota lq : getLayerQuotas()) {
                 names.add(lq.getLayer());
@@ -248,7 +247,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
         }
         clone.lastCleanUpTime = lastCleanUpTime;
         clone.globalQuota = globalQuota == null ? null : new Quota(globalQuota);
-        clone.layerQuotas = layerQuotas == null ? null : new ArrayList<LayerQuota>(layerQuotas);
+        clone.layerQuotas = layerQuotas == null ? null : new ArrayList<>(layerQuotas);
         return clone;
     }
 

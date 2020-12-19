@@ -107,7 +107,7 @@ public class MemoryCacheController {
             }
         } else {
             entity =
-                    new ResponseEntity<Object>(
+                    new ResponseEntity<>(
                             "No statistics available for the current BlobStore: "
                                     + (store != null ? store.getClass() : null),
                             HttpStatus.NOT_FOUND);

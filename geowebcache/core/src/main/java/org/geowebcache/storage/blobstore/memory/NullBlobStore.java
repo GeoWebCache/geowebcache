@@ -49,7 +49,7 @@ public class NullBlobStore implements BlobStore {
 
     public NullBlobStore() {
         // Map initialization
-        metadataMap = new HashMap<String, Properties>();
+        metadataMap = new HashMap<>();
     }
 
     @Override

@@ -370,7 +370,7 @@ public abstract class RasterFilter extends RequestFilter {
             throws IOException, GeoWebCacheException {
 
         if (matrices == null) {
-            matrices = new Hashtable<String, BufferedImage[]>();
+            matrices = new Hashtable<>();
         }
 
         if (matrices.get(gridSetId) == null) {

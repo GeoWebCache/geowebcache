@@ -110,7 +110,7 @@ public class HazelcastCacheProviderTest {
         // Put a TileObject
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
         long[] xyz = {1L, 2L, 3L};
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put("a", "x");
         parameters.put("b", "ø");
         TileObject to =
@@ -160,7 +160,7 @@ public class HazelcastCacheProviderTest {
         assertEquals(0, cache1.getStatistics().getActualSize());
         assertEquals(0, cache2.getStatistics().getActualSize());
 
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put("a", "x");
         parameters.put("b", "y");
 

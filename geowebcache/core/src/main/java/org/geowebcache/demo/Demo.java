@@ -176,7 +176,7 @@ public class Demo {
             StringBuffer buf, TileLayerDispatcher tileLayerDispatcher, GridSetBroker gridSetBroker)
             throws GeoWebCacheException {
 
-        Set<String> layerList = new TreeSet<String>(tileLayerDispatcher.getLayerNames());
+        Set<String> layerList = new TreeSet<>(tileLayerDispatcher.getLayerNames());
         for (String layerName : layerList) {
             TileLayer layer = tileLayerDispatcher.getTileLayer(layerName);
             if (!layer.isAdvertised()) {
@@ -660,7 +660,7 @@ public class Demo {
         if (parameterFilters == null || parameterFilters.size() == 0) {
             return "";
         }
-        parameterFilters = new ArrayList<ParameterFilter>(parameterFilters);
+        parameterFilters = new ArrayList<>(parameterFilters);
         Collections.sort(
                 parameterFilters,
                 new Comparator<ParameterFilter>() {
@@ -714,7 +714,7 @@ public class Demo {
 
     private static Map<String, String> makeParametersMap(
             String defaultValue, List<String> legalValues) {
-        Map<String, String> map = new TreeMap<String, String>();
+        Map<String, String> map = new TreeMap<>();
         for (String s : legalValues) {
             map.put(s, s);
         }

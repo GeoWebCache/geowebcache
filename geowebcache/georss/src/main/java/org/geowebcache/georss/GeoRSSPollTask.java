@@ -74,7 +74,7 @@ class GeoRSSPollTask implements Runnable {
 
     private final TileBreeder seeder;
 
-    private LinkedList<GWCTask> seedTasks = new LinkedList<GWCTask>();
+    private LinkedList<GWCTask> seedTasks = new LinkedList<>();
 
     public GeoRSSPollTask(final PollDef poll, final TileBreeder seeder) {
         this.poll = poll;
@@ -261,7 +261,7 @@ class GeoRSSPollTask implements Runnable {
             MimeType mime;
             try {
                 mime = MimeType.createFromFormat(pollDef.getFormat());
-                mimeList = new LinkedList<MimeType>();
+                mimeList = new LinkedList<>();
                 mimeList.add(mime);
             } catch (MimeException e) {
                 logger.error(e.getMessage());

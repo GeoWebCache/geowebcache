@@ -54,6 +54,6 @@ public class GWCIndexController {
                         + "</li>\n"
                         + "</ul>"
                         + "</body></html>";
-        return new ResponseEntity<String>(idx, HttpStatus.OK);
+        return new ResponseEntity<>(idx, HttpStatus.OK);
     }
 }

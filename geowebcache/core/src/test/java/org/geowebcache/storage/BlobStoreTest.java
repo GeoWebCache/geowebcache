@@ -57,7 +57,7 @@ public class BlobStoreTest extends TestCase {
 
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
         long[] xyz = {1L, 2L, 3L};
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put("a", "x");
         parameters.put("b", "ø");
         TileObject to =
@@ -82,7 +82,7 @@ public class BlobStoreTest extends TestCase {
     public void testTileDelete() throws Exception {
         fbs = setup();
 
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put("a", "x");
         parameters.put("b", "ø");
 
@@ -118,7 +118,7 @@ public class BlobStoreTest extends TestCase {
         fbs = setup();
 
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put("a", "x");
         parameters.put("b", "ø");
         MimeType mime = ImageMime.png;
@@ -198,7 +198,7 @@ public class BlobStoreTest extends TestCase {
     public void testRenameLayer() throws Exception {
         fbs = setup();
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put("a", "x");
         parameters.put("b", "ø");
         MimeType mime = ImageMime.png;
