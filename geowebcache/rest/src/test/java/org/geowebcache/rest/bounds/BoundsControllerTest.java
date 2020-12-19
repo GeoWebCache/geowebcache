@@ -76,7 +76,7 @@ public class BoundsControllerTest {
         XMLConfiguration xmlConfig = loadXMLConfig();
         xmlConfig.setGridSetBroker(gridSetBroker);
         xmlConfig.afterPropertiesSet();
-        LinkedList<TileLayerConfiguration> configList = new LinkedList<TileLayerConfiguration>();
+        LinkedList<TileLayerConfiguration> configList = new LinkedList<>();
         configList.add(xmlConfig);
 
         tld = new TileLayerDispatcher(gridSetBroker, configList);

@@ -76,7 +76,7 @@ public class MassTruncateControllerTest {
 
     @Test
     public void testTruncateLayer() throws Exception {
-        Set<String> layer1GridSet = new HashSet<String>(Arrays.asList("test_grid1", "test_grid2"));
+        Set<String> layer1GridSet = new HashSet<>(Arrays.asList("test_grid1", "test_grid2"));
         String layerName = "test";
         TileLayer tl1 = createMock(TileLayer.class);
         expect(tl1.getGridSubsets()).andReturn(layer1GridSet).anyTimes();
@@ -108,12 +108,12 @@ public class MassTruncateControllerTest {
 
     @Test
     public void testTruncateLayerTwice() throws Exception {
-        Set<String> layer1GridSet = new HashSet<String>(Arrays.asList("test_grid1", "test_grid2"));
+        Set<String> layer1GridSet = new HashSet<>(Arrays.asList("test_grid1", "test_grid2"));
         String layerName = "test";
         TileLayer tileLayer = createMock(TileLayer.class);
         expect(tileLayer.getName()).andReturn(layerName).anyTimes();
         expect(tileLayer.getGridSubsets()).andReturn(layer1GridSet);
-        expect(tileLayer.getGridSubsets()).andReturn(new HashSet<String>());
+        expect(tileLayer.getGridSubsets()).andReturn(new HashSet<>());
         replay(tileLayer);
         String requestBody =
                 "<truncateLayer><layerName>" + layerName + "</layerName></truncateLayer>";
@@ -194,10 +194,8 @@ public class MassTruncateControllerTest {
 
     @Test
     public void testTruncateAllLayers() throws Exception {
-        Set<String> layer1GridSet =
-                new HashSet<String>(Arrays.asList("test1_grid1", "test1_grid2"));
-        Set<String> layer2GridSet =
-                new HashSet<String>(Arrays.asList("test22_grid1", "test22_grid2"));
+        Set<String> layer1GridSet = new HashSet<>(Arrays.asList("test1_grid1", "test1_grid2"));
+        Set<String> layer2GridSet = new HashSet<>(Arrays.asList("test22_grid1", "test22_grid2"));
 
         String layerName = "test11";
         String layerName2 = "test22";
@@ -214,7 +212,7 @@ public class MassTruncateControllerTest {
         replay(tl1);
         replay(tl2);
 
-        ArrayList<TileLayer> mockList = new ArrayList<TileLayer>();
+        ArrayList<TileLayer> mockList = new ArrayList<>();
         mockList.add(tl1);
         mockList.add(tl2);
 
@@ -249,10 +247,8 @@ public class MassTruncateControllerTest {
 
     @Test
     public void testTruncateAllLayersFromHTMLForm() throws Exception {
-        Set<String> layer1GridSet =
-                new HashSet<String>(Arrays.asList("test1_grid1", "test1_grid2"));
-        Set<String> layer2GridSet =
-                new HashSet<String>(Arrays.asList("test2_grid1", "test2_grid2"));
+        Set<String> layer1GridSet = new HashSet<>(Arrays.asList("test1_grid1", "test1_grid2"));
+        Set<String> layer2GridSet = new HashSet<>(Arrays.asList("test2_grid1", "test2_grid2"));
 
         String layerName = "test1";
         String layerName2 = "test2";
@@ -269,7 +265,7 @@ public class MassTruncateControllerTest {
         replay(tl1);
         replay(tl2);
 
-        ArrayList<TileLayer> mockList = new ArrayList<TileLayer>();
+        ArrayList<TileLayer> mockList = new ArrayList<>();
         mockList.add(tl1);
         mockList.add(tl2);
 

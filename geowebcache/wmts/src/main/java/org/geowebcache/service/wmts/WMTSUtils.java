@@ -38,7 +38,7 @@ final class WMTSUtils {
     }
 
     public static List<ParameterFilter> getLayerDimensions(List<ParameterFilter> filters) {
-        List<ParameterFilter> dimensions = new ArrayList<ParameterFilter>(0);
+        List<ParameterFilter> dimensions = new ArrayList<>(0);
         if (filters != null) {
             dimensions =
                     filters.stream()

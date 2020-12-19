@@ -30,9 +30,7 @@ import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.DefaultingConfiguration;
 import org.geowebcache.config.LayerConfigurationTest;
 import org.geowebcache.config.TileLayerConfiguration;
-import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.grid.GridSetBroker;
-import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -67,10 +65,10 @@ public class GetCapabilitiesLayerConfigurationConformanceTest extends LayerConfi
                 new String[] {"http://foo"},
                 "style",
                 Integer.toString(rand),
-                Collections.<String>emptyList(),
-                Collections.<String, GridSubset>singletonMap(
+                Collections.emptyList(),
+                Collections.singletonMap(
                         "EPSG:4326", GridSubsetFactory.createGridSubSet(broker.getWorldEpsg4326())),
-                Collections.<ParameterFilter>emptyList(),
+                Collections.emptyList(),
                 new int[] {3, 3},
                 "",
                 false,
@@ -109,7 +107,7 @@ public class GetCapabilitiesLayerConfigurationConformanceTest extends LayerConfi
         Layer l = new Layer();
         l.setName("testExisting");
         l.setLatLonBoundingBox(new CRSEnvelope());
-        List<Layer> layers = new LinkedList<Layer>();
+        List<Layer> layers = new LinkedList<>();
         layers.add(l);
         expect(cap.getLayerList()).andReturn(layers);
 

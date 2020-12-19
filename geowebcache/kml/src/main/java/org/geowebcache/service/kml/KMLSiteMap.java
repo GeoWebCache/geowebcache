@@ -159,7 +159,7 @@ public class KMLSiteMap {
                         + ".kml.kml</loc><geo:geo><geo:format>kml</geo:format></geo:geo></url>\n";
         os.write(superOverlayLoc.getBytes());
 
-        LinkedList<long[]> subTileList = new LinkedList<long[]>();
+        LinkedList<long[]> subTileList = new LinkedList<>();
 
         subTileList.addFirst(gridLoc);
 

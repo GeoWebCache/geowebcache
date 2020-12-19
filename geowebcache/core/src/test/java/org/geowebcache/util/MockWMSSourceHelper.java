@@ -27,7 +27,7 @@ import org.geowebcache.mime.MimeType;
 public class MockWMSSourceHelper extends WMSSourceHelper {
     private Font font = Font.decode("Arial-BOLD-14");
 
-    private Map<List<Integer>, byte[]> images = new HashMap<List<Integer>, byte[]>();
+    private Map<List<Integer>, byte[]> images = new HashMap<>();
 
     @Override
     protected void makeRequest(

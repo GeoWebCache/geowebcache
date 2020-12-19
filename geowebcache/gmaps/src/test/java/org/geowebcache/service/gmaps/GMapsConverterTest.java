@@ -92,7 +92,7 @@ public class GMapsConverterTest extends TestCase {
     public void testConveyorCreation() {
         StorageBroker sb = null;
 
-        List<ParameterFilter> filters = new ArrayList<ParameterFilter>();
+        List<ParameterFilter> filters = new ArrayList<>();
         RegexParameterFilter parameterFilter = new RegexParameterFilter();
         parameterFilter.setKey(CQL_FILTER_PARAMETER_NAME);
         parameterFilter.setDefaultValue("");

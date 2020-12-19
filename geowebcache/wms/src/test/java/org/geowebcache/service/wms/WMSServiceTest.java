@@ -163,8 +163,8 @@ public class WMSServiceTest {
         final MimeType mimeType2 = MimeType.createFromFormat("image/jpeg");
         when(tileLayer.getMimeTypes()).thenReturn(Arrays.asList(mimeType1, mimeType2));
 
-        Map<String, GridSubset> subsets = new HashMap<String, GridSubset>();
-        Map<SRS, List<GridSubset>> bySrs = new HashMap<SRS, List<GridSubset>>();
+        Map<String, GridSubset> subsets = new HashMap<>();
+        Map<SRS, List<GridSubset>> bySrs = new HashMap<>();
 
         GridSetBroker broker = gridsetBroker;
 
@@ -178,7 +178,7 @@ public class WMSServiceTest {
 
             List<GridSubset> list = bySrs.get(gridSet.getSrs());
             if (list == null) {
-                list = new ArrayList<GridSubset>();
+                list = new ArrayList<>();
                 bySrs.put(gridSet.getSrs(), list);
             }
             list.add(gridSubSet);
@@ -306,9 +306,9 @@ public class WMSServiceTest {
         kvp.put("layers", new String[] {layerName});
         kvp.put("time", new String[] {timeValue});
 
-        List<String> mimeFormats = new ArrayList<String>();
+        List<String> mimeFormats = new ArrayList<>();
         mimeFormats.add("image/png");
-        List<ParameterFilter> parameterFilters = new ArrayList<ParameterFilter>();
+        List<ParameterFilter> parameterFilters = new ArrayList<>();
         RegexParameterFilter filter = new RegexParameterFilter();
         filter.setKey("time");
         filter.setRegex("\\d{2}:\\d{2}");

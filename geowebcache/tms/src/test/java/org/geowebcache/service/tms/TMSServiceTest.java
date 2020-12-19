@@ -125,7 +125,7 @@ public class TMSServiceTest extends TestCase {
         }
 
         static {
-            CATALOG_INSTANCE = new ArrayList<CustomLayerImplementation>(2);
+            CATALOG_INSTANCE = new ArrayList<>(2);
             CATALOG_INSTANCE.add(
                     new CustomLayerImplementation("customLayer1", "Custom Layer1", false, null));
             CATALOG_INSTANCE.add(
@@ -144,12 +144,7 @@ public class TMSServiceTest extends TestCase {
             super(tld, gsb, urlMangler, "tilemapservice", StandardCharsets.UTF_8);
             List<String> gridSetNames = Arrays.asList("EPSG:4326");
             TileLayer tileLayer =
-                    mockTileLayer(
-                            tld,
-                            gsb,
-                            "customLayer2",
-                            gridSetNames,
-                            Collections.<ParameterFilter>emptyList());
+                    mockTileLayer(tld, gsb, "customLayer2", gridSetNames, Collections.emptyList());
             when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
             this.customCatalogLayers = customCatalogLayers;
         }
@@ -222,8 +217,8 @@ public class TMSServiceTest extends TestCase {
         final MimeType mimeType2 = MimeType.createFromFormat("image/jpeg");
         when(tileLayer.getMimeTypes()).thenReturn(Arrays.asList(mimeType1, mimeType2));
 
-        Map<String, GridSubset> subsets = new HashMap<String, GridSubset>();
-        Map<SRS, List<GridSubset>> bySrs = new HashMap<SRS, List<GridSubset>>();
+        Map<String, GridSubset> subsets = new HashMap<>();
+        Map<SRS, List<GridSubset>> bySrs = new HashMap<>();
 
         GridSetBroker broker = gridsetBroker;
 
@@ -237,7 +232,7 @@ public class TMSServiceTest extends TestCase {
 
             List<GridSubset> list = bySrs.get(gridSet.getSrs());
             if (list == null) {
-                list = new ArrayList<GridSubset>();
+                list = new ArrayList<>();
                 bySrs.put(gridSet.getSrs(), list);
             }
             list.add(gridSubSet);
@@ -283,11 +278,7 @@ public class TMSServiceTest extends TestCase {
         List<String> gridSetNames = Arrays.asList("EPSG:4326");
         TileLayer tileLayer =
                 mockTileLayer(
-                        tld,
-                        gridsetBroker,
-                        "mockLayer",
-                        gridSetNames,
-                        Collections.<ParameterFilter>emptyList());
+                        tld, gridsetBroker, "mockLayer", gridSetNames, Collections.emptyList());
         when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
 
         Conveyor conv = service.getConveyor(req, resp);

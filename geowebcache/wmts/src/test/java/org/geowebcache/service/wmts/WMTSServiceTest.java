@@ -184,8 +184,8 @@ public class WMTSServiceTest {
         when(tileLayer.getInfoMimeTypes())
                 .thenReturn(Arrays.asList(infoMimeType1, infoMimeType2, infoMimeType3));
 
-        Map<String, GridSubset> subsets = new HashMap<String, GridSubset>();
-        Map<SRS, List<GridSubset>> bySrs = new HashMap<SRS, List<GridSubset>>();
+        Map<String, GridSubset> subsets = new HashMap<>();
+        Map<SRS, List<GridSubset>> bySrs = new HashMap<>();
 
         GridSetBroker broker = gridsetBroker;
 
@@ -199,7 +199,7 @@ public class WMTSServiceTest {
 
             List<GridSubset> list = bySrs.get(gridSet.getSrs());
             if (list == null) {
-                list = new ArrayList<GridSubset>();
+                list = new ArrayList<>();
                 bySrs.put(gridSet.getSrs(), list);
             }
             list.add(gridSubSet);
@@ -247,15 +247,9 @@ public class WMTSServiceTest {
             List<String> gridSetNames =
                     Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
 
-            TileLayer tileLayer =
-                    mockTileLayer(
-                            "mockLayer", gridSetNames, Collections.<ParameterFilter>emptyList());
+            TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames, Collections.emptyList());
             TileLayer tileLayerUn =
-                    mockTileLayer(
-                            "mockLayerUnadv",
-                            gridSetNames,
-                            Collections.<ParameterFilter>emptyList(),
-                            false);
+                    mockTileLayer("mockLayerUnadv", gridSetNames, Collections.emptyList(), false);
             when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer, tileLayerUn));
 
             // add styles
@@ -532,8 +526,7 @@ public class WMTSServiceTest {
         when(req.getParameterMap()).thenReturn(kvp);
         List<String> gridSetNames =
                 Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
-        TileLayer tileLayer =
-                mockTileLayer("mockLayer", gridSetNames, Collections.<ParameterFilter>emptyList());
+        TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames, Collections.emptyList());
         when(tld.getLayerList()).thenReturn(Collections.singletonList(tileLayer));
         Conveyor conv = service.getConveyor(req, resp);
         assertNotNull(conv);
@@ -631,15 +624,9 @@ public class WMTSServiceTest {
                     Arrays.asList(
                             "GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326", "EPSG:900913");
 
-            TileLayer tileLayer =
-                    mockTileLayer(
-                            "mockLayer", gridSetNames, Collections.<ParameterFilter>emptyList());
+            TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames, Collections.emptyList());
             TileLayer tileLayerUn =
-                    mockTileLayer(
-                            "mockLayerUnadv",
-                            gridSetNames,
-                            Collections.<ParameterFilter>emptyList(),
-                            false);
+                    mockTileLayer("mockLayerUnadv", gridSetNames, Collections.emptyList(), false);
             when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer, tileLayerUn));
             GridSubset wgs84Subset = mock(GridSubset.class);
             when(wgs84Subset.getOriginalExtent()).thenReturn(new BoundingBox(-42d, -24d, 40d, 50d));
@@ -681,7 +668,7 @@ public class WMTSServiceTest {
         // validator.assertIsValid();
 
         Document doc = XMLUnit.buildTestDocument(result);
-        Map<String, String> namespaces = new HashMap<String, String>();
+        Map<String, String> namespaces = new HashMap<>();
         namespaces.put("xlink", "http://www.w3.org/1999/xlink");
         namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
         namespaces.put("ows", "http://www.opengis.net/ows/1.1");
@@ -715,15 +702,9 @@ public class WMTSServiceTest {
                     Arrays.asList(
                             "GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326", "EPSG:900913");
 
-            TileLayer tileLayer =
-                    mockTileLayer(
-                            "mockLayer", gridSetNames, Collections.<ParameterFilter>emptyList());
+            TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames, Collections.emptyList());
             TileLayer tileLayerUn =
-                    mockTileLayer(
-                            "mockLayerUnadv",
-                            gridSetNames,
-                            Collections.<ParameterFilter>emptyList(),
-                            false);
+                    mockTileLayer("mockLayerUnadv", gridSetNames, Collections.emptyList(), false);
             when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer, tileLayerUn));
             GridSubset wgs84Subset = mock(GridSubset.class);
             when(wgs84Subset.getOriginalExtent()).thenReturn(new BoundingBox(-42d, -24d, 40d, 50d));
@@ -767,7 +748,7 @@ public class WMTSServiceTest {
         // validator.assertIsValid();
 
         Document doc = XMLUnit.buildTestDocument(result);
-        Map<String, String> namespaces = new HashMap<String, String>();
+        Map<String, String> namespaces = new HashMap<>();
         namespaces.put("xlink", "http://www.w3.org/1999/xlink");
         namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
         namespaces.put("ows", "http://www.opengis.net/ows/1.1");
@@ -841,7 +822,7 @@ public class WMTSServiceTest {
         // validator.assertIsValid();
 
         Document doc = XMLUnit.buildTestDocument(result);
-        Map<String, String> namespaces = new HashMap<String, String>();
+        Map<String, String> namespaces = new HashMap<>();
         namespaces.put("xlink", "http://www.w3.org/1999/xlink");
         namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
         namespaces.put("ows", "http://www.opengis.net/ows/1.1");
@@ -887,7 +868,7 @@ public class WMTSServiceTest {
             ParameterFilter styleFilter = mock(ParameterFilter.class);
             when(styleFilter.getKey()).thenReturn("STYLES");
             when(styleFilter.getDefaultValue()).thenReturn("Foo");
-            when(styleFilter.getLegalValues()).thenReturn(Collections.<String>emptyList());
+            when(styleFilter.getLegalValues()).thenReturn(Collections.emptyList());
 
             TileLayer tileLayer =
                     mockTileLayer(
@@ -924,7 +905,7 @@ public class WMTSServiceTest {
         validator.assertIsValid();
 
         Document doc = XMLUnit.buildTestDocument(result);
-        Map<String, String> namespaces = new HashMap<String, String>();
+        Map<String, String> namespaces = new HashMap<>();
         namespaces.put("xlink", "http://www.w3.org/1999/xlink");
         namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
         namespaces.put("ows", "http://www.opengis.net/ows/1.1");
@@ -1007,7 +988,7 @@ public class WMTSServiceTest {
         // validator.assertIsValid();
 
         Document doc = XMLUnit.buildTestDocument(result);
-        Map<String, String> namespaces = new HashMap<String, String>();
+        Map<String, String> namespaces = new HashMap<>();
         namespaces.put("xlink", "http://www.w3.org/1999/xlink");
         namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
         namespaces.put("ows", "http://www.opengis.net/ows/1.1");
@@ -1093,7 +1074,7 @@ public class WMTSServiceTest {
             ParameterFilter timeDimension = mock(ParameterFilter.class);
             when(timeDimension.getKey()).thenReturn("time");
             when(timeDimension.getDefaultValue()).thenReturn("2016-02-23T03:00:00.00");
-            when(timeDimension.getLegalValues()).thenReturn(Collections.<String>emptyList());
+            when(timeDimension.getLegalValues()).thenReturn(Collections.emptyList());
 
             TileLayer tileLayer =
                     mockTileLayer(
@@ -1126,7 +1107,7 @@ public class WMTSServiceTest {
         String result = resp.getContentAsString();
 
         Document doc = XMLUnit.buildTestDocument(result);
-        Map<String, String> namespaces = new HashMap<String, String>();
+        Map<String, String> namespaces = new HashMap<>();
         namespaces.put("xlink", "http://www.w3.org/1999/xlink");
         namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
         namespaces.put("ows", "http://www.opengis.net/ows/1.1");

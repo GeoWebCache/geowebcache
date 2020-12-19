@@ -469,8 +469,7 @@ public class WMSService extends Service {
     public void setFullWMS(String trueFalse) {
         // Selection of the configurations
         List<TileLayerConfiguration> configs =
-                new ArrayList<TileLayerConfiguration>(
-                        GeoWebCacheExtensions.extensions(TileLayerConfiguration.class));
+                new ArrayList<>(GeoWebCacheExtensions.extensions(TileLayerConfiguration.class));
         // Selection of the TileLayerConfiguration file associated to geowebcache.xml
         ServerConfiguration gwcXMLconfig = null;
         for (BaseConfiguration config : configs) {

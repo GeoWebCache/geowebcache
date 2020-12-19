@@ -169,7 +169,7 @@ class GML31ParsingUtils {
         Geometry geom;
         nextTag(reader);
         final QName memberTag = reader.getName();
-        List<Point> points = new ArrayList<Point>(4);
+        List<Point> points = new ArrayList<>(4);
         if (GML.pointMembers.equals(memberTag)) {
             while (true) {
                 nextTag(reader);
@@ -219,7 +219,7 @@ class GML31ParsingUtils {
 
         reader.require(START_ELEMENT, GML.GML_NS_URI, GML.MultiLineString.getLocalPart());
 
-        List<LineString> lines = new ArrayList<LineString>(2);
+        List<LineString> lines = new ArrayList<>(2);
 
         while (true) {
             nextTag(reader);
@@ -258,7 +258,7 @@ class GML31ParsingUtils {
         Geometry geom;
         nextTag(reader);
         final QName memberTag = reader.getName();
-        List<Polygon> polygons = new ArrayList<Polygon>(2);
+        List<Polygon> polygons = new ArrayList<>(2);
         if (GML.surfaceMembers.equals(memberTag)) {
             while (true) {
                 nextTag(reader);
@@ -297,7 +297,7 @@ class GML31ParsingUtils {
 
         reader.require(START_ELEMENT, GML.GML_NS_URI, GML.MultiPolygon.getLocalPart());
         Geometry geom;
-        List<Polygon> polygons = new ArrayList<Polygon>(2);
+        List<Polygon> polygons = new ArrayList<>(2);
         nextTag(reader);
         while (true) {
             reader.require(START_ELEMENT, GML.GML_NS_URI, GML.polygonMember.getLocalPart());
@@ -342,7 +342,7 @@ class GML31ParsingUtils {
 
         if (GML.interior.equals(reader.getName())) {
             // parse interior rings
-            holes = new ArrayList<LinearRing>(2);
+            holes = new ArrayList<>(2);
             while (true) {
                 nextTag(reader);
                 LinearRing hole = parseLinearRing(reader, dimension);
@@ -378,7 +378,7 @@ class GML31ParsingUtils {
         Coordinate[] shellCoords;
         if (GML.pos.equals(tagName)) {
             Coordinate[] point;
-            List<Coordinate> coords = new ArrayList<Coordinate>();
+            List<Coordinate> coords = new ArrayList<>();
             int eventType;
             do {
                 point = parseCoordListContent(reader, dimension);

@@ -55,8 +55,8 @@ public class GeoRSSPoller {
     public GeoRSSPoller(final TileBreeder seeder, final int startUpDelaySecs) {
 
         this.seeder = seeder;
-        this.scheduledPolls = new ArrayList<PollDef>();
-        this.scheduledTasks = new ArrayList<GeoRSSPollTask>();
+        this.scheduledPolls = new ArrayList<>();
+        this.scheduledTasks = new ArrayList<>();
 
         final int corePoolSize = 1;
         CustomizableThreadFactory tf = new CustomizableThreadFactory("GWC GeoRSS Poll Tasks-");

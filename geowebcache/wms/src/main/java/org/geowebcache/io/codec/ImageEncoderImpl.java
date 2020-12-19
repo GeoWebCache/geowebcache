@@ -345,7 +345,7 @@ public class ImageEncoderImpl implements ImageEncoder {
             Map<String, String> inputParams,
             ImageIOInitializer initializer) {
         this.isAggressiveOutputStreamSupported = aggressiveOutputStreamOptimization;
-        this.supportedMimeTypes = new ArrayList<String>(supportedMimeTypes);
+        this.supportedMimeTypes = new ArrayList<>(supportedMimeTypes);
         this.inputParams = inputParams;
         // Get the IIORegistry if needed
         IIORegistry theRegistry = initializer.getRegistry();

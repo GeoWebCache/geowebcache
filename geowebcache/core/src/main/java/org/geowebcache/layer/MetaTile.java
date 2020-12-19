@@ -327,7 +327,7 @@ public class MetaTile implements TileResponseReceiver {
         }
         log.trace("native accel not available, returning buffered image");
         BufferedImage tile = cropped.getAsBufferedImage();
-        disposePlanarImageChain(cropped, new HashSet<PlanarImage>());
+        disposePlanarImageChain(cropped, new HashSet<>());
         return tile;
     }
 
@@ -380,7 +380,7 @@ public class MetaTile implements TileResponseReceiver {
 
     protected void disposeLater(RenderedImage tile) {
         if (disposableImages == null) {
-            disposableImages = new ArrayList<RenderedImage>(tiles.length);
+            disposableImages = new ArrayList<>(tiles.length);
         }
         disposableImages.add(tile);
     }
@@ -483,7 +483,7 @@ public class MetaTile implements TileResponseReceiver {
         if (image instanceof BufferedImage) {
             ((BufferedImage) image).flush();
         } else if (image instanceof PlanarImage) {
-            disposePlanarImageChain((PlanarImage) image, new HashSet<PlanarImage>());
+            disposePlanarImageChain((PlanarImage) image, new HashSet<>());
         }
         if (disposableImages != null) {
             for (RenderedImage tile : disposableImages) {
@@ -493,7 +493,7 @@ public class MetaTile implements TileResponseReceiver {
                 if (tile instanceof BufferedImage) {
                     ((BufferedImage) tile).flush();
                 } else if (tile instanceof PlanarImage) {
-                    disposePlanarImageChain((PlanarImage) tile, new HashSet<PlanarImage>());
+                    disposePlanarImageChain((PlanarImage) tile, new HashSet<>());
                 }
             }
         }

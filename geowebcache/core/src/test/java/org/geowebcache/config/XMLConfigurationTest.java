@@ -192,7 +192,7 @@ public class XMLConfigurationTest {
         String wmsStyles = "default,line";
         String wmsLayers = "states,border";
         List<String> mimeFormats = Arrays.asList("image/png", "image/jpeg");
-        Map<String, GridSubset> subSets = new HashMap<String, GridSubset>();
+        Map<String, GridSubset> subSets = new HashMap<>();
         GridSubset gridSubSet = GridSubsetFactory.createGridSubSet(gridSetBroker.get("EPSG:4326"));
         subSets.put(gridSubSet.getName(), gridSubSet);
 
@@ -202,8 +202,7 @@ public class XMLConfigurationTest {
         filter.setDefaultValue("polygon");
 
         List<ParameterFilter> parameterFilters =
-                new ArrayList<ParameterFilter>(
-                        new ArrayList<ParameterFilter>(Arrays.asList((ParameterFilter) filter)));
+                new ArrayList<>(new ArrayList<>(Arrays.asList((ParameterFilter) filter)));
         int[] metaWidthHeight = {9, 9};
         String vendorParams = "vendor=1";
         boolean queryable = false;
@@ -296,7 +295,7 @@ public class XMLConfigurationTest {
         String wmsStyles = "default,line";
         String wmsLayers = "states,border";
         List<String> mimeFormats = Arrays.asList("image/png", "image/jpeg");
-        Map<String, GridSubset> subSets = new HashMap<String, GridSubset>();
+        Map<String, GridSubset> subSets = new HashMap<>();
         GridSubset gridSubSet = GridSubsetFactory.createGridSubSet(gridSetBroker.get("EPSG:4326"));
         subSets.put(gridSubSet.getName(), gridSubSet);
 
@@ -306,8 +305,7 @@ public class XMLConfigurationTest {
         filter.setDefaultValue("polygon");
 
         List<ParameterFilter> parameterFilters =
-                new ArrayList<ParameterFilter>(
-                        new ArrayList<ParameterFilter>(Arrays.asList((ParameterFilter) filter)));
+                new ArrayList<>(new ArrayList<>(Arrays.asList((ParameterFilter) filter)));
         int[] metaWidthHeight = {9, 9};
         String vendorParams = "vendor=1";
         boolean queryable = false;

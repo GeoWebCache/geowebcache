@@ -25,7 +25,7 @@ import org.geowebcache.conveyor.ConveyorTile;
  */
 public class LayerListenerList {
 
-    private List<TileLayerListener> listeners = new CopyOnWriteArrayList<TileLayerListener>();
+    private List<TileLayerListener> listeners = new CopyOnWriteArrayList<>();
 
     public synchronized void addListener(TileLayerListener listener) {
         if (listener != null) {

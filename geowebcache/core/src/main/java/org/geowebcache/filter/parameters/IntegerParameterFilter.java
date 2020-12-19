@@ -39,13 +39,13 @@ public class IntegerParameterFilter extends ParameterFilter {
 
     public IntegerParameterFilter() {
         super();
-        values = new ArrayList<Integer>(0);
+        values = new ArrayList<>(0);
     }
 
     protected @Override Object readResolve() {
         super.readResolve();
         if (values == null) {
-            values = new ArrayList<Integer>(0);
+            values = new ArrayList<>(0);
         }
         if (threshold == null) {
             threshold = getDefaultThreshold();
@@ -77,7 +77,7 @@ public class IntegerParameterFilter extends ParameterFilter {
             Preconditions.checkNotNull(f);
         }
 
-        this.values = new ArrayList<Integer>(values);
+        this.values = new ArrayList<>(values);
     }
 
     /** @return the threshold */
@@ -135,7 +135,7 @@ public class IntegerParameterFilter extends ParameterFilter {
 
     @Override
     public @Nullable List<String> getLegalValues() {
-        List<String> ret = new LinkedList<String>();
+        List<String> ret = new LinkedList<>();
 
         Iterator<Integer> iter = getValues().iterator();
         while (iter.hasNext()) {

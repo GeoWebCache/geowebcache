@@ -96,7 +96,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long> {
             this.tileSet = tileSet;
             this.tpc = tpc;
             this.creationTime = System.currentTimeMillis();
-            tilePages = new HashMap<String, PageStatsPayload>();
+            tilePages = new HashMap<>();
             pageIndexTarget = new int[3];
             pageIdTarget = new StringBuilder(128);
             accumQuotaDiff = new Quota();
@@ -165,7 +165,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long> {
         this.quotaStore = quotaStore;
         this.tilePageCalculator = quotaStore.getTilePageCalculator();
         this.queue = queue;
-        aggregatedDelayedUpdates = new HashMap<TileSet, TimedQuotaUpdate>();
+        aggregatedDelayedUpdates = new HashMap<>();
     }
 
     /** @see java.util.concurrent.Callable#call() */
@@ -242,7 +242,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long> {
         List<TileSet> pruneList = null;
         for (TimedQuotaUpdate timedUpadte : aggregatedDelayedUpdates.values()) {
             if (pruneList == null) {
-                pruneList = new ArrayList<TileSet>(2);
+                pruneList = new ArrayList<>(2);
             }
             boolean prune = checkAggregatedTimeout(timedUpadte);
             if (prune) {
@@ -299,8 +299,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long> {
         final Quota quotaDiff = aggregatedUpadte.getAccummulatedQuotaDifference();
 
         Collection<PageStatsPayload> tileCountDiffs;
-        tileCountDiffs =
-                new ArrayList<PageStatsPayload>(aggregatedUpadte.getAccummulatedTilePageCounts());
+        tileCountDiffs = new ArrayList<>(aggregatedUpadte.getAccummulatedTilePageCounts());
 
         if (quotaDiff.getBytes().compareTo(BigInteger.ZERO) == 0 && tileCountDiffs.size() == 0) {
             return;

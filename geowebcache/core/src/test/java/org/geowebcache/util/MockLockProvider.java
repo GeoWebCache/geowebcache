@@ -17,7 +17,7 @@ public class MockLockProvider extends MemoryLockProvider {
 
     public AtomicLong acquires = new AtomicLong();
     public AtomicLong releases = new AtomicLong();
-    public Map<String, String> keys = new ConcurrentHashMap<String, String>();
+    public Map<String, String> keys = new ConcurrentHashMap<>();
 
     public Lock getLock(final String lockKey) {
         super.getLock(lockKey);

@@ -30,15 +30,15 @@ public class CompositeIterable<T> implements Iterable<T> {
     }
 
     public CompositeIterable(List<Iterable<T>> iteratbles) {
-        this.iterables = new ArrayList<Iterable<T>>(iteratbles);
+        this.iterables = new ArrayList<>(iteratbles);
     }
 
     public Iterator<T> iterator() {
-        List<Iterator<T>> iterators = new ArrayList<Iterator<T>>(4);
+        List<Iterator<T>> iterators = new ArrayList<>(4);
         for (Iterable<T> iterable : iterables) {
             Iterator<T> iterator = iterable.iterator();
             iterators.add(iterator);
         }
-        return new CompositeIterator<T>(iterators);
+        return new CompositeIterator<>(iterators);
     }
 }

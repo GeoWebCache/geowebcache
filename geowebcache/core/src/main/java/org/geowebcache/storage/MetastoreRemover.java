@@ -180,7 +180,7 @@ public class MetastoreRemover {
                      */
                     private Map<String, String> toMap(String paramsKvp) {
                         // TODO: wondering, shall we URL decode the values??
-                        Map<String, String> result = new HashMap<String, String>();
+                        Map<String, String> result = new HashMap<>();
                         String[] kvps = paramsKvp.split("&");
                         for (String kvp : kvps) {
                             if (kvp != null && !"".equals(kvp)) {

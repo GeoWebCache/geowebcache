@@ -109,13 +109,13 @@ class PagePyramid {
      *     GridSubset#getCoverages()}
      */
     public PagePyramid(final long[][] gridSubsetCoverages, int zoomStart, int zoomStop) {
-        this.gridSubsetCoverages = new TreeMap<Integer, long[]>();
+        this.gridSubsetCoverages = new TreeMap<>();
         for (long[] coverage : gridSubsetCoverages) {
             this.gridSubsetCoverages.put(Integer.valueOf((int) coverage[4]), coverage);
         }
         this.zoomStart = zoomStart;
         this.zoomStop = zoomStop;
-        this.pageInfo = new TreeMap<Integer, PagePyramid.PageLevelInfo>();
+        this.pageInfo = new TreeMap<>();
     }
 
     public int getZoomStart() {

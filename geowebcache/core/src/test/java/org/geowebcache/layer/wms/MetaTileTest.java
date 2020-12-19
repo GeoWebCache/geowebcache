@@ -279,10 +279,10 @@ public class MetaTileTest extends TestCase {
 
     private WMSLayer createWMSLayer(BoundingBox layerBounds) {
         String[] urls = {"http://localhost:38080/wms"};
-        List<String> formatList = new LinkedList<String>();
+        List<String> formatList = new LinkedList<>();
         formatList.add("image/png");
 
-        Hashtable<String, GridSubset> grids = new Hashtable<String, GridSubset>();
+        Hashtable<String, GridSubset> grids = new Hashtable<>();
 
         GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326());
 

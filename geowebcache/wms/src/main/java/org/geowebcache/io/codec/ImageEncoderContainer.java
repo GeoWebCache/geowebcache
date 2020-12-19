@@ -65,7 +65,7 @@ public class ImageEncoderContainer implements ApplicationContextAware {
             throw new IllegalArgumentException("No Encoder found");
         }
 
-        mapEncoders = new HashMap<String, ImageEncoder>();
+        mapEncoders = new HashMap<>();
 
         for (ImageEncoder encoder : encoders) {
 

@@ -846,7 +846,7 @@ public class XMLConfiguration
     }
 
     private void updateLayers() {
-        Map<String, TileLayer> buff = new HashMap<String, TileLayer>();
+        Map<String, TileLayer> buff = new HashMap<>();
         for (TileLayer layer : getGwcConfig().getLayers()) {
             buff.put(layer.getName(), layer);
         }

@@ -165,14 +165,14 @@ public class GeoWebCacheDispatcher extends AbstractController {
         log.info("Loading GWC Service extensions...");
 
         List<Service> plugins = GeoWebCacheExtensions.extensions(Service.class);
-        Map<String, Service> services = new HashMap<String, Service>();
+        Map<String, Service> services = new HashMap<>();
         // Give all service objects direct access to the tileLayerDispatcher
         for (Service aService : plugins) {
             services.put(aService.getPathName(), aService);
         }
         log.info(
                 "Done loading GWC Service extensions. Found : "
-                        + new ArrayList<String>(services.keySet()));
+                        + new ArrayList<>(services.keySet()));
         return services;
     }
 

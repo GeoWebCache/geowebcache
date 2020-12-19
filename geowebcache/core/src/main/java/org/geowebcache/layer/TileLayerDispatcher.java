@@ -71,7 +71,7 @@ public class TileLayerDispatcher
      */
     public TileLayerDispatcher(GridSetBroker gridSetBroker, List<TileLayerConfiguration> configs) {
         this.gridSetBroker = gridSetBroker;
-        this.configs = configs == null ? new ArrayList<TileLayerConfiguration>() : configs;
+        this.configs = configs == null ? new ArrayList<>() : configs;
     }
 
     public TileLayerDispatcher(GridSetBroker gridSetBroker) {
@@ -123,7 +123,7 @@ public class TileLayerDispatcher
     }
 
     public Set<String> getLayerNames() {
-        Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<>();
         for (int i = 0; i < configs.size(); i++) {
             TileLayerConfiguration configuration = configs.get(i);
             names.addAll(configuration.getLayerNames());
@@ -141,14 +141,13 @@ public class TileLayerDispatcher
      */
     @SuppressWarnings("unchecked")
     public Iterable<TileLayer> getLayerList() {
-        List<Iterable<TileLayer>> perConfigLayers =
-                new ArrayList<Iterable<TileLayer>>(configs.size());
+        List<Iterable<TileLayer>> perConfigLayers = new ArrayList<>(configs.size());
 
         for (TileLayerConfiguration config : configs) {
             perConfigLayers.add((Iterable<TileLayer>) config.getLayers());
         }
 
-        return new CompositeIterable<TileLayer>(perConfigLayers);
+        return new CompositeIterable<>(perConfigLayers);
     }
 
     public ServiceInformation getServiceInformation() {

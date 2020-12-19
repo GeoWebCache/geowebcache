@@ -148,7 +148,7 @@ public class S3BlobStoreConfigStoreLoadTest {
                         XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
         FileUtils.copyURLToFile(source, configFile);
 
-        providers = new HashMap<String, XMLConfigurationProvider>();
+        providers = new HashMap<>();
         Mockito.when(context.getApplicationContext()).thenReturn(webCtx, webCtx, webCtx, webCtx);
         Mockito.when(webCtx.getBeansOfType(XMLConfigurationProvider.class))
                 .thenReturn(providers, providers);

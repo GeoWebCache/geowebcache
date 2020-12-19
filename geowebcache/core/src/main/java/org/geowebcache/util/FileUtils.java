@@ -85,7 +85,7 @@ public class FileUtils {
         // thousands of File objects as well as its String objects for the path name. Faster and
         // less resource intensive
         File[] files = listFilesNullSafe(path);
-        List<File> subDirectories = new ArrayList<File>();
+        List<File> subDirectories = new ArrayList<>();
 
         File file;
         for (int i = 0; i < files.length; i++) {

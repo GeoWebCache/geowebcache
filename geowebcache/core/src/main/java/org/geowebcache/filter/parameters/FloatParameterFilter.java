@@ -39,13 +39,13 @@ public class FloatParameterFilter extends ParameterFilter {
 
     public FloatParameterFilter() {
         super();
-        values = new ArrayList<Float>(0);
+        values = new ArrayList<>(0);
     }
 
     protected @Override Object readResolve() {
         super.readResolve();
         if (values == null) {
-            values = new ArrayList<Float>(0);
+            values = new ArrayList<>(0);
         }
         if (threshold == null) {
             threshold = getDefaultThreshold();
@@ -77,7 +77,7 @@ public class FloatParameterFilter extends ParameterFilter {
             Preconditions.checkNotNull(f);
         }
 
-        this.values = new ArrayList<Float>(values);
+        this.values = new ArrayList<>(values);
     }
 
     /** @return the threshold */
@@ -135,7 +135,7 @@ public class FloatParameterFilter extends ParameterFilter {
 
     @Override
     public @Nullable List<String> getLegalValues() {
-        List<String> ret = new LinkedList<String>();
+        List<String> ret = new LinkedList<>();
 
         Iterator<Float> iter = getValues().iterator();
         while (iter.hasNext()) {

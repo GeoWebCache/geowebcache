@@ -131,7 +131,7 @@ public class LayerCacheInfoBuilderTest extends TestCase {
         Arrays.fill(mockTileContents, (byte) 0xFF);
 
         // just to control the same tile is not created more than once
-        Set<String> addedTiles = new HashSet<String>();
+        Set<String> addedTiles = new HashSet<>();
 
         long[] tileIndex;
         while (addedTiles.size() < numFiles) {

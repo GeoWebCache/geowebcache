@@ -38,6 +38,6 @@ public interface MassTruncateRequest {
             throws StorageException, GeoWebCacheException;
 
     public default ResponseEntity<String> getResponse(String contentType) {
-        return new ResponseEntity<String>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

@@ -58,8 +58,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
      * needed. We cache names instead of beans because doing the latter we would break the
      * "singleton=false" directive of some beans
      */
-    static WeakHashMap<Class<?>, String[]> extensionsCache =
-            new WeakHashMap<Class<?>, String[]>(40);
+    static WeakHashMap<Class<?>, String[]> extensionsCache = new WeakHashMap<>(40);
 
     /** A static application context */
     static ApplicationContext context;
@@ -116,7 +115,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
         }
 
         // look up all the beans
-        List<T> result = new ArrayList<T>(names.length);
+        List<T> result = new ArrayList<>(names.length);
         for (String name : names) {
             T bean = (T) context.getBean(name);
             result.add(bean);

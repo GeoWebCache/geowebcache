@@ -185,7 +185,7 @@ public class ConfigLoader {
         }
 
         if (null != quotaConfig.getLayerQuotas()) {
-            for (LayerQuota lq : new ArrayList<LayerQuota>(quotaConfig.getLayerQuotas())) {
+            for (LayerQuota lq : new ArrayList<>(quotaConfig.getLayerQuotas())) {
                 if (null == lq.getQuota()) {
                     log.info(
                             "Configured quota for layer "

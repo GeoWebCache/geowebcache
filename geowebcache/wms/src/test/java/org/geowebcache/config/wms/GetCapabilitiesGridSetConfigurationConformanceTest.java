@@ -84,7 +84,7 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
         l.setName("testExisting");
         l.setBoundingBoxes(new CRSEnvelope("EPSG:3978", -2259049, 347711, -1994160, 827919));
         l.setLatLonBoundingBox(new CRSEnvelope());
-        List<Layer> layers = new LinkedList<Layer>();
+        List<Layer> layers = new LinkedList<>();
         layers.add(l);
         expect(cap.getLayerList()).andReturn(layers);
 

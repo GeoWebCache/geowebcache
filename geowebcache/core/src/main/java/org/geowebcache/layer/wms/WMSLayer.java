@@ -146,16 +146,15 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         this.wmsUrl = wmsURL;
         this.wmsLayers = wmsLayers;
         this.wmsStyles = wmsStyles;
-        this.mimeFormats = mimeFormats == null ? null : new ArrayList<String>(mimeFormats);
+        this.mimeFormats = mimeFormats == null ? null : new ArrayList<>(mimeFormats);
         this.subSets = subSets;
-        this.gridSubsets = new ArrayList<XMLGridSubset>();
+        this.gridSubsets = new ArrayList<>();
         if (subSets != null) {
             for (GridSubset subset : subSets.values()) {
                 gridSubsets.add(new XMLGridSubset(subset));
             }
         }
-        this.parameterFilters =
-                parameterFilters == null ? null : new ArrayList<ParameterFilter>(parameterFilters);
+        this.parameterFilters = parameterFilters == null ? null : new ArrayList<>(parameterFilters);
         this.metaWidthHeight = metaWidthHeight;
         this.vendorParameters = vendorParams;
         this.transparent = true;
@@ -541,7 +540,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     }
 
     public Map<String, String> getWMSRequestTemplate(MimeType responseFormat, RequestType reqType) {
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         FormatModifier mod = getFormatModifier(responseFormat);
 
         params.put("SERVICE", "WMS");

@@ -25,7 +25,7 @@ import org.geowebcache.GeoWebCacheException;
 
 public class SRS implements Comparable<SRS>, Serializable {
 
-    private static Map<Integer, SRS> list = new ConcurrentHashMap<Integer, SRS>();
+    private static Map<Integer, SRS> list = new ConcurrentHashMap<>();
 
     private static final SRS EPSG4326 = new SRS(4326);
 
@@ -35,7 +35,7 @@ public class SRS implements Comparable<SRS>, Serializable {
      * EPSG:900913.
      */
     private static final SRS EPSG3857 =
-            new SRS(3857, new ArrayList<Integer>(asList(900913, 102113, 102100)));
+            new SRS(3857, new ArrayList<>(asList(900913, 102113, 102100)));
 
     /**
      * The EPSG says EPSG:3857 is the identifier for web mercator. ArcGIS 10 says either of
@@ -43,7 +43,7 @@ public class SRS implements Comparable<SRS>, Serializable {
      * EPSG:900913.
      */
     private static final SRS EPSG900913 =
-            new SRS(900913, new ArrayList<Integer>(asList(3857, 102113, 102100)));
+            new SRS(900913, new ArrayList<>(asList(3857, 102113, 102100)));
 
     private int number;
 
@@ -86,7 +86,7 @@ public class SRS implements Comparable<SRS>, Serializable {
         if (existing != null) {
             return existing;
         }
-        for (SRS candidate : new ArrayList<SRS>(list.values())) {
+        for (SRS candidate : new ArrayList<>(list.values())) {
             if (candidate.aliases != null && candidate.aliases.contains(Integer.valueOf(code))) {
                 list.put(code, candidate);
                 return candidate;

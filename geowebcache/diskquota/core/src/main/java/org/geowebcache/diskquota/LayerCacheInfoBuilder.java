@@ -66,7 +66,7 @@ final class LayerCacheInfoBuilder {
         this.rootCacheDir = rootCacheDir;
         this.threadPool = threadPool;
         this.quotaUsageMonitor = quotaUsageMonitor;
-        this.perLayerRunningTasks = new HashMap<String, List<Future<ZoomLevelVisitor.Stats>>>();
+        this.perLayerRunningTasks = new HashMap<>();
     }
 
     /**
@@ -98,7 +98,7 @@ final class LayerCacheInfoBuilder {
             return;
         }
 
-        perLayerRunningTasks.put(layerName, new ArrayList<Future<ZoomLevelVisitor.Stats>>());
+        perLayerRunningTasks.put(layerName, new ArrayList<>());
 
         final Set<TileSet> onDiskTileSets = findOnDiskTileSets(tileLayer, layerDir);
 
@@ -150,7 +150,7 @@ final class LayerCacheInfoBuilder {
 
         final String layerName = tileLayer.getName();
         final Set<String> griSetNames = tileLayer.getGridSubsets();
-        Set<TileSet> foundTileSets = new HashSet<TileSet>();
+        Set<TileSet> foundTileSets = new HashSet<>();
         for (String gridSetName : griSetNames) {
             final String gridSetDirPrefix = FilePathUtils.filteredGridSetId(gridSetName);
             FileFilter prefixFilter =

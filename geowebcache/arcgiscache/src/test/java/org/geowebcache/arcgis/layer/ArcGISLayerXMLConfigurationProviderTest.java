@@ -11,7 +11,7 @@ public class ArcGISLayerXMLConfigurationProviderTest extends TestCase {
     @SuppressWarnings("rawtypes")
     public void testGetConfiguredXStream() {
 
-        final Map<String, Class> aliases = new HashMap<String, Class>();
+        final Map<String, Class> aliases = new HashMap<>();
         XStream xs =
                 new ArcGISLayerXMLConfigurationProvider()
                         .getConfiguredXStream(

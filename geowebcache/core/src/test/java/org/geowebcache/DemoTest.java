@@ -32,7 +32,7 @@ public class DemoTest {
         servReq.setRequestURI("/test");
 
         // Creating an advertised Layer and an unadvertised one
-        HashMap<String, GridSubset> subSets = new HashMap<String, GridSubset>();
+        HashMap<String, GridSubset> subSets = new HashMap<>();
         TileLayer advertisedLayer =
                 new WMSLayer(
                         "testAdv", null, null, null, null, subSets, null, null, null, false, null);
@@ -55,7 +55,7 @@ public class DemoTest {
         unAdvertisedLayer.setAdvertised(false);
 
         // Define used method
-        TreeSet<String> set = new TreeSet<String>();
+        TreeSet<String> set = new TreeSet<>();
         set.add(advertisedLayer.getName());
         set.add(unAdvertisedLayer.getName());
 

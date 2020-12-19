@@ -60,7 +60,7 @@ public class ImageDecoderImpl implements ImageDecoder {
             ImageIOInitializer initializer) {
 
         this.isAggressiveInputStreamSupported = aggressiveInputStreamOptimization;
-        this.supportedMimeTypes = new ArrayList<String>(supportedMimeTypes);
+        this.supportedMimeTypes = new ArrayList<>(supportedMimeTypes);
         // Get the IIORegistry if needed
         IIORegistry theRegistry = initializer.getRegistry();
         // Checks for each Spi class if it is present and then it is added to the list.
