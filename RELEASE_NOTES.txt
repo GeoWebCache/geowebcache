@@ -1,3 +1,17 @@
+GeoWebCache 1.17.4 (2020-12-20)
+-------------------------------
+
+<Release Description>
+
+Improvements:
++++++++++++++
+- <New feature>
+
+Fixes:
+++++++
+- <Bug fix>
+
+
 GeoWebCache 1.17.3 (2020-09-25)
 -------------------------------
 
