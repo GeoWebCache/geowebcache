@@ -1,3 +1,12 @@
+GeoWebCache 1.17.4 (2020-12-20)
+-------------------------------
+
+Maintenance release for 1.17.x series.
+
+Improvements:
++++++++++++++
+- Allow the S3 storage to work against Cohesity (tested against S3, Minio and Cohesity)
+
 GeoWebCache 1.17.3 (2020-09-25)
 -------------------------------
 
