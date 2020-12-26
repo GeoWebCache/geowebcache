@@ -303,9 +303,9 @@ public class TileBreeder implements ApplicationContextAware {
     public void dispatchTasks(GWCTask[] tasks) {
         lock.writeLock().lock();
         try {
-            for (int i = 0; i < tasks.length; i++) {
+            for (GWCTask gwcTask : tasks) {
                 final Long taskId = this.currentId.incrementAndGet();
-                final GWCTask task = tasks[i];
+                final GWCTask task = gwcTask;
                 task.setTaskId(taskId);
                 Future<GWCTask> future = threadPool.submit(new MTSeeder(task));
                 this.currentPool.put(taskId, new SubmittedTask(task, future));

@@ -215,11 +215,11 @@ public class FileBlobStore implements BlobStore {
                 throw new InterruptedException();
             }
             File[] files = listFilesNullSafe(directory);
-            for (int i = 0; i < files.length; i++) {
+            for (File value : files) {
                 if (Thread.interrupted()) {
                     throw new InterruptedException();
                 }
-                File file = files[i];
+                File file = value;
                 if (file.isDirectory()) {
                     deleteDirectory(file);
                 } else {

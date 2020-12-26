@@ -128,8 +128,8 @@ public class GeometryRasterMaskBuilder {
 
     public boolean hasTilesSet() {
         long[][] coveredBounds = getCoveredBounds();
-        for (int i = 0; i < coveredBounds.length; i++) {
-            if (coveredBounds[i] != null) {
+        for (long[] coveredBound : coveredBounds) {
+            if (coveredBound != null) {
                 return true;
             }
         }

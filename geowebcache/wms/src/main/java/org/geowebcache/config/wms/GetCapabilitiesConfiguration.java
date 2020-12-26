@@ -463,8 +463,8 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
             mimeFormats = new ArrayList<>(mimeFormatArray.length);
 
             // This is stupid... but oh well, we're only doing it once
-            for (int i = 0; i < mimeFormatArray.length; i++) {
-                mimeFormats.add(mimeFormatArray[i]);
+            for (String s : mimeFormatArray) {
+                mimeFormats.add(s);
             }
         } else {
             mimeFormats = new ArrayList<>(3);

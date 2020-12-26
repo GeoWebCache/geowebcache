@@ -40,12 +40,12 @@ public class FileUtils {
                 files = listFilesNullSafe(path);
             }
 
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].isDirectory()) {
-                    rmFileCacheDir(files[i], extfl);
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    rmFileCacheDir(file, extfl);
                 } else {
-                    if (!files[i].delete()) {
-                        log.error("Unable to delete " + files[i].getAbsolutePath());
+                    if (!file.delete()) {
+                        log.error("Unable to delete " + file.getAbsolutePath());
                     }
                 }
             }
@@ -88,8 +88,8 @@ public class FileUtils {
         List<File> subDirectories = new ArrayList<>();
 
         File file;
-        for (int i = 0; i < files.length; i++) {
-            file = files[i];
+        for (File value : files) {
+            file = value;
             if (file.isDirectory()) {
                 subDirectories.add(file);
             }
