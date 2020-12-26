@@ -79,8 +79,7 @@ public class TileLayerDispatcher
     }
 
     public boolean layerExists(final String layerName) {
-        for (int i = 0; i < configs.size(); i++) {
-            TileLayerConfiguration configuration = configs.get(i);
+        for (TileLayerConfiguration configuration : configs) {
             Optional<TileLayer> layer = configuration.getLayer(layerName);
             if (layer.isPresent()) {
                 return true;
@@ -97,8 +96,7 @@ public class TileLayerDispatcher
     public TileLayer getTileLayer(final String layerName) throws GeoWebCacheException {
         Preconditions.checkNotNull(layerName, "layerName is null");
 
-        for (int i = 0; i < configs.size(); i++) {
-            TileLayerConfiguration configuration = configs.get(i);
+        for (TileLayerConfiguration configuration : configs) {
             Optional<TileLayer> layer = configuration.getLayer(layerName);
             if (layer.isPresent()) {
                 return layer.get();
@@ -115,8 +113,7 @@ public class TileLayerDispatcher
 
     public int getLayerCount() {
         int count = 0;
-        for (int i = 0; i < configs.size(); i++) {
-            TileLayerConfiguration configuration = configs.get(i);
+        for (TileLayerConfiguration configuration : configs) {
             count += configuration.getLayerCount();
         }
         return count;
@@ -124,8 +121,7 @@ public class TileLayerDispatcher
 
     public Set<String> getLayerNames() {
         Set<String> names = new HashSet<>();
-        for (int i = 0; i < configs.size(); i++) {
-            TileLayerConfiguration configuration = configs.get(i);
+        for (TileLayerConfiguration configuration : configs) {
             names.addAll(configuration.getLayerNames());
         }
         return names;
