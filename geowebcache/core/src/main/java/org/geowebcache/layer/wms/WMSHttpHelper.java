@@ -310,13 +310,13 @@ public class WMSHttpHelper extends WMSSourceHelper {
         HttpMethodBase method;
         if (httpRequestMode == WMSLayer.HttpRequestMode.FormPost) {
             PostMethod pm = new PostMethod(url.toString());
-            if (queryParams != null && queryParams.size() > 0) {
+            if (queryParams != null && !queryParams.isEmpty()) {
                 pm.setRequestBody(params);
             }
             method = pm;
         } else {
             method = new GetMethod(url.toString());
-            if (queryParams != null && queryParams.size() > 0) {
+            if (queryParams != null && !queryParams.isEmpty()) {
                 method.setQueryString(params);
             }
         }

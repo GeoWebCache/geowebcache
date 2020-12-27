@@ -705,7 +705,7 @@ public class BDBQuotaStore implements QuotaStore {
                 addToUsedQuota(tx, storedTileset, quotaDiff);
 
                 // and each page's fillFactor for lru/lfu expiration
-                if (tileCountDiffs.size() > 0) {
+                if (!tileCountDiffs.isEmpty()) {
                     TilePage page;
                     String pageKey;
                     for (PageStatsPayload payload : tileCountDiffs) {

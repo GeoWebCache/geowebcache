@@ -252,7 +252,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
             final GridSetBroker gridSetBroker) {
         List<? extends ArcGISCacheGridsetConfiguration> configs =
                 gridSetBroker.getConfigurations(ArcGISCacheGridsetConfiguration.class);
-        if (configs.size() == 0) {
+        if (configs.isEmpty()) {
             throw new IllegalStateException("No ArcGISCacheGridsetConfiguration could be found");
         } else {
             if (configs.size() > 1) {

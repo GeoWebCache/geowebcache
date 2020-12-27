@@ -657,7 +657,7 @@ public class Demo {
 
     private static String makeModifiableParameters(TileLayer tl) {
         List<ParameterFilter> parameterFilters = tl.getParameterFilters();
-        if (parameterFilters == null || parameterFilters.size() == 0) {
+        if (parameterFilters == null || parameterFilters.isEmpty()) {
             return "";
         }
         parameterFilters = new ArrayList<>(parameterFilters);

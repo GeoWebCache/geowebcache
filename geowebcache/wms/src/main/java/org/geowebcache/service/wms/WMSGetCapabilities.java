@@ -81,7 +81,7 @@ public class WMSGetCapabilities {
                 ServletUtils.selectedStringsFromMap(
                         servReq.getParameterMap(), servReq.getCharacterEncoding(), tiledKey);
 
-        if (tiledValue != null && tiledValue.size() > 0) {
+        if (tiledValue != null && !tiledValue.isEmpty()) {
             includeVendorSpecific = Boolean.parseBoolean(tiledValue.get("TILED"));
         }
     }

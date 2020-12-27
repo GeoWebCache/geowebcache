@@ -236,7 +236,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long> {
 
     /** Makes sure no cached updates are held for too long before synchronizing with the store */
     private void checkAggregatedTimeouts() throws InterruptedException {
-        if (aggregatedDelayedUpdates.size() == 0) {
+        if (aggregatedDelayedUpdates.isEmpty()) {
             return;
         }
         List<TileSet> pruneList = null;
@@ -253,7 +253,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long> {
     }
 
     private void prune(List<TileSet> pruneList) {
-        if (pruneList != null && pruneList.size() > 0) {
+        if (pruneList != null && !pruneList.isEmpty()) {
             for (TileSet ts : pruneList) {
                 aggregatedDelayedUpdates.remove(ts);
             }
@@ -301,7 +301,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long> {
         Collection<PageStatsPayload> tileCountDiffs;
         tileCountDiffs = new ArrayList<>(aggregatedUpadte.getAccummulatedTilePageCounts());
 
-        if (quotaDiff.getBytes().compareTo(BigInteger.ZERO) == 0 && tileCountDiffs.size() == 0) {
+        if (quotaDiff.getBytes().compareTo(BigInteger.ZERO) == 0 && tileCountDiffs.isEmpty()) {
             return;
         }
 
