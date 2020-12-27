@@ -57,6 +57,6 @@ public class S3BlobStoreConfigProviderTest {
         S3BlobStoreInfo s3Config = (S3BlobStoreInfo) config;
         assertEquals("MYBUCKET", s3Config.getBucket());
         assertEquals(30, s3Config.getMaxConnections().intValue());
-        assertEquals(true, s3Config.isEnabled());
+        assertTrue(s3Config.isEnabled());
     }
 }

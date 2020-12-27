@@ -15,6 +15,7 @@
 package org.geowebcache.config;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertNull;
 
 import java.net.MalformedURLException;
@@ -60,7 +61,7 @@ public class DefaultingConfigurationTest {
         config.setDefaultValues(tl);
         boolean cacheBypass = tl.isCacheBypassAllowed();
         int timeout = tl.getBackendTimeout();
-        assertEquals(cacheBypass, false);
+        assertFalse(cacheBypass);
         assertEquals(timeout, 120);
         assertNull(tl.getFormatModifiers());
     }

@@ -17,7 +17,7 @@ package org.geowebcache.filter.parameters;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyString;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import java.util.Collections;
 import java.util.Map;

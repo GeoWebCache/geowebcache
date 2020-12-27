@@ -12,7 +12,12 @@
  */
 package org.geowebcache.storage.blobstore.memory;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +36,9 @@ import org.geowebcache.storage.StorageBrokerTest;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
 import org.geowebcache.storage.blobstore.memory.guava.GuavaCacheProvider;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * This test class is used for testing {@link
@@ -290,13 +297,13 @@ public class MemoryBlobStoreTest {
                 is.close();
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
-                assertTrue(false);
+                fail();
             }
             try {
                 is2.close();
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
-                assertTrue(false);
+                fail();
             }
         }
     }

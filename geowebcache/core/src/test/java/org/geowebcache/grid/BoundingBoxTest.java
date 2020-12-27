@@ -1,6 +1,7 @@
 package org.geowebcache.grid;
 
-import java.util.Arrays;
+import static org.junit.Assert.assertArrayEquals;
+
 import junit.framework.TestCase;
 
 public class BoundingBoxTest extends TestCase {
@@ -24,7 +25,7 @@ public class BoundingBoxTest extends TestCase {
         if (bboxStr.equalsIgnoreCase("-180.0,-90.0,180.0,90.0")) {
             assertTrue(true);
         } else {
-            assertTrue(false);
+            fail();
         }
     }
 
@@ -49,7 +50,7 @@ public class BoundingBoxTest extends TestCase {
         assertEquals(5D, intersection.getWidth());
         assertEquals(5D, intersection.getHeight());
         assertTrue(intersection.isSane());
-        assertTrue(Arrays.equals(new double[] {5, 5, 10, 10}, intersection.getCoords()));
+        assertArrayEquals(new double[] {5, 5, 10, 10}, intersection.getCoords(), 0.0);
     }
 
     /** Two bboxes don't intersect, BoundingBox.intersection()'s result should be the empty bbox */

@@ -492,17 +492,17 @@ public class SwiftBlobStoreTest {
 
         // Test if layer name is empty
         String result = this.swiftBlobStore.getLayerMetadata("", "sample_key");
-        assertEquals(null, result);
+        assertNull(result);
 
         // Test if layer name is invalid
         result = this.swiftBlobStore.getLayerMetadata(INVALID_TEST_LAYER_NAME, "sample_key");
-        assertEquals(null, result);
+        assertNull(result);
 
         // Test if metadata is null
         result =
                 this.swiftBlobStore.getLayerMetadata(
                         "valid layer name without metadata", "sample_key");
-        assertEquals(null, result);
+        assertNull(result);
 
         // Test when layer name is valid
         result = this.swiftBlobStore.getLayerMetadata(VALID_TEST_LAYER_NAME, "sample_key");
@@ -512,7 +512,7 @@ public class SwiftBlobStoreTest {
         // Test when layer name is valid and key is invalid
         result = this.swiftBlobStore.getLayerMetadata(VALID_TEST_LAYER_NAME, "");
         verify(objectApi, times(1)).get("");
-        assertEquals(null, result);
+        assertNull(result);
     }
 
     @Test

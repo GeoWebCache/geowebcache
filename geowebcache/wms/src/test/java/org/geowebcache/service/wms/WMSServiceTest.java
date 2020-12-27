@@ -143,12 +143,13 @@ public class WMSServiceTest {
 
         assertEquals(expectedGridset, tileRequest.getGridSetId());
         assertEquals("image/png", tileRequest.getMimeType().getMimeType());
-        assertTrue(
+        assertArrayEquals(
                 "Expected "
                         + Arrays.toString(tileIndex)
                         + " got "
                         + Arrays.toString(tileRequest.getTileIndex()),
-                Arrays.equals(tileIndex, tileRequest.getTileIndex()));
+                tileIndex,
+                tileRequest.getTileIndex());
     }
 
     private TileLayer mockTileLayer(String layerName, List<String> gridSetNames) throws Exception {
@@ -338,7 +339,7 @@ public class WMSServiceTest {
         assertEquals(Conveyor.RequestHandler.SERVICE, conv.reqHandler);
         assertNotNull(conv.getLayerId());
         assertEquals(layerName, conv.getLayerId());
-        assertTrue(!conv.getFilteringParameters().isEmpty());
+        assertFalse(conv.getFilteringParameters().isEmpty());
         assertEquals(timeValue, conv.getFilteringParameters().get("TIME"));
     }
 

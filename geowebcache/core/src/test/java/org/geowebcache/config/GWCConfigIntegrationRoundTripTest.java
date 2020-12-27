@@ -14,7 +14,8 @@
  */
 package org.geowebcache.config;
 
-import static org.geowebcache.config.GWCConfigIntegrationTestData.*;
+import static org.geowebcache.config.GWCConfigIntegrationTestData.BLOBSTORES;
+import static org.geowebcache.config.GWCConfigIntegrationTestData.LAYERS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

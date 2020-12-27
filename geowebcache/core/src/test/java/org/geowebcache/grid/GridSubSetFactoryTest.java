@@ -1,6 +1,7 @@
 package org.geowebcache.grid;
 
-import java.util.Arrays;
+import static org.junit.Assert.assertArrayEquals;
+
 import java.util.Collections;
 import junit.framework.TestCase;
 import org.geowebcache.config.DefaultGridsets;
@@ -19,7 +20,7 @@ public class GridSubSetFactoryTest extends TestCase {
         long[] ret = grid.getCoverage(0);
         long[] correct = {1, 0, 1, 0, 0};
 
-        assertTrue(Arrays.equals(correct, ret));
+        assertArrayEquals(correct, ret);
     }
 
     public void testCoverageBounds2() throws Exception {
@@ -31,7 +32,7 @@ public class GridSubSetFactoryTest extends TestCase {
         long[] ret = grid.getCoverage(1);
         long[] correct = {2, 1, 3, 1, 1};
 
-        assertTrue(Arrays.equals(correct, ret));
+        assertArrayEquals(correct, ret);
     }
 
     public void testGridNames() throws Exception {
@@ -61,7 +62,7 @@ public class GridSubSetFactoryTest extends TestCase {
         assertEquals(3, coverages.length);
         long[] correct = {2, 0, 3, 0};
 
-        assertTrue(Arrays.equals(correct, coverages[0]));
+        assertArrayEquals(correct, coverages[0]);
     }
 
     public void testGridIndex() throws Exception {

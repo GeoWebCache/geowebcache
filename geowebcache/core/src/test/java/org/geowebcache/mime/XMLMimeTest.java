@@ -1,6 +1,9 @@
 package org.geowebcache.mime;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -13,7 +16,7 @@ public class XMLMimeTest {
         try {
             result = MimeType.createFromFormat("application/vnd.ogc.se_xml");
         } catch (MimeException e) {
-            assertTrue("Format not found", false);
+            fail("Format not found");
         }
         // Ensure it is not null
         assertNotNull(result);
@@ -28,7 +31,7 @@ public class XMLMimeTest {
         try {
             result = MimeType.createFromFormat("application/vnd.google-earth.kml+xml");
         } catch (MimeException e) {
-            assertTrue("Format not found", false);
+            fail("Format not found");
         }
         // Ensure it is not null
         assertNotNull(result);
@@ -38,7 +41,7 @@ public class XMLMimeTest {
         try {
             result = MimeType.createFromExtension("kml");
         } catch (MimeException e) {
-            assertTrue("Format not found", false);
+            fail("Format not found");
         }
         // Ensure it is not null
         assertNotNull(result);
@@ -53,7 +56,7 @@ public class XMLMimeTest {
         try {
             result = MimeType.createFromFormat("application/vnd.google-earth.kmz");
         } catch (MimeException e) {
-            assertTrue("Format not found", false);
+            fail("Format not found");
         }
         // Ensure it is not null
         assertNotNull(result);
@@ -63,7 +66,7 @@ public class XMLMimeTest {
         try {
             result = MimeType.createFromExtension("kmz");
         } catch (MimeException e) {
-            assertTrue("Format not found", false);
+            fail("Format not found");
         }
         // Ensure it is not null
         assertNotNull(result);
@@ -78,7 +81,7 @@ public class XMLMimeTest {
         try {
             result = MimeType.createFromFormat("application/vnd.ogc.gml");
         } catch (MimeException e) {
-            assertTrue("Format not found", false);
+            fail("Format not found");
         }
         // Ensure it is not null
         assertNotNull(result);
@@ -88,7 +91,7 @@ public class XMLMimeTest {
         try {
             result = MimeType.createFromExtension("gml");
         } catch (MimeException e) {
-            assertTrue("Format not found", false);
+            fail("Format not found");
         }
         // Ensure it is not null
         assertNotNull(result);
@@ -103,7 +106,7 @@ public class XMLMimeTest {
         try {
             result = MimeType.createFromFormat("application/vnd.ogc.gml/3.1.1");
         } catch (MimeException e) {
-            assertTrue("Format not found", false);
+            fail("Format not found");
         }
         // Ensure it is not null
         assertNotNull(result);
@@ -113,7 +116,7 @@ public class XMLMimeTest {
         try {
             result = MimeType.createFromExtension("gml3");
         } catch (MimeException e) {
-            assertTrue("Format not found", false);
+            fail("Format not found");
         }
         // Ensure it is not null
         assertNotNull(result);
