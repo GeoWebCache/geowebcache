@@ -1,5 +1,7 @@
 package org.geowebcache.grid;
 
+import static org.junit.Assert.assertArrayEquals;
+
 import java.util.Arrays;
 import java.util.Collections;
 import junit.framework.TestCase;
@@ -35,7 +37,7 @@ public class GridCalculatorTest extends TestCase {
                 System.out.println(
                         i + " " + Arrays.toString(solution[i]) + "  " + Arrays.toString(bounds));
             }
-            assertTrue(Arrays.equals(solution[i], bounds));
+            assertArrayEquals(solution[i], bounds);
         }
     }
 
@@ -61,7 +63,7 @@ public class GridCalculatorTest extends TestCase {
             if (!Arrays.equals(solution[i], bounds)) {
                 System.out.println(Arrays.toString(solution[i]) + "  " + Arrays.toString(bounds));
             }
-            assertTrue(Arrays.equals(solution[i], bounds));
+            assertArrayEquals(solution[i], bounds);
         }
     }
 
@@ -88,7 +90,7 @@ public class GridCalculatorTest extends TestCase {
             if (!Arrays.equals(solution[i], bounds)) {
                 System.out.println(Arrays.toString(solution[i]) + "  " + Arrays.toString(bounds));
             }
-            assertTrue(Arrays.equals(solution[i], bounds));
+            assertArrayEquals(solution[i], bounds);
         }
     }
 
@@ -116,7 +118,7 @@ public class GridCalculatorTest extends TestCase {
             if (!Arrays.equals(solution[i], bounds)) {
                 System.out.println(Arrays.toString(solution[i]) + "  " + Arrays.toString(bounds));
             }
-            assertTrue(Arrays.equals(solution[i], bounds));
+            assertArrayEquals(solution[i], bounds);
         }
     }
 
@@ -137,7 +139,7 @@ public class GridCalculatorTest extends TestCase {
                 System.out.println("test1gridLevels900913, level " + i);
                 System.out.println(Arrays.toString(solution[i]) + "  " + Arrays.toString(bounds));
             }
-            assertTrue(Arrays.equals(solution[i], bounds));
+            assertArrayEquals(solution[i], bounds);
         }
     }
 
@@ -164,7 +166,7 @@ public class GridCalculatorTest extends TestCase {
                 System.out.println("test2gridLevels900913, level " + i);
                 System.out.println(Arrays.toString(solution[i]) + "  " + Arrays.toString(bounds));
             }
-            assertTrue(Arrays.equals(solution[i], bounds));
+            assertArrayEquals(solution[i], bounds);
         }
     }
 
@@ -192,7 +194,7 @@ public class GridCalculatorTest extends TestCase {
                 System.out.println("test3gridLevels900913, level " + i);
                 System.out.println(Arrays.toString(solution[i]) + "  " + Arrays.toString(bounds));
             }
-            assertTrue(Arrays.equals(solution[i], bounds));
+            assertArrayEquals(solution[i], bounds);
         }
     }
 
@@ -204,7 +206,7 @@ public class GridCalculatorTest extends TestCase {
 
         long[] bestFit = grid.getCoverageBestFit();
         long[] solution = {0, 0, 0, 0, 0};
-        assertTrue(Arrays.equals(bestFit, solution));
+        assertArrayEquals(bestFit, solution);
     }
 
     public void test6gridLoctoBounds4326() throws Exception {
@@ -251,7 +253,7 @@ public class GridCalculatorTest extends TestCase {
             if (!Arrays.equals(solution[i], bounds)) {
                 System.out.println(Arrays.toString(solution[i]) + "  " + Arrays.toString(bounds));
             }
-            assertTrue(Arrays.equals(solution[i], bounds));
+            assertArrayEquals(solution[i], bounds);
         }
     }
 
@@ -322,16 +324,16 @@ public class GridCalculatorTest extends TestCase {
 
         // Check the actual max bounds
         long[] solution = {0, 0, 0};
-        assertTrue(Arrays.equals(solution, gridSubset.closestIndex(bbox)));
+        assertArrayEquals(solution, gridSubset.closestIndex(bbox));
 
         // Test a grid location
         long[] gridLoc = {1, 0, 1};
         BoundingBox bboxSolution =
                 new BoundingBox(599484.8750000002, 4912451.9275, 611635.5437500004, 4924602.59625);
-        assertTrue(bboxSolution.equals(gridSubset.boundsFromIndex(gridLoc)));
+        assertEquals(bboxSolution, gridSubset.boundsFromIndex(gridLoc));
 
         // Now lets go the other way
-        assertTrue(Arrays.equals(gridLoc, gridSubset.closestIndex(bboxSolution)));
+        assertArrayEquals(gridLoc, gridSubset.closestIndex(bboxSolution));
     }
 
     public void testTopLeftNaive() throws Exception {
@@ -356,11 +358,11 @@ public class GridCalculatorTest extends TestCase {
         // Check the actual max bounds
         long[] solution = {0, 0, 0};
         long[] closest = gridSubset.closestIndex(new BoundingBox(-180.0, -90.0, 0.0, 90.0));
-        assertTrue(Arrays.equals(solution, closest));
+        assertArrayEquals(solution, closest);
 
         long[] solution2 = {1, 0, 0};
         closest = gridSubset.closestIndex(new BoundingBox(0.0, -90.0, 180.0, 90.0));
-        assertTrue(Arrays.equals(solution2, closest));
+        assertArrayEquals(solution2, closest);
 
         long[] t1 = {0, 0, 1}; // 90x90 degrees
         BoundingBox test1 = gridSubset.boundsFromIndex(t1);
@@ -396,17 +398,17 @@ public class GridCalculatorTest extends TestCase {
         // Check the actual max bounds
         long[] solution = {0, 0, 0};
         long[] closest = gridSubset.closestIndex(bbox);
-        assertTrue(Arrays.equals(solution, closest));
+        assertArrayEquals(solution, closest);
 
         // Test a grid location
         long[] gridLoc = {1, 0, 1};
         BoundingBox bboxSolution =
                 new BoundingBox(599484.8750000002, 4912451.9275, 611635.5437500004, 4924602.59625);
-        assertTrue(bboxSolution.equals(gridSubset.boundsFromIndex(gridLoc)));
+        assertEquals(bboxSolution, gridSubset.boundsFromIndex(gridLoc));
 
         // Now lets go the other way
         closest = gridSubset.closestIndex(bboxSolution);
-        assertTrue(Arrays.equals(gridLoc, closest));
+        assertArrayEquals(gridLoc, closest);
     }
 
     private BoundingBox createApproximateTileBounds(

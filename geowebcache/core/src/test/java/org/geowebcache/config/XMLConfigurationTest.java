@@ -17,8 +17,19 @@ package org.geowebcache.config;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -268,7 +279,7 @@ public class XMLConfigurationTest {
         assertThat(config2.getLayer("testLayer"), TestUtils.isPresent());
 
         WMSLayer l = (WMSLayer) config2.getLayer("testLayer").get();
-        assertTrue(Arrays.equals(wmsURL, l.getWMSurl()));
+        assertArrayEquals(wmsURL, l.getWMSurl());
         assertEquals(wmsStyles, l.getStyles());
         assertEquals(wmsLayers, l.getWmsLayers());
         assertEquals(mimeFormats, l.getMimeFormats());
@@ -549,7 +560,7 @@ public class XMLConfigurationTest {
 
         final String currVersion = XMLConfiguration.getCurrentSchemaVersion();
         assertNotNull(currVersion);
-        assertFalse(previousVersion.equals(currVersion));
+        assertNotEquals(previousVersion, currVersion);
 
         config = new XMLConfiguration(null, configDir.getAbsolutePath());
         config.setGridSetBroker(gridSetBroker);

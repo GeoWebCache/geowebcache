@@ -14,6 +14,8 @@
  */
 package org.geowebcache.diskquota.storage;
 
+import static org.junit.Assert.assertArrayEquals;
+
 import java.math.BigInteger;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -168,35 +170,35 @@ public class PagePyramidTest extends TestCase {
         int[] pageIndexTarget = {Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE};
         int[] expected = {0, 0, 0};
         pyramid.pageIndexForTile(0, 0, 0, pageIndexTarget);
-        assertTrue(Arrays.toString(pageIndexTarget), Arrays.equals(expected, pageIndexTarget));
+        assertArrayEquals(Arrays.toString(pageIndexTarget), expected, pageIndexTarget);
 
         expected = new int[] {1, 1, 0};
         pyramid.pageIndexForTile(1, 1, 0, pageIndexTarget);
-        assertTrue(Arrays.toString(pageIndexTarget), Arrays.equals(expected, pageIndexTarget));
+        assertArrayEquals(Arrays.toString(pageIndexTarget), expected, pageIndexTarget);
 
         // grid coverages:
         // { 3, 3, 10, 10, 1 },// 1x1 tiles
         expected = new int[] {0, 0, 1};
         pyramid.pageIndexForTile(3, 3, 1, pageIndexTarget);
-        assertTrue(Arrays.toString(pageIndexTarget), Arrays.equals(expected, pageIndexTarget));
+        assertArrayEquals(Arrays.toString(pageIndexTarget), expected, pageIndexTarget);
 
         expected = new int[] {1, 1, 1};
         pyramid.pageIndexForTile(4, 4, 1, pageIndexTarget);
-        assertTrue(Arrays.toString(pageIndexTarget), Arrays.equals(expected, pageIndexTarget));
+        assertArrayEquals(Arrays.toString(pageIndexTarget), expected, pageIndexTarget);
 
         expected = new int[] {7, 7, 1};
         pyramid.pageIndexForTile(10, 10, 1, pageIndexTarget);
-        assertTrue(Arrays.toString(pageIndexTarget), Arrays.equals(expected, pageIndexTarget));
+        assertArrayEquals(Arrays.toString(pageIndexTarget), expected, pageIndexTarget);
 
         // grid coverages:
         // { 1000, 1000, 3000, 3000, 3 } // 77x77 pages, 26x26 tiles
         expected = new int[] {0, 0, 3};
         pyramid.pageIndexForTile(1000, 1000, 3, pageIndexTarget);
-        assertTrue(Arrays.toString(pageIndexTarget), Arrays.equals(expected, pageIndexTarget));
+        assertArrayEquals(Arrays.toString(pageIndexTarget), expected, pageIndexTarget);
 
         expected = new int[] {1, 1, 3};
         pyramid.pageIndexForTile(1026, 1026, 3, pageIndexTarget);
-        assertTrue(Arrays.toString(pageIndexTarget), Arrays.equals(expected, pageIndexTarget));
+        assertArrayEquals(Arrays.toString(pageIndexTarget), expected, pageIndexTarget);
     }
 
     private List<Long> asList(long... coverage) {

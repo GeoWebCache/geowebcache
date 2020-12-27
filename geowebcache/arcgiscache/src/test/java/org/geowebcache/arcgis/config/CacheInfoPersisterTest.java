@@ -46,7 +46,7 @@ public class CacheInfoPersisterTest extends TestCase {
         assertEquals(0.0037383177570093459, sr.getXYTolerance(), 1e-6);
         assertEquals(2, sr.getZTolerance(), 1e-6);
         assertEquals(2, sr.getMTolerance(), 1e-6);
-        assertEquals(true, sr.isHighPrecision());
+        assertTrue(sr.isHighPrecision());
         assertEquals(2193, sr.getWKID());
         assertEquals(2193, sr.getLatestWKID());
     }

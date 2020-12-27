@@ -3,10 +3,9 @@ package org.geowebcache.grid;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
 import java.util.Collections;
 import org.geowebcache.config.DefaultGridsets;
 import org.hamcrest.Matcher;
@@ -148,8 +147,8 @@ public class GridSetTest {
         long[] idxBL = gridSetBL.closestIndex(box);
         long[] solution = {0, 0, 1};
 
-        assertTrue(Arrays.equals(idxTL, solution));
-        assertTrue(Arrays.equals(idxBL, solution));
+        assertArrayEquals(idxTL, solution);
+        assertArrayEquals(idxBL, solution);
     }
 
     @Test
@@ -159,8 +158,8 @@ public class GridSetTest {
         long[] rectBL = gridSetBL.closestRectangle(box);
         long[] solution = {0, 0, 1, 0, 1};
 
-        assertTrue(Arrays.equals(rectTL, solution));
-        assertTrue(Arrays.equals(rectBL, solution));
+        assertArrayEquals(rectTL, solution);
+        assertArrayEquals(rectBL, solution);
     }
 
     @Test

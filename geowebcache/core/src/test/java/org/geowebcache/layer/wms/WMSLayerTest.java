@@ -28,7 +28,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -397,7 +400,7 @@ public class WMSLayerTest extends TileLayerTest {
         // proxy the request, and check the response
         layer.proxyRequest(tile);
 
-        assertEquals(null, servletResp.getContentType());
+        assertNull(servletResp.getContentType());
     }
 
     @Test

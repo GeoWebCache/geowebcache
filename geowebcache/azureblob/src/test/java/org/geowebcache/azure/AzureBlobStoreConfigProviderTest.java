@@ -61,6 +61,6 @@ public class AzureBlobStoreConfigProviderTest {
         assertEquals("myname", abConfig.getAccountName());
         assertEquals("${MYKEY}", abConfig.getAccountKey());
         assertEquals("30", abConfig.getMaxConnections());
-        assertEquals(true, abConfig.isEnabled());
+        assertTrue(abConfig.isEnabled());
     }
 }

@@ -1,6 +1,7 @@
 package org.geowebcache.diskquota.jdbc;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -901,14 +902,14 @@ public abstract class JDBCQuotaStoreTest {
         long[][] expected = tilePageCalculator.toGridCoverage(testTileSet, page);
         long[][] tilesForPage = store.getTilesForPage(page);
 
-        assertTrue(Arrays.equals(expected[0], tilesForPage[0]));
+        assertArrayEquals(expected[0], tilesForPage[0]);
 
         page = new TilePage(testTileSet.getId(), 0, 0, 1);
 
         expected = tilePageCalculator.toGridCoverage(testTileSet, page);
         tilesForPage = store.getTilesForPage(page);
 
-        assertTrue(Arrays.equals(expected[1], tilesForPage[1]));
+        assertArrayEquals(expected[1], tilesForPage[1]);
     }
 
     private int countTileSetsByLayerName(String layerName) {

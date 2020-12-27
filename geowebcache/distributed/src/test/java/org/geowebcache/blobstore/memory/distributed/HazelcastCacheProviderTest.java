@@ -17,6 +17,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
@@ -231,13 +232,13 @@ public class HazelcastCacheProviderTest {
                 is.close();
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
-                assertTrue(false);
+                fail();
             }
             try {
                 is2.close();
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
-                assertTrue(false);
+                fail();
             }
         }
     }

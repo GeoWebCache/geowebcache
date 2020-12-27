@@ -224,10 +224,10 @@ public class MetaTileTest extends TestCase {
 
         // The actual gutter is calculated right at construction time
         wmsParams = mt.getWMSParams();
-        assertTrue(mt.getGutter()[0] == layer.gutter);
-        assertTrue(mt.getGutter()[1] == layer.gutter);
-        assertTrue(mt.getGutter()[2] == layer.gutter);
-        assertTrue(mt.getGutter()[3] == layer.gutter);
+        assertEquals(mt.getGutter()[0], (int) layer.gutter);
+        assertEquals(mt.getGutter()[1], (int) layer.gutter);
+        assertEquals(mt.getGutter()[2], (int) layer.gutter);
+        assertEquals(mt.getGutter()[3], (int) layer.gutter);
 
         height = Integer.parseInt(wmsParams.get("HEIGHT"));
 

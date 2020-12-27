@@ -19,7 +19,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.geowebcache.filter.parameters.StringParameterFilter;
-import org.geowebcache.grid.*;
+import org.geowebcache.grid.BoundingBox;
+import org.geowebcache.grid.GridSet;
+import org.geowebcache.grid.GridSetFactory;
+import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.GridSubsetFactory;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.wms.WMSLayer;
 
 /** Test data for {@link GWCConfigIntegrationTest} */

@@ -14,8 +14,8 @@
  */
 package org.geowebcache.config;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import java.util.Collection;
 import java.util.Optional;

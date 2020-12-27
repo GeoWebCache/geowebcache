@@ -61,37 +61,37 @@ public class RasterMaskTest extends TestCase {
                 new RasterMask(mask.getByLevelMasks(), fullCoverage, mask.getCoveredBounds());
 
         // level 0
-        assertEquals(true, tileRangeMask.lookup(0, 0, 0));
-        assertEquals(true, tileRangeMask.lookup(1, 0, 0));
+        assertTrue(tileRangeMask.lookup(0, 0, 0));
+        assertTrue(tileRangeMask.lookup(1, 0, 0));
 
         // level 1
         // TODO commented out by arneke
         // assertEquals(false, tileRangeMask.lookup(0, 1, 1));
-        assertEquals(true, tileRangeMask.lookup(1, 1, 1));
-        assertEquals(true, tileRangeMask.lookup(1, 0, 1));
+        assertTrue(tileRangeMask.lookup(1, 1, 1));
+        assertTrue(tileRangeMask.lookup(1, 0, 1));
 
         // level 2
-        assertEquals(false, tileRangeMask.lookup(0, 0, 2));
-        assertEquals(false, tileRangeMask.lookup(0, 1, 2));
-        assertEquals(true, tileRangeMask.lookup(1, 0, 2));
-        assertEquals(false, tileRangeMask.lookup(0, 3, 2));
-        assertEquals(true, tileRangeMask.lookup(7, 0, 2));
+        assertFalse(tileRangeMask.lookup(0, 0, 2));
+        assertFalse(tileRangeMask.lookup(0, 1, 2));
+        assertTrue(tileRangeMask.lookup(1, 0, 2));
+        assertFalse(tileRangeMask.lookup(0, 3, 2));
+        assertTrue(tileRangeMask.lookup(7, 0, 2));
 
         // level 9 (coverage is 0, 0, 1023, 511, 9)
-        assertEquals(false, tileRangeMask.lookup(0, 0, 9)); // lower left
-        assertEquals(false, tileRangeMask.lookup(0, 511, 9)); // upper left
-        assertEquals(false, tileRangeMask.lookup(1023, 511, 9)); // upper right
-        assertEquals(true, tileRangeMask.lookup(1023, 0, 9)); // lower right
+        assertFalse(tileRangeMask.lookup(0, 0, 9)); // lower left
+        assertFalse(tileRangeMask.lookup(0, 511, 9)); // upper left
+        assertFalse(tileRangeMask.lookup(1023, 511, 9)); // upper right
+        assertTrue(tileRangeMask.lookup(1023, 0, 9)); // lower right
 
-        assertEquals(true, tileRangeMask.lookup(511, 127, 9)); // point location
+        assertTrue(tileRangeMask.lookup(511, 127, 9)); // point location
 
         // line end point 1 LINESTRING(-90 -45, 90 45)
-        assertEquals(true, tileRangeMask.lookup(255, 127, 9));
+        assertTrue(tileRangeMask.lookup(255, 127, 9));
         // line end point 2 LINESTRING(-90 -45, 90 45)
-        assertEquals(true, tileRangeMask.lookup(767, 383, 9));
+        assertTrue(tileRangeMask.lookup(767, 383, 9));
 
         // center
-        assertEquals(true, tileRangeMask.lookup(511, 255, 9));
+        assertTrue(tileRangeMask.lookup(511, 255, 9));
     }
 
     public void testTileIsPresentBuffering() throws Exception {
@@ -113,15 +113,15 @@ public class RasterMaskTest extends TestCase {
          * <p>We only guarantee one tile buffering, so I'm not sure why we are testing all the tests
          * below, some of which fail. I've just commented them out to get the build back to normal.
          */
-        assertEquals(true, tileRangeMask.lookup(32, 23, 5)); // point location
+        assertTrue(tileRangeMask.lookup(32, 23, 5)); // point location
 
-        assertEquals(true, tileRangeMask.lookup(31, 23, 5)); // point's left
+        assertTrue(tileRangeMask.lookup(31, 23, 5)); // point's left
         // assertEquals(true, tileRangeMask.lookup(33, 23, 5));// point's right
 
-        assertEquals(true, tileRangeMask.lookup(32, 24, 5)); // point's top
+        assertTrue(tileRangeMask.lookup(32, 24, 5)); // point's top
         // assertEquals(true, tileRangeMask.lookup(32, 22, 5));// point's bottom
 
-        assertEquals(true, tileRangeMask.lookup(31, 24, 5)); // point's top left
+        assertTrue(tileRangeMask.lookup(31, 24, 5)); // point's top left
         // assertEquals(true, tileRangeMask.lookup(33, 24, 5));// point's top right
         // assertEquals(true, tileRangeMask.lookup(31, 22, 5));// point's bottom left
         // assertEquals(true, tileRangeMask.lookup(33, 22, 5));// point's bottom right
@@ -141,21 +141,21 @@ public class RasterMaskTest extends TestCase {
 
         // level 5 (coverage is 0, 0, 63, 31)
 
-        assertEquals(false, tileRangeMask.lookup(0, 0, 5));
-        assertEquals(false, tileRangeMask.lookup(0, 31, 5));
-        assertEquals(false, tileRangeMask.lookup(63, 31, 5));
-        assertEquals(true, tileRangeMask.lookup(63, 0, 5));
+        assertFalse(tileRangeMask.lookup(0, 0, 5));
+        assertFalse(tileRangeMask.lookup(0, 31, 5));
+        assertFalse(tileRangeMask.lookup(63, 31, 5));
+        assertTrue(tileRangeMask.lookup(63, 0, 5));
 
-        assertEquals(true, tileRangeMask.lookup(32, 23, 5)); // point location
+        assertTrue(tileRangeMask.lookup(32, 23, 5)); // point location
 
-        assertEquals(true, tileRangeMask.lookup(31, 23, 5)); // point's left
-        assertEquals(true, tileRangeMask.lookup(33, 23, 5)); // point's right
-        assertEquals(true, tileRangeMask.lookup(32, 24, 5)); // point's top
-        assertEquals(true, tileRangeMask.lookup(32, 22, 5)); // point's bottom
+        assertTrue(tileRangeMask.lookup(31, 23, 5)); // point's left
+        assertTrue(tileRangeMask.lookup(33, 23, 5)); // point's right
+        assertTrue(tileRangeMask.lookup(32, 24, 5)); // point's top
+        assertTrue(tileRangeMask.lookup(32, 22, 5)); // point's bottom
 
-        assertEquals(true, tileRangeMask.lookup(31, 24, 5)); // point's top left
-        assertEquals(true, tileRangeMask.lookup(33, 24, 5)); // point's top right
-        assertEquals(true, tileRangeMask.lookup(31, 22, 5)); // point's bottom left
-        assertEquals(true, tileRangeMask.lookup(33, 22, 5)); // point's bottom right
+        assertTrue(tileRangeMask.lookup(31, 24, 5)); // point's top left
+        assertTrue(tileRangeMask.lookup(33, 24, 5)); // point's top right
+        assertTrue(tileRangeMask.lookup(31, 22, 5)); // point's bottom left
+        assertTrue(tileRangeMask.lookup(33, 22, 5)); // point's bottom right
     }
 }
