@@ -235,9 +235,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                         true,
                         connection -> {
                             // instantiating geotools mbtiles reader
-                            MBTilesFile mbtiles =
-                                    GeoToolsMbtilesUtils.getMBTilesFile(connection, file);
-                            try {
+                            try (MBTilesFile mbtiles =
+                                    GeoToolsMbtilesUtils.getMBTilesFile(connection, file)) {
 
                                 final boolean gzipped = tileIsGzipped(tile);
 
@@ -279,8 +278,6 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                                         "Error loading tile '%s' from MBTiles file '%s'.",
                                         tile,
                                         file);
-                            } finally {
-                                mbtiles.close();
                             }
                             if (LOGGER.isDebugEnabled()) {
                                 LOGGER.debug(

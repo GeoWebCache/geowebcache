@@ -54,9 +54,7 @@ public class MetastoreRemover {
     public MetastoreRemover(DefaultStorageFinder finder) throws Exception {
         this.storageFinder = finder;
         File root = new File(storageFinder.getDefaultPath());
-        Connection conn = null;
-        try {
-            conn = getMetaStoreConnection(root);
+        try (Connection conn = getMetaStoreConnection(root)) {
             if (conn != null) {
                 log.info("Migrating the old metastore to filesystem storage");
                 SingleConnectionDataSource ds = new SingleConnectionDataSource(conn, false);
@@ -73,10 +71,6 @@ public class MetastoreRemover {
                 if (!defaultLocation) {
                     removeTiles(template);
                 }
-            }
-        } finally {
-            if (conn != null) {
-                conn.close();
             }
         }
 
