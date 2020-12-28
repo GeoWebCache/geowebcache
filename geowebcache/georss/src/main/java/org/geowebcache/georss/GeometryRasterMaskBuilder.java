@@ -35,6 +35,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 
 /**
@@ -204,9 +205,7 @@ public class GeometryRasterMaskBuilder {
         Geometry geomInGridCrs;
         try {
             geomInGridCrs = JTS.transform(geometryInLayerCrs, worldToGrid);
-        } catch (MismatchedDimensionException e) {
-            throw new IllegalArgumentException(e);
-        } catch (TransformException e) {
+        } catch (MismatchedDimensionException | TransformException e) {
             throw new IllegalArgumentException(e);
         }
 
@@ -255,9 +254,7 @@ public class GeometryRasterMaskBuilder {
         mapper.setSwapXY(false);
         try {
             worldToScreen = mapper.createTransform().inverse();
-        } catch (org.opengis.referencing.operation.NoninvertibleTransformException e) {
-            throw new IllegalArgumentException(e);
-        } catch (IllegalStateException e) {
+        } catch (NoninvertibleTransformException | IllegalStateException e) {
             throw new IllegalArgumentException(e);
         }
 

@@ -327,9 +327,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         Assert.isTrue(diskQuotaEnabled, "called saveConfig but DiskQuota is disabled!");
         try {
             configLoader.saveConfig(config);
-        } catch (ConfigurationException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (ConfigurationException | IOException e) {
             throw new RuntimeException(e);
         }
         if (config != quotaConfig) {

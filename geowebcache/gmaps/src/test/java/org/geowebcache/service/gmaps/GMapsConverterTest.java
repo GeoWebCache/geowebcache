@@ -18,7 +18,6 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.TileLayerDispatcherMock;
 import org.geowebcache.layer.wms.WMSLayer;
-import org.geowebcache.service.ServiceException;
 import org.geowebcache.storage.StorageBroker;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -139,11 +138,7 @@ public class GMapsConverterTest extends TestCase {
             assertEquals(
                     CQL_FILTER_PARAMETER_VALUE,
                     URLDecoder.decode(parameters.get(CQL_FILTER_PARAMETER_NAME), "UTF8"));
-        } catch (ServiceException e) {
-            fail();
-        } catch (GeoWebCacheException e) {
-            fail();
-        } catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException | GeoWebCacheException e) {
             fail();
         }
     }

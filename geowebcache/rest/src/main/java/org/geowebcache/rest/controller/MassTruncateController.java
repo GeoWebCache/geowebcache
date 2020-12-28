@@ -141,9 +141,7 @@ public class MassTruncateController extends GWCSeedingController {
             }
         } catch (IllegalArgumentException e) {
             throw new RestException(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (StorageException e) {
-            throw new RestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (GeoWebCacheException e) {
+        } catch (StorageException | GeoWebCacheException e) {
             throw new RestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return mtr.getResponse(contentType);
@@ -157,9 +155,7 @@ public class MassTruncateController extends GWCSeedingController {
             }
         } catch (IllegalArgumentException e) {
             throw new RestException(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (StorageException e) {
-            throw new RestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (GeoWebCacheException e) {
+        } catch (StorageException | GeoWebCacheException e) {
             throw new RestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

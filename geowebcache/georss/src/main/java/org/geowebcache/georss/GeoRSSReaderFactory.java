@@ -83,9 +83,7 @@ class GeoRSSReaderFactory {
         GeoRSSReader reader;
         try {
             reader = new StaxGeoRSSReader(feed);
-        } catch (XMLStreamException e) {
-            throw new IllegalStateException(e);
-        } catch (FactoryConfigurationError e) {
+        } catch (XMLStreamException | FactoryConfigurationError e) {
             throw new IllegalStateException(e);
         }
         return reader;

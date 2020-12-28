@@ -400,9 +400,7 @@ public class KMLService extends Service {
             ret[0] = Long.parseLong(key.substring(1, yloc));
             ret[1] = Long.parseLong(key.substring(yloc + 1, zloc));
             ret[2] = Long.parseLong(key.substring(zloc + 1, key.length()));
-        } catch (NumberFormatException nfe) {
-            throw new ServiceException("Unable to parse " + key);
-        } catch (StringIndexOutOfBoundsException sobe) {
+        } catch (NumberFormatException | StringIndexOutOfBoundsException nfe) {
             throw new ServiceException("Unable to parse " + key);
         }
         return ret;
