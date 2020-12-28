@@ -153,9 +153,7 @@ public class VEConverter extends Service {
         //
         // What we'll end up with is the top left hand corner of the bbox
         //
-        for (int i = 0; i < zoomLevel; i++) {
-            char curChar = quadArray[i];
-
+        for (char curChar : quadArray) {
             // For each round half as much is at stake
             extent = extent / 2;
 

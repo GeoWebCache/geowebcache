@@ -41,8 +41,8 @@ public class LayerListenerList {
 
     public void sendTileRequested(TileLayer layer, ConveyorTile tile) {
         if (!listeners.isEmpty()) {
-            for (int i = 0; i < listeners.size(); i++) {
-                listeners.get(i).tileRequested(layer, tile);
+            for (TileLayerListener listener : listeners) {
+                listener.tileRequested(layer, tile);
             }
         }
     }

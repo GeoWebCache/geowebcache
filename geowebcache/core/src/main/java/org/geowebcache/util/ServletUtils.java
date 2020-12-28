@@ -260,8 +260,8 @@ public class ServletUtils {
     public static String hexOfBytes(byte[] bytes) {
         StringBuilder str = new StringBuilder(bytes.length * 2);
 
-        for (int i = 0; i < bytes.length; i++) {
-            str.append(hexOfByte(bytes[i]));
+        for (byte aByte : bytes) {
+            str.append(hexOfByte(aByte));
         }
 
         return str.toString();

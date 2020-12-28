@@ -473,8 +473,7 @@ public class WMSLayerTest extends TileLayerTest {
         // this number is determined by our tileRange minus those out of bounds
         assertEquals(880, tiles.size());
         // tiles at zoom 4 and 7 will have non png data
-        for (int i = 0; i < tiles.size(); i++) {
-            ConveyorTile tile = tiles.get(i);
+        for (ConveyorTile tile : tiles) {
             assertNotNull(tile.getBlob());
             // System.out.println(tile.getTileIndex()[2] + " " + tile.getBlob().getSize());
         }
@@ -570,8 +569,8 @@ public class WMSLayerTest extends TileLayerTest {
 
         // these assertions could be externalized
         List<ConveyorTile> results = new ArrayList<>();
-        for (int i = 0; i < futures.size(); i++) {
-            ConveyorTile get = futures.get(i).get();
+        for (Future<ConveyorTile> future : futures) {
+            ConveyorTile get = future.get();
             if (get != null) {
                 results.add(get);
             }
