@@ -42,9 +42,7 @@ public class BlankTileException extends RequestFilterException {
 
     private Resource getBlankTile() {
         // Use the built-in one:
-        InputStream is = null;
-        try {
-            is = GeoWebCacheDispatcher.class.getResourceAsStream("blank.png");
+        try (InputStream is = GeoWebCacheDispatcher.class.getResourceAsStream("blank.png")) {
             byte[] blankTile = new byte[425];
             int ret = is.read(blankTile);
             log.info("Read " + ret + " from blank PNG file (expected 425).");
@@ -52,12 +50,6 @@ public class BlankTileException extends RequestFilterException {
             return new ByteArrayResource(blankTile);
         } catch (IOException ioe) {
             log.error(ioe);
-        } finally {
-            try {
-                if (is != null) is.close();
-            } catch (IOException e) {
-                // close quietly
-            }
         }
 
         return null;

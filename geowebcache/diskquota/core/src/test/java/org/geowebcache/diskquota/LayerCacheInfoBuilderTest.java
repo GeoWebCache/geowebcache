@@ -158,11 +158,8 @@ public class LayerCacheInfoBuilderTest extends TestCase {
 
             File tileDir = tilePath.getParentFile();
             tileDir.mkdirs();
-            FileOutputStream fout = new FileOutputStream(tilePath);
-            try {
+            try (FileOutputStream fout = new FileOutputStream(tilePath)) {
                 fout.write(mockTileContents);
-            } finally {
-                fout.close();
             }
         }
     }

@@ -64,7 +64,8 @@ public class NIOLockProvider implements LockProvider {
         this.maxLockAttempts = 120 * 1000 / waitBeforeRetry;
     }
 
-    @SuppressWarnings("PMD.CloseResource") // complex but seemingly correct resource handling
+    @SuppressWarnings({"PMD.CloseResource", "PMD.UseTryWithResources"})
+    // complex but seemingly correct resource handling
     public LockProvider.Lock getLock(final String lockKey) throws GeoWebCacheException {
         File file = null;
         // first off, synchronize among threads in the same jvm (the nio locks won't lock
