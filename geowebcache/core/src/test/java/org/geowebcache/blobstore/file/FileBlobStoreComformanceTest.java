@@ -80,10 +80,8 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
                             FileBlobStore nStore =
                                     new FileBlobStore(temp.getRoot().getAbsolutePath());
                             putLayerMetadataConcurrently(key, nStore, numberOfThreads);
-                        } catch (InterruptedException eh) {
+                        } catch (InterruptedException | StorageException eh) {
                             eh.printStackTrace();
-                        } catch (StorageException e) {
-                            e.printStackTrace();
                         } finally {
                             latch.countDown();
                         }
