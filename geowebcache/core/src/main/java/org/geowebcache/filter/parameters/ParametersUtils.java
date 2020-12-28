@@ -106,7 +106,7 @@ public class ParametersUtils {
 
     /** Returns the parameters identifier for the given parameters map */
     public static String getId(Map<String, String> parameters) {
-        if (parameters == null || parameters.size() == 0) {
+        if (parameters == null || parameters.isEmpty()) {
             return null;
         }
         String parametersKvp = getLegacyParametersKvp(parameters);

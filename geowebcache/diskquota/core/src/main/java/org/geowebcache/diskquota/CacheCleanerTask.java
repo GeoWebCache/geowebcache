@@ -153,7 +153,7 @@ class CacheCleanerTask implements Runnable {
             }
         }
 
-        if (globallyManagedLayerNames.size() > 0) {
+        if (!globallyManagedLayerNames.isEmpty()) {
             ExpirationPolicy globalExpirationPolicy = quotaConfig.getGlobalExpirationPolicyName();
             if (globalExpirationPolicy == null) {
                 return;

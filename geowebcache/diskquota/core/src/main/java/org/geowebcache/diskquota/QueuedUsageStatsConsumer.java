@@ -116,7 +116,7 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
                      * poll timed out, nothing new, check there are no pending aggregated updates
                      * for too long if we're idle
                      */
-                    if (aggregatedPendingUpdates.pages.size() > 0) {
+                    if (!aggregatedPendingUpdates.pages.isEmpty()) {
                         commit();
                     }
 

@@ -95,7 +95,7 @@ public class FileUtils {
             }
             filter.accept(file);
         }
-        if (subDirectories.size() > 0) {
+        if (!subDirectories.isEmpty()) {
             for (File subdir : subDirectories) {
                 boolean accepted = filter.accept(subdir);
                 if (accepted && subdir.isDirectory()) {

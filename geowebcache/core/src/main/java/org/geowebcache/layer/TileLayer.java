@@ -302,7 +302,7 @@ public abstract class TileLayer implements Info {
      */
     public FormatModifier getFormatModifier(MimeType responseFormat) {
         List<FormatModifier> formatModifiers = getFormatModifiers();
-        if (formatModifiers == null || formatModifiers.size() == 0) {
+        if (formatModifiers == null || formatModifiers.isEmpty()) {
             return null;
         }
 
@@ -382,7 +382,7 @@ public abstract class TileLayer implements Info {
     public Map<String, String> getDefaultParameterFilters() {
         if (defaultParameterFilterValues == null) {
             List<ParameterFilter> parameterFilters = getParameterFilters();
-            if (parameterFilters == null || parameterFilters.size() == 0) {
+            if (parameterFilters == null || parameterFilters.isEmpty()) {
                 defaultParameterFilterValues = Collections.emptyMap();
             } else {
                 Map<String, String> defaults = new HashMap<>();

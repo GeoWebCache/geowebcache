@@ -261,7 +261,7 @@ public abstract class AbstractTileLayer extends TileLayer {
                     formats.add(MimeType.createFromFormat(fmt));
                 }
             }
-            if (formats.size() == 0) {
+            if (formats.isEmpty()) {
                 formats.add(0, MimeType.createFromFormat("image/png"));
                 formats.add(1, MimeType.createFromFormat("image/jpeg"));
             }
@@ -277,7 +277,7 @@ public abstract class AbstractTileLayer extends TileLayer {
                     infoFormats.add(MimeType.createFromFormat(fmt));
                 }
             }
-            if (infoFormats.size() == 0) {
+            if (infoFormats.isEmpty()) {
                 infoFormats.add(MimeType.createFromFormat("text/plain"));
                 infoFormats.add(MimeType.createFromFormat("text/html"));
                 infoFormats.add(MimeType.createFromFormat("application/vnd.ogc.gml"));

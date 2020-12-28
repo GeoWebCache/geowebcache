@@ -175,7 +175,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
 
         layers = getLayers(wms, wmsUrl, urlVersion);
 
-        if (layers == null || layers.size() < 1) {
+        if (layers == null || layers.isEmpty()) {
             log.error("Unable to find any layers based on " + url);
         } else {
             log.info("Loaded " + layers.size() + " layers from " + url);
@@ -419,7 +419,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
                 GridSubsetFactory.createGridSubSet(
                         gridSetBroker.getWorldEpsg3857(), bounds3785, 0, 30));
 
-        if (additionalBounds != null && additionalBounds.size() > 0) {
+        if (additionalBounds != null && !additionalBounds.isEmpty()) {
             Iterator<CRSEnvelope> iter = additionalBounds.values().iterator();
             while (iter.hasNext()) {
                 CRSEnvelope env = iter.next();

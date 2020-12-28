@@ -337,7 +337,7 @@ public class FormService {
 
     private void makeModifiableParameters(StringBuilder doc, TileLayer tl) {
         List<ParameterFilter> parameterFilters = tl.getParameterFilters();
-        if (parameterFilters == null || parameterFilters.size() == 0) {
+        if (parameterFilters == null || parameterFilters.isEmpty()) {
             return;
         }
         doc.append("<tr><td>Modifiable Parameters:</td><td>\n");
