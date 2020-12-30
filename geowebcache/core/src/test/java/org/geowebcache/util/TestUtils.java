@@ -23,8 +23,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
@@ -70,7 +71,7 @@ public class TestUtils {
         String[] urls = {"http://localhost:38080/wms"};
         List<String> formatList = Collections.singletonList(format);
 
-        Hashtable<String, GridSubset> grids = new Hashtable<>();
+        Map<String, GridSubset> grids = new HashMap<>();
 
         GridSubset grid =
                 GridSubsetFactory.createGridSubSet(

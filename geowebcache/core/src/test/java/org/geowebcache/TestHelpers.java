@@ -6,8 +6,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.config.DefaultGridsets;
@@ -64,7 +65,7 @@ public class TestHelpers {
         String[] urls = {"http://localhost:38080/wms"};
         List<String> formatList = Collections.singletonList(format);
 
-        Hashtable<String, GridSubset> grids = new Hashtable<>();
+        Map<String, GridSubset> grids = new HashMap<>();
 
         GridSubset grid =
                 GridSubsetFactory.createGridSubSet(

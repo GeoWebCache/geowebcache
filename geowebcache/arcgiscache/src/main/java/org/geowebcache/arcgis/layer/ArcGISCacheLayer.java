@@ -21,7 +21,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
@@ -225,7 +225,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         return Collections.singletonList(format);
     }
 
-    private Hashtable<String, GridSubset> createGridSubsets(final GridSetBroker gridSetBroker) {
+    private HashMap<String, GridSubset> createGridSubsets(final GridSetBroker gridSetBroker) {
 
         final CacheInfo info = this.cacheInfo;
         final TileCacheInfo tileCacheInfo = info.getTileCacheInfo();
@@ -243,7 +243,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         GridSubset subSet =
                 GridSubsetFactory.createGridSubSet(gridSet, this.layerBounds, zoomStart, zoomStop);
 
-        Hashtable<String, GridSubset> subsets = new Hashtable<>();
+        HashMap<String, GridSubset> subsets = new HashMap<>();
         subsets.put(gridSet.getName(), subSet);
         return subsets;
     }
