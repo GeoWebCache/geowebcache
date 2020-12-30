@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -431,7 +430,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
             List<ParameterFilter> paramFilters)
             throws GeoWebCacheException {
 
-        Hashtable<String, GridSubset> grids = new Hashtable<>(2);
+        Map<String, GridSubset> grids = new HashMap<>(2);
         grids.put(
                 gridSetBroker.getWorldEpsg4326().getName(),
                 GridSubsetFactory.createGridSubSet(

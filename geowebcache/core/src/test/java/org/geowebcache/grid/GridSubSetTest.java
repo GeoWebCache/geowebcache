@@ -4,8 +4,9 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -37,7 +38,7 @@ public class GridSubSetTest {
     /** Creation of a PNG test Layer with a non-zero zoomStart parameter for the test. */
     private static WMSLayer createWMSLayer() {
         // Subsets table
-        Hashtable<String, GridSubset> grids = new Hashtable<>();
+        Map<String, GridSubset> grids = new HashMap<>();
         // GridSetBroker to use for creating a GridSubSet to add to the table
         GridSetBroker gridSetBroker =
                 new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));

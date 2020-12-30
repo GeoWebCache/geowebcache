@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Vector;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -507,7 +506,7 @@ public class MetaTile implements TileResponseReceiver {
 
     @SuppressWarnings("rawtypes")
     protected static void disposePlanarImageChain(PlanarImage pi, HashSet<PlanarImage> visited) {
-        Vector sinks = pi.getSinks();
+        List sinks = pi.getSinks();
         // check all the sinks (the image might be in the middle of a chain)
         if (sinks != null) {
             for (Object sink : sinks) {
@@ -523,7 +522,7 @@ public class MetaTile implements TileResponseReceiver {
         visited.add(pi);
 
         // check the image sources
-        Vector sources = pi.getSources();
+        List sources = pi.getSources();
         if (sources != null) {
             for (Object child : sources) {
                 if (child instanceof PlanarImage && !visited.contains(child)) {

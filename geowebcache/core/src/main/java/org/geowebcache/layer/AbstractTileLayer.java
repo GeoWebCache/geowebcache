@@ -17,7 +17,6 @@ package org.geowebcache.layer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +69,7 @@ public abstract class AbstractTileLayer extends TileLayer {
     protected List<FormatModifier> formatModifiers;
 
     // 1.1.x compatibility
-    protected Hashtable<SRS, XMLOldGrid> grids;
+    protected Map<SRS, XMLOldGrid> grids;
 
     protected List<XMLGridSubset> gridSubsets;
 

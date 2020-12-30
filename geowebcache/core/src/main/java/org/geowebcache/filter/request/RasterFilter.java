@@ -16,7 +16,8 @@ package org.geowebcache.filter.request;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -51,7 +52,7 @@ public abstract class RasterFilter extends RequestFilter {
 
     private Boolean debug;
 
-    public transient Hashtable<String, BufferedImage[]> matrices;
+    public transient Map<String, BufferedImage[]> matrices;
 
     public RasterFilter() {}
 
@@ -370,7 +371,7 @@ public abstract class RasterFilter extends RequestFilter {
             throws IOException, GeoWebCacheException {
 
         if (matrices == null) {
-            matrices = new Hashtable<>();
+            matrices = new HashMap<>();
         }
 
         if (matrices.get(gridSetId) == null) {
