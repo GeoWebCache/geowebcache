@@ -1,14 +1,15 @@
 package org.geowebcache.util;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-public class ByteUtilsTest extends TestCase {
+public class ByteUtilsTest {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
+    @Before
+    public void setUp() throws Exception {}
 
+    @Test
     public void testBasicConversion() throws Exception {
         basicConversion(0);
         basicConversion(1);
@@ -22,6 +23,6 @@ public class ByteUtilsTest extends TestCase {
         byte[] testB = ByteUtils.uIntLongToByteWord(number);
         long testL = ByteUtils.bytesToUIntLong(testB, 0);
 
-        assertEquals(number, testL);
+        Assert.assertEquals(number, testL);
     }
 }

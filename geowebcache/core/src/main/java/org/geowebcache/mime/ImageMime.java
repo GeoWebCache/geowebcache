@@ -17,7 +17,7 @@ package org.geowebcache.mime;
 import it.geosolutions.jaiext.JAIExt;
 import it.geosolutions.jaiext.colorindexer.ColorIndexer;
 import it.geosolutions.jaiext.colorindexer.Quantizer;
-import java.awt.*;
+import java.awt.RenderingHints;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;

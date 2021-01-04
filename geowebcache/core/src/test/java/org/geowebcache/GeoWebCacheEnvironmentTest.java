@@ -8,7 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -17,25 +20,26 @@ import org.springframework.context.ApplicationContext;
  * @author Gabriel Roldan (TOPP)
  * @version $Id$
  */
-public class GeoWebCacheEnvironmentTest extends TestCase {
+public class GeoWebCacheEnvironmentTest {
 
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         System.setProperty("TEST_SYS_PROPERTY", "ABC");
         System.setProperty("ALLOW_ENV_PARAMETRIZATION", "true");
     }
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    @After
+    public void tearDown() throws Exception {
         System.setProperty("TEST_SYS_PROPERTY", "");
         System.setProperty("ALLOW_ENV_PARAMETRIZATION", "");
     }
 
+    @Test
     public void testEnvironment() {
         ApplicationContext appContext = createMock(ApplicationContext.class);
         GeoWebCacheEnvironment genv = new GeoWebCacheEnvironment();
 
-        assertEquals(0, GeoWebCacheExtensions.extensionsCache.size());
+        Assert.assertEquals(0, GeoWebCacheExtensions.extensionsCache.size());
         expect(appContext.getBeanNamesForType(GeoWebCacheEnvironment.class))
                 .andReturn(new String[] {"geoWebCacheEnvironment"});
         expect(appContext.getBean("geoWebCacheEnvironment")).andReturn(genv);
@@ -51,24 +55,25 @@ public class GeoWebCacheEnvironmentTest extends TestCase {
 
         List<GeoWebCacheEnvironment> extensions =
                 GeoWebCacheExtensions.extensions(GeoWebCacheEnvironment.class);
-        assertNotNull(extensions);
-        assertEquals(1, extensions.size());
-        assertTrue(extensions.contains(genv));
+        Assert.assertNotNull(extensions);
+        Assert.assertEquals(1, extensions.size());
+        Assert.assertTrue(extensions.contains(genv));
 
-        assertTrue(GeoWebCacheEnvironment.ALLOW_ENV_PARAMETRIZATION);
+        Assert.assertTrue(GeoWebCacheEnvironment.ALLOW_ENV_PARAMETRIZATION);
     }
 
+    @Test
     public void testSystemProperty() {
         // check for a property we did set up in the setUp
         GeoWebCacheEnvironment genv = new GeoWebCacheEnvironment();
-        assertEquals("ABC", genv.resolveValue("${TEST_SYS_PROPERTY}"));
+        Assert.assertEquals("ABC", genv.resolveValue("${TEST_SYS_PROPERTY}"));
 
         Properties props = new Properties();
         props.setProperty("TEST_SYS_PROPERTY", "DEF");
         props.setProperty("TEST_PROPERTY", "WWW");
         genv.setProps(props);
 
-        assertEquals("ABC", genv.resolveValue("${TEST_SYS_PROPERTY}"));
-        assertEquals("WWW", genv.resolveValue("${TEST_PROPERTY}"));
+        Assert.assertEquals("ABC", genv.resolveValue("${TEST_SYS_PROPERTY}"));
+        Assert.assertEquals("WWW", genv.resolveValue("${TEST_PROPERTY}"));
     }
 }

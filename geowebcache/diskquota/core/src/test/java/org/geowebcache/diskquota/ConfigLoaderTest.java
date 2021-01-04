@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletContext;
-import junit.framework.TestCase;
 import org.easymock.EasyMock;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.diskquota.storage.LayerQuota;
@@ -39,9 +38,13 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.geowebcache.util.FileUtils;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.web.context.WebApplicationContext;
 
-public class ConfigLoaderTest extends TestCase {
+public class ConfigLoaderTest {
 
     private File cacheDir;
 
@@ -53,8 +56,8 @@ public class ConfigLoaderTest extends TestCase {
 
     private ConfigLoader loader;
 
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         cacheDir = new File("target" + File.separator + getClass().getSimpleName());
         if (!cacheDir.getParentFile().exists()) {
             throw new IllegalStateException(
@@ -108,8 +111,8 @@ public class ConfigLoaderTest extends TestCase {
         loader = new ConfigLoader(storageFinder, contextProvider, tld);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         if (cacheDir != null) {
             FileUtils.rmFileCacheDir(cacheDir, null);
         }
@@ -122,33 +125,36 @@ public class ConfigLoaderTest extends TestCase {
         return layer;
     }
 
+    @Test
     public void testLoadConfig() throws ConfigurationException, IOException {
         DiskQuotaConfig config = loader.loadConfig();
-        assertNotNull(config);
-        assertFalse(config.isEnabled());
-        assertEquals(10, config.getCacheCleanUpFrequency().intValue());
-        assertEquals(TimeUnit.SECONDS, config.getCacheCleanUpUnits());
-        assertEquals(3, config.getMaxConcurrentCleanUps().intValue());
+        Assert.assertNotNull(config);
+        Assert.assertFalse(config.isEnabled());
+        Assert.assertEquals(10, config.getCacheCleanUpFrequency().intValue());
+        Assert.assertEquals(TimeUnit.SECONDS, config.getCacheCleanUpUnits());
+        Assert.assertEquals(3, config.getMaxConcurrentCleanUps().intValue());
 
-        assertEquals(LFU, config.getGlobalExpirationPolicyName());
-        assertNotNull(config.getGlobalExpirationPolicyName());
+        Assert.assertEquals(LFU, config.getGlobalExpirationPolicyName());
+        Assert.assertNotNull(config.getGlobalExpirationPolicyName());
 
-        assertNotNull(config.getGlobalQuota());
-        assertEquals(
+        Assert.assertNotNull(config.getGlobalQuota());
+        Assert.assertEquals(
                 GiB.convertTo(200, B).longValue(), config.getGlobalQuota().getBytes().longValue());
 
-        assertNotNull(config.getLayerQuotas());
-        assertEquals(2, config.getLayerQuotas().size());
+        Assert.assertNotNull(config.getLayerQuotas());
+        Assert.assertEquals(2, config.getLayerQuotas().size());
 
         LayerQuota states = config.layerQuota("topp:states");
-        assertNotNull(states);
-        assertEquals(LFU, states.getExpirationPolicyName());
-        assertEquals(MiB.convertTo(100, B).longValue(), states.getQuota().getBytes().longValue());
+        Assert.assertNotNull(states);
+        Assert.assertEquals(LFU, states.getExpirationPolicyName());
+        Assert.assertEquals(
+                MiB.convertTo(100, B).longValue(), states.getQuota().getBytes().longValue());
 
         LayerQuota raster = config.layerQuota("raster test layer");
-        assertNotNull(raster);
+        Assert.assertNotNull(raster);
     }
 
+    @Test
     public void testSaveConfig() throws ConfigurationException, IOException {
         DiskQuotaConfig config = new DiskQuotaConfig();
         List<LayerQuota> quotas = new ArrayList<>();
@@ -161,14 +167,15 @@ public class ConfigLoaderTest extends TestCase {
             configFile.delete();
         }
         loader.saveConfig(config);
-        assertTrue(configFile.exists());
+        Assert.assertTrue(configFile.exists());
 
         // loader = new ConfigLoader(storageFinder, contextProvider, tld);
         // DiskQuotaConfig loadConfig = loader.loadConfig();
         // assertNotNull(loadConfig);
     }
 
+    @Test
     public void testGetRootCacheDir() throws Exception {
-        assertEquals(cacheDir.getAbsolutePath(), loader.getRootCacheDir().getAbsolutePath());
+        Assert.assertEquals(cacheDir.getAbsolutePath(), loader.getRootCacheDir().getAbsolutePath());
     }
 }

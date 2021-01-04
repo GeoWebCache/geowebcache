@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import javax.media.jai.PlanarImage;
-import junit.framework.TestCase;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
@@ -22,17 +21,19 @@ import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.MetaTile;
 import org.geowebcache.mime.ApplicationMime;
 import org.geowebcache.mime.ImageMime;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-public class MetaTileTest extends TestCase {
+public class MetaTileTest {
 
     GridSetBroker gridSetBroker =
             new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
+    @Before
+    public void setUp() throws Exception {}
 
+    @Test
     public void test1MetaTile() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
         int metaHeight = 1;
@@ -66,9 +67,10 @@ public class MetaTileTest extends TestCase {
                             + Arrays.toString(mt.getMetaTileGridBounds())
                             + "}");
         }
-        assertTrue(test);
+        Assert.assertTrue(test);
     }
 
+    @Test
     public void test2MetaTile() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
         int metaHeight = 3;
@@ -100,9 +102,10 @@ public class MetaTileTest extends TestCase {
                             + Arrays.toString(mt.getMetaTileGridBounds())
                             + "}");
         }
-        assertTrue(test);
+        Assert.assertTrue(test);
     }
 
+    @Test
     public void test3MetaTile() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 20037508.34, 20037508.34);
         int metaHeight = 1;
@@ -134,9 +137,10 @@ public class MetaTileTest extends TestCase {
                             + Arrays.toString(mt.getMetaTileGridBounds())
                             + "}");
         }
-        assertTrue(test);
+        Assert.assertTrue(test);
     }
 
+    @Test
     public void test4MetaTile() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 20037508.34, 20037508.34);
 
@@ -171,10 +175,11 @@ public class MetaTileTest extends TestCase {
                             + Arrays.toString(mt.getMetaTileGridBounds())
                             + "}");
         }
-        assertTrue(test);
+        Assert.assertTrue(test);
     }
 
     /** @throws Exception */
+    @Test
     public void test5MetaTileGutter() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
 
@@ -201,14 +206,14 @@ public class MetaTileTest extends TestCase {
 
         // The actual gutter is calculated right at construction time
         Map<String, String> wmsParams = mt.getWMSParams();
-        assertEquals(layer.gutter.intValue(), mt.getGutter()[0]);
-        assertEquals(layer.gutter.intValue(), mt.getGutter()[1]);
-        assertEquals(0, mt.getGutter()[2]);
-        assertEquals(0, mt.getGutter()[3]);
+        Assert.assertEquals(layer.gutter.intValue(), mt.getGutter()[0]);
+        Assert.assertEquals(layer.gutter.intValue(), mt.getGutter()[1]);
+        Assert.assertEquals(0, mt.getGutter()[2]);
+        Assert.assertEquals(0, mt.getGutter()[3]);
 
         int height = Integer.parseInt(wmsParams.get("HEIGHT"));
 
-        assertEquals(height, 256 + 50);
+        Assert.assertEquals(height, 256 + 50);
 
         long[] midGridPos = {83, 45, 6};
         mt =
@@ -224,23 +229,24 @@ public class MetaTileTest extends TestCase {
 
         // The actual gutter is calculated right at construction time
         wmsParams = mt.getWMSParams();
-        assertEquals(mt.getGutter()[0], (int) layer.gutter);
-        assertEquals(mt.getGutter()[1], (int) layer.gutter);
-        assertEquals(mt.getGutter()[2], (int) layer.gutter);
-        assertEquals(mt.getGutter()[3], (int) layer.gutter);
+        Assert.assertEquals(mt.getGutter()[0], (int) layer.gutter);
+        Assert.assertEquals(mt.getGutter()[1], (int) layer.gutter);
+        Assert.assertEquals(mt.getGutter()[2], (int) layer.gutter);
+        Assert.assertEquals(mt.getGutter()[3], (int) layer.gutter);
 
         height = Integer.parseInt(wmsParams.get("HEIGHT"));
 
-        assertEquals(height, 768 + 2 * 50);
+        Assert.assertEquals(height, 768 + 2 * 50);
 
         String[] coordStrs = wmsParams.get("BBOX").split(",");
 
         // Lets check some specific coordinates too
-        assertTrue(Math.abs(Double.parseDouble(coordStrs[0]) - 47.26318359375) < 0.001);
-        assertTrue(Math.abs(Double.parseDouble(coordStrs[3]) - 45.54931640625) < 0.001);
+        Assert.assertTrue(Math.abs(Double.parseDouble(coordStrs[0]) - 47.26318359375) < 0.001);
+        Assert.assertTrue(Math.abs(Double.parseDouble(coordStrs[3]) - 45.54931640625) < 0.001);
     }
 
     /** @throws Exception */
+    @Test
     public void test6MetaTileNoGutterWithVector() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
 
@@ -267,14 +273,14 @@ public class MetaTileTest extends TestCase {
 
         // The actual gutter is calculated right at construction time
         Map<String, String> wmsParams = mt.getWMSParams();
-        assertEquals(0, mt.getGutter()[0]);
-        assertEquals(0, mt.getGutter()[1]);
-        assertEquals(0, mt.getGutter()[2]);
-        assertEquals(0, mt.getGutter()[3]);
+        Assert.assertEquals(0, mt.getGutter()[0]);
+        Assert.assertEquals(0, mt.getGutter()[1]);
+        Assert.assertEquals(0, mt.getGutter()[2]);
+        Assert.assertEquals(0, mt.getGutter()[3]);
 
         int height = Integer.parseInt(wmsParams.get("HEIGHT"));
 
-        assertEquals(height, 256);
+        Assert.assertEquals(height, 256);
     }
 
     private WMSLayer createWMSLayer(BoundingBox layerBounds) {
@@ -309,6 +315,7 @@ public class MetaTileTest extends TestCase {
     }
 
     // Testing the create tile operation with a meta tile buffer image
+    @Test
     public void testCreateTileFromMetaTileBufferImage() throws Exception {
         // creating the meta tile image
         Color[][] colors = new Color[2][2];
@@ -318,6 +325,7 @@ public class MetaTileTest extends TestCase {
     }
 
     // Testing the create tile operation with a meta tile planar image
+    @Test
     public void testCreateTileFromMetaTilePlanarImage() throws Exception {
         // creating the meta tile image
         Color[][] colors = new Color[2][2];
@@ -367,12 +375,12 @@ public class MetaTileTest extends TestCase {
         // comparing the borders pixels with the expected color
         for (int i = 0; i < width; i++) {
             if (borderA[i] != colorInt || borderB[i] != colorInt) {
-                fail("Not the expected color.");
+                Assert.fail("Not the expected color.");
             }
         }
         for (int i = 0; i < height; i++) {
             if (borderC[i] != colorInt || borderD[i] != colorInt) {
-                fail("Not the expected color.");
+                Assert.fail("Not the expected color.");
             }
         }
     }

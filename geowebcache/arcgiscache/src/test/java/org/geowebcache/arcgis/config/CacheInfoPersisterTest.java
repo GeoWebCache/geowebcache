@@ -6,10 +6,12 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class CacheInfoPersisterTest extends TestCase {
+public class CacheInfoPersisterTest {
 
+    @Test
     public void testLoadSpatialReference() {
         String spatialRef =
                 "<SpatialReference xsi:type='typens:ProjectedCoordinateSystem'>" //
@@ -33,24 +35,25 @@ public class CacheInfoPersisterTest extends TestCase {
         XStream xs = persister.getConfiguredXStream();
         SpatialReference sr = (SpatialReference) xs.fromXML(new StringReader(spatialRef));
 
-        assertNotNull(sr);
+        Assert.assertNotNull(sr);
         String wkt =
                 "PROJCS[\"NZGD_2000_New_Zealand_Transverse_Mercator\",GEOGCS[\"GCS_NZGD_2000\",DATUM[\"D_NZGD_2000\",SPHEROID[\"GRS_1980\",6378137.0,298.257222101]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"False_Easting\",1600000.0],PARAMETER[\"False_Northing\",10000000.0],PARAMETER[\"Central_Meridian\",173.0],PARAMETER[\"Scale_Factor\",0.9996],PARAMETER[\"Latitude_Of_Origin\",0.0],UNIT[\"Meter\",1.0],AUTHORITY[\"EPSG\",2193]]";
-        assertEquals(wkt, sr.getWKT());
-        assertEquals(-4020900, sr.getXOrigin(), 1e-6);
-        assertEquals(1900, sr.getYOrigin(), 1e-6);
-        assertEquals(450445547.3910538, sr.getXYScale(), 1e-6);
-        assertEquals(0.5, sr.getZOrigin(), 1e-6);
-        assertEquals(1, sr.getZScale(), 1e-6);
-        assertEquals(10000, sr.getMScale(), 1e-6);
-        assertEquals(0.0037383177570093459, sr.getXYTolerance(), 1e-6);
-        assertEquals(2, sr.getZTolerance(), 1e-6);
-        assertEquals(2, sr.getMTolerance(), 1e-6);
-        assertTrue(sr.isHighPrecision());
-        assertEquals(2193, sr.getWKID());
-        assertEquals(2193, sr.getLatestWKID());
+        Assert.assertEquals(wkt, sr.getWKT());
+        Assert.assertEquals(-4020900, sr.getXOrigin(), 1e-6);
+        Assert.assertEquals(1900, sr.getYOrigin(), 1e-6);
+        Assert.assertEquals(450445547.3910538, sr.getXYScale(), 1e-6);
+        Assert.assertEquals(0.5, sr.getZOrigin(), 1e-6);
+        Assert.assertEquals(1, sr.getZScale(), 1e-6);
+        Assert.assertEquals(10000, sr.getMScale(), 1e-6);
+        Assert.assertEquals(0.0037383177570093459, sr.getXYTolerance(), 1e-6);
+        Assert.assertEquals(2, sr.getZTolerance(), 1e-6);
+        Assert.assertEquals(2, sr.getMTolerance(), 1e-6);
+        Assert.assertTrue(sr.isHighPrecision());
+        Assert.assertEquals(2193, sr.getWKID());
+        Assert.assertEquals(2193, sr.getLatestWKID());
     }
 
+    @Test
     public void testLoadTileOrigin() {
         String tileOrigin =
                 "<TileOrigin xsi:type='typens:PointN'>" //
@@ -60,11 +63,12 @@ public class CacheInfoPersisterTest extends TestCase {
         CacheInfoPersister persister = new CacheInfoPersister();
         XStream xs = persister.getConfiguredXStream();
         TileOrigin to = (TileOrigin) xs.fromXML(new StringReader(tileOrigin));
-        assertNotNull(to);
-        assertEquals(-4020900, to.getX(), 1e-6);
-        assertEquals(19998100, to.getY(), 1e-6);
+        Assert.assertNotNull(to);
+        Assert.assertEquals(-4020900, to.getX(), 1e-6);
+        Assert.assertEquals(19998100, to.getY(), 1e-6);
     }
 
+    @Test
     public void testLoadTileCacheInfo() {
         String tileCacheInfo =
                 "<TileCacheInfo xsi:type='typens:TileCacheInfo'>" //
@@ -87,17 +91,18 @@ public class CacheInfoPersisterTest extends TestCase {
         CacheInfoPersister persister = new CacheInfoPersister();
         XStream xs = persister.getConfiguredXStream();
         TileCacheInfo tci = (TileCacheInfo) xs.fromXML(new StringReader(tileCacheInfo));
-        assertNotNull(tci);
-        assertNotNull(tci.getSpatialReference());
-        assertNotNull(tci.getTileOrigin());
-        assertEquals(512, tci.getTileCols());
-        assertEquals(512, tci.getTileRows());
-        assertEquals(96, tci.getDPI());
-        assertEquals(96, tci.getPreciseDPI());
-        assertNotNull(tci.getLodInfos());
-        assertEquals(1, tci.getLodInfos().size());
+        Assert.assertNotNull(tci);
+        Assert.assertNotNull(tci.getSpatialReference());
+        Assert.assertNotNull(tci.getTileOrigin());
+        Assert.assertEquals(512, tci.getTileCols());
+        Assert.assertEquals(512, tci.getTileRows());
+        Assert.assertEquals(96, tci.getDPI());
+        Assert.assertEquals(96, tci.getPreciseDPI());
+        Assert.assertNotNull(tci.getLodInfos());
+        Assert.assertEquals(1, tci.getLodInfos().size());
     }
 
+    @Test
     public void testLoadLODInfo() {
         String lodInfo =
                 "<LODInfo xsi:type='typens:LODInfo'>" //
@@ -109,12 +114,13 @@ public class CacheInfoPersisterTest extends TestCase {
         CacheInfoPersister persister = new CacheInfoPersister();
         XStream xs = persister.getConfiguredXStream();
         LODInfo li = (LODInfo) xs.fromXML(new StringReader(lodInfo));
-        assertNotNull(li);
-        assertEquals(10, li.getLevelID());
-        assertEquals(6000000, li.getScale(), 1e-6);
-        assertEquals(1587.5031750063501, li.getResolution(), 1e-6);
+        Assert.assertNotNull(li);
+        Assert.assertEquals(10, li.getLevelID());
+        Assert.assertEquals(6000000, li.getScale(), 1e-6);
+        Assert.assertEquals(1587.5031750063501, li.getResolution(), 1e-6);
     }
 
+    @Test
     public void testLoadTileImageInfo() {
         String tileImageInfo =
                 "<TileImageInfo xsi:type='typens:TileImageInfo'>" //
@@ -128,14 +134,15 @@ public class CacheInfoPersisterTest extends TestCase {
         CacheInfoPersister persister = new CacheInfoPersister();
         XStream xs = persister.getConfiguredXStream();
         TileImageInfo tii = (TileImageInfo) xs.fromXML(new StringReader(tileImageInfo));
-        assertNotNull(tii);
-        assertEquals("JPEG", tii.getCacheTileFormat());
-        assertEquals(80f, tii.getCompressionQuality(), 1e-6f);
-        assertTrue(tii.isAntialiasing());
-        assertEquals(1, tii.getBandCount());
-        assertEquals(0.0f, tii.getLERCError());
+        Assert.assertNotNull(tii);
+        Assert.assertEquals("JPEG", tii.getCacheTileFormat());
+        Assert.assertEquals(80f, tii.getCompressionQuality(), 1e-6f);
+        Assert.assertTrue(tii.isAntialiasing());
+        Assert.assertEquals(1, tii.getBandCount());
+        Assert.assertEquals(0.0f, tii.getLERCError(), 0d);
     }
 
+    @Test
     public void testLoadCacheStorageInfo() {
         String cacheStorageInfo =
                 "<CacheStorageInfo xsi:type='typens:CacheStorageInfo'>" //
@@ -146,11 +153,12 @@ public class CacheInfoPersisterTest extends TestCase {
         CacheInfoPersister persister = new CacheInfoPersister();
         XStream xs = persister.getConfiguredXStream();
         CacheStorageInfo csi = (CacheStorageInfo) xs.fromXML(new StringReader(cacheStorageInfo));
-        assertNotNull(csi);
-        assertEquals(CacheStorageInfo.EXPLODED_FORMAT_CODE, csi.getStorageFormat());
-        assertEquals(10, csi.getPacketSize());
+        Assert.assertNotNull(csi);
+        Assert.assertEquals(CacheStorageInfo.EXPLODED_FORMAT_CODE, csi.getStorageFormat());
+        Assert.assertEquals(10, csi.getPacketSize());
     }
 
+    @Test
     public void testLoadEnvelopeN() {
         String envelopeN =
                 "<EnvelopeN xsi:type='typens:EnvelopeN' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xs='http://www.w3.org/2001/XMLSchema'" //
@@ -163,56 +171,59 @@ public class CacheInfoPersisterTest extends TestCase {
         CacheInfoPersister persister = new CacheInfoPersister();
         XStream xs = persister.getConfiguredXStream();
         EnvelopeN en = (EnvelopeN) xs.fromXML(new StringReader(envelopeN));
-        assertNotNull(en);
-        assertEquals(700000, en.getXmin(), 1e-6);
-        assertEquals(-450000, en.getYmin(), 1e-6);
-        assertEquals(1588888.8888888895, en.getXmax(), 1e-6);
-        assertEquals(440000, en.getYmax(), 1e-6);
+        Assert.assertNotNull(en);
+        Assert.assertEquals(700000, en.getXmin(), 1e-6);
+        Assert.assertEquals(-450000, en.getYmin(), 1e-6);
+        Assert.assertEquals(1588888.8888888895, en.getXmax(), 1e-6);
+        Assert.assertEquals(440000, en.getYmax(), 1e-6);
     }
 
+    @Test
     public void testLoadCacheInfo_ArcGIS_92() throws Exception {
         URL url = getClass().getResource("/arcgis_09.2_conf.xml");
         CacheInfo ci = load(url);
-        assertNotNull(ci);
-        assertNotNull(ci.getTileCacheInfo());
-        assertNotNull(ci.getTileCacheInfo().getSpatialReference());
-        assertNotNull(ci.getTileCacheInfo().getTileOrigin());
-        assertNotNull(ci.getTileCacheInfo().getLodInfos());
+        Assert.assertNotNull(ci);
+        Assert.assertNotNull(ci.getTileCacheInfo());
+        Assert.assertNotNull(ci.getTileCacheInfo().getSpatialReference());
+        Assert.assertNotNull(ci.getTileCacheInfo().getTileOrigin());
+        Assert.assertNotNull(ci.getTileCacheInfo().getLodInfos());
 
-        assertEquals(18, ci.getTileCacheInfo().getLodInfos().size());
+        Assert.assertEquals(18, ci.getTileCacheInfo().getLodInfos().size());
 
-        assertNotNull(ci.getTileImageInfo());
-        assertNotNull(ci.getCacheStorageInfo());
+        Assert.assertNotNull(ci.getTileImageInfo());
+        Assert.assertNotNull(ci.getCacheStorageInfo());
     }
 
+    @Test
     public void testLoadCacheInfo_ArcGIS_93() throws Exception {
         URL url = getClass().getResource("/arcgis_09.3_conf.xml");
         CacheInfo ci = load(url);
-        assertNotNull(ci);
-        assertNotNull(ci.getTileCacheInfo());
-        assertNotNull(ci.getTileCacheInfo().getSpatialReference());
-        assertNotNull(ci.getTileCacheInfo().getTileOrigin());
-        assertNotNull(ci.getTileCacheInfo().getLodInfos());
+        Assert.assertNotNull(ci);
+        Assert.assertNotNull(ci.getTileCacheInfo());
+        Assert.assertNotNull(ci.getTileCacheInfo().getSpatialReference());
+        Assert.assertNotNull(ci.getTileCacheInfo().getTileOrigin());
+        Assert.assertNotNull(ci.getTileCacheInfo().getLodInfos());
 
-        assertEquals(11, ci.getTileCacheInfo().getLodInfos().size());
+        Assert.assertEquals(11, ci.getTileCacheInfo().getLodInfos().size());
 
-        assertNotNull(ci.getTileImageInfo());
-        assertNotNull(ci.getCacheStorageInfo());
+        Assert.assertNotNull(ci.getTileImageInfo());
+        Assert.assertNotNull(ci.getCacheStorageInfo());
     }
 
+    @Test
     public void testLoadCacheInfo_ArcGIS_10() throws Exception {
         URL url = getClass().getResource("/arcgis_10.0_conf.xml");
         CacheInfo ci = load(url);
-        assertNotNull(ci);
-        assertNotNull(ci.getTileCacheInfo());
-        assertNotNull(ci.getTileCacheInfo().getSpatialReference());
-        assertNotNull(ci.getTileCacheInfo().getTileOrigin());
-        assertNotNull(ci.getTileCacheInfo().getLodInfos());
+        Assert.assertNotNull(ci);
+        Assert.assertNotNull(ci.getTileCacheInfo());
+        Assert.assertNotNull(ci.getTileCacheInfo().getSpatialReference());
+        Assert.assertNotNull(ci.getTileCacheInfo().getTileOrigin());
+        Assert.assertNotNull(ci.getTileCacheInfo().getLodInfos());
 
-        assertEquals(15, ci.getTileCacheInfo().getLodInfos().size());
+        Assert.assertEquals(15, ci.getTileCacheInfo().getLodInfos().size());
 
-        assertNotNull(ci.getTileImageInfo());
-        assertNotNull(ci.getCacheStorageInfo());
+        Assert.assertNotNull(ci.getTileImageInfo());
+        Assert.assertNotNull(ci.getCacheStorageInfo());
     }
 
     private CacheInfo load(final URL url) throws Exception {

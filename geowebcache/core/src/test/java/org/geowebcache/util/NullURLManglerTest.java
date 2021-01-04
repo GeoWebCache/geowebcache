@@ -1,43 +1,51 @@
 package org.geowebcache.util;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-public class NullURLManglerTest extends TestCase {
+public class NullURLManglerTest {
 
     private URLMangler urlMangler;
 
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         urlMangler = new NullURLMangler();
     }
 
+    @Test
     public void testBuildURL() {
         String url = urlMangler.buildURL("http://foo.example.com", "/foo", "/bar");
-        assertEquals("http://foo.example.com/foo/bar", url);
+        Assert.assertEquals("http://foo.example.com/foo/bar", url);
     }
 
+    @Test
     public void testBuildTrailingSlashes() throws Exception {
         String url = urlMangler.buildURL("http://foo.example.com/", "/foo/", "/bar");
-        assertEquals("http://foo.example.com/foo/bar", url);
+        Assert.assertEquals("http://foo.example.com/foo/bar", url);
     }
 
+    @Test
     public void testBuildNoLeadingSlashes() throws Exception {
         String url = urlMangler.buildURL("http://foo.example.com/", "foo/", "bar");
-        assertEquals("http://foo.example.com/foo/bar", url);
+        Assert.assertEquals("http://foo.example.com/foo/bar", url);
     }
 
+    @Test
     public void testBuildRootContext() throws Exception {
         String url = urlMangler.buildURL("http://foo.example.com/", "/", "/bar");
-        assertEquals("http://foo.example.com/bar", url);
+        Assert.assertEquals("http://foo.example.com/bar", url);
     }
 
+    @Test
     public void testBuildNullContext() throws Exception {
         String url = urlMangler.buildURL("http://foo.example.com/", null, "/bar");
-        assertEquals("http://foo.example.com/bar", url);
+        Assert.assertEquals("http://foo.example.com/bar", url);
     }
 
+    @Test
     public void testBuildEmptyContext() throws Exception {
         String url = urlMangler.buildURL("http://foo.example.com/", "", "/bar");
-        assertEquals("http://foo.example.com/bar", url);
+        Assert.assertEquals("http://foo.example.com/bar", url);
     }
 }

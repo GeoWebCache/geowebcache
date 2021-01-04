@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import junit.framework.TestCase;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.geowebcache.GeoWebCacheException;
@@ -17,14 +16,18 @@ import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.blobstore.file.DefaultFilePathFilter;
 import org.geowebcache.storage.blobstore.file.DefaultFilePathGenerator;
 import org.geowebcache.storage.blobstore.file.FilePathGenerator;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-public class DefaultFilePathGeneratorTest extends TestCase {
+public class DefaultFilePathGeneratorTest {
 
     FilePathGenerator generator;
     File testRoot;
 
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         testRoot = new File("./target/pathGeneratorTests");
         if (testRoot.exists()) {
             testRoot.delete();
@@ -35,11 +38,12 @@ public class DefaultFilePathGeneratorTest extends TestCase {
         generator = new DefaultFilePathGenerator(testRoot.getPath());
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         FileUtils.deleteDirectory(testRoot);
     }
 
+    @Test
     public void testPathNoParams() throws Exception {
         TileObject tile =
                 TileObject.createCompleteTileObject(
@@ -47,9 +51,10 @@ public class DefaultFilePathGeneratorTest extends TestCase {
         File path = generator.tilePath(tile, ImageMime.png);
 
         File expected = new File(testRoot, "states/EPSG_2163_00/0_0/00_00.png");
-        assertEquals(expected, path);
+        Assert.assertEquals(expected, path);
     }
 
+    @Test
     public void testPathWithParams() throws Exception {
         Map<String, String> params = new HashMap<>();
         params.put("style", "population");
@@ -86,14 +91,16 @@ public class DefaultFilePathGeneratorTest extends TestCase {
     private void testParameterId(File path, String parameterId, String parameterKvp)
             throws IOException {
         File expected = new File(testRoot, "states/EPSG_2163_00_" + parameterId + "/0_0/00_00.png");
-        assertEquals(expected.getPath(), path.getPath());
+        Assert.assertEquals(expected.getPath(), path.getPath());
     }
 
+    @Test
     public void testPathGeneratorFilterConsistency4326() throws GeoWebCacheException, IOException {
         GridSet gridSet4326 = new DefaultGridsets(true, true).worldEpsg4326();
         assertPathGeneratorFilterConsistency(gridSet4326);
     }
 
+    @Test
     public void testPathGeneratorFilterConsistency3857() throws GeoWebCacheException, IOException {
         GridSet gridSet3857 = new DefaultGridsets(true, true).worldEpsg3857();
         assertPathGeneratorFilterConsistency(gridSet3857);
@@ -117,9 +124,9 @@ public class DefaultFilePathGeneratorTest extends TestCase {
                     File file = generator.tilePath(tile, ImageMime.png);
                     // create the file
                     if (!file.getParentFile().exists()) {
-                        assertTrue(file.getParentFile().mkdirs());
+                        Assert.assertTrue(file.getParentFile().mkdirs());
                     }
-                    assertTrue(file.createNewFile());
+                    Assert.assertTrue(file.createNewFile());
                     TileRange tr =
                             new TileRange(
                                     "states",
@@ -132,13 +139,13 @@ public class DefaultFilePathGeneratorTest extends TestCase {
                     DefaultFilePathFilter filter = new DefaultFilePathFilter(tr);
                     // assert the file and its parents are accepted
                     File gridsetFolder = file.getParentFile().getParentFile();
-                    assertTrue(
+                    Assert.assertTrue(
                             filter.accept(gridsetFolder.getParentFile(), gridsetFolder.getName()));
                     File intermediateFolder = file.getParentFile();
-                    assertTrue(
+                    Assert.assertTrue(
                             filter.accept(
                                     intermediateFolder.getParentFile(), gridsetFolder.getName()));
-                    assertTrue(filter.accept(file.getParentFile(), file.getName()));
+                    Assert.assertTrue(filter.accept(file.getParentFile(), file.getName()));
                 }
             }
         }

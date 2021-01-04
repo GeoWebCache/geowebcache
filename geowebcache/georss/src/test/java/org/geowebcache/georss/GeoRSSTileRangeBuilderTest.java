@@ -25,14 +25,16 @@ import java.io.Reader;
 import java.util.Collections;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
-import junit.framework.TestCase;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.util.TestUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-public class GeoRSSTileRangeBuilderTest extends TestCase {
+public class GeoRSSTileRangeBuilderTest {
 
     /**
      * Use the System property {@code org.geowebcache.debugToDisk} in order for the mask images
@@ -44,6 +46,7 @@ public class GeoRSSTileRangeBuilderTest extends TestCase {
 
     private String gridsetId;
 
+    @Before
     public void setUp() {
         RasterMaskTestUtils.debugToDisk = debugToDisk;
         layer =
@@ -57,18 +60,20 @@ public class GeoRSSTileRangeBuilderTest extends TestCase {
         gridsetId = layer.getGridSubsets().iterator().next();
     }
 
+    @Test
     public void testBuildTileRangeMask() throws Exception {
 
         GeometryRasterMaskBuilder tileRangeMask = buildSampleFilterMatrix(layer, gridsetId);
 
-        assertNotNull(tileRangeMask);
-        assertEquals(0, tileRangeMask.getStartLevel());
-        assertEquals(11, tileRangeMask.getNumLevels());
-        assertEquals(
+        Assert.assertNotNull(tileRangeMask);
+        Assert.assertEquals(0, tileRangeMask.getStartLevel());
+        Assert.assertEquals(11, tileRangeMask.getNumLevels());
+        Assert.assertEquals(
                 layer.getGridSubset(gridsetId).getCoverages().length, tileRangeMask.getNumLevels());
     }
 
     /** Test for {@link GeometryRasterMaskBuilder#getCoveredBounds(int)} */
+    @Test
     public void testCoveredBounds() throws Exception {
         GeometryRasterMaskBuilder tileRangeMask = buildSampleFilterMatrix(layer, gridsetId);
 
@@ -103,6 +108,7 @@ public class GeoRSSTileRangeBuilderTest extends TestCase {
                 new long[] {511, 0, 2047, 768, 10}, tileRangeMask.getCoveredBounds(10));
     }
 
+    @Test
     public void testLatestUpdate()
             throws IOException, XMLStreamException, FactoryConfigurationError {
         assertLatestUpdate("2005-08-17T07:02:34Z", "point_feed.xml");
@@ -121,6 +127,6 @@ public class GeoRSSTileRangeBuilderTest extends TestCase {
         StaxGeoRSSReader reader = new StaxGeoRSSReader(feed);
         GeoRSSTileRangeBuilder b = new GeoRSSTileRangeBuilder(layer, gridsetId, 10);
         b.buildTileRangeMask(reader, null);
-        assertEquals(expected, b.getLastEntryUpdate());
+        Assert.assertEquals(expected, b.getLastEntryUpdate());
     }
 }

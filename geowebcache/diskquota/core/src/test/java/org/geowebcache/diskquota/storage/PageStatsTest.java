@@ -1,14 +1,17 @@
 package org.geowebcache.diskquota.storage;
 
 import java.math.BigInteger;
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-public class PageStatsTest extends TestCase {
+public class PageStatsTest {
 
     private static final int CREATION_TIME_MINUTES = 1000;
 
     private MockSystemUtils mockSysUtils;
 
+    @Before
     public void setUp() {
         mockSysUtils = new MockSystemUtils();
         mockSysUtils.setCurrentTimeMinutes(CREATION_TIME_MINUTES);
@@ -16,31 +19,35 @@ public class PageStatsTest extends TestCase {
         SystemUtils.set(mockSysUtils);
     }
 
+    @Test
     public void testAddHitsNoFillFactor() {
         PageStats stats = new PageStats(1);
         stats.setFillFactor(0f);
         stats.addHitsAndAccessTime(10, CREATION_TIME_MINUTES, CREATION_TIME_MINUTES);
         float frequencyOfUsePerMinute = stats.getFrequencyOfUsePerMinute();
-        assertEquals(Float.MIN_VALUE, frequencyOfUsePerMinute, 1e-6f);
+        Assert.assertEquals(Float.MIN_VALUE, frequencyOfUsePerMinute, 1e-6f);
     }
 
+    @Test
     public void testAddHitsNoFillFactorNewLastAccessTime() {
         PageStats stats = new PageStats(1);
         stats.setFillFactor(0f);
         stats.addHitsAndAccessTime(10, CREATION_TIME_MINUTES + 2, CREATION_TIME_MINUTES);
         float frequencyOfUsePerMinute = stats.getFrequencyOfUsePerMinute();
-        assertEquals(Float.MIN_VALUE, frequencyOfUsePerMinute, 1e-6f);
+        Assert.assertEquals(Float.MIN_VALUE, frequencyOfUsePerMinute, 1e-6f);
     }
 
+    @Test
     public void testAddHitsFullFillFactor() {
         PageStats stats = new PageStats(1);
         stats.setFillFactor(1f);
         final int numHits = 10;
         stats.addHitsAndAccessTime(numHits, CREATION_TIME_MINUTES, CREATION_TIME_MINUTES);
         float frequencyOfUsePerMinute = stats.getFrequencyOfUsePerMinute();
-        assertEquals(numHits, frequencyOfUsePerMinute, 1e-6f);
+        Assert.assertEquals(numHits, frequencyOfUsePerMinute, 1e-6f);
     }
 
+    @Test
     public void testAddHitsFullFillFactorNewLastAccessTime() {
         PageStats stats = new PageStats(1);
         stats.setFillFactor(1f);
@@ -49,24 +56,26 @@ public class PageStatsTest extends TestCase {
         int numHits = 10;
         stats.addHitsAndAccessTime(numHits, CREATION_TIME_MINUTES + 2, CREATION_TIME_MINUTES);
         float frequencyOfUsePerMinute = stats.getFrequencyOfUsePerMinute();
-        assertEquals(numHits / 3f, frequencyOfUsePerMinute, 1e-6f);
+        Assert.assertEquals(numHits / 3f, frequencyOfUsePerMinute, 1e-6f);
 
         // 100 hits added in one minute later
         numHits = 100;
         stats.addHitsAndAccessTime(numHits, CREATION_TIME_MINUTES + 3, CREATION_TIME_MINUTES);
         frequencyOfUsePerMinute = stats.getFrequencyOfUsePerMinute();
-        assertEquals(110f / 4f, frequencyOfUsePerMinute, 1e-6f);
+        Assert.assertEquals(110f / 4f, frequencyOfUsePerMinute, 1e-6f);
     }
 
+    @Test
     public void testAddHitsHalfFillFactor() {
         PageStats stats = new PageStats(1);
         stats.setFillFactor(0.5f);
         final int numHits = 10;
         stats.addHitsAndAccessTime(numHits, CREATION_TIME_MINUTES, CREATION_TIME_MINUTES);
         float frequencyOfUsePerMinute = stats.getFrequencyOfUsePerMinute();
-        assertEquals(numHits / 2f, frequencyOfUsePerMinute, 1e-6f);
+        Assert.assertEquals(numHits / 2f, frequencyOfUsePerMinute, 1e-6f);
     }
 
+    @Test
     public void testAddHitsHalfFillFactorNewLastAccessTime() {
         PageStats stats = new PageStats(1);
         float fillFactor = 0.5f;
@@ -74,20 +83,21 @@ public class PageStatsTest extends TestCase {
         int numHits = 10;
         stats.addHitsAndAccessTime(numHits, CREATION_TIME_MINUTES + 2, CREATION_TIME_MINUTES);
         float frequencyOfUsePerMinute = stats.getFrequencyOfUsePerMinute();
-        assertEquals(fillFactor * (numHits / 3f), frequencyOfUsePerMinute, 1e-6f);
+        Assert.assertEquals(fillFactor * (numHits / 3f), frequencyOfUsePerMinute, 1e-6f);
     }
 
+    @Test
     public void testAddTiles() {
         PageStats stats = new PageStats(1);
         final BigInteger maxTiles = BigInteger.valueOf(1000);
 
         stats.addTiles(1, maxTiles);
-        assertEquals(1 / 1000f, stats.getFillFactor(), 1e-6f);
+        Assert.assertEquals(1 / 1000f, stats.getFillFactor(), 1e-6f);
 
         stats.addTiles(499, maxTiles);
-        assertEquals(0.5f, stats.getFillFactor(), 1e-6f);
+        Assert.assertEquals(0.5f, stats.getFillFactor(), 1e-6f);
 
         stats.addTiles(500, maxTiles);
-        assertEquals(1f, stats.getFillFactor(), 1e-6f);
+        Assert.assertEquals(1f, stats.getFillFactor(), 1e-6f);
     }
 }

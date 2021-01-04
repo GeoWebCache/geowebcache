@@ -15,90 +15,98 @@
 package org.geowebcache.diskquota;
 
 import java.util.concurrent.TimeUnit;
-import junit.framework.TestCase;
 import org.geowebcache.diskquota.storage.LayerQuota;
 import org.geowebcache.diskquota.storage.Quota;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-public class DiskQuotaConfigTest extends TestCase {
+public class DiskQuotaConfigTest {
 
     private DiskQuotaConfig config;
 
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         config = new DiskQuotaConfig();
         config.setDefaults();
     }
 
+    @Test
     public void testDiskQuotaConfig() {
-        assertEquals(
+        Assert.assertEquals(
                 DiskQuotaConfig.DEFAULT_CLEANUP_FREQUENCY,
                 config.getCacheCleanUpFrequency().intValue());
-        assertEquals(
+        Assert.assertEquals(
                 DiskQuotaConfig.DEFAULT_MAX_CONCURRENT_CLEANUPS,
                 config.getMaxConcurrentCleanUps().intValue());
-        assertEquals(DiskQuotaConfig.DEFAULT_CLEANUP_UNITS, config.getCacheCleanUpUnits());
+        Assert.assertEquals(DiskQuotaConfig.DEFAULT_CLEANUP_UNITS, config.getCacheCleanUpUnits());
     }
 
+    @Test
     public void testSetCacheCleanUpFrequency() {
         try {
             config.setCacheCleanUpFrequency(-1);
-            fail("Expected IAE");
+            Assert.fail("Expected IAE");
         } catch (IllegalArgumentException e) {
-            assertTrue(true);
+            Assert.assertTrue(true);
         }
 
         config.setCacheCleanUpFrequency(10);
-        assertEquals(10, config.getCacheCleanUpFrequency().intValue());
+        Assert.assertEquals(10, config.getCacheCleanUpFrequency().intValue());
     }
 
+    @Test
     public void testSetCacheCleanUpUnits() {
         try {
             config.setCacheCleanUpUnits(null);
-            fail("Expected IAE");
+            Assert.fail("Expected IAE");
         } catch (IllegalArgumentException e) {
-            assertTrue(true);
+            Assert.assertTrue(true);
         }
 
         config.setCacheCleanUpUnits(TimeUnit.MILLISECONDS);
-        assertEquals(TimeUnit.MILLISECONDS, config.getCacheCleanUpUnits());
+        Assert.assertEquals(TimeUnit.MILLISECONDS, config.getCacheCleanUpUnits());
     }
 
+    @Test
     public void testSetLayerQuotas() {
         // config.setLayerQuotas(null);
-        assertNull(config.getLayerQuotas());
+        Assert.assertNull(config.getLayerQuotas());
 
         try {
             config.addLayerQuota(new LayerQuota("layer", ExpirationPolicy.LRU));
-            fail("Expected IAE");
+            Assert.fail("Expected IAE");
         } catch (IllegalArgumentException e) {
-            assertTrue(true);
+            Assert.assertTrue(true);
         }
         LayerQuota lq = new LayerQuota("layer", ExpirationPolicy.LFU, new Quota());
         config.addLayerQuota(lq);
-        assertNotNull(config.layerQuota("layer"));
+        Assert.assertNotNull(config.layerQuota("layer"));
     }
 
+    @Test
     public void testRemove() {
         LayerQuota lq = new LayerQuota("layer", ExpirationPolicy.LFU, new Quota());
         config.addLayerQuota(lq);
         config.remove(lq);
-        assertNull(config.layerQuota("layer"));
+        Assert.assertNull(config.layerQuota("layer"));
     }
 
+    @Test
     public void testSetMaxConcurrentCleanUps() {
         try {
             config.setMaxConcurrentCleanUps(-1);
-            fail("Expected IAE");
+            Assert.fail("Expected IAE");
         } catch (IllegalArgumentException e) {
-            assertTrue(true);
+            Assert.assertTrue(true);
         }
         try {
             config.setMaxConcurrentCleanUps(0);
-            fail("Expected IAE");
+            Assert.fail("Expected IAE");
         } catch (IllegalArgumentException e) {
-            assertTrue(true);
+            Assert.assertTrue(true);
         }
         config.setMaxConcurrentCleanUps(10);
-        assertEquals(10, config.getMaxConcurrentCleanUps().intValue());
+        Assert.assertEquals(10, config.getMaxConcurrentCleanUps().intValue());
     }
 }
