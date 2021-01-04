@@ -26,36 +26,39 @@ import static org.geowebcache.diskquota.storage.StorageUnit.ZiB;
 import static org.geowebcache.diskquota.storage.StorageUnit.bestFit;
 
 import java.math.BigDecimal;
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class StorageUnitTest extends TestCase {
+public class StorageUnitTest {
 
+    @Test
     public void testConvertTo() {
-        assertEquals(1D, B.convertTo(1024, KiB).doubleValue());
-        assertEquals(1D, KiB.convertTo(1024 * 1024D, GiB).doubleValue());
-        assertEquals(1024D, GiB.convertTo(1024 * 1024D, TiB).doubleValue());
+        Assert.assertEquals(1D, B.convertTo(1024, KiB).doubleValue(), 0d);
+        Assert.assertEquals(1D, KiB.convertTo(1024 * 1024D, GiB).doubleValue(), 0d);
+        Assert.assertEquals(1024D, GiB.convertTo(1024 * 1024D, TiB).doubleValue(), 0d);
 
         BigDecimal k = BigDecimal.valueOf(1024);
         BigDecimal value = k.multiply(k).multiply(k).multiply(k).multiply(k);
-        assertEquals(BigDecimal.ONE, B.convertTo(value, PiB));
+        Assert.assertEquals(BigDecimal.ONE, B.convertTo(value, PiB));
     }
 
+    @Test
     public void testClosest() {
-        assertEquals(YiB, bestFit(1, YiB));
-        assertEquals(YiB, bestFit(1025, ZiB));
-        assertEquals(ZiB, bestFit(1023, ZiB));
-        assertEquals(ZiB, bestFit(1025, EiB));
-        assertEquals(EiB, bestFit(1023, EiB));
-        assertEquals(EiB, bestFit(1025, PiB));
-        assertEquals(PiB, bestFit(1023, PiB));
-        assertEquals(TiB, bestFit(1023, TiB));
-        assertEquals(TiB, bestFit(1025, GiB));
-        assertEquals(GiB, bestFit(1023, GiB));
-        assertEquals(GiB, bestFit(1025, MiB));
-        assertEquals(MiB, bestFit(1023, MiB));
-        assertEquals(MiB, bestFit(1025, KiB));
-        assertEquals(KiB, bestFit(1023, KiB));
-        assertEquals(KiB, bestFit(1025, B));
-        assertEquals(B, bestFit(0.5, KiB));
+        Assert.assertEquals(YiB, bestFit(1, YiB));
+        Assert.assertEquals(YiB, bestFit(1025, ZiB));
+        Assert.assertEquals(ZiB, bestFit(1023, ZiB));
+        Assert.assertEquals(ZiB, bestFit(1025, EiB));
+        Assert.assertEquals(EiB, bestFit(1023, EiB));
+        Assert.assertEquals(EiB, bestFit(1025, PiB));
+        Assert.assertEquals(PiB, bestFit(1023, PiB));
+        Assert.assertEquals(TiB, bestFit(1023, TiB));
+        Assert.assertEquals(TiB, bestFit(1025, GiB));
+        Assert.assertEquals(GiB, bestFit(1023, GiB));
+        Assert.assertEquals(GiB, bestFit(1025, MiB));
+        Assert.assertEquals(MiB, bestFit(1023, MiB));
+        Assert.assertEquals(MiB, bestFit(1025, KiB));
+        Assert.assertEquals(KiB, bestFit(1023, KiB));
+        Assert.assertEquals(KiB, bestFit(1025, B));
+        Assert.assertEquals(B, bestFit(0.5, KiB));
     }
 }

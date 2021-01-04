@@ -24,7 +24,8 @@ import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.MultiPoint;
@@ -32,17 +33,19 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
-public class StaxGeoRSSReaderTest extends TestCase {
+public class StaxGeoRSSReaderTest {
 
+    @Test
     public void testConstructor() throws Exception {
         try {
             new StaxGeoRSSReader(new StringReader("<not-a-feed/>"));
-            fail("expected IAE on not a georss feed argument");
+            Assert.fail("expected IAE on not a georss feed argument");
         } catch (IllegalArgumentException e) {
-            assertTrue(true);
+            Assert.assertTrue(true);
         }
     }
 
+    @Test
     public void testParsePointFeed() throws Exception {
 
         Reader feed = reader("point_feed.xml");
@@ -50,14 +53,15 @@ public class StaxGeoRSSReaderTest extends TestCase {
 
         List<Entry> entries = read(reader);
 
-        assertEquals(3, entries.size());
+        Assert.assertEquals(3, entries.size());
         assertRequiredMembers(entries);
 
-        assertTrue(entries.get(0).getWhere() instanceof Point);
-        assertTrue(entries.get(1).getWhere() instanceof Point);
-        assertTrue(entries.get(2).getWhere() instanceof Point);
+        Assert.assertTrue(entries.get(0).getWhere() instanceof Point);
+        Assert.assertTrue(entries.get(1).getWhere() instanceof Point);
+        Assert.assertTrue(entries.get(2).getWhere() instanceof Point);
     }
 
+    @Test
     public void testMultiGeometryTypesFeed() throws Exception {
 
         Reader feed = reader("mixedgeometries_feed.xml");
@@ -65,21 +69,21 @@ public class StaxGeoRSSReaderTest extends TestCase {
 
         List<Entry> entries = read(reader);
 
-        assertEquals(6, entries.size());
+        Assert.assertEquals(6, entries.size());
         assertRequiredMembers(entries);
 
-        assertTrue(entries.get(0).getWhere() instanceof Point);
-        assertTrue(entries.get(1).getWhere() instanceof MultiPoint);
-        assertTrue(entries.get(2).getWhere() instanceof Polygon);
-        assertTrue(entries.get(3).getWhere() instanceof MultiPolygon);
-        assertTrue(entries.get(4).getWhere() instanceof LineString);
-        assertTrue(entries.get(5).getWhere() instanceof MultiLineString);
+        Assert.assertTrue(entries.get(0).getWhere() instanceof Point);
+        Assert.assertTrue(entries.get(1).getWhere() instanceof MultiPoint);
+        Assert.assertTrue(entries.get(2).getWhere() instanceof Polygon);
+        Assert.assertTrue(entries.get(3).getWhere() instanceof MultiPolygon);
+        Assert.assertTrue(entries.get(4).getWhere() instanceof LineString);
+        Assert.assertTrue(entries.get(5).getWhere() instanceof MultiLineString);
     }
 
     private void assertRequiredMembers(List<Entry> entries) {
         for (Entry e : entries) {
-            assertNotNull(e.getUpdated());
-            assertNotNull(e.getWhere());
+            Assert.assertNotNull(e.getUpdated());
+            Assert.assertNotNull(e.getWhere());
         }
     }
 

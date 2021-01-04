@@ -16,7 +16,12 @@
  */
 package org.geowebcache.jetty;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.describedAs;
+import static org.hamcrest.Matchers.either;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -27,9 +32,13 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import junit.framework.TestCase;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -137,14 +146,14 @@ public class RestIntegrationTest {
                 handleGet(
                         URI.create("/geowebcache/rest/web/geowebcache_logo.png"),
                         anonymous.getClient());
-        TestCase.assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, response.getStatusLine().getStatusCode());
     }
 
     @Test
     public void testGetCss() throws Exception {
         CloseableHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/web/gwc.css"), anonymous.getClient());
-        TestCase.assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, response.getStatusLine().getStatusCode());
     }
 
     @Test
@@ -153,7 +162,7 @@ public class RestIntegrationTest {
                 handleGet(
                         URI.create("/geowebcache/rest/web/thisDoesNotExist"),
                         anonymous.getClient());
-        TestCase.assertEquals(404, response.getStatusLine().getStatusCode());
+        assertEquals(404, response.getStatusLine().getStatusCode());
     }
 
     /* ServerController Integration Tests ********************************************************/
@@ -1046,7 +1055,7 @@ public class RestIntegrationTest {
     public void testDiskQuotaXML() throws Exception {
         CloseableHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/diskquota.xml"), admin.getClient());
-        TestCase.assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, response.getStatusLine().getStatusCode());
         if (response.getStatusLine().getStatusCode() == 200) {
             Document doc = getResponseEntityAsXML(response);
             assertThat(doc, hasXPath("//enabled", equalTo("false")));
@@ -1063,20 +1072,20 @@ public class RestIntegrationTest {
     public void testDiskQuotaJson() throws Exception {
         CloseableHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/diskquota.json"), admin.getClient());
-        TestCase.assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, response.getStatusLine().getStatusCode());
         if (response.getStatusLine().getStatusCode() == 200) {
             JSONObject jsonObject = getResponseEntityAsJSONObject(response);
             Object obj = jsonObject.get("org.geowebcache.diskquota.DiskQuotaConfig");
             if (obj instanceof JSONObject) {
-                TestCase.assertEquals(false, ((JSONObject) obj).get("enabled"));
-                TestCase.assertEquals(10, ((JSONObject) obj).get("cacheCleanUpFrequency"));
-                TestCase.assertEquals("SECONDS", ((JSONObject) obj).get("cacheCleanUpUnits"));
-                TestCase.assertEquals(2, ((JSONObject) obj).get("maxConcurrentCleanUps"));
-                TestCase.assertEquals("LFU", ((JSONObject) obj).get("globalExpirationPolicyName"));
+                assertEquals(false, ((JSONObject) obj).get("enabled"));
+                assertEquals(10, ((JSONObject) obj).get("cacheCleanUpFrequency"));
+                assertEquals("SECONDS", ((JSONObject) obj).get("cacheCleanUpUnits"));
+                assertEquals(2, ((JSONObject) obj).get("maxConcurrentCleanUps"));
+                assertEquals("LFU", ((JSONObject) obj).get("globalExpirationPolicyName"));
                 Object globalQuota = ((JSONObject) obj).get("globalQuota");
                 if (globalQuota instanceof JSONObject) {
-                    TestCase.assertEquals(0, ((JSONObject) globalQuota).get("id"));
-                    TestCase.assertEquals(524288000, ((JSONObject) globalQuota).get("bytes"));
+                    assertEquals(0, ((JSONObject) globalQuota).get("id"));
+                    assertEquals(524288000, ((JSONObject) globalQuota).get("bytes"));
                 }
             }
         }
@@ -1114,49 +1123,49 @@ public class RestIntegrationTest {
                         URI.create("/geowebcache/rest/seed/topp:states.xml"),
                         admin.getClient(),
                         seedLayer);
-        TestCase.assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, response.getStatusLine().getStatusCode());
     }
 
     @Test
     public void testSeedGet() throws Exception {
         CloseableHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/seed/topp:states"), admin.getClient());
-        TestCase.assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, response.getStatusLine().getStatusCode());
     }
 
     @Test
     public void testSeedGetNoLayer() throws Exception {
         CloseableHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/seed"), admin.getClient());
-        TestCase.assertEquals(405, response.getStatusLine().getStatusCode());
+        assertEquals(405, response.getStatusLine().getStatusCode());
     }
 
     @Test
     public void testSeedGetSeedForm() throws Exception {
         CloseableHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/seed/topp:states"), admin.getClient());
-        TestCase.assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, response.getStatusLine().getStatusCode());
     }
 
     @Test
     public void testSeedGetJson() throws Exception {
         CloseableHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/seed.json"), admin.getClient());
-        TestCase.assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, response.getStatusLine().getStatusCode());
     }
 
     @Test
     public void testSeedGetLayerJson() throws Exception {
         CloseableHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/seed/topp:states.json"), admin.getClient());
-        TestCase.assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, response.getStatusLine().getStatusCode());
     }
 
     @Test
     public void testSeedGetLayerXml() throws Exception {
         CloseableHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/seed/topp:states.xml"), admin.getClient());
-        TestCase.assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, response.getStatusLine().getStatusCode());
     }
 
     @Test
@@ -1164,7 +1173,7 @@ public class RestIntegrationTest {
         String killCommand = "kill_all=all";
         CloseableHttpResponse response =
                 handlePost(URI.create("/geowebcache/rest/seed"), admin.getClient(), killCommand);
-        TestCase.assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, response.getStatusLine().getStatusCode());
     }
 
     @Test
@@ -1175,7 +1184,7 @@ public class RestIntegrationTest {
                         URI.create("/geowebcache/rest/seed/topp:states"),
                         admin.getClient(),
                         killCommand);
-        TestCase.assertEquals(200, response.getStatusLine().getStatusCode());
+        assertEquals(200, response.getStatusLine().getStatusCode());
     }
 
     @Test

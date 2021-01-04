@@ -1,12 +1,12 @@
 package org.geowebcache.storage;
 
 import java.io.File;
-import junit.framework.TestCase;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
+import org.junit.Test;
 
-public class StorageBrokerTest extends TestCase {
+public class StorageBrokerTest {
     public static final String TEST_DB_NAME = "gwcTestStorageBroker";
 
     public static final String TEST_BLOB_DIR_NAME = "gwcTestBlobs";
@@ -21,6 +21,7 @@ public class StorageBrokerTest extends TestCase {
 
     public static final boolean RUN_PERFORMANCE_TESTS = false;
 
+    @Test
     public void testTileSingleThread() throws Exception {
         if (!RUN_PERFORMANCE_TESTS) return;
 
@@ -31,6 +32,7 @@ public class StorageBrokerTest extends TestCase {
         }
     }
 
+    @Test
     public void testTileMultiThread() throws Exception {
         if (!RUN_PERFORMANCE_TESTS) return;
 

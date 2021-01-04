@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import junit.framework.TestCase;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.geowebcache.GeoWebCacheException;
@@ -53,6 +52,10 @@ import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.TileRangeIterator;
 import org.geowebcache.util.MockWMSSourceHelper;
 import org.geowebcache.util.Sleeper;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Unit test suite for {@link SeedTask}
@@ -60,20 +63,19 @@ import org.geowebcache.util.Sleeper;
  * @author Gabriel Roldan (OpenGeo)
  * @version $Id$
  */
-public class SeedTaskTest extends TestCase {
+public class SeedTaskTest {
 
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
+    @Before
+    public void setUp() throws Exception {}
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
+    @After
+    public void tearDown() throws Exception {}
 
     /**
      * For a metatiled seed request over a given zoom level, make sure the correct wms calls are
      * issued
      */
+    @Test
     @SuppressWarnings("serial")
     public void testSeedWMSRequests() throws Exception {
         WMSLayer tl = createWMSLayer("image/png");
@@ -149,7 +151,7 @@ public class SeedTaskTest extends TestCase {
 
         final long expectedWmsRequestsCount = 3; // due to metatiling
         final long wmsRequestCount = wmsRequestsCounter.get();
-        assertEquals(expectedWmsRequestsCount, wmsRequestCount);
+        Assert.assertEquals(expectedWmsRequestsCount, wmsRequestCount);
         verify(sleeper);
     }
 
@@ -157,6 +159,7 @@ public class SeedTaskTest extends TestCase {
      * For a metatiled seed request over a given zoom level, make sure the correct wms calls are
      * issued
      */
+    @Test
     public void testSeedRetries() throws Exception {
         WMSLayer tl = createWMSLayer("image/png");
 
@@ -247,7 +250,7 @@ public class SeedTaskTest extends TestCase {
          * Call the seed process
          */
         seedTask.doAction();
-        assertEquals(totalFailuresBeforeAborting, sharedFailureCounter.get());
+        Assert.assertEquals(totalFailuresBeforeAborting, sharedFailureCounter.get());
         verify(sleeper);
     }
 
@@ -255,6 +258,7 @@ public class SeedTaskTest extends TestCase {
      * Make sure when seeding a given zoom level, the correct tiles are sent to the {@link
      * StorageBroker}
      */
+    @Test
     @SuppressWarnings("serial")
     public void testSeedStoredTiles() throws Exception {
 
@@ -333,7 +337,7 @@ public class SeedTaskTest extends TestCase {
         List<TileObject> storedTiles = storedObjects.getValues();
         final int seededTileCount = storedTiles.size();
 
-        assertEquals(expectedSavedTileCount, seededTileCount);
+        Assert.assertEquals(expectedSavedTileCount, seededTileCount);
 
         Set<Tuple<Long>> tileKeys = new TreeSet<>();
         Set<Tuple<Long>> expectedTiles = new TreeSet<>();
@@ -346,7 +350,7 @@ public class SeedTaskTest extends TestCase {
             tileKeys.add(new Tuple<>(obj.getXYZ()[0], obj.getXYZ()[1], obj.getXYZ()[2]));
         }
 
-        assertEquals(expectedTiles, tileKeys);
+        Assert.assertEquals(expectedTiles, tileKeys);
         verify(sleeper);
     }
 

@@ -1,20 +1,20 @@
 package org.geowebcache.service.ve;
 
 import java.util.Arrays;
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 
-public class VEConverterTest extends TestCase {
+public class VEConverterTest {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
+    @Before
+    public void setUp() throws Exception {}
 
     /**
      * Remember, quadkeys look like this: 0 1 2 3
      *
      * <p>And the "most zoomed out" is level 1,
      */
+    @Test
     public void testVEConverter() throws Exception {
         /* Check origin location */
         String quadKey = "2";

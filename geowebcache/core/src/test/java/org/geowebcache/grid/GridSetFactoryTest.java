@@ -1,9 +1,11 @@
 package org.geowebcache.grid;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class GridSetFactoryTest extends TestCase {
+public class GridSetFactoryTest {
 
+    @Test
     public void testResolutionsArrayEPSG4326() throws Exception {
         BoundingBox extent = new BoundingBox(-180, -90, 180, 90);
         double[] resolutions = {180.0 / 256, 180.0 / 512, 180.0 / 1024, 180.0 / 2048};
@@ -23,24 +25,25 @@ public class GridSetFactoryTest extends TestCase {
                         256,
                         false);
 
-        assertEquals("test", gridSet.getName());
-        assertEquals(-180.0, gridSet.tileOrigin()[0]);
-        assertEquals(-90.0, gridSet.tileOrigin()[1]);
-        assertEquals(resolutions.length, gridSet.getNumLevels());
+        Assert.assertEquals("test", gridSet.getName());
+        Assert.assertEquals(-180.0, gridSet.tileOrigin()[0], 0d);
+        Assert.assertEquals(-90.0, gridSet.tileOrigin()[1], 0d);
+        Assert.assertEquals(resolutions.length, gridSet.getNumLevels());
 
         Grid grid0 = gridSet.getGrid(0);
 
-        assertEquals(180.0 / 256, grid0.getResolution());
-        assertEquals(2L, grid0.getNumTilesWide());
-        assertEquals(1L, grid0.getNumTilesHigh());
+        Assert.assertEquals(180.0 / 256, grid0.getResolution(), 0d);
+        Assert.assertEquals(2L, grid0.getNumTilesWide());
+        Assert.assertEquals(1L, grid0.getNumTilesHigh());
 
         Grid grid3 = gridSet.getGrid(3);
 
-        assertEquals(180.0 / 2048, grid3.getResolution());
-        assertEquals((long) Math.pow(2, 4), grid3.getNumTilesWide());
-        assertEquals((long) Math.pow(2, 3), grid3.getNumTilesHigh());
+        Assert.assertEquals(180.0 / 2048, grid3.getResolution(), 0d);
+        Assert.assertEquals((long) Math.pow(2, 4), grid3.getNumTilesWide());
+        Assert.assertEquals((long) Math.pow(2, 3), grid3.getNumTilesHigh());
     }
 
+    @Test
     public void testResolutionsArrayEPSG3785() throws Exception {
         BoundingBox extent = new BoundingBox(-20037508.34, -20037508.34, 20037508.34, 20037508.34);
         double[] resolutions = {
@@ -67,16 +70,17 @@ public class GridSetFactoryTest extends TestCase {
 
         Grid grid0 = gridSet.getGrid(0);
 
-        assertEquals((20037508.34 * 2) / 256, grid0.getResolution());
-        assertEquals(1L, grid0.getNumTilesWide());
-        assertEquals(1L, grid0.getNumTilesHigh());
+        Assert.assertEquals((20037508.34 * 2) / 256, grid0.getResolution(), 0d);
+        Assert.assertEquals(1L, grid0.getNumTilesWide());
+        Assert.assertEquals(1L, grid0.getNumTilesHigh());
 
         Grid grid3 = gridSet.getGrid(3);
 
-        assertEquals((long) Math.pow(2, 3), grid3.getNumTilesWide());
-        assertEquals((long) Math.pow(2, 3), grid3.getNumTilesHigh());
+        Assert.assertEquals((long) Math.pow(2, 3), grid3.getNumTilesWide());
+        Assert.assertEquals((long) Math.pow(2, 3), grid3.getNumTilesHigh());
     }
 
+    @Test
     public void testResolutionsArrayTricky1() throws Exception {
         // This should be expanded in the X direction
         BoundingBox extent = new BoundingBox(-173, -90, 180, 96);
@@ -97,23 +101,24 @@ public class GridSetFactoryTest extends TestCase {
                         200,
                         false);
 
-        assertEquals(-173.0, gridSet.tileOrigin()[0]);
-        assertEquals(-90.0, gridSet.tileOrigin()[1]);
-        assertEquals(resolutions.length, gridSet.getNumLevels());
+        Assert.assertEquals(-173.0, gridSet.tileOrigin()[0], 0d);
+        Assert.assertEquals(-90.0, gridSet.tileOrigin()[1], 0d);
+        Assert.assertEquals(resolutions.length, gridSet.getNumLevels());
 
         Grid grid0 = gridSet.getGrid(0);
 
-        assertEquals(180.0 / 200, grid0.getResolution());
-        assertEquals(2L, grid0.getNumTilesWide());
-        assertEquals(2L, grid0.getNumTilesHigh());
+        Assert.assertEquals(180.0 / 200, grid0.getResolution(), 0d);
+        Assert.assertEquals(2L, grid0.getNumTilesWide());
+        Assert.assertEquals(2L, grid0.getNumTilesHigh());
 
         Grid grid3 = gridSet.getGrid(2);
 
-        assertEquals(180.0 / 800, grid3.getResolution());
-        assertEquals(8L, grid3.getNumTilesWide());
-        assertEquals(5L, grid3.getNumTilesHigh());
+        Assert.assertEquals(180.0 / 800, grid3.getResolution(), 0d);
+        Assert.assertEquals(8L, grid3.getNumTilesWide());
+        Assert.assertEquals(5L, grid3.getNumTilesHigh());
     }
 
+    @Test
     public void testBoundingBoxEPSG4326() throws Exception {
         BoundingBox extent = new BoundingBox(-180, -90, 180, 90);
 
@@ -130,24 +135,25 @@ public class GridSetFactoryTest extends TestCase {
                         256,
                         false);
 
-        assertEquals("test", gridSet.getName());
-        assertEquals(-180.0, gridSet.tileOrigin()[0]);
-        assertEquals(-90.0, gridSet.tileOrigin()[1]);
-        assertEquals(4, gridSet.getNumLevels());
+        Assert.assertEquals("test", gridSet.getName());
+        Assert.assertEquals(-180.0, gridSet.tileOrigin()[0], 0d);
+        Assert.assertEquals(-90.0, gridSet.tileOrigin()[1], 0d);
+        Assert.assertEquals(4, gridSet.getNumLevels());
 
         Grid grid0 = gridSet.getGrid(0);
 
-        assertEquals(180.0 / 256, grid0.getResolution());
-        assertEquals(2L, grid0.getNumTilesWide());
-        assertEquals(1L, grid0.getNumTilesHigh());
+        Assert.assertEquals(180.0 / 256, grid0.getResolution(), 0d);
+        Assert.assertEquals(2L, grid0.getNumTilesWide());
+        Assert.assertEquals(1L, grid0.getNumTilesHigh());
 
         Grid grid3 = gridSet.getGrid(3);
 
-        assertEquals(180.0 / 2048, grid3.getResolution());
-        assertEquals((long) Math.pow(2, 4), grid3.getNumTilesWide());
-        assertEquals((long) Math.pow(2, 3), grid3.getNumTilesHigh());
+        Assert.assertEquals(180.0 / 2048, grid3.getResolution(), 0d);
+        Assert.assertEquals((long) Math.pow(2, 4), grid3.getNumTilesWide());
+        Assert.assertEquals((long) Math.pow(2, 3), grid3.getNumTilesHigh());
     }
 
+    @Test
     public void testBoundingBoxEPSG3785() throws Exception {
         BoundingBox extent = new BoundingBox(-20037508.34, -20037508.34, 20037508.34, 20037508.34);
         GridSet gridSet =
@@ -165,16 +171,17 @@ public class GridSetFactoryTest extends TestCase {
 
         Grid grid0 = gridSet.getGrid(0);
 
-        assertEquals((20037508.34 * 2) / 256, grid0.getResolution());
-        assertEquals(1L, grid0.getNumTilesWide());
-        assertEquals(1L, grid0.getNumTilesHigh());
+        Assert.assertEquals((20037508.34 * 2) / 256, grid0.getResolution(), 0d);
+        Assert.assertEquals(1L, grid0.getNumTilesWide());
+        Assert.assertEquals(1L, grid0.getNumTilesHigh());
 
         Grid grid3 = gridSet.getGrid(3);
 
-        assertEquals((long) Math.pow(2, 3), grid3.getNumTilesWide());
-        assertEquals((long) Math.pow(2, 3), grid3.getNumTilesHigh());
+        Assert.assertEquals((long) Math.pow(2, 3), grid3.getNumTilesWide());
+        Assert.assertEquals((long) Math.pow(2, 3), grid3.getNumTilesHigh());
     }
 
+    @Test
     public void testBoundingBoxTricky1() throws Exception {
         BoundingBox extent = new BoundingBox(-180, -90, 172, 90);
 
@@ -191,18 +198,19 @@ public class GridSetFactoryTest extends TestCase {
                         256,
                         false);
 
-        assertEquals("test", gridSet.getName());
-        assertEquals(-180.0, gridSet.tileOrigin()[0]);
-        assertEquals(-90.0, gridSet.tileOrigin()[1]);
-        assertEquals(4, gridSet.getNumLevels());
+        Assert.assertEquals("test", gridSet.getName());
+        Assert.assertEquals(-180.0, gridSet.tileOrigin()[0], 0d);
+        Assert.assertEquals(-90.0, gridSet.tileOrigin()[1], 0d);
+        Assert.assertEquals(4, gridSet.getNumLevels());
 
         Grid grid0 = gridSet.getGrid(0);
 
-        assertEquals(180.0 / 256, grid0.getResolution());
-        assertEquals(2L, grid0.getNumTilesWide());
-        assertEquals(1L, grid0.getNumTilesHigh());
+        Assert.assertEquals(180.0 / 256, grid0.getResolution(), 0d);
+        Assert.assertEquals(2L, grid0.getNumTilesWide());
+        Assert.assertEquals(1L, grid0.getNumTilesHigh());
     }
 
+    @Test
     public void testBoundingBoxTricky2() throws Exception {
         BoundingBox extent = new BoundingBox(-180, -90, 180, 82);
 
@@ -212,18 +220,19 @@ public class GridSetFactoryTest extends TestCase {
                 GridSetFactory.createGridSet(
                         "test", srs, extent, false, 4, null, 0.00028, 256, 256, false);
 
-        assertEquals("test", gridSet.getName());
-        assertEquals(-180.0, gridSet.tileOrigin()[0]);
-        assertEquals(-90.0, gridSet.tileOrigin()[1]);
-        assertEquals(4, gridSet.getNumLevels());
+        Assert.assertEquals("test", gridSet.getName());
+        Assert.assertEquals(-180.0, gridSet.tileOrigin()[0], 0d);
+        Assert.assertEquals(-90.0, gridSet.tileOrigin()[1], 0d);
+        Assert.assertEquals(4, gridSet.getNumLevels());
 
         Grid grid0 = gridSet.getGrid(0);
 
-        assertEquals(180.0 / 256, grid0.getResolution());
-        assertEquals(2L, grid0.getNumTilesWide());
-        assertEquals(1L, grid0.getNumTilesHigh());
+        Assert.assertEquals(180.0 / 256, grid0.getResolution(), 0d);
+        Assert.assertEquals(2L, grid0.getNumTilesWide());
+        Assert.assertEquals(1L, grid0.getNumTilesHigh());
     }
 
+    @Test
     public void testResolutionsPreservedFlag() throws Exception {
         BoundingBox extent = new BoundingBox(-180, -90, 180, 90);
         double[] resolutions = {180.0 / 256, 180.0 / 512, 180.0 / 1024, 180.0 / 2048};
@@ -244,7 +253,7 @@ public class GridSetFactoryTest extends TestCase {
                         256,
                         false);
 
-        assertTrue(gridSet.isResolutionsPreserved());
+        Assert.assertTrue(gridSet.isResolutionsPreserved());
 
         gridSet =
                 GridSetFactory.createGridSet(
@@ -261,9 +270,10 @@ public class GridSetFactoryTest extends TestCase {
                         256,
                         false);
 
-        assertFalse(gridSet.isResolutionsPreserved());
+        Assert.assertFalse(gridSet.isResolutionsPreserved());
     }
 
+    @Test
     public void testLevels2() throws Exception {
         BoundingBox extent = new BoundingBox(0, 0, 1000, 1000);
         int levels = 16;
@@ -284,21 +294,22 @@ public class GridSetFactoryTest extends TestCase {
                         tileH,
                         false);
 
-        assertEquals(extent, gridSet.getOriginalExtent());
-        assertEquals(16, gridSet.getNumLevels());
-        assertEquals(1, gridSet.getGrid(0).getNumTilesWide());
-        assertEquals(3, gridSet.getGrid(0).getNumTilesHigh());
+        Assert.assertEquals(extent, gridSet.getOriginalExtent());
+        Assert.assertEquals(16, gridSet.getNumLevels());
+        Assert.assertEquals(1, gridSet.getGrid(0).getNumTilesWide());
+        Assert.assertEquals(3, gridSet.getGrid(0).getNumTilesHigh());
 
         for (int i = 1; i < gridSet.getNumLevels(); i++) {
-            assertEquals(
+            Assert.assertEquals(
                     2 * gridSet.getGrid(i - 1).getNumTilesWide(),
                     gridSet.getGrid(i).getNumTilesWide());
-            assertEquals(
+            Assert.assertEquals(
                     2 * gridSet.getGrid(i - 1).getNumTilesHigh(),
                     gridSet.getGrid(i).getNumTilesHigh());
         }
     }
 
+    @Test
     public void testWideBoundsTallTile() throws Exception {
         BoundingBox extent = new BoundingBox(0, 0, 100, 45);
 
@@ -322,19 +333,19 @@ public class GridSetFactoryTest extends TestCase {
                         tileHeight,
                         false);
 
-        assertEquals("test", gridSet.getName());
-        assertEquals(0D, gridSet.tileOrigin()[0]);
-        assertEquals(0D, gridSet.tileOrigin()[1]);
+        Assert.assertEquals("test", gridSet.getName());
+        Assert.assertEquals(0D, gridSet.tileOrigin()[0], 0d);
+        Assert.assertEquals(0D, gridSet.tileOrigin()[1], 0d);
 
-        assertEquals(new BoundingBox(0, 0, 100, 50), gridSet.getBounds());
+        Assert.assertEquals(new BoundingBox(0, 0, 100, 50), gridSet.getBounds());
 
-        assertEquals(4, gridSet.getNumLevels());
+        Assert.assertEquals(4, gridSet.getNumLevels());
 
         Grid grid0 = gridSet.getGrid(0);
 
-        assertEquals(4L, grid0.getNumTilesWide());
-        assertEquals(1L, grid0.getNumTilesHigh());
-        assertEquals(50D / 20D, grid0.getResolution());
+        Assert.assertEquals(4L, grid0.getNumTilesWide());
+        Assert.assertEquals(1L, grid0.getNumTilesHigh());
+        Assert.assertEquals(50D / 20D, grid0.getResolution(), 0d);
 
         alignTopLeft = true;
         gridSet =
@@ -350,12 +361,13 @@ public class GridSetFactoryTest extends TestCase {
                         tileHeight,
                         false);
 
-        assertEquals(new BoundingBox(0, -5, 100, 45), gridSet.getBounds());
-        assertEquals("test", gridSet.getName());
-        assertEquals(0D, gridSet.tileOrigin()[0]);
-        assertEquals(45D, gridSet.tileOrigin()[1]);
+        Assert.assertEquals(new BoundingBox(0, -5, 100, 45), gridSet.getBounds());
+        Assert.assertEquals("test", gridSet.getName());
+        Assert.assertEquals(0D, gridSet.tileOrigin()[0], 0d);
+        Assert.assertEquals(45D, gridSet.tileOrigin()[1], 0d);
     }
 
+    @Test
     public void testTallBoundsWideTile() throws Exception {
         BoundingBox extent = new BoundingBox(0, 0, 100, 490);
 
@@ -379,18 +391,18 @@ public class GridSetFactoryTest extends TestCase {
                         tileHeight,
                         false);
 
-        assertEquals(new BoundingBox(0, 0, 100, 500), gridSet.getBounds());
+        Assert.assertEquals(new BoundingBox(0, 0, 100, 500), gridSet.getBounds());
 
-        assertEquals(4, gridSet.getNumLevels());
+        Assert.assertEquals(4, gridSet.getNumLevels());
 
         Grid grid0 = gridSet.getGrid(0);
 
         long tilesWide = 1;
         long tilesHigh = 10;
 
-        assertEquals(tilesWide, grid0.getNumTilesWide());
-        assertEquals(tilesHigh, grid0.getNumTilesHigh());
-        assertEquals(500D / tileHeight / tilesHigh, grid0.getResolution());
+        Assert.assertEquals(tilesWide, grid0.getNumTilesWide());
+        Assert.assertEquals(tilesHigh, grid0.getNumTilesHigh());
+        Assert.assertEquals(500D / tileHeight / tilesHigh, grid0.getResolution(), 0d);
 
         alignTopLeft = true;
         gridSet =
@@ -407,10 +419,10 @@ public class GridSetFactoryTest extends TestCase {
                         false);
 
         BoundingBox bounds = gridSet.getBounds();
-        assertEquals(new BoundingBox(0, -10, 100, 490), bounds);
+        Assert.assertEquals(new BoundingBox(0, -10, 100, 490), bounds);
 
-        assertEquals("test", gridSet.getName());
-        assertEquals(0D, gridSet.tileOrigin()[0]);
-        assertEquals(490D, gridSet.tileOrigin()[1]);
+        Assert.assertEquals("test", gridSet.getName());
+        Assert.assertEquals(0D, gridSet.tileOrigin()[0], 0d);
+        Assert.assertEquals(490D, gridSet.tileOrigin()[1], 0d);
     }
 }

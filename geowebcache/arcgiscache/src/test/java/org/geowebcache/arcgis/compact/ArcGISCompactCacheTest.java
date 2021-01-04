@@ -4,8 +4,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.URL;
-import junit.framework.TestCase;
 import org.geowebcache.io.Resource;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Unit test for ArcGIS compact cache classes. Available data in supplied test caches:
@@ -34,7 +35,7 @@ import org.geowebcache.io.Resource;
  *
  * @author Bjoern Saxe
  */
-public class ArcGISCompactCacheTest extends TestCase {
+public class ArcGISCompactCacheTest {
     private static final byte[] JFIFHeader = {
         (byte) 0xFF,
         (byte) 0xD8,
@@ -50,110 +51,114 @@ public class ArcGISCompactCacheTest extends TestCase {
         0x01
     };
 
+    @Test
     public void testCompactCacheV1() throws Exception {
         URL url = getClass().getResource("/compactcache/_alllayers/");
         ArcGISCompactCache cache = new ArcGISCompactCacheV1(url.toURI().getPath());
 
-        assertNotNull(cache);
+        Assert.assertNotNull(cache);
 
-        assertNull(cache.getBundleFileResource(5, -1, -1));
-        assertNull(cache.getBundleFileResource(4, 10, 4));
-        assertNull(cache.getBundleFileResource(7, 22, 10));
+        Assert.assertNull(cache.getBundleFileResource(5, -1, -1));
+        Assert.assertNull(cache.getBundleFileResource(4, 10, 4));
+        Assert.assertNull(cache.getBundleFileResource(7, 22, 10));
 
-        assertNull(cache.getBundleFileResource(5, 0, 0));
-        assertNotNull(cache.getBundleFileResource(5, 10, 4));
-        assertNotNull(cache.getBundleFileResource(5, 13, 10));
-        assertNotNull(cache.getBundleFileResource(5, 12, 7));
+        Assert.assertNull(cache.getBundleFileResource(5, 0, 0));
+        Assert.assertNotNull(cache.getBundleFileResource(5, 10, 4));
+        Assert.assertNotNull(cache.getBundleFileResource(5, 13, 10));
+        Assert.assertNotNull(cache.getBundleFileResource(5, 12, 7));
 
-        assertNull(cache.getBundleFileResource(6, 0, 0));
-        assertNotNull(cache.getBundleFileResource(6, 22, 10));
-        assertNotNull(cache.getBundleFileResource(6, 22, 10));
-        assertNotNull(cache.getBundleFileResource(6, 25, 17));
+        Assert.assertNull(cache.getBundleFileResource(6, 0, 0));
+        Assert.assertNotNull(cache.getBundleFileResource(6, 22, 10));
+        Assert.assertNotNull(cache.getBundleFileResource(6, 22, 10));
+        Assert.assertNotNull(cache.getBundleFileResource(6, 25, 17));
     }
 
+    @Test
     public void testCompactCacheV2() throws Exception {
         URL url = getClass().getResource("/compactcacheV2/_alllayers/");
         ArcGISCompactCache cache = new ArcGISCompactCacheV2(url.toURI().getPath());
 
-        assertNotNull(cache);
+        Assert.assertNotNull(cache);
 
-        assertNull(cache.getBundleFileResource(5, -1, -1));
-        assertNull(cache.getBundleFileResource(3, 5, 2));
-        assertNull(cache.getBundleFileResource(4, 4, 1));
-        assertNull(cache.getBundleFileResource(4, 7, 6));
-        assertNull(cache.getBundleFileResource(5, 9, 4));
-        assertNull(cache.getBundleFileResource(6, 13, 11));
+        Assert.assertNull(cache.getBundleFileResource(5, -1, -1));
+        Assert.assertNull(cache.getBundleFileResource(3, 5, 2));
+        Assert.assertNull(cache.getBundleFileResource(4, 4, 1));
+        Assert.assertNull(cache.getBundleFileResource(4, 7, 6));
+        Assert.assertNull(cache.getBundleFileResource(5, 9, 4));
+        Assert.assertNull(cache.getBundleFileResource(6, 13, 11));
 
-        assertNotNull(cache.getBundleFileResource(4, 5, 2));
-        assertNotNull(cache.getBundleFileResource(4, 5, 4));
-        assertNotNull(cache.getBundleFileResource(4, 6, 5));
-        assertNotNull(cache.getBundleFileResource(5, 10, 4));
-        assertNotNull(cache.getBundleFileResource(5, 11, 9));
-        assertNotNull(cache.getBundleFileResource(5, 13, 10));
+        Assert.assertNotNull(cache.getBundleFileResource(4, 5, 2));
+        Assert.assertNotNull(cache.getBundleFileResource(4, 5, 4));
+        Assert.assertNotNull(cache.getBundleFileResource(4, 6, 5));
+        Assert.assertNotNull(cache.getBundleFileResource(5, 10, 4));
+        Assert.assertNotNull(cache.getBundleFileResource(5, 11, 9));
+        Assert.assertNotNull(cache.getBundleFileResource(5, 13, 10));
     }
 
+    @Test
     public void testBundleFileResourceV1() throws Exception {
         URL url = getClass().getResource("/compactcache/_alllayers/");
         ArcGISCompactCache cache = new ArcGISCompactCacheV1(url.toURI().getPath());
 
-        assertNotNull(cache);
+        Assert.assertNotNull(cache);
 
         Resource resource = cache.getBundleFileResource(5, 12, 7);
-        assertNotNull(resource);
-        assertEquals(6342, resource.getSize());
+        Assert.assertNotNull(resource);
+        Assert.assertEquals(6342, resource.getSize());
 
         File f = new File("5_12_7.jpg");
         FileOutputStream fos = new FileOutputStream(f);
         resource.transferTo(fos.getChannel());
         fos.close();
 
-        assertTrue(startsWithJPEGHeader(f));
+        Assert.assertTrue(startsWithJPEGHeader(f));
 
         f.delete();
 
         resource = cache.getBundleFileResource(6, 25, 17);
-        assertNotNull(resource);
-        assertEquals(6308, resource.getSize());
+        Assert.assertNotNull(resource);
+        Assert.assertEquals(6308, resource.getSize());
 
         f = new File("6_25_17.jpg");
         fos = new FileOutputStream(f);
         resource.transferTo(fos.getChannel());
         fos.close();
 
-        assertTrue(startsWithJPEGHeader(f));
+        Assert.assertTrue(startsWithJPEGHeader(f));
 
         f.delete();
     }
 
+    @Test
     public void testBundleFileResourceV2() throws Exception {
         URL url = getClass().getResource("/compactcacheV2/_alllayers/");
         ArcGISCompactCache cache = new ArcGISCompactCacheV2(url.toURI().getPath());
 
-        assertNotNull(cache);
+        Assert.assertNotNull(cache);
 
         Resource resource = cache.getBundleFileResource(4, 5, 4);
-        assertNotNull(resource);
-        assertEquals(7288, resource.getSize());
+        Assert.assertNotNull(resource);
+        Assert.assertEquals(7288, resource.getSize());
 
         File f = new File("4_5_4.jpg");
         FileOutputStream fos = new FileOutputStream(f);
         resource.transferTo(fos.getChannel());
         fos.close();
 
-        assertTrue(startsWithJPEGHeader(f));
+        Assert.assertTrue(startsWithJPEGHeader(f));
 
         f.delete();
 
         resource = cache.getBundleFileResource(5, 11, 5);
-        assertNotNull(resource);
-        assertEquals(6055, resource.getSize());
+        Assert.assertNotNull(resource);
+        Assert.assertEquals(6055, resource.getSize());
 
         f = new File("5_11_5.jpg");
         fos = new FileOutputStream(f);
         resource.transferTo(fos.getChannel());
         fos.close();
 
-        assertTrue(startsWithJPEGHeader(f));
+        Assert.assertTrue(startsWithJPEGHeader(f));
 
         f.delete();
     }

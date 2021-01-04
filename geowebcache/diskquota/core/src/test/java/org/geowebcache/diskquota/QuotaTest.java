@@ -14,16 +14,18 @@
  */
 package org.geowebcache.diskquota;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-public class QuotaTest extends TestCase {
+public class QuotaTest {
 
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
+    @Before
+    public void setUp() throws Exception {}
 
+    @Test
     public void testFake() {
-        assertTrue(true);
+        Assert.assertTrue(true);
     }
 
     /*

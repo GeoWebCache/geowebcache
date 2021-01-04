@@ -18,7 +18,6 @@
 package org.geowebcache.diskquota.jdbc;
 
 import java.util.Properties;
-import junit.framework.TestCase;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
@@ -72,7 +71,7 @@ import org.junit.internal.AssumptionViolatedException;
  * @author Justin Deoliveira, The Open Planning Project
  * @author Ben Caradoc-Davies, CSIRO Earth Science and Resource Engineering
  */
-public abstract class OnlineTestCase extends TestCase {
+public abstract class OnlineTestCase {
 
     private final class CompatibilityRule extends OnlineTestRule {
         private CompatibilityRule(String fixtureId) {

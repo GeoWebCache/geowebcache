@@ -1,16 +1,16 @@
 package org.geowebcache.service.mgmaps;
 
 import java.util.Arrays;
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 
-public class MGMapsConverterTest extends TestCase {
+public class MGMapsConverterTest {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
+    @Before
+    public void setUp() throws Exception {}
 
     /** see Modified for MGMaps API */
+    @Test
     public void testMGMapsConverter() throws Exception {
         /* Check origin location */
         int x = 0;

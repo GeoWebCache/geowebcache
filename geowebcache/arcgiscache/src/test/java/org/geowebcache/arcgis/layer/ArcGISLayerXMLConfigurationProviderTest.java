@@ -3,11 +3,13 @@ package org.geowebcache.arcgis.layer;
 import com.thoughtworks.xstream.XStream;
 import java.util.HashMap;
 import java.util.Map;
-import junit.framework.TestCase;
 import org.geowebcache.io.GeoWebCacheXStream;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class ArcGISLayerXMLConfigurationProviderTest extends TestCase {
+public class ArcGISLayerXMLConfigurationProviderTest {
 
+    @Test
     @SuppressWarnings("rawtypes")
     public void testGetConfiguredXStream() {
 
@@ -22,7 +24,7 @@ public class ArcGISLayerXMLConfigurationProviderTest extends TestCase {
                                     }
                                 });
 
-        assertNotNull(xs);
-        assertEquals(ArcGISCacheLayer.class, aliases.get("arcgisLayer"));
+        Assert.assertNotNull(xs);
+        Assert.assertEquals(ArcGISCacheLayer.class, aliases.get("arcgisLayer"));
     }
 }

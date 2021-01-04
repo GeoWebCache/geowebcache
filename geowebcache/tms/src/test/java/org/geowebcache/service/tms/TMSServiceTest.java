@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
-import junit.framework.TestCase;
 import org.apache.commons.lang3.StringUtils;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
@@ -36,10 +35,13 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.URLMangler;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.w3c.dom.Document;
 
-public class TMSServiceTest extends TestCase {
+public class TMSServiceTest {
 
     private TMSService service;
 
@@ -54,7 +56,8 @@ public class TMSServiceTest extends TestCase {
 
     private TMSDocumentFactory customFactory;
 
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         sb = mock(StorageBroker.class);
         tld = mock(TileLayerDispatcher.class);
         customTld = mock(TileLayerDispatcher.class);
@@ -250,13 +253,14 @@ public class TMSServiceTest extends TestCase {
 
         // sanity check
         for (String gsetName : gridSetNames) {
-            assertTrue(tileLayer.getGridSubsets().contains(gsetName));
-            assertNotNull(tileLayer.getGridSubset(gsetName));
+            Assert.assertTrue(tileLayer.getGridSubsets().contains(gsetName));
+            Assert.assertNotNull(tileLayer.getGridSubset(gsetName));
         }
 
         return tileLayer;
     }
 
+    @Test
     public void testTileMapServiceDocument() throws Exception {
 
         GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
@@ -282,43 +286,45 @@ public class TMSServiceTest extends TestCase {
         when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
 
         Conveyor conv = service.getConveyor(req, resp);
-        assertNotNull(conv);
+        Assert.assertNotNull(conv);
 
         final String layerName = conv.getLayerId();
-        assertNull(layerName);
+        Assert.assertNull(layerName);
 
-        assertEquals(Conveyor.RequestHandler.SERVICE, conv.reqHandler);
+        Assert.assertEquals(Conveyor.RequestHandler.SERVICE, conv.reqHandler);
         service.handleRequest(conv);
 
         String result = resp.getContentAsString();
 
         // Ensure the advertised Layer is contained
-        assertTrue(result.contains("mockLayer"));
+        Assert.assertTrue(result.contains("mockLayer"));
 
         Document doc = XMLUnit.buildTestDocument(result);
         XpathEngine xpath = XMLUnit.newXpathEngine();
 
-        assertEquals(
+        Assert.assertEquals(
                 "1",
                 xpath.evaluate(
-                        "count(//TileMapService[contains(@services,'http://localhost:8080/mycontext/')])",
+                        "count(//TileMapService[contains(@services,"
+                                + "'http://localhost:8080/mycontext/')])",
                         doc));
-        assertEquals("2", xpath.evaluate("count(//TileMap[@title='mockLayer'])", doc));
-        assertEquals(
+        Assert.assertEquals("2", xpath.evaluate("count(//TileMap[@title='mockLayer'])", doc));
+        Assert.assertEquals(
                 "2", xpath.evaluate("count(//TileMap[@title='mockLayer'][@srs='EPSG:4326'])", doc));
-        assertEquals(
+        Assert.assertEquals(
                 "1",
                 xpath.evaluate(
                         "count(//TileMap[@title='mockLayer'][contains(@href,'jpeg')])", doc));
-        assertEquals(
+        Assert.assertEquals(
                 "1",
                 xpath.evaluate("count(//TileMap[@title='mockLayer'][contains(@href,'png')])", doc));
-        assertEquals(
+        Assert.assertEquals(
                 "0",
                 xpath.evaluate(
                         "count(//TileMap[@title='mockLayer'][contains(@href,'jpeg-png')])", doc));
     }
 
+    @Test
     public void testTMSDocumentsWithCustomFactory() throws Exception {
 
         GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
@@ -337,36 +343,36 @@ public class TMSServiceTest extends TestCase {
         when(req.getRequestURL())
                 .thenReturn(new StringBuffer("http://localhost:8080/mycontext/service/tms/1.0.0"));
         Conveyor conv = service.getConveyor(req, resp);
-        assertNotNull(conv);
+        Assert.assertNotNull(conv);
 
         final String layerName = conv.getLayerId();
-        assertNull(layerName);
+        Assert.assertNull(layerName);
 
-        assertEquals(Conveyor.RequestHandler.SERVICE, conv.reqHandler);
+        Assert.assertEquals(Conveyor.RequestHandler.SERVICE, conv.reqHandler);
         service.handleRequest(conv);
 
         String result = resp.getContentAsString();
 
         // Ensure the custom authorized Layer is contained and the un-authorized is not
-        assertFalse(result.contains("customLayer1"));
-        assertTrue(result.contains("customLayer2"));
+        Assert.assertFalse(result.contains("customLayer1"));
+        Assert.assertTrue(result.contains("customLayer2"));
 
         Document doc = XMLUnit.buildTestDocument(result);
         XpathEngine xpath = XMLUnit.newXpathEngine();
 
         // Note the https being added by the custom URLMangler
-        assertEquals(
+        Assert.assertEquals(
                 "1",
                 xpath.evaluate(
                         "count(//TileMapService[contains(@services,'https://localhost:8080/mycontext/')])",
                         doc));
-        assertEquals("1", xpath.evaluate("count(//TileMap[@title='Custom Layer2'])", doc));
-        assertEquals(
+        Assert.assertEquals("1", xpath.evaluate("count(//TileMap[@title='Custom Layer2'])", doc));
+        Assert.assertEquals(
                 "1",
                 xpath.evaluate(
                         "count(//TileMap[@title='Custom Layer2'][contains(@href,'jpeg-png')])",
                         doc));
-        assertEquals("0", xpath.evaluate("count(//TileMap[@title='Custom Layer1'])", doc));
+        Assert.assertEquals("0", xpath.evaluate("count(//TileMap[@title='Custom Layer1'])", doc));
 
         req = mock(HttpServletRequest.class);
         resp = new MockHttpServletResponse();
@@ -388,13 +394,16 @@ public class TMSServiceTest extends TestCase {
         doc = XMLUnit.buildTestDocument(result);
         xpath = XMLUnit.newXpathEngine();
 
-        assertEquals("22", xpath.evaluate("count(//TileSet[contains(@href,'customLayer2')])", doc));
+        Assert.assertEquals(
+                "22", xpath.evaluate("count(//TileSet[contains(@href,'customLayer2')])", doc));
     }
 
+    @Test
     public void testGetTile() throws Exception {
         testGetTile(false);
     }
 
+    @Test
     public void testGetTileFlipped() throws Exception {
         testGetTile(true);
     }
@@ -452,12 +461,13 @@ public class TMSServiceTest extends TestCase {
         when(req.getParameter("flipY")).thenReturn(flipParameter);
 
         Conveyor conv = service.getConveyor(req, resp);
-        assertNotNull(conv);
+        Assert.assertNotNull(conv);
         assertThat(conv, instanceOf(ConveyorTile.class));
         ConveyorTile tile = (ConveyorTile) conv;
         final long[] tileIndex = tile.getTileIndex();
-        assertEquals(column, tileIndex[0]);
-        assertEquals(row, flipY ? ((int) Math.pow(2, level) - tileIndex[1] - 1) : tileIndex[1]);
-        assertEquals(level, tileIndex[2]);
+        Assert.assertEquals(column, tileIndex[0]);
+        Assert.assertEquals(
+                row, flipY ? ((int) Math.pow(2, level) - tileIndex[1] - 1) : tileIndex[1]);
+        Assert.assertEquals(level, tileIndex[2]);
     }
 }

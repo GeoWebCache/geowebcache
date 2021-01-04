@@ -20,6 +20,7 @@ import org.jclouds.io.Payload;
 import org.jclouds.io.payloads.BaseMutableContentMetadata;
 import org.jclouds.openstack.swift.v1.domain.SwiftObject;
 import org.jclouds.openstack.swift.v1.features.ObjectApi;
+import org.junit.Test;
 
 public class SwiftUploadTaskTest extends SwiftTileTest {
 
@@ -30,6 +31,7 @@ public class SwiftUploadTaskTest extends SwiftTileTest {
         super.setUp();
     }
 
+    @Test
     public void testRunWithEmptyListeners() {
         SwiftUploadTask swiftUploadTask =
                 new SwiftUploadTask(testKey, swiftTile, testListeners, testObjectApi);
@@ -40,6 +42,7 @@ public class SwiftUploadTaskTest extends SwiftTileTest {
         verify(swiftTile, times(0)).setExisted(anyLong());
     }
 
+    @Test
     public void testRunWithNullObject() {
         when(testObjectApi.getWithoutBody(testKey)).thenReturn(null);
         addListener();
@@ -53,6 +56,7 @@ public class SwiftUploadTaskTest extends SwiftTileTest {
         verify(swiftTile, times(0)).setExisted(anyLong());
     }
 
+    @Test
     public void testRunWithValidObject() {
         SwiftObject testSwiftObject = mock(SwiftObject.class);
         Payload testPayload = mock(Payload.class);

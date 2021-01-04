@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
-import junit.framework.TestCase;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.conveyor.ConveyorTile;
@@ -19,16 +18,18 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.TileLayerDispatcherMock;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.storage.StorageBroker;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-public class GMapsConverterTest extends TestCase {
+public class GMapsConverterTest {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
+    @Before
+    public void setUp() throws Exception {}
 
     /** see http://code.google.com/apis/maps/documentation/overlays.html# Custom_Map_Types */
+    @Test
     public void testGMapsConverter() throws Exception {
         /* Check origin location */
         int x = 0;
@@ -88,6 +89,7 @@ public class GMapsConverterTest extends TestCase {
 
     private static final String TEST_LAYER_NAME = "testLayer";
 
+    @Test
     public void testConveyorCreation() {
         StorageBroker sb = null;
 
@@ -133,13 +135,13 @@ public class GMapsConverterTest extends TestCase {
         try {
             ConveyorTile conveyorTile = converter.getConveyor(request, response);
             Map<String, String> parameters = conveyorTile.getParameters();
-            assertNotNull(parameters);
+            Assert.assertNotNull(parameters);
             // assertTrue(parameters.contains(URLEncoder.encode(CQL_FILTER_PARAMETER_VALUE,"UTF8")));
-            assertEquals(
+            Assert.assertEquals(
                     CQL_FILTER_PARAMETER_VALUE,
                     URLDecoder.decode(parameters.get(CQL_FILTER_PARAMETER_NAME), "UTF8"));
         } catch (UnsupportedEncodingException | GeoWebCacheException e) {
-            fail();
+            Assert.fail();
         }
     }
 }

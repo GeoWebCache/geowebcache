@@ -1,6 +1,7 @@
 package org.geowebcache.service;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
 import org.owasp.encoder.Encode;
 
 /**
@@ -10,7 +11,7 @@ import org.owasp.encoder.Encode;
  * @author Thijs Brentjens (thijs@brentjensgeoict.nl)
  * @version $Id$
  */
-public class OWSExceptionEncodingTest extends TestCase {
+public class OWSExceptionEncodingTest {
 
     int httpCode;
     String exceptionCode = "OperationNotSupported";
@@ -18,16 +19,18 @@ public class OWSExceptionEncodingTest extends TestCase {
 
     // The exception locator and text are vulnerable for XSS for example and should be escaped.
     // Other parts of the Exception are fine.
+    @Test
     public void testLocator() throws Exception {
         OWSException xssExceptionLocator =
                 new OWSException(httpCode, exceptionCode, textToEncode, "exceptionText");
-        assertTrue(isXmlEncoded(xssExceptionLocator));
+        Assert.assertTrue(isXmlEncoded(xssExceptionLocator));
     }
 
+    @Test
     public void testText() throws Exception {
         OWSException xssExceptionText =
                 new OWSException(httpCode, exceptionCode, "locator", textToEncode);
-        assertTrue(isXmlEncoded(xssExceptionText));
+        Assert.assertTrue(isXmlEncoded(xssExceptionText));
     }
 
     private boolean isXmlEncoded(OWSException exception) throws Exception {

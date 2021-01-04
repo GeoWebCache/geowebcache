@@ -16,7 +16,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import junit.framework.TestCase;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
@@ -27,9 +26,12 @@ import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.ServletUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.util.StopWatch;
 
-public class TileRangeIteratorTest extends TestCase {
+public class TileRangeIteratorTest {
 
     private MimeType mimeType;
 
@@ -47,7 +49,7 @@ public class TileRangeIteratorTest extends TestCase {
      */
     private RasterMask rasterMask;
 
-    @Override
+    @Before
     public void setUp() throws Exception {
         mimeType = MimeType.createFromFormat("image/png");
         parameters = null;
@@ -80,6 +82,7 @@ public class TileRangeIteratorTest extends TestCase {
     }
 
     /** */
+    @Test
     public void testTraverseIndividualZoomLevelsNoMetaTiling() throws Exception {
         int zoomStart = gridSubSet.getZoomStart();
         int zoomStop = gridSubSet.getZoomStop();
@@ -89,7 +92,7 @@ public class TileRangeIteratorTest extends TestCase {
             long tilesProcessed =
                     traverseTileRangeIter(1, gridCoverages, zLevel, zLevel, metaTilingFactors);
             long expected = countMetaTiles(gridCoverages, zLevel, zLevel, metaTilingFactors);
-            assertEquals(
+            Assert.assertEquals(
                     "Expected tile count mismatch at zoom level " + zLevel,
                     expected,
                     tilesProcessed);
@@ -97,6 +100,7 @@ public class TileRangeIteratorTest extends TestCase {
     }
 
     /** */
+    @Test
     public void testTraverseIndividualZoomLevelsNoMetaTilingMultiThreading() throws Exception {
         int zoomStart = gridSubSet.getZoomStart();
         int zoomStop = gridSubSet.getZoomStop();
@@ -110,7 +114,7 @@ public class TileRangeIteratorTest extends TestCase {
                 traverseTileRangeIter(
                         nThreads, gridCoverages, zoomStart, zoomStop, metaTilingFactors);
         long expected = countMetaTiles(gridCoverages, zoomStart, zoomStop, metaTilingFactors);
-        assertEquals(
+        Assert.assertEquals(
                 "Expected tile count mismatch at zoom level " + zoomStart,
                 expected,
                 tilesProcessed);
@@ -125,6 +129,7 @@ public class TileRangeIteratorTest extends TestCase {
     }
 
     /** */
+    @Test
     public void testTraverseIndividualZoomLevelsMetaTiling() throws Exception {
         int zoomStart = gridSubSet.getZoomStart();
         int zoomStop = gridSubSet.getZoomStop();
@@ -134,7 +139,7 @@ public class TileRangeIteratorTest extends TestCase {
             long tilesProcessed =
                     traverseTileRangeIter(1, gridCoverages, zLevel, zLevel, metaTilingFactors);
             long expected = countMetaTiles(gridCoverages, zLevel, zLevel, metaTilingFactors);
-            assertEquals(
+            Assert.assertEquals(
                     "Expected tile count mismatch at zoom level " + zLevel,
                     expected,
                     tilesProcessed);
@@ -142,6 +147,7 @@ public class TileRangeIteratorTest extends TestCase {
     }
 
     /** */
+    @Test
     public void testWholeRangeMultiThreaded() throws Exception {
         int zoomStart = gridSubSet.getZoomStart();
         int zoomStop = gridSubSet.getZoomStop();
@@ -152,10 +158,11 @@ public class TileRangeIteratorTest extends TestCase {
                 traverseTileRangeIter(
                         nThreads, gridCoverages, zoomStart, zoomStop, metaTilingFactors);
         long expected = countMetaTiles(gridCoverages, zoomStart, zoomStop, metaTilingFactors);
-        assertEquals(expected, tilesProcessed);
+        Assert.assertEquals(expected, tilesProcessed);
     }
 
     /** */
+    @Test
     public void testWholeRangeMultiThreadedMetaTiling() throws Exception {
         int zoomStart = gridSubSet.getZoomStart();
         int zoomStop = gridSubSet.getZoomStop();
@@ -166,10 +173,11 @@ public class TileRangeIteratorTest extends TestCase {
                 traverseTileRangeIter(
                         nThreads, gridCoverages, zoomStart, zoomStop, metaTilingFactors);
         long expected = countMetaTiles(gridCoverages, zoomStart, zoomStop, metaTilingFactors);
-        assertEquals(expected, tilesProcessed);
+        Assert.assertEquals(expected, tilesProcessed);
     }
 
     /** */
+    @Test
     public void testDiscontinuousTileRange() throws Exception {
         rasterMask = createMock(RasterMask.class);
         expect(rasterMask.getGridCoverages()).andReturn(gridCoverages);
@@ -190,7 +198,7 @@ public class TileRangeIteratorTest extends TestCase {
                 traverseTileRangeIter(
                         nThreads, gridCoverages, zoomStart, zoomStop, metaTilingFactors);
         final long expected = 2;
-        assertEquals(expected, tilesProcessed);
+        Assert.assertEquals(expected, tilesProcessed);
         verify(rasterMask);
     }
 
@@ -240,7 +248,7 @@ public class TileRangeIteratorTest extends TestCase {
             executorService.awaitTermination(120, TimeUnit.SECONDS);
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
-            fail("Executor service timeout: " + ie.getMessage());
+            Assert.fail("Executor service timeout: " + ie.getMessage());
         }
 
         long totalProcessed = sumValues(values);

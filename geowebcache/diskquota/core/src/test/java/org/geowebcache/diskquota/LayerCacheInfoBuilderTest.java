@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import junit.framework.TestCase;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.grid.GridSubset;
@@ -30,8 +29,9 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.blobstore.file.DefaultFilePathGenerator;
 import org.geowebcache.storage.blobstore.file.FilePathGenerator;
+import org.junit.Test;
 
-public class LayerCacheInfoBuilderTest extends TestCase {
+public class LayerCacheInfoBuilderTest {
 
     private LayerCacheInfoBuilder infoBuilder;
 
@@ -51,6 +51,7 @@ public class LayerCacheInfoBuilderTest extends TestCase {
                 };
             };
 
+    @Test
     public void testFake() {}
 
     /*

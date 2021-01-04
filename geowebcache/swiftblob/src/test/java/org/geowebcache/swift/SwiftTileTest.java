@@ -16,12 +16,19 @@ package org.geowebcache.swift;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
-import junit.framework.TestCase;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.storage.BlobStoreListener;
@@ -29,10 +36,12 @@ import org.geowebcache.storage.BlobStoreListenerList;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.jclouds.io.Payload;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-public class SwiftTileTest extends TestCase {
+public class SwiftTileTest {
 
     protected SwiftTile swiftTile;
     protected BlobStoreListenerList testListeners;
@@ -42,8 +51,8 @@ public class SwiftTileTest extends TestCase {
     private long[] xyz = {1L, 2L, 3L};
     private Map<String, String> parameters = Collections.singletonMap("testKey", "testValue1");
 
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
         createValidSwiftTile();
     }
 
@@ -70,25 +79,22 @@ public class SwiftTileTest extends TestCase {
     }
 
     @Test(expected = IOException.class)
-    public void testSwiftTileWhenBlobInputStreamThrowsIOException() {
+    public void testSwiftTileWhenBlobInputStreamThrowsIOException() throws IOException {
         Resource invalidResource = mock(Resource.class);
         when(invalidResource.getSize()).thenReturn(3L);
 
-        try {
-            when(invalidResource.getInputStream()).thenThrow(IOException.class);
+        when(invalidResource.getInputStream()).thenThrow(IOException.class);
 
-            TileObject sampleTileObject =
-                    TileObject.createCompleteTileObject(
-                            VALID_TEST_LAYER_NAME,
-                            xyz,
-                            "EPSG:4326",
-                            "image/jpeg",
-                            parameters,
-                            invalidResource);
+        TileObject sampleTileObject =
+                TileObject.createCompleteTileObject(
+                        VALID_TEST_LAYER_NAME,
+                        xyz,
+                        "EPSG:4326",
+                        "image/jpeg",
+                        parameters,
+                        invalidResource);
 
-            swiftTile = new SwiftTile(sampleTileObject);
-        } catch (IOException e) {
-        }
+        swiftTile = new SwiftTile(sampleTileObject);
     }
 
     @Test
@@ -105,11 +111,11 @@ public class SwiftTileTest extends TestCase {
 
         try {
             swiftTile = new SwiftTile(sampleTileObject);
-            fail("Null check for tile format failed.");
+            Assert.fail("Null check for tile format failed.");
         } catch (NullPointerException e) {
             assertThat(e.getMessage(), is("Object Blob Format must not be null."));
         } catch (StorageException e) {
-            fail("Should be throwing a NullPointerException.\n" + e);
+            Assert.fail("Should be throwing a NullPointerException.\n" + e);
         }
     }
 
@@ -129,11 +135,11 @@ public class SwiftTileTest extends TestCase {
         // Test when blob is null
         try {
             swiftTile = new SwiftTile(sampleTileObject);
-            fail("Null check when blob is null failed");
+            Assert.fail("Null check when blob is null failed");
         } catch (NullPointerException e) {
             assertThat(e.getMessage(), is("Object Blob must not be null."));
         } catch (StorageException e) {
-            fail("Should be throwing a NullPointerException.\n" + e);
+            Assert.fail("Should be throwing a NullPointerException.\n" + e);
         }
     }
 
@@ -143,7 +149,8 @@ public class SwiftTileTest extends TestCase {
         ReflectionTestUtils.setField(swiftTile, "outputLength", testOutputLengthValue);
 
         Payload testPayload = swiftTile.getPayload();
-        assertEquals(testOutputLengthValue, testPayload.getContentMetadata().getContentLength());
+        Assert.assertEquals(
+                testOutputLengthValue, testPayload.getContentMetadata().getContentLength());
     }
 
     @Test
@@ -152,9 +159,10 @@ public class SwiftTileTest extends TestCase {
         ReflectionTestUtils.setField(swiftTile, "blobFormat", testBlobFormat);
 
         Payload testPayload = swiftTile.getPayload();
-        assertEquals(testBlobFormat, testPayload.getContentMetadata().getContentType());
+        Assert.assertEquals(testBlobFormat, testPayload.getContentMetadata().getContentType());
     }
 
+    @Test
     public void testSetExisted() {
         Long testNewSize = 6L;
 
@@ -162,8 +170,8 @@ public class SwiftTileTest extends TestCase {
         ReflectionTestUtils.setField(swiftTile, "oldSize", 0L);
 
         swiftTile.setExisted(testNewSize);
-        assertTrue((boolean) ReflectionTestUtils.getField(swiftTile, "existed"));
-        assertEquals(testNewSize, ReflectionTestUtils.getField(swiftTile, "oldSize"));
+        Assert.assertTrue((boolean) ReflectionTestUtils.getField(swiftTile, "existed"));
+        Assert.assertEquals(testNewSize, ReflectionTestUtils.getField(swiftTile, "oldSize"));
     }
 
     private void checkListenersNotifications(int sendTileUpdatedTimes, int sendTileStoredTimes) {
@@ -228,10 +236,11 @@ public class SwiftTileTest extends TestCase {
         checkListenersNotifications(0, 1);
     }
 
+    @Test
     public void testTestToString() { // Parameters id is null?
         String testString = swiftTile.toString();
         String expectedString = "TestLayer, EPSG:4326, image/jpeg, 1234, xyz=1,2,3";
 
-        assertEquals(expectedString, testString);
+        Assert.assertEquals(expectedString, testString);
     }
 }
