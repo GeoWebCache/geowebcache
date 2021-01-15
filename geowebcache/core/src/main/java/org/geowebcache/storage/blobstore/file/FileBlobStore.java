@@ -293,14 +293,12 @@ public class FileBlobStore implements BlobStore {
         final String filteredGridSetId = filteredGridSetId(gridSetId);
 
         FileFilter filter =
-                new FileFilter() {
-                    public boolean accept(File pathname) {
-                        if (!pathname.isDirectory()) {
-                            return false;
-                        }
-                        String dirName = pathname.getName();
-                        return dirName.startsWith(filteredGridSetId);
+                pathname -> {
+                    if (!pathname.isDirectory()) {
+                        return false;
                     }
+                    String dirName = pathname.getName();
+                    return dirName.startsWith(filteredGridSetId);
                 };
         File[] gridSubsetCaches = listFilesNullSafe(layerPath, filter);
 

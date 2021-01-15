@@ -285,20 +285,18 @@ public class BDBQuotaStore implements QuotaStore {
     /** @see org.geowebcache.diskquota.QuotaStore#createLayer(java.lang.String) */
     public void createLayer(final String layerName) throws InterruptedException {
         issueSync(
-                new Callable<Void>() {
-
-                    public Void call() throws Exception {
-                        final Transaction transaction =
-                                entityStore.getEnvironment().beginTransaction(null, null);
-                        try {
-                            createLayer(layerName, transaction);
-                            transaction.commit();
-                        } catch (RuntimeException e) {
-                            transaction.abort();
-                        }
-                        return null;
-                    }
-                });
+                (Callable<Void>)
+                        () -> {
+                            final Transaction transaction =
+                                    entityStore.getEnvironment().beginTransaction(null, null);
+                            try {
+                                createLayer(layerName, transaction);
+                                transaction.commit();
+                            } catch (RuntimeException e) {
+                                transaction.abort();
+                            }
+                            return null;
+                        });
     }
 
     private void createLayer(String layerName, final Transaction transaction) {
@@ -633,16 +631,12 @@ public class BDBQuotaStore implements QuotaStore {
     /** @see org.geowebcache.diskquota.QuotaStore#getTileSetById(java.lang.String) */
     public TileSet getTileSetById(final String tileSetId) throws InterruptedException {
         return issueSync(
-                new Callable<TileSet>() {
-
-                    public TileSet call() throws Exception {
-                        TileSet tileSet = tileSetById.get(tileSetId);
-                        if (tileSet == null) {
-                            throw new IllegalArgumentException(
-                                    "TileSet does not exist: " + tileSetId);
-                        }
-                        return tileSet;
+                () -> {
+                    TileSet tileSet = tileSetById.get(tileSetId);
+                    if (tileSet == null) {
+                        throw new IllegalArgumentException("TileSet does not exist: " + tileSetId);
                     }
+                    return tileSet;
                 });
     }
 

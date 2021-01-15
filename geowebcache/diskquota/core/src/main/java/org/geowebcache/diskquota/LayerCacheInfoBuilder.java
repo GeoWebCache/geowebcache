@@ -154,13 +154,11 @@ final class LayerCacheInfoBuilder {
         for (String gridSetName : griSetNames) {
             final String gridSetDirPrefix = FilePathUtils.filteredGridSetId(gridSetName);
             FileFilter prefixFilter =
-                    new FileFilter() {
-                        public boolean accept(File pathname) {
-                            if (!pathname.isDirectory()) {
-                                return false;
-                            }
-                            return pathname.getName().startsWith(gridSetDirPrefix + "_");
+                    pathname -> {
+                        if (!pathname.isDirectory()) {
+                            return false;
                         }
+                        return pathname.getName().startsWith(gridSetDirPrefix + "_");
                     };
             File[] thisGridSetDirs = FileUtils.listFilesNullSafe(layerDir, prefixFilter);
             for (File directory : thisGridSetDirs) {

@@ -22,7 +22,6 @@ import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.util.List;
@@ -136,12 +135,9 @@ public class TemporaryS3Folder extends ExternalResource {
             List<KeyVersion> keys =
                     Lists.transform(
                             os,
-                            new Function<S3ObjectSummary, KeyVersion>() {
-                                @Override
-                                public KeyVersion apply(S3ObjectSummary input) {
-                                    KeyVersion k = new KeyVersion(input.getKey());
-                                    return k;
-                                }
+                            input -> {
+                                KeyVersion k = new KeyVersion(input.getKey());
+                                return k;
                             });
             DeleteObjectsRequest deleteRequest = new DeleteObjectsRequest(bucket);
             deleteRequest.setKeys(keys);

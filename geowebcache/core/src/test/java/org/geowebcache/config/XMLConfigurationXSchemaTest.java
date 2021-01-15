@@ -21,7 +21,6 @@ import com.thoughtworks.xstream.XStream;
 import java.util.Collections;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
-import org.easymock.IAnswer;
 import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.util.PropertyRule;
 import org.junit.Ignore;
@@ -90,14 +89,10 @@ public class XMLConfigurationXSchemaTest {
         final Capture<XStream> xsCap = new Capture<>();
         EasyMock.expect(provider.getConfiguredXStream(EasyMock.capture(xsCap)))
                 .andStubAnswer(
-                        new IAnswer<XStream>() {
-
-                            @Override
-                            public XStream answer() throws Throwable {
-                                XStream xs = xsCap.getValue();
-                                xs.allowTypes(new Class[] {org.easymock.Capture.class});
-                                return xs;
-                            }
+                        () -> {
+                            XStream xs1 = xsCap.getValue();
+                            xs1.allowTypes(new Class[] {Capture.class});
+                            return xs1;
                         });
 
         EasyMock.replay(wac, provider);

@@ -18,7 +18,6 @@ package org.geowebcache.config;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -251,16 +250,14 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
 
         String[] previousBackUps =
                 parentFile.list(
-                        new FilenameFilter() {
-                            public boolean accept(File dir, String name) {
-                                if (configFileName.equals(name)) {
-                                    return false;
-                                }
-                                if (name.startsWith(configFileName) && name.endsWith(".bak")) {
-                                    return true;
-                                }
+                        (dir, name) -> {
+                            if (configFileName.equals(name)) {
                                 return false;
                             }
+                            if (name.startsWith(configFileName) && name.endsWith(".bak")) {
+                                return true;
+                            }
+                            return false;
                         });
 
         final int maxBackups = 10;

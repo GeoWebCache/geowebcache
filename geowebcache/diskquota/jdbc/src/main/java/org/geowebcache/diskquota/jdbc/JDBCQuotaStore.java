@@ -22,13 +22,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -149,13 +147,7 @@ public class JDBCQuotaStore implements QuotaStore {
                         List<String> existingLayers =
                                 jt.query(
                                         dialect.getAllLayersQuery(schema),
-                                        new RowMapper<String>() {
-
-                                            public String mapRow(ResultSet rs, int rowNum)
-                                                    throws SQLException {
-                                                return rs.getString(1);
-                                            }
-                                        });
+                                        (rs, rowNum) -> rs.getString(1));
 
                         // compare with the ones available in the config
                         final Set<String> layerNames = calculator.getLayerNames();
@@ -257,14 +249,11 @@ public class JDBCQuotaStore implements QuotaStore {
         String sql = dialect.getUsedQuotaByTileSetId(schema, "key");
         return jt.queryForOptionalObject(
                 sql,
-                new RowMapper<Quota>() {
-
-                    public Quota mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        BigDecimal bytes = rs.getBigDecimal(1);
-                        Quota quota = new Quota(bytes.toBigInteger());
-                        quota.setTileSetId(tileSetId);
-                        return quota;
-                    }
+                (rs, rowNum) -> {
+                    BigDecimal bytes = rs.getBigDecimal(1);
+                    Quota quota = new Quota(bytes.toBigInteger());
+                    quota.setTileSetId(tileSetId);
+                    return quota;
                 },
                 Collections.singletonMap("key", tileSetId));
     }
@@ -571,13 +560,10 @@ public class JDBCQuotaStore implements QuotaStore {
         List<PageStatsPayload> result = new ArrayList<>(tileCountDiffs);
         Collections.sort(
                 result,
-                new Comparator<PageStatsPayload>() {
-
-                    public int compare(PageStatsPayload pl1, PageStatsPayload pl2) {
-                        TilePage p1 = pl1.getPage();
-                        TilePage p2 = pl2.getPage();
-                        return p1.getKey().compareTo(p2.getKey());
-                    }
+                (pl1, pl2) -> {
+                    TilePage p1 = pl1.getPage();
+                    TilePage p2 = pl2.getPage();
+                    return p1.getKey().compareTo(p2.getKey());
                 });
         return result;
     }
@@ -655,18 +641,15 @@ public class JDBCQuotaStore implements QuotaStore {
         String getPageStats = dialect.getPageStats(schema, "key");
         return jt.queryForOptionalObject(
                 getPageStats,
-                new RowMapper<PageStats>() {
+                (rs, rowNum) -> {
+                    PageStats ps = new PageStats(0);
+                    // FREQUENCY_OF_USE, LAST_ACCESS_TIME, FILL_FACTOR, NUM_HITS FROM
+                    ps.setFrequencyOfUsePerMinute(rs.getFloat(1));
+                    ps.setLastAccessMinutes(rs.getInt(2));
+                    ps.setFillFactor(rs.getFloat(3));
+                    ps.setNumHits(rs.getBigDecimal(4).toBigInteger());
 
-                    public PageStats mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        PageStats ps = new PageStats(0);
-                        // FREQUENCY_OF_USE, LAST_ACCESS_TIME, FILL_FACTOR, NUM_HITS FROM
-                        ps.setFrequencyOfUsePerMinute(rs.getFloat(1));
-                        ps.setLastAccessMinutes(rs.getInt(2));
-                        ps.setFillFactor(rs.getFloat(3));
-                        ps.setNumHits(rs.getBigDecimal(4).toBigInteger());
-
-                        return ps;
-                    }
+                    return ps;
                 },
                 Collections.singletonMap("key", pageStatsKey));
     }
@@ -675,10 +658,8 @@ public class JDBCQuotaStore implements QuotaStore {
     public Future<List<PageStats>> addHitsAndSetAccesTime(
             final Collection<PageStatsPayload> statsUpdates) {
         return executor.submit(
-                new Callable<List<PageStats>>() {
-
-                    public List<PageStats> call() throws Exception {
-                        return (List<PageStats>)
+                () ->
+                        (List<PageStats>)
                                 tt.execute(
                                         new TransactionCallback<Object>() {
 
@@ -838,9 +819,7 @@ public class JDBCQuotaStore implements QuotaStore {
                                                         lastAccessTimeMinutes,
                                                         creationTimeMinutes);
                                             }
-                                        });
-                    }
-                });
+                                        }));
     }
 
     public long[][] getTilesForPage(TilePage page) throws InterruptedException {
@@ -880,29 +859,27 @@ public class JDBCQuotaStore implements QuotaStore {
     public PageStats setTruncated(final TilePage page) throws InterruptedException {
         return (PageStats)
                 tt.execute(
-                        new TransactionCallback<Object>() {
-
-                            public Object doInTransaction(TransactionStatus status) {
-                                if (log.isDebugEnabled()) {
-                                    log.info("Truncating page " + page);
-                                }
-
-                                PageStats stats = getPageStats(page.getKey());
-                                if (stats != null) {
-                                    stats.setFillFactor(0);
-
-                                    // update the record in the db
-                                    int modified = setPageFillFactor(page, stats);
-                                    // if no record updated the page has been deleted by another
-                                    // instance
-                                    if (modified == 0) {
-                                        return null;
+                        (TransactionCallback<Object>)
+                                status -> {
+                                    if (log.isDebugEnabled()) {
+                                        log.info("Truncating page " + page);
                                     }
-                                }
 
-                                return stats;
-                            }
-                        });
+                                    PageStats stats = getPageStats(page.getKey());
+                                    if (stats != null) {
+                                        stats.setFillFactor(0);
+
+                                        // update the record in the db
+                                        int modified = setPageFillFactor(page, stats);
+                                        // if no record updated the page has been deleted by another
+                                        // instance
+                                        if (modified == 0) {
+                                            return null;
+                                        }
+                                    }
+
+                                    return stats;
+                                });
     }
 
     public void close() throws Exception {

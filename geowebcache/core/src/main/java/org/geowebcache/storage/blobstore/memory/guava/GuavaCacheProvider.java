@@ -17,8 +17,6 @@ package org.geowebcache.storage.blobstore.memory.guava;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheStats;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
 import com.google.common.cache.Weigher;
 import java.util.Arrays;
 import java.util.Collections;
@@ -152,13 +150,9 @@ public class GuavaCacheProvider implements CacheProvider {
         CacheBuilder<Object, Object> builder = CacheBuilder.newBuilder();
         // Add weigher
         Weigher<String, TileObject> weigher =
-                new Weigher<String, TileObject>() {
-
-                    @Override
-                    public int weigh(String key, TileObject value) {
-                        currentSize.addAndGet(value.getBlobSize());
-                        return value.getBlobSize();
-                    }
+                (key, value) -> {
+                    currentSize.addAndGet(value.getBlobSize());
+                    return value.getBlobSize();
                 };
         // Create the builder
         CacheBuilder<String, TileObject> newBuilder =
@@ -167,30 +161,25 @@ public class GuavaCacheProvider implements CacheProvider {
                         .weigher(weigher)
                         .concurrencyLevel(concurrency)
                         .removalListener(
-                                new RemovalListener<String, TileObject>() {
-
-                                    @Override
-                                    public void onRemoval(
-                                            RemovalNotification<String, TileObject> notification) {
-                                        // TODO This operation is not atomic
-                                        TileObject obj = notification.getValue();
-                                        // Update the current size
-                                        currentSize.addAndGet(-obj.getBlobSize());
-                                        final String tileKey = generateTileKey(obj);
-                                        final String layerName = obj.getLayerName();
-                                        multimap.removeTile(layerName, tileKey);
-                                        if (LOGGER.isDebugEnabled()) {
-                                            LOGGER.debug(
-                                                    "Removed tile "
-                                                            + tileKey
-                                                            + " for layer "
-                                                            + layerName
-                                                            + " due to reason:"
-                                                            + notification.getCause().toString());
-                                            LOGGER.debug(
-                                                    "Removed tile was evicted? "
-                                                            + notification.wasEvicted());
-                                        }
+                                notification -> {
+                                    // TODO This operation is not atomic
+                                    TileObject obj = notification.getValue();
+                                    // Update the current size
+                                    currentSize.addAndGet(-obj.getBlobSize());
+                                    final String tileKey = generateTileKey(obj);
+                                    final String layerName = obj.getLayerName();
+                                    multimap.removeTile(layerName, tileKey);
+                                    if (LOGGER.isDebugEnabled()) {
+                                        LOGGER.debug(
+                                                "Removed tile "
+                                                        + tileKey
+                                                        + " for layer "
+                                                        + layerName
+                                                        + " due to reason:"
+                                                        + notification.getCause().toString());
+                                        LOGGER.debug(
+                                                "Removed tile was evicted? "
+                                                        + notification.wasEvicted());
                                     }
                                 });
         // Handle eviction policy
@@ -223,22 +212,18 @@ public class GuavaCacheProvider implements CacheProvider {
                 LOGGER.debug("Configuring Scheduled Task for cache eviction");
             }
             Runnable command =
-                    new Runnable() {
-
-                        @Override
-                        public void run() {
-                            if (configured.get()) {
-                                // Increment the number of current operations
-                                // This behavior is used in order to wait
-                                // the end of all the operations after setting
-                                // the configured parameter to false
-                                actualOperations.incrementAndGet();
-                                try {
-                                    cache.cleanUp();
-                                } finally {
-                                    // Decrement the number of current operations.
-                                    actualOperations.decrementAndGet();
-                                }
+                    () -> {
+                        if (configured.get()) {
+                            // Increment the number of current operations
+                            // This behavior is used in order to wait
+                            // the end of all the operations after setting
+                            // the configured parameter to false
+                            actualOperations.incrementAndGet();
+                            try {
+                                cache.cleanUp();
+                            } finally {
+                                // Decrement the number of current operations.
+                                actualOperations.decrementAndGet();
                             }
                         }
                     };
