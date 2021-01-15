@@ -70,13 +70,7 @@ public class GeoWebCacheEnvironment {
                     true);
 
     private final PlaceholderResolver resolver =
-            new PlaceholderResolver() {
-
-                @Override
-                public String resolvePlaceholder(String placeholderName) {
-                    return GeoWebCacheEnvironment.this.resolvePlaceholder(placeholderName);
-                }
-            };
+            placeholderName -> resolvePlaceholder(placeholderName);
 
     private Properties props;
 

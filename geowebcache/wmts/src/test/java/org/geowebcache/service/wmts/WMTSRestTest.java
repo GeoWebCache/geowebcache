@@ -63,7 +63,6 @@ import org.geowebcache.util.ResponseUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -368,16 +367,13 @@ public class WMTSRestTest {
 
         when(tileLayer.getTile(any(ConveyorTile.class)))
                 .thenAnswer(
-                        new Answer<ConveyorTile>() {
-                            @Override
-                            public ConveyorTile answer(InvocationOnMock invocation)
-                                    throws Throwable {
-                                ConveyorTile sourceTile =
-                                        (ConveyorTile) invocation.getArguments()[0];
-                                sourceTile.setBlob(getSampleTileContent());
-                                return sourceTile;
-                            }
-                        });
+                        (Answer<ConveyorTile>)
+                                invocation -> {
+                                    ConveyorTile sourceTile =
+                                            (ConveyorTile) invocation.getArguments()[0];
+                                    sourceTile.setBlob(getSampleTileContent());
+                                    return sourceTile;
+                                });
 
         when(tileLayer.getFeatureInfo(
                         any(ConveyorTile.class),
@@ -386,13 +382,7 @@ public class WMTSRestTest {
                         anyInt(),
                         anyInt(),
                         anyInt()))
-                .thenAnswer(
-                        new Answer<Resource>() {
-                            @Override
-                            public Resource answer(InvocationOnMock invocation) throws Throwable {
-                                return new ByteArrayResource(new byte[0]);
-                            }
-                        });
+                .thenAnswer((Answer<Resource>) invocation -> new ByteArrayResource(new byte[0]));
 
         return tld;
     }

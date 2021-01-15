@@ -43,7 +43,6 @@ import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
 import org.geowebcache.diskquota.DiskQuotaMonitor;
-import org.geowebcache.diskquota.QuotaStore;
 import org.geowebcache.diskquota.storage.PageStats;
 import org.geowebcache.diskquota.storage.PageStatsPayload;
 import org.geowebcache.diskquota.storage.Quota;
@@ -52,7 +51,6 @@ import org.geowebcache.diskquota.storage.SystemUtils;
 import org.geowebcache.diskquota.storage.TilePage;
 import org.geowebcache.diskquota.storage.TilePageCalculator;
 import org.geowebcache.diskquota.storage.TileSet;
-import org.geowebcache.diskquota.storage.TileSetVisitor;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -572,13 +570,7 @@ public abstract class JDBCQuotaStoreTest {
     public void testVisitor() throws Exception {
         Set<TileSet> tileSets1 = store.getTileSets();
         final Set<TileSet> tileSets2 = new HashSet<>();
-        store.accept(
-                new TileSetVisitor() {
-
-                    public void visit(TileSet tileSet, QuotaStore quotaStore) {
-                        tileSets2.add(tileSet);
-                    }
-                });
+        store.accept((tileSet, quotaStore) -> tileSets2.add(tileSet));
         assertEquals(tileSets1, tileSets2);
     }
 

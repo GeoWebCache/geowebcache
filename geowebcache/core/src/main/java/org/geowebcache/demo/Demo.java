@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -661,13 +660,7 @@ public class Demo {
             return "";
         }
         parameterFilters = new ArrayList<>(parameterFilters);
-        Collections.sort(
-                parameterFilters,
-                new Comparator<ParameterFilter>() {
-                    public int compare(ParameterFilter o1, ParameterFilter o2) {
-                        return o1.getKey().compareTo(o2.getKey());
-                    }
-                });
+        Collections.sort(parameterFilters, (o1, o2) -> o1.getKey().compareTo(o2.getKey()));
         StringBuilder doc = new StringBuilder();
         doc.append("Modifiable Parameters:\n");
         doc.append("<table>\n");

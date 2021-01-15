@@ -257,12 +257,7 @@ public class AzureBlobStore implements BlobStore {
                                         TileObject.createQueryTileObject(
                                                 layerName, xyz, gridSetId, format, parameters);
                                 tile.setParametersId(tileRange.getParametersId());
-                                return new Callable<Object>() {
-                                    @Override
-                                    public Object call() throws Exception {
-                                        return delete(tile);
-                                    }
-                                };
+                                return (Callable<Object>) () -> delete(tile);
                             });
             Iterator<List<Callable<?>>> partition =
                     Iterators.partition(tilesIterator, DeleteManager.PAGE_SIZE);

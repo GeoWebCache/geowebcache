@@ -51,7 +51,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -554,14 +553,11 @@ public class WMSLayerTest extends TileLayerTest {
                             null);
             futures.add(
                     completer.submit(
-                            new Callable<ConveyorTile>() {
-
-                                public ConveyorTile call() throws Exception {
-                                    try {
-                                        return tl.getTile(tile);
-                                    } catch (OutsideCoverageException oce) {
-                                        return null;
-                                    }
+                            () -> {
+                                try {
+                                    return tl.getTile(tile);
+                                } catch (OutsideCoverageException oce) {
+                                    return null;
                                 }
                             }));
 
@@ -727,24 +723,20 @@ public class WMSLayerTest extends TileLayerTest {
         private void installMockBroker() throws Exception {
             expect(storageBroker.getTransient(anyObject()))
                     .andAnswer(
-                            new IAnswer<Boolean>() {
-
-                                public Boolean answer() throws Throwable {
-                                    TileObject tile =
-                                            (TileObject) EasyMock.getCurrentArguments()[0];
-                                    String key = TransientCache.computeTransientKey(tile);
-                                    Resource resource;
-                                    synchronized (transientCache) {
-                                        resource = transientCache.get(key);
-                                    }
-                                    if (resource != null) {
-                                        cacheHits.incrementAndGet();
-                                    } else {
-                                        cacheMisses.incrementAndGet();
-                                    }
-                                    tile.setBlob(resource);
-                                    return resource != null;
+                            () -> {
+                                TileObject tile = (TileObject) EasyMock.getCurrentArguments()[0];
+                                String key = TransientCache.computeTransientKey(tile);
+                                Resource resource;
+                                synchronized (transientCache) {
+                                    resource = transientCache.get(key);
                                 }
+                                if (resource != null) {
+                                    cacheHits.incrementAndGet();
+                                } else {
+                                    cacheMisses.incrementAndGet();
+                                }
+                                tile.setBlob(resource);
+                                return resource != null;
                             })
                     .anyTimes();
 
@@ -779,17 +771,14 @@ public class WMSLayerTest extends TileLayerTest {
                     .anyTimes();
             expect(storageBroker.get(anyObject()))
                     .andAnswer(
-                            new IAnswer<Boolean>() {
-                                public Boolean answer() throws Throwable {
-                                    TileObject tile =
-                                            (TileObject) EasyMock.getCurrentArguments()[0];
-                                    if (puts.contains(TransientCache.computeTransientKey(tile))) {
-                                        tile.setBlob(new ByteArrayResource(fakeWMSResponse));
-                                        storageGetCounter.incrementAndGet();
-                                        return true;
-                                    } else {
-                                        return false;
-                                    }
+                            () -> {
+                                TileObject tile = (TileObject) EasyMock.getCurrentArguments()[0];
+                                if (puts.contains(TransientCache.computeTransientKey(tile))) {
+                                    tile.setBlob(new ByteArrayResource(fakeWMSResponse));
+                                    storageGetCounter.incrementAndGet();
+                                    return true;
+                                } else {
+                                    return false;
                                 }
                             })
                     .anyTimes();
