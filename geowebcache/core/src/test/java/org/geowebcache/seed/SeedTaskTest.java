@@ -322,7 +322,6 @@ public class SeedTaskTest {
         /*
          * Make sure the seed process asked for the expected tiles to be stored
          */
-        final long expectedSavedTileCount;
 
         final long[] coveredGridLevels = gridSubset.getCoverage(zoomLevel);
 
@@ -331,7 +330,7 @@ public class SeedTaskTest {
         long starty = coveredGridLevels[1];
         long startx = coveredGridLevels[0];
 
-        expectedSavedTileCount =
+        final long expectedSavedTileCount =
                 (coveredGridLevels[2] - startx + 1) * (coveredGridLevels[3] - starty + 1);
 
         List<TileObject> storedTiles = storedObjects.getValues();

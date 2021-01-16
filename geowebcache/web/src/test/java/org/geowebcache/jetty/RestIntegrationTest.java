@@ -1371,9 +1371,9 @@ public class RestIntegrationTest {
     /* Utility methods ***************************************************************************/
 
     private Document getResponseEntityAsXML(CloseableHttpResponse response) throws Exception {
-        Document doc;
 
-        doc = XMLUnit.buildTestDocument(new InputSource(response.getEntity().getContent()));
+        Document doc =
+                XMLUnit.buildTestDocument(new InputSource(response.getEntity().getContent()));
         doc.normalizeDocument();
 
         return doc;

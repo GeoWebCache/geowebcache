@@ -137,9 +137,7 @@ public class PagePyramidTest {
     @Test
     public void testToGridCoverage() {
 
-        long[][] gridCoverage;
-
-        gridCoverage = pyramid.toGridCoverage(0, 0, 0);
+        long[][] gridCoverage = pyramid.toGridCoverage(0, 0, 0);
         Assert.assertEquals(asList(0, 0, 0, 0, 0), asList(gridCoverage[0]));
 
         int level = 1;

@@ -352,14 +352,13 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      */
     private LayerCacheInfoBuilder launchCacheInfoGatheringThreads() throws InterruptedException {
 
-        LayerCacheInfoBuilder cacheInfoBuilder;
         File cacheRoot;
         try {
             cacheRoot = new File(storageFinder.getDefaultPath());
         } catch (ConfigurationException e) {
             throw new RuntimeException(e);
         }
-        cacheInfoBuilder =
+        LayerCacheInfoBuilder cacheInfoBuilder =
                 new LayerCacheInfoBuilder(cacheRoot, cleanUpExecutorService, quotaUsageMonitor);
 
         for (String layerName : tileLayerDispatcher.getLayerNames()) {

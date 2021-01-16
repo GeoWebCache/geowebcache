@@ -200,7 +200,6 @@ final class TMSKeyBuilder {
         String gridset = obj.getGridSetId();
         MimeType mimeType = obj.getMimeType();
 
-        String shortFormat;
         String parametersId = obj.getParametersId();
         if (parametersId == null) {
             Map<String, String> parameters = obj.getParameters();
@@ -211,7 +210,7 @@ final class TMSKeyBuilder {
                 obj.setParametersId(parametersId);
             }
         }
-        shortFormat = mimeType.getFileExtension(); // png, png8, png24, etc
+        String shortFormat = mimeType.getFileExtension(); // png, png8, png24, etc
 
         return join(true, prefix, layer, gridset, shortFormat, parametersId);
     }

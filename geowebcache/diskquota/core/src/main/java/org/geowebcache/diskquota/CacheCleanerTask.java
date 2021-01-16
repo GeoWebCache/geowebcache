@@ -143,11 +143,10 @@ class CacheCleanerTask implements Runnable {
                 }
 
                 Set<String> layerNames = Collections.singleton(layerName);
-                QuotaResolver quotaResolver;
-                quotaResolver = monitor.newLayerQuotaResolver(layerName);
+                QuotaResolver quotaResolver = monitor.newLayerQuotaResolver(layerName);
 
-                LayerQuotaEnforcementTask task;
-                task = new LayerQuotaEnforcementTask(layerNames, quotaResolver, monitor);
+                LayerQuotaEnforcementTask task =
+                        new LayerQuotaEnforcementTask(layerNames, quotaResolver, monitor);
                 Future<Object> future = this.cleanUpExecutorService.submit(task);
                 perLayerRunningCleanUps.put(layerName, future);
             }
@@ -179,9 +178,8 @@ class CacheCleanerTask implements Runnable {
             if (excedent.getBytes().compareTo(BigInteger.ZERO) > 0) {
 
                 log.debug("Submitting global cache quota enforcement task");
-                LayerQuotaEnforcementTask task;
                 QuotaResolver quotaResolver = monitor.newGlobalQuotaResolver();
-                task =
+                LayerQuotaEnforcementTask task =
                         new LayerQuotaEnforcementTask(
                                 globallyManagedLayerNames, quotaResolver, monitor);
                 this.globalCleanUpTask = this.cleanUpExecutorService.submit(task);

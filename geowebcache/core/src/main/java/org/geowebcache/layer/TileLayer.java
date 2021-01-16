@@ -416,8 +416,8 @@ public abstract class TileLayer implements Info {
         final String[] keys =
                 parameterFilters.stream().map(ParameterFilter::getKey).toArray(i -> new String[i]);
 
-        final Map<String, String> requestValues;
-        requestValues = ServletUtils.selectedStringsFromMap(map, encoding, keys);
+        final Map<String, String> requestValues =
+                ServletUtils.selectedStringsFromMap(map, encoding, keys);
 
         final Map<String, String> defaultValues = getDefaultParameterFilters();
 

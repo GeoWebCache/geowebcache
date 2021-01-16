@@ -515,9 +515,8 @@ public class TileBreeder implements ApplicationContextAware {
      * @throws GeoWebCacheException if the layer is not found
      */
     public TileLayer findTileLayer(String layerName) throws GeoWebCacheException {
-        TileLayer layer = null;
 
-        layer = layerDispatcher.getTileLayer(layerName);
+        TileLayer layer = layerDispatcher.getTileLayer(layerName);
 
         if (layer == null) {
             throw new GeoWebCacheException("Unknown layer: " + layerName);
