@@ -600,8 +600,7 @@ public abstract class JDBCQuotaStoreTest {
     @Test
     public void testGetUsedQuotaByLayerName() throws Exception {
         String layerName = "topp:states2";
-        List<TileSet> tileSets;
-        tileSets = new ArrayList<>(tilePageCalculator.getTileSetsFor(layerName));
+        List<TileSet> tileSets = new ArrayList<>(tilePageCalculator.getTileSetsFor(layerName));
 
         Quota expected = new Quota();
         for (TileSet tset : tileSets) {
@@ -618,8 +617,7 @@ public abstract class JDBCQuotaStoreTest {
     @Test
     public void testGetUsedQuotaByTileSetId() throws Exception {
         String layerName = "topp:states2";
-        List<TileSet> tileSets;
-        tileSets = new ArrayList<>(tilePageCalculator.getTileSetsFor(layerName));
+        List<TileSet> tileSets = new ArrayList<>(tilePageCalculator.getTileSetsFor(layerName));
 
         Map<String, Quota> expectedById = new HashMap<>();
 
@@ -760,8 +758,7 @@ public abstract class JDBCQuotaStoreTest {
         final String layerName = testTileSet.getLayerName();
         Set<String> layerNames = Collections.singleton(layerName);
 
-        TilePage lfuPage;
-        lfuPage = store.getLeastFrequentlyUsedPage(layerNames);
+        TilePage lfuPage = store.getLeastFrequentlyUsedPage(layerNames);
         assertNull(lfuPage);
 
         TilePage page1 = new TilePage(testTileSet.getId(), 0, 1, 2);
@@ -790,8 +787,7 @@ public abstract class JDBCQuotaStoreTest {
         final String layerName = testTileSet.getLayerName();
         Set<String> layerNames = Collections.singleton(layerName);
 
-        TilePage lfuPage;
-        lfuPage = store.getLeastFrequentlyUsedPage(layerNames);
+        TilePage lfuPage = store.getLeastFrequentlyUsedPage(layerNames);
         assertNull(lfuPage);
 
         TilePage page1 = new TilePage(testTileSet.getId(), 0, 1, 2);
@@ -824,8 +820,7 @@ public abstract class JDBCQuotaStoreTest {
         final String layerName = testTileSet.getLayerName();
         Set<String> layerNames = Collections.singleton(layerName);
 
-        TilePage leastRecentlyUsedPage;
-        leastRecentlyUsedPage = store.getLeastRecentlyUsedPage(layerNames);
+        TilePage leastRecentlyUsedPage = store.getLeastRecentlyUsedPage(layerNames);
         assertNull(leastRecentlyUsedPage);
 
         TilePage page1 = new TilePage(testTileSet.getId(), 0, 1, 2);
@@ -860,8 +855,7 @@ public abstract class JDBCQuotaStoreTest {
         final String layerName = testTileSet.getLayerName();
         Set<String> layerNames = Collections.singleton(layerName);
 
-        TilePage leastRecentlyUsedPage;
-        leastRecentlyUsedPage = store.getLeastRecentlyUsedPage(layerNames);
+        TilePage leastRecentlyUsedPage = store.getLeastRecentlyUsedPage(layerNames);
         assertNull(leastRecentlyUsedPage);
 
         TilePage page1 = new TilePage(testTileSet.getId(), 0, 1, 2);

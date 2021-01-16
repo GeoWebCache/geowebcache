@@ -76,10 +76,8 @@ public class SeedService {
     public ResponseEntity<?> getRunningTasks(HttpServletRequest request) {
         try {
             XStream xs = new GeoWebCacheXStream(new JsonHierarchicalStreamDriver());
-            JSONObject obj = null;
-            long[][] list;
-            list = seeder.getStatusList();
-            obj = new JSONObject(xs.toXML(list));
+            long[][] list = seeder.getStatusList();
+            JSONObject obj = new JSONObject(xs.toXML(list));
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             return new ResponseEntity<>(obj.toString(), headers, HttpStatus.OK);
@@ -94,7 +92,6 @@ public class SeedService {
     public ResponseEntity<?> getRunningLayerTasks(HttpServletRequest request, String layer) {
         try {
             XStream xs = new GeoWebCacheXStream(new JsonHierarchicalStreamDriver());
-            JSONObject obj = null;
             long[][] list;
             if (null == layer) {
                 list = seeder.getStatusList();
@@ -108,7 +105,7 @@ public class SeedService {
                 }
                 list = seeder.getStatusList(layer);
             }
-            obj = new JSONObject(xs.toXML(list));
+            JSONObject obj = new JSONObject(xs.toXML(list));
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             return new ResponseEntity<>(obj.toString(), headers, HttpStatus.OK);

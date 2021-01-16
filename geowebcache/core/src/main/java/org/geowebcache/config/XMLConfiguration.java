@@ -323,8 +323,8 @@ public class XMLConfiguration
         Node rootNode = loadDocument(xmlFile);
         XStream xs = getConfiguredXStreamWithContext(new GeoWebCacheXStream(), Context.PERSIST);
 
-        GeoWebCacheConfiguration config;
-        config = (GeoWebCacheConfiguration) xs.unmarshal(new DomReader((Element) rootNode));
+        GeoWebCacheConfiguration config =
+                (GeoWebCacheConfiguration) xs.unmarshal(new DomReader((Element) rootNode));
         return config;
     }
 

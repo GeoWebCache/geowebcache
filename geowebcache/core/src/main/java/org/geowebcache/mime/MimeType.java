@@ -101,11 +101,10 @@ public class MimeType {
 
     /** Get the MIME type object for a given MIME type string */
     public static MimeType createFromFormat(String formatStr) throws MimeException {
-        MimeType mimeType = null;
         if (formatStr == null) {
             throw new MimeException("formatStr was not set");
         }
-        mimeType = ImageMime.checkForFormat(formatStr);
+        MimeType mimeType = ImageMime.checkForFormat(formatStr);
         if (mimeType != null) {
             return mimeType;
         }
@@ -129,9 +128,8 @@ public class MimeType {
 
     /** Get the MIME type object for a given file extension */
     public static MimeType createFromExtension(String fileExtension) throws MimeException {
-        MimeType mimeType = null;
 
-        mimeType = ImageMime.checkForExtension(fileExtension);
+        MimeType mimeType = ImageMime.checkForExtension(fileExtension);
         if (mimeType != null) {
             return mimeType;
         }

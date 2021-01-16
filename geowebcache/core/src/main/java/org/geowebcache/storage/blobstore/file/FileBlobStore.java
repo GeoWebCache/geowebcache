@@ -169,8 +169,8 @@ public class FileBlobStore implements BlobStore {
     }
 
     private void createDeleteExecutorService() {
-        CustomizableThreadFactory tf;
-        tf = new CustomizableThreadFactory("GWC FileStore delete directory thread-");
+        CustomizableThreadFactory tf =
+                new CustomizableThreadFactory("GWC FileStore delete " + "directory thread-");
         tf.setDaemon(true);
         tf.setThreadPriority(Thread.MIN_PRIORITY);
         deleteExecutorService = Executors.newFixedThreadPool(1);

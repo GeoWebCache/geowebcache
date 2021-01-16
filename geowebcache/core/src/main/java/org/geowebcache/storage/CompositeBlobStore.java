@@ -381,8 +381,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
                 config.setEnabled(true);
                 config.setDefault(true);
                 config.setBaseDirectory(defaultStorageFinder.getDefaultPath());
-                BlobStore store;
-                store = new FileBlobStore(config.getBaseDirectory());
+                BlobStore store = new FileBlobStore(config.getBaseDirectory());
 
                 stores.put(
                         CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID, new LiveStore(config, store));

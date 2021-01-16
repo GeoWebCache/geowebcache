@@ -111,8 +111,7 @@ final class LayerCacheInfoBuilder {
             final int zoomStop = gs.getZoomStop();
 
             for (int zoomLevel = zoomStart; zoomLevel <= zoomStop && !closed; zoomLevel++) {
-                String gridsetZLevelParamsDirName;
-                gridsetZLevelParamsDirName =
+                String gridsetZLevelParamsDirName =
                         FilePathUtils.gridsetZoomLevelDir(gridSetId, zoomLevel);
                 if (parametersId != null) {
                     gridsetZLevelParamsDirName += "_" + parametersId;
@@ -120,8 +119,7 @@ final class LayerCacheInfoBuilder {
                 final File gridsetZLevelDir = new File(layerDir, gridsetZLevelParamsDirName);
 
                 if (gridsetZLevelDir.exists()) {
-                    ZoomLevelVisitor cacheInfoBuilder;
-                    cacheInfoBuilder =
+                    ZoomLevelVisitor cacheInfoBuilder =
                             new ZoomLevelVisitor(
                                     layerName,
                                     gridsetZLevelDir,
@@ -130,8 +128,7 @@ final class LayerCacheInfoBuilder {
                                     parametersId,
                                     quotaUsageMonitor);
 
-                    Future<ZoomLevelVisitor.Stats> cacheTask;
-                    cacheTask = threadPool.submit(cacheInfoBuilder);
+                    Future<ZoomLevelVisitor.Stats> cacheTask = threadPool.submit(cacheInfoBuilder);
 
                     perLayerRunningTasks.get(layerName).add(cacheTask);
                     log.debug(

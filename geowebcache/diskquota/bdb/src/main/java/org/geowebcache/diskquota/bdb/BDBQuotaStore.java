@@ -587,8 +587,7 @@ public class BDBQuotaStore implements QuotaStore {
         public Quota call() throws Exception {
             Quota aggregated = null;
 
-            EntityCursor<TileSet> layerTileSetsIds;
-            layerTileSetsIds =
+            EntityCursor<TileSet> layerTileSetsIds =
                     tileSetsByLayer.entities(
                             null, layerName, true, layerName, true, CursorConfig.DEFAULT);
             TileSet tileSet;

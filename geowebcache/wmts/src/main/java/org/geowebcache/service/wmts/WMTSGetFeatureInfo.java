@@ -46,8 +46,7 @@ public class WMTSGetFeatureInfo {
 
         String[] keys = {"i", "j"};
 
-        Map<String, String> values;
-        values =
+        Map<String, String> values =
                 ServletUtils.selectedStringsFromMap(
                         convTile.getRequestParameters(),
                         convTile.servletReq.getCharacterEncoding(),

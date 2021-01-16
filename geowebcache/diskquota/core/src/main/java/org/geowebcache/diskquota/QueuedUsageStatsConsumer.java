@@ -109,8 +109,8 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
                 /*
                  * do not wait for more than 5 seconds for data to become available on the queue
                  */
-                UsageStats requestedTile;
-                requestedTile = usageStatsQueue.poll(DEFAULT_SYNC_TIMEOUT, TimeUnit.MILLISECONDS);
+                UsageStats requestedTile =
+                        usageStatsQueue.poll(DEFAULT_SYNC_TIMEOUT, TimeUnit.MILLISECONDS);
                 if (requestedTile == null) {
                     /*
                      * poll timed out, nothing new, check there are no pending aggregated updates
@@ -220,8 +220,8 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
     }
 
     private void commit() {
-        Collection<PageStatsPayload> pendingCommits;
-        pendingCommits = new ArrayList<>(aggregatedPendingUpdates.pages.values());
+        Collection<PageStatsPayload> pendingCommits =
+                new ArrayList<>(aggregatedPendingUpdates.pages.values());
         quotaStore.addHitsAndSetAccesTime(pendingCommits);
         aggregatedPendingUpdates.lastCommitTime = System.currentTimeMillis();
         aggregatedPendingUpdates.numAggregations = 0;

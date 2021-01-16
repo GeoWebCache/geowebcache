@@ -341,13 +341,12 @@ public class SwiftBlobStore implements BlobStore {
     @Override
     public void putLayerMetadata(String layerName, String key, String value) {
         SwiftObject layer = this.objectApi.get(layerName);
-        Map<String, String> metaData;
 
         if (layer == null) {
             return;
         }
 
-        metaData = layer.getMetadata();
+        Map<String, String> metaData = layer.getMetadata();
         if (metaData == null) {
             metaData = new HashMap<>();
         }

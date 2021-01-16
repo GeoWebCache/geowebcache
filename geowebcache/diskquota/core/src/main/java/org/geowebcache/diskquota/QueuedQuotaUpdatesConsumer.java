@@ -120,8 +120,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long> {
             final int tileCountDiff = size > 0 ? 1 : -1;
             PageStatsPayload payload = tilePages.get(pageIdForTile);
             if (payload == null) {
-                TilePage page;
-                page = new TilePage(tileSetId, pageX, pageY, pageZ);
+                TilePage page = new TilePage(tileSetId, pageX, pageY, pageZ);
                 payload = new PageStatsPayload(page);
                 tilePages.put(pageIdForTile, payload);
             }
@@ -189,8 +188,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long> {
                  * do not wait for more than DEFAULT_SYNC_TIMEOUT for data to become available on
                  * the queue
                  */
-                QuotaUpdate updateData;
-                updateData = queue.poll(DEFAULT_SYNC_TIMEOUT, TimeUnit.MILLISECONDS);
+                QuotaUpdate updateData = queue.poll(DEFAULT_SYNC_TIMEOUT, TimeUnit.MILLISECONDS);
                 if (updateData != null) {
                     /*
                      * or perform an aggregated update in case we're really busy
@@ -298,8 +296,8 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long> {
         final TileSet tileSet = aggregatedUpadte.getTileSet();
         final Quota quotaDiff = aggregatedUpadte.getAccummulatedQuotaDifference();
 
-        Collection<PageStatsPayload> tileCountDiffs;
-        tileCountDiffs = new ArrayList<>(aggregatedUpadte.getAccummulatedTilePageCounts());
+        Collection<PageStatsPayload> tileCountDiffs =
+                new ArrayList<>(aggregatedUpadte.getAccummulatedTilePageCounts());
 
         if (quotaDiff.getBytes().compareTo(BigInteger.ZERO) == 0 && tileCountDiffs.isEmpty()) {
             return;

@@ -175,7 +175,6 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
      * @return the layers described at the given URL
      */
     private synchronized List<TileLayer> getTileLayers(boolean reload) throws GeoWebCacheException {
-        final List<TileLayer> layers;
 
         final WebMapServer wms;
 
@@ -194,7 +193,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
 
         String urlVersion = parseVersion(url);
 
-        layers = getLayers(wms, wmsUrl, urlVersion);
+        final List<TileLayer> layers = getLayers(wms, wmsUrl, urlVersion);
 
         if (layers == null || layers.isEmpty()) {
             log.error("Unable to find any layers based on " + url);
