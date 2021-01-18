@@ -1,3 +1,16 @@
+GeoWebCache 1.18.2 (2021-01-18)
+-------------------------------
+
+Stable release of the 1.18.x series
+
+Improvements:
++++++++++++++
+- In the seeding form, order threads count numerically instead of lexicographically
+- Bounding box toString scales poorly due to internal synchornization of NumberFormat
+- Creating a new UUID for each temp file scales poorly, reduce the calculation of those to a lower number, appending an atomic integer at the end
+- Upgrading to jaiext 1.1.18, better BufferedImageAdapter (also improves scalability)
+
+
 GeoWebCache 1.18.1 (2020-11-18)
 -------------------------------
 
