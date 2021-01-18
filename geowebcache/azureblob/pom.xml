@@ -5,7 +5,7 @@
     <parent>
         <artifactId>geowebcache</artifactId>
         <groupId>org.geowebcache</groupId>
-        <version>1.18.2</version><!-- GWC VERSION -->
+        <version>1.18-SNAPSHOT</version><!-- GWC VERSION -->
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
