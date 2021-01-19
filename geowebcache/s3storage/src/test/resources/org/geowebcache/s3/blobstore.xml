@@ -5,5 +5,6 @@
   <bucket>${BUCKET}</bucket>
   <awsAccessKey>mykey</awsAccessKey>
   <awsSecretKey>mykey</awsSecretKey>
+  <endpoint>https://s3.${REGION}.amazonaws.com</endpoint>
   <maxConnections>${CONNECTIONS}</maxConnections>
 </S3BlobStore>

@@ -104,6 +104,7 @@ public class S3BlobStoreConfigProvider implements XMLConfigurationProvider {
         xs.registerLocalConverter(S3BlobStoreInfo.class, "proxyHost", EnvironmentStringConverter);
         xs.registerLocalConverter(
                 BlobStoreInfo.class, "enabled", EnvironmentNullableBooleanConverter);
+        xs.registerLocalConverter(S3BlobStoreInfo.class, "endpoint", EnvironmentStringConverter);
         xs.aliasField("id", S3BlobStoreInfo.class, "name");
         return xs;
     }
