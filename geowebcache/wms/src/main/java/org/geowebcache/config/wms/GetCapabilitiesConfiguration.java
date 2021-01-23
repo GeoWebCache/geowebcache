@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.geotools.http.HTTPFactoryFinder;
+import org.geotools.http.HTTPClientFinder;
 import org.geotools.ows.ServiceException;
 import org.geotools.ows.wms.CRSEnvelope;
 import org.geotools.ows.wms.Layer;
@@ -517,7 +517,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     WebMapServer getWMS() throws IOException, ServiceException {
         Map<String, Object> hints = new HashMap<>();
         hints.put(XMLHandlerHints.ENTITY_RESOLVER, PreventLocalEntityResolver.INSTANCE);
-        return new WebMapServer(new URL(url), HTTPFactoryFinder.createClient(), hints);
+        return new WebMapServer(new URL(url), HTTPClientFinder.createClient(), hints);
     }
 
     private String parseVersion(String url) {
