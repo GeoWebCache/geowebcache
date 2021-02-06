@@ -124,10 +124,11 @@ public class RestIntegrationTest {
                         + "  <backendTimeout>120</backendTimeout>\n"
                         + "</global>";
 
-        CloseableHttpResponse response =
-                handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate);
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        response.close();
+        try (CloseableHttpResponse response =
+                handlePut(
+                        URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
     }
 
     Matcher<Node> hasXPath(final String xpathExpr, final Matcher<String> matcher) {
@@ -142,62 +143,67 @@ public class RestIntegrationTest {
 
     @Test
     public void testGetLogo() throws Exception {
-        CloseableHttpResponse response =
+        try (CloseableHttpResponse response =
                 handleGet(
                         URI.create("/geowebcache/rest/web/geowebcache_logo.png"),
-                        anonymous.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+                        anonymous.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
     }
 
     @Test
     public void testGetCss() throws Exception {
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/web/gwc.css"), anonymous.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/web/gwc.css"), anonymous.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
     }
 
     @Test
     public void testGetBadWebResource() throws Exception {
-        CloseableHttpResponse response =
+        try (CloseableHttpResponse response =
                 handleGet(
                         URI.create("/geowebcache/rest/web/thisDoesNotExist"),
-                        anonymous.getClient());
-        assertEquals(404, response.getStatusLine().getStatusCode());
+                        anonymous.getClient())) {
+            assertEquals(404, response.getStatusLine().getStatusCode());
+        }
     }
 
     /* ServerController Integration Tests ********************************************************/
 
     @Test
     public void testGetGlobal() throws Exception {
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        Document doc = getResponseEntityAsXML(response);
+            Document doc = getResponseEntityAsXML(response);
 
-        assertThat(doc, hasXPath("/global/serviceInformation/title", equalTo("GeoWebCache")));
-        assertThat(
-                doc,
-                hasXPath(
-                        "normalize-space(/global/serviceInformation/description)",
-                        equalTo(
-                                "GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of "
-                                        + "protocols and formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.")));
-        assertThat(
-                doc, hasXPath("count(/global/serviceInformation/keywords/string)", equalTo("4")));
-        assertThat(
-                doc,
-                hasXPath(
-                        "/global/serviceInformation/serviceProvider/providerName",
-                        equalTo("John Smith inc.")));
-        assertThat(
-                doc,
-                hasXPath(
-                        "/global/serviceInformation/serviceProvider/serviceContact/individualName",
-                        equalTo("John Smith")));
-        assertThat(doc, hasXPath("/global/runtimeStatsEnabled", equalTo("true")));
-        assertThat(doc, hasXPath("/global/wmtsCiteCompliant", equalTo("false")));
-        assertThat(doc, hasXPath("/global/backendTimeout", equalTo("120")));
+            assertThat(doc, hasXPath("/global/serviceInformation/title", equalTo("GeoWebCache")));
+            assertThat(
+                    doc,
+                    hasXPath(
+                            "normalize-space(/global/serviceInformation/description)",
+                            equalTo(
+                                    "GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of "
+                                            + "protocols and formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.")));
+            assertThat(
+                    doc,
+                    hasXPath("count(/global/serviceInformation/keywords/string)", equalTo("4")));
+            assertThat(
+                    doc,
+                    hasXPath(
+                            "/global/serviceInformation/serviceProvider/providerName",
+                            equalTo("John Smith inc.")));
+            assertThat(
+                    doc,
+                    hasXPath(
+                            "/global/serviceInformation/serviceProvider/serviceContact/individualName",
+                            equalTo("John Smith")));
+            assertThat(doc, hasXPath("/global/runtimeStatsEnabled", equalTo("true")));
+            assertThat(doc, hasXPath("/global/wmtsCiteCompliant", equalTo("false")));
+            assertThat(doc, hasXPath("/global/backendTimeout", equalTo("120")));
+        }
     }
 
     @Test
@@ -240,58 +246,66 @@ public class RestIntegrationTest {
 
         testGetGlobal();
 
-        CloseableHttpResponse response =
-                handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate);
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        response.close();
+        try (CloseableHttpResponse response =
+                handlePut(
+                        URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
 
-        response = handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        Document doc = getResponseEntityAsXML(response);
+            Document doc = getResponseEntityAsXML(response);
 
-        assertThat(doc, hasXPath("/global/serviceInformation/title", equalTo("GeoWebCache")));
-        assertThat(
-                doc,
-                hasXPath(
-                        "normalize-space(/global/serviceInformation/description)",
-                        equalTo(
-                                "GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of "
-                                        + "protocols and formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.")));
-        assertThat(
-                doc, hasXPath("count(/global/serviceInformation/keywords/string)", equalTo("3")));
-        assertThat(
-                doc,
-                hasXPath(
-                        "/global/serviceInformation/serviceProvider/providerName",
-                        equalTo("Jane Doe inc.")));
-        assertThat(
-                doc,
-                hasXPath(
-                        "/global/serviceInformation/serviceProvider/serviceContact/individualName",
-                        equalTo("Jane Doe")));
-        assertThat(doc, hasXPath("/global/runtimeStatsEnabled", equalTo("false")));
-        assertThat(doc, hasXPath("/global/wmtsCiteCompliant", equalTo("false")));
-        assertThat(doc, hasXPath("/global/backendTimeout", equalTo("120")));
+            assertThat(doc, hasXPath("/global/serviceInformation/title", equalTo("GeoWebCache")));
+            assertThat(
+                    doc,
+                    hasXPath(
+                            "normalize-space(/global/serviceInformation/description)",
+                            equalTo(
+                                    "GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of "
+                                            + "protocols and formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.")));
+            assertThat(
+                    doc,
+                    hasXPath("count(/global/serviceInformation/keywords/string)", equalTo("3")));
+            assertThat(
+                    doc,
+                    hasXPath(
+                            "/global/serviceInformation/serviceProvider/providerName",
+                            equalTo("Jane Doe inc.")));
+            assertThat(
+                    doc,
+                    hasXPath(
+                            "/global/serviceInformation/serviceProvider/serviceContact/individualName",
+                            equalTo("Jane Doe")));
+            assertThat(doc, hasXPath("/global/runtimeStatsEnabled", equalTo("false")));
+            assertThat(doc, hasXPath("/global/wmtsCiteCompliant", equalTo("false")));
+            assertThat(doc, hasXPath("/global/backendTimeout", equalTo("120")));
+        }
     }
 
     @Test
     public void testPutGlobalRoundTrip() throws Exception {
         testGetGlobal();
 
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        final String globalUpdate;
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        final String globalUpdate = getResponseEntity(response);
+            globalUpdate = getResponseEntity(response);
+        }
 
-        response =
-                handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate);
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        response.close();
+        try (CloseableHttpResponse response =
+                handlePut(
+                        URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            response.close();
 
-        // Round-tripping the XML should not cause changes
-        testGetGlobal();
+            // Round-tripping the XML should not cause changes
+            testGetGlobal();
+        }
     }
 
     @Test
@@ -302,40 +316,44 @@ public class RestIntegrationTest {
 
         testGetGlobal();
 
-        CloseableHttpResponse response =
-                handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate);
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        response.close();
+        try (CloseableHttpResponse response =
+                handlePut(
+                        URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
 
-        response = handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        Document doc = getResponseEntityAsXML(response);
+            Document doc = getResponseEntityAsXML(response);
 
-        // Verify only the PUT value has changed
-        assertThat(doc, hasXPath("/global/serviceInformation/title", equalTo("GeoWebCache")));
-        assertThat(
-                doc,
-                hasXPath(
-                        "normalize-space(/global/serviceInformation/description)",
-                        equalTo(
-                                "GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of "
-                                        + "protocols and formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.")));
-        assertThat(
-                doc, hasXPath("count(/global/serviceInformation/keywords/string)", equalTo("4")));
-        assertThat(
-                doc,
-                hasXPath(
-                        "/global/serviceInformation/serviceProvider/providerName",
-                        equalTo("John Smith inc.")));
-        assertThat(
-                doc,
-                hasXPath(
-                        "/global/serviceInformation/serviceProvider/serviceContact/individualName",
-                        equalTo("John Smith")));
-        assertThat(doc, hasXPath("/global/runtimeStatsEnabled", equalTo("true")));
-        assertThat(doc, hasXPath("/global/wmtsCiteCompliant", equalTo("false")));
-        assertThat(doc, hasXPath("/global/backendTimeout", equalTo("150")));
+            // Verify only the PUT value has changed
+            assertThat(doc, hasXPath("/global/serviceInformation/title", equalTo("GeoWebCache")));
+            assertThat(
+                    doc,
+                    hasXPath(
+                            "normalize-space(/global/serviceInformation/description)",
+                            equalTo(
+                                    "GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of "
+                                            + "protocols and formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.")));
+            assertThat(
+                    doc,
+                    hasXPath("count(/global/serviceInformation/keywords/string)", equalTo("4")));
+            assertThat(
+                    doc,
+                    hasXPath(
+                            "/global/serviceInformation/serviceProvider/providerName",
+                            equalTo("John Smith inc.")));
+            assertThat(
+                    doc,
+                    hasXPath(
+                            "/global/serviceInformation/serviceProvider/serviceContact/individualName",
+                            equalTo("John Smith")));
+            assertThat(doc, hasXPath("/global/runtimeStatsEnabled", equalTo("true")));
+            assertThat(doc, hasXPath("/global/wmtsCiteCompliant", equalTo("false")));
+            assertThat(doc, hasXPath("/global/backendTimeout", equalTo("150")));
+        }
     }
 
     @Test
@@ -343,27 +361,31 @@ public class RestIntegrationTest {
 
         final String globalUpdate = "<global><lockProvider>nioLock</lockProvider></global>";
 
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        Document doc = getResponseEntityAsXML(response);
+            Document doc = getResponseEntityAsXML(response);
 
-        // Lock provider is null by default. If this is the case, it won't show up in the
-        // configuration
-        assertThat(doc, hasXPath("count(/global/lockProvider)", equalTo("0")));
+            // Lock provider is null by default. If this is the case, it won't show up in the
+            // configuration
+            assertThat(doc, hasXPath("count(/global/lockProvider)", equalTo("0")));
+        }
 
-        response =
-                handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate);
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        response.close();
+        try (CloseableHttpResponse response =
+                handlePut(
+                        URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
 
-        response = handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        doc = getResponseEntityAsXML(response);
+            Document doc = getResponseEntityAsXML(response);
 
-        assertThat(doc, hasXPath("/global/lockProvider", equalTo("nioLock")));
+            assertThat(doc, hasXPath("/global/lockProvider", equalTo("nioLock")));
+        }
     }
 
     @Test
@@ -371,10 +393,11 @@ public class RestIntegrationTest {
         // PUT a value that is read-only
         final String globalUpdate = "<global><location>foobar</location></global>";
 
-        CloseableHttpResponse response =
-                handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate);
-        assertEquals(400, response.getStatusLine().getStatusCode());
-        response.close();
+        try (CloseableHttpResponse response =
+                handlePut(
+                        URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate)) {
+            assertEquals(400, response.getStatusLine().getStatusCode());
+        }
     }
 
     /* TileLayerController Integration Tests *****************************************************/
@@ -623,6 +646,7 @@ public class RestIntegrationTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.CloseResource")
     public void testLayerNoAuth() throws Exception {
         for (CloseableHttpClient client :
                 Arrays.asList(anonymous.getClient(), notAUser.getClient())) {
@@ -645,6 +669,7 @@ public class RestIntegrationTest {
      * Check that the given request gives a 401 Forbidden when not authenticated, and otherwise has
      * a response matching the given matcher
      */
+    @SuppressWarnings("PMD.CloseResource")
     protected void testSecured(HttpUriRequest request, Matcher<Integer> authenticatedStatus)
             throws Exception {
         {
@@ -689,67 +714,71 @@ public class RestIntegrationTest {
 
     @Test
     public void testGetBlobStoresXML() throws Exception {
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/blobstores.xml"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/blobstores.xml"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        Document doc = getResponseEntityAsXML(response);
+            Document doc = getResponseEntityAsXML(response);
 
-        assertThat(doc, hasXPath("count(/blobStores/blobStore)", equalTo("1")));
-        assertThat(doc, hasXPath("/blobStores/blobStore[1]/name", equalTo("defaultCache")));
-        assertThat(
-                doc,
-                hasXPath(
-                        "/blobStores/blobStore[1]/atom:link/@href",
-                        equalTo(jetty.getUri() + "rest/blobstores/defaultCache.xml")));
-        assertThat(
-                doc,
-                hasXPath(
-                        "/blobStores/blobStore[1]/atom:link/@type",
-                        equalTo(MediaType.TEXT_XML_VALUE)));
+            assertThat(doc, hasXPath("count(/blobStores/blobStore)", equalTo("1")));
+            assertThat(doc, hasXPath("/blobStores/blobStore[1]/name", equalTo("defaultCache")));
+            assertThat(
+                    doc,
+                    hasXPath(
+                            "/blobStores/blobStore[1]/atom:link/@href",
+                            equalTo(jetty.getUri() + "rest/blobstores/defaultCache.xml")));
+            assertThat(
+                    doc,
+                    hasXPath(
+                            "/blobStores/blobStore[1]/atom:link/@type",
+                            equalTo(MediaType.TEXT_XML_VALUE)));
+        }
     }
 
     @Test
     public void testGetBlobStoresJSON() throws Exception {
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/blobstores.json"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/blobstores.json"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        JSONArray jsonArray = getResponseEntityAsJSONArray(response);
-        assertEquals(1, jsonArray.length());
-        assertEquals("defaultCache", jsonArray.get(0));
+            JSONArray jsonArray = getResponseEntityAsJSONArray(response);
+            assertEquals(1, jsonArray.length());
+            assertEquals("defaultCache", jsonArray.get(0));
+        }
     }
 
     @Test
     public void testGetBlobStoreXML() throws Exception {
-        CloseableHttpResponse response =
+        try (CloseableHttpResponse response =
                 handleGet(
                         URI.create("/geowebcache/rest/blobstores/defaultCache.xml"),
-                        admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+                        admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        Document doc = getResponseEntityAsXML(response);
+            Document doc = getResponseEntityAsXML(response);
 
-        assertThat(doc, hasXPath("//id", equalTo("defaultCache")));
-        assertThat(doc, hasXPath("//enabled", equalTo("false")));
-        assertThat(doc, hasXPath("//baseDirectory", equalTo("/tmp/defaultCache")));
-        assertThat(doc, hasXPath("//fileSystemBlockSize", equalTo("4096")));
+            assertThat(doc, hasXPath("//id", equalTo("defaultCache")));
+            assertThat(doc, hasXPath("//enabled", equalTo("false")));
+            assertThat(doc, hasXPath("//baseDirectory", equalTo("/tmp/defaultCache")));
+            assertThat(doc, hasXPath("//fileSystemBlockSize", equalTo("4096")));
+        }
     }
 
     @Test
     public void testGetBlobStoreJSON() throws Exception {
-        CloseableHttpResponse response =
+        try (CloseableHttpResponse response =
                 handleGet(
                         URI.create("/geowebcache/rest/blobstores/defaultCache.json"),
-                        admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+                        admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        JSONObject jsonObject = getResponseEntityAsJSONObject(response);
-        jsonObject = jsonObject.getJSONObject("FileBlobStore");
-        assertEquals("defaultCache", jsonObject.get("id"));
-        assertEquals(false, jsonObject.get("enabled"));
-        assertEquals("/tmp/defaultCache", jsonObject.get("baseDirectory"));
-        assertEquals(4096, jsonObject.get("fileSystemBlockSize"));
+            JSONObject jsonObject = getResponseEntityAsJSONObject(response);
+            jsonObject = jsonObject.getJSONObject("FileBlobStore");
+            assertEquals("defaultCache", jsonObject.get("id"));
+            assertEquals(false, jsonObject.get("enabled"));
+            assertEquals("/tmp/defaultCache", jsonObject.get("baseDirectory"));
+            assertEquals(4096, jsonObject.get("fileSystemBlockSize"));
+        }
     }
 
     @Test
@@ -763,31 +792,34 @@ public class RestIntegrationTest {
                         + "</FileBlobStore>";
 
         // Make it sure doesn't exist
-        CloseableHttpResponse response =
+        try (CloseableHttpResponse response =
                 handleGet(
-                        URI.create("/geowebcache/rest/blobstores/newCache.xml"), admin.getClient());
-        assertEquals(404, response.getStatusLine().getStatusCode());
-        response.close();
+                        URI.create("/geowebcache/rest/blobstores/newCache.xml"),
+                        admin.getClient())) {
+            assertEquals(404, response.getStatusLine().getStatusCode());
+        }
 
-        response =
+        try (CloseableHttpResponse response =
                 handlePut(
                         URI.create("/geowebcache/rest/blobstores/newCache"),
                         admin.getClient(),
-                        blobStore);
-        assertEquals(201, response.getStatusLine().getStatusCode());
-        response.close();
+                        blobStore)) {
+            assertEquals(201, response.getStatusLine().getStatusCode());
+        }
 
-        response =
+        try (CloseableHttpResponse response =
                 handleGet(
-                        URI.create("/geowebcache/rest/blobstores/newCache.xml"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+                        URI.create("/geowebcache/rest/blobstores/newCache.xml"),
+                        admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        Document doc = getResponseEntityAsXML(response);
+            Document doc = getResponseEntityAsXML(response);
 
-        assertThat(doc, hasXPath("//id", equalTo("newCache")));
-        assertThat(doc, hasXPath("//enabled", equalTo("false")));
-        assertThat(doc, hasXPath("//baseDirectory", equalTo("/tmp/newCache")));
-        assertThat(doc, hasXPath("//fileSystemBlockSize", equalTo("4096")));
+            assertThat(doc, hasXPath("//id", equalTo("newCache")));
+            assertThat(doc, hasXPath("//enabled", equalTo("false")));
+            assertThat(doc, hasXPath("//baseDirectory", equalTo("/tmp/newCache")));
+            assertThat(doc, hasXPath("//fileSystemBlockSize", equalTo("4096")));
+        }
 
         String blobStoreUpdate =
                 "<FileBlobStore>\n"
@@ -797,111 +829,122 @@ public class RestIntegrationTest {
                         + "    <fileSystemBlockSize>2048</fileSystemBlockSize>\n"
                         + "</FileBlobStore>";
 
-        response =
+        try (CloseableHttpResponse response =
                 handlePut(
                         URI.create("/geowebcache/rest/blobstores/newCache"),
                         admin.getClient(),
-                        blobStoreUpdate);
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        response.close();
+                        blobStoreUpdate)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
 
-        response =
+        try (CloseableHttpResponse response =
                 handleGet(
-                        URI.create("/geowebcache/rest/blobstores/newCache.xml"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+                        URI.create("/geowebcache/rest/blobstores/newCache.xml"),
+                        admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        doc = getResponseEntityAsXML(response);
+            Document doc = getResponseEntityAsXML(response);
 
-        assertThat(doc, hasXPath("//id", equalTo("newCache")));
-        assertThat(doc, hasXPath("//enabled", equalTo("false")));
-        assertThat(doc, hasXPath("//baseDirectory", equalTo("/tmp/newCache")));
-        assertThat(doc, hasXPath("//fileSystemBlockSize", equalTo("2048")));
+            assertThat(doc, hasXPath("//id", equalTo("newCache")));
+            assertThat(doc, hasXPath("//enabled", equalTo("false")));
+            assertThat(doc, hasXPath("//baseDirectory", equalTo("/tmp/newCache")));
+            assertThat(doc, hasXPath("//fileSystemBlockSize", equalTo("2048")));
+        }
 
-        response =
+        try (CloseableHttpResponse response =
                 handleDelete(
-                        URI.create("/geowebcache/rest/blobstores/newCache.xml"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        response.close();
+                        URI.create("/geowebcache/rest/blobstores/newCache.xml"),
+                        admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
 
-        response =
+        try (CloseableHttpResponse response =
                 handleGet(
-                        URI.create("/geowebcache/rest/blobstores/newCache.xml"), admin.getClient());
-        assertEquals(404, response.getStatusLine().getStatusCode());
-        response.close();
+                        URI.create("/geowebcache/rest/blobstores/newCache.xml"),
+                        admin.getClient())) {
+            assertEquals(404, response.getStatusLine().getStatusCode());
+        }
     }
 
     /* GridSetController Integration Tests *****************************************************/
 
     @Test
     public void testGetGridSetsXML() throws Exception {
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/gridsets.xml"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/gridsets.xml"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        Document doc = getResponseEntityAsXML(response);
+            Document doc = getResponseEntityAsXML(response);
 
-        assertThat(doc, hasXPath("count(/gridSets/gridSet)", equalTo("7")));
-        assertThat(doc, hasXPath("/gridSets/gridSet[1]/name", equalTo("EPSG:2163")));
-        assertThat(
-                doc,
-                hasXPath(
-                        "/gridSets/gridSet[1]/atom:link/@href",
-                        equalTo(jetty.getUri() + "rest/gridsets/EPSG:2163.xml")));
-        assertThat(
-                doc,
-                hasXPath(
-                        "/gridSets/gridSet[1]/atom:link/@type", equalTo(MediaType.TEXT_XML_VALUE)));
+            assertThat(doc, hasXPath("count(/gridSets/gridSet)", equalTo("7")));
+            assertThat(doc, hasXPath("/gridSets/gridSet[1]/name", equalTo("EPSG:2163")));
+            assertThat(
+                    doc,
+                    hasXPath(
+                            "/gridSets/gridSet[1]/atom:link/@href",
+                            equalTo(jetty.getUri() + "rest/gridsets/EPSG:2163.xml")));
+            assertThat(
+                    doc,
+                    hasXPath(
+                            "/gridSets/gridSet[1]/atom:link/@type",
+                            equalTo(MediaType.TEXT_XML_VALUE)));
+        }
     }
 
     @Test
     public void testGetGridSetsJSON() throws Exception {
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/gridsets.json"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/gridsets.json"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        JSONArray jsonArray = getResponseEntityAsJSONArray(response);
-        assertEquals(7, jsonArray.length());
-        assertEquals("EPSG:2163", jsonArray.get(0));
+            JSONArray jsonArray = getResponseEntityAsJSONArray(response);
+            assertEquals(7, jsonArray.length());
+            assertEquals("EPSG:2163", jsonArray.get(0));
+        }
     }
 
     @Test
     public void testGetGridSetXML() throws Exception {
-        CloseableHttpResponse response =
+        try (CloseableHttpResponse response =
                 handleGet(
-                        URI.create("/geowebcache/rest/gridsets/EPSG:2163.xml"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+                        URI.create("/geowebcache/rest/gridsets/EPSG:2163.xml"),
+                        admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        Document doc = getResponseEntityAsXML(response);
+            Document doc = getResponseEntityAsXML(response);
 
-        assertThat(doc, hasXPath("//name", equalTo("EPSG:2163")));
-        assertThat(doc, hasXPath("//srs/number", equalTo("2163")));
-        assertThat(doc, hasXPath("//extent/coords/double[1]", equalTo("-2495667.977678598")));
-        assertThat(doc, hasXPath("//extent/coords/double[2]", equalTo("-2223677.196231552")));
-        assertThat(doc, hasXPath("//extent/coords/double[3]", equalTo("3291070.6104286816")));
-        assertThat(doc, hasXPath("//extent/coords/double[4]", equalTo("959189.3312465074")));
-        assertThat(doc, hasXPath("//scaleDenominators/double[1]", equalTo("2.5E7")));
-        assertThat(doc, hasXPath("//metersPerUnit", equalTo("1.0")));
-        assertThat(doc, hasXPath("//pixelSize", equalTo("2.8E-4")));
-        assertThat(doc, hasXPath("//yCoordinateFirst", equalTo("false")));
-        assertThat(doc, hasXPath("//tileWidth", equalTo("200")));
-        assertThat(doc, hasXPath("//tileHeight", equalTo("200")));
+            assertThat(doc, hasXPath("//name", equalTo("EPSG:2163")));
+            assertThat(doc, hasXPath("//srs/number", equalTo("2163")));
+            assertThat(doc, hasXPath("//extent/coords/double[1]", equalTo("-2495667.977678598")));
+            assertThat(doc, hasXPath("//extent/coords/double[2]", equalTo("-2223677.196231552")));
+            assertThat(doc, hasXPath("//extent/coords/double[3]", equalTo("3291070.6104286816")));
+            assertThat(doc, hasXPath("//extent/coords/double[4]", equalTo("959189.3312465074")));
+            assertThat(doc, hasXPath("//scaleDenominators/double[1]", equalTo("2.5E7")));
+            assertThat(doc, hasXPath("//metersPerUnit", equalTo("1.0")));
+            assertThat(doc, hasXPath("//pixelSize", equalTo("2.8E-4")));
+            assertThat(doc, hasXPath("//yCoordinateFirst", equalTo("false")));
+            assertThat(doc, hasXPath("//tileWidth", equalTo("200")));
+            assertThat(doc, hasXPath("//tileHeight", equalTo("200")));
+        }
     }
 
     @Test
     public void testGetGridSetJSON() throws Exception {
-        CloseableHttpResponse response =
+        try (CloseableHttpResponse response =
                 handleGet(
-                        URI.create("/geowebcache/rest/gridsets/EPSG:2163.json"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+                        URI.create("/geowebcache/rest/gridsets/EPSG:2163.json"),
+                        admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        JSONObject jsonObject = getResponseEntityAsJSONObject(response);
-        jsonObject = jsonObject.getJSONObject("gridSet");
-        assertEquals("EPSG:2163", jsonObject.get("name"));
-        assertEquals(2163, jsonObject.getJSONObject("srs").get("number"));
-        assertEquals(
-                "[-2495667.977678598,-2223677.196231552,3291070.6104286816,959189.3312465074]",
-                jsonObject.getJSONObject("extent").get("coords").toString());
-        assertEquals("false", jsonObject.get("yCoordinateFirst").toString());
+            JSONObject jsonObject = getResponseEntityAsJSONObject(response);
+            jsonObject = jsonObject.getJSONObject("gridSet");
+            assertEquals("EPSG:2163", jsonObject.get("name"));
+            assertEquals(2163, jsonObject.getJSONObject("srs").get("number"));
+            assertEquals(
+                    "[-2495667.977678598,-2223677.196231552,3291070.6104286816,959189.3312465074]",
+                    jsonObject.getJSONObject("extent").get("coords").toString());
+            assertEquals("false", jsonObject.get("yCoordinateFirst").toString());
+        }
     }
 
     @Test
@@ -942,37 +985,38 @@ public class RestIntegrationTest {
                         + "</gridSet>";
 
         // Make it sure doesn't exist
-        CloseableHttpResponse response =
+        try (CloseableHttpResponse response =
                 handleGet(
                         URI.create("/geowebcache/rest/gridsets/testGridset.xml"),
-                        admin.getClient());
-        assertEquals(404, response.getStatusLine().getStatusCode());
-        response.close();
+                        admin.getClient())) {
+            assertEquals(404, response.getStatusLine().getStatusCode());
+        }
 
-        response =
+        try (CloseableHttpResponse response =
                 handlePut(
                         URI.create("/geowebcache/rest/gridsets/testGridset.xml"),
                         admin.getClient(),
-                        gridSet);
-        assertEquals(201, response.getStatusLine().getStatusCode());
-        response.close();
+                        gridSet)) {
+            assertEquals(201, response.getStatusLine().getStatusCode());
+        }
 
-        response =
+        try (CloseableHttpResponse response =
                 handleGet(
                         URI.create("/geowebcache/rest/gridsets/testGridset.xml"),
-                        admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+                        admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        Document doc = getResponseEntityAsXML(response);
+            Document doc = getResponseEntityAsXML(response);
 
-        assertThat(doc, hasXPath("//name", equalTo("testGridset")));
-        assertThat(doc, hasXPath("//srs/number", equalTo("4326")));
-        assertThat(doc, hasXPath("//scaleDenominators/double[1]", equalTo("2.5E7")));
-        assertThat(doc, hasXPath("//metersPerUnit", equalTo("1.0")));
-        assertThat(doc, hasXPath("//pixelSize", equalTo("2.8E-4")));
-        assertThat(doc, hasXPath("//yCoordinateFirst", equalTo("false")));
-        assertThat(doc, hasXPath("//tileWidth", equalTo("211")));
-        assertThat(doc, hasXPath("//tileHeight", equalTo("211")));
+            assertThat(doc, hasXPath("//name", equalTo("testGridset")));
+            assertThat(doc, hasXPath("//srs/number", equalTo("4326")));
+            assertThat(doc, hasXPath("//scaleDenominators/double[1]", equalTo("2.5E7")));
+            assertThat(doc, hasXPath("//metersPerUnit", equalTo("1.0")));
+            assertThat(doc, hasXPath("//pixelSize", equalTo("2.8E-4")));
+            assertThat(doc, hasXPath("//yCoordinateFirst", equalTo("false")));
+            assertThat(doc, hasXPath("//tileWidth", equalTo("211")));
+            assertThat(doc, hasXPath("//tileHeight", equalTo("211")));
+        }
 
         String gridSetUpdate =
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -1009,83 +1053,85 @@ public class RestIntegrationTest {
                         + "  <yCoordinateFirst>false</yCoordinateFirst>\n"
                         + "</gridSet>";
 
-        response =
+        try (CloseableHttpResponse response =
                 handlePut(
                         URI.create("/geowebcache/rest/gridsets/testGridset"),
                         admin.getClient(),
-                        gridSetUpdate);
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        response.close();
+                        gridSetUpdate)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
 
-        response =
+        try (CloseableHttpResponse response =
                 handleGet(
                         URI.create("/geowebcache/rest/gridsets/testGridset.xml"),
-                        admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+                        admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        doc = getResponseEntityAsXML(response);
+            Document doc = getResponseEntityAsXML(response);
+            assertThat(doc, hasXPath("//name", equalTo("testGridset")));
+            assertThat(doc, hasXPath("//srs/number", equalTo("2163")));
+            assertThat(doc, hasXPath("//scaleDenominators/double[1]", equalTo("2.5E7")));
+            assertThat(doc, hasXPath("//metersPerUnit", equalTo("1.0")));
+            assertThat(doc, hasXPath("//pixelSize", equalTo("2.8E-4")));
+            assertThat(doc, hasXPath("//yCoordinateFirst", equalTo("false")));
+            assertThat(doc, hasXPath("//tileWidth", equalTo("200")));
+            assertThat(doc, hasXPath("//tileHeight", equalTo("200")));
+        }
 
-        assertThat(doc, hasXPath("//name", equalTo("testGridset")));
-        assertThat(doc, hasXPath("//srs/number", equalTo("2163")));
-        assertThat(doc, hasXPath("//scaleDenominators/double[1]", equalTo("2.5E7")));
-        assertThat(doc, hasXPath("//metersPerUnit", equalTo("1.0")));
-        assertThat(doc, hasXPath("//pixelSize", equalTo("2.8E-4")));
-        assertThat(doc, hasXPath("//yCoordinateFirst", equalTo("false")));
-        assertThat(doc, hasXPath("//tileWidth", equalTo("200")));
-        assertThat(doc, hasXPath("//tileHeight", equalTo("200")));
-
-        response =
+        try (CloseableHttpResponse response =
                 handleDelete(
                         URI.create("/geowebcache/rest/gridsets/testGridset.xml"),
-                        admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        response.close();
+                        admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
 
-        response =
+        try (CloseableHttpResponse response =
                 handleGet(
                         URI.create("/geowebcache/rest/gridsets/testGridset.xml"),
-                        admin.getClient());
-        assertEquals(404, response.getStatusLine().getStatusCode());
-        response.close();
+                        admin.getClient())) {
+            assertEquals(404, response.getStatusLine().getStatusCode());
+        }
     }
 
     /* DiskQuotaController Integration Tests *****************************************************/
 
     @Test
     public void testDiskQuotaXML() throws Exception {
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/diskquota.xml"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        if (response.getStatusLine().getStatusCode() == 200) {
-            Document doc = getResponseEntityAsXML(response);
-            assertThat(doc, hasXPath("//enabled", equalTo("false")));
-            assertThat(doc, hasXPath("//cacheCleanUpFrequency", equalTo("10")));
-            assertThat(doc, hasXPath("//cacheCleanUpUnits", equalTo("SECONDS")));
-            assertThat(doc, hasXPath("//maxConcurrentCleanUps", equalTo("2")));
-            assertThat(doc, hasXPath("//globalExpirationPolicyName", equalTo("LFU")));
-            assertThat(doc, hasXPath("//globalQuota/id", equalTo("0")));
-            assertThat(doc, hasXPath("//globalQuota/bytes", equalTo("524288000")));
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/diskquota.xml"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            if (response.getStatusLine().getStatusCode() == 200) {
+                Document doc = getResponseEntityAsXML(response);
+                assertThat(doc, hasXPath("//enabled", equalTo("false")));
+                assertThat(doc, hasXPath("//cacheCleanUpFrequency", equalTo("10")));
+                assertThat(doc, hasXPath("//cacheCleanUpUnits", equalTo("SECONDS")));
+                assertThat(doc, hasXPath("//maxConcurrentCleanUps", equalTo("2")));
+                assertThat(doc, hasXPath("//globalExpirationPolicyName", equalTo("LFU")));
+                assertThat(doc, hasXPath("//globalQuota/id", equalTo("0")));
+                assertThat(doc, hasXPath("//globalQuota/bytes", equalTo("524288000")));
+            }
         }
     }
 
     @Test
     public void testDiskQuotaJson() throws Exception {
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/diskquota.json"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        if (response.getStatusLine().getStatusCode() == 200) {
-            JSONObject jsonObject = getResponseEntityAsJSONObject(response);
-            Object obj = jsonObject.get("org.geowebcache.diskquota.DiskQuotaConfig");
-            if (obj instanceof JSONObject) {
-                assertEquals(false, ((JSONObject) obj).get("enabled"));
-                assertEquals(10, ((JSONObject) obj).get("cacheCleanUpFrequency"));
-                assertEquals("SECONDS", ((JSONObject) obj).get("cacheCleanUpUnits"));
-                assertEquals(2, ((JSONObject) obj).get("maxConcurrentCleanUps"));
-                assertEquals("LFU", ((JSONObject) obj).get("globalExpirationPolicyName"));
-                Object globalQuota = ((JSONObject) obj).get("globalQuota");
-                if (globalQuota instanceof JSONObject) {
-                    assertEquals(0, ((JSONObject) globalQuota).get("id"));
-                    assertEquals(524288000, ((JSONObject) globalQuota).get("bytes"));
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/diskquota.json"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            if (response.getStatusLine().getStatusCode() == 200) {
+                JSONObject jsonObject = getResponseEntityAsJSONObject(response);
+                Object obj = jsonObject.get("org.geowebcache.diskquota.DiskQuotaConfig");
+                if (obj instanceof JSONObject) {
+                    assertEquals(false, ((JSONObject) obj).get("enabled"));
+                    assertEquals(10, ((JSONObject) obj).get("cacheCleanUpFrequency"));
+                    assertEquals("SECONDS", ((JSONObject) obj).get("cacheCleanUpUnits"));
+                    assertEquals(2, ((JSONObject) obj).get("maxConcurrentCleanUps"));
+                    assertEquals("LFU", ((JSONObject) obj).get("globalExpirationPolicyName"));
+                    Object globalQuota = ((JSONObject) obj).get("globalQuota");
+                    if (globalQuota instanceof JSONObject) {
+                        assertEquals(0, ((JSONObject) globalQuota).get("id"));
+                        assertEquals(524288000, ((JSONObject) globalQuota).get("bytes"));
+                    }
                 }
             }
         }
@@ -1118,73 +1164,84 @@ public class RestIntegrationTest {
                         + //
                         "</seedRequest>";
 
-        CloseableHttpResponse response =
+        try (CloseableHttpResponse response =
                 handlePost(
                         URI.create("/geowebcache/rest/seed/topp:states.xml"),
                         admin.getClient(),
-                        seedLayer);
-        assertEquals(200, response.getStatusLine().getStatusCode());
+                        seedLayer)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
     }
 
     @Test
     public void testSeedGet() throws Exception {
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/seed/topp:states"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/seed/topp:states"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
     }
 
     @Test
     public void testSeedGetNoLayer() throws Exception {
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/seed"), admin.getClient());
-        assertEquals(405, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/seed"), admin.getClient())) {
+            assertEquals(405, response.getStatusLine().getStatusCode());
+        }
     }
 
     @Test
     public void testSeedGetSeedForm() throws Exception {
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/seed/topp:states"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/seed/topp:states"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
     }
 
     @Test
     public void testSeedGetJson() throws Exception {
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/seed.json"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/seed.json"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
     }
 
     @Test
     public void testSeedGetLayerJson() throws Exception {
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/seed/topp:states.json"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handleGet(
+                        URI.create("/geowebcache/rest/seed/topp:states.json"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
     }
 
     @Test
     public void testSeedGetLayerXml() throws Exception {
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/seed/topp:states.xml"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handleGet(
+                        URI.create("/geowebcache/rest/seed/topp:states.xml"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
     }
 
     @Test
     public void testKillAll() throws Exception {
         String killCommand = "kill_all=all";
-        CloseableHttpResponse response =
-                handlePost(URI.create("/geowebcache/rest/seed"), admin.getClient(), killCommand);
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handlePost(URI.create("/geowebcache/rest/seed"), admin.getClient(), killCommand)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
     }
 
     @Test
     public void testLayerKillAll() throws Exception {
         String killCommand = "kill_all=all";
-        CloseableHttpResponse response =
+        try (CloseableHttpResponse response =
                 handlePost(
                         URI.create("/geowebcache/rest/seed/topp:states"),
                         admin.getClient(),
-                        killCommand);
-        assertEquals(200, response.getStatusLine().getStatusCode());
+                        killCommand)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+        }
     }
 
     @Test

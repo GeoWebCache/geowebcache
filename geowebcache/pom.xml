@@ -729,11 +729,13 @@
             <configuration>
               <rulesets>
                 <ruleset>${geowebcacheBaseDir}/pmd-ruleset.xml</ruleset>
+                <ruleset>${geowebcacheBaseDir}/pmd-junit-ruleset.xml</ruleset>
               </rulesets>
               <failurePriority>3</failurePriority>
               <minimumPriority>3</minimumPriority>
               <verbose>true</verbose>
               <printFailingErrors>true</printFailingErrors>
+              <includeTests>true</includeTests>
               <excludeRoots>
                 <excludeRoot>target/generated-sources</excludeRoot>
               </excludeRoots>

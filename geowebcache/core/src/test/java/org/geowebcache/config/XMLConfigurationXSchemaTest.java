@@ -42,16 +42,17 @@ public class XMLConfigurationXSchemaTest {
     public void testNotAllowNonGWCClass() throws Exception {
         // Check that classes from other packages on the class path can't be serialized
         ContextualConfigurationProvider.Context pc = ContextualConfigurationProvider.Context.REST;
-        WebApplicationContext wac = new StaticWebApplicationContext();
+        try (StaticWebApplicationContext wac = new StaticWebApplicationContext()) {
 
-        XStream xs = new GeoWebCacheXStream();
+            XStream xs = new GeoWebCacheXStream();
 
-        xs = XMLConfiguration.getConfiguredXStreamWithContext(xs, wac, pc);
+            xs = XMLConfiguration.getConfiguredXStreamWithContext(xs, wac, pc);
 
-        exception.expect(com.thoughtworks.xstream.security.ForbiddenClassException.class);
+            exception.expect(com.thoughtworks.xstream.security.ForbiddenClassException.class);
 
-        @SuppressWarnings("unused")
-        Object o = xs.fromXML("<" + org.easymock.Capture.class.getCanonicalName() + " />");
+            @SuppressWarnings("unused")
+            Object o = xs.fromXML("<" + org.easymock.Capture.class.getCanonicalName() + " />");
+        }
     }
 
     @Ignore // Need to tighten the XStream permissions to get this to pass
@@ -59,16 +60,18 @@ public class XMLConfigurationXSchemaTest {
     public void testNotAllowNonXMLGWCClass() throws Exception {
         // Check that a class in GWC that shouldn't be serialized to XML can't be
         ContextualConfigurationProvider.Context pc = ContextualConfigurationProvider.Context.REST;
-        WebApplicationContext wac = new StaticWebApplicationContext();
+        try (StaticWebApplicationContext wac = new StaticWebApplicationContext()) {
 
-        XStream xs = new GeoWebCacheXStream();
+            XStream xs = new GeoWebCacheXStream();
 
-        xs = XMLConfiguration.getConfiguredXStreamWithContext(xs, wac, pc);
+            xs = XMLConfiguration.getConfiguredXStreamWithContext(xs, wac, pc);
 
-        exception.expect(com.thoughtworks.xstream.security.ForbiddenClassException.class);
+            exception.expect(com.thoughtworks.xstream.security.ForbiddenClassException.class);
 
-        @SuppressWarnings("unused")
-        Object o = xs.fromXML("<" + XMLConfigurationXSchemaTest.class.getCanonicalName() + " />");
+            @SuppressWarnings("unused")
+            Object o =
+                    xs.fromXML("<" + XMLConfigurationXSchemaTest.class.getCanonicalName() + " />");
+        }
     }
 
     @Test
@@ -115,14 +118,15 @@ public class XMLConfigurationXSchemaTest {
         whitelistProperty.setValue("org.easymock.**");
 
         ContextualConfigurationProvider.Context pc = ContextualConfigurationProvider.Context.REST;
-        WebApplicationContext wac = new StaticWebApplicationContext();
-        XStream xs = new GeoWebCacheXStream();
+        try (StaticWebApplicationContext wac = new StaticWebApplicationContext()) {
+            XStream xs = new GeoWebCacheXStream();
 
-        xs = XMLConfiguration.getConfiguredXStreamWithContext(xs, wac, pc);
+            xs = XMLConfiguration.getConfiguredXStreamWithContext(xs, wac, pc);
 
-        Object o = xs.fromXML("<" + org.easymock.Capture.class.getCanonicalName() + " />");
+            Object o = xs.fromXML("<" + org.easymock.Capture.class.getCanonicalName() + " />");
 
-        assertThat(o, instanceOf(org.easymock.Capture.class));
+            assertThat(o, instanceOf(org.easymock.Capture.class));
+        }
     }
 
     @Test
@@ -132,15 +136,16 @@ public class XMLConfigurationXSchemaTest {
         whitelistProperty.setValue("org.easymock.**; org.junit.**");
 
         ContextualConfigurationProvider.Context pc = ContextualConfigurationProvider.Context.REST;
-        WebApplicationContext wac = new StaticWebApplicationContext();
-        XStream xs = new GeoWebCacheXStream();
+        try (StaticWebApplicationContext wac = new StaticWebApplicationContext()) {
+            XStream xs = new GeoWebCacheXStream();
 
-        xs = XMLConfiguration.getConfiguredXStreamWithContext(xs, wac, pc);
+            xs = XMLConfiguration.getConfiguredXStreamWithContext(xs, wac, pc);
 
-        Object o1 = xs.fromXML("<" + org.easymock.Capture.class.getCanonicalName() + " />");
-        Object o2 = xs.fromXML("<" + org.junit.rules.TestName.class.getCanonicalName() + " />");
+            Object o1 = xs.fromXML("<" + org.easymock.Capture.class.getCanonicalName() + " />");
+            Object o2 = xs.fromXML("<" + org.junit.rules.TestName.class.getCanonicalName() + " />");
 
-        assertThat(o1, instanceOf(org.easymock.Capture.class));
-        assertThat(o2, instanceOf(org.junit.rules.TestName.class));
+            assertThat(o1, instanceOf(org.easymock.Capture.class));
+            assertThat(o2, instanceOf(org.junit.rules.TestName.class));
+        }
     }
 }

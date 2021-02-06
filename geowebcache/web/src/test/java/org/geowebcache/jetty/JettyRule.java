@@ -24,6 +24,7 @@ import org.junit.runners.model.Statement;
  *
  * @author Kevin Smith, Boundless
  */
+@SuppressWarnings("PMD.CloseResource")
 public class JettyRule extends org.junit.rules.ExternalResource {
 
     private static final String JETTY_PORT_PROPERTY = "jetty.port";

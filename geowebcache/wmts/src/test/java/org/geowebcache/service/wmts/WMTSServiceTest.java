@@ -1239,8 +1239,7 @@ public class WMTSServiceTest {
                     @Override
                     public boolean handleRequest(Conveyor conveyor) throws OWSException {
                         if (conveyor.getHint().equalsIgnoreCase("CustomOperation")) {
-                            try {
-                                OutputStream os = conveyor.servletResp.getOutputStream();
+                            try (OutputStream os = conveyor.servletResp.getOutputStream()) {
                                 os.write("CustomOperation Result".getBytes());
                                 os.flush();
                             } catch (IOException exception) {

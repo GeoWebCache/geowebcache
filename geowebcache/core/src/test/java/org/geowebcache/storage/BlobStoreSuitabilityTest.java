@@ -54,7 +54,7 @@ public abstract class BlobStoreSuitabilityTest {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Theory
-    public void testEmptyOk(Object persistenceLocation) throws Exception {
+    public void emptyOk(Object persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY);
         assumeThat(persistenceLocation, empty());
 
@@ -64,7 +64,7 @@ public abstract class BlobStoreSuitabilityTest {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Theory
-    public void testEmptyFail(Object persistenceLocation) throws Exception {
+    public void emptyFail(Object persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY);
         assumeThat(persistenceLocation, not(empty()));
 
@@ -75,7 +75,7 @@ public abstract class BlobStoreSuitabilityTest {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Theory
-    public void testExistingOk(Object persistenceLocation) throws Exception {
+    public void existingOk(Object persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EXISTING);
         assumeThat(persistenceLocation, (either(empty()).or(existing())));
 
@@ -85,7 +85,7 @@ public abstract class BlobStoreSuitabilityTest {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Theory
-    public void testExistingFail(Object persistenceLocation) throws Exception {
+    public void existingFail(Object persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EXISTING);
         assumeThat(persistenceLocation, not(either(empty()).or(existing())));
 
@@ -95,7 +95,7 @@ public abstract class BlobStoreSuitabilityTest {
     }
 
     @Theory
-    public void testNoneOk(Object persistenceLocation) throws Exception {
+    public void noneOk(Object persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.NONE);
 
         BlobStore store = create(persistenceLocation);

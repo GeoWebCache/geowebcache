@@ -15,26 +15,27 @@ public class TestSpring {
     @Test
     public void testBeanSelection() {
         // Selection of the Test Application Context
-        ClassPathXmlApplicationContext context =
-                new ClassPathXmlApplicationContext("appContextTest2.xml");
-        // Check that the initializer is present
-        Object obj = context.getBean("ioInitializer");
-        Assert.assertNotNull(obj);
-        Assert.assertTrue(obj instanceof ImageIOInitializer);
+        try (ClassPathXmlApplicationContext context =
+                new ClassPathXmlApplicationContext("appContextTest2.xml")) {
+            // Check that the initializer is present
+            Object obj = context.getBean("ioInitializer");
+            Assert.assertNotNull(obj);
+            Assert.assertTrue(obj instanceof ImageIOInitializer);
 
-        // Ensure that the excluded spi are present
-        ImageIOInitializer init = (ImageIOInitializer) obj;
-        List<String> excluded = init.getExcludedSpis();
-        Assert.assertNotNull(excluded);
-        Assert.assertTrue(excluded.isEmpty());
+            // Ensure that the excluded spi are present
+            ImageIOInitializer init = (ImageIOInitializer) obj;
+            List<String> excluded = init.getExcludedSpis();
+            Assert.assertNotNull(excluded);
+            Assert.assertTrue(excluded.isEmpty());
 
-        // Ensure that a decoder is present
-        Object obj2 = context.getBean("TIFFDecoder");
-        Assert.assertNotNull(obj2);
-        Assert.assertTrue(obj2 instanceof ImageDecoderImpl);
+            // Ensure that a decoder is present
+            Object obj2 = context.getBean("TIFFDecoder");
+            Assert.assertNotNull(obj2);
+            Assert.assertTrue(obj2 instanceof ImageDecoderImpl);
 
-        // Test if the container has been created
-        ImageDecoderContainer container = context.getBean(ImageDecoderContainer.class);
-        Assert.assertNotNull(container);
+            // Test if the container has been created
+            ImageDecoderContainer container = context.getBean(ImageDecoderContainer.class);
+            Assert.assertNotNull(container);
+        }
     }
 }

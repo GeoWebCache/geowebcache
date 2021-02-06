@@ -18,6 +18,7 @@ import org.geowebcache.storage.StorageException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * Offline integration tests for {@link S3BlobStore}.
@@ -51,12 +52,14 @@ public class OfflineS3BlobStoreIntegrationTest extends AbstractS3BlobStoreIntegr
 
     @Override
     @Ignore // randomly fails
+    @Test
     public void testTruncateOptimizationIfNoListeners() throws StorageException, MimeException {
         super.testTruncateOptimizationIfNoListeners();
     }
 
     @Override
     @Ignore // randomly fails
+    @Test
     public void testTruncateShortCutsIfNoTilesInGridsetPrefix()
             throws StorageException, MimeException {
         super.testTruncateShortCutsIfNoTilesInGridsetPrefix();

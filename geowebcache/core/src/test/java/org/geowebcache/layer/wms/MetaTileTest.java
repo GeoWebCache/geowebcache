@@ -5,7 +5,6 @@ import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -56,18 +55,7 @@ public class MetaTileTest {
                         metaHeight,
                         Collections.singletonMap("test", "test1"));
 
-        long[] solution = {0, 0, 0, 0, 0};
-        boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
-        if (!test) {
-            System.out.println("1 - " + mt.debugString());
-            System.out.println(
-                    "test1MetaTile {"
-                            + Arrays.toString(solution)
-                            + "} {"
-                            + Arrays.toString(mt.getMetaTileGridBounds())
-                            + "}");
-        }
-        Assert.assertTrue(test);
+        Assert.assertArrayEquals(new long[] {0, 0, 0, 0, 0}, mt.getMetaTileGridBounds());
     }
 
     @Test
@@ -92,17 +80,7 @@ public class MetaTileTest {
                         Collections.singletonMap("test", "test1"));
 
         long[] solution = {126, 63, 127, 63, 6};
-        boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
-        if (!test) {
-            System.out.println("2 - " + mt.debugString());
-            System.out.println(
-                    "test2MetaTile {"
-                            + Arrays.toString(solution)
-                            + "} {"
-                            + Arrays.toString(mt.getMetaTileGridBounds())
-                            + "}");
-        }
-        Assert.assertTrue(test);
+        Assert.assertArrayEquals(mt.getMetaTileGridBounds(), solution);
     }
 
     @Test
@@ -127,17 +105,7 @@ public class MetaTileTest {
                         Collections.singletonMap("test", "test1"));
 
         long[] solution = {0, 0, 0, 0, 0};
-        boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
-        if (!test) {
-            System.out.println("3 - " + mt.debugString());
-            System.out.println(
-                    "test3MetaTile {"
-                            + Arrays.toString(solution)
-                            + "} {"
-                            + Arrays.toString(mt.getMetaTileGridBounds())
-                            + "}");
-        }
-        Assert.assertTrue(test);
+        Assert.assertArrayEquals(mt.getMetaTileGridBounds(), solution);
     }
 
     @Test
@@ -163,19 +131,7 @@ public class MetaTileTest {
                         Collections.singletonMap("test", "test1"));
 
         long[] solution = {69, 69, 63, 63, 6};
-        boolean test = Arrays.equals(mt.getMetaTileGridBounds(), solution);
-        if (test) {
-
-        } else {
-            System.out.println("4 - " + mt.debugString());
-            System.out.println(
-                    "test4MetaTile {"
-                            + Arrays.toString(solution)
-                            + "} {"
-                            + Arrays.toString(mt.getMetaTileGridBounds())
-                            + "}");
-        }
-        Assert.assertTrue(test);
+        Assert.assertArrayEquals(mt.getMetaTileGridBounds(), solution);
     }
 
     /** @throws Exception */

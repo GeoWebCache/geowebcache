@@ -1,12 +1,16 @@
 package org.geowebcache.storage;
 
 import java.io.File;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
 import org.junit.Test;
 
 public class StorageBrokerTest {
+    static final Log LOG = LogFactory.getLog(StorageBrokerTest.class);
+
     public static final String TEST_DB_NAME = "gwcTestStorageBroker";
 
     public static final String TEST_BLOB_DIR_NAME = "gwcTestBlobs";
@@ -36,7 +40,6 @@ public class StorageBrokerTest {
     public void testTileMultiThread() throws Exception {
         if (!RUN_PERFORMANCE_TESTS) return;
 
-        System.out.println("\n");
         StorageBroker sb = resetAndPrepStorageBroker();
 
         long iterations = REPEAT_COUNT;
@@ -58,7 +61,7 @@ public class StorageBrokerTest {
         long perSec = totalTiles * 1000 / diff;
         long bw = (20 * 1024 * 8 * perSec) / 1000000;
 
-        System.out.println(
+        LOG.info(
                 "Total time: "
                         + diff
                         + "ms for "
@@ -74,10 +77,7 @@ public class StorageBrokerTest {
     }
 
     private StorageBroker resetAndPrepStorageBroker() throws Exception {
-        System.out.println("Deleting old test database.");
-
         String blobPath = findTempDir() + File.separator + TEST_BLOB_DIR_NAME;
-        System.out.println("Creating new blobstore in " + blobPath);
 
         File blobDirs = new File(blobPath);
         if (!blobDirs.exists() && !blobDirs.mkdirs()) {
@@ -85,14 +85,11 @@ public class StorageBrokerTest {
         }
 
         BlobStore blobStore = new FileBlobStore(blobPath);
-        TransientCache transCache = new TransientCache(100, 1024, 2000);
 
         StorageBroker sb = new DefaultStorageBroker(blobStore, new TransientCache(100, 1024, 2000));
 
         // long[] xyz = {1L,2L,3L};
         Resource blob = new ByteArrayResource(new byte[20 * 1024]);
-
-        System.out.println("Inserting into database, " + TILE_PUT_COUNT + " tiles");
 
         long startInsert = System.currentTimeMillis();
         for (int i = 1; i < TILE_PUT_COUNT; i++) {
@@ -106,8 +103,7 @@ public class StorageBrokerTest {
         }
         long stopInsert = System.currentTimeMillis();
 
-        System.out.println(
-                TILE_PUT_COUNT + " inserts took " + Long.toString(stopInsert - startInsert) + "ms");
+        LOG.info(TILE_PUT_COUNT + " inserts took " + (stopInsert - startInsert) + "ms");
 
         return sb;
     }
@@ -135,7 +131,7 @@ public class StorageBrokerTest {
 
         long stop = System.currentTimeMillis();
 
-        System.out.println(
+        LOG.info(
                 name
                         + " - run "
                         + run

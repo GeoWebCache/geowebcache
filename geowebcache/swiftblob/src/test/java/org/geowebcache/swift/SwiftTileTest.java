@@ -144,22 +144,24 @@ public class SwiftTileTest {
     }
 
     @Test
-    public void testGetPayloadMetadataOutputLength() {
+    public void testGetPayloadMetadataOutputLength() throws IOException {
         Long testOutputLengthValue = 5L;
         ReflectionTestUtils.setField(swiftTile, "outputLength", testOutputLengthValue);
 
-        Payload testPayload = swiftTile.getPayload();
-        Assert.assertEquals(
-                testOutputLengthValue, testPayload.getContentMetadata().getContentLength());
+        try (Payload testPayload = swiftTile.getPayload()) {
+            Assert.assertEquals(
+                    testOutputLengthValue, testPayload.getContentMetadata().getContentLength());
+        }
     }
 
     @Test
-    public void testGetPayloadMetadataMimeType() {
+    public void testGetPayloadMetadataMimeType() throws IOException {
         String testBlobFormat = "image/png";
         ReflectionTestUtils.setField(swiftTile, "blobFormat", testBlobFormat);
 
-        Payload testPayload = swiftTile.getPayload();
-        Assert.assertEquals(testBlobFormat, testPayload.getContentMetadata().getContentType());
+        try (Payload testPayload = swiftTile.getPayload()) {
+            Assert.assertEquals(testBlobFormat, testPayload.getContentMetadata().getContentType());
+        }
     }
 
     @Test

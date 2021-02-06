@@ -278,7 +278,6 @@ public abstract class AbstractAzureBlobStoreIntegrationTest {
 
         // check the tiles are gone too, give it up to 100 seconds
         long start = System.currentTimeMillis();
-        boolean allDeleted = false;
         boolean t20Deleted = false, t21Deleted = false, t22Deleted = false;
         while (System.currentTimeMillis() - start < 100000
                 && (!t20Deleted || !t21Deleted || !t22Deleted)) {
@@ -602,10 +601,6 @@ public abstract class AbstractAzureBlobStoreIntegrationTest {
                 }
             }
         }
-    }
-
-    private TileObject put(long x, long y, int z) throws StorageException {
-        return put(x, y, z, DEFAULT_GRIDSET, DEFAULT_FORMAT, null);
     }
 
     private TileObject put(

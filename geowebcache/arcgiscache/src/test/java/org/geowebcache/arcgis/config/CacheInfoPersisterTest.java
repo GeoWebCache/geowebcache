@@ -228,14 +228,9 @@ public class CacheInfoPersisterTest {
 
     private CacheInfo load(final URL url) throws Exception {
         CacheInfoPersister persister = new CacheInfoPersister();
-        InputStream stream = url.openStream();
-        Reader reader = new InputStreamReader(stream);
-        CacheInfo cacheInfo;
-        try {
-            cacheInfo = persister.load(reader);
-        } finally {
-            stream.close();
+        try (InputStream stream = url.openStream();
+                Reader reader = new InputStreamReader(stream)) {
+            return persister.load(reader);
         }
-        return cacheInfo;
     }
 }

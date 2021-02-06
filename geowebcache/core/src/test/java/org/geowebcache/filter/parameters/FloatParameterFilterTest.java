@@ -79,7 +79,6 @@ public class FloatParameterFilterTest {
     @Test
     public void testThreshold() throws Exception {
         filter.setThreshold(15f);
-        ;
 
         assertThat(filter.getLegalValues(), containsInAnyOrder("42.0", "6.283", "-17.5"));
 

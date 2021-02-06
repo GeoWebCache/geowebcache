@@ -130,26 +130,29 @@ public class HazelcastCacheProviderTest {
         assertEquals(to.getBlobFormat(), to2.getBlobFormat());
 
         // Checks if the resources are equals
-        InputStream is = to.getBlob().getInputStream();
-        InputStream is2 = to2.getBlob().getInputStream();
-        checkInputStreams(is, is2);
+        try (InputStream is = to.getBlob().getInputStream();
+                InputStream is2 = to2.getBlob().getInputStream()) {
+            checkInputStreams(is, is2);
+        }
 
         // Ensure Caches contain the result
         TileObject to3 = cache1.getTileObj(to);
         assertNotNull(to3);
 
         // Checks if the resources are equals
-        is = to.getBlob().getInputStream();
-        InputStream is3 = to3.getBlob().getInputStream();
-        checkInputStreams(is, is3);
+        try (InputStream is = to.getBlob().getInputStream();
+                InputStream is3 = to3.getBlob().getInputStream()) {
+            checkInputStreams(is, is3);
+        }
 
         TileObject to4 = cache2.getTileObj(to);
         assertNotNull(to4);
 
         // Checks if the resources are equals
-        is = to.getBlob().getInputStream();
-        InputStream is4 = to4.getBlob().getInputStream();
-        checkInputStreams(is, is4);
+        try (InputStream is = to.getBlob().getInputStream();
+                InputStream is4 = to4.getBlob().getInputStream()) {
+            checkInputStreams(is, is4);
+        }
     }
 
     @Test
@@ -181,9 +184,10 @@ public class HazelcastCacheProviderTest {
         assertTrue(mem2.get(to2));
 
         // Checks if the resources are equals
-        InputStream is = to2.getBlob().getInputStream();
-        InputStream is2 = bytes.getInputStream();
-        checkInputStreams(is, is2);
+        try (InputStream is = to2.getBlob().getInputStream();
+                InputStream is2 = bytes.getInputStream()) {
+            checkInputStreams(is, is2);
+        }
 
         // Delete TileObject
         TileObject to3 =

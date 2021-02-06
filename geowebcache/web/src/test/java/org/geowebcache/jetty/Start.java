@@ -19,6 +19,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
  *
  * @author wolf
  */
+@SuppressWarnings("PMD.CloseResource")
 public class Start {
     private static final Log log = LogFactory.getLog(Start.class);
 
@@ -85,15 +86,6 @@ public class Start {
                     log.error("Unable to stop the " + "Jetty server:" + e1.getMessage(), e1);
                 }
             }
-        }
-    }
-
-    private static int parsePort(String portVariable) {
-        if (portVariable == null) return -1;
-        try {
-            return Integer.valueOf(portVariable).intValue();
-        } catch (NumberFormatException e) {
-            return -1;
         }
     }
 }

@@ -19,8 +19,6 @@ import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.locks.LockProvider;
-import org.geowebcache.locks.NoOpLockProvider;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.blobstore.file.FilePathGenerator;
@@ -54,7 +52,6 @@ public class ZXYFilePathGeneratorTest {
         testRoot.mkdir();
 
         TileLayerDispatcher layers = createMock(TileLayerDispatcher.class);
-        LockProvider lockProvider = new NoOpLockProvider();
         String name = "states";
         TileLayer mock = createMock(name, TileLayer.class);
         expect(mock.getName()).andStubReturn(name);

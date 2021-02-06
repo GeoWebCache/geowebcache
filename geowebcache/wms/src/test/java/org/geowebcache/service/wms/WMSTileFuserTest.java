@@ -178,19 +178,21 @@ public class WMSTileFuserTest {
                         });
         WMSTileFuser tileFuser =
                 new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
-        ClassPathXmlApplicationContext context =
-                new ClassPathXmlApplicationContext("appContextTest.xml");
-        tileFuser.setApplicationContext(context);
+        try (ClassPathXmlApplicationContext context =
+                new ClassPathXmlApplicationContext("appContextTest.xml")) {
+            tileFuser.setApplicationContext(context);
 
-        tileFuser.setSecurityDispatcher(secDisp);
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        RuntimeStats stats = mock(RuntimeStats.class);
+            tileFuser.setSecurityDispatcher(secDisp);
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            RuntimeStats stats = mock(RuntimeStats.class);
 
-        tileFuser.writeResponse(response, stats);
+            tileFuser.writeResponse(response, stats);
 
-        Mockito.verify(secDisp, times(4))
-                .checkSecurity(
-                        Mockito.argThat(hasProperty("tileLayer", notNullValue(TileLayer.class))));
+            Mockito.verify(secDisp, times(4))
+                    .checkSecurity(
+                            Mockito.argThat(
+                                    hasProperty("tileLayer", notNullValue(TileLayer.class))));
+        }
     }
 
     @Test
@@ -300,15 +302,16 @@ public class WMSTileFuserTest {
             tileFuser.setSecurityDispatcher(secDisp);
 
             // Selection of the ApplicationContext associated
-            ClassPathXmlApplicationContext context =
-                    new ClassPathXmlApplicationContext("appContextTest.xml");
-            tileFuser.setApplicationContext(context);
-            MockHttpServletResponse response = new MockHttpServletResponse();
+            try (ClassPathXmlApplicationContext context =
+                    new ClassPathXmlApplicationContext("appContextTest.xml")) {
+                tileFuser.setApplicationContext(context);
+                MockHttpServletResponse response = new MockHttpServletResponse();
 
-            tileFuser.writeResponse(
-                    response, new RuntimeStats(1, Arrays.asList(1), Arrays.asList("desc")));
+                tileFuser.writeResponse(
+                        response, new RuntimeStats(1, Arrays.asList(1), Arrays.asList("desc")));
 
-            assertTrue(response.getContentAsString().length() > 0);
+                assertTrue(response.getContentAsString().length() > 0);
+            }
         } finally {
             temp.delete();
         }

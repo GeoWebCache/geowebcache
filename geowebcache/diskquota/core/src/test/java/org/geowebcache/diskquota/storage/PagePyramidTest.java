@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.diskquota.storage.PagePyramid.PageLevelInfo;
 import org.geowebcache.grid.GridSet;
@@ -35,6 +37,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class PagePyramidTest {
+
+    static final Log LOG = LogFactory.getLog(PagePyramidTest.class);
 
     GridSet world_EPSG3857 =
             new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, false)))
@@ -87,7 +91,7 @@ public class PagePyramidTest {
             totalPages += levelPages;
             totalTiles = totalTiles.add(tilesPerPage.multiply(BigInteger.valueOf(levelPages)));
 
-            System.out.println(
+            LOG.info(
                     FilePathUtils.zeroPadder(z, 2)
                             + ": (total pages ="
                             + nf.format(totalPages)
@@ -97,7 +101,7 @@ public class PagePyramidTest {
                             + nf.format(tilesPerPage.multiply(BigInteger.valueOf(levelPages)))
                             + ") ");
         }
-        System.out.println("Total pages: " + totalPages);
+        LOG.info("Total pages: " + totalPages);
     }
 
     @Test

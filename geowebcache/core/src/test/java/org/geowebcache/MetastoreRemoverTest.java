@@ -43,18 +43,16 @@ public class MetastoreRemoverTest {
         testMigration(true);
     }
 
-    public void testMigration(boolean migrateCreationDates) throws Exception {
+    protected void testMigration(boolean migrateCreationDates) throws Exception {
         System.setProperty("MIGRATE_CREATION_DATES", String.valueOf(migrateCreationDates));
         // the remover does the migration on instantiation
-        MetastoreRemover remover =
-                new MetastoreRemover(
-                        new DefaultStorageFinder(new ApplicationContextProvider()) {
-                            @Override
-                            public synchronized String getDefaultPath()
-                                    throws ConfigurationException {
-                                return root.toString();
-                            }
-                        });
+        new MetastoreRemover(
+                new DefaultStorageFinder(new ApplicationContextProvider()) {
+                    @Override
+                    public synchronized String getDefaultPath() throws ConfigurationException {
+                        return root.toString();
+                    }
+                });
 
         // the first param has been removed and replaced, the file last modified date has been
         // replaced

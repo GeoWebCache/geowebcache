@@ -519,10 +519,6 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
         }
     }
 
-    private TileObject put(long x, long y, int z) throws StorageException {
-        return put(x, y, z, DEFAULT_GRIDSET, DEFAULT_FORMAT, null);
-    }
-
     private TileObject put(
             long x,
             long y,

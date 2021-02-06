@@ -98,9 +98,7 @@ public class S3BlobStoreConfigSerializeTest {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
         exception.expect(XStreamException.class);
-        S3BlobStoreInfo config =
-                (S3BlobStoreInfo)
-                        xs.fromXML(
-                                "<S3BlobStore><id>test</id><enabled>false</enabled><access>NOT_A_REAL_ACCESS_TYPE</access><useHTTPS>true</useHTTPS></S3BlobStore>");
+        xs.fromXML(
+                "<S3BlobStore><id>test</id><enabled>false</enabled><access>NOT_A_REAL_ACCESS_TYPE</access><useHTTPS>true</useHTTPS></S3BlobStore>");
     }
 }
