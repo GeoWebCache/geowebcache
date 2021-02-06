@@ -175,9 +175,6 @@ public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigInt
     public void testRename() throws IOException, GeoWebCacheException {
         testAdd();
 
-        FileBlobStoreInfo info =
-                (FileBlobStoreInfo) blobStoreAggregator.getBlobStore("newFileBlobStore");
-
         blobStoreAggregator.renameBlobStore("newFileBlobStore", "renamedFileBlobStore");
         assertFalse(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
         assertTrue(compositeBlobStore.blobStores.containsKey("renamedFileBlobStore"));
@@ -186,9 +183,6 @@ public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigInt
     @Test
     public void testRenameDefault() throws IOException, GeoWebCacheException {
         testAddDefault();
-
-        FileBlobStoreInfo info =
-                (FileBlobStoreInfo) blobStoreAggregator.getBlobStore("newFileBlobStore");
 
         blobStoreAggregator.renameBlobStore("newFileBlobStore", "renamedFileBlobStore");
         assertFalse(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
@@ -221,7 +215,6 @@ public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigInt
                                     "message",
                                     containsString("default blob store can't be removed"))));
             blobStoreAggregator.removeBlobStore("newFileBlobStore");
-            System.out.println("FOO");
         } finally {
             assertTrue(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
             assertTrue(blobStoreAggregator.blobStoreExists("newFileBlobStore"));

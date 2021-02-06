@@ -19,10 +19,14 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
 import org.junit.Test;
 
 public class HttpClientTest {
+
+    static final Log LOG = LogFactory.getLog(HttpClientTest.class);
 
     static final boolean RUN_PERFORMANCE_TEST = false;
 
@@ -54,17 +58,12 @@ public class HttpClientTest {
                 hc.getState().setCredentials(authscope, credentials);
                 getMethod.setDoAuthentication(true);
                 hc.getParams().setAuthenticationPreemptive(true);
-
-                if (hc.getHostConfiguration().getPort() == 0) {
-                    // Dummy
-                }
-                // System.out.print(i);
             }
             long stop = System.currentTimeMillis();
 
             long diff = (stop - start);
 
-            System.out.println("Time to create " + LOOP_COUNT + " in " + diff + " milliseconds");
+            LOG.info("Time to create " + LOOP_COUNT + " in " + diff + " milliseconds");
         }
     }
 }

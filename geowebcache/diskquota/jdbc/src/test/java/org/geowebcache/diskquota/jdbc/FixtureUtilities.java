@@ -87,7 +87,7 @@ public class FixtureUtilities {
      */
     public static void printSkipNotice(String fixtureId, File fixtureFile) {
         try {
-            System.out.println(
+            log.info(
                     "Skipping "
                             + fixtureId
                             + " tests. Fixture file "

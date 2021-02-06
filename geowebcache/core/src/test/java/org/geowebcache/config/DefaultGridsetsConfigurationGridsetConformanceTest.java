@@ -101,6 +101,7 @@ public class DefaultGridsetsConfigurationGridsetConformanceTest extends GridSetC
     }
 
     @Override
+    @Test
     public void testCanSaveGoodInfo() throws Exception {
         // Should not be able to save anything as it is read only
         assertThat(config.canSave(getGoodInfo("test", 1)), equalTo(false));

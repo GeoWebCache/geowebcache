@@ -35,12 +35,9 @@ public class GridSetBuilderTest {
     public void setUp() throws Exception {
         URL url = getClass().getResource("/arcgis_09.2_conf.xml");
         CacheInfoPersister persister = new CacheInfoPersister();
-        InputStream stream = url.openStream();
-        Reader reader = new InputStreamReader(stream);
-        try {
+        try (InputStream stream = url.openStream();
+                Reader reader = new InputStreamReader(stream)) {
             cacheInfo = persister.load(reader);
-        } finally {
-            stream.close();
         }
         layerBounds = new BoundingBox(-10, -10, 100, 50);
         builder = new GridSetBuilder();

@@ -188,8 +188,6 @@ public class MassTruncateControllerTest {
                         .andReturn();
 
         assertEquals(200, result.getResponse().getStatus());
-
-        System.out.print(result);
     }
 
     @Test

@@ -110,9 +110,10 @@ public class MemoryBlobStoreTest {
         assertEquals(to.getBlobFormat(), to2.getBlobFormat());
 
         // Checks if the resources are equals
-        InputStream is = to.getBlob().getInputStream();
-        InputStream is2 = to2.getBlob().getInputStream();
-        checkInputStreams(is, is2);
+        try (InputStream is = to.getBlob().getInputStream();
+                InputStream is2 = to2.getBlob().getInputStream()) {
+            checkInputStreams(is, is2);
+        }
 
         // Ensure Cache contains the result
         TileObject to3 = cache.getTileObj(to);
@@ -120,9 +121,10 @@ public class MemoryBlobStoreTest {
         assertEquals(to.getBlobFormat(), to3.getBlobFormat());
 
         // Checks if the resources are equals
-        is = to.getBlob().getInputStream();
-        InputStream is3 = to3.getBlob().getInputStream();
-        checkInputStreams(is, is3);
+        try (InputStream is = to.getBlob().getInputStream();
+                InputStream is3 = to3.getBlob().getInputStream()) {
+            checkInputStreams(is, is3);
+        }
 
         // Ensure that NullBlobStore does not contain anything
         assertFalse(nbs.get(to));
@@ -160,9 +162,10 @@ public class MemoryBlobStoreTest {
         assertEquals(to.getBlobFormat(), to2.getBlobFormat());
 
         // Checks if the resources are equals
-        InputStream is = to.getBlob().getInputStream();
-        InputStream is2 = to2.getBlob().getInputStream();
-        checkInputStreams(is, is2);
+        try (InputStream is = to.getBlob().getInputStream();
+                InputStream is2 = to2.getBlob().getInputStream()) {
+            checkInputStreams(is, is2);
+        }
 
         // Ensure Cache contains the result
         TileObject to3 = cache.getTileObj(to);
@@ -170,9 +173,10 @@ public class MemoryBlobStoreTest {
         assertEquals(to.getBlobFormat(), to3.getBlobFormat());
 
         // Checks if the resources are equals
-        is = to.getBlob().getInputStream();
-        InputStream is3 = to3.getBlob().getInputStream();
-        checkInputStreams(is, is3);
+        try (InputStream is = to.getBlob().getInputStream();
+                InputStream is3 = to3.getBlob().getInputStream()) {
+            checkInputStreams(is, is3);
+        }
     }
 
     @Test
@@ -205,9 +209,10 @@ public class MemoryBlobStoreTest {
         mbs.get(to2);
 
         // Checks if the resources are equals
-        InputStream is = to2.getBlob().getInputStream();
-        InputStream is2 = bytes.getInputStream();
-        checkInputStreams(is, is2);
+        try (InputStream is = to2.getBlob().getInputStream();
+                InputStream is2 = bytes.getInputStream()) {
+            checkInputStreams(is, is2);
+        }
 
         // Delete TileObject
         TileObject to3 =

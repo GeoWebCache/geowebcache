@@ -133,6 +133,6 @@ public class XMLMimeTest {
 
     @Test(expected = MimeException.class)
     public void testUnknownFormat() throws MimeException {
-        MimeType result = MimeType.createFromFormat("xxx/xxx");
+        MimeType.createFromFormat("xxx/xxx");
     }
 }

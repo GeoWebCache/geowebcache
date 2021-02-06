@@ -16,6 +16,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
@@ -32,6 +34,8 @@ import org.junit.Test;
 import org.springframework.util.StopWatch;
 
 public class TileRangeIteratorTest {
+
+    static final Log LOG = LogFactory.getLog(TileRangeIteratorTest.class);
 
     private MimeType mimeType;
 
@@ -120,7 +124,7 @@ public class TileRangeIteratorTest {
                 tilesProcessed);
         // }
         sw.stop();
-        System.err.println(
+        LOG.info(
                 nThreads
                         + " threads finished in "
                         + sw.getTotalTimeMillis()

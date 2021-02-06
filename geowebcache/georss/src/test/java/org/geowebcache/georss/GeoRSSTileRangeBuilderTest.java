@@ -17,7 +17,6 @@ package org.geowebcache.georss;
 import static org.geowebcache.georss.RasterMaskTestUtils.buildSampleFilterMatrix;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -118,15 +117,12 @@ public class GeoRSSTileRangeBuilderTest {
     private void assertLatestUpdate(String expected, String fileName)
             throws IOException, XMLStreamException, FactoryConfigurationError {
 
-        InputStream stream = getClass().getResourceAsStream("test-data/" + fileName);
-        if (stream == null) {
-            throw new FileNotFoundException("test-data/" + fileName);
+        try (InputStream stream = getClass().getResourceAsStream("test-data/" + fileName);
+                Reader feed = new BufferedReader(new InputStreamReader(stream, "UTF-8")); ) {
+            StaxGeoRSSReader reader = new StaxGeoRSSReader(feed);
+            GeoRSSTileRangeBuilder b = new GeoRSSTileRangeBuilder(layer, gridsetId, 10);
+            b.buildTileRangeMask(reader, null);
+            Assert.assertEquals(expected, b.getLastEntryUpdate());
         }
-        Reader feed = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-
-        StaxGeoRSSReader reader = new StaxGeoRSSReader(feed);
-        GeoRSSTileRangeBuilder b = new GeoRSSTileRangeBuilder(layer, gridsetId, 10);
-        b.buildTileRangeMask(reader, null);
-        Assert.assertEquals(expected, b.getLastEntryUpdate());
     }
 }

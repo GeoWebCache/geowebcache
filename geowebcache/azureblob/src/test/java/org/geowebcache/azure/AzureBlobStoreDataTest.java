@@ -26,6 +26,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class AzureBlobStoreDataTest {
 
     @Before
+    @SuppressWarnings("PMD.CloseResource")
     public void setUp() throws Exception {
         System.setProperty("CONTAINER", "MYCONTAINER");
         System.setProperty("ACCOUNT_NAME", "MYNAME");

@@ -84,7 +84,6 @@ public class FormServiceTest {
                 .anyTimes();
         replay(breeder);
         Set<String> layer1GridSet = new HashSet<>(Arrays.asList("test_grid1"));
-        String layerName = "test";
         GridSubset gs = createMock(GridSubset.class);
         expect(gs.getOriginalExtent()).andReturn(new BoundingBox(0, 0, 10, 10)).anyTimes();
         expect(gs.getZoomStart()).andReturn(0).anyTimes();

@@ -35,7 +35,6 @@ public class OnlineAzureBlobStoreIntegrationTest extends AbstractAzureBlobStoreI
     @Test
     public void testCreatesStoreMetadataOnStart() {
         String prefix = tempFolder.getConfig().getPrefix();
-        String container = tempFolder.getConfig().getContainer();
         // if the file does not exist a StorageException will be thrown
         int status =
                 tempFolder
