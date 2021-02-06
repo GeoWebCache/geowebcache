@@ -16,7 +16,7 @@ package org.geowebcache.service;
 
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
-import org.owasp.encoder.*;
+import org.owasp.encoder.Encode;
 
 public class OWSException extends Exception {
     private static final long serialVersionUID = -8024005353689857211L;

@@ -14,7 +14,10 @@
  */
 package org.geowebcache.storage.blobstore.file;
 
-import static org.geowebcache.storage.blobstore.file.FilePathUtils.*;
+import static org.geowebcache.storage.blobstore.file.FilePathUtils.filteredGridSetId;
+import static org.geowebcache.storage.blobstore.file.FilePathUtils.filteredLayerName;
+import static org.geowebcache.storage.blobstore.file.FilePathUtils.findParameter;
+import static org.geowebcache.storage.blobstore.file.FilePathUtils.findZoomLevel;
 
 import com.google.common.base.Preconditions;
 import java.io.File;

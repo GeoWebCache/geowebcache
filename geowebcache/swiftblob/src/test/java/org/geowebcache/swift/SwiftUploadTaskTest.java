@@ -14,7 +14,13 @@
  */
 package org.geowebcache.swift;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.jclouds.io.Payload;
 import org.jclouds.io.payloads.BaseMutableContentMetadata;
@@ -26,10 +32,6 @@ public class SwiftUploadTaskTest extends SwiftTileTest {
 
     private ObjectApi testObjectApi = mock(ObjectApi.class);
     private String testKey = "TestKey";
-
-    public void setUp() throws Exception {
-        super.setUp();
-    }
 
     @Test
     public void testRunWithEmptyListeners() {
@@ -57,6 +59,7 @@ public class SwiftUploadTaskTest extends SwiftTileTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.CloseResource")
     public void testRunWithValidObject() {
         SwiftObject testSwiftObject = mock(SwiftObject.class);
         Payload testPayload = mock(Payload.class);

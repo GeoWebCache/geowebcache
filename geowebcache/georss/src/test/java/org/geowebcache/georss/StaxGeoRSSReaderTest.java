@@ -48,36 +48,38 @@ public class StaxGeoRSSReaderTest {
     @Test
     public void testParsePointFeed() throws Exception {
 
-        Reader feed = reader("point_feed.xml");
-        StaxGeoRSSReader reader = new StaxGeoRSSReader(feed);
+        try (Reader feed = reader("point_feed.xml")) {
+            StaxGeoRSSReader reader = new StaxGeoRSSReader(feed);
 
-        List<Entry> entries = read(reader);
+            List<Entry> entries = read(reader);
 
-        Assert.assertEquals(3, entries.size());
-        assertRequiredMembers(entries);
+            Assert.assertEquals(3, entries.size());
+            assertRequiredMembers(entries);
 
-        Assert.assertTrue(entries.get(0).getWhere() instanceof Point);
-        Assert.assertTrue(entries.get(1).getWhere() instanceof Point);
-        Assert.assertTrue(entries.get(2).getWhere() instanceof Point);
+            Assert.assertTrue(entries.get(0).getWhere() instanceof Point);
+            Assert.assertTrue(entries.get(1).getWhere() instanceof Point);
+            Assert.assertTrue(entries.get(2).getWhere() instanceof Point);
+        }
     }
 
     @Test
     public void testMultiGeometryTypesFeed() throws Exception {
 
-        Reader feed = reader("mixedgeometries_feed.xml");
-        StaxGeoRSSReader reader = new StaxGeoRSSReader(feed);
+        try (Reader feed = reader("mixedgeometries_feed.xml")) {
+            StaxGeoRSSReader reader = new StaxGeoRSSReader(feed);
 
-        List<Entry> entries = read(reader);
+            List<Entry> entries = read(reader);
 
-        Assert.assertEquals(6, entries.size());
-        assertRequiredMembers(entries);
+            Assert.assertEquals(6, entries.size());
+            assertRequiredMembers(entries);
 
-        Assert.assertTrue(entries.get(0).getWhere() instanceof Point);
-        Assert.assertTrue(entries.get(1).getWhere() instanceof MultiPoint);
-        Assert.assertTrue(entries.get(2).getWhere() instanceof Polygon);
-        Assert.assertTrue(entries.get(3).getWhere() instanceof MultiPolygon);
-        Assert.assertTrue(entries.get(4).getWhere() instanceof LineString);
-        Assert.assertTrue(entries.get(5).getWhere() instanceof MultiLineString);
+            Assert.assertTrue(entries.get(0).getWhere() instanceof Point);
+            Assert.assertTrue(entries.get(1).getWhere() instanceof MultiPoint);
+            Assert.assertTrue(entries.get(2).getWhere() instanceof Polygon);
+            Assert.assertTrue(entries.get(3).getWhere() instanceof MultiPolygon);
+            Assert.assertTrue(entries.get(4).getWhere() instanceof LineString);
+            Assert.assertTrue(entries.get(5).getWhere() instanceof MultiLineString);
+        }
     }
 
     private void assertRequiredMembers(List<Entry> entries) {

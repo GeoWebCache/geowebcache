@@ -15,19 +15,43 @@
 package org.geowebcache.swift;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.common.io.ByteSource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.storage.*;
+import org.geowebcache.storage.BlobStoreListener;
+import org.geowebcache.storage.BlobStoreListenerList;
+import org.geowebcache.storage.StorageException;
+import org.geowebcache.storage.TileObject;
+import org.geowebcache.storage.TileRange;
 import org.jclouds.blobstore.domain.PageSet;
 import org.jclouds.io.payloads.ByteSourcePayload;
 import org.jclouds.openstack.swift.v1.SwiftApi;
@@ -228,6 +252,7 @@ public class SwiftBlobStoreTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.CloseResource")
     public void get() {
         String thePayloadData = "Test Content";
         Date lastModified = new Date();

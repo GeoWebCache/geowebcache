@@ -107,9 +107,9 @@ public class ArcGISCompactCacheTest {
         Assert.assertEquals(6342, resource.getSize());
 
         File f = new File("5_12_7.jpg");
-        FileOutputStream fos = new FileOutputStream(f);
-        resource.transferTo(fos.getChannel());
-        fos.close();
+        try (FileOutputStream fos = new FileOutputStream(f)) {
+            resource.transferTo(fos.getChannel());
+        }
 
         Assert.assertTrue(startsWithJPEGHeader(f));
 
@@ -120,9 +120,9 @@ public class ArcGISCompactCacheTest {
         Assert.assertEquals(6308, resource.getSize());
 
         f = new File("6_25_17.jpg");
-        fos = new FileOutputStream(f);
-        resource.transferTo(fos.getChannel());
-        fos.close();
+        try (FileOutputStream fos = new FileOutputStream(f)) {
+            resource.transferTo(fos.getChannel());
+        }
 
         Assert.assertTrue(startsWithJPEGHeader(f));
 
@@ -141,9 +141,9 @@ public class ArcGISCompactCacheTest {
         Assert.assertEquals(7288, resource.getSize());
 
         File f = new File("4_5_4.jpg");
-        FileOutputStream fos = new FileOutputStream(f);
-        resource.transferTo(fos.getChannel());
-        fos.close();
+        try (FileOutputStream fos = new FileOutputStream(f)) {
+            resource.transferTo(fos.getChannel());
+        }
 
         Assert.assertTrue(startsWithJPEGHeader(f));
 
@@ -154,9 +154,9 @@ public class ArcGISCompactCacheTest {
         Assert.assertEquals(6055, resource.getSize());
 
         f = new File("5_11_5.jpg");
-        fos = new FileOutputStream(f);
-        resource.transferTo(fos.getChannel());
-        fos.close();
+        try (FileOutputStream fos = new FileOutputStream(f)) {
+            resource.transferTo(fos.getChannel());
+        }
 
         Assert.assertTrue(startsWithJPEGHeader(f));
 

@@ -2,7 +2,6 @@ package org.geowebcache.grid;
 
 import static org.junit.Assert.assertArrayEquals;
 
-import java.util.Arrays;
 import java.util.Collections;
 import org.geowebcache.config.DefaultGridsets;
 import org.junit.Assert;
@@ -34,10 +33,6 @@ public class GridCalculatorTest {
         for (int i = 0; i < solution.length; i++) {
             long[] bounds = grid.getCoverage(i);
 
-            if (!Arrays.equals(solution[i], bounds)) {
-                System.out.println(
-                        i + " " + Arrays.toString(solution[i]) + "  " + Arrays.toString(bounds));
-            }
             assertArrayEquals(solution[i], bounds);
         }
     }
@@ -62,9 +57,6 @@ public class GridCalculatorTest {
         for (int i = 0; i < solution.length; i++) {
             long[] bounds = grid.getCoverage(i);
 
-            if (!Arrays.equals(solution[i], bounds)) {
-                System.out.println(Arrays.toString(solution[i]) + "  " + Arrays.toString(bounds));
-            }
             assertArrayEquals(solution[i], bounds);
         }
     }
@@ -90,9 +82,6 @@ public class GridCalculatorTest {
         for (int i = 0; i < solution.length; i++) {
             long[] bounds = grid.getCoverage(i);
 
-            if (!Arrays.equals(solution[i], bounds)) {
-                System.out.println(Arrays.toString(solution[i]) + "  " + Arrays.toString(bounds));
-            }
             assertArrayEquals(solution[i], bounds);
         }
     }
@@ -119,9 +108,6 @@ public class GridCalculatorTest {
         for (int i = 0; i < solution.length; i++) {
             long[] bounds = grid.getCoverage(i);
 
-            if (!Arrays.equals(solution[i], bounds)) {
-                System.out.println(Arrays.toString(solution[i]) + "  " + Arrays.toString(bounds));
-            }
             assertArrayEquals(solution[i], bounds);
         }
     }
@@ -140,10 +126,6 @@ public class GridCalculatorTest {
         for (int i = 0; i < solution.length; i++) {
             long[] bounds = grid.getCoverage(i);
 
-            if (!Arrays.equals(solution[i], bounds)) {
-                System.out.println("test1gridLevels900913, level " + i);
-                System.out.println(Arrays.toString(solution[i]) + "  " + Arrays.toString(bounds));
-            }
             assertArrayEquals(solution[i], bounds);
         }
     }
@@ -168,10 +150,6 @@ public class GridCalculatorTest {
         for (int i = 0; i < solution.length; i++) {
             long[] bounds = grid.getCoverage(i);
 
-            if (!Arrays.equals(solution[i], bounds)) {
-                System.out.println("test2gridLevels900913, level " + i);
-                System.out.println(Arrays.toString(solution[i]) + "  " + Arrays.toString(bounds));
-            }
             assertArrayEquals(solution[i], bounds);
         }
     }
@@ -197,10 +175,6 @@ public class GridCalculatorTest {
         for (int i = 0; i < solution.length; i++) {
             long[] bounds = grid.getCoverage(i);
 
-            if (!Arrays.equals(solution[i], bounds)) {
-                System.out.println("test3gridLevels900913, level " + i);
-                System.out.println(Arrays.toString(solution[i]) + "  " + Arrays.toString(bounds));
-            }
             assertArrayEquals(solution[i], bounds);
         }
     }
@@ -260,9 +234,6 @@ public class GridCalculatorTest {
         for (int i = 0; i < solution.length; i++) {
             long[] bounds = grid.getCoverage(i);
 
-            if (!Arrays.equals(solution[i], bounds)) {
-                System.out.println(Arrays.toString(solution[i]) + "  " + Arrays.toString(bounds));
-            }
             assertArrayEquals(solution[i], bounds);
         }
     }

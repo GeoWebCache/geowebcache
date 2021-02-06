@@ -18,6 +18,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.locationtech.jts.geom.Geometry;
@@ -25,6 +27,8 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 public class RasterMaskTestUtils {
+
+    static final Log LOG = LogFactory.getLog(RasterMaskTestUtils.class);
 
     public static boolean debugToDisk;
 
@@ -64,7 +68,7 @@ public class RasterMaskTestUtils {
 
             for (int i = 0; i < byLevelMasks.length; i++) {
                 File output = new File(target, "level_" + i + ".tiff");
-                System.out.println("--- writing " + output.getAbsolutePath() + "---");
+                LOG.info("--- writing " + output.getAbsolutePath() + "---");
                 ImageIO.write(byLevelMasks[i], "TIFF", output);
             }
         }

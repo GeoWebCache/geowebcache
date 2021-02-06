@@ -324,48 +324,49 @@ final class SqlitlePerf {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format("Start seeding file '%s'.", seedFile));
         }
-        Connection connection = DriverManager.getConnection("jdbc:sqlite:" + seedFile.getPath());
-        String createTableSql =
-                "CREATE TABLE IF NOT EXISTS tiles (zoom_level integer, tile_column integer, "
-                        + "tile_row integer, tile_data blob, CONSTRAINT pk_tiles PRIMARY KEY(zoom_level, tile_column,tile_row));";
-        executeSql(connection, createTableSql);
-        // start seeding wrapped in a transaction (improves performance)
-        long startTime = System.currentTimeMillis();
-        executeSql(connection, "BEGIN TRANSACTION;");
-        String sql = "INSERT OR REPLACE INTO tiles VALUES(?, ?, ?, ?);";
-        // insert the tiles in batches
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            for (int i = 0; i < TILES; i++) {
-                Tile tile = Tile.random();
-                tiles[i][0] = tile.x;
-                tiles[i][1] = tile.y;
-                tiles[i][2] = tile.z;
-                statement.setLong(1, tile.z);
-                statement.setLong(2, tile.x);
-                statement.setLong(3, tile.y);
-                statement.setBytes(4, tile.data);
-                statement.addBatch();
-                if (i != 0 && i % 10000 == 0) {
-                    statement.executeBatch();
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug(String.format("Inserted batch %d.", i));
+        try (Connection connection =
+                DriverManager.getConnection("jdbc:sqlite:" + seedFile.getPath())) {
+            String createTableSql =
+                    "CREATE TABLE IF NOT EXISTS tiles (zoom_level integer, tile_column integer, "
+                            + "tile_row integer, tile_data blob, CONSTRAINT pk_tiles PRIMARY KEY(zoom_level, tile_column,tile_row));";
+            executeSql(connection, createTableSql);
+            // start seeding wrapped in a transaction (improves performance)
+            long startTime = System.currentTimeMillis();
+            executeSql(connection, "BEGIN TRANSACTION;");
+            String sql = "INSERT OR REPLACE INTO tiles VALUES(?, ?, ?, ?);";
+            // insert the tiles in batches
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                for (int i = 0; i < TILES; i++) {
+                    Tile tile = Tile.random();
+                    tiles[i][0] = tile.x;
+                    tiles[i][1] = tile.y;
+                    tiles[i][2] = tile.z;
+                    statement.setLong(1, tile.z);
+                    statement.setLong(2, tile.x);
+                    statement.setLong(3, tile.y);
+                    statement.setBytes(4, tile.data);
+                    statement.addBatch();
+                    if (i != 0 && i % 10000 == 0) {
+                        statement.executeBatch();
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug(String.format("Inserted batch %d.", i));
+                        }
                     }
                 }
+                statement.executeBatch();
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(String.format("Inserted batch %d.", TILES));
+                }
+            } catch (Exception exception) {
+                throw Utils.exception(exception, "Error executing SQL '%s'.", sql);
             }
-            statement.executeBatch();
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format("Inserted batch %d.", TILES));
+            // clean everything
+            executeSql(connection, "END TRANSACTION;");
+            long endTime = System.currentTimeMillis();
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(String.format("Insert time '%d' (batch mode).", endTime - startTime));
             }
-        } catch (Exception exception) {
-            throw Utils.exception(exception, "Error executing SQL '%s'.", sql);
         }
-        // clean everything
-        executeSql(connection, "END TRANSACTION;");
-        long endTime = System.currentTimeMillis();
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(String.format("Insert time '%d' (batch mode).", endTime - startTime));
-        }
-        connection.close();
         return seedFile;
     }
 

@@ -25,11 +25,15 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.Assume;
 import org.junit.AssumptionViolatedException;
 import org.junit.rules.ExternalResource;
 
 public class OnlineTestRule extends ExternalResource {
+
+    static final Log LOG = LogFactory.getLog(OnlineTestRule.class);
 
     /** System property set to totally disable any online tests */
     public static final String ONLINE_TEST_PROFILE = "onlineTestProfile";
@@ -78,7 +82,7 @@ public class OnlineTestRule extends ExternalResource {
         try {
             available = isOnline();
         } catch (Throwable t) {
-            System.out.println(
+            LOG.info(
                     "Skipping " + fixtureId + " tests, resources not available: " + t.getMessage());
             t.printStackTrace();
             available = Boolean.FALSE;
@@ -141,17 +145,17 @@ public class OnlineTestRule extends ExternalResource {
             exFixtureFile.getParentFile().mkdirs();
             exFixtureFile.createNewFile();
 
-            FileOutputStream fout = new FileOutputStream(exFixtureFile);
+            try (FileOutputStream fout = new FileOutputStream(exFixtureFile)) {
 
-            exampleFixture.store(
-                    fout,
-                    "This is an example fixture. Update the "
-                            + "values and remove the .example suffix to enable the test");
-            fout.flush();
-            fout.close();
-            System.out.println("Wrote example fixture file to " + exFixtureFile);
+                exampleFixture.store(
+                        fout,
+                        "This is an example fixture. Update the "
+                                + "values and remove the .example suffix to enable the test");
+                fout.flush();
+            }
+            LOG.info("Wrote example fixture file to " + exFixtureFile);
         } catch (IOException ioe) {
-            System.out.println("Unable to write out example fixture " + exFixtureFile);
+            LOG.info("Unable to write out example fixture " + exFixtureFile);
             ioe.printStackTrace();
         }
     }
@@ -201,9 +205,7 @@ public class OnlineTestRule extends ExternalResource {
                 try {
                     disconnect();
                 } catch (Exception e) {
-                    if (skipOnFailure) {
-                        // do nothing
-                    } else {
+                    if (!skipOnFailure) {
                         throw new AssertionError(
                                 "Exception during disconnect of fixture " + fixtureId, e);
                     }

@@ -19,7 +19,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.MockGridSetConfiguration;
-import org.geowebcache.grid.*;
+import org.geowebcache.grid.BoundingBox;
+import org.geowebcache.grid.GridSet;
+import org.geowebcache.grid.GridSetBroker;
+import org.geowebcache.grid.GridSetFactory;
+import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.rest.controller.ReloadController;
 import org.junit.Before;

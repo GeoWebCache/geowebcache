@@ -47,9 +47,10 @@ public class BlobStoreTest {
         if (fh.exists()) {
             FileUtils.deleteDirectory(fh);
             if (fh.exists()) {
-                System.out.println(
-                        "Unable to delete " + org.geowebcache.util.FileUtils.printFileTree(fh));
-                Assert.fail("Could not cleanup blob store directory");
+                Assert.fail(
+                        "Could not cleanup blob store directory\n"
+                                + "Unable to delete "
+                                + org.geowebcache.util.FileUtils.printFileTree(fh));
             }
         }
     }
@@ -253,9 +254,11 @@ public class BlobStoreTest {
         if (!fh.exists()) {
             Files.createDirectory(fh.toPath());
             if (!fh.exists()) {
-                System.out.println(
-                        "Unable to create " + org.geowebcache.util.FileUtils.printFileTree(fh));
-                throw new StorageException("Unable to create " + fh.getAbsolutePath());
+                throw new StorageException(
+                        "Unable to create "
+                                + fh.getAbsolutePath()
+                                + "\nUnable to create "
+                                + org.geowebcache.util.FileUtils.printFileTree(fh));
             }
         }
 

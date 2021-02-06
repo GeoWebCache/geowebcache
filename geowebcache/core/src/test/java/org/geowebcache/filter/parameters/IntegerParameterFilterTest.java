@@ -76,7 +76,6 @@ public class IntegerParameterFilterTest {
     @Test
     public void testThreshold() throws Exception {
         filter.setThreshold(15);
-        ;
 
         for (String test : Arrays.asList("42", "2", "0", "-1", "-200")) {
             assertThat(

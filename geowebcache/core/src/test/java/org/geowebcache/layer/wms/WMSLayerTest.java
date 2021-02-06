@@ -307,7 +307,7 @@ public class WMSLayerTest extends TileLayerTest {
     public void testCascadeGetLegendGraphics() throws Exception {
         // setup the layer
         WMSLayer layer = createWMSLayer("image/png");
-        final byte[] responseBody = new String("Fake body").getBytes();
+        final byte[] responseBody = "Fake body".getBytes();
         layer.setSourceHelper(
                 new WMSHttpHelper() {
                     @Override
@@ -369,7 +369,7 @@ public class WMSLayerTest extends TileLayerTest {
     public void testCascadeWithoutContentType() throws Exception {
         // setup the layer
         WMSLayer layer = createWMSLayer("image/png");
-        final byte[] responseBody = new String("Fake body").getBytes();
+        final byte[] responseBody = "Fake body".getBytes();
         layer.setSourceHelper(
                 new WMSHttpHelper() {
                     @Override
@@ -494,8 +494,6 @@ public class WMSLayerTest extends TileLayerTest {
         // assertTrue(Math.abs(494 - mock.cacheMisses.get()) < 10);
         // assertTrue(Math.abs(172 - mock.wmsMetaRequestCounter.get()) < 10);
         // stats
-        System.out.println("transientCacheSize " + mock.transientCache.size());
-        System.out.println("transientCacheStorage " + mock.transientCache.storageSize());
     }
 
     private void seedTiles(StorageBroker storageBroker, TileRange tr, final WMSLayer tl)

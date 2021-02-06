@@ -12,7 +12,6 @@ import static org.junit.Assert.fail;
 import com.google.common.base.Objects;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -23,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -101,7 +99,6 @@ public abstract class JDBCQuotaStoreTest {
             EasyMock.replay(cacheDirFinder);
 
             XMLConfiguration xmlConfig = loadXMLConfig();
-            LinkedList<TileLayerConfiguration> configList = new LinkedList<>();
             extensions.addBean(
                     "xmlConfig",
                     xmlConfig,
@@ -312,19 +309,13 @@ public abstract class JDBCQuotaStoreTest {
     private String[] paramIds;
 
     private XMLConfiguration loadXMLConfig() throws Exception {
-        InputStream is = null;
-        XMLConfiguration xmlConfig = null;
-
-        xmlConfig =
-                new XMLConfiguration(
-                        null,
-                        new MockConfigurationResourceProvider(
-                                () ->
-                                        XMLConfiguration.class.getResourceAsStream(
-                                                XMLConfigurationBackwardsCompatibilityTest
-                                                        .LATEST_FILENAME)));
-
-        return xmlConfig;
+        return new XMLConfiguration(
+                null,
+                new MockConfigurationResourceProvider(
+                        () ->
+                                XMLConfiguration.class.getResourceAsStream(
+                                        XMLConfigurationBackwardsCompatibilityTest
+                                                .LATEST_FILENAME)));
     }
 
     @Test
@@ -471,7 +462,7 @@ public abstract class JDBCQuotaStoreTest {
         Quota newTset4Quota = store.getUsedQuotaByTileSetId(tset4.getId());
         // validate test quota 1
         assertNotNull(newTset1Quota);
-        assertEquals(new BigInteger("0"), newTset1Quota.getBytes());
+        assertEquals(BigInteger.valueOf(0), newTset1Quota.getBytes());
         // validate test quota 2
         assertNotNull(newTset2Quota);
         assertEquals(tset2Quota.getBytes(), newTset2Quota.getBytes());
@@ -480,7 +471,7 @@ public abstract class JDBCQuotaStoreTest {
         assertEquals(tset3Quota.getBytes(), newTset3Quota.getBytes());
         // validate test quota 4
         assertNotNull(newTset4Quota);
-        assertEquals(new BigInteger("0"), newTset4Quota.getBytes());
+        assertEquals(BigInteger.valueOf(0), newTset4Quota.getBytes());
         // test the global quota
         globalQuota = store.getGloballyUsedQuota();
         assertEquals(tset2Quota.getBytes().add(tset3Quota.getBytes()), globalQuota.getBytes());
@@ -529,7 +520,7 @@ public abstract class JDBCQuotaStoreTest {
         tset2Quota = store.getUsedQuotaByTileSetId(tset2.getId());
 
         assertNotNull(tset2Quota);
-        assertEquals(new BigInteger("0"), tset2Quota.getBytes());
+        assertEquals(BigInteger.valueOf(0), tset2Quota.getBytes());
         globalQuota = store.getGloballyUsedQuota();
         assertEquals(tset1Quota.getBytes(), globalQuota.getBytes());
     }

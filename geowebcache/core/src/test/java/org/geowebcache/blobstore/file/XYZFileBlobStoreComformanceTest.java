@@ -32,8 +32,6 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
-import org.geowebcache.locks.LockProvider;
-import org.geowebcache.locks.NoOpLockProvider;
 import org.geowebcache.storage.AbstractBlobStoreTest;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
 import org.geowebcache.storage.blobstore.file.XYZFilePathGenerator;
@@ -58,7 +56,6 @@ public class XYZFileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileB
     @Override
     public void createTestUnit() throws Exception {
         this.layers = createMock(TileLayerDispatcher.class);
-        LockProvider lockProvider = new NoOpLockProvider();
         GridSet wgs84Grid = new DefaultGridsets(false, false).worldEpsg4326();
         GridSubset gridSubset = GridSubsetFactory.createGridSubSet(wgs84Grid);
         Stream.of("testLayer", "testLayer1", "testLayer2")

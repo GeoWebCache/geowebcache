@@ -205,6 +205,7 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
     }
 
     @Override
+    @Test
     public void testGetExistingHasGridset() throws Exception {
         Optional<TileLayer> retrieved = getInfo(config, getExistingInfo());
         assertThat(

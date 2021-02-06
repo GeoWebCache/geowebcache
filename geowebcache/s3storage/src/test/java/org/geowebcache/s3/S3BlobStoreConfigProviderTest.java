@@ -27,6 +27,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class S3BlobStoreConfigProviderTest {
 
     @Before
+    @SuppressWarnings("PMD.CloseResource")
     public void setUp() throws Exception {
         System.setProperty("BUCKET", "MYBUCKET");
         System.setProperty("CONNECTIONS", "30");

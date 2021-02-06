@@ -37,7 +37,6 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.FileUtils;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.custommonkey.xmlunit.XpathEngine;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.XMLGridSubset;
@@ -73,9 +72,6 @@ import org.w3c.dom.Document;
 
 public class WMTSRestTest {
 
-    // private static Map<String, String> namespaces = new HashMap<String, String>(0);
-    private static XpathEngine xpath;
-
     GridSetBroker broker =
             new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
     private WMTSService wmtsService;
@@ -103,7 +99,6 @@ public class WMTSRestTest {
         namespaces.put("ows", "http://www.opengis.net/ows/1.1");
         namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
         XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
-        xpath = XMLUnit.newXpathEngine();
     }
 
     @Test
