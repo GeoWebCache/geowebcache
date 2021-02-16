@@ -14,6 +14,7 @@
  */
 package org.geowebcache.config;
 
+import java.util.Arrays;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
@@ -33,14 +34,26 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
 
     private final GridSet WORLD_EPSG4326;
 
+    private final GridSet WORLD_EPSG4326x2;
+
     private final GridSet WORLD_EPSG3857;
+
+    private final GridSet WORLD_EPSG3857x2;
 
     public GridSet worldEpsg4326() {
         return new GridSet(WORLD_EPSG4326);
     }
 
+    public GridSet worldEpsg4326x2() {
+        return new GridSet(WORLD_EPSG4326x2);
+    }
+
     public GridSet worldEpsg3857() {
         return new GridSet(WORLD_EPSG3857);
+    }
+
+    public GridSet worldEpsg3857x2() {
+        return new GridSet(WORLD_EPSG3857x2);
     }
 
     /**
@@ -79,10 +92,29 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
                         true);
         WORLD_EPSG4326.setDescription(
                 "A default WGS84 tile matrix set where the first zoom level "
-                        + "covers the world with two tiles on the horizonal axis and one tile "
+                        + "covers the world with two tiles on the horizontal axis and one tile "
                         + "over the vertical axis and each subsequent zoom level is calculated by half "
-                        + "the resolution of its previous one.");
+                        + "the resolution of its previous one. Tiles are 256px wide.");
         addInternal(WORLD_EPSG4326);
+
+        WORLD_EPSG4326x2 =
+                GridSetFactory.createGridSet(
+                        unprojectedName + "x2",
+                        SRS.getEPSG4326(),
+                        BoundingBox.WORLD4326,
+                        false,
+                        GridSetFactory.DEFAULT_LEVELS,
+                        null,
+                        GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                        512,
+                        512,
+                        true);
+        WORLD_EPSG4326x2.setDescription(
+                "A default WGS84 tile matrix set where the first zoom level "
+                        + "covers the world with two tiles on the horizontal axis and one tile "
+                        + "over the vertical axis and each subsequent zoom level is calculated by half "
+                        + "the resolution of its previous one. Tiles are 512px wide.");
+        addInternal(WORLD_EPSG4326x2);
 
         final SRS googleMapsCompatibleSRS = useEPSG900913 ? SRS.getEPSG900913() : SRS.getEPSG3857();
         log.debug(
@@ -104,7 +136,6 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
                         256,
                         256,
                         false);
-
         WORLD_EPSG3857.setDescription(
                 "This well-known scale set has been defined to be compatible with Google Maps and"
                         + " Microsoft Live Map projections and zoom levels. Level 0 allows representing the whole "
@@ -112,6 +143,27 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
                         + "of 256x256 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
 
         addInternal(WORLD_EPSG3857);
+
+        WORLD_EPSG3857x2 =
+                GridSetFactory.createGridSet(
+                        mercatorName + "x2",
+                        googleMapsCompatibleSRS,
+                        BoundingBox.WORLD3857,
+                        false,
+                        halveResolutions(commonPractice900913Resolutions()),
+                        null,
+                        1.0D,
+                        GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                        null,
+                        512,
+                        512,
+                        false);
+        WORLD_EPSG3857x2.setDescription(
+                "This well-known scale set has been defined to be compatible with Google Maps and"
+                        + " Microsoft Live Map projections and zoom levels. Level 0 allows representing the whole "
+                        + "world in a single 512x512 pixels. The next level represents the whole world in 2x2 tiles "
+                        + "of 512x512 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
+        addInternal(WORLD_EPSG3857x2);
 
         log.debug("Adding GlobalCRS84Pixel");
         GridSet GlobalCRS84Pixel =
@@ -182,6 +234,10 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
                         + " tiles of 256x256 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
 
         addInternal(GoogleCRS84Quad);
+    }
+
+    private double[] halveResolutions(double[] resolutions) {
+        return Arrays.stream(resolutions).map(r -> r / 2).toArray();
     }
 
     @Override
