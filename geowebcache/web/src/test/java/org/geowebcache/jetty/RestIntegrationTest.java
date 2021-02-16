@@ -876,7 +876,7 @@ public class RestIntegrationTest {
 
             Document doc = getResponseEntityAsXML(response);
 
-            assertThat(doc, hasXPath("count(/gridSets/gridSet)", equalTo("7")));
+            assertThat(doc, hasXPath("count(/gridSets/gridSet)", equalTo("9")));
             assertThat(doc, hasXPath("/gridSets/gridSet[1]/name", equalTo("EPSG:2163")));
             assertThat(
                     doc,
@@ -898,7 +898,7 @@ public class RestIntegrationTest {
             assertEquals(200, response.getStatusLine().getStatusCode());
 
             JSONArray jsonArray = getResponseEntityAsJSONArray(response);
-            assertEquals(7, jsonArray.length());
+            assertEquals(9, jsonArray.length());
             assertEquals("EPSG:2163", jsonArray.get(0));
         }
     }
