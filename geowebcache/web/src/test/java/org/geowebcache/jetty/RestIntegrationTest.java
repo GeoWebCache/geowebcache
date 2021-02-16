@@ -825,34 +825,38 @@ public class RestIntegrationTest {
 
     @Test
     public void testGetGridSetsXML() throws Exception {
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/gridsets.xml"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
 
-        Document doc = getResponseEntityAsXML(response);
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/gridsets.xml"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        assertThat(doc, hasXPath("count(/gridSets/gridSet)", equalTo("7")));
-        assertThat(doc, hasXPath("/gridSets/gridSet[1]/name", equalTo("EPSG:2163")));
-        assertThat(
-                doc,
-                hasXPath(
-                        "/gridSets/gridSet[1]/atom:link/@href",
-                        equalTo(jetty.getUri() + "rest/gridsets/EPSG:2163.xml")));
-        assertThat(
-                doc,
-                hasXPath(
-                        "/gridSets/gridSet[1]/atom:link/@type", equalTo(MediaType.TEXT_XML_VALUE)));
+            Document doc = getResponseEntityAsXML(response);
+
+            assertThat(doc, hasXPath("count(/gridSets/gridSet)", equalTo("9")));
+            assertThat(doc, hasXPath("/gridSets/gridSet[1]/name", equalTo("EPSG:2163")));
+            assertThat(
+                    doc,
+                    hasXPath(
+                            "/gridSets/gridSet[1]/atom:link/@href",
+                            equalTo(jetty.getUri() + "rest/gridsets/EPSG:2163.xml")));
+            assertThat(
+                    doc,
+                    hasXPath(
+                            "/gridSets/gridSet[1]/atom:link/@type",
+                            equalTo(MediaType.TEXT_XML_VALUE)));
+        }
     }
 
     @Test
     public void testGetGridSetsJSON() throws Exception {
-        CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/gridsets.json"), admin.getClient());
-        assertEquals(200, response.getStatusLine().getStatusCode());
+        try (CloseableHttpResponse response =
+                handleGet(URI.create("/geowebcache/rest/gridsets.json"), admin.getClient())) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
 
-        JSONArray jsonArray = getResponseEntityAsJSONArray(response);
-        assertEquals(7, jsonArray.length());
-        assertEquals("EPSG:2163", jsonArray.get(0));
+            JSONArray jsonArray = getResponseEntityAsJSONArray(response);
+            assertEquals(9, jsonArray.length());
+            assertEquals("EPSG:2163", jsonArray.get(0));
+        }
     }
 
     @Test
