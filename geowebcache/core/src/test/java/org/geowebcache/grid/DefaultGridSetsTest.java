@@ -17,9 +17,11 @@ package org.geowebcache.grid;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 import org.geowebcache.config.DefaultGridsets;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 public class DefaultGridSetsTest {
@@ -85,5 +87,55 @@ public class DefaultGridSetsTest {
                 "Unexpected default mercator GridSet",
                 googleMapsCompatible,
                 defaultMercatorGridSet);
+    }
+
+    @Test
+    public void test4326x2() {
+        DefaultGridsets gs = new DefaultGridsets(true, true);
+        GridSet base = gs.worldEpsg4326();
+        GridSet x2 = gs.worldEpsg4326x2();
+
+        // description
+        assertThat(base.getDescription(), CoreMatchers.containsString("256"));
+        assertThat(x2.getDescription(), CoreMatchers.containsString("512"));
+
+        // tile sizes
+        assertEquals(256, base.getTileWidth());
+        assertEquals(256, base.getTileHeight());
+        assertEquals(512, x2.getTileWidth());
+        assertEquals(512, x2.getTileHeight());
+
+        // reference pixel size and scale denominators
+        for (int level = 0; level < base.getNumLevels(); level++) {
+            assertEquals(
+                    base.getGrid(level).getScaleDenominator(),
+                    x2.getGrid(level).getScaleDenominator() * 2,
+                    1e-6);
+        }
+    }
+
+    @Test
+    public void test3857x2() {
+        DefaultGridsets gs = new DefaultGridsets(true, true);
+        GridSet base = gs.worldEpsg3857();
+        GridSet x2 = gs.worldEpsg3857x2();
+
+        // description
+        assertThat(base.getDescription(), CoreMatchers.containsString("256x256"));
+        assertThat(x2.getDescription(), CoreMatchers.containsString("512x512"));
+
+        // tile sizes
+        assertEquals(256, base.getTileWidth());
+        assertEquals(256, base.getTileHeight());
+        assertEquals(512, x2.getTileWidth());
+        assertEquals(512, x2.getTileHeight());
+
+        // reference pixel size and scale denominators
+        for (int level = 0; level < base.getNumLevels(); level++) {
+            assertEquals(
+                    base.getGrid(level).getScaleDenominator(),
+                    x2.getGrid(level).getScaleDenominator() * 2,
+                    1e-6);
+        }
     }
 }
