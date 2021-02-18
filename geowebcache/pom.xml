@@ -39,7 +39,7 @@
     <joda-time.version>2.8.1</joda-time.version>
     <fmt.action>format</fmt.action>
     <fmt.skip>false</fmt.skip>
-    <jackson.version>2.10.1</jackson.version>
+    <jackson.version>2.12.1</jackson.version>
     <jetty.version>9.4.18.v20190429</jetty.version>
     <errorProneFlags></errorProneFlags>
     <errorProne.version>2.3.4</errorProne.version>
