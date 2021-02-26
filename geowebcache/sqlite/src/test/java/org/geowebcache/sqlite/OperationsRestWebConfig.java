@@ -24,6 +24,7 @@ import java.util.List;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.config.XMLConfiguration;
+import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.springframework.context.annotation.Bean;
@@ -75,5 +76,10 @@ public class OperationsRestWebConfig extends WebMvcConfigurationSupport {
         mbtilesStoreConfig.add(configuration);
         when(gwcConfiguration.getBlobStores()).thenReturn(mbtilesStoreConfig);
         return gwcConfiguration;
+    }
+
+    @Bean
+    public GridSetBroker gwcGridSetBroker() {
+        return mock(GridSetBroker.class);
     }
 }

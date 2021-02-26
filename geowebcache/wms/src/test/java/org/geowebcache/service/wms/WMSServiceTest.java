@@ -3,7 +3,6 @@ package org.geowebcache.service.wms;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -13,7 +12,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -118,8 +117,7 @@ public class WMSServiceTest {
 
         service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
 
-        @SuppressWarnings("unchecked")
-        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("format", new String[] {"image/png"});
 
         kvp.put("srs", new String[] {"EPSG:4326"});
@@ -216,8 +214,7 @@ public class WMSServiceTest {
 
         service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
 
-        @SuppressWarnings("unchecked")
-        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMS"});
         kvp.put("version", new String[] {"1.1.1"});
         kvp.put("request", new String[] {"GetCapabilities"});
@@ -260,8 +257,7 @@ public class WMSServiceTest {
 
         service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
 
-        @SuppressWarnings("unchecked")
-        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMS"});
         kvp.put("version", new String[] {"1.1.1"});
         kvp.put("request", new String[] {"GetCapabilities"});
@@ -305,8 +301,7 @@ public class WMSServiceTest {
         String layerName = "mockLayer";
         String timeValue = "00:00";
 
-        @SuppressWarnings("unchecked")
-        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMS"});
         kvp.put("version", new String[] {"1.1.1"});
         kvp.put("request", new String[] {"GetFeatureInfo"});
@@ -607,7 +602,7 @@ public class WMSServiceTest {
         ConveyorTile conv = service.getConveyor(req, resp);
 
         assertThat(conv, hasProperty("hint", equalTo("GetMap".toLowerCase())));
-        assertThat(conv, hasProperty("requestHandler", is(RequestHandler.SERVICE)));
+        assertThat(conv, hasProperty("requestHandler", equalTo(RequestHandler.SERVICE)));
 
         service.handleRequest(conv);
 
@@ -670,7 +665,7 @@ public class WMSServiceTest {
         ConveyorTile conv = service.getConveyor(req, resp);
 
         assertThat(conv, hasProperty("hint", equalTo("GetMap".toLowerCase())));
-        assertThat(conv, hasProperty("requestHandler", is(RequestHandler.SERVICE)));
+        assertThat(conv, hasProperty("requestHandler", equalTo(RequestHandler.SERVICE)));
 
         try {
             service.handleRequest(conv);
@@ -736,7 +731,7 @@ public class WMSServiceTest {
                 .thenReturn(new ByteArrayResource("TEST FEATURE INFO".getBytes()));
 
         assertThat(conv, hasProperty("hint", equalTo("GetFeatureInfo".toLowerCase())));
-        assertThat(conv, hasProperty("requestHandler", is(RequestHandler.SERVICE)));
+        assertThat(conv, hasProperty("requestHandler", equalTo(RequestHandler.SERVICE)));
 
         service.handleRequest(conv);
         // fail("Expected SecurityException");
@@ -800,7 +795,7 @@ public class WMSServiceTest {
                 .thenReturn(new ByteArrayResource("TEST FEATURE INFO".getBytes()));
 
         assertThat(conv, hasProperty("hint", equalTo("GetFeatureInfo".toLowerCase())));
-        assertThat(conv, hasProperty("requestHandler", is(RequestHandler.SERVICE)));
+        assertThat(conv, hasProperty("requestHandler", equalTo(RequestHandler.SERVICE)));
 
         try {
             service.handleRequest(conv);

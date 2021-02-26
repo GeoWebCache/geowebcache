@@ -2,7 +2,7 @@ package org.geowebcache.service.tms;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -330,7 +330,6 @@ public class TMSServiceTest {
         GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
         service = new TMSService(sb, mock(RuntimeStats.class), gwcd, customFactory);
 
-        @SuppressWarnings("unchecked")
         HttpServletRequest req = mock(HttpServletRequest.class);
         MockHttpServletResponse resp = new MockHttpServletResponse();
         when(req.getCharacterEncoding()).thenReturn("UTF-8");

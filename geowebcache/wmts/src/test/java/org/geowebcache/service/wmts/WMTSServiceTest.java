@@ -9,7 +9,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -17,9 +16,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -140,7 +139,8 @@ public class WMTSServiceTest {
             assertNotNull(source);
             FileUtils.copyURLToFile(source, configFile);
         }
-        // initialize the config with an XMLFileResourceProvider that uses the temp config file
+        // initialize the config with an XMLFileResourceProvider that uses the temp
+        // config file
         gridsetBroker =
                 new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
         ConfigurationResourceProvider configProvider =
@@ -372,7 +372,8 @@ public class WMTSServiceTest {
                         "count(//wmts:Contents/wmts:Layer/wmts:MetadataURL[@type='some-type']"
                                 + "/wmts:OnlineResource[@xlink:href='http://localhost:8080/some-url'])",
                         doc));
-        // checking that the layer has an associated tile resource URL, for each supported image
+        // checking that the layer has an associated tile resource URL, for each
+        // supported image
         // format of the layer
 
         assertEquals(
@@ -393,7 +394,8 @@ public class WMTSServiceTest {
                                 + WMTSService.REST_PATH
                                 + "/mockLayer/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}?format=image/png'])",
                         doc));
-        // checking that the layer has an associated feature info resources URL, for each supported
+        // checking that the layer has an associated feature info resources URL, for
+        // each supported
         // feature info format of the layer
         assertEquals(
                 "1",
@@ -1173,16 +1175,19 @@ public class WMTSServiceTest {
                     mockTileLayer(
                             "mockLayer", gridSetNames, Collections.singletonList(styleFilter));
 
-            // Style parameter should have been made plural by the time getModifiableParameters is
+            // Style parameter should have been made plural by the time
+            // getModifiableParameters is
             // called.
             Map<String, String> map = new HashMap<>();
             map.put("STYLES", "Bar");
             when(tileLayer.getModifiableParameters(
-                            (Map)
-                                    argThat(
+                            argThat(
+                                    m ->
                                             hasEntry(
-                                                    equalToIgnoringCase("styles"),
-                                                    arrayContaining(equalToIgnoringCase("Bar")))),
+                                                            equalToIgnoringCase("styles"),
+                                                            arrayContaining(
+                                                                    equalToIgnoringCase("Bar")))
+                                                    .matches(m)),
                             any()))
                     .thenReturn(Collections.unmodifiableMap(map));
             when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
@@ -1254,7 +1259,7 @@ public class WMTSServiceTest {
         Conveyor conveyor = service.getConveyor(req, resp);
         assertThat(conveyor, notNullValue());
         service.handleRequest(conveyor);
-        assertThat(resp.getContentAsString(), is("CustomOperation Result"));
+        assertThat(resp.getContentAsString(), equalTo("CustomOperation Result"));
     }
 
     @Test
@@ -1276,6 +1281,7 @@ public class WMTSServiceTest {
 
         when(subset.getName()).thenReturn("testGridset");
         when(subset.getGridSet()).thenReturn(set);
+        when(subset.boundsFromIndex(any())).thenReturn(new BoundingBox(0, 0, 180, 90));
 
         when(set.getTileHeight()).thenReturn(256);
         when(set.getTileWidth()).thenReturn(256);
@@ -1317,7 +1323,7 @@ public class WMTSServiceTest {
 
         Conveyor conv = service.getConveyor(req, resp);
 
-        assertThat(conv, hasProperty("gridSetId", is("testGridset")));
+        assertThat(conv, hasProperty("gridSetId", equalTo("testGridset")));
 
         when(tileLayer.getFeatureInfo(
                         any(ConveyorTile.class),
@@ -1329,7 +1335,7 @@ public class WMTSServiceTest {
                 .thenReturn(new ByteArrayResource("TEST FEATURE INFO".getBytes()));
 
         assertThat(conv, hasProperty("hint", equalTo("GetFeatureInfo".toLowerCase())));
-        assertThat(conv, hasProperty("requestHandler", is(RequestHandler.SERVICE)));
+        assertThat(conv, hasProperty("requestHandler", equalTo(RequestHandler.SERVICE)));
 
         service.handleRequest(conv);
         // fail("Expected SecurityException");
@@ -1397,7 +1403,7 @@ public class WMTSServiceTest {
 
         Conveyor conv = service.getConveyor(req, resp);
 
-        assertThat(conv, hasProperty("gridSetId", is("testGridset")));
+        assertThat(conv, hasProperty("gridSetId", equalTo("testGridset")));
 
         when(tileLayer.getFeatureInfo(
                         any(ConveyorTile.class),
@@ -1409,7 +1415,7 @@ public class WMTSServiceTest {
                 .thenReturn(new ByteArrayResource("TEST FEATURE INFO".getBytes()));
 
         assertThat(conv, hasProperty("hint", equalTo("GetFeatureInfo".toLowerCase())));
-        assertThat(conv, hasProperty("requestHandler", is(RequestHandler.SERVICE)));
+        assertThat(conv, hasProperty("requestHandler", equalTo(RequestHandler.SERVICE)));
 
         try {
             service.handleRequest(conv);
