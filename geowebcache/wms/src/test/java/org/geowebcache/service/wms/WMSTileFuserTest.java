@@ -14,11 +14,8 @@
  */
 package org.geowebcache.service.wms;
 
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
@@ -33,6 +30,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.DefaultGridsets;
+import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.security.SecurityDispatcher;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
@@ -51,10 +49,10 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TransientCache;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
-import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -165,7 +163,7 @@ public class WMSTileFuserTest {
         Mockito.when(tld.getTileLayer("test:layer")).thenReturn(layer);
         StorageBroker sb = mock(StorageBroker.class);
 
-        Mockito.when(sb.get(argThat(Matchers.instanceOf(TileObject.class))))
+        Mockito.when(sb.get(ArgumentMatchers.any(TileObject.class)))
                 .thenAnswer(
                         invoc -> {
                             TileObject stObj = (TileObject) invoc.getArguments()[0];
@@ -189,9 +187,7 @@ public class WMSTileFuserTest {
             tileFuser.writeResponse(response, stats);
 
             Mockito.verify(secDisp, times(4))
-                    .checkSecurity(
-                            Mockito.argThat(
-                                    hasProperty("tileLayer", notNullValue(TileLayer.class))));
+                    .checkSecurity(ArgumentMatchers.any(ConveyorTile.class));
         }
     }
 

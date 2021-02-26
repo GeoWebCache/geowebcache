@@ -74,7 +74,7 @@ public class GridSubset {
     }
 
     public BoundingBox boundsFromIndex(long[] tileIndex) {
-        return gridSet.boundsFromIndex(tileIndex);
+        return getGridSet().boundsFromIndex(tileIndex);
     }
 
     /**

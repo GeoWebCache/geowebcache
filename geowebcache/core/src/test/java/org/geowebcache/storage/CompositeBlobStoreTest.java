@@ -22,8 +22,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -58,7 +58,7 @@ public class CompositeBlobStoreTest {
 
     private static final String DEFAULT_LAYER = "topp:states";
 
-    private static class NotEq<T> extends ArgumentMatcher<T> {
+    private static class NotEq<T> implements ArgumentMatcher<T> {
 
         private T val;
 

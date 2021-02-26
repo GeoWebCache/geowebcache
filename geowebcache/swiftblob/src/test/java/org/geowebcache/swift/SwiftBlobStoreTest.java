@@ -101,7 +101,7 @@ public class SwiftBlobStoreTest {
     public void setUp() throws Exception {
 
         // Initialises the annotated mocks and spies
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
 
         // Create tile object for use in swift blob store methods
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
