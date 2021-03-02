@@ -1,3 +1,56 @@
+GeoWebCache 1.19-RC (2021-03-01)
+--------------------------------
+
+Release candidate for 1.19.x series.
+
+Improvements:
++++++++++++++
+- Introduce 512px tiles as possible alternative for the default gridsets
+- Update to JTS 1.18.1
+- Update JAIEXT 1.1.20
+- Update Spring to v5.1.20.RELEASE and Spring security to 5.1.13.RELEASE 
+
+Internal:
++++++++++
+- Enabled PMD checks on tests, Switch JUnit tests from v3 to v4
+- Use geotools factory for http connections
+- Cleaning up unnecessary casts
+- Cleaning up unecessary type specifications
+- Repalce iterator loops with enhanced for loops
+- Use isEmpty instead of size() == 0
+- Use try-with-resources replacing try/finally
+- Replace use of Vector/Hashtable with ArrayList/HashMap
+
+GeoWebCache 1.18.2 (2021-01-18)
+-------------------------------
+
+Stable release of the 1.18.x series
+
+Improvements:
++++++++++++++
+- In the seeding form, order threads count numerically instead of lexicographically
+- Bounding box toString scales poorly due to internal synchornization of NumberFormat
+- Creating a new UUID for each temp file scales poorly, reduce the calculation of those to a lower number, appending an atomic integer at the end
+- Upgrading to jaiext 1.1.18, better BufferedImageAdapter (also improves scalability)
+
+GeoWebCache 1.18.1 (2020-11-18)
+-------------------------------
+
+Stable release of the 1.18.x series
+
+Improvements:
++++++++++++++
+- Allow the S3 storage to work against Cohesity too, in addition to AWS S3 and Minio
+
+GeoWebCache 1.18.0 (2020-09-21)
+-------------------------------
+
+First stable release of the 1.18.x series.
+
+Fixes:
+++++++
+- Fixed documentation scripts branch reference
+
 GeoWebCache 1.18.0
 -------------------
 
@@ -5,6 +58,67 @@ Improvements:
 +++++++++++++
 
 - Use of repo.osgeo.org
+
+GeoWebCache 1.18-RC (2020-09-01)
+--------------------------------
+
+Release candidate.
+
+Improvements:
+
+* Include the default ServiceInfo into the WMS & WMTS GetCapabilities document
+* Use of JTS 1.17.1
+
+GeoWebCache 1.17.4 (2020-12-20)
+-------------------------------
+
+Improvements:
++++++++++++++
+- Allow the S3 storage to work against Cohesity too.
+
+GeoWebCache 1.17.3 (2020-09-25)
+-------------------------------
+
+First maintenance release of the 1.17.x series
+
+Improvements:
++++++++++++++
+- Upgraded JTS to 1.17.0
+- Upgraded JAI-EXT to 1.1.17
+
+Fixes:
+++++++
+- Dispose image reader in MetaTile (improves stability downstreams in GeoServer, when using GDAL image readers)
+
+GeoWebCache 1.17.2 (2020-07-19)
+-------------------------------
+
+Stable release of 1.17.x series.
+
+Improvements:
++++++++++++++
+- Upgrade to PostgreSQL driver 42.2.14
+- Upgrade to jai-ext 1.1.15
+- Upgrade to spring-framework to 5.1.16 and spring-security to 5.1.11
+
+GeoWebCache 1.17.1 (2020-06-01)
+-------------------------------
+
+Stable release of 1.17.x series.
+
+Improvements:
++++++++++++++
+- Upgrade to GeoTools 23.1.
+
+GeoWebCache 1.17.0 (2020-04-14)
+-------------------------------
+
+Initial release of 1.17.x series.
+
+Improvements:
++++++++++++++
+- Use of repo.osgeo.org
+- Upgraded jai-ext to 1.1.14
 
 GeoWebCache 1.17-RC (2020-03-11)
 --------------------------------
