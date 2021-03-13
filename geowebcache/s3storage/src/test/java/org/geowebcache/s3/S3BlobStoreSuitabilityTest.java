@@ -47,14 +47,13 @@ public class S3BlobStoreSuitabilityTest extends BlobStoreSuitabilityTest {
     public TemporaryS3Folder tempFolder = new TemporaryS3Folder(testConfigLoader.getProperties());
 
     @DataPoints
-    public static String[][] persistenceLocations =
-            new String[][] {
-                {},
-                {"metadata.properties"},
-                {"something"},
-                {"something", "metadata.properties"},
-                {"something/metadata.properties"}
-            };
+    public static String[][] persistenceLocations = {
+        {},
+        {"metadata.properties"},
+        {"something"},
+        {"something", "metadata.properties"},
+        {"something/metadata.properties"}
+    };
 
     TileLayerDispatcher tld;
     LockProvider locks;

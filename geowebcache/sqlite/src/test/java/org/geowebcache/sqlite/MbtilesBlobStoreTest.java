@@ -220,11 +220,10 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
         addStoresToClean(store);
         // create the tile range
-        long[][] rangeBounds =
-                new long[][] {
-                    {0, 490, 10, 500, 10},
-                    {800, 950, 1005, 1020, 11}
-                };
+        long[][] rangeBounds = {
+            {0, 490, 10, 500, 10},
+            {800, 950, 1005, 1020, 11}
+        };
         TileRange tileRange =
                 new TileRange(
                         "asia",
@@ -268,11 +267,10 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
         addStoresToClean(store);
         // create the tile range
-        long[][] rangeBounds =
-                new long[][] {
-                    {0, 10, 5, 15, 10},
-                    {980, 950, 1005, 1020, 11}
-                };
+        long[][] rangeBounds = {
+            {0, 10, 5, 15, 10},
+            {980, 950, 1005, 1020, 11}
+        };
         TileRange tileRange =
                 new TileRange(
                         "asia",
