@@ -287,7 +287,7 @@ final class FileManager {
             long minx = Math.max(x, range[0]);
             long maxx = Math.min(x + columnRangeCount - 1, range[2]);
             for (long y = minRangeY; y <= maxRangeY; y += rowRangeCount) {
-                long[] tile = new long[] {x, y, z};
+                long[] tile = {x, y, z};
                 File file = getFile(parametersId, tile, layerName, gridSetId, format, parameters);
                 long miny = Math.max(y, range[1]);
                 long maxy = Math.min(y + rowRangeCount - 1, range[3]);

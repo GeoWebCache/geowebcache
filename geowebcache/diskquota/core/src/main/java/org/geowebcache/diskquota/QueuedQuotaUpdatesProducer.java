@@ -125,7 +125,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
             return;
         }
 
-        long[] tileIndex = new long[] {x, y, z};
+        long[] tileIndex = {x, y, z};
         quotaUpdate(layerName, gridSetId, blobFormat, parametersId, delta, tileIndex);
     }
 

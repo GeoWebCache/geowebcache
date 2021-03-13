@@ -366,11 +366,10 @@ public final class FileManagerTest extends TestSupport {
         File file3 = createFileInRootDir(Utils.buildPath("tiles", "5", "tiles-0-10.sqlite"));
         File file4 = createFileInRootDir(Utils.buildPath("tiles", "5", "tiles-10-10.sqlite"));
         File file5 = createFileInRootDir(Utils.buildPath("tiles", "6", "tiles-10-0.sqlite"));
-        long[][] rangeBounds =
-                new long[][] {
-                    {9, 9, 12, 13, 5},
-                    {16, 5, 16, 5, 6}
-                };
+        long[][] rangeBounds = {
+            {9, 9, 12, 13, 5},
+            {16, 5, 16, 5, 6}
+        };
         TileRange tileRange =
                 new TileRange(
                         "layer",

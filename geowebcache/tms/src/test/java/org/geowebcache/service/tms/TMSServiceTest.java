@@ -453,7 +453,7 @@ public class TMSServiceTest {
         Enumeration<String> parameterNames = null;
         String flipParameter = "false";
         if (flipY) {
-            String[] paramNames = new String[] {"random", "flipY"};
+            String[] paramNames = {"random", "flipY"};
             parameterNames = Collections.enumeration(Arrays.asList(paramNames));
             flipParameter = "true";
         }

@@ -83,8 +83,8 @@ public class TruncateBboxRequestTest {
         allParams.add(Collections.singletonMap("STYLES", "style1"));
         allParams.add(Collections.singletonMap("STYLES", "style2"));
 
-        final long[][] coverages = new long[][] {{0, 0, 0, 0, 0}, {0, 0, 1, 1, 1}, {0, 0, 4, 4, 2}};
-        final int[] metaFactors = new int[] {1, 1};
+        final long[][] coverages = {{0, 0, 0, 0, 0}, {0, 0, 1, 1, 1}, {0, 0, 4, 4, 2}};
+        final int[] metaFactors = {1, 1};
 
         // Boring mocks
         EasyMock.expect(broker.getCachedParameters(layerName))
