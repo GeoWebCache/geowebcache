@@ -225,7 +225,7 @@ public class ByteArrayResource implements Resource, Serializable {
         }
 
         @Override
-        public void write(byte buff[], int off, int len) throws IOException {
+        public void write(byte[] buff, int off, int len) throws IOException {
             if (remaining < len) {
                 while (remaining < len) {
                     this.res.expand();

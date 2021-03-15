@@ -41,7 +41,7 @@ public class RasterMaskTestUtils {
             final TileLayer layer, final String gridsetId, final int maxMaskLevel)
             throws Exception {
 
-        final Geometry entries[] = createSampleEntries();
+        final Geometry[] entries = createSampleEntries();
 
         final GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
         final int[] metaTilingFactors = layer.getMetaTilingFactors();
