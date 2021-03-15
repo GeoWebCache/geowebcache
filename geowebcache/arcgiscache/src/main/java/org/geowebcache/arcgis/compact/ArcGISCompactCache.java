@@ -106,7 +106,7 @@ public abstract class ArcGISCompactCache {
             file.seek(offset);
             // pad to multiples of 4 so we can use getInt() and getLong()
             int padding = 4 - (length % 4);
-            byte data[] = new byte[length + padding];
+            byte[] data = new byte[length + padding];
 
             if (file.read(data, 0, length) != length)
                 throw new IOException("not enough bytes read or reached end of file");
