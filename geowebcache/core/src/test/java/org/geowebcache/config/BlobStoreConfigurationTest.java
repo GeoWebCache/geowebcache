@@ -19,13 +19,14 @@ import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.verify;
 import static org.geowebcache.util.TestUtils.isPresent;
 import static org.geowebcache.util.TestUtils.notPresent;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -36,6 +37,7 @@ import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.storage.UnsuitableStorageException;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 public abstract class BlobStoreConfigurationTest
@@ -87,10 +89,8 @@ public abstract class BlobStoreConfigurationTest
         expectLastCall().andThrow(new UnsuitableStorageException("TEST"));
         EasyMock.replay(listener);
         config.addBlobStoreListener(listener);
-        exception.expect(instanceOf(ConfigurationPersistenceException.class));
-        exception.expectCause(instanceOf(UnsuitableStorageException.class));
         try {
-            config.addBlobStore(info);
+            assertThrows(ConfigurationPersistenceException.class, () -> config.addBlobStore(info));
         } finally {
             verify(listener);
             assertThat(config.getBlobStore("test"), notPresent());
@@ -109,10 +109,11 @@ public abstract class BlobStoreConfigurationTest
         EasyMock.replay(listener);
         config.addBlobStoreListener(listener);
         config.addBlobStore(info1);
-        exception.expect(instanceOf(ConfigurationPersistenceException.class));
-        exception.expectCause(instanceOf(UnsuitableStorageException.class));
         try {
             config.modifyBlobStore(info2);
+        } catch (ConfigurationPersistenceException expected) {
+            assertThat(
+                    expected.getCause(), CoreMatchers.instanceOf(UnsuitableStorageException.class));
         } finally {
             verify(listener);
             assertThat(config.getBlobStore("test"), isPresent(infoEquals(info1)));
@@ -142,10 +143,10 @@ public abstract class BlobStoreConfigurationTest
         config.addBlobStoreListener(listener1);
         config.addBlobStoreListener(listener2);
         config.addBlobStore(info1);
-        exception.expect(instanceOf(ConfigurationPersistenceException.class));
-        exception.expectCause(instanceOf(IOException.class));
         try {
             config.modifyBlobStore(info2);
+        } catch (ConfigurationPersistenceException expected) {
+            assertThat(expected.getCause(), CoreMatchers.instanceOf(IOException.class));
         } finally {
             control.verify();
             assertThat(config.getBlobStore("test"), isPresent(infoEquals(info1)));
@@ -168,10 +169,10 @@ public abstract class BlobStoreConfigurationTest
         control.replay();
         config.addBlobStoreListener(listener1);
         config.addBlobStoreListener(listener2);
-        exception.expect(instanceOf(ConfigurationPersistenceException.class));
-        exception.expectCause(instanceOf(IOException.class));
         try {
             config.addBlobStore(info1);
+        } catch (ConfigurationPersistenceException expected) {
+            assertThat(expected.getCause(), CoreMatchers.instanceOf(IOException.class));
         } finally {
             control.verify();
             assertThat(config.getBlobStore("test"), notPresent());
@@ -464,12 +465,11 @@ public abstract class BlobStoreConfigurationTest
         EasyMock.expectLastCall().andThrow(ex);
         EasyMock.replay(listener);
 
-        exception.expect(
-                allOf(
-                        instanceOf(ConfigurationPersistenceException.class),
-                        hasProperty("cause", sameInstance(ex))));
-
-        this.addInfo(this.config, goodInfo);
+        try {
+            this.addInfo(this.config, goodInfo);
+        } catch (ConfigurationPersistenceException expected) {
+            assertSame(ex, ex.getCause());
+        }
     }
 
     @Test
@@ -537,21 +537,22 @@ public abstract class BlobStoreConfigurationTest
 
         EasyMock.replay(listener1, listener2);
 
-        exception.expect(
-                allOf(
-                        instanceOf(ConfigurationPersistenceException.class),
-                        hasProperty(
-                                "cause",
-                                allOf(
-                                        sameInstance(ex2),
-                                        hasProperty(
-                                                "suppressed",
-                                                arrayContainingInAnyOrder(sameInstance(ex1)))))));
-
-        this.addInfo(this.config, goodInfo);
+        try {
+            this.addInfo(this.config, goodInfo);
+        } catch (ConfigurationPersistenceException expected) {
+            assertThat(
+                    expected,
+                    hasProperty(
+                            "cause",
+                            allOf(
+                                    sameInstance(ex2),
+                                    hasProperty(
+                                            "suppressed",
+                                            arrayContainingInAnyOrder(sameInstance(ex1))))));
+        }
     }
-    // Exceptions during modify handlers
 
+    // Exceptions during modify handlers
     @Test
     public void testExceptionInModifyListenerIsWrapped() throws Exception {
         BlobStoreConfigurationListener listener =
@@ -564,12 +565,11 @@ public abstract class BlobStoreConfigurationTest
         EasyMock.expectLastCall().andThrow(ex);
         EasyMock.replay(listener);
 
-        exception.expect(
-                allOf(
-                        instanceOf(ConfigurationPersistenceException.class),
-                        hasProperty("cause", sameInstance(ex))));
-
-        this.modifyInfo(this.config, goodInfo);
+        try {
+            this.modifyInfo(this.config, goodInfo);
+        } catch (ConfigurationPersistenceException expected) {
+            assertThat(expected, hasProperty("cause", sameInstance(ex)));
+        }
     }
 
     /**
@@ -650,18 +650,19 @@ public abstract class BlobStoreConfigurationTest
 
         EasyMock.replay(listener1, listener2);
 
-        exception.expect(
-                allOf(
-                        instanceOf(ConfigurationPersistenceException.class),
-                        hasProperty(
-                                "cause",
-                                allOf(
-                                        sameInstance(ex2),
-                                        hasProperty(
-                                                "suppressed",
-                                                arrayContainingInAnyOrder(sameInstance(ex1)))))));
-
-        this.modifyInfo(this.config, goodInfo);
+        try {
+            this.modifyInfo(this.config, goodInfo);
+        } catch (ConfigurationPersistenceException expected) {
+            assertThat(
+                    expected,
+                    hasProperty(
+                            "cause",
+                            allOf(
+                                    sameInstance(ex2),
+                                    hasProperty(
+                                            "suppressed",
+                                            arrayContainingInAnyOrder(sameInstance(ex1))))));
+        }
     }
 
     // Exceptions during rename handlers
@@ -689,12 +690,11 @@ public abstract class BlobStoreConfigurationTest
         EasyMock.expectLastCall().andThrow(ex);
         EasyMock.replay(listener);
 
-        exception.expect(
-                allOf(
-                        instanceOf(ConfigurationPersistenceException.class),
-                        hasProperty("cause", sameInstance(ex))));
-
-        this.renameInfo(this.config, "test", "test2");
+        try {
+            this.renameInfo(this.config, "test", "test2");
+        } catch (ConfigurationPersistenceException expected) {
+            assertThat(expected, hasProperty("cause", sameInstance(ex)));
+        }
     }
 
     @Test
@@ -763,18 +763,19 @@ public abstract class BlobStoreConfigurationTest
 
         EasyMock.replay(listener1, listener2);
 
-        exception.expect(
-                allOf(
-                        instanceOf(ConfigurationPersistenceException.class),
-                        hasProperty(
-                                "cause",
-                                allOf(
-                                        sameInstance(ex2),
-                                        hasProperty(
-                                                "suppressed",
-                                                arrayContainingInAnyOrder(sameInstance(ex1)))))));
-
-        this.renameInfo(this.config, "test", "test2");
+        try {
+            this.renameInfo(this.config, "test", "test2");
+        } catch (ConfigurationPersistenceException expected) {
+            assertThat(
+                    expected,
+                    hasProperty(
+                            "cause",
+                            allOf(
+                                    sameInstance(ex2),
+                                    hasProperty(
+                                            "suppressed",
+                                            arrayContainingInAnyOrder(sameInstance(ex1))))));
+        }
     }
 
     // Exceptions during remove handlers
@@ -802,12 +803,11 @@ public abstract class BlobStoreConfigurationTest
         EasyMock.expectLastCall().andThrow(ex);
         EasyMock.replay(listener);
 
-        exception.expect(
-                allOf(
-                        instanceOf(ConfigurationPersistenceException.class),
-                        hasProperty("cause", sameInstance(ex))));
-
-        this.removeInfo(this.config, "test");
+        try {
+            this.removeInfo(this.config, "test");
+        } catch (ConfigurationPersistenceException expected) {
+            assertThat(expected, hasProperty("cause", sameInstance(ex)));
+        }
     }
 
     @Test
@@ -876,17 +876,18 @@ public abstract class BlobStoreConfigurationTest
 
         EasyMock.replay(listener1, listener2);
 
-        exception.expect(
-                allOf(
-                        instanceOf(ConfigurationPersistenceException.class),
-                        hasProperty(
-                                "cause",
-                                allOf(
-                                        sameInstance(ex2),
-                                        hasProperty(
-                                                "suppressed",
-                                                arrayContainingInAnyOrder(sameInstance(ex1)))))));
-
-        this.removeInfo(this.config, "test");
+        try {
+            this.removeInfo(this.config, "test");
+        } catch (ConfigurationPersistenceException expected) {
+            assertThat(
+                    expected,
+                    hasProperty(
+                            "cause",
+                            allOf(
+                                    sameInstance(ex2),
+                                    hasProperty(
+                                            "suppressed",
+                                            arrayContainingInAnyOrder(sameInstance(ex1))))));
+        }
     }
 }
