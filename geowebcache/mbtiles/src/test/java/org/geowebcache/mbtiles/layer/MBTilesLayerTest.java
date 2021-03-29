@@ -14,6 +14,7 @@
  */
 package org.geowebcache.mbtiles.layer;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -44,6 +45,8 @@ import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.meta.LayerMetaInformation;
+import org.geowebcache.layer.meta.TileJSON;
+import org.geowebcache.layer.meta.VectorLayerMetadata;
 import org.geowebcache.mime.ApplicationMime;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,6 +54,14 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 public class MBTilesLayerTest {
+
+    private static final double DELTA = 1E-6;
+
+    private static final Set<String> TEST_FIELDS =
+            new HashSet<>(
+                    Arrays.asList(
+                            "_zoom", "_row", "_col", "ID", "Costant", "Zeroval", "IntVal",
+                            "Double1", "Double2", "Double3"));
 
     private static final String TEST_POINTS_FILENAME = "manypoints_test.mbtiles";
 
@@ -171,11 +182,7 @@ public class MBTilesLayerTest {
         assertEquals("manypoints_test", feature.getLayerName());
         Map<String, Object> attribs = feature.getAttributes();
         Set<String> keys = attribs.keySet();
-        Set<String> expectedKeys =
-                new HashSet<>(
-                        Arrays.asList(
-                                "_zoom", "_row", "_col", "ID", "Costant", "Zeroval", "IntVal",
-                                "Double1", "Double2", "Double3"));
+        Set<String> expectedKeys = new HashSet<>(TEST_FIELDS);
         expectedKeys.removeAll(keys);
         assertTrue(expectedKeys.isEmpty());
         assertEquals(3L, attribs.get("_zoom"));
@@ -183,6 +190,38 @@ public class MBTilesLayerTest {
         assertEquals(4L, attribs.get("_col"));
         assertEquals(25180626L, attribs.get("ID"));
         assertEquals(37L, attribs.get("IntVal"));
-        assertEquals(3.25f, (Float) attribs.get("Double3"), 1e-6);
+        assertEquals(3.25f, (Float) attribs.get("Double3"), DELTA);
+    }
+
+    @Test
+    public void testTileJson() {
+        MBTilesLayer mbTilesLayer = (MBTilesLayer) config.getLayer("testName").get();
+        assertTrue(mbTilesLayer.supportsTileJSON());
+        TileJSON tileJson = mbTilesLayer.getTileJSON();
+        assertEquals("testName", tileJson.getName());
+        assertEquals(0, tileJson.getMinZoom().intValue());
+        assertEquals(6, tileJson.getMaxZoom().intValue());
+        assertArrayEquals(
+                new double[] {38.221435, 38.856820, 41.495361, 40.763901},
+                tileJson.getBounds(),
+                DELTA);
+        assertArrayEquals(new double[] {41.495361, 38.856820, 6}, tileJson.getCenter(), DELTA);
+
+        List<VectorLayerMetadata> layers = tileJson.getLayers();
+        assertEquals(1, layers.size());
+        VectorLayerMetadata pointLayer = layers.get(0);
+        assertEquals("manypoints_test", pointLayer.getId());
+        assertEquals(0, pointLayer.getMinZoom().intValue());
+        assertEquals(6, pointLayer.getMaxZoom().intValue());
+
+        Map<String, String> fields = pointLayer.getFields();
+        Set<String> keys = fields.keySet();
+
+        for (String key : TEST_FIELDS) {
+            assertEquals("Number", fields.get(key));
+        }
+
+        keys.removeAll(TEST_FIELDS);
+        assertTrue(keys.isEmpty());
     }
 }
