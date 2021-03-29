@@ -76,6 +76,11 @@
     </dependency>
     <dependency>
       <groupId>org.geowebcache</groupId>
+      <artifactId>gwc-mbtiles</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.geowebcache</groupId>
       <artifactId>gwc-distributed</artifactId>
       <version>${project.version}</version>
     </dependency>

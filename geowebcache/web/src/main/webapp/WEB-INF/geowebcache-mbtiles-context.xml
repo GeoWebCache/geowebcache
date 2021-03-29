@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+  <description>
+   Bean configuration file for the gwc-mbtiles module
+  </description>
+
+  <bean id="mbtilesLayerConfigurationExtention" class="org.geowebcache.mbtiles.layer.MBTilesLayerXMLConfigurationProvider" />
+</beans>

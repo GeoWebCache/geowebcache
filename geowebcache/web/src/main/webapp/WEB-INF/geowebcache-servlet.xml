@@ -25,6 +25,7 @@
   <import resource="geowebcache-swiftblob-context.xml"/>
   <import resource="geowebcache-diskquota-context.xml"/>
   <import resource="geowebcache-arcgiscache-context.xml"/>
+  <import resource="geowebcache-mbtiles-context.xml"/>
   <import resource="geowebcache-distributed.xml"/>
   <import resource="geowebcache-security.xml"/>
 
