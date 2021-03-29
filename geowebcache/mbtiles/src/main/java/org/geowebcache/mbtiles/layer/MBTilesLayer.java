@@ -44,6 +44,8 @@ import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.layer.AbstractTileLayer;
 import org.geowebcache.layer.ExpirationRule;
+import org.geowebcache.layer.TileJSONProvider;
+import org.geowebcache.layer.meta.TileJSON;
 import org.geowebcache.mime.ApplicationMime;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
@@ -54,7 +56,7 @@ import org.geowebcache.util.GWCVars;
  *
  * @author Daniele Romagnoli
  */
-public class MBTilesLayer extends AbstractTileLayer {
+public class MBTilesLayer extends AbstractTileLayer implements TileJSONProvider {
 
     private static final String UNZIP_CONTENT_KEY = "gwc.mbtiles.pbf.unzip.debug";
 
@@ -351,5 +353,21 @@ public class MBTilesLayer extends AbstractTileLayer {
          * NOTE: this method doesn't seem like belonging to TileLayer, but to GeoWebCacheDispatcher
          * itself
          */
+    }
+
+    @Override
+    public boolean supportsTileJSON() {
+        return true;
+    }
+
+    @Override
+    public TileJSON getTileJSON() {
+        TileJSON tileJSON = new TileJSON();
+        tileJSON.setName(name);
+        if (metaInformation != null) {
+            tileJSON.setDescription(metaInformation.getDescription());
+        }
+        tilesInfo.decorateTileJSON(tileJSON);
+        return tileJSON;
     }
 }

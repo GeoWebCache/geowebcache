@@ -17,7 +17,11 @@ package org.geowebcache.mbtiles.layer;
 import static org.geotools.mbtiles.MBTilesFile.SPHERICAL_MERCATOR;
 import static org.geotools.mbtiles.MBTilesFile.WORLD_ENVELOPE;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -25,6 +29,8 @@ import org.geotools.mbtiles.MBTilesFile;
 import org.geotools.mbtiles.MBTilesMetadata;
 import org.geotools.referencing.CRS;
 import org.geowebcache.grid.BoundingBox;
+import org.geowebcache.layer.meta.TileJSON;
+import org.geowebcache.layer.meta.VectorLayerMetadata;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -37,17 +43,22 @@ public class MBTilesInfo {
 
     private static final CoordinateReferenceSystem WGS_84;
 
+    private static final BoundingBox WORLD_MERCATOR_WGS_84_BOUNDS;
+
     static {
         try {
             WGS_84 = CRS.decode("EPSG:4326", true);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        WORLD_MERCATOR_WGS_84_BOUNDS = new BoundingBox(-180.0, -85, 180, 85.0);
     }
 
     private MBTilesMetadata metadata;
 
     private BoundingBox bounds;
+
+    private BoundingBox wgs84Bounds;
 
     public MBTilesMetadata.t_format getFormat() {
         return format;
@@ -88,6 +99,7 @@ public class MBTilesInfo {
         ReferencedEnvelope envelope = null;
         if (env != null) {
             try {
+                wgs84Bounds = getBBoxFromEnvelope(env);
                 envelope =
                         ReferencedEnvelope.create(env, WGS_84).transform(SPHERICAL_MERCATOR, true);
             } catch (TransformException | FactoryException e) {
@@ -104,6 +116,7 @@ public class MBTilesInfo {
                                 + ". Using full GridSet extent ");
             }
             envelope = WORLD_ENVELOPE;
+            wgs84Bounds = WORLD_MERCATOR_WGS_84_BOUNDS;
         }
         bounds = getBBoxFromEnvelope(envelope);
     }
@@ -119,5 +132,43 @@ public class MBTilesInfo {
                             envelope.getMaximum(1));
         }
         return bbox;
+    }
+
+    public void decorateTileJSON(TileJSON tileJSON) {
+        tileJSON.setMinZoom(minZoom);
+        tileJSON.setMaxZoom(maxZoom);
+        tileJSON.setBounds(
+                new double[] {
+                    wgs84Bounds.getMinX(),
+                    wgs84Bounds.getMinY(),
+                    wgs84Bounds.getMaxX(),
+                    wgs84Bounds.getMaxY()
+                });
+        if (metadata != null) {
+            String description = metadata.getDescription();
+            if (description != null) {
+                tileJSON.setDescription(description);
+            }
+            tileJSON.setCenter(metadata.getCenter());
+            tileJSON.setAttribution(metadata.getAttribution());
+            String json = metadata.getJson();
+
+            int index = -1;
+            if (json != null && ((index = json.indexOf("[")) > 0)) {
+                // skip the "vector_layers initial part and go straight to the array
+                json = json.substring(index, json.length() - 1).trim();
+                ObjectMapper mapper = new ObjectMapper();
+                List<VectorLayerMetadata> layers = null;
+                try {
+                    layers =
+                            mapper.readValue(
+                                    json, new TypeReference<List<VectorLayerMetadata>>() {});
+                } catch (JsonProcessingException e) {
+                    throw new IllegalArgumentException(
+                            "Exception occurred while parsing the layers metadata. " + e);
+                }
+                tileJSON.setLayers(layers);
+            }
+        }
     }
 }

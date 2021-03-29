@@ -45,6 +45,7 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.io.XMLBuilder;
+import org.geowebcache.layer.TileJSONProvider;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.LayerMetaInformation;
@@ -721,11 +722,9 @@ public class WMTSGetCapabilities {
     private void layerResourceUrls(
             XMLBuilder xml, TileLayer layer, List<ParameterFilter> filters, String baseurl)
             throws IOException {
+        String baseTemplate = baseurl + "/" + layer.getName();
         String commonTemplate =
-                baseurl
-                        + "/"
-                        + layer.getName()
-                        + "/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}";
+                baseTemplate + "/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}";
         String commonDimensions = "";
         // Extracts layer dimension
         List<ParameterFilter> layerDimensions = WMTSUtils.getLayerDimensions(filters);
@@ -748,6 +747,14 @@ public class WMTSGetCapabilities {
         for (String format : infoFormats) {
             String template = commonTemplate + "/{J}/{I}?format=" + format + commonDimensions;
             layerResourceUrlsGen(xml, format, "FeatureInfo", template);
+        }
+        if (layer instanceof TileJSONProvider) {
+            TileJSONProvider provider = (TileJSONProvider) layer;
+            String format = "json";
+            if (provider.supportsTileJSON()) {
+                String template = baseTemplate + "/tilejson/{style}?format=" + format;
+                layerResourceUrlsGen(xml, format, "TileJSON", template);
+            }
         }
     }
 

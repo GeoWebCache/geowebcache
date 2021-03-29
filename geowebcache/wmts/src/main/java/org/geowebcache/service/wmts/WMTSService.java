@@ -38,6 +38,7 @@ import org.geowebcache.filter.security.SecurityDispatcher;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.OutsideCoverageException;
+import org.geowebcache.layer.TileJSONProvider;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeException;
@@ -60,11 +61,13 @@ public class WMTSService extends Service {
     public static final String GET_CAPABILITIES = "getcapabilities";
     public static final String GET_FEATUREINFO = "getfeatureinfo";
     public static final String GET_TILE = "gettile";
+    public static final String GET_TILEJSON = "gettilejson";
 
     enum RequestType {
         TILE,
         CAPABILITIES,
-        FEATUREINFO
+        FEATUREINFO,
+        TILEJSON
     }
 
     static final String buildRestPattern(int numPathElements, boolean hasStyle) {
@@ -84,7 +87,11 @@ public class WMTSService extends Service {
         // "/{layer}/{tileMatrixSet}/{tileMatrix}/{tileRow}/{tileCol}/{j}/{i}"
         FEATUREINFO(buildRestPattern(7, false), RequestType.FEATUREINFO, false),
         // "/{layer}/{style}/{tileMatrixSet}/{tileMatrix}/{tileRow}/{tileCol}/{j}/{i}",
-        FEATUREINFO_STYLE(buildRestPattern(8, true), RequestType.FEATUREINFO, true);
+        FEATUREINFO_STYLE(buildRestPattern(8, true), RequestType.FEATUREINFO, true),
+        // "/{layer}/tilejson"
+        TILEJSON(buildRestPattern(2, false), RequestType.TILEJSON, false),
+        // "/{layer}/{style}/tilejson"
+        TILEJSON_STYLE(buildRestPattern(3, true), RequestType.TILEJSON, true);
 
         Pattern pattern;
         RequestType type;
@@ -107,19 +114,33 @@ public class WMTSService extends Service {
             // leverage the predictable path structure to use a single parsing sequence for all
             // requests
             int i = 1;
+            String req = null;
+            switch (type) {
+                case FEATUREINFO:
+                    req = GET_FEATUREINFO;
+                    break;
+                case TILEJSON:
+                    req = GET_TILEJSON;
+                    break;
+                default:
+                    req = GET_TILE;
+                    break;
+            }
             final boolean isFeatureInfo = type == RequestType.FEATUREINFO;
-            values.put("request", isFeatureInfo ? GET_FEATUREINFO : GET_TILE);
+            values.put("request", req);
             values.put("layer", matcher.group(i++));
             if (hasStyle) {
                 values.put("style", matcher.group(i++));
             }
-            values.put("tilematrixset", matcher.group(i++));
-            values.put("tilematrix", matcher.group(i++));
-            values.put("tilerow", matcher.group(i++));
-            values.put("tilecol", matcher.group(i++));
-            if (isFeatureInfo) {
-                values.put("j", matcher.group(i++));
-                values.put("i", matcher.group(i++));
+            if (type != RequestType.TILEJSON) {
+                values.put("tilematrixset", matcher.group(i++));
+                values.put("tilematrix", matcher.group(i++));
+                values.put("tilerow", matcher.group(i++));
+                values.put("tilecol", matcher.group(i++));
+                if (isFeatureInfo) {
+                    values.put("j", matcher.group(i++));
+                    values.put("i", matcher.group(i++));
+                }
             }
             if (request.getParameter("format") instanceof String) {
                 if (isFeatureInfo) {
@@ -312,15 +333,20 @@ public class WMTSService extends Service {
             }
             ConveyorTile tile = getTile(values, request, response, RequestType.TILE);
             return tile;
-        } else if (req.equals("getcapabilities")) {
+        } else if (req.equals(GET_CAPABILITIES)) {
             ConveyorTile tile = new ConveyorTile(sb, values.get("layer"), request, response);
             tile.setHint(req);
             tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
             return tile;
-        } else if (req.equals("getfeatureinfo")) {
+        } else if (req.equals(GET_FEATUREINFO)) {
             ConveyorTile tile = getTile(values, request, response, RequestType.FEATUREINFO);
             tile.setHint(req);
             tile.setRequestHandler(Conveyor.RequestHandler.SERVICE);
+            return tile;
+        } else if (req.equals(GET_TILEJSON)) {
+            ConveyorTile tile = new ConveyorTile(sb, values.get("layer"), request, response);
+            tile.setHint(req);
+            tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
             return tile;
         } else {
             // we implement all WMTS supported request, this means that the provided request name is
@@ -557,6 +583,22 @@ public class WMTSService extends Service {
                 ConveyorTile convTile = (ConveyorTile) conv;
                 WMTSGetFeatureInfo wmsGFI = new WMTSGetFeatureInfo(convTile);
                 wmsGFI.writeResponse(stats);
+            } else if (tile.getHint().equals(GET_TILEJSON)) {
+                getSecurityDispatcher().checkSecurity(tile);
+                ConveyorTile convTile = (ConveyorTile) conv;
+                TileLayer layer = convTile.getLayer();
+                if (layer instanceof TileJSONProvider) {
+                    // in GetCapabilities we are adding a TileJSON resource URL
+                    // only when the layer supports TileJSON.
+                    // That information allows us to return a 404 when
+                    // someone is asking a TileJSON when not supported.
+                    if (!((TileJSONProvider) layer).supportsTileJSON()) {
+                        throw new HttpErrorCodeException(404, "TileJSON Not supported");
+                    }
+                    WMTSTileJSON wmtsTileJSON =
+                            new WMTSTileJSON(convTile, servletBase, context, urlMangler);
+                    wmtsTileJSON.writeResponse(layer);
+                }
             }
         }
     }
