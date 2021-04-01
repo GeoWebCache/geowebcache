@@ -911,5 +911,6 @@
     <module>sqlite</module>
     <module>azureblob</module>
     <module>swiftblob</module>
+	<module>mbtiles</module>
   </modules>
 </project>
