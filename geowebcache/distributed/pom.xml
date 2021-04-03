@@ -1,31 +1,20 @@
-<?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.geowebcache</groupId>
     <artifactId>geowebcache</artifactId>
-    <version>1.19-SNAPSHOT</version><!-- GWC VERSION -->
+    <version>1.19-SNAPSHOT</version>
+    <!-- GWC VERSION -->
   </parent>
   <groupId>org.geowebcache</groupId>
   <artifactId>gwc-distributed</artifactId>
   <packaging>jar</packaging>
   <name>gwc-distributed</name>
   <url>http://geowebcache.org</url>
-  
-  <repositories>
-    <repository>
-      <id>central</id>
-      <name>Central Maven Repository</name>
-      <url>https://repo1.maven.org/maven2</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-  
+
   <dependencies>
-      <dependency>
+    <dependency>
       <groupId>com.hazelcast</groupId>
       <artifactId>hazelcast</artifactId>
       <version>${hazelcast.version}</version>
@@ -38,8 +27,8 @@
     <dependency>
       <groupId>org.geowebcache</groupId>
       <artifactId>gwc-core</artifactId>
-	  <version>${project.version}</version>
-    </dependency>   
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -53,4 +42,15 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <repositories>
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>central</id>
+      <name>Central Maven Repository</name>
+      <url>https://repo1.maven.org/maven2</url>
+    </repository>
+  </repositories>
 </project>
