@@ -1,12 +1,12 @@
-<?xml version="1.0" encoding="utf-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <!-- mvn -Dtest=StorageBrokerTest -Dmaven.test.jvmargs='-XX:+HeapDumpOnOutOfMemoryError -Xms32m -Xmx32m' test -->
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.geowebcache</groupId>
     <artifactId>geowebcache</artifactId>
-    <version>1.20-SNAPSHOT</version><!-- GWC VERSION -->
+    <version>1.20-SNAPSHOT</version>
+    <!-- GWC VERSION -->
   </parent>
   <groupId>org.geowebcache</groupId>
   <artifactId>gwc-core</artifactId>
@@ -20,8 +20,8 @@
       <artifactId>commons-logging</artifactId>
       <exclusions>
         <exclusion>
-          <groupId>avalon-framework</groupId>
           <artifactId>avalon-framework</artifactId>
+          <groupId>avalon-framework</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -46,7 +46,6 @@
       <artifactId>h2</artifactId>
     </dependency>
 
-    
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
@@ -115,10 +114,10 @@
       <groupId>it.geosolutions.jaiext.utilities</groupId>
       <artifactId>jt-utilities</artifactId>
       <exclusions>
-         <exclusion>
-            <groupId>org.locationtech.jts</groupId>
-            <artifactId>jts-core</artifactId>
-         </exclusion>
+        <exclusion>
+          <artifactId>jts-core</artifactId>
+          <groupId>org.locationtech.jts</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -127,8 +126,8 @@
       <artifactId>jt-colorindexer</artifactId>
       <exclusions>
         <exclusion>
-          <groupId>org.locationtech.jts</groupId>
           <artifactId>jts-core</artifactId>
+          <groupId>org.locationtech.jts</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -145,7 +144,6 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
     </dependency>
-
 
     <dependency>
       <groupId>commons-httpclient</groupId>
@@ -190,15 +188,14 @@
       <scope>test</scope>
     </dependency>
 
-	<!-- Thijs Brentjens: for security fixes, OWASP library-->
-	<dependency>
-	  <groupId>org.owasp.encoder</groupId>
-	  <artifactId>encoder</artifactId>
-	  <version>1.1</version>
-	</dependency>
+    <!-- Thijs Brentjens: for security fixes, OWASP library-->
+    <dependency>
+      <groupId>org.owasp.encoder</groupId>
+      <artifactId>encoder</artifactId>
+      <version>1.1</version>
+    </dependency>
 
   </dependencies>
-
 
   <build>
     <plugins>
