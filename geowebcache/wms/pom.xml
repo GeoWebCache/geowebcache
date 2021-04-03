@@ -1,12 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <!-- mvn -Dtest=StorageBrokerTest -Dmaven.test.jvmargs='-XX:+HeapDumpOnOutOfMemoryError -Xms32m -Xmx32m' test -->  
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <!-- mvn -Dtest=StorageBrokerTest -Dmaven.test.jvmargs='-XX:+HeapDumpOnOutOfMemoryError -Xms32m -Xmx32m' test -->
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.geowebcache</groupId>
     <artifactId>geowebcache</artifactId>
-    <version>1.18-SNAPSHOT</version><!-- GWC VERSION -->
+    <version>1.18-SNAPSHOT</version>
+    <!-- GWC VERSION -->
   </parent>
   <groupId>org.geowebcache</groupId>
   <artifactId>gwc-wms</artifactId>
@@ -32,10 +32,10 @@
       <!-- optional>true</optional -->
     </dependency>
 
-	<dependency>
-    	<groupId>commons-httpclient</groupId>
-    	<artifactId>commons-httpclient</artifactId>
-    	<version>3.1</version>
+    <dependency>
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient</artifactId>
+      <version>3.1</version>
     </dependency>
 
     <dependency>
@@ -43,16 +43,16 @@
       <artifactId>httpclient</artifactId>
       <version>4.5.11</version>
     </dependency>
-    
+
     <dependency>
       <groupId>it.geosolutions.imageio-ext</groupId>
       <artifactId>imageio-ext-png</artifactId>
     </dependency>
-    
+
     <dependency>
-		<groupId>it.geosolutions.imageio-ext</groupId>
-		<artifactId>imageio-ext-streams</artifactId>
-	</dependency>
+      <groupId>it.geosolutions.imageio-ext</groupId>
+      <artifactId>imageio-ext-streams</artifactId>
+    </dependency>
 
     <!-- test dependencies -->
     <dependency>
@@ -89,7 +89,6 @@
   </dependencies>
 
   <build>
-    <plugins>
-    </plugins>
+    <plugins></plugins>
   </build>
 </project>
