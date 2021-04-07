@@ -1560,7 +1560,7 @@ public class WMTSServiceTest {
                                 + "[@format='json']"
                                 + "[@template='http://localhost:8080/geowebcache"
                                 + WMTSService.REST_PATH
-                                + "/mockLayer/tilejson/{style}?format=json'])",
+                                + "/mockLayer/{style}/tilejson?format=json'])",
                         doc));
     }
 }

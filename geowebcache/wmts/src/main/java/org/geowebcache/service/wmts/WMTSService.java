@@ -63,6 +63,8 @@ public class WMTSService extends Service {
     public static final String GET_TILE = "gettile";
     public static final String GET_TILEJSON = "gettilejson";
 
+    private static final String STYLE_HINT = ";style=";
+
     enum RequestType {
         TILE,
         CAPABILITIES,
@@ -345,7 +347,13 @@ public class WMTSService extends Service {
             return tile;
         } else if (req.equals(GET_TILEJSON)) {
             ConveyorTile tile = new ConveyorTile(sb, values.get("layer"), request, response);
-            tile.setHint(req);
+            String hint = req;
+            // I Will need the style when setting up the TileJSON tiles url
+            String style = values.get("style");
+            if (style != null) {
+                hint += (STYLE_HINT + style);
+            }
+            tile.setHint(hint);
             tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
             return tile;
         } else {
@@ -583,10 +591,17 @@ public class WMTSService extends Service {
                 ConveyorTile convTile = (ConveyorTile) conv;
                 WMTSGetFeatureInfo wmsGFI = new WMTSGetFeatureInfo(convTile);
                 wmsGFI.writeResponse(stats);
-            } else if (tile.getHint().equals(GET_TILEJSON)) {
+            } else if (tile.getHint().startsWith(GET_TILEJSON)) {
                 getSecurityDispatcher().checkSecurity(tile);
                 ConveyorTile convTile = (ConveyorTile) conv;
                 TileLayer layer = convTile.getLayer();
+                String hint = tile.getHint();
+                String style = null;
+                int styleIndex = hint.indexOf(STYLE_HINT);
+                if (styleIndex != -1) {
+                    style = hint.substring(styleIndex + STYLE_HINT.length());
+                }
+
                 if (layer instanceof TileJSONProvider) {
                     // in GetCapabilities we are adding a TileJSON resource URL
                     // only when the layer supports TileJSON.
@@ -596,7 +611,7 @@ public class WMTSService extends Service {
                         throw new HttpErrorCodeException(404, "TileJSON Not supported");
                     }
                     WMTSTileJSON wmtsTileJSON =
-                            new WMTSTileJSON(convTile, servletBase, context, urlMangler);
+                            new WMTSTileJSON(convTile, servletBase, context, style, urlMangler);
                     wmtsTileJSON.writeResponse(layer);
                 }
             }
