@@ -752,7 +752,7 @@ public class WMTSGetCapabilities {
             TileJSONProvider provider = (TileJSONProvider) layer;
             String format = "json";
             if (provider.supportsTileJSON()) {
-                String template = baseTemplate + "/tilejson/{style}?format=" + format;
+                String template = baseTemplate + "/{style}/tilejson?format=" + format;
                 layerResourceUrlsGen(xml, format, "TileJSON", template);
             }
         }

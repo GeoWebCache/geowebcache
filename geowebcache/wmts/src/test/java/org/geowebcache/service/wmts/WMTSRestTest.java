@@ -18,11 +18,13 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,10 +35,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.FileUtils;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.XMLGridSubset;
@@ -53,8 +57,10 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
+import org.geowebcache.layer.TileJSONProvider;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
+import org.geowebcache.layer.meta.TileJSON;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.OWSException;
 import org.geowebcache.stats.RuntimeStats;
@@ -153,12 +159,89 @@ public class WMTSRestTest {
         assertArrayEquals(getSampleTileContent().getContents(), resp.getContentAsByteArray());
     }
 
+    @Test
+    public void testGetTileJSONWithStyle() throws Exception {
+        addTileLayerJsonMock();
+
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        req.setPathInfo("geowebcache/service/wmts/rest/mockLayerTileJSON/style-a/tilejson");
+        req.addParameter("format", "json");
+        MockHttpServletResponse resp = dispatch(req);
+
+        assertEquals(200, resp.getStatus());
+        String content = resp.getContentAsString();
+
+        // Checking the response contains a tileUrl with the style
+        assertTrue(
+                content.contains(
+                        "\"tiles\":[\"http://localhost/service/wmts/rest/mockLayerTileJSON/style-a/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png\"]"));
+    }
+
+    @Test
+    public void testGetTileJSONWithoutStyle() throws Exception {
+        addTileLayerJsonMock();
+
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        req.setPathInfo("geowebcache/service/wmts/rest/mockLayerTileJSON/tilejson");
+        req.addParameter("format", "json");
+        MockHttpServletResponse resp = dispatch(req);
+
+        assertEquals(200, resp.getStatus());
+        String content = resp.getContentAsString();
+
+        // Checking the response contains a tileUrl without the style
+        assertTrue(
+                content.contains(
+                        "\"tiles\":[\"http://localhost/service/wmts/rest/mockLayerTileJSON/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png\"]"));
+    }
+
+    private void addTileLayerJsonMock() throws GeoWebCacheException {
+
+        final MimeType mimeType1 = MimeType.createFromFormat("image/png");
+
+        String layerNameJson = "mockLayerTileJSON";
+        TileLayer tileLayerJson =
+                mock(TileLayer.class, withSettings().extraInterfaces(TileJSONProvider.class));
+        when(tileLayerDispatcher.getTileLayer(eq(layerNameJson))).thenReturn(tileLayerJson);
+        when(tileLayerJson.getName()).thenReturn(layerNameJson);
+        when(tileLayerJson.isEnabled()).thenReturn(true);
+        when(tileLayerJson.isAdvertised()).thenReturn(true);
+        when(tileLayerJson.getMimeTypes()).thenReturn(Arrays.asList(mimeType1));
+        TileJSONProvider tileJSONProvider = (TileJSONProvider) tileLayerJson;
+        when(tileJSONProvider.supportsTileJSON()).thenReturn(true);
+        when(tileJSONProvider.getTileJSON()).thenReturn(new TileJSON());
+
+        String googleMercator = "EPSG:900913";
+        when(tileLayerJson.getGridSubsets()).thenReturn(Collections.singleton(googleMercator));
+        GridSubset subset = mock(GridSubset.class);
+        when(subset.getGridNames()).thenReturn(new String[] {googleMercator + ":1"});
+        when(tileLayerJson.getGridSubset(eq(googleMercator))).thenReturn(subset);
+
+        when(tileLayerDispatcher.getLayerList()).thenReturn(Arrays.asList(tileLayerJson));
+    }
+
     public MockHttpServletResponse dispatch(MockHttpServletRequest req) throws Exception {
         MockHttpServletResponse resp = new MockHttpServletResponse();
         try {
             final Conveyor conveyor = wmtsService.getConveyor(req, resp);
 
             if (conveyor.reqHandler == Conveyor.RequestHandler.SERVICE) {
+                final String layerName = conveyor.getLayerId();
+
+                final TileLayer layer;
+                if (Objects.nonNull(layerName)) {
+                    layer = tileLayerDispatcher.getTileLayer(layerName);
+                    if (layer != null && !layer.isEnabled()) {
+                        throw new OWSException(
+                                400,
+                                "InvalidParameterValue",
+                                "LAYERS",
+                                "Layer '" + layerName + "' is disabled");
+                    }
+                    if (conveyor instanceof ConveyorTile) {
+                        ((ConveyorTile) conveyor).setTileLayer(layer);
+                    }
+                }
                 wmtsService.handleRequest(conveyor);
             } else {
                 ResponseUtils.writeTile(

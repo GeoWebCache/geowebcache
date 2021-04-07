@@ -39,20 +39,26 @@ public class WMTSTileJSON {
 
     private static Log log = LogFactory.getLog(org.geowebcache.service.wmts.WMTSTileJSON.class);
     private final String restBaseUrl;
+    private String style;
     private ConveyorTile convTile;
     private static final String ENDING_DIGITS_REGEX = "([0-9]+)$";
     private static final Pattern PATTERN_DIGITS = Pattern.compile(ENDING_DIGITS_REGEX);
 
     public WMTSTileJSON(
-            ConveyorTile convTile, String baseUrl, String contextPath, URLMangler urlMangler) {
+            ConveyorTile convTile,
+            String baseUrl,
+            String contextPath,
+            String style,
+            URLMangler urlMangler) {
         this.convTile = convTile;
+        this.style = style;
         this.restBaseUrl = urlMangler.buildURL(baseUrl, contextPath, WMTSService.REST_PATH);
     }
 
     public void writeResponse(TileLayer layer) {
         TileJSONProvider provider = (TileJSONProvider) layer;
         TileJSON json = provider.getTileJSON();
-        // "/{layer}/{tileMatrixSet}/{tileZoom}/{tileRow}/{tileCol}"
+
         List<String> urls = new ArrayList<>();
         for (MimeType mimeType : layer.getMimeTypes()) {
             Set<String> gridSubSets = layer.getGridSubsets();
@@ -107,11 +113,12 @@ public class WMTSTileJSON {
                         + "/"
                         + layer.getName()
                         + "/"
+                        + (style != null ? (style + "/") : "")
                         + gridSubSet
                         + "/"
                         + zoomLevelPrefix
-                        + "{tileZoom}"
-                        + "/{tileRow}/{tileColumn}"
+                        + "{z}"
+                        + "/{y}/{x}"
                         + "?format="
                         + mimeType;
         urls.add(tileUrl);
