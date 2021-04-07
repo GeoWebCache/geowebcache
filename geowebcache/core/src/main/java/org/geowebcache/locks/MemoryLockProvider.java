@@ -16,6 +16,8 @@ package org.geowebcache.locks;
 
 import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.geowebcache.GeoWebCacheException;
 
 /**
@@ -24,6 +26,8 @@ import org.geowebcache.GeoWebCacheException;
  * @author Andrea Aime - GeoSolutions
  */
 public class MemoryLockProvider implements LockProvider {
+
+    private static Log LOGGER = LogFactory.getLog(MemoryLockProvider.class);
 
     java.util.concurrent.locks.Lock[] locks;
 
@@ -40,7 +44,12 @@ public class MemoryLockProvider implements LockProvider {
 
     public Lock getLock(String lockKey) {
         final int idx = getIndex(lockKey);
+        if (LOGGER.isDebugEnabled())
+            LOGGER.debug("Mapped lock key " + lockKey + " to index " + idx + ". Acquiring lock.");
         locks[idx].lock();
+        if (LOGGER.isDebugEnabled())
+            LOGGER.debug("Mapped lock key " + lockKey + " to index " + idx + ". Lock acquired");
+
         return new Lock() {
 
             boolean released = false;
@@ -49,6 +58,8 @@ public class MemoryLockProvider implements LockProvider {
                 if (!released) {
                     released = true;
                     locks[idx].unlock();
+                    if (LOGGER.isDebugEnabled())
+                        LOGGER.debug("Released lock key " + lockKey + " mapped to index " + idx);
                 }
             }
         };
