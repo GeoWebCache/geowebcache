@@ -164,6 +164,8 @@ public class NIOLockProvider implements LockProvider {
                                     LOGGER.debug(
                                             "Lock "
                                                     + lockKey
+                                                    + " on file "
+                                                    + lockFile
                                                     + " released by thread "
                                                     + Thread.currentThread().getId());
                                 }
