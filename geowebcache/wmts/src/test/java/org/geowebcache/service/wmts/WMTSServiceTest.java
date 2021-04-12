@@ -27,6 +27,7 @@ import static org.mockito.Mockito.withSettings;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,6 +74,10 @@ import org.geowebcache.layer.TileJSONProvider;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.MetadataURL;
+import org.geowebcache.layer.meta.TileJSON;
+import org.geowebcache.layer.meta.VectorLayerMetadata;
+import org.geowebcache.mime.ApplicationMime;
+import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.service.OWSException;
@@ -236,15 +241,11 @@ public class WMTSServiceTest {
         when(tileLayer.isEnabled()).thenReturn(true);
         when(tileLayer.isAdvertised()).thenReturn(true);
 
-        final MimeType mimeType1 = MimeType.createFromFormat("image/png");
-        final MimeType mimeType2 = MimeType.createFromFormat("image/jpeg");
-        when(tileLayer.getMimeTypes()).thenReturn(Arrays.asList(mimeType1, mimeType2));
+        final MimeType mimeType1 = ImageMime.png;
+        final MimeType mimeType2 = ApplicationMime.mapboxVector;
 
-        final MimeType infoMimeType1 = MimeType.createFromFormat("text/plain");
-        final MimeType infoMimeType2 = MimeType.createFromFormat("text/html");
-        final MimeType infoMimeType3 = MimeType.createFromFormat("application/vnd.ogc.gml");
-        when(tileLayer.getInfoMimeTypes())
-                .thenReturn(Arrays.asList(infoMimeType1, infoMimeType2, infoMimeType3));
+        // Mocking a tile layer supporting both png (raster) and mvt (vector)
+        when(tileLayer.getMimeTypes()).thenReturn(Arrays.asList(mimeType1, mimeType2));
 
         Map<String, GridSubset> subsets = new HashMap<>();
         Map<SRS, List<GridSubset>> bySrs = new HashMap<>();
@@ -276,6 +277,11 @@ public class WMTSServiceTest {
         when(tileLayer.getGridSubsets()).thenReturn(subsets.keySet());
         TileJSONProvider tileJSONProvider = (TileJSONProvider) tileLayer;
         when(tileJSONProvider.supportsTileJSON()).thenReturn(true);
+        TileJSON json = new TileJSON();
+        VectorLayerMetadata metadata = new VectorLayerMetadata();
+        metadata.setFields(Collections.singletonMap("FIELD", "TYPE"));
+        json.setLayers(Collections.singletonList(metadata));
+        when(tileJSONProvider.getTileJSON()).thenReturn(json);
 
         // sanity check
         for (String gsetName : gridSetNames) {
@@ -1489,7 +1495,7 @@ public class WMTSServiceTest {
     }
 
     @Test
-    public void testGetCapWithTileJSON() throws Exception {
+    public void testGetCapWithTileJSONDifferentUrls() throws Exception {
 
         GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
         when(gwcd.getServletPrefix()).thenReturn(null);
@@ -1507,12 +1513,9 @@ public class WMTSServiceTest {
         when(req.getCharacterEncoding()).thenReturn("UTF-8");
         when(req.getParameterMap()).thenReturn(kvp);
 
-        {
-            List<String> gridSetNames = Arrays.asList("EPSG:900913");
-
-            TileLayer tileLayer = mockTileLayerWithJSONSupport("mockLayer", gridSetNames);
-            when(tld.getLayerList()).thenReturn(Collections.singletonList(tileLayer));
-        }
+        List<String> gridSetNames = Arrays.asList("EPSG:900913");
+        TileLayer tileLayer = mockTileLayerWithJSONSupport("mockLayer", gridSetNames);
+        when(tld.getLayerList()).thenReturn(Collections.singletonList(tileLayer));
 
         Conveyor conv = service.getConveyor(req, resp);
         assertNotNull(conv);
@@ -1535,7 +1538,6 @@ public class WMTSServiceTest {
                 "inline;filename=wmts-getcapabilities.xml", resp.getHeader("content-disposition"));
         String result = resp.getContentAsString();
 
-        // Ensure the advertised Layer is contained and the unadvertised not
         assertTrue(result.contains("mockLayer"));
 
         Document doc = XMLUnit.buildTestDocument(result);
@@ -1557,10 +1559,49 @@ public class WMTSServiceTest {
                 "1",
                 xpath.evaluate(
                         "count(//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='TileJSON']"
-                                + "[@format='json']"
+                                + "[@format='application/json']"
                                 + "[@template='http://localhost:8080/geowebcache"
                                 + WMTSService.REST_PATH
-                                + "/mockLayer/{style}/tilejson?format=json'])",
+                                + "/mockLayer/{style}/tilejson/png?format=application/json'])",
                         doc));
+
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        "count(//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='TileJSON']"
+                                + "[@format='application/json']"
+                                + "[@template='http://localhost:8080/geowebcache"
+                                + WMTSService.REST_PATH
+                                + "/mockLayer/{style}/tilejson/pbf?format=application/json'])",
+                        doc));
+
+        // Sending the above 2 getTileJson urls
+        // Vector tilejson
+        kvp.put("request", new String[] {"GetTileJSON"});
+        kvp.put("tileformat", new String[] {"pbf"});
+        when(req.getParameterMap()).thenReturn(kvp);
+        conv = service.getConveyor(req, resp);
+        result = writeTileJsonResponse((ConveyorTile) conv, tileLayer, resp);
+        assertTrue(
+                result.contains(
+                        "\"tiles\":[\"http://localhost/service/wmts/rest/mockLayer/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=application/vnd.mapbox-vector-tile\"]"));
+
+        // Raster tilejson
+        kvp.put("tileformat", new String[] {"png"});
+        when(req.getParameterMap()).thenReturn(kvp);
+        conv = service.getConveyor(req, resp);
+        result = writeTileJsonResponse((ConveyorTile) conv, tileLayer, resp);
+        assertTrue(
+                result.contains(
+                        "\"tiles\":[\"http://localhost/service/wmts/rest/mockLayer/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png\"]"));
+    }
+
+    private String writeTileJsonResponse(
+            ConveyorTile conv, TileLayer tileLayer, MockHttpServletResponse resp)
+            throws UnsupportedEncodingException {
+        WMTSTileJSON tileJSON =
+                new WMTSTileJSON(conv, "http://localhost", "", null, new NullURLMangler());
+        tileJSON.writeResponse(tileLayer);
+        return resp.getContentAsString();
     }
 }

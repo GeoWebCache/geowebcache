@@ -90,10 +90,10 @@ public class WMTSService extends Service {
         FEATUREINFO(buildRestPattern(7, false), RequestType.FEATUREINFO, false),
         // "/{layer}/{style}/{tileMatrixSet}/{tileMatrix}/{tileRow}/{tileCol}/{j}/{i}",
         FEATUREINFO_STYLE(buildRestPattern(8, true), RequestType.FEATUREINFO, true),
-        // "/{layer}/tilejson"
-        TILEJSON(buildRestPattern(2, false), RequestType.TILEJSON, false),
-        // "/{layer}/{style}/tilejson"
-        TILEJSON_STYLE(buildRestPattern(3, true), RequestType.TILEJSON, true);
+        // "/{layer}/tilejson/{tileformat}"
+        TILEJSON(buildRestPattern(3, false), RequestType.TILEJSON, false),
+        // "/{layer}/{style}/tilejson/{tileformat}"
+        TILEJSON_STYLE(buildRestPattern(4, true), RequestType.TILEJSON, true);
 
         Pattern pattern;
         RequestType type;
@@ -143,6 +143,8 @@ public class WMTSService extends Service {
                     values.put("j", matcher.group(i++));
                     values.put("i", matcher.group(i++));
                 }
+            } else {
+                values.put("tileformat", matcher.group(++i));
             }
             if (request.getParameter("format") instanceof String) {
                 if (isFeatureInfo) {
@@ -238,6 +240,7 @@ public class WMTSService extends Service {
             "tilematrix",
             "tilerow",
             "tilecol",
+            "tileformat",
             "i",
             "j"
         };
@@ -347,6 +350,8 @@ public class WMTSService extends Service {
             return tile;
         } else if (req.equals(GET_TILEJSON)) {
             ConveyorTile tile = new ConveyorTile(sb, values.get("layer"), request, response);
+            String format = values.get("tileformat");
+            tile.setMimeType(MimeType.createFromExtension(format));
             String hint = req;
             // I Will need the style when setting up the TileJSON tiles url
             String style = values.get("style");
