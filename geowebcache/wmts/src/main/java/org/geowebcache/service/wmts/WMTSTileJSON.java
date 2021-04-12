@@ -31,6 +31,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileJSONProvider;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.meta.TileJSON;
+import org.geowebcache.layer.meta.VectorLayerMetadata;
 import org.geowebcache.mime.ApplicationMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.URLMangler;
@@ -60,11 +61,15 @@ public class WMTSTileJSON {
         TileJSON json = provider.getTileJSON();
 
         List<String> urls = new ArrayList<>();
-        for (MimeType mimeType : layer.getMimeTypes()) {
-            Set<String> gridSubSets = layer.getGridSubsets();
-            for (String gridSubSet : gridSubSets) {
-                addTileUrl(layer, gridSubSet, mimeType, urls);
-            }
+        MimeType mimeType = convTile.getMimeType();
+        Set<String> gridSubSets = layer.getGridSubsets();
+        for (String gridSubSet : gridSubSets) {
+            addTileUrl(layer, gridSubSet, mimeType, urls);
+        }
+        List<VectorLayerMetadata> vectorLayers = json.getLayers();
+        if (vectorLayers != null && !vectorLayers.isEmpty() && !mimeType.isVector()) {
+            // Removing vectorLayers info when requesting a raster format
+            json.setLayers(null);
         }
 
         String[] tileUrls = urls.toArray(new String[urls.size()]);

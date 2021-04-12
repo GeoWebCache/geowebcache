@@ -18,6 +18,7 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -61,6 +62,8 @@ import org.geowebcache.layer.TileJSONProvider;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.TileJSON;
+import org.geowebcache.layer.meta.VectorLayerMetadata;
+import org.geowebcache.mime.ApplicationMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.OWSException;
 import org.geowebcache.stats.RuntimeStats;
@@ -161,11 +164,11 @@ public class WMTSRestTest {
 
     @Test
     public void testGetTileJSONWithStyle() throws Exception {
-        addTileLayerJsonMock();
+        addTileLayerJsonMock("image/png");
 
         MockHttpServletRequest req = new MockHttpServletRequest();
-        req.setPathInfo("geowebcache/service/wmts/rest/mockLayerTileJSON/style-a/tilejson");
-        req.addParameter("format", "json");
+        req.setPathInfo("geowebcache/service/wmts/rest/mockLayerTileJSON/style-a/tilejson/png");
+        req.addParameter("format", "application/json");
         MockHttpServletResponse resp = dispatch(req);
 
         assertEquals(200, resp.getStatus());
@@ -175,15 +178,17 @@ public class WMTSRestTest {
         assertTrue(
                 content.contains(
                         "\"tiles\":[\"http://localhost/service/wmts/rest/mockLayerTileJSON/style-a/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png\"]"));
+        assertFalse(content.contains("vector_layers"));
     }
 
     @Test
     public void testGetTileJSONWithoutStyle() throws Exception {
-        addTileLayerJsonMock();
+        String mvt = ApplicationMime.mapboxVector.getFormat();
+        addTileLayerJsonMock(mvt);
 
         MockHttpServletRequest req = new MockHttpServletRequest();
-        req.setPathInfo("geowebcache/service/wmts/rest/mockLayerTileJSON/tilejson");
-        req.addParameter("format", "json");
+        req.setPathInfo("geowebcache/service/wmts/rest/mockLayerTileJSON/tilejson/pbf");
+        req.addParameter("format", ApplicationMime.json.getFormat());
         MockHttpServletResponse resp = dispatch(req);
 
         assertEquals(200, resp.getStatus());
@@ -192,13 +197,15 @@ public class WMTSRestTest {
         // Checking the response contains a tileUrl without the style
         assertTrue(
                 content.contains(
-                        "\"tiles\":[\"http://localhost/service/wmts/rest/mockLayerTileJSON/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png\"]"));
+                        "\"tiles\":[\"http://localhost/service/wmts/rest/mockLayerTileJSON/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format="
+                                + mvt
+                                + "\"]"));
+        assertTrue(content.contains("vector_layers"));
     }
 
-    private void addTileLayerJsonMock() throws GeoWebCacheException {
+    private void addTileLayerJsonMock(String mimeType) throws GeoWebCacheException {
 
-        final MimeType mimeType1 = MimeType.createFromFormat("image/png");
-
+        final MimeType mimeType1 = MimeType.createFromFormat(mimeType);
         String layerNameJson = "mockLayerTileJSON";
         TileLayer tileLayerJson =
                 mock(TileLayer.class, withSettings().extraInterfaces(TileJSONProvider.class));
@@ -209,7 +216,11 @@ public class WMTSRestTest {
         when(tileLayerJson.getMimeTypes()).thenReturn(Arrays.asList(mimeType1));
         TileJSONProvider tileJSONProvider = (TileJSONProvider) tileLayerJson;
         when(tileJSONProvider.supportsTileJSON()).thenReturn(true);
-        when(tileJSONProvider.getTileJSON()).thenReturn(new TileJSON());
+        TileJSON json = new TileJSON();
+        VectorLayerMetadata metadata = new VectorLayerMetadata();
+        metadata.setFields(Collections.singletonMap("FIELD", "TYPE"));
+        json.setLayers(Collections.singletonList(metadata));
+        when(tileJSONProvider.getTileJSON()).thenReturn(json);
 
         String googleMercator = "EPSG:900913";
         when(tileLayerJson.getGridSubsets()).thenReturn(Collections.singleton(googleMercator));

@@ -50,6 +50,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.meta.MetadataURL;
+import org.geowebcache.mime.ApplicationMime;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
@@ -749,11 +750,19 @@ public class WMTSGetCapabilities {
             layerResourceUrlsGen(xml, format, "FeatureInfo", template);
         }
         if (layer instanceof TileJSONProvider) {
+            List<String> formatExtensions = WMTSUtils.getLayerFormatsExtensions(layer);
             TileJSONProvider provider = (TileJSONProvider) layer;
-            String format = "json";
+            String outputFormat = ApplicationMime.json.getFormat();
             if (provider.supportsTileJSON()) {
-                String template = baseTemplate + "/{style}/tilejson?format=" + format;
-                layerResourceUrlsGen(xml, format, "TileJSON", template);
+                for (String tileJsonFormat : formatExtensions) {
+                    String template =
+                            baseTemplate
+                                    + "/{style}/tilejson/"
+                                    + tileJsonFormat
+                                    + "?format="
+                                    + outputFormat;
+                    layerResourceUrlsGen(xml, outputFormat, "TileJSON", template);
+                }
             }
         }
     }
