@@ -315,11 +315,7 @@ public class MetastoreRemover {
     private String getDefaultJDBCURL(File root) {
         String path = root.getPath() + File.separator + "meta_jdbc_h2";
         String jdbcString =
-                "jdbc:h2:file:"
-                        + path
-                        + File.separator
-                        + "gwc_metastore"
-                        + ";TRACE_LEVEL_FILE=0;AUTO_SERVER=TRUE";
+                "jdbc:h2:file:" + path + File.separator + "gwc_metastore" + ";TRACE_LEVEL_FILE=0";
         return jdbcString;
     }
 }
