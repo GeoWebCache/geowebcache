@@ -1,4 +1,4 @@
-GeoWebCache 1.18.3 (2021-04-20)
+GeoWebCache 1.18.3 (2021-04-21)
 -------------------------------
 
 Maintenance release of 1.18.x series.
