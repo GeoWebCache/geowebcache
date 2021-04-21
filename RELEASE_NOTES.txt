@@ -1,3 +1,14 @@
+GeoWebCache 1.18.3 (2021-04-20)
+-------------------------------
+
+Maintenance release of 1.18.x series.
+
+Improvements:
++++++++++++++
+- Improve logging in lock providers
+- Introduce 512px tiles as a possible alternative for the default gridsets
+- Update Spring to v5.1.20.RELEASE and Spring security to 5.1.13.RELEASE 
+
 GeoWebCache 1.18.2 (2021-01-18)
 -------------------------------
 
