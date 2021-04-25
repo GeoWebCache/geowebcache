@@ -114,8 +114,7 @@ public class BDBQuotaStore implements QuotaStore {
         this.tilePageCalculator = tilePageCalculator;
         this.cacheRootDir = cacheDirFinder.getDefaultPath();
 
-        boolean disabled =
-                Boolean.valueOf(cacheDirFinder.findEnvVar(GWC_DISKQUOTA_DISABLED)).booleanValue();
+        boolean disabled = Boolean.parseBoolean(cacheDirFinder.findEnvVar(GWC_DISKQUOTA_DISABLED));
         if (disabled) {
             log.warn(
                     " -- Found environment variable "
