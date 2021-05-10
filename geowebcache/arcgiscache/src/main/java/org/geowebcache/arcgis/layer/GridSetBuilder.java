@@ -55,7 +55,7 @@ class GridSetBuilder {
          */
         final double[] scaleDenominators = null;
         final Double metersPerUnit;
-        final String[] scaleNames = null;
+        final String[] scaleNames;
         final int tileWidth = tileCacheInfo.getTileCols();
         final int tileHeight = tileCacheInfo.getTileRows();
         final boolean yCoordinateFirst = false;
@@ -71,6 +71,9 @@ class GridSetBuilder {
             resolutions = resAndScales[0];
 
             double[] scales = resAndScales[1];
+
+            scaleNames = getScaleNames(lodInfos);
+
             // TODO: check whether pixelSize computed above should be used instead
             metersPerUnit = (GridSetFactory.DEFAULT_PIXEL_SIZE_METER * scales[0]) / resolutions[0];
         }
@@ -126,13 +129,25 @@ class GridSetBuilder {
 
     private double[][] getResolutions(List<LODInfo> lodInfos) {
         final int numLevelsOfDetail = lodInfos.size();
-        double[][] resolutionsAndScales = new double[2][numLevelsOfDetail];
+        double[][] resolutionsAndScales = new double[3][numLevelsOfDetail];
         LODInfo lodInfo;
         for (int i = 0; i < numLevelsOfDetail; i++) {
             lodInfo = lodInfos.get(i);
             resolutionsAndScales[0][i] = lodInfo.getResolution();
             resolutionsAndScales[1][i] = lodInfo.getScale();
+            resolutionsAndScales[2][i] = lodInfo.getLevelID();
         }
         return resolutionsAndScales;
+    }
+
+    private String[] getScaleNames(List<LODInfo> lodInfos) {
+        final int numLevelsOfDetail = lodInfos.size();
+        String[] scaleNames = new String[numLevelsOfDetail];
+        LODInfo lodInfo;
+        for (int i = 0; i < numLevelsOfDetail; i++) {
+            lodInfo = lodInfos.get(i);
+            scaleNames[i] = String.valueOf(lodInfo.getLevelID());
+        }
+        return scaleNames;
     }
 }
