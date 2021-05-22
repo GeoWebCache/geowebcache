@@ -102,7 +102,7 @@ public class ImageDecoderImpl implements ImageDecoder {
             // Creation of the associated Writer
             ImageReader reader = null;
             ImageInputStream stream = null;
-            try {
+            try { // NOPMD (handling of stream is complicated)
                 reader = newSpi.createReaderInstance();
                 if (source instanceof FileResource) {
                     // file

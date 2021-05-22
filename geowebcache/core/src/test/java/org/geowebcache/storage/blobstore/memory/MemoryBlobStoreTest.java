@@ -294,6 +294,7 @@ public class MemoryBlobStoreTest {
     /**
      * Checks if the streams are equals, note that this method also closes the {@link InputStream}
      */
+    @SuppressWarnings("PMD.UseTryWithResources") // provided as method params, handle in java 11
     private void checkInputStreams(InputStream is, InputStream is2) throws IOException {
         try {
             assertTrue(IOUtils.contentEquals(is, is2));
