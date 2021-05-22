@@ -104,8 +104,7 @@ public class PNGImageEncoder extends ImageEncoderImpl {
             // Creation of the associated Writer
             PNGWriter writer = new PNGWriter();
             OutputStream stream = null;
-            try {
-                // writer = new PNGJWriter();
+            try { // NOPMD stream not instantiated here
                 // Check if the input object is an OutputStream
                 if (destination instanceof OutputStream) {
                     boolean isScanlinePresent = writer.isScanlineSupported(image);

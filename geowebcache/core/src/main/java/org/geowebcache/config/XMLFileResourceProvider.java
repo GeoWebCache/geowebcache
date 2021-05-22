@@ -222,15 +222,10 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
                             + getClass().getResource(templateLocation).toExternalForm());
             // grab template from classpath
             try {
-                try (InputStream templateStream =
-                        getClass().getResourceAsStream(templateLocation)) {
-                    OutputStream output = new FileOutputStream(xmlFile);
-                    try {
-                        IOUtils.copy(templateStream, output);
-                    } finally {
-                        output.flush();
-                        output.close();
-                    }
+                try (InputStream templateStream = getClass().getResourceAsStream(templateLocation);
+                        OutputStream output = new FileOutputStream(xmlFile); ) {
+                    IOUtils.copy(templateStream, output);
+                    output.flush();
                 }
             } catch (IOException e) {
                 throw new IOException(

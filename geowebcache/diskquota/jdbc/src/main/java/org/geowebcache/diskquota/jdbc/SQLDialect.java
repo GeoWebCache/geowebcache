@@ -153,22 +153,17 @@ public class SQLDialect {
                     JdbcUtils.extractDatabaseMetaData(
                             ds,
                             dbmd -> {
-                                ResultSet rs = null;
-                                try {
-                                    rs =
-                                            dbmd.getTables(
-                                                    null, schema, tableName.toLowerCase(), null);
+                                try (ResultSet rs =
+                                        dbmd.getTables(
+                                                null, schema, tableName.toLowerCase(), null)) {
                                     boolean exists = rs.next();
                                     rs.close();
                                     if (exists) {
                                         return true;
                                     }
-                                    rs = dbmd.getTables(null, schema, tableName, null);
+                                }
+                                try (ResultSet rs = dbmd.getTables(null, schema, tableName, null)) {
                                     return rs.next();
-                                } finally {
-                                    if (rs != null) {
-                                        rs.close();
-                                    }
                                 }
                             });
         } catch (MetaDataAccessException e) {

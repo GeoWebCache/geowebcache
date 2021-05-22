@@ -37,8 +37,8 @@ public class ZipFilterUpdate {
         this.is = is;
     }
 
+    @SuppressWarnings("PMD.UseTryWithResources") // is is a field, cannot be handled using ITWR
     public void runUpdate(RequestFilter filter, TileLayer tl) throws RestException {
-
         try (ZipInputStream zis = new ZipInputStream(is)) {
             ZipEntry ze = zis.getNextEntry();
 

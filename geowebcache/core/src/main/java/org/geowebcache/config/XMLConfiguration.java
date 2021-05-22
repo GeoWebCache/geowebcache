@@ -304,13 +304,9 @@ public class XMLConfiguration
 
     private GeoWebCacheConfiguration loadConfiguration() throws ConfigurationException {
         Assert.isTrue(resourceProvider.hasInput(), "Resource provider must have an input");
-        InputStream in;
         try {
-            in = resourceProvider.in();
-            try {
+            try (InputStream in = resourceProvider.in()) {
                 return loadConfiguration(in);
-            } finally {
-                in.close();
             }
         } catch (IOException e) {
             throw new ConfigurationException(
