@@ -199,6 +199,9 @@ final class FileManager {
 
     /** Return the files present in the root directory that correspond to a certain layer. */
     List<File> getFiles(String layerName) {
+        if (layerName != null){
+            layerName = normalizeAttributeValue("layer", layerName);
+        }
         // init the thread local path builder
         String[] pathBuilderCopy = getPathBuilderCopy();
         // we only need to replace the layer term
@@ -211,6 +214,7 @@ final class FileManager {
      * grid set.
      */
     List<File> getFiles(String layerName, String gridSetId) {
+        layerName = normalizeAttributeValue("layer", layerName);
         // init the thread local path builder
         String[] pathBuilderCopy = getPathBuilderCopy();
         // we replace the layer and grid set terms
@@ -224,6 +228,7 @@ final class FileManager {
      * grid set.
      */
     List<File> getParametersFiles(String layerName, String parametersId) {
+        layerName = normalizeAttributeValue("layer", layerName);
         // init the thread local path builder
         String[] pathBuilderCopy = getPathBuilderCopy();
         // we replace the layer and grid set terms
