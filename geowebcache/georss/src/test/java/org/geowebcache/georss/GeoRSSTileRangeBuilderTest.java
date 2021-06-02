@@ -14,6 +14,7 @@
  */
 package org.geowebcache.georss;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.geowebcache.georss.RasterMaskTestUtils.buildSampleFilterMatrix;
 
 import java.io.BufferedReader;
@@ -118,7 +119,7 @@ public class GeoRSSTileRangeBuilderTest {
             throws IOException, XMLStreamException, FactoryConfigurationError {
 
         try (InputStream stream = getClass().getResourceAsStream("test-data/" + fileName);
-                Reader feed = new BufferedReader(new InputStreamReader(stream, "UTF-8")); ) {
+                Reader feed = new BufferedReader(new InputStreamReader(stream, UTF_8)); ) {
             StaxGeoRSSReader reader = new StaxGeoRSSReader(feed);
             GeoRSSTileRangeBuilder b = new GeoRSSTileRangeBuilder(layer, gridsetId, 10);
             b.buildTileRangeMask(reader, null);

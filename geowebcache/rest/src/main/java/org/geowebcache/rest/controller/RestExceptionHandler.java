@@ -16,7 +16,7 @@ package org.geowebcache.rest.controller;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletResponse;
@@ -44,6 +44,6 @@ public class RestExceptionHandler {
         LOGGER.log(Level.SEVERE, e.getMessage(), e);
         response.setStatus(e.getStatus().value());
         response.setContentType(MediaType.TEXT_PLAIN_VALUE);
-        StreamUtils.copy(e.getMessage(), Charset.forName("UTF-8"), os);
+        StreamUtils.copy(e.getMessage(), StandardCharsets.UTF_8, os);
     }
 }

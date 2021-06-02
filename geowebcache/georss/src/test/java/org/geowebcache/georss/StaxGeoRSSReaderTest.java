@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Assert;
@@ -110,6 +111,6 @@ public class StaxGeoRSSReaderTest {
         if (stream == null) {
             throw new FileNotFoundException("test-data/" + fileName);
         }
-        return new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+        return new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
     }
 }

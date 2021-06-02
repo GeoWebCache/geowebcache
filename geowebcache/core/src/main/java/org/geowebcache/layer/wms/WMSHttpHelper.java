@@ -20,6 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
@@ -208,7 +209,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
                 } else if (responseMime != null
                         && responseMime.toLowerCase().startsWith("application/vnd.ogc.se_xml")) {
                     try (InputStream stream = method.getResponseBodyAsStream()) {
-                        message = IOUtils.toString(stream, "UTF-8");
+                        message = IOUtils.toString(stream, StandardCharsets.UTF_8);
                     } catch (IOException e) {
                         //
                     }

@@ -32,6 +32,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -125,7 +126,7 @@ public class ConfigLoader {
 
         log.debug("Saving disk quota config to " + resourceProvider.getLocation());
         try (OutputStream configOut = resourceProvider.out()) {
-            xStream.toXML(config, new OutputStreamWriter(configOut, "UTF-8"));
+            xStream.toXML(config, new OutputStreamWriter(configOut, StandardCharsets.UTF_8));
         } catch (RuntimeException e) {
             log.error("Error saving DiskQuota config to file :" + resourceProvider.getLocation());
         }
@@ -257,7 +258,7 @@ public class ConfigLoader {
     private DiskQuotaConfig loadConfiguration(final InputStream configStream)
             throws XStreamException {
         XStream xstream = getConfiguredXStream(new GeoWebCacheXStream());
-        try (Reader reader = new InputStreamReader(configStream, "UTF-8")) {
+        try (Reader reader = new InputStreamReader(configStream, StandardCharsets.UTF_8)) {
             DiskQuotaConfig fromXML = loadConfiguration(reader, xstream);
             return fromXML;
         } catch (IOException e) {
