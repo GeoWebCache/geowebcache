@@ -14,6 +14,7 @@
  */
 package org.geowebcache.config;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -251,6 +252,6 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         tx.setOutputProperty(OutputKeys.INDENT, "yes");
 
         tx.transform(
-                new DOMSource(dom), new StreamResult(new OutputStreamWriter(System.out, "utf-8")));
+                new DOMSource(dom), new StreamResult(new OutputStreamWriter(System.out, UTF_8)));
     }
 }

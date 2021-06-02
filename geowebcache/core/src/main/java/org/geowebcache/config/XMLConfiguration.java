@@ -14,6 +14,8 @@
  */
 package org.geowebcache.config;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomReader;
 import java.io.FileNotFoundException;
@@ -471,7 +473,7 @@ public class XMLConfiguration
         // create the XStream for serializing the configuration
         XStream xs = getConfiguredXStreamWithContext(new GeoWebCacheXStream(), Context.PERSIST);
 
-        try (OutputStreamWriter writer = new OutputStreamWriter(resourceProvider.out(), "UTF-8")) {
+        try (OutputStreamWriter writer = new OutputStreamWriter(resourceProvider.out(), UTF_8)) {
             // set version to latest
             String currentSchemaVersion = getCurrentSchemaVersion();
             getGwcConfig().setVersion(currentSchemaVersion);
