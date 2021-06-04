@@ -319,7 +319,7 @@ public abstract class AbstractTileLayer extends TileLayer {
             grids = null;
         }
 
-        if (this.subSets.size() == 0) {
+        if (this.subSets.isEmpty()) {
             subSets.put(
                     gridSetBroker.getWorldEpsg4326().getName(),
                     GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326()));

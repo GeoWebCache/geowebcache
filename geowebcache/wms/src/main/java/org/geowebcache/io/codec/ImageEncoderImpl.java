@@ -264,7 +264,7 @@ public class ImageEncoderImpl implements ImageEncoder {
             // Creation of the associated Writer
             ImageWriter writer = null;
             ImageOutputStream stream = null;
-            try {
+            try { // NOPMD (complex instantiation of the image stream
                 writer = newSpi.createWriterInstance();
                 // Check if the input object is an OutputStream
                 if (destination instanceof OutputStream) {

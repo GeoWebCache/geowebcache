@@ -226,6 +226,7 @@ public class HazelcastCacheProviderTest {
     /**
      * Checks if the streams are equals, note that this method also closes the {@link InputStream}
      */
+    @SuppressWarnings("PMD.UseTryWithResources") // resources not created here
     private void checkInputStreams(InputStream is, InputStream is2) throws IOException {
         try {
             // Ensure the two contents are equal

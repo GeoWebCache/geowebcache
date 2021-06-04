@@ -66,21 +66,9 @@ public class HazelcastLoader implements InitializingBean {
                     File[] files = hazelCastDir.listFiles(filter);
                     if (files != null && files.length > 0) {
                         File hazelCastConf = files[0];
-                        InputStream stream = new FileInputStream(hazelCastConf);
                         Config config = null;
-                        try {
+                        try (InputStream stream = new FileInputStream(hazelCastConf)) {
                             config = new XmlConfigBuilder(stream).build();
-                        } finally {
-                            if (stream != null) {
-                                try {
-                                    stream.close();
-                                } catch (Exception e) {
-                                    stream = null;
-                                    if (LOGGER.isErrorEnabled()) {
-                                        LOGGER.error(e.getMessage(), e);
-                                    }
-                                }
-                            }
                         }
                         // Ensure the configuration is accepted
                         if (configAccepted(config)) {

@@ -203,7 +203,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
 
             // verify the datasource works
             Connection c = null;
-            try {
+            try { // NOPMD try-with-resources would just lead to an unused variable violation
                 c = ds.getConnection();
             } catch (SQLException e) {
                 throw new ConfigurationException(
