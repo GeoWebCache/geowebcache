@@ -49,7 +49,7 @@
     <jts.version>1.18.1</jts.version>
     <jaiext.version>1.1.20</jaiext.version>
     <spring.version>5.1.20.RELEASE</spring.version>
-    <spring.security.version>5.1.13.RELEASE</spring.security.version>
+    <spring.security.version>5.2.10.RELEASE</spring.security.version>
     <xstream.version>1.4.11.1</xstream.version>
     <commons-logging.version>1.1.1</commons-logging.version>
     <commons-io.version>2.6</commons-io.version>
