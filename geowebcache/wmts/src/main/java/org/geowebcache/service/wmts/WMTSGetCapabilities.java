@@ -166,10 +166,16 @@ public class WMTSGetCapabilities {
             operationsMetadata(xml);
 
             contents(xml);
+            String kvpBaseUrl = baseUrl;
+            if (kvpBaseUrl.indexOf('?') == -1) {
+                kvpBaseUrl += "?";
+            } else {
+                kvpBaseUrl += "&";
+            }
             xml.indentElement("ServiceMetadataURL")
                     .attribute(
                             "xlink:href",
-                            baseUrl + "?SERVICE=wmts&REQUEST=getcapabilities&VERSION=1.0.0")
+                            kvpBaseUrl + "SERVICE=wmts&REQUEST=getcapabilities&VERSION=1.0.0")
                     .endElement();
 
             xml.indentElement("ServiceMetadataURL")
