@@ -57,4 +57,24 @@ final class WMTSUtils {
         }
         return dimensions;
     }
+    
+    public static String getKvpServiceMetadataURL(String baseUrl) {
+    	String base = baseUrl;
+    	
+    	// Remove stray ? and &'s at the end of the URL
+    	int l = base.length();
+    	while (l > 0 && (base.charAt(l-1) == '?' || base.charAt(l-1) == '&')) {
+    		base = base.substring(0, l-1);
+    		l--;
+    	}
+    	
+    	// Append the correct delimiter
+        if (base.indexOf('?') == -1) {
+            base += "?";
+        } else {
+            base += "&";
+        }
+
+        return base + "SERVICE=wmts&REQUEST=getcapabilities&VERSION=1.0.0";
+    }
 }
