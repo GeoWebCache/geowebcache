@@ -60,6 +60,13 @@ final class WMTSUtils {
     
     public static String getKvpServiceMetadataURL(String baseUrl) {
     	String base = baseUrl;
+    	String anchor = "";
+    	
+    	// Split anchor
+    	if (base.indexOf('#') != -1) {
+    		anchor = base.substring(base.indexOf('#'));
+    		base = base.substring(0, base.indexOf('#'));
+    	}
     	
     	// Remove stray ? and &'s at the end of the URL
     	int l = base.length();
@@ -75,6 +82,6 @@ final class WMTSUtils {
             base += "&";
         }
 
-        return base + "SERVICE=wmts&REQUEST=getcapabilities&VERSION=1.0.0";
+        return base + "SERVICE=wmts&REQUEST=getcapabilities&VERSION=1.0.0" + anchor;
     }
 }

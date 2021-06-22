@@ -12,6 +12,14 @@ public class WMTSUtilsTest {
 		assertEquals("https://www.foo.com/?SERVICE=wmts&REQUEST=getcapabilities&VERSION=1.0.0", result);
 	 }
 	 
+
+	 @Test
+	 public void testKvpServiceMetadataURLNoParametersWithAnchor() throws Exception {
+		String result = WMTSUtils.getKvpServiceMetadataURL("https://www.foo.com/#anchor"); 
+		assertEquals("https://www.foo.com/?SERVICE=wmts&REQUEST=getcapabilities&VERSION=1.0.0#anchor", result);
+	 }
+	 
+	 
 	 @Test
 	 public void testKvpServiceMetadataURLNoParameters_questionMark() throws Exception {
 		String result = WMTSUtils.getKvpServiceMetadataURL("https://www.foo.com/?"); 
@@ -44,5 +52,10 @@ public class WMTSUtilsTest {
 		assertEquals("https://www.foo.com/?bar=doo&dii=daa&SERVICE=wmts&REQUEST=getcapabilities&VERSION=1.0.0", result);
 	 }
 
+	 @Test
+	 public void testKvpServiceMetadataURLMultipleParameters_manyAmpersands_withAnchor() throws Exception {
+		String result = WMTSUtils.getKvpServiceMetadataURL("https://www.foo.com/?bar=doo&dii=daa&&&#hello"); 
+		assertEquals("https://www.foo.com/?bar=doo&dii=daa&SERVICE=wmts&REQUEST=getcapabilities&VERSION=1.0.0#hello", result);
+	 }
 
 }
