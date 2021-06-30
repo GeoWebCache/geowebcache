@@ -166,11 +166,9 @@ public class WMTSGetCapabilities {
             operationsMetadata(xml);
 
             contents(xml);
-            
+
             xml.indentElement("ServiceMetadataURL")
-                    .attribute(
-                            "xlink:href",
-                            WMTSUtils.getKvpServiceMetadataURL(baseUrl))
+                    .attribute("xlink:href", WMTSUtils.getKvpServiceMetadataURL(baseUrl))
                     .endElement();
 
             xml.indentElement("ServiceMetadataURL")
