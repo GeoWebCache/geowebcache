@@ -14,20 +14,17 @@
  */
 package org.geowebcache.util;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpConnectionManager;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 /** Builder class for HttpClients */
 public class HttpClientBuilder {
@@ -47,6 +44,8 @@ public class HttpClientBuilder {
     private boolean doAuthentication = false;
 
     private int concurrency;
+
+    private RequestConfig connectionConfig;
 
     public HttpClientBuilder() {
         super();
@@ -72,33 +71,23 @@ public class HttpClientBuilder {
             this.setHttpCredentials(httpUsername, httpPassword, AuthScope.ANY);
         }
 
-        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-        List<String> lst = runtimeMXBean.getInputArguments();
-        String proxyHost = null;
-        String proxyPort = null;
-        for (String arg : lst) {
-            if (arg.startsWith("-Dhttp.proxyHost=")) {
-                proxyHost = extractVMArg(arg);
-            } else if (arg.startsWith("-Dhttp.proxyPort=")) {
-                proxyPort = extractVMArg(arg);
-            }
-        }
-        if (proxyHost != null)
-            try {
-                proxyUrl = new URL(proxyHost + ((proxyPort != null) ? (":" + proxyPort) : ("")));
-            } catch (MalformedURLException e) {
-                log.debug(e);
-            }
-        this.setProxy(proxyUrl);
+        /*
+         * RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean(); List<String> lst =
+         * runtimeMXBean.getInputArguments(); String proxyHost = null; String proxyPort = null; for
+         * (String arg : lst) { if (arg.startsWith("-Dhttp.proxyHost=")) { proxyHost =
+         * extractVMArg(arg); } else if (arg.startsWith("-Dhttp.proxyPort=")) { proxyPort =
+         * extractVMArg(arg); } } if (proxyHost != null) try { proxyUrl = new URL(proxyHost +
+         * ((proxyPort != null) ? (":" + proxyPort) : (""))); } catch (MalformedURLException e) {
+         * log.debug(e); } this.setProxy(proxyUrl);
+         */
         this.setBackendTimeout(backendTimeout);
         this.concurrency = concurrency;
     }
 
-    private String extractVMArg(String arg) {
-        String[] proxyArg = arg.split("=");
-        if (proxyArg.length == 2 && proxyArg[1].length() > 0) return proxyArg[1];
-        return null;
-    }
+    /*
+     * private String extractVMArg(String arg) { String[] proxyArg = arg.split("="); if
+     * (proxyArg.length == 2 && proxyArg[1].length() > 0) return proxyArg[1]; return null; }
+     */
 
     public void setHttpCredentials(String username, String password, URL authscopeUrl) {
         AuthScope authscope = new AuthScope(authscopeUrl.getHost(), authscopeUrl.getPort());
@@ -140,35 +129,36 @@ public class HttpClientBuilder {
      * @return the generated HttpClient
      */
     public HttpClient buildClient() {
-        HttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
+        HttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+        setConnectionConfig(
+                RequestConfig.custom()
+                        .setCookieSpec(CookieSpecs.DEFAULT)
+                        .setExpectContinueEnabled(true)
+                        .setSocketTimeout(backendTimeoutMillis)
+                        .setConnectTimeout(backendTimeoutMillis)
+                        .build());
+        /*
+         * if (concurrency > 0) { params.setMaxTotalConnections(concurrency);
+         * params.setMaxConnectionsPerHost(HostConfiguration.ANY_HOST_CONFIGURATION, concurrency); }
+         */
 
-        HttpConnectionManagerParams params = new HttpConnectionManagerParams();
-        params.setSoTimeout(backendTimeoutMillis);
-        params.setConnectionTimeout(backendTimeoutMillis);
-        if (concurrency > 0) {
-            params.setMaxTotalConnections(concurrency);
-            params.setMaxConnectionsPerHost(HostConfiguration.ANY_HOST_CONFIGURATION, concurrency);
-        }
-
-        connectionManager.setParams(params);
-
-        HttpClient httpClient = new HttpClient(connectionManager);
-
+        org.apache.http.impl.client.HttpClientBuilder clientBuilder =
+                org.apache.http.impl.client.HttpClientBuilder.create();
+        clientBuilder.useSystemProperties();
+        clientBuilder.setConnectionManager(connectionManager);
         if (authscope != null && httpcredentials != null) {
-            httpClient.getState().setCredentials(authscope, httpcredentials);
-            httpClient.getParams().setAuthenticationPreemptive(true);
+            BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
+            credsProvider.setCredentials(authscope, httpcredentials);
+            clientBuilder.setDefaultCredentialsProvider(credsProvider);
         }
+        HttpClient httpClient = clientBuilder.build();
 
-        if (proxyUrl != null) {
-            httpClient.getHostConfiguration().setProxy(proxyUrl.getHost(), proxyUrl.getPort());
-            if (proxycredentials != null) {
-                httpClient
-                        .getState()
-                        .setProxyCredentials(
-                                new AuthScope(proxyUrl.getHost(), proxyUrl.getPort()),
-                                proxycredentials);
-            }
-        }
+        /*
+         * if (proxyUrl != null) { httpClient.getHostConfiguration().setProxy(proxyUrl.getHost(),
+         * proxyUrl.getPort()); if (proxycredentials != null) { httpClient .getState()
+         * .setProxyCredentials( new AuthScope(proxyUrl.getHost(), proxyUrl.getPort()),
+         * proxycredentials); } }
+         */
         return httpClient;
     }
 
@@ -178,5 +168,24 @@ public class HttpClientBuilder {
      */
     public boolean isDoAuthentication() {
         return doAuthentication;
+    }
+    /** @return the httpcredentials */
+    public UsernamePasswordCredentials getHttpcredentials() {
+        return httpcredentials;
+    }
+
+    /** @param httpcredentials the httpcredentials to set */
+    public void setHttpcredentials(UsernamePasswordCredentials httpcredentials) {
+        this.httpcredentials = httpcredentials;
+    }
+
+    /** @return the connectionConfig */
+    public RequestConfig getConnectionConfig() {
+        return connectionConfig;
+    }
+
+    /** @param connectionConfig the connectionConfig to set */
+    public void setConnectionConfig(RequestConfig connectionConfig) {
+        this.connectionConfig = connectionConfig;
     }
 }

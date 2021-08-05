@@ -21,10 +21,11 @@ import java.io.Reader;
 import java.net.URL;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.geowebcache.util.HttpClientBuilder;
 
 class GeoRSSReaderFactory {
@@ -48,22 +49,17 @@ class GeoRSSReaderFactory {
 
         HttpClient httpClient = builder.buildClient();
 
-        GetMethod getMethod = new GetMethod(url.toString());
-        getMethod.setRequestHeader("Connection", "close");
-        if (builder.isDoAuthentication()) {
-            getMethod.setDoAuthentication(true);
-            httpClient.getParams().setAuthenticationPreemptive(true);
-        }
+        HttpGet getMethod = new HttpGet(url.toString());
 
         if (log.isDebugEnabled()) {
             log.debug("Executing HTTP GET requesr for feed URL " + url.toExternalForm());
         }
-        httpClient.executeMethod(getMethod);
+        HttpResponse response = httpClient.execute(getMethod);
 
         if (log.isDebugEnabled()) {
             log.debug("Building GeoRSS reader out of URL response");
         }
-        String contentEncoding = getMethod.getResponseCharSet();
+        String contentEncoding = response.getEntity().getContentEncoding().getValue();
         if (contentEncoding == null) {
             contentEncoding = "UTF-8";
         }
@@ -71,8 +67,7 @@ class GeoRSSReaderFactory {
         @SuppressWarnings("PMD.CloseResource") // The stream will be kept open to get new events
         Reader reader =
                 new BufferedReader(
-                        new InputStreamReader(
-                                getMethod.getResponseBodyAsStream(), contentEncoding));
+                        new InputStreamReader(response.getEntity().getContent(), contentEncoding));
         if (log.isDebugEnabled()) {
             log.debug("GeoRSS reader created, returning.");
         }

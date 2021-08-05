@@ -22,9 +22,9 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import javax.imageio.ImageIO;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpResponse;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
@@ -114,43 +114,32 @@ public class WMSRasterFilter extends RasterFilter {
             backendTimeout = 120;
         }
 
-        GetMethod getMethod = null;
+        HttpResponse httpResponse = null;
         BufferedImage img = null;
 
-        try {
-            getMethod =
-                    (GetMethod)
-                            srcHelper.executeRequest(
-                                    wmsUrl,
-                                    requestParams,
-                                    backendTimeout,
-                                    WMSLayer.HttpRequestMode.Get);
+        httpResponse =
+                srcHelper.executeRequest(
+                        wmsUrl, requestParams, backendTimeout, WMSLayer.HttpRequestMode.Get);
 
-            if (getMethod.getStatusCode() != 200) {
-                throw new GeoWebCacheException(
-                        "Received response code " + getMethod.getStatusCode() + "\n");
-            }
-
-            if (!getMethod.getResponseHeader("Content-Type").getValue().startsWith("image/")) {
-                throw new GeoWebCacheException(
-                        "Unexpected response content type "
-                                + getMethod.getResponseHeader("Content-Type").getValue()
-                                + " , request was "
-                                + urlStr
-                                + "\n");
-            }
-
-            byte[] ret = ServletUtils.readStream(getMethod.getResponseBodyAsStream(), 16384, 2048);
-
-            InputStream is = new ByteArrayInputStream(ret);
-
-            img = ImageIO.read(is);
-
-        } finally {
-            if (getMethod != null) {
-                getMethod.releaseConnection();
-            }
+        int statusCode = httpResponse.getStatusLine().getStatusCode();
+        if (statusCode != 200) {
+            throw new GeoWebCacheException("Received response code " + statusCode + "\n");
         }
+
+        if (!httpResponse.getFirstHeader("Content-Type").getValue().startsWith("image/")) {
+            throw new GeoWebCacheException(
+                    "Unexpected response content type "
+                            + httpResponse.getFirstHeader("Content-Type").getValue()
+                            + " , request was "
+                            + urlStr
+                            + "\n");
+        }
+
+        byte[] ret = ServletUtils.readStream(httpResponse.getEntity().getContent(), 16384, 2048);
+
+        InputStream is = new ByteArrayInputStream(ret);
+
+        img = ImageIO.read(is);
 
         if (img.getWidth() != widthHeight[0] || img.getHeight() != widthHeight[1]) {
             String msg =
