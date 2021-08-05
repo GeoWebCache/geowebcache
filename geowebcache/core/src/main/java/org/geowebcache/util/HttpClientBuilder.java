@@ -33,19 +33,17 @@ public class HttpClientBuilder {
 
     private UsernamePasswordCredentials httpcredentials = null;
 
-    private UsernamePasswordCredentials proxycredentials = null;
-
     private AuthScope authscope = null;
 
-    private URL proxyUrl = null;
-
     private Integer backendTimeoutMillis = null;
+    private static final HttpClientConnectionManager connectionManager =
+            new PoolingHttpClientConnectionManager();
 
     private boolean doAuthentication = false;
 
-    private int concurrency;
-
     private RequestConfig connectionConfig;
+
+    private org.apache.http.impl.client.HttpClientBuilder clientBuilder;
 
     public HttpClientBuilder() {
         super();
@@ -71,17 +69,18 @@ public class HttpClientBuilder {
             this.setHttpCredentials(httpUsername, httpPassword, AuthScope.ANY);
         }
 
-        /*
-         * RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean(); List<String> lst =
-         * runtimeMXBean.getInputArguments(); String proxyHost = null; String proxyPort = null; for
-         * (String arg : lst) { if (arg.startsWith("-Dhttp.proxyHost=")) { proxyHost =
-         * extractVMArg(arg); } else if (arg.startsWith("-Dhttp.proxyPort=")) { proxyPort =
-         * extractVMArg(arg); } } if (proxyHost != null) try { proxyUrl = new URL(proxyHost +
-         * ((proxyPort != null) ? (":" + proxyPort) : (""))); } catch (MalformedURLException e) {
-         * log.debug(e); } this.setProxy(proxyUrl);
-         */
+        setConnectionConfig(
+                RequestConfig.custom()
+                        .setCookieSpec(CookieSpecs.DEFAULT)
+                        .setExpectContinueEnabled(true)
+                        .setSocketTimeout(backendTimeoutMillis)
+                        .setConnectTimeout(backendTimeoutMillis)
+                        .build());
+
+        clientBuilder = org.apache.http.impl.client.HttpClientBuilder.create();
+        clientBuilder.useSystemProperties();
+        clientBuilder.setConnectionManager(connectionManager);
         this.setBackendTimeout(backendTimeout);
-        this.concurrency = concurrency;
     }
 
     /*
@@ -106,18 +105,6 @@ public class HttpClientBuilder {
         }
     }
 
-    /**
-     * parses a proxyUrl parameter and configures (if possible) the builder to set a proxy when
-     * generating a httpClient and (if possible) proxy authentication.
-     */
-    public void setProxy(URL proxyUrl) {
-        this.proxyUrl = proxyUrl;
-        if (this.proxyUrl != null && this.proxyUrl.getUserInfo() != null) {
-            String[] userinfo = this.proxyUrl.getUserInfo().split(":");
-            this.proxycredentials = new UsernamePasswordCredentials(userinfo[0], userinfo[1]);
-        }
-    }
-
     /** @param backendTimeout timeout in seconds */
     public void setBackendTimeout(final int backendTimeout) {
         this.backendTimeoutMillis = backendTimeout * 1000;
@@ -129,23 +116,7 @@ public class HttpClientBuilder {
      * @return the generated HttpClient
      */
     public HttpClient buildClient() {
-        HttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        setConnectionConfig(
-                RequestConfig.custom()
-                        .setCookieSpec(CookieSpecs.DEFAULT)
-                        .setExpectContinueEnabled(true)
-                        .setSocketTimeout(backendTimeoutMillis)
-                        .setConnectTimeout(backendTimeoutMillis)
-                        .build());
-        /*
-         * if (concurrency > 0) { params.setMaxTotalConnections(concurrency);
-         * params.setMaxConnectionsPerHost(HostConfiguration.ANY_HOST_CONFIGURATION, concurrency); }
-         */
 
-        org.apache.http.impl.client.HttpClientBuilder clientBuilder =
-                org.apache.http.impl.client.HttpClientBuilder.create();
-        clientBuilder.useSystemProperties();
-        clientBuilder.setConnectionManager(connectionManager);
         if (authscope != null && httpcredentials != null) {
             BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
             credsProvider.setCredentials(authscope, httpcredentials);

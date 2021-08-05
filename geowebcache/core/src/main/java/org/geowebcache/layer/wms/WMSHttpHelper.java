@@ -49,7 +49,7 @@ import org.springframework.util.Assert;
 
 /** This class is a wrapper for HTTP interaction with WMS backend */
 public class WMSHttpHelper extends WMSSourceHelper {
-    private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSHttpHelper.class);
+    private static Log log = LogFactory.getLog(WMSHttpHelper.class);
 
     private final URL proxyUrl;
 
@@ -58,8 +58,6 @@ public class WMSHttpHelper extends WMSSourceHelper {
     private final String httpPassword;
 
     private volatile HttpClient client;
-
-    private boolean doAuthentication;
 
     public WMSHttpHelper() {
         this(null, null, null);
@@ -87,7 +85,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
                                 httpPassword,
                                 proxyUrl,
                                 getConcurrency());
-                doAuthentication = builder.isDoAuthentication();
+
                 client = builder.buildClient();
             }
         }
