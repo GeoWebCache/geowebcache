@@ -23,10 +23,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.config.legends.LegendsRawInfo;
@@ -789,7 +790,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         String queryStr = tile.servletReq.getQueryString();
         String serverStr = getWMSurl()[0];
 
-        HttpMethodBase method = null;
+        HttpResponse httpResponse = null;
         try {
             URL url;
             if (serverStr.contains("?")) {
@@ -804,13 +805,15 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
                         "Can only proxy if WMS Layer is backed by an HTTP backend");
             }
 
-            method =
+            httpResponse =
                     ((WMSHttpHelper) helper)
                             .executeRequest(url, null, getBackendTimeout(), getHttpRequestMode());
-            try (InputStream is = method.getResponseBodyAsStream()) {
+            HttpEntity entity = httpResponse.getEntity();
+            try (InputStream is = entity.getContent()) {
                 HttpServletResponse response = tile.servletResp;
-                response.setCharacterEncoding(method.getResponseCharSet());
-                Header contentType = method.getResponseHeader("Content-Type");
+                Header contentEncoding = entity.getContentEncoding();
+                response.setCharacterEncoding(contentEncoding.getValue());
+                org.apache.http.Header contentType = httpResponse.getFirstHeader("Content-Type");
                 if (contentType != null) {
                     response.setContentType(contentType.getValue());
                 }
@@ -828,10 +831,6 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         } catch (IOException ioe) {
             tile.servletResp.setStatus(500);
             log.error(ioe.getMessage());
-        } finally {
-            if (method != null) {
-                method.releaseConnection();
-            }
         }
     }
 

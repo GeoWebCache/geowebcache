@@ -63,9 +63,11 @@ import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BandSelectDescriptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.message.BasicHeader;
 import org.easymock.Capture;
 import org.easymock.CaptureType;
 import org.easymock.EasyMock;
@@ -310,21 +312,29 @@ public class WMSLayerTest extends TileLayerTest {
         layer.setSourceHelper(
                 new WMSHttpHelper() {
                     @Override
-                    public GetMethod executeRequest(
+                    public HttpResponse executeRequest(
                             URL url,
                             Map<String, String> queryParams,
                             Integer backendTimeout,
                             WMSLayer.HttpRequestMode httpRequestMode)
-                            throws HttpException, IOException {
-                        GetMethod response = EasyMock.createMock(GetMethod.class);
-                        expect(response.getStatusCode()).andReturn(200);
-                        expect(response.getResponseBodyAsStream())
+                            throws UnsupportedOperationException, IOException {
+
+                        HttpResponse response = EasyMock.createNiceMock(HttpResponse.class);
+                        StatusLine statusLine = EasyMock.createMock(StatusLine.class);
+                        expect(response.getStatusLine()).andReturn(statusLine);
+
+                        HttpEntity entity = EasyMock.createMock(HttpEntity.class);
+
+                        expect(entity.getContent())
                                 .andReturn(new ByteArrayInputStream(responseBody));
-                        expect(response.getResponseCharSet()).andReturn("UTF-8");
-                        expect(response.getResponseHeader("Content-Type"))
-                                .andReturn(new Header("Content-Type", "image/png"));
-                        response.releaseConnection();
-                        expectLastCall();
+                        expect(response.getEntity()).andReturn(entity);
+                        Header contentEncoding = new BasicHeader("ContentEncoding", "UTF-8");
+                        expect(entity.getContentEncoding()).andReturn(contentEncoding);
+                        expect(response.getFirstHeader("Content-Type"))
+                                .andReturn(new BasicHeader("Content-Type", "image/png"));
+
+                        replay(entity);
+                        // expectLastCall();
                         replay(response);
                         return response;
                     }
@@ -372,20 +382,26 @@ public class WMSLayerTest extends TileLayerTest {
         layer.setSourceHelper(
                 new WMSHttpHelper() {
                     @Override
-                    public GetMethod executeRequest(
+                    public HttpResponse executeRequest(
                             URL url,
                             Map<String, String> queryParams,
                             Integer backendTimeout,
                             WMSLayer.HttpRequestMode httpRequestMode)
-                            throws HttpException, IOException {
-                        GetMethod response = EasyMock.createMock(GetMethod.class);
-                        expect(response.getStatusCode()).andReturn(200);
-                        expect(response.getResponseBodyAsStream())
+                            throws UnsupportedOperationException, IOException {
+                        HttpResponse response = EasyMock.createNiceMock(HttpResponse.class);
+                        StatusLine statusLine = EasyMock.createMock(StatusLine.class);
+                        expect(response.getStatusLine()).andReturn(statusLine);
+                        expect(response.getFirstHeader("Content-Type")).andReturn(null);
+                        HttpEntity entity = EasyMock.createMock(HttpEntity.class);
+
+                        expect(entity.getContent())
                                 .andReturn(new ByteArrayInputStream(responseBody));
-                        expect(response.getResponseCharSet()).andReturn("UTF-8");
-                        expect(response.getResponseHeader("Content-Type")).andReturn(null);
-                        response.releaseConnection();
-                        expectLastCall();
+                        expect(response.getEntity()).andReturn(entity);
+                        Header contentEncoding = new BasicHeader("ContentEncoding", "UTF-8");
+                        expect(entity.getContentEncoding()).andReturn(contentEncoding);
+
+                        replay(entity);
+                        // expectLastCall();
                         replay(response);
                         return response;
                     }

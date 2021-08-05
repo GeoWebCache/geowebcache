@@ -26,10 +26,9 @@ import java.util.Arrays;
 import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.httpclient.util.DateParseException;
-import org.apache.commons.httpclient.util.DateUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.client.utils.DateUtils;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
@@ -135,28 +134,19 @@ public final class ResponseUtils {
         // (e.g. 'Sun, 06 Nov 1994 08:49:37 GMT'). See
         // http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3.1
 
-        final String lastModified =
-                org.apache.commons.httpclient.util.DateUtil.formatDate(new Date(tileTimeStamp));
+        final String lastModified = DateUtils.formatDate(new Date(tileTimeStamp));
         servletResp.setHeader("Last-Modified", lastModified);
 
         final Date ifModifiedSince;
         if (ifModSinceHeader != null && ifModSinceHeader.length() > 0) {
-            try {
-                ifModifiedSince = DateUtil.parseDate(ifModSinceHeader);
-                // the HTTP header has second precision
-                long ifModSinceSeconds = 1000 * (ifModifiedSince.getTime() / 1000);
-                long tileTimeStampSeconds = 1000 * (tileTimeStamp / 1000);
-                if (ifModSinceSeconds >= tileTimeStampSeconds) {
-                    httpCode = HttpServletResponse.SC_NOT_MODIFIED;
-                    blob = null;
-                }
-            } catch (DateParseException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug(
-                            "Can't parse client's If-Modified-Since header: '"
-                                    + ifModSinceHeader
-                                    + "'");
-                }
+
+            ifModifiedSince = DateUtils.parseDate(ifModSinceHeader);
+            // the HTTP header has second precision
+            long ifModSinceSeconds = 1000 * (ifModifiedSince.getTime() / 1000);
+            long tileTimeStampSeconds = 1000 * (tileTimeStamp / 1000);
+            if (ifModSinceSeconds >= tileTimeStampSeconds) {
+                httpCode = HttpServletResponse.SC_NOT_MODIFIED;
+                blob = null;
             }
         }
 

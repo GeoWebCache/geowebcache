@@ -15,12 +15,13 @@
 package org.geowebcache.layer.wms;
 
 import java.net.URL;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.geowebcache.util.HttpClientBuilder;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,21 +44,20 @@ public class HttpClientTest {
      */
     @Test
     public void testHttpClientConstruction() throws Exception {
+        HttpClientBuilder builder = new HttpClientBuilder();
         if (RUN_PERFORMANCE_TEST) {
             long start = System.currentTimeMillis();
             for (int i = 0; i < LOOP_COUNT; i++) {
-                HttpClient hc = new HttpClient();
 
                 URL url = new URL("http://localhost:8080/test");
-                GetMethod getMethod = new GetMethod(url.toString());
-
                 AuthScope authscope = new AuthScope(url.getHost(), url.getPort());
                 UsernamePasswordCredentials credentials =
                         new UsernamePasswordCredentials("username", "password");
 
-                hc.getState().setCredentials(authscope, credentials);
-                getMethod.setDoAuthentication(true);
-                hc.getParams().setAuthenticationPreemptive(true);
+                builder.setHttpcredentials(credentials);
+                HttpClient hc = builder.buildClient();
+
+                HttpGet getMethod = new HttpGet(url.toString());
             }
             long stop = System.currentTimeMillis();
 
