@@ -75,11 +75,13 @@ public class HttpClientBuilder {
                         .setExpectContinueEnabled(true)
                         .setSocketTimeout(backendTimeoutMillis)
                         .setConnectTimeout(backendTimeoutMillis)
+                        .setRedirectsEnabled(true)
                         .build());
 
         clientBuilder = org.apache.http.impl.client.HttpClientBuilder.create();
         clientBuilder.useSystemProperties();
         clientBuilder.setConnectionManager(connectionManager);
+        clientBuilder.setMaxConnTotal(concurrency);
         this.setBackendTimeout(backendTimeout);
     }
 
@@ -124,12 +126,6 @@ public class HttpClientBuilder {
         }
         HttpClient httpClient = clientBuilder.build();
 
-        /*
-         * if (proxyUrl != null) { httpClient.getHostConfiguration().setProxy(proxyUrl.getHost(),
-         * proxyUrl.getPort()); if (proxycredentials != null) { httpClient .getState()
-         * .setProxyCredentials( new AuthScope(proxyUrl.getHost(), proxyUrl.getPort()),
-         * proxycredentials); } }
-         */
         return httpClient;
     }
 
