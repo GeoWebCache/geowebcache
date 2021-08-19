@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -399,32 +400,31 @@ public class WMTSServiceTest {
         namespaces.put("ows", "http://www.opengis.net/ows/1.1");
         namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
         XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
-        XpathEngine xpath = XMLUnit.newXpathEngine();
+        XpathEngine xp = XMLUnit.newXpathEngine();
 
-        assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer)", doc));
+        assertEquals("1", xp.evaluate("count(//wmts:Contents/wmts:Layer)", doc));
         assertEquals(
                 "1",
-                xpath.evaluate(
-                        "count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer'])", doc));
+                xp.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer'])", doc));
         assertEquals(
                 "2",
-                xpath.evaluate("count(//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier)", doc));
+                xp.evaluate("count(//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier)", doc));
         assertEquals(
                 "1",
-                xpath.evaluate(
+                xp.evaluate(
                         "count(//wmts:Contents/wmts:Layer/wmts:Style[ows:Identifier='style-a'])",
                         doc));
         // checking that style-a has the correct legend url
         assertEquals(
                 "1",
-                xpath.evaluate(
+                xp.evaluate(
                         "count(//wmts:Contents/wmts:Layer/wmts:Style[ows:Identifier='style-a']/wmts:LegendURL"
                                 + "[@width='250'][@height='500'][@format='image/jpeg'][@xlink:href='https://some-url?some-parameter=value1&another-parameter=value2'])",
                         doc));
         // checking that style-b has the correct legend url
         assertEquals(
                 "1",
-                xpath.evaluate(
+                xp.evaluate(
                         "count(//wmts:Contents/wmts:Layer/wmts:Style[ows:Identifier='style-b']/wmts:LegendURL"
                                 + "[@width='125'][@height='130'][@format='image/png'][@minScaleDenominator='5000.0'][@maxScaleDenominator='10000.0']"
                                 + "[@xlink:href='https://some-url?some-parameter=value3&another-parameter=value4'])",
@@ -432,12 +432,12 @@ public class WMTSServiceTest {
         // checking that the layer has an associated metadata URL
         assertEquals(
                 "1",
-                xpath.evaluate(
+                xp.evaluate(
                         "count(//wmts:Contents/wmts:Layer/wmts:MetadataURL[@type='some-type'][wmts:Format='some-format'])",
                         doc));
         assertEquals(
                 "1",
-                xpath.evaluate(
+                xp.evaluate(
                         "count(//wmts:Contents/wmts:Layer/wmts:MetadataURL[@type='some-type']"
                                 + "/wmts:OnlineResource[@xlink:href='http://localhost:8080/some-url'])",
                         doc));
@@ -447,7 +447,7 @@ public class WMTSServiceTest {
 
         assertEquals(
                 "1",
-                xpath.evaluate(
+                xp.evaluate(
                         "count(//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='tile']"
                                 + "[@format='image/jpeg']"
                                 + "[@template='http://localhost:8080/geowebcache"
@@ -456,7 +456,7 @@ public class WMTSServiceTest {
                         doc));
         assertEquals(
                 "1",
-                xpath.evaluate(
+                xp.evaluate(
                         "count(//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='tile']"
                                 + "[@format='image/png']"
                                 + "[@template='http://localhost:8080/geowebcache"
@@ -468,7 +468,7 @@ public class WMTSServiceTest {
         // feature info format of the layer
         assertEquals(
                 "1",
-                xpath.evaluate(
+                xp.evaluate(
                         "count(//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='FeatureInfo']"
                                 + "[@format='text/plain']"
                                 + "[@template='http://localhost:8080/geowebcache"
@@ -477,7 +477,7 @@ public class WMTSServiceTest {
                         doc));
         assertEquals(
                 "1",
-                xpath.evaluate(
+                xp.evaluate(
                         "count(//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='FeatureInfo']"
                                 + "[@format='text/html']"
                                 + "[@template='http://localhost:8080/geowebcache"
@@ -486,7 +486,7 @@ public class WMTSServiceTest {
                         doc));
         assertEquals(
                 "1",
-                xpath.evaluate(
+                xp.evaluate(
                         "count(//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='FeatureInfo']"
                                 + "[@format='application/vnd.ogc.gml']"
                                 + "[@template='http://localhost:8080/geowebcache"
@@ -496,18 +496,25 @@ public class WMTSServiceTest {
         // Checking the service metadata URL
         assertEquals(
                 "1",
-                xpath.evaluate(
+                xp.evaluate(
                         "count(//wmts:ServiceMetadataURL[@xlink:href='http://localhost:8080/geowebcache"
                                 + WMTSService.SERVICE_PATH
                                 + "?SERVICE=wmts&REQUEST=getcapabilities&VERSION=1.0.0'])",
                         doc));
         assertEquals(
                 "1",
-                xpath.evaluate(
+                xp.evaluate(
                         "count(//wmts:ServiceMetadataURL[@xlink:href='http://localhost:8080/geowebcache"
                                 + WMTSService.REST_PATH
                                 + "/WMTSCapabilities.xml'])",
                         doc));
+        // check only the tile matrices actually used are declared
+        String matrices = "/wmts:Capabilities/wmts:Contents/wmts:TileMatrixSet";
+        assertEquals("3", xp.evaluate("count(" + matrices + ")", doc));
+        // xpath would return an empty string if
+        assertNotEquals("", xp.evaluate(matrices + "[ows:Identifier = 'EPSG:4326']", doc));
+        assertNotEquals("", xp.evaluate(matrices + "[ows:Identifier = 'GlobalCRS84Scale']", doc));
+        assertNotEquals("", xp.evaluate(matrices + "[ows:Identifier = 'GlobalCRS84Pixel']", doc));
     }
 
     @Test

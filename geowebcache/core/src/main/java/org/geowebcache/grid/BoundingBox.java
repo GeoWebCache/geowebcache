@@ -45,6 +45,11 @@ public class BoundingBox implements Serializable {
     public static final BoundingBox WORLD3857 =
             new BoundingBox(-20037508.34, -20037508.34, 20037508.34, 20037508.34);
 
+    // exactly as defined in the OGC TMS specification
+    public static final BoundingBox WORLD3857_TMS =
+            new BoundingBox(
+                    -20037508.3427892, -20037508.3427892, 20037508.3427892, 20037508.3427892);
+
     // minx, miny, maxx, maxy
     private double[] coords = new double[4];
 

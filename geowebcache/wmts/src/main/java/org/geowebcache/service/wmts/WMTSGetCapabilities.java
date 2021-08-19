@@ -21,12 +21,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -426,21 +430,28 @@ public class WMTSGetCapabilities {
     private void contents(XMLBuilder xml) throws IOException {
         xml.indentElement("Contents");
         Iterable<TileLayer> iter = tld.getLayerList();
+        Set<GridSet> usedGridsets = new HashSet<>();
         for (TileLayer layer : iter) {
             if (!layer.isEnabled() || !layer.isAdvertised()) {
                 continue;
             }
-            layer(xml, layer, baseUrl);
+            layer(xml, layer, baseUrl, usedGridsets);
         }
 
-        for (GridSet gset : gsb.getGridSets()) {
+        // only dump the gridsets actually used, as the OGC TMS spec introduced many default ones
+        List<GridSet> capabilitiesGridsets = new ArrayList<>(gsb.getGridSets());
+        capabilitiesGridsets.retainAll(usedGridsets);
+        // sorting makes it easier to find a gridset now that levels do not repeat the gridset name
+        capabilitiesGridsets.sort(Comparator.comparing(GridSet::getName));
+        for (GridSet gset : capabilitiesGridsets) {
             tileMatrixSet(xml, gset);
         }
 
         xml.endElement("Contents");
     }
 
-    private void layer(XMLBuilder xml, TileLayer layer, String baseurl) throws IOException {
+    private void layer(XMLBuilder xml, TileLayer layer, String baseurl, Set<GridSet> usedGridsets)
+            throws IOException {
         xml.indentElement("Layer");
         LayerMetaInformation layerMeta = layer.getMetaInformation();
 
@@ -482,7 +493,7 @@ public class WMTSGetCapabilities {
             layerDimensions(xml, layer, filters);
         }
 
-        layerGridSubSets(xml, layer);
+        layerGridSubSets(xml, layer, usedGridsets);
 
         layerResourceUrls(xml, layer, filters, restBaseUrl);
 
@@ -526,7 +537,6 @@ public class WMTSGetCapabilities {
 
             xml.simpleElement("ows:UpperCorner", lon + " " + lat, true);
             xml.endElement("ows:WGS84BoundingBox");
-            return;
         }
     }
 
@@ -688,13 +698,15 @@ public class WMTSGetCapabilities {
         xml.endElement("Dimension");
     }
 
-    private void layerGridSubSets(XMLBuilder xml, TileLayer layer) throws IOException {
+    private void layerGridSubSets(XMLBuilder xml, TileLayer layer, Set<GridSet> usedGridSets)
+            throws IOException {
 
         for (String gridSetId : layer.getGridSubsets()) {
             GridSubset gridSubset = layer.getGridSubset(gridSetId);
 
             xml.indentElement("TileMatrixSetLink");
             xml.simpleElement("TileMatrixSet", gridSubset.getName(), true);
+            usedGridSets.add(gridSubset.getGridSet());
 
             if (!gridSubset.fullGridSetCoverage()) {
                 String[] levelNames = gridSubset.getGridNames();
