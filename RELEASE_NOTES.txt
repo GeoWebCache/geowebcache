@@ -1,3 +1,21 @@
+GeoWebCache 1.19.1 (2021-05-21)
+-------------------------------
+
+Stable release of 1.19.1, with minor improvements.
+
+Improvements:
++++++++++++++
+- improve logging of if lock providers
+
+Internal:
++++++++++
+- automatic formatting of pom.xml with sortpom
+
+GeoWebCache 1.19.0 (2021-03-18)
+-------------------------------
+
+Re-releasing 1.19-RC as 1.19.0, no new changes.
+
 GeoWebCache 1.19-RC (2021-03-01)
 --------------------------------
 
