@@ -1,3 +1,13 @@
+GeoWebCache 1.20.0 (2021-10-12)
+-------------------------------
+
+First stable release of the 1.20.x series.
+
+Improvements:
++++++++++++++
+- Upgraded GeoTools dependencies to 26.0
+
+
 GeoWebCache 1.20-RC (2021-09-11)
 --------------------------------
 
