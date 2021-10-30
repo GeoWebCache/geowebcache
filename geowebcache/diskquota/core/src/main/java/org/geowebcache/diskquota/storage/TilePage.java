@@ -68,8 +68,7 @@ public class TilePage {
                 .append(',')
                 .append(pageY)
                 .append(',')
-                .append(pageZ)
-                .toString();
+                .append(pageZ);
     }
 
     public long getId() {

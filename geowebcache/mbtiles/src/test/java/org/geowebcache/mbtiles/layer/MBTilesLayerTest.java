@@ -151,7 +151,7 @@ public class MBTilesLayerTest {
         assertEquals("TestDescription", metaInformation.getDescription());
         assertEquals("TestTitle", metaInformation.getTitle());
         Set<String> gridsubsets = mbTilesLayer.getGridSubsets();
-        gridsubsets.contains("EPSG:900913");
+        assertTrue(gridsubsets.contains("EPSG:900913"));
         GridSubset subset = mbTilesLayer.getGridSubset("EPSG:900913");
         assertEquals(6, subset.getZoomStop());
         assertEquals(0, subset.getZoomStart());
