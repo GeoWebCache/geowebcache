@@ -224,7 +224,7 @@ public class FileMatchers {
     }
 
     /** Matcher for file with a particular name */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings("unchecked")
     public static Matcher<File> named(String name) {
         return both(instanceOf(File.class)).and((Matcher) hasProperty("name", equalTo(name)));
     }
