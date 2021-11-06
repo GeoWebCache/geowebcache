@@ -160,7 +160,6 @@ public class BlobStoreAggregator {
      *
      * @return a list view of this blob store aggregators's internal blob stores
      */
-    @SuppressWarnings("unchecked")
     public Iterable<BlobStoreInfo> getBlobStores() {
         List<Iterable<BlobStoreInfo>> perConfigBlobStores = new ArrayList<>(getConfigs().size());
 

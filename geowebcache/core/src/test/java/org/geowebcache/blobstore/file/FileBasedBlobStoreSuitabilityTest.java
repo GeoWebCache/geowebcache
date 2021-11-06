@@ -82,13 +82,13 @@ public abstract class FileBasedBlobStoreSuitabilityTest extends BlobStoreSuitabi
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings("unchecked")
     protected Matcher<Object> empty() {
         return either(directoryEmpty()).or((Matcher) not(exists()));
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings("unchecked")
     protected Matcher<Object> existing() {
         return directoryContaining((Matcher) hasItem(named("metadata.properties")));
     }

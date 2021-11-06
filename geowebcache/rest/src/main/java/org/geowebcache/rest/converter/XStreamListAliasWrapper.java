@@ -66,7 +66,7 @@ public class XStreamListAliasWrapper {
             /**
              * @see com.thoughtworks.xstream.converters.ConverterMatcher#canConvert(java.lang.Class)
              */
-            public boolean canConvert(@SuppressWarnings("rawtypes") Class type) {
+            public boolean canConvert(Class type) {
                 return collectionClass.isAssignableFrom(type);
             }
 

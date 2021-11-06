@@ -61,7 +61,6 @@ import org.locationtech.jts.geom.Polygon;
  * @author Gabriel Roldan (TOPP)
  * @version $Id$
  */
-@SuppressWarnings("nls")
 class GML31ParsingUtils {
 
     private final GeometryFactory geomFac;

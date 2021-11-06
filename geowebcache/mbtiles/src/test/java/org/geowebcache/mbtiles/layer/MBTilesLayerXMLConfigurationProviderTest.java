@@ -24,7 +24,6 @@ import org.junit.Test;
 public class MBTilesLayerXMLConfigurationProviderTest {
 
     @Test
-    @SuppressWarnings("rawtypes")
     public void testGetConfiguredXStream() {
 
         final Map<String, Class> aliases = new HashMap<>();

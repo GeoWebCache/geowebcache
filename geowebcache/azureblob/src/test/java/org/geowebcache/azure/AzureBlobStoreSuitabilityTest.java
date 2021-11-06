@@ -67,13 +67,13 @@ public class AzureBlobStoreSuitabilityTest extends BlobStoreSuitabilityTest {
         EasyMock.replay(tld);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings("unchecked")
     @Override
     protected Matcher<Object> existing() {
         return (Matcher) hasItemInArray(equalTo("metadata.properties"));
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings("unchecked")
     @Override
     protected Matcher<Object> empty() {
         return (Matcher) Matchers.emptyArray();
