@@ -732,7 +732,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
             @Override
             public boolean executeOperation(BlobStore store, Object... objs)
                     throws StorageException {
-                if (objs == null || objs.length < 2 || !(objs[0] instanceof String)) {
+                if (objs == null || objs.length < 1 || !(objs[0] instanceof String)) {
                     return false;
                 }
                 return store.delete((String) objs[0]);
