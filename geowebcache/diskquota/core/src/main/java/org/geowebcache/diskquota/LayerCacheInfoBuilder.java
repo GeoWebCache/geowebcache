@@ -53,7 +53,7 @@ final class LayerCacheInfoBuilder {
 
     private final ExecutorService threadPool;
 
-    private final Map<String, List<Future<ZoomLevelVisitor.Stats>>> perLayerRunningTasks;
+    private final Map<String, List<Future<?>>> perLayerRunningTasks;
 
     private final QuotaUpdatesMonitor quotaUsageMonitor;
 
@@ -73,15 +73,8 @@ final class LayerCacheInfoBuilder {
      * Asynchronously collects cache usage information for the given {@code tileLayer} into the
      * given {@code layerQuota} by using the provided {@link ExecutorService} at construction time.
      *
-     * <p>This method discards any {@link LayerQuota#getUsedQuota() used quota} information
-     * available for {@code layerQuota} and updates it by collecting the usage information for the
-     * layer.
-     *
-     * <p>In addition to collecting the cache usage information for the layer, the {@code
-     * layerQuota}'s {@link ExpirationPolicy expiration policy} will be given the opportunity to
-     * gather any additional information by calling the {@link
-     * ExpirationPolicy#createInfoFor(LayerQuota, String, long[], File) createInforFor(layerQuota,
-     * gridSetId, tileXYZ, file)} method for each available tile on the layer's cache.
+     * <p>This method discards any {@link LayerQuota#getQuota()} used quota} information available
+     * for {@code layerQuota} and updates it by collecting the usage information for the layer.
      *
      * <p>Note the cache information gathering is performed asynchronously and hence this method
      * returns immediately. To check whether the information collect for a given layer has finished
@@ -102,6 +95,16 @@ final class LayerCacheInfoBuilder {
 
         perLayerRunningTasks.put(layerName, new ArrayList<Future<ZoomLevelVisitor.Stats>>());
 
+        // gathering the on disk tilesets can take a very long time, in case there are
+        // many parameters (e.g., long list of times), so moving this task also on background exec
+        Future<?> tilesetCollector =
+                threadPool.submit(() -> gatherStatsByTileset(tileLayer, layerName, layerDir));
+        // make sure the list has at this task too, so early calls to #isRunning find
+        // that something is executing, even if the stats collectors have not been created yet
+        perLayerRunningTasks.get(layerName).add(tilesetCollector);
+    }
+
+    private void gatherStatsByTileset(TileLayer tileLayer, String layerName, File layerDir) {
         final Set<TileSet> onDiskTileSets = findOnDiskTileSets(tileLayer, layerDir);
 
         for (TileSet tileSet : onDiskTileSets) {
@@ -322,15 +325,14 @@ final class LayerCacheInfoBuilder {
      */
     public boolean isRunning(String layerName) {
         try {
-            List<Future<ZoomLevelVisitor.Stats>> layerTasks = perLayerRunningTasks.get(layerName);
+            List<Future<?>> layerTasks = perLayerRunningTasks.get(layerName);
             if (layerTasks == null) {
                 return false;
             }
 
             int numRunning = 0;
-            Future<ZoomLevelVisitor.Stats> future;
-            for (Iterator<Future<ZoomLevelVisitor.Stats>> it = layerTasks.iterator();
-                    it.hasNext(); ) {
+            Future<?> future;
+            for (Iterator<Future<?>> it = layerTasks.iterator(); it.hasNext(); ) {
                 future = it.next();
                 if (future.isDone()) {
                     it.remove();
