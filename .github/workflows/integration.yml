@@ -36,12 +36,11 @@ jobs:
         git clone https://github.com/geoserver/geoserver.git geoserver
     - name: Build GeoServer with tests
       run: |
-        export TEST_OPTS="-XX:+UseStringDeduplication -XX:+UseG1GC -XX:MaxHeapFreeRatio=30 -XX:MinHeapFreeRatio=10"
-        export MAVEN_OPTS="-Xmx256m $TEST_OPTS"
+        export MAVEN_OPTS="-Xmx512m $TEST_OPTS -XX:+UseStringDeduplication -XX:+UseG1GC -XX:MaxHeapFreeRatio=30 -XX:MinHeapFreeRatio=10"
         cd ~
         mvn -B -f geoserver/src/pom.xml install -nsu -Prelease -Dfmt.skip=true -DskipTests
         mvn -B -f geoserver/src/community/pom.xml install -nsu -DcommunityRelease -Dfmt.skip=true -DskipTests
-        mvn -B -f geoserver/src/pom.xml test -T2 -nsu -Dtest.maxHeapSize=512m -Djvm.opts="$TEST_OPTS" -Prelease -Dfmt.skip=true
+        mvn -B -f geoserver/src/pom.xml test -T2 -nsu -Djvm.opts="$TEST_OPTS" -Prelease -Dfmt.skip=true
     - name: Remove SNAPSHOT jars from repository
       run: |
         find ~/.m2/repository -name "*SNAPSHOT*" -type d | xargs rm -rf {} 
