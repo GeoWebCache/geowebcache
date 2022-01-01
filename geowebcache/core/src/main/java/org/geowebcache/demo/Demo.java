@@ -214,35 +214,7 @@ public class Demo {
                 buf.append("]</td><td>\n");
 
                 if (gridSubset.getName().equals(gridSetBroker.getWorldEpsg4326().getName())) {
-                    buf.append(" &nbsp; KML: [");
-                    String prefix = "";
-
-                    buf.append(
-                            layer.getMimeTypes()
-                                    .stream()
-                                    .filter(
-                                            type ->
-                                                    type instanceof ImageMime
-                                                            || type == XMLMime.kml
-                                                            || type == XMLMime.kmz)
-                                    .map(
-                                            type -> {
-                                                if (type == XMLMime.kmz) {
-                                                    return String.format(
-                                                            "<a href=\"%sservice/kml/%s.kml.kmz\">kmz</a>",
-                                                            prefix, layer.getName());
-                                                } else {
-                                                    return String.format(
-                                                            "<a href=\"%sservice/kml/%s.%s.kml\">%s</a>",
-                                                            prefix,
-                                                            layer.getName(),
-                                                            type.getFileExtension(),
-                                                            type.getFileExtension());
-                                                }
-                                            })
-                                    .collect(Collectors.joining(", ")));
-
-                    buf.append("]");
+                    outputKMLSupport(buf, layer);
                 }
                 buf.append("</td></tr>");
             }
@@ -250,6 +222,38 @@ public class Demo {
             buf.append("</table></td>\n");
             buf.append("</tr>\n");
         }
+    }
+
+    private static void outputKMLSupport(StringBuffer buf, TileLayer layer) {
+        buf.append(" &nbsp; KML: [");
+        String prefix = "";
+
+        buf.append(
+                layer.getMimeTypes()
+                        .stream()
+                        .filter(
+                                type ->
+                                        type instanceof ImageMime
+                                                || type == XMLMime.kml
+                                                || type == XMLMime.kmz)
+                        .map(
+                                type -> {
+                                    if (type == XMLMime.kmz) {
+                                        return String.format(
+                                                "<a href=\"%sservice/kml/%s.kml.kmz\">kmz</a>",
+                                                prefix, layer.getName());
+                                    } else {
+                                        return String.format(
+                                                "<a href=\"%sservice/kml/%s.%s.kml\">%s</a>",
+                                                prefix,
+                                                layer.getName(),
+                                                type.getFileExtension(),
+                                                type.getFileExtension());
+                                    }
+                                })
+                        .collect(Collectors.joining(", ")));
+
+        buf.append("]");
     }
 
     private static String generateDemoUrl(String layerName, String gridSetId, MimeType type) {

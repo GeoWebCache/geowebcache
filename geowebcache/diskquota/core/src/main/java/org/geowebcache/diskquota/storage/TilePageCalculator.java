@@ -17,6 +17,7 @@ package org.geowebcache.diskquota.storage;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -144,24 +145,17 @@ public class TilePageCalculator {
         Collection<String> parameterIds =
                 getParameterIds(layerName, (Optional<Collection<String>>) optParameterIds);
 
-        return gridsetNames
-                .stream()
-                .flatMap(
-                        gridset ->
-                                formatNames
-                                        .stream()
-                                        .flatMap(
-                                                format ->
-                                                        parameterIds
-                                                                .stream()
-                                                                .map(
-                                                                        parametersId ->
-                                                                                new TileSet(
-                                                                                        layerName,
-                                                                                        gridset,
-                                                                                        format,
-                                                                                        parametersId))))
-                .collect(Collectors.toSet());
+        // keeping as loop (was a nested flatmap stream), to avoid too deep nesting
+        Set<TileSet> set = new HashSet<>();
+        for (String gridset : gridsetNames) {
+            for (String format : formatNames) {
+                for (String parametersId : parameterIds) {
+                    TileSet tileSet = new TileSet(layerName, gridset, format, parametersId);
+                    set.add(tileSet);
+                }
+            }
+        }
+        return set;
     }
 
     private Collection<String> getGridSubsetNames(

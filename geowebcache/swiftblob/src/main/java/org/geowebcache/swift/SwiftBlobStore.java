@@ -46,6 +46,7 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.TileRangeIterator;
+import org.geowebcache.util.TMSKeyBuilder;
 import org.jclouds.io.Payload;
 import org.jclouds.openstack.swift.v1.SwiftApi;
 import org.jclouds.openstack.swift.v1.blobstore.RegionScopedBlobStoreContext;
@@ -196,7 +197,7 @@ public class SwiftBlobStore implements BlobStore {
     @Override
     public boolean delete(final TileRange tileRange) {
 
-        final String coordsPrefix = keyBuilder.coordinatesPrefix(tileRange);
+        final String coordsPrefix = keyBuilder.coordinatesPrefix(tileRange, true);
 
         if (this.objectApi.get(coordsPrefix) == null) {
             return false;

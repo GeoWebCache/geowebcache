@@ -54,6 +54,7 @@ import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.LockProvider.Lock;
 import org.geowebcache.locks.NoOpLockProvider;
 import org.geowebcache.storage.StorageException;
+import org.geowebcache.util.TMSKeyBuilder;
 
 class S3Ops {
 

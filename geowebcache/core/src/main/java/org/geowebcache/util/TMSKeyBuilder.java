@@ -12,11 +12,12 @@
  *
  * @author Andrea Aime, GeoSolutions, Copyright 2019
  */
-package org.geowebcache.azure;
+package org.geowebcache.util;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Strings;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -30,8 +31,8 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 
-// TODO: move to core?
-final class TMSKeyBuilder {
+/** Helper allowing to build TMS paths, commonly used in blob storage */
+public final class TMSKeyBuilder {
 
     private static final String DELIMITER = "/";
 
@@ -155,22 +156,14 @@ final class TMSKeyBuilder {
         String layerId = layerId(layerName);
         // Coordinates prefix: {@code <prefix>/<layer name>/<gridset id>/<format id>/<parameters
         // hash>/}
-        return layerGridsets(layerName)
-                .stream()
-                .flatMap(
-                        gridsetId ->
-                                layerFormats(layerName)
-                                        .stream()
-                                        .map(
-                                                format ->
-                                                        join(
-                                                                true,
-                                                                prefix,
-                                                                layerId,
-                                                                gridsetId,
-                                                                format,
-                                                                parametersId)))
-                .collect(Collectors.toSet());
+        Set<String> set = new HashSet<>();
+        for (String gridsetId : layerGridsets(layerName)) {
+            for (String format : layerFormats(layerName)) {
+                String join = join(true, prefix, layerId, gridsetId, format, parametersId);
+                set.add(join);
+            }
+        }
+        return set;
     }
 
     public String layerMetadata(final String layerName) {
@@ -202,7 +195,7 @@ final class TMSKeyBuilder {
      * @return the key prefix up to the coordinates (i.e. {@code
      *     "<prefix>/<layer>/<gridset>/<format>/<parametersId>"})
      */
-    public String coordinatesPrefix(TileRange obj) {
+    public String coordinatesPrefix(TileRange obj, boolean endWithSlah) {
         checkNotNull(obj.getLayerName());
         checkNotNull(obj.getGridSetId());
         checkNotNull(obj.getMimeType());
@@ -223,7 +216,7 @@ final class TMSKeyBuilder {
         }
         String shortFormat = mimeType.getFileExtension(); // png, png8, png24, etc
 
-        String key = join(false, prefix, layer, gridset, shortFormat, parametersId);
+        String key = join(endWithSlah, prefix, layer, gridset, shortFormat, parametersId);
         return key;
     }
 
