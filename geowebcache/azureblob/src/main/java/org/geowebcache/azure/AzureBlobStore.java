@@ -57,6 +57,7 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.TileRangeIterator;
+import org.geowebcache.util.TMSKeyBuilder;
 import org.springframework.http.HttpStatus;
 
 public class AzureBlobStore implements BlobStore {
@@ -201,7 +202,7 @@ public class AzureBlobStore implements BlobStore {
     @Override
     public boolean delete(TileRange tileRange) throws StorageException {
         // see if there is anything to delete in that range by computing a prefix
-        final String coordsPrefix = keyBuilder.coordinatesPrefix(tileRange);
+        final String coordsPrefix = keyBuilder.coordinatesPrefix(tileRange, true);
         if (client.listBlobs(coordsPrefix, 1).isEmpty()) {
             return false;
         }

@@ -69,6 +69,7 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.TileRangeIterator;
+import org.geowebcache.util.TMSKeyBuilder;
 
 public class S3BlobStore implements BlobStore {
 
@@ -309,7 +310,7 @@ public class S3BlobStore implements BlobStore {
     @Override
     public boolean delete(final TileRange tileRange) throws StorageException {
 
-        final String coordsPrefix = keyBuilder.coordinatesPrefix(tileRange);
+        final String coordsPrefix = keyBuilder.coordinatesPrefix(tileRange, false);
         if (!s3Ops.prefixExists(coordsPrefix)) {
             return false;
         }

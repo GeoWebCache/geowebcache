@@ -658,168 +658,7 @@ public class JDBCQuotaStore implements QuotaStore {
     public Future<List<PageStats>> addHitsAndSetAccesTime(
             final Collection<PageStatsPayload> statsUpdates) {
         return executor.submit(
-                () ->
-                        (List<PageStats>)
-                                tt.execute(
-                                        new TransactionCallback<Object>() {
-
-                                            public Object doInTransaction(
-                                                    TransactionStatus status) {
-                                                List<PageStats> result = new ArrayList<>();
-                                                if (statsUpdates != null) {
-                                                    // sort the payloads by page id as a deadlock
-                                                    // avoidance measure, out
-                                                    // of order updates may result in deadlock with
-                                                    // the addHitsAndSetAccessTime method
-                                                    List<PageStatsPayload> sorted =
-                                                            sortPayloads(statsUpdates);
-                                                    for (PageStatsPayload payload : sorted) {
-                                                        // verify the stats are referring to an
-                                                        // existing tile set id
-                                                        TileSet tset = payload.getTileSet();
-                                                        if (tset == null) {
-                                                            String tileSetId =
-                                                                    payload.getPage()
-                                                                            .getTileSetId();
-                                                            tset =
-                                                                    getTileSetByIdInternal(
-                                                                            tileSetId);
-                                                            if (tset == null) {
-                                                                log.warn(
-                                                                        "Could not locate tileset with id "
-                                                                                + tileSetId
-                                                                                + ", skipping page stats update: "
-                                                                                + payload);
-                                                            }
-                                                        } else {
-                                                            getOrCreateTileSet(tset);
-                                                        }
-
-                                                        // update the stats
-                                                        PageStats stats =
-                                                                upsertTilePageHitAccessTime(
-                                                                        payload);
-                                                        result.add(stats);
-                                                    }
-                                                }
-
-                                                return result;
-                                            }
-
-                                            private PageStats upsertTilePageHitAccessTime(
-                                                    PageStatsPayload payload) {
-                                                TilePage page = payload.getPage();
-
-                                                if (log.isDebugEnabled()) {
-                                                    log.info(
-                                                            "Updating page "
-                                                                    + page
-                                                                    + " with payload "
-                                                                    + payload);
-                                                }
-
-                                                int modified = 0;
-                                                int count = 0;
-                                                PageStats stats = null;
-                                                while (modified == 0 && count < maxLoops) {
-                                                    try {
-                                                        count++;
-                                                        stats = getPageStats(page.getKey());
-                                                        if (stats != null) {
-                                                            // gather the old values, we'll use them
-                                                            // for the optimistic locking
-                                                            final BigInteger oldHits =
-                                                                    stats.getNumHits();
-                                                            final float oldFrequency =
-                                                                    stats
-                                                                            .getFrequencyOfUsePerMinute();
-                                                            final int oldAccessTime =
-                                                                    stats
-                                                                            .getLastAccessTimeMinutes();
-                                                            // update the page so that it computes
-                                                            // the new stats
-                                                            updatePageStats(payload, page, stats);
-
-                                                            // update the record in the db
-                                                            String update =
-                                                                    dialect.updatePageStats(
-                                                                            schema,
-                                                                            "key",
-                                                                            "newHits",
-                                                                            "oldHits",
-                                                                            "newFrequency",
-                                                                            "oldFrequency",
-                                                                            "newAccessTime",
-                                                                            "oldAccessTime");
-                                                            Map<String, Object> params =
-                                                                    new HashMap<>();
-                                                            params.put("key", page.getKey());
-                                                            params.put(
-                                                                    "newHits",
-                                                                    new BigDecimal(
-                                                                            stats.getNumHits()));
-                                                            params.put(
-                                                                    "oldHits",
-                                                                    new BigDecimal(oldHits));
-                                                            params.put(
-                                                                    "newFrequency",
-                                                                    stats
-                                                                            .getFrequencyOfUsePerMinute());
-                                                            params.put(
-                                                                    "oldFrequency", oldFrequency);
-                                                            params.put(
-                                                                    "newAccessTime",
-                                                                    stats
-                                                                            .getLastAccessTimeMinutes());
-                                                            params.put(
-                                                                    "oldAccessTime", oldAccessTime);
-                                                            modified = jt.update(update, params);
-                                                        } else {
-                                                            // create the new stats and insert it
-                                                            stats = new PageStats(0);
-                                                            updatePageStats(payload, page, stats);
-                                                            modified =
-                                                                    createNewPageStats(stats, page);
-                                                        }
-                                                    } catch (DeadlockLoserDataAccessException e) {
-                                                        if (log.isDebugEnabled()) {
-                                                            log.debug(
-                                                                    "Deadlock while updating page stats, will retry",
-                                                                    e);
-                                                        }
-                                                    }
-                                                }
-
-                                                if (modified == 0) {
-                                                    throw new ConcurrencyFailureException(
-                                                            "Failed to create or update page stats for page "
-                                                                    + payload.getPage()
-                                                                    + " after "
-                                                                    + count
-                                                                    + " attempts");
-                                                }
-
-                                                return stats;
-                                            }
-
-                                            private void updatePageStats(
-                                                    PageStatsPayload payload,
-                                                    TilePage page,
-                                                    PageStats stats) {
-                                                final int addedHits = payload.getNumHits();
-                                                final int lastAccessTimeMinutes =
-                                                        (int)
-                                                                (payload.getLastAccessTime()
-                                                                        / 1000
-                                                                        / 60);
-                                                final int creationTimeMinutes =
-                                                        page.getCreationTimeMinutes();
-                                                stats.addHitsAndAccessTime(
-                                                        addedHits,
-                                                        lastAccessTimeMinutes,
-                                                        creationTimeMinutes);
-                                            }
-                                        }));
+                () -> (List<PageStats>) tt.execute(new QuotaStoreCallback(statsUpdates)));
     }
 
     public long[][] getTilesForPage(TilePage page) throws InterruptedException {
@@ -979,5 +818,125 @@ public class JDBCQuotaStore implements QuotaStore {
                         jt.update(statement, params);
                     }
                 });
+    }
+
+    private class QuotaStoreCallback implements TransactionCallback<Object> {
+
+        private final Collection<PageStatsPayload> statsUpdates;
+
+        public QuotaStoreCallback(Collection<PageStatsPayload> statsUpdates) {
+            this.statsUpdates = statsUpdates;
+        }
+
+        public Object doInTransaction(TransactionStatus status) {
+            List<PageStats> result = new ArrayList<>();
+            if (statsUpdates != null) {
+                // sort the payloads by page id as a deadlock
+                // avoidance measure, out
+                // of order updates may result in deadlock with
+                // the addHitsAndSetAccessTime method
+                List<PageStatsPayload> sorted = sortPayloads(statsUpdates);
+                for (PageStatsPayload payload : sorted) {
+                    // verify the stats are referring to an
+                    // existing tile set id
+                    TileSet tset = payload.getTileSet();
+                    if (tset == null) {
+                        String tileSetId = payload.getPage().getTileSetId();
+                        tset = getTileSetByIdInternal(tileSetId);
+                        if (tset == null) {
+                            log.warn(
+                                    "Could not locate tileset with id "
+                                            + tileSetId
+                                            + ", skipping page stats update: "
+                                            + payload);
+                        }
+                    } else {
+                        getOrCreateTileSet(tset);
+                    }
+
+                    // update the stats
+                    PageStats stats = upsertTilePageHitAccessTime(payload);
+                    result.add(stats);
+                }
+            }
+
+            return result;
+        }
+
+        private PageStats upsertTilePageHitAccessTime(PageStatsPayload payload) {
+            TilePage page = payload.getPage();
+
+            if (log.isDebugEnabled()) {
+                log.info("Updating page " + page + " with payload " + payload);
+            }
+
+            int modified = 0;
+            int count = 0;
+            PageStats stats = null;
+            while (modified == 0 && count < maxLoops) {
+                try {
+                    count++;
+                    stats = getPageStats(page.getKey());
+                    if (stats != null) {
+                        // gather the old values, we'll use them
+                        // for the optimistic locking
+                        final BigInteger oldHits = stats.getNumHits();
+                        final float oldFrequency = stats.getFrequencyOfUsePerMinute();
+                        final int oldAccessTime = stats.getLastAccessTimeMinutes();
+                        // update the page so that it computes
+                        // the new stats
+                        updatePageStats(payload, page, stats);
+
+                        // update the record in the db
+                        String update =
+                                dialect.updatePageStats(
+                                        schema,
+                                        "key",
+                                        "newHits",
+                                        "oldHits",
+                                        "newFrequency",
+                                        "oldFrequency",
+                                        "newAccessTime",
+                                        "oldAccessTime");
+                        Map<String, Object> params = new HashMap<>();
+                        params.put("key", page.getKey());
+                        params.put("newHits", new BigDecimal(stats.getNumHits()));
+                        params.put("oldHits", new BigDecimal(oldHits));
+                        params.put("newFrequency", stats.getFrequencyOfUsePerMinute());
+                        params.put("oldFrequency", oldFrequency);
+                        params.put("newAccessTime", stats.getLastAccessTimeMinutes());
+                        params.put("oldAccessTime", oldAccessTime);
+                        modified = jt.update(update, params);
+                    } else {
+                        // create the new stats and insert it
+                        stats = new PageStats(0);
+                        updatePageStats(payload, page, stats);
+                        modified = createNewPageStats(stats, page);
+                    }
+                } catch (DeadlockLoserDataAccessException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Deadlock while updating page stats, will retry", e);
+                    }
+                }
+            }
+
+            if (modified == 0) {
+                throw new ConcurrencyFailureException(
+                        "Failed to create or update page stats for page "
+                                + payload.getPage()
+                                + " after "
+                                + count
+                                + " attempts");
+            }
+
+            return stats;
+        }
+
+        private void updatePageStats(PageStatsPayload payload, TilePage page, PageStats stats) {
+            final int addedHits = payload.getNumHits();
+            final int lastAccessTimeMinutes = (int) (payload.getLastAccessTime() / 1000 / 60);
+            final int creationTimeMinutes = page.getCreationTimeMinutes();
+            stats.addHitsAndAccessTime(addedHits, lastAccessTimeMinutes, creationTimeMinutes);
+        }
     }
 }

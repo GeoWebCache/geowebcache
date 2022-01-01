@@ -52,6 +52,7 @@ import org.geowebcache.storage.BlobStoreListenerList;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
+import org.geowebcache.util.TMSKeyBuilder;
 import org.jclouds.blobstore.domain.PageSet;
 import org.jclouds.io.payloads.ByteSourcePayload;
 import org.jclouds.openstack.swift.v1.SwiftApi;
@@ -346,20 +347,22 @@ public class SwiftBlobStoreTest {
         String testCoordinatesPrefix = "test/coord/prefix";
         SwiftObject testSwiftObject = mock(SwiftObject.class);
 
-        doReturn(testCoordinatesPrefix).when(this.keyBuilder).coordinatesPrefix(testTileRange);
+        doReturn(testCoordinatesPrefix)
+                .when(this.keyBuilder)
+                .coordinatesPrefix(testTileRange, true);
         doReturn("layer_id").when(this.keyBuilder).layerId(VALID_TEST_LAYER_NAME);
 
         // Test when object is null from the objectApi
         when(this.objectApi.get(testCoordinatesPrefix)).thenReturn(null);
         boolean outcome = this.swiftBlobStore.delete(testTileRange);
-        verify(keyBuilder, times(1)).coordinatesPrefix(testTileRange);
+        verify(keyBuilder, times(1)).coordinatesPrefix(testTileRange, true);
         verify(objectApi, times(1)).get(testCoordinatesPrefix);
         assertFalse(outcome);
 
         // Test when object is valid and listeners are empty
         when(this.objectApi.get(any())).thenReturn(testSwiftObject);
         outcome = this.swiftBlobStore.delete(realTestTileRange);
-        verify(keyBuilder, times(1)).coordinatesPrefix(realTestTileRange);
+        verify(keyBuilder, times(1)).coordinatesPrefix(realTestTileRange, true);
 
         // Test that keybuilder is outputting the correct path
         verify(objectApi, times(1)).get("test_prefix/layer_id/test_gridset_id/test_param_id/");

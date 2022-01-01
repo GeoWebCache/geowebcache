@@ -42,6 +42,7 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.LockProvider.Lock;
 import org.geowebcache.storage.StorageException;
+import org.geowebcache.util.TMSKeyBuilder;
 import org.springframework.http.HttpStatus;
 
 /**
