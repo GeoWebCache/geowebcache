@@ -1,4 +1,4 @@
-﻿.. _configuration.layers.selectivezoomlevel:
+.. _configuration.layers.selectivezoomlevel:
 
 Selective zoom level caching
 ============================
