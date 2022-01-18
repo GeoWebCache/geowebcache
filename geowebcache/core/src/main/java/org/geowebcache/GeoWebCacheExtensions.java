@@ -24,6 +24,7 @@ import javax.servlet.ServletContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.geowebcache.config.BaseConfiguration;
+import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.SuppressFBWarnings;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -347,13 +348,10 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
      * @param propertyName The property name to be searched
      * @param context The Spring context (may be null)
      * @return The property value, or null if not found
+     * @see GWCVars#findEnvVar(ApplicationContext, String)
      */
     public static String getProperty(String propertyName, ApplicationContext context) {
-        if (context instanceof WebApplicationContext) {
-            return getProperty(propertyName, ((WebApplicationContext) context).getServletContext());
-        } else {
-            return getProperty(propertyName, (ServletContext) null);
-        }
+        return GWCVars.findEnvVar(context, propertyName);
     }
 
     /**
@@ -370,7 +368,9 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
      * @param propertyName The property name to be searched
      * @param context The servlet context used to look into web.xml (may be null)
      * @return The property value, or null if not found
+     * @deprecated since 1.21, use {@link GWCVars#findEnvVar(ApplicationContext, String)} instead
      */
+    @Deprecated
     public static String getProperty(String propertyName, ServletContext context) {
         // TODO: this code comes from the data directory lookup and it's useful as
         // long as we don't provide a way for the user to manually inspect the three contexts
