@@ -1,3 +1,22 @@
+GeoWebCache 1.20.1 (2022-01-22)
+-------------------------------
+
+Stable release for 1.20.x series.
+
+Improvements:
++++++++++++++
+- Update JAI-EXT to 1.1.21
+- TileSet collection in background
+
+Fixes:
+++++++
+- Use custom log4j1 library that does not include remote appenders and does not include server socket related classes (closing door to remote code execution)
+
+Internal:
++++++++++
+- Repository includes .gitattributes file providing configuration for consistent line encoding
+- Consistent line encoding for files in the repository
+
 GeoWebCache 1.20.0 (2021-10-12)
 -------------------------------
 
