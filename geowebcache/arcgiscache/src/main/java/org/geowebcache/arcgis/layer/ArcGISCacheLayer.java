@@ -244,7 +244,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         final GridSetBuilder gsBuilder = new GridSetBuilder();
         GridSet gridSet = gsBuilder.buildGridset(layerName, info, layerBounds);
 
-        getGridsetConfiguration(gridSetBroker).addInternal(gridSet);
+        gridSetBroker.put(gridSet);
 
         final List<LODInfo> lodInfos = tileCacheInfo.getLodInfos();
         Integer zoomStart = lodInfos.get(0).getLevelID();
