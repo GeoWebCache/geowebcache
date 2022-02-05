@@ -62,8 +62,7 @@ public class TruncateBboxRequest implements MassTruncateRequest {
         // Create seed request for each combination of params and format
         Function<Map<String, String>, Stream<SeedRequest>> seedRequestMapper =
                 params ->
-                        allFormats
-                                .stream()
+                        allFormats.stream()
                                 .map(
                                         format ->
                                                 new SeedRequest(

@@ -76,8 +76,7 @@ public final class TMSKeyBuilder {
         } catch (GeoWebCacheException e) {
             throw new RuntimeException(e);
         }
-        return layer.getMimeTypes()
-                .stream()
+        return layer.getMimeTypes().stream()
                 .map(MimeType::getFileExtension)
                 .collect(Collectors.toSet());
     }

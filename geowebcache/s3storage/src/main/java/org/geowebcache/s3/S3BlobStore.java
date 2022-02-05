@@ -497,9 +497,7 @@ public class S3BlobStore implements BlobStore {
         checkNotNull(parametersId, "parametersId");
 
         boolean prefixExists =
-                keyBuilder
-                        .forParameters(layerName, parametersId)
-                        .stream()
+                keyBuilder.forParameters(layerName, parametersId).stream()
                         .map(
                                 prefix -> {
                                     try {
