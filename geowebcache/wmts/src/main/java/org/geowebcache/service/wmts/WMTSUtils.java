@@ -31,15 +31,13 @@ final class WMTSUtils {
     }
 
     protected static List<String> getLayerFormatsExtensions(TileLayer layer) throws IOException {
-        return layer.getMimeTypes()
-                .stream()
+        return layer.getMimeTypes().stream()
                 .map(MimeType::getFileExtension)
                 .collect(Collectors.toList());
     }
 
     public static List<String> getInfoFormats(TileLayer layer) {
-        return layer.getInfoMimeTypes()
-                .stream()
+        return layer.getInfoMimeTypes().stream()
                 .map(MimeType::getFormat)
                 .collect(Collectors.toList());
     }

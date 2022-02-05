@@ -569,8 +569,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
             layers.put(layer.getName(), layer);
 
             Map<String, GridSet> generatedForLayer =
-                    Sets.difference(layer.getGridSubsets(), brokerNames)
-                            .stream()
+                    Sets.difference(layer.getGridSubsets(), brokerNames).stream()
                             .map(layer::getGridSubset)
                             .map(GridSubset::getGridSet)
                             .collect(Collectors.toMap(GridSet::getName, UnaryOperator.identity()));

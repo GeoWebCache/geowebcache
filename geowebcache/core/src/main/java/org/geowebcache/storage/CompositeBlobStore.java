@@ -232,9 +232,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
         return readFunction(
                 () -> {
                     this.listeners.removeListener(listener);
-                    return blobStores
-                            .values()
-                            .stream()
+                    return blobStores.values().stream()
                             .filter(bs -> bs.config.isEnabled())
                             .map(bs -> bs.liveInstance.removeListener(listener))
                             .collect(Collectors.reducing((x, y) -> x || y)) // Don't use anyMatch or
@@ -277,9 +275,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
     public boolean layerExists(String layerName) {
         return readFunction(
                 () ->
-                        blobStores
-                                .values()
-                                .stream()
+                        blobStores.values().stream()
                                 .anyMatch(
                                         bs ->
                                                 bs.config.isEnabled()

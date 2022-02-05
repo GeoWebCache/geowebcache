@@ -764,8 +764,7 @@ public class FileBlobStore implements BlobStore {
             log.debug("Optimistic read of metadata mappings failed");
             return null;
         }
-        return getParameterIds(layerName)
-                .stream()
+        return getParameterIds(layerName).stream()
                 .collect(
                         Collectors.toMap(
                                 (id) -> id,

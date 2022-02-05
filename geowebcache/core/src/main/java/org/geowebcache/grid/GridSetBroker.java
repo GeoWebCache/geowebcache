@@ -54,8 +54,7 @@ public class GridSetBroker
     public GridSetBroker(List<GridSetConfiguration> configurations) {
         this.configurations = configurations;
         defaults =
-                configurations
-                        .stream()
+                configurations.stream()
                         .filter(DefaultGridsets.class::isInstance)
                         .findFirst()
                         .map(DefaultGridsets.class::cast)
@@ -91,16 +90,14 @@ public class GridSetBroker
     }
 
     public Set<String> getGridSetNames() {
-        return getConfigurations()
-                .stream()
+        return getConfigurations().stream()
                 .map(GridSetConfiguration::getGridSetNames)
                 .flatMap(Set::stream)
                 .collect(Collectors.toSet());
     }
 
     public Collection<GridSet> getGridSets() {
-        return getConfigurations()
-                .stream()
+        return getConfigurations().stream()
                 .map(GridSetConfiguration::getGridSets)
                 .flatMap(Collection::stream)
                 .collect(
@@ -119,8 +116,7 @@ public class GridSetBroker
 
     public void addGridSet(GridSet gridSet) {
         log.debug("Adding " + gridSet.getName());
-        getConfigurations()
-                .stream()
+        getConfigurations().stream()
                 .filter(c -> c.canSave(gridSet))
                 .findFirst()
                 .orElseThrow(
@@ -148,8 +144,7 @@ public class GridSetBroker
     }
 
     public synchronized void removeGridSet(final String gridSetName) {
-        getConfigurations()
-                .stream()
+        getConfigurations().stream()
                 .filter(c -> c.getGridSet(gridSetName).isPresent())
                 .forEach(
                         c -> {

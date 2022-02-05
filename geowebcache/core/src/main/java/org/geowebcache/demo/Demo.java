@@ -200,8 +200,7 @@ public class Demo {
 
                 buf.append("</td><td>OpenLayers: [");
                 buf.append(
-                        layer.getMimeTypes()
-                                .stream()
+                        layer.getMimeTypes().stream()
                                 .filter(type -> type.supportsTiling() || type.isVector())
                                 .map(
                                         type ->
@@ -229,8 +228,7 @@ public class Demo {
         String prefix = "";
 
         buf.append(
-                layer.getMimeTypes()
-                        .stream()
+                layer.getMimeTypes().stream()
                         .filter(
                                 type ->
                                         type instanceof ImageMime
