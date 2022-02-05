@@ -71,10 +71,10 @@
     <imageio-ext.version>1.3.10</imageio-ext.version>
     <hazelcast.version>3.11-BETA-1</hazelcast.version>
     <joda-time.version>2.8.1</joda-time.version>
-    <fmt.action>format</fmt.action>
-    <fmt.skip>false</fmt.skip>
+    <spotless.action>apply</spotless.action>
+    <spotless.apply.skip>false</spotless.apply.skip>
     <pom.fmt.action>sort</pom.fmt.action>
-    <pom.fmt.skip>${fmt.skip}</pom.fmt.skip>
+    <pom.fmt.skip>${spotless.apply.skip}</pom.fmt.skip>
     <jackson.version>2.10.1</jackson.version>
     <jetty.version>9.4.18.v20190429</jetty.version>
     <errorProneFlags></errorProneFlags>
@@ -629,21 +629,28 @@
       </plugin>
 
       <plugin>
-        <groupId>com.coveo</groupId>
-        <artifactId>fmt-maven-plugin</artifactId>
-        <version>2.4.0</version>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>2.20.0</version>
         <executions>
           <execution>
+            <phase>validate</phase>
             <goals>
-              <goal>${fmt.action}</goal>
+              <goal>${spotless.action}</goal>
             </goals>
           </execution>
         </executions>
         <configuration>
-          <verbose>false</verbose>
-          <filesNamePattern>.*\.java</filesNamePattern>
-          <skip>${fmt.skip}</skip>
-          <style>aosp</style>
+          <java>
+            <googleJavaFormat>
+              <version>1.7</version>
+              <style>AOSP</style>
+            </googleJavaFormat>
+          </java>
+          <upToDateChecking>
+            <enabled>true</enabled>
+            <indexFile>${project.basedir}/.spotless-index</indexFile>
+          </upToDateChecking>
         </configuration>
       </plugin>
 
