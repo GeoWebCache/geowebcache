@@ -83,9 +83,7 @@ public class ParametersUtils {
 
     /** Turns the parameter list into a sorted KVP string */
     public static String getKvp(Map<String, String> parameters) {
-        return parameters
-                .entrySet()
-                .stream()
+        return parameters.entrySet().stream()
                 .sorted(derivedComparator(Entry::getKey))
                 .map(e -> String.join("=", encUTF8(e.getKey()), encUTF8(e.getValue())))
                 .collect(Collectors.joining("&"));

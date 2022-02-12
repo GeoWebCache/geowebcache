@@ -109,15 +109,12 @@ public class BDBQuotaStoreTest {
                         .map(ParametersUtils::getMap)
                         .collect(Collectors.toSet()));
         parameterIdsMap =
-                parametersMap
-                        .entrySet()
-                        .stream()
+                parametersMap.entrySet().stream()
                         .collect(
                                 Collectors.toMap(
                                         Map.Entry::getKey,
                                         e ->
-                                                e.getValue()
-                                                        .stream()
+                                                e.getValue().stream()
                                                         .map(ParametersUtils::getKvp)
                                                         .collect(Collectors.toSet())));
         XMLConfiguration xmlConfig = loadXMLConfig();
@@ -316,9 +313,7 @@ public class BDBQuotaStoreTest {
         String gridSetId = "EPSG:4326";
 
         long quotaToDelete =
-                tilePageCalculator
-                        .getTileSetsFor(layerName)
-                        .stream()
+                tilePageCalculator.getTileSetsFor(layerName).stream()
                         .filter(ts -> ts.getGridsetId().equals(gridSetId))
                         .map(
                                 ts -> {
@@ -338,9 +333,7 @@ public class BDBQuotaStoreTest {
                         .collect(Collectors.summingLong(mb -> mb * 1024 * 1024));
         assertThat(quotaToDelete, greaterThan(0L));
         long quotaToKeep =
-                tilePageCalculator
-                        .getTileSetsFor(layerName)
-                        .stream()
+                tilePageCalculator.getTileSetsFor(layerName).stream()
                         .filter(ts -> !ts.getGridsetId().equals(gridSetId))
                         .map(
                                 ts -> {
@@ -373,9 +366,7 @@ public class BDBQuotaStoreTest {
         String parametersId = parameterIdsMap.get(layerName).iterator().next();
 
         long quotaToDelete =
-                tilePageCalculator
-                        .getTileSetsFor(layerName)
-                        .stream()
+                tilePageCalculator.getTileSetsFor(layerName).stream()
                         .filter(ts -> ts.getParametersId().equals(parametersId))
                         .map(
                                 ts -> {
@@ -395,9 +386,7 @@ public class BDBQuotaStoreTest {
                         .collect(Collectors.summingLong(mb -> mb * 1024 * 1024));
         assertThat(quotaToDelete, greaterThan(0L));
         long quotaToKeep =
-                tilePageCalculator
-                        .getTileSetsFor(layerName)
-                        .stream()
+                tilePageCalculator.getTileSetsFor(layerName).stream()
                         .filter(ts -> !ts.getParametersId().equals(parametersId))
                         .map(
                                 ts -> {

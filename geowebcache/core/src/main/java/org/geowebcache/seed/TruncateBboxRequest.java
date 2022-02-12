@@ -67,8 +67,7 @@ public class TruncateBboxRequest implements MassTruncateRequest {
                                                     null)) // Add null for the default parameters
                             .flatMap(
                                     params ->
-                                            allFormats
-                                                    .stream()
+                                            allFormats.stream()
                                                     .map(
                                                             format ->
                                                                     // Create seed request for each

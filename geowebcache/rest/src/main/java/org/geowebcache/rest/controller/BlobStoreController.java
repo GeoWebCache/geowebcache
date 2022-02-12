@@ -39,27 +39,25 @@ public class BlobStoreController extends GWCController {
     @Autowired private BlobStoreAggregator blobStores;
 
     @RequestMapping(
-        method = RequestMethod.GET,
-        produces = {
-            MediaType.APPLICATION_XML_VALUE,
-            MediaType.APPLICATION_JSON_VALUE,
-            MediaType.TEXT_XML_VALUE
-        }
-    )
+            method = RequestMethod.GET,
+            produces = {
+                MediaType.APPLICATION_XML_VALUE,
+                MediaType.APPLICATION_JSON_VALUE,
+                MediaType.TEXT_XML_VALUE
+            })
     public XStreamListAliasWrapper blobStoresGet() {
         return new XStreamListAliasWrapper(
                 blobStores.getBlobStoreNames(), "blobStore", List.class, this.getClass());
     }
 
     @RequestMapping(
-        path = "/{blobStoreName}",
-        method = RequestMethod.GET,
-        produces = {
-            MediaType.APPLICATION_XML_VALUE,
-            MediaType.APPLICATION_JSON_VALUE,
-            MediaType.TEXT_XML_VALUE
-        }
-    )
+            path = "/{blobStoreName}",
+            method = RequestMethod.GET,
+            produces = {
+                MediaType.APPLICATION_XML_VALUE,
+                MediaType.APPLICATION_JSON_VALUE,
+                MediaType.TEXT_XML_VALUE
+            })
     public BlobStoreInfo blobStoreGet(@PathVariable String blobStoreName) {
         try {
             return blobStores.getBlobStore(blobStoreName);
@@ -74,14 +72,13 @@ public class BlobStoreController extends GWCController {
     }
 
     @RequestMapping(
-        path = "/{blobStoreName}",
-        method = RequestMethod.PUT,
-        consumes = {
-            MediaType.APPLICATION_XML_VALUE,
-            MediaType.APPLICATION_JSON_VALUE,
-            MediaType.TEXT_XML_VALUE
-        }
-    )
+            path = "/{blobStoreName}",
+            method = RequestMethod.PUT,
+            consumes = {
+                MediaType.APPLICATION_XML_VALUE,
+                MediaType.APPLICATION_JSON_VALUE,
+                MediaType.TEXT_XML_VALUE
+            })
     public ResponseEntity<?> blobStorePut(
             @PathVariable String blobStoreName, @RequestBody BlobStoreInfo blobStore) {
 

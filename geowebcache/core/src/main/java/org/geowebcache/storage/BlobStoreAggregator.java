@@ -93,8 +93,7 @@ public class BlobStoreAggregator {
     public BlobStoreInfo getBlobStore(final String blobStoreName) throws GeoWebCacheException {
         Objects.requireNonNull(blobStoreName, "blobStoreName is null");
 
-        return getConfigs()
-                .stream()
+        return getConfigs().stream()
                 .map(c -> c.getBlobStore(blobStoreName))
                 .filter(Optional::isPresent)
                 .map(Optional::get)

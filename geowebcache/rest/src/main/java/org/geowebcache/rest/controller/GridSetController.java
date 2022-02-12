@@ -38,27 +38,25 @@ public class GridSetController extends GWCController {
     @Autowired GridSetBroker broker;
 
     @RequestMapping(
-        method = RequestMethod.GET,
-        produces = {
-            MediaType.APPLICATION_XML_VALUE,
-            MediaType.APPLICATION_JSON_VALUE,
-            MediaType.TEXT_XML_VALUE
-        }
-    )
+            method = RequestMethod.GET,
+            produces = {
+                MediaType.APPLICATION_XML_VALUE,
+                MediaType.APPLICATION_JSON_VALUE,
+                MediaType.TEXT_XML_VALUE
+            })
     public XStreamListAliasWrapper gridSetsGet() {
         return new XStreamListAliasWrapper(
                 broker.getGridSetNames(), "gridSet", Set.class, this.getClass());
     }
 
     @RequestMapping(
-        path = "/{gridSetName}",
-        method = RequestMethod.GET,
-        produces = {
-            MediaType.APPLICATION_XML_VALUE,
-            MediaType.APPLICATION_JSON_VALUE,
-            MediaType.TEXT_XML_VALUE
-        }
-    )
+            path = "/{gridSetName}",
+            method = RequestMethod.GET,
+            produces = {
+                MediaType.APPLICATION_XML_VALUE,
+                MediaType.APPLICATION_JSON_VALUE,
+                MediaType.TEXT_XML_VALUE
+            })
     public GridSet gridSetGet(@PathVariable String gridSetName) {
         if (broker.get(gridSetName) != null) {
             return broker.get(gridSetName);
@@ -72,14 +70,13 @@ public class GridSetController extends GWCController {
     }
 
     @RequestMapping(
-        path = "/{gridSetName}",
-        method = RequestMethod.PUT,
-        consumes = {
-            MediaType.APPLICATION_XML_VALUE,
-            MediaType.APPLICATION_JSON_VALUE,
-            MediaType.TEXT_XML_VALUE
-        }
-    )
+            path = "/{gridSetName}",
+            method = RequestMethod.PUT,
+            consumes = {
+                MediaType.APPLICATION_XML_VALUE,
+                MediaType.APPLICATION_JSON_VALUE,
+                MediaType.TEXT_XML_VALUE
+            })
     public ResponseEntity<?> gridSetPut(
             @PathVariable String gridSetName, @RequestBody GridSet gridSet) {
 
