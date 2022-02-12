@@ -200,8 +200,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
      */
     public static <T extends BaseConfiguration> List<T> configurations(
             Class<T> extensionPoint, ApplicationContext context) {
-        return extensions(extensionPoint, context)
-                .stream()
+        return extensions(extensionPoint, context).stream()
                 .sorted(
                         (x, y) ->
                                 Integer.signum(

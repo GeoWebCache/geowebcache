@@ -159,15 +159,12 @@ public abstract class JDBCQuotaStoreTest {
                             .map(ParametersUtils::getMap)
                             .collect(Collectors.toSet()));
             parameterIdsMap =
-                    parametersMap
-                            .entrySet()
-                            .stream()
+                    parametersMap.entrySet().stream()
                             .collect(
                                     Collectors.toMap(
                                             Map.Entry::getKey,
                                             e ->
-                                                    e.getValue()
-                                                            .stream()
+                                                    e.getValue().stream()
                                                             .map(ParametersUtils::getKvp)
                                                             .collect(Collectors.toSet())));
 
@@ -436,8 +433,7 @@ public abstract class JDBCQuotaStoreTest {
         assertThat(
                 store.getTileSets(),
                 containsInAnyOrder(
-                        expectedTileSets
-                                .stream()
+                        expectedTileSets.stream()
                                 .map(Matchers::equalTo)
                                 .collect(Collectors.toSet())));
 
@@ -446,8 +442,7 @@ public abstract class JDBCQuotaStoreTest {
         assertThat(
                 store.getTileSets(),
                 containsInAnyOrder(
-                        expectedTileSets
-                                .stream()
+                        expectedTileSets.stream()
                                 .filter(
                                         ts ->
                                                 !(ts.getGridsetId().equals("EPSG:4326")
@@ -496,8 +491,7 @@ public abstract class JDBCQuotaStoreTest {
         assertThat(
                 store.getTileSets(),
                 containsInAnyOrder(
-                        expectedTileSets
-                                .stream()
+                        expectedTileSets.stream()
                                 .map(Matchers::equalTo)
                                 .collect(Collectors.toSet())));
 
@@ -506,8 +500,7 @@ public abstract class JDBCQuotaStoreTest {
         assertThat(
                 store.getTileSets(),
                 containsInAnyOrder(
-                        expectedTileSets
-                                .stream()
+                        expectedTileSets.stream()
                                 .filter(
                                         ts ->
                                                 !(Objects.equal(ts.getParametersId(), paramIds[1])

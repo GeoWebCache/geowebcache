@@ -38,8 +38,7 @@ public abstract class SimpleGridSetConfiguration implements GridSetConfiguration
 
     @Override
     public Collection<GridSet> getGridSets() {
-        return gridSets.values()
-                .stream()
+        return gridSets.values().stream()
                 .map(GridSet::new) // Make sure that modifying them doesn't modify the real ones
                 .collect(Collectors.toList());
     }

@@ -122,9 +122,7 @@ public interface BlobStore {
     /** Get the cached parameter maps for a layer */
     public default Set<Map<String, String>> getParameters(String layerName)
             throws StorageException {
-        return getParametersMapping(layerName)
-                .values()
-                .stream()
+        return getParametersMapping(layerName).values().stream()
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toSet());
@@ -191,8 +189,7 @@ public interface BlobStore {
                         return parameters.size() != parameterFilters.size()
                                 || // Should have the same number of parameters as the layer has
                                 // filters
-                                parameterFilters
-                                        .stream()
+                                parameterFilters.stream()
                                         .allMatch(
                                                 pfilter -> { // Do all the parameter filters on the
                                                     // layer consider their parameter legal
@@ -208,9 +205,7 @@ public interface BlobStore {
                                                 });
                     };
 
-            return getParametersMapping(layer.getName())
-                    .entrySet()
-                    .stream()
+            return getParametersMapping(layer.getName()).entrySet().stream()
                     .filter(
                             parameterMapping -> {
                                 return parameterMapping

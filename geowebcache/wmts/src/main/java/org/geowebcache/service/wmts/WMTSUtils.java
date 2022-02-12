@@ -31,8 +31,7 @@ final class WMTSUtils {
     }
 
     public static List<String> getInfoFormats(TileLayer layer) {
-        return layer.getInfoMimeTypes()
-                .stream()
+        return layer.getInfoMimeTypes().stream()
                 .map(MimeType::getFormat)
                 .collect(Collectors.toList());
     }

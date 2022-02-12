@@ -144,16 +144,13 @@ public class TilePageCalculator {
         Collection<String> parameterIds =
                 getParameterIds(layerName, (Optional<Collection<String>>) optParameterIds);
 
-        return gridsetNames
-                .stream()
+        return gridsetNames.stream()
                 .flatMap(
                         gridset ->
-                                formatNames
-                                        .stream()
+                                formatNames.stream()
                                         .flatMap(
                                                 format ->
-                                                        parameterIds
-                                                                .stream()
+                                                        parameterIds.stream()
                                                                 .map(
                                                                         parametersId ->
                                                                                 new TileSet(
