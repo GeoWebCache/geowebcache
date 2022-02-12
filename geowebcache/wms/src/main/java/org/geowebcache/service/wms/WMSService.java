@@ -546,8 +546,7 @@ public class WMSService extends Service {
     }
 
     protected void checkProxyRequest(String request) {
-        if (getProxyRequestWhitelist()
-                .stream()
+        if (getProxyRequestWhitelist().stream()
                 .noneMatch(pattern -> pattern.equals("*") || pattern.equals(request))) {
             throw new SecurityException(
                     "WMS Request " + request + " is not on request proxy whitelist");

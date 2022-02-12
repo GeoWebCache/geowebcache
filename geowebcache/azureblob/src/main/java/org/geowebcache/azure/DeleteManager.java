@@ -314,8 +314,7 @@ class DeleteManager implements Closeable {
                 ContainerURL container, BlobFlatListSegment segment, Predicate<BlobItem> filter)
                 throws ExecutionException, InterruptedException {
             List<Future<Object>> collect =
-                    segment.blobItems()
-                            .stream()
+                    segment.blobItems().stream()
                             .filter(item -> filter.test(item))
                             .map(
                                     item ->
@@ -398,8 +397,7 @@ class DeleteManager implements Closeable {
         private long deleteItems(ContainerURL container, List<String> itemNames)
                 throws ExecutionException, InterruptedException {
             List<Future<Object>> collect =
-                    itemNames
-                            .stream()
+                    itemNames.stream()
                             .map(
                                     item ->
                                             deleteExecutor.submit(

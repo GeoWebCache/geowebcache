@@ -859,9 +859,7 @@ public class XMLConfiguration
     private void loadGridSets() {
         if (getGwcConfig().getGridSets() != null) {
             this.gridSets =
-                    getGwcConfig()
-                            .getGridSets()
-                            .stream()
+                    getGwcConfig().getGridSets().stream()
                             .map(
                                     (xmlGridSet) -> {
                                         if (log.isDebugEnabled()) {
@@ -972,9 +970,7 @@ public class XMLConfiguration
     public List<BlobStoreInfo> getBlobStores() {
         // need to return an unmodifiable list of unmodifiable BlobStoreInfos
         return Collections.unmodifiableList(
-                getGwcConfig()
-                        .getBlobStores()
-                        .stream()
+                getGwcConfig().getBlobStores().stream()
                         .map(
                                 (info) -> {
                                     return (BlobStoreInfo) info.clone();
@@ -1113,9 +1109,7 @@ public class XMLConfiguration
     /** @see BlobStoreConfiguration#getBlobStoreNames() */
     @Override
     public Set<String> getBlobStoreNames() {
-        return getGwcConfig()
-                .getBlobStores()
-                .stream()
+        return getGwcConfig().getBlobStores().stream()
                 .map(
                         (info) -> {
                             return info.getName();
@@ -1364,9 +1358,7 @@ public class XMLConfiguration
             throw new IllegalArgumentException("GridSet " + gridSet.getName() + " already exists");
         }
 
-        assert getGwcConfig()
-                .getGridSets()
-                .stream()
+        assert getGwcConfig().getGridSets().stream()
                 .noneMatch(xgs -> xgs.getName().equals(gridSet.getName()));
 
         try {
@@ -1440,9 +1432,7 @@ public class XMLConfiguration
 
     @Override
     public Collection<GridSet> getGridSets() {
-        return getGridSetsInternal()
-                .values()
-                .stream()
+        return getGridSetsInternal().values().stream()
                 .map(GridSet::new)
                 .collect(Collectors.toList());
     }
@@ -1457,9 +1447,7 @@ public class XMLConfiguration
             throw new NoSuchElementException("GridSet " + gridSet.getName() + " does not exist");
         }
 
-        assert getGwcConfig()
-                .getGridSets()
-                .stream()
+        assert getGwcConfig().getGridSets().stream()
                 .anyMatch(xgs -> xgs.getName().equals(gridSet.getName()));
 
         try {

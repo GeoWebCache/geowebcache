@@ -141,8 +141,7 @@ public class MockExtensionRule extends ExternalResource {
                 }
 
             } else if (method.getName().equals("getBeansOfType")) {
-                return types.getOrDefault(args[0], Collections.emptySet())
-                        .stream()
+                return types.getOrDefault(args[0], Collections.emptySet()).stream()
                         .collect(Collectors.toMap(name -> name, beans::get));
             }
             throw new UnsupportedOperationException();
