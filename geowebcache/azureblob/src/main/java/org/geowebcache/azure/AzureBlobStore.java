@@ -126,9 +126,7 @@ public class AzureBlobStore implements BlobStore {
         checkNotNull(parametersId, "parametersId");
 
         boolean prefixExists =
-                keyBuilder
-                        .forParameters(layerName, parametersId)
-                        .stream()
+                keyBuilder.forParameters(layerName, parametersId).stream()
                         .map(
                                 prefix -> {
                                     try {
@@ -462,9 +460,7 @@ public class AzureBlobStore implements BlobStore {
             for (BlobItem item : items) {
 
                 Map<String, String> properties =
-                        client.getProperties(item.name())
-                                .entrySet()
-                                .stream()
+                        client.getProperties(item.name()).entrySet().stream()
                                 .collect(
                                         Collectors.toMap(
                                                 e -> (String) e.getKey(),

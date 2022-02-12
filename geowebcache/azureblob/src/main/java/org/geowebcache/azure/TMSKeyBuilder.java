@@ -75,8 +75,7 @@ final class TMSKeyBuilder {
         } catch (GeoWebCacheException e) {
             throw new RuntimeException(e);
         }
-        return layer.getMimeTypes()
-                .stream()
+        return layer.getMimeTypes().stream()
                 .map(MimeType::getFileExtension)
                 .collect(Collectors.toSet());
     }
@@ -155,12 +154,10 @@ final class TMSKeyBuilder {
         String layerId = layerId(layerName);
         // Coordinates prefix: {@code <prefix>/<layer name>/<gridset id>/<format id>/<parameters
         // hash>/}
-        return layerGridsets(layerName)
-                .stream()
+        return layerGridsets(layerName).stream()
                 .flatMap(
                         gridsetId ->
-                                layerFormats(layerName)
-                                        .stream()
+                                layerFormats(layerName).stream()
                                         .map(
                                                 format ->
                                                         join(

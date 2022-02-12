@@ -732,8 +732,7 @@ public class WMTSGetCapabilities {
         if (!layerDimensions.isEmpty()) {
             commonDimensions =
                     "&"
-                            + layerDimensions
-                                    .stream()
+                            + layerDimensions.stream()
                                     .map(d -> d.getKey() + "={" + d.getKey() + "}")
                                     .collect(Collectors.joining("&"));
         }
