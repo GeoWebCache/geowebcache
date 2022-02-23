@@ -258,20 +258,6 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         return subsets;
     }
 
-    private ArcGISCacheGridsetConfiguration getGridsetConfiguration(
-            final GridSetBroker gridSetBroker) {
-        List<? extends ArcGISCacheGridsetConfiguration> configs =
-                gridSetBroker.getConfigurations(ArcGISCacheGridsetConfiguration.class);
-        if (configs.isEmpty()) {
-            throw new IllegalStateException("No ArcGISCacheGridsetConfiguration could be found");
-        } else {
-            if (configs.size() > 1) {
-                log.warn("Multiple instances of ArcGISCacheGridsetConfiguration, using first");
-            }
-            return configs.iterator().next();
-        }
-    }
-
     /** @see org.geowebcache.layer.TileLayer#getTile(org.geowebcache.conveyor.ConveyorTile) */
     @Override
     public ConveyorTile getTile(final ConveyorTile tile)
