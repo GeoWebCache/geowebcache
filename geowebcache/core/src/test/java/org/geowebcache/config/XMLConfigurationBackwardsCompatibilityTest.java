@@ -213,7 +213,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
 
         try (InputStream is = XMLConfiguration.class.getResourceAsStream(fileName); ) {
             Node root = XMLConfiguration.loadDocument(is);
-            print(root.getOwnerDocument());
+            // print(root.getOwnerDocument());
         }
 
         XMLConfiguration xmlConfig =
