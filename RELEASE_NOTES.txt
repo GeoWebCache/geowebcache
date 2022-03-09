@@ -1,3 +1,64 @@
+GeoWebCache 1.21-RC (pending)
+-----------------------------
+
+Release candidate for 1.21.x series.
+
+Improvements:
++++++++++++++
+ - Updated to imageio-ext-1.3.0
+ 
+GeoWebCache 1.20.1 (2022-01-22)
+-------------------------------
+
+Stable release for 1.20.x series.
+
+Improvements:
++++++++++++++
+- Update JAI-EXT to 1.1.21
+- TileSet collection in background
+
+Fixes:
+++++++
+- Use custom log4j1 library that does not include remote appenders and does not include server socket related classes (closing door to remote code execution)
+
+Internal:
++++++++++
+- Repository includes .gitattributes file providing configuration for consistent line encoding
+- Consistent line encoding for files in the repository
+
+GeoWebCache 1.20.0 (2021-10-12)
+-------------------------------
+
+First stable release of the 1.20.x series.
+
+Improvements:
++++++++++++++
+- Upgraded GeoTools dependencies to 26.0
+
+
+GeoWebCache 1.20-RC (2021-09-11)
+--------------------------------
+
+Release candidate for 1.20.x series.
+
+Improvements:
++++++++++++++
+- Adding OGC TileMatrixSet common gridsets (as well as x2 versions)
+- Upgrade to GeoTools 26-RC
+- Upgrade to JTS 1.18.2
+- Upgrade to ImageIO-Ext 1.3.10
+
+
+Fixes:
+++++++
+- Fix service metadata url when base URL already contains a query string parameters
+
+Internal:
++++++++++
+- Change default branch to main
+- Consistent use of LF for XSD files
+- Add PMD checks
+
 GeoWebCache 1.19.1 (2021-05-21)
 -------------------------------
 
