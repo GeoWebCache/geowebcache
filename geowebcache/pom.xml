@@ -31,6 +31,12 @@
     <module>mbtiles</module>
   </modules>
 
+  <scm>
+    <connection>scm:git:git://github.com/geowebcache/geowebcache.git</connection>
+    <developerConnection>scm:git:[fetch=]git://github.com/geowebcache/geowebcache.git[push=]git@github.com:geowebcache/geowebcache.git</developerConnection>
+    <url>https://github.com/geowebcache/geowebcache</url>
+  </scm>
+
   <distributionManagement>
     <repository>
       <id>nexus</id>
@@ -89,6 +95,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <jclouds.version>2.3.0</jclouds.version>
     <mockito.version>3.8.0</mockito.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <dependencyManagement>
@@ -430,13 +437,13 @@
       <releases>
         <enabled>true</enabled>
       </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
       <!-- Contains releases for OSGeo projects: GeoTools, GeoWebCache, GeoServer, ...     -->
       <!-- Includs third-party-dependences, and caches of:                                 -->
       <!-- ucar (https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases) -->
       <!-- geosolutions (http://maven.geo-solutions.it/)                                   -->
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
       <id>osgeo-release</id>
       <name>OSGeo Repository</name>
       <url>https://repo.osgeo.org/repository/release/</url>
@@ -452,17 +459,22 @@
       <name>OSGeo Repository</name>
       <url>https://repo.osgeo.org/repository/snapshot/</url>
     </repository>
+    <repository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <!-- required for use of imageio-ext snapshots during upgrade testing only           -->
+      <!-- see property imageio-ext.version                                                -->
+      <id>geosolutions</id>
+      <name>GeoSolutions libraries repository</name>
+      <url>https://maven.geo-solutions.it/</url>
+    </repository>
   </repositories>
 
   <build>
-
-    <extensions>
-      <extension>
-        <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-webdav</artifactId>
-        <version>1.0-beta-2</version>
-      </extension>
-    </extensions>
 
     <pluginManagement>
       <plugins>
@@ -477,7 +489,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>buildnumber-maven-plugin</artifactId>
-        <version>1.0-beta-3</version>
+        <version>1.4</version>
         <executions>
           <execution>
             <phase>validate</phase>
