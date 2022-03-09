@@ -21,7 +21,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -42,7 +41,6 @@ import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.ImageMime;
 import org.junit.Test;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 
 public class XMLConfigurationBackwardsCompatibilityTest {
 
@@ -211,10 +209,10 @@ public class XMLConfigurationBackwardsCompatibilityTest {
 
     private XMLConfiguration loadConfig(String fileName) throws Exception {
 
-        try (InputStream is = XMLConfiguration.class.getResourceAsStream(fileName); ) {
-            Node root = XMLConfiguration.loadDocument(is);
-            // print(root.getOwnerDocument());
-        }
+        // try (InputStream is = XMLConfiguration.class.getResourceAsStream(fileName); ) {
+        //     Node root = XMLConfiguration.loadDocument(is);
+        //     print(root.getOwnerDocument());
+        // }
 
         XMLConfiguration xmlConfig =
                 new XMLConfiguration(
