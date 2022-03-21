@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -37,8 +39,7 @@ import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.CropDescriptor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
@@ -52,7 +53,7 @@ import org.springframework.util.Assert;
 
 public class MetaTile implements TileResponseReceiver {
 
-    private static Log log = LogFactory.getLog(MetaTile.class);
+    private static Logger log = Logging.getLogger(MetaTile.class.getName());
 
     protected static final RenderingHints NO_CACHE = new RenderingHints(JAI.KEY_TILE_CACHE, null);
 
@@ -70,8 +71,7 @@ public class MetaTile implements TileResponseReceiver {
         }
         NATIVE_JAI_AVAILABLE = nativeJAIAvailable;
         if (!NATIVE_JAI_AVAILABLE) {
-            log.warn(
-                    "********* Native JAI is not installed, meta tile cropping may be slow ********");
+            log.config("Native JAI is not installed");
         }
     }
 
@@ -326,10 +326,10 @@ public class MetaTile implements TileResponseReceiver {
                         Float.valueOf(tileHeight),
                         NO_CACHE);
         if (nativeAccelAvailable()) {
-            log.trace("created cropped tile");
+            log.finer("created cropped tile");
             return cropped;
         }
-        log.trace("native accel not available, returning buffered image");
+        log.finer("native accel not available, returning buffered image");
         BufferedImage tile = cropped.getAsBufferedImage();
         disposePlanarImageChain(cropped, new HashSet<>());
         return tile;
@@ -351,8 +351,8 @@ public class MetaTile implements TileResponseReceiver {
             return false;
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Thread: " + Thread.currentThread().getName() + " writing: " + tileIdx);
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Thread: " + Thread.currentThread().getName() + " writing: " + tileIdx);
         }
 
         Rectangle tileRegion = tiles[tileIdx];
@@ -481,8 +481,8 @@ public class MetaTile implements TileResponseReceiver {
         RenderedImage image = metaTileImage;
         metaTileImage = null;
 
-        if (log.isTraceEnabled()) {
-            log.trace("disposing metatile " + image);
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("disposing metatile " + image);
         }
         if (image instanceof BufferedImage) {
             ((BufferedImage) image).flush();
@@ -491,8 +491,8 @@ public class MetaTile implements TileResponseReceiver {
         }
         if (disposableImages != null) {
             for (RenderedImage tile : disposableImages) {
-                if (log.isTraceEnabled()) {
-                    log.trace("disposing tile " + tile);
+                if (log.isLoggable(Level.FINER)) {
+                    log.finer("disposing tile " + tile);
                 }
                 if (tile instanceof BufferedImage) {
                     ((BufferedImage) tile).flush();

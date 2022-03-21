@@ -49,10 +49,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.io.ByteArrayResource;
@@ -73,7 +74,7 @@ import org.geowebcache.util.TMSKeyBuilder;
 
 public class S3BlobStore implements BlobStore {
 
-    static Log log = LogFactory.getLog(S3BlobStore.class);
+    static Logger log = Logging.getLogger(S3BlobStore.class.getName());
 
     private final BlobStoreListenerList listeners = new BlobStoreListenerList();
 
@@ -152,10 +153,10 @@ public class S3BlobStore implements BlobStore {
      */
     private void checkAccessControlList(AmazonS3Client client, String bucketName) throws Exception {
         try {
-            log.debug("Checking access rights to bucket " + bucketName);
+            log.fine("Checking access rights to bucket " + bucketName);
             AccessControlList bucketAcl = client.getBucketAcl(bucketName);
             List<Grant> grants = bucketAcl.getGrantsAsList();
-            log.debug("Bucket " + bucketName + " permissions: " + grants);
+            log.fine("Bucket " + bucketName + " permissions: " + grants);
         } catch (AmazonServiceException se) {
             throw new StorageException("Server error listing bucket ACLs: " + se.getMessage(), se);
         }
@@ -167,9 +168,9 @@ public class S3BlobStore implements BlobStore {
      */
     private void checkBucketPolicy(AmazonS3Client client, String bucketName) throws Exception {
         try {
-            log.debug("Checking policy for bucket " + bucketName);
+            log.fine("Checking policy for bucket " + bucketName);
             BucketPolicy bucketPol = client.getBucketPolicy(bucketName);
-            log.debug("Bucket " + bucketName + " policy: " + bucketPol.getPolicyText());
+            log.fine("Bucket " + bucketName + " policy: " + bucketPol.getPolicyText());
         } catch (AmazonServiceException se) {
             throw new StorageException(
                     "Server error getting bucket policy: " + se.getMessage(), se);
@@ -231,7 +232,7 @@ public class S3BlobStore implements BlobStore {
         PutObjectRequest putObjectRequest =
                 new PutObjectRequest(bucketName, key, input, objectMetadata).withCannedAcl(acl);
 
-        log.trace(log.isTraceEnabled() ? ("Storing " + key) : "");
+        log.finer(log.isLoggable(Level.FINER) ? ("Storing " + key) : "");
         s3Ops.putObject(putObjectRequest);
 
         putParametersMetadata(obj.getLayerName(), obj.getParametersId(), obj.getParameters());
@@ -430,7 +431,7 @@ public class S3BlobStore implements BlobStore {
 
     @Override
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
-        log.debug("No need to rename layers, S3BlobStore uses layer id as key root");
+        log.fine("No need to rename layers, S3BlobStore uses layer id as key root");
         if (s3Ops.prefixExists(oldLayerName)) {
             listeners.sendLayerRenamed(oldLayerName, newLayerName);
         }

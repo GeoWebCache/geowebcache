@@ -24,9 +24,9 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -36,6 +36,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileResponseReceiver;
@@ -49,7 +50,7 @@ import org.springframework.util.Assert;
 
 /** This class is a wrapper for HTTP interaction with WMS backend */
 public class WMSHttpHelper extends WMSSourceHelper {
-    private static Log log = LogFactory.getLog(WMSHttpHelper.class);
+    private static Logger log = Logging.getLogger(WMSHttpHelper.class.getName());
 
     private final URL proxyUrl;
 
@@ -176,9 +177,9 @@ public class WMSHttpHelper extends WMSSourceHelper {
 
             // Do not set error at this stage
         } catch (IOException ce) {
-            if (log.isDebugEnabled()) {
+            if (log.isLoggable(Level.FINE)) {
                 String message = "Error forwarding request " + wmsBackendUrl.toString();
-                log.debug(message, ce);
+                log.log(Level.FINE, message, ce);
             }
             throw new GeoWebCacheException(ce);
         }
@@ -227,7 +228,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
                             + (message == null ? "" : (":\n" + message));
             tileRespRecv.setError();
             tileRespRecv.setErrorMessage(msg);
-            log.warn(msg);
+            log.warning(msg);
         }
 
         // Everything looks okay, try to save expiration
@@ -243,8 +244,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
         if (responseCode != 204) {
             try (InputStream inStream = method.getEntity().getContent()) {
                 if (inStream == null) {
-
-                    log.error("No response for " + method);
+                    log.severe("No response for " + method);
                 } else {
                     try (ReadableByteChannel channel = Channels.newChannel(inStream)) {
                         target.transferFrom(channel);
@@ -265,7 +265,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
                 }
             } catch (IOException ioe) {
                 tileRespRecv.setError();
-                log.error(
+                log.severe(
                         "Caught IO exception, "
                                 + wmsBackendUrl.toString()
                                 + " "
@@ -327,8 +327,8 @@ public class WMSHttpHelper extends WMSSourceHelper {
         }
 
         // fire!
-        if (log.isDebugEnabled()) {
-            log.trace(method);
+        if (log.isLoggable(Level.FINER)) {
+            log.finer(method.toString());
         }
         return client.execute(method);
     }

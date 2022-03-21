@@ -15,8 +15,7 @@
 package org.geowebcache.util;
 
 import java.net.URL;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
@@ -25,11 +24,12 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.geotools.util.logging.Logging;
 
 /** Builder class for HttpClients */
 public class HttpClientBuilder {
 
-    static final Log log = LogFactory.getLog(HttpClientBuilder.class);
+    static final Logger log = Logging.getLogger(HttpClientBuilder.class.toString());
 
     private UsernamePasswordCredentials httpcredentials = null;
 

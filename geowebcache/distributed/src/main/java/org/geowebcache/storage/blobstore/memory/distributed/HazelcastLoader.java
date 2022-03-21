@@ -25,10 +25,10 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.io.filefilter.NameFileFilter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
+import org.geotools.util.logging.Logging;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -43,7 +43,7 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class HazelcastLoader implements InitializingBean {
     /** {@link Logger} object used for logging exceptions */
-    private static final Log LOGGER = LogFactory.getLog(HazelcastLoader.class);
+    private static final Logger LOGGER = Logging.getLogger(HazelcastLoader.class.getName());
 
     /** Property name for the Hazelcast property file */
     public static final String HAZELCAST_CONFIG_DIR = "hazelcast.config.dir";
@@ -72,12 +72,12 @@ public class HazelcastLoader implements InitializingBean {
                         }
                         // Ensure the configuration is accepted
                         if (configAccepted(config)) {
-                            if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug("Hazelcast instance validated");
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine("Hazelcast instance validated");
                             }
                             instance = Hazelcast.newHazelcastInstance(config);
                         } else {
-                            if (LOGGER.isInfoEnabled()) {
+                            if (LOGGER.isLoggable(Level.INFO)) {
                                 LOGGER.info("No mapping for CacheProvider Map is present");
                             }
                         }
@@ -87,8 +87,8 @@ public class HazelcastLoader implements InitializingBean {
         } else if (!configAccepted(instance.getConfig())) {
             instance = null;
         }
-        if (LOGGER.isDebugEnabled() && instance == null) {
-            LOGGER.debug("Hazelcast instance invalid or not found");
+        if (LOGGER.isLoggable(Level.FINE) && instance == null) {
+            LOGGER.fine("Hazelcast instance invalid or not found");
         }
     }
 
@@ -125,8 +125,8 @@ public class HazelcastLoader implements InitializingBean {
     private boolean configAccepted(Config config) {
         boolean configAccepted = false;
         if (config != null) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Checking configuration");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Checking configuration");
             }
             // Check if the cache map is present
             if (config.getMapConfigs()
@@ -149,15 +149,15 @@ public class HazelcastLoader implements InitializingBean {
                 }
 
                 if (sizeDefined && policyExists && sizeFromHeap && nearCacheAccepted) {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Hazelcast config validated");
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Hazelcast config validated");
                     }
                     configAccepted = true;
                 }
             }
         } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("No configuration provided");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("No configuration provided");
             }
         }
 

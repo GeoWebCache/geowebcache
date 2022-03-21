@@ -21,9 +21,10 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
@@ -58,7 +59,7 @@ import org.geowebcache.storage.StorageBroker;
  */
 class GeoRSSPollTask implements Runnable {
 
-    private static final Log logger = LogFactory.getLog(GeoRSSPollTask.class);
+    private static final Logger LOGGER = Logging.getLogger(GeoRSSPollTask.class.getName());
 
     /**
      * Layer metadata property under which the lastUpdated entry value is stored
@@ -94,7 +95,8 @@ class GeoRSSPollTask implements Runnable {
         try {
             runPollAndLaunchSeed();
         } catch (Exception e) {
-            logger.error(
+            LOGGER.log(
+                    Level.SEVERE,
                     "Error encountered trying to poll the GeoRSS feed "
                             + poll.getPollDef().getFeedUrl()
                             + ". Another attempt will be made after the poll interval of "
@@ -103,7 +105,8 @@ class GeoRSSPollTask implements Runnable {
 
         } catch (OutOfMemoryError error) {
             System.gc();
-            logger.fatal(
+            LOGGER.log(
+                    Level.SEVERE,
                     "Out of memory error processing poll "
                             + poll.getPollDef()
                             + ". Need to reduce the maxMaskLevel param or increase system memory."
@@ -118,7 +121,7 @@ class GeoRSSPollTask implements Runnable {
         final TileLayer layer = poll.getLayer();
         final GeoRSSFeedDefinition pollDef = poll.getPollDef();
 
-        logger.info("Polling GeoRSS feed for layer " + layerName + ": " + pollDef.toString());
+        LOGGER.info("Polling GeoRSS feed for layer " + layerName + ": " + pollDef.toString());
 
         final StorageBroker storageBroker = seeder.getStorageBroker();
         final String previousUpdatedEntry = storageBroker.getLayerMetadata(layerName, LAST_UPDATED);
@@ -128,18 +131,18 @@ class GeoRSSPollTask implements Runnable {
         final String httpUsername = pollDef.getHttpUsername();
         final String httpPassword = pollDef.getHttpUsername();
 
-        logger.debug("Getting GeoRSS reader for " + feedUrl.toExternalForm());
+        LOGGER.fine("Getting GeoRSS reader for " + feedUrl.toExternalForm());
         final GeoRSSReaderFactory geoRSSReaderFactory = new GeoRSSReaderFactory();
 
         GeoRSSReader geoRSSReader = null;
         try {
             geoRSSReader = geoRSSReaderFactory.createReader(feedUrl, httpUsername, httpPassword);
         } catch (IOException ioe) {
-            logger.error("Failed to fetch RSS feed from " + feedUrl + "\n" + ioe.getMessage());
+            LOGGER.severe("Failed to fetch RSS feed from " + feedUrl + "\n" + ioe.getMessage());
             return;
         }
 
-        logger.debug(
+        LOGGER.fine(
                 "Got reader for "
                         + pollDef.getFeedUrl()
                         + ". Creating geometry filter matrix for gridset "
@@ -151,7 +154,7 @@ class GeoRSSPollTask implements Runnable {
         final GeoRSSTileRangeBuilder matrixBuilder =
                 new GeoRSSTileRangeBuilder(layer, gridSetId, maxMaskLevel);
 
-        logger.debug(
+        LOGGER.fine(
                 "Creating tile range mask based on GeoRSS feed's geometries from "
                         + feedUrl.toExternalForm()
                         + " for "
@@ -161,7 +164,7 @@ class GeoRSSPollTask implements Runnable {
                 matrixBuilder.buildTileRangeMask(geoRSSReader, previousUpdatedEntry);
 
         if (tileRangeMask == null) {
-            logger.info("Did not create a tileRangeMask, presumably no new entries in feed.");
+            LOGGER.info("Did not create a tileRangeMask, presumably no new entries in feed.");
             return;
         }
 
@@ -169,7 +172,7 @@ class GeoRSSPollTask implements Runnable {
         final String lastUpdatedEntry = matrixBuilder.getLastEntryUpdate();
         storageBroker.putLayerMetadata(layerName, LAST_UPDATED, lastUpdatedEntry);
 
-        logger.debug(
+        LOGGER.fine(
                 "Created tile range mask based on GeoRSS geometry feed from "
                         + pollDef
                         + " for "
@@ -179,16 +182,16 @@ class GeoRSSPollTask implements Runnable {
 
         final boolean tilesAffected = tileRangeMask.hasTilesSet();
         if (tilesAffected) {
-            logger.info("Launching reseed process " + pollDef + " for " + layerName);
+            LOGGER.info("Launching reseed process " + pollDef + " for " + layerName);
         } else {
-            logger.info(
+            LOGGER.info(
                     pollDef + " for " + layerName + " did not affect any tile. No need to reseed.");
             return;
         }
 
         launchSeeding(layer, pollDef, gridSetId, tileRangeMask);
 
-        logger.info(
+        LOGGER.info(
                 "Seeding process for tiles affected by feed "
                         + feedUrl.toExternalForm()
                         + " successfully launched.");
@@ -203,7 +206,7 @@ class GeoRSSPollTask implements Runnable {
         if (feedUrl.indexOf(LAST_UPDATE_URL_TEMPLATE) > -1) {
             String replaceValue = lastUpdatedEntry == null ? "" : lastUpdatedEntry;
             url = feedUrl.replace(LAST_UPDATE_URL_TEMPLATE, replaceValue);
-            logger.info("Feed URL templated as '" + url + "'");
+            LOGGER.info("Feed URL templated as '" + url + "'");
         }
         return url;
     }
@@ -224,18 +227,18 @@ class GeoRSSPollTask implements Runnable {
                             + target.getAbsolutePath());
         }
 
-        logger.warn(
+        LOGGER.warning(
                 "\n!!!!!!!!!!!\n REMEMBER NOT TO SET THE org.geowebcache.georss.debugToDisk"
                         + " SYSTEM PROPERTY ON A PRODUCTION ENVIRONMENT \n!!!!!!!!!!!");
         BufferedImage[] byLevelMasks = matrix.getByLevelMasks();
 
         for (int i = 0; i < byLevelMasks.length; i++) {
             File output = new File(target, poll.getLayerName() + "_level_" + i + ".tiff");
-            logger.info("--- writing " + output.getAbsolutePath() + "---");
+            LOGGER.info("--- writing " + output.getAbsolutePath() + "---");
             try {
                 ImageIO.write(byLevelMasks[i], "TIFF", output);
             } catch (IOException e) {
-                logger.debug(e);
+                LOGGER.log(Level.FINE, e.getMessage(), e);
             }
         }
     }
@@ -264,7 +267,7 @@ class GeoRSSPollTask implements Runnable {
                 mimeList = new LinkedList<>();
                 mimeList.add(mime);
             } catch (MimeException e) {
-                logger.error(e.getMessage());
+                LOGGER.severe(e.getMessage());
             }
         }
 
@@ -292,9 +295,9 @@ class GeoRSSPollTask implements Runnable {
                 GWCTask[] tasks = seeder.createTasks(dtr, layer, GWCTask.TYPE.TRUNCATE, 1, false);
                 tasks[0].doAction();
             } catch (GeoWebCacheException e) {
-                logger.error("Problem truncating based on GeoRSS feed: " + e.getMessage());
+                LOGGER.severe("Problem truncating based on GeoRSS feed: " + e.getMessage());
             } catch (InterruptedException e) {
-                logger.info("Task abruptly interrupted.");
+                LOGGER.info("Task abruptly interrupted.");
                 Thread.currentThread().interrupt();
                 return;
             }
@@ -302,7 +305,7 @@ class GeoRSSPollTask implements Runnable {
 
         // If truncate was all that was needed, we can quit now
         if (pollDef.getOperation() == GWCTask.TYPE.TRUNCATE) {
-            logger.info("Truncation succeeded, won't seed as stated by poll def: " + pollDef);
+            LOGGER.info("Truncation succeeded, won't seed as stated by poll def: " + pollDef);
             return;
         }
 
@@ -358,13 +361,13 @@ class GeoRSSPollTask implements Runnable {
             }
 
             try {
-                logger.debug(
+                LOGGER.fine(
                         "Found "
                                 + liveCount
                                 + " running seed threads. Waiting 3s for them to terminate.");
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
-                logger.debug(e);
+                LOGGER.log(Level.FINE, e.getMessage(), e);
                 Thread.currentThread().interrupt();
             }
 
@@ -379,13 +382,13 @@ class GeoRSSPollTask implements Runnable {
                 }
             }
             if (liveCount > 0) {
-                logger.info(
+                LOGGER.info(
                         liveCount
                                 + " seed jobs are still waiting to terminate, proceeding anyway.");
             }
 
         } else {
-            logger.debug("Found no running seed jobs");
+            LOGGER.fine("Found no running seed jobs");
         }
     }
 }

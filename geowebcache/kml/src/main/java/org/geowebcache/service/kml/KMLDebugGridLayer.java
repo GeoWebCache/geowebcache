@@ -40,8 +40,8 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
 
     public static final int IS_KMZ = 100;
 
-    // private static Log log =
-    // LogFactory.getLog(org.geowebcache.service.kml.KMLDebugGridLayer.class);
+    // private static Logger log =
+    // Logging.getLogger(org.geowebcache.service.kml.KMLDebugGridLayer.class);
 
     // This is completely isolated anyway
     private static GridSetBroker gridSetBroker =
@@ -164,7 +164,7 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
     }
 
     public int[][] getZoomInGridLoc(SRS srs, int[] gridLoc) {
-        // log.warn("done - getZoomInGridLoc(srsIdx, gridLoc)");
+        // log.warning("done - getZoomInGridLoc(srsIdx, gridLoc)");
 
         int[][] retVal = new int[4][3];
 
@@ -264,7 +264,7 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
     }
 
     public int[] getZoomedOutGridLoc(SRS srs) {
-        // log.warn("done - getZoomedOutGridLoc");
+        // log.warning("done - getZoomedOutGridLoc");
         int[] zoomedOutGridLoc = new int[3];
         zoomedOutGridLoc[0] = -1;
         zoomedOutGridLoc[1] = -1;

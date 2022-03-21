@@ -43,9 +43,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.diskquota.QuotaStore;
 import org.geowebcache.diskquota.storage.PageStats;
@@ -62,7 +63,7 @@ import org.springframework.util.Assert;
 
 public class BDBQuotaStore implements QuotaStore {
 
-    private static final Log log = LogFactory.getLog(BDBQuotaStore.class);
+    private static final Logger log = Logging.getLogger(BDBQuotaStore.class.getName());
 
     private static final String GLOBAL_QUOTA_NAME = "___GLOBAL_QUOTA___";
 
@@ -116,7 +117,7 @@ public class BDBQuotaStore implements QuotaStore {
 
         boolean disabled = Boolean.parseBoolean(cacheDirFinder.findEnvVar(GWC_DISKQUOTA_DISABLED));
         if (disabled) {
-            log.warn(
+            log.warning(
                     " -- Found environment variable "
                             + GWC_DISKQUOTA_DISABLED
                             + " set to true. DiskQuotaMonitor is disabled.");
@@ -170,14 +171,15 @@ public class BDBQuotaStore implements QuotaStore {
 
             deleteStaleLayersAndCreateMissingTileSets();
 
-            log.info(
+            log.config(
                     "Berkeley DB JE Disk Quota page store configured at "
                             + storeDirectory.getAbsolutePath());
         } catch (RuntimeException e) {
             transactionRunner.shutdownNow();
             throw e;
         }
-        log.info("Quota Store initialized. Global quota: " + getGloballyUsedQuota().toNiceString());
+        log.config(
+                "Quota Store initialized. Global quota: " + getGloballyUsedQuota().toNiceString());
     }
 
     public void close() throws Exception {
@@ -185,12 +187,13 @@ public class BDBQuotaStore implements QuotaStore {
             return;
         }
         open = false;
-        log.info("Requesting to close quota store...");
+        log.config("Requesting to close quota store...");
         transactionRunner.shutdown();
         try {
             transactionRunner.awaitTermination(30 * 1000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ie) {
-            log.error(
+            log.log(
+                    Level.SEVERE,
                     "Time out shutting down quota store write thread, trying to "
                             + "close the entity store as is.",
                     ie);
@@ -200,7 +203,7 @@ public class BDBQuotaStore implements QuotaStore {
             entityStore.close();
             environment.close();
         }
-        log.info("Quota store closed.");
+        log.config("Quota store closed.");
     }
 
     private void configure(final File storeDirectory) throws InterruptedException {
@@ -234,7 +237,7 @@ public class BDBQuotaStore implements QuotaStore {
                 if (null
                         == usedQuotaByTileSetId.get(
                                 transaction, GLOBAL_QUOTA_NAME, LockMode.DEFAULT)) {
-                    log.debug("First time run: creating global quota object");
+                    log.fine("First time run: creating global quota object");
                     // need a global TileSet cause the Quota->TileSet relationship is enforced
                     TileSet globalTileSet = new TileSet(GLOBAL_QUOTA_NAME);
                     tileSetById.put(transaction, globalTileSet);
@@ -242,7 +245,7 @@ public class BDBQuotaStore implements QuotaStore {
                     Quota globalQuota = new Quota();
                     globalQuota.setTileSetId(GLOBAL_QUOTA_NAME);
                     usedQuotaById.put(transaction, globalQuota);
-                    log.debug("created Global Quota");
+                    log.fine("created Global Quota");
                 }
 
                 final Set<String> layerNames = tilePageCalculator.getLayerNames();
@@ -260,7 +263,8 @@ public class BDBQuotaStore implements QuotaStore {
                     try {
                         new Deleter(layerName, ts -> true).call(transaction);
                     } catch (Exception e) {
-                        log.warn(
+                        log.log(
+                                Level.WARNING,
                                 "Error deleting disk quota information for layer '"
                                         + layerName
                                         + "'",
@@ -309,7 +313,7 @@ public class BDBQuotaStore implements QuotaStore {
         String id = tset.getId();
         TileSet stored;
         if (null == (stored = tileSetById.get(transaction, id, LockMode.DEFAULT))) {
-            log.debug("Creating TileSet for quota tracking: " + tset);
+            log.fine("Creating TileSet for quota tracking: " + tset);
             tileSetById.putNoReturn(transaction, tset);
             stored = tset;
             Quota tileSetUsedQuota = new Quota();
@@ -341,12 +345,12 @@ public class BDBQuotaStore implements QuotaStore {
         } catch (RuntimeException e) {
             throw e;
         } catch (InterruptedException e) {
-            log.debug(
+            log.fine(
                     "Caught InterruptedException while waiting for command "
                             + command.getClass().getSimpleName());
             throw e;
         } catch (ExecutionException e) {
-            log.warn(e);
+            log.log(Level.WARNING, e.getMessage(), e);
             Throwable cause = e.getCause();
             if (cause instanceof RuntimeException) {
                 throw (RuntimeException) cause;

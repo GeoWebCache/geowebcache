@@ -31,11 +31,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.config.legends.LegendInfo;
 import org.geowebcache.config.legends.LegendInfoBuilder;
 import org.geowebcache.config.meta.ServiceContact;
@@ -61,7 +61,7 @@ import org.geowebcache.util.URLMangler;
 
 public class WMTSGetCapabilities {
 
-    private static Log log = LogFactory.getLog(WMTSGetCapabilities.class);
+    private static Logger log = Logging.getLogger(WMTSGetCapabilities.class.getName());
 
     private TileLayerDispatcher tld;
 
@@ -125,7 +125,7 @@ public class WMTSGetCapabilities {
             os.write(data);
             os.flush();
         } catch (IOException ioe) {
-            log.debug("Caught IOException" + ioe.getMessage());
+            log.fine("Caught IOException" + ioe.getMessage());
         }
     }
 

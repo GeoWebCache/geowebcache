@@ -16,8 +16,9 @@ package org.geowebcache.storage;
 
 import java.io.File;
 import java.util.List;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.geowebcache.util.GWCVars;
@@ -45,7 +46,7 @@ public class DefaultStorageFinder {
 
     public static final String GWC_BLANK_TILE_PATH = "GWC_BLANK_TILE_PATH";
 
-    private static Log log = LogFactory.getLog(org.geowebcache.storage.DefaultStorageFinder.class);
+    private static Logger log = Logging.getLogger(DefaultStorageFinder.class.getName());
 
     private String defaultPrefix = null;
 
@@ -93,8 +94,8 @@ public class DefaultStorageFinder {
                 String typeStr = v.getType().getSource();
                 String value = v.getValue();
                 if (value == null || value.isEmpty()) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(typeStr + varStr + " is unset");
+                    if (log.isLoggable(Level.FINE)) {
+                        log.fine(typeStr + varStr + " is unset");
                     }
                     continue;
                 }
@@ -105,15 +106,15 @@ public class DefaultStorageFinder {
                 msgPrefix = "Found " + typeStr + varStr + " set to " + value;
 
                 if (!fh.exists()) {
-                    log.error(msgPrefix + " , but this path does not exist");
+                    log.log(Level.SEVERE, msgPrefix + " , but this path does not exist");
                     continue;
                 }
                 if (!fh.isDirectory()) {
-                    log.error(msgPrefix + " , which is not a directory");
+                    log.log(Level.SEVERE, msgPrefix + " , which is not a directory");
                     continue;
                 }
                 if (!fh.canWrite()) {
-                    log.error(msgPrefix + " , which is not writeable");
+                    log.log(Level.SEVERE, msgPrefix + " , which is not writeable");
                     continue;
                 }
 

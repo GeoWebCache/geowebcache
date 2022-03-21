@@ -16,15 +16,15 @@
 package org.geowebcache.seed;
 
 import java.util.Map;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.seed.GWCTask.TYPE;
 
 /** Stores the information for a Seed Request. */
 public class SeedRequest {
-    private static Log log = LogFactory.getLog(org.geowebcache.seed.SeedRequest.class);
+    private static Logger log = Logging.getLogger(SeedRequest.class.getName());
 
     private String name = null;
 
@@ -192,7 +192,7 @@ public class SeedRequest {
             } else if (type.equalsIgnoreCase("truncate")) {
                 return TYPE.TRUNCATE;
             } else {
-                log.warn("Unknown type \"" + type + "\", assuming seed");
+                log.warning("Unknown type \"" + type + "\", assuming seed");
                 return TYPE.SEED;
             }
         }

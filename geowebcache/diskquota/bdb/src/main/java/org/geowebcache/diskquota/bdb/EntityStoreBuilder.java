@@ -23,13 +23,13 @@ import com.sleepycat.persist.StoreConfig;
 import java.io.File;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.diskquota.storage.PageStoreConfig;
 
 public class EntityStoreBuilder {
 
-    private static final Log log = LogFactory.getLog(EntityStoreBuilder.class);
+    private static final Logger log = Logging.getLogger(EntityStoreBuilder.class.getName());
 
     private PageStoreConfig config;
 
@@ -58,12 +58,12 @@ public class EntityStoreBuilder {
         Integer cacheSizeMB = config.getCacheSizeMB();
         if (cacheMemoryPercentAllowed == null) {
             if (cacheSizeMB == null) {
-                log.info(
+                log.config(
                         "Neither disk quota page store' cache memory percent nor cache size was provided."
                                 + " Defaulting to 25% Heap Size");
                 envCfg.setCachePercent(25);
             } else {
-                log.info("Disk quota page store cache explicitly set to " + cacheSizeMB + "MB");
+                log.config("Disk quota page store cache explicitly set to " + cacheSizeMB + "MB");
                 envCfg.setCacheSize(cacheSizeMB);
             }
         } else {

@@ -33,9 +33,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeType;
@@ -59,7 +60,7 @@ import org.jclouds.openstack.swift.v1.options.ListContainerOptions;
 /** Blobstore class compatatble with Openstack Swift. */
 public class SwiftBlobStore implements BlobStore {
 
-    static final Log log = LogFactory.getLog(SwiftBlobStore.class);
+    static final Logger logg = Logging.getLogger(SwiftBlobStore.class.getName());
 
     private final BlobStoreListenerList listeners = new BlobStoreListenerList();
 
@@ -125,8 +126,7 @@ public class SwiftBlobStore implements BlobStore {
             this.swiftApi.close();
             this.blobStoreContext.close();
         } catch (IOException e) {
-            log.error("Error closing connection.");
-            log.error(e);
+            log.log(Level.SEVERE, "Error closing connection.", e);
         }
     }
 
@@ -147,8 +147,7 @@ public class SwiftBlobStore implements BlobStore {
             final String key = keyBuilder.forTile(obj);
 
             executor.execute(new SwiftUploadTask(key, tile, listeners, objectApi));
-            log.debug(
-                    "Added upload request to task queue. Queue length is now " + taskQueue.size());
+            log.fine("Added upload request to task queue. Queue length is now " + taskQueue.size());
         } catch (IOException e) {
             throw new StorageException("Could not process tile object for upload.");
         }
@@ -295,7 +294,7 @@ public class SwiftBlobStore implements BlobStore {
 
     @Override
     public boolean rename(String oldLayerName, String newLayerName) {
-        log.debug("No need to rename layers, SwiftBlobStore uses layer id as key root");
+        log.fine("No need to rename layers, SwiftBlobStore uses layer id as key root");
         if (objectApi.get(oldLayerName) != null) {
             listeners.sendLayerRenamed(oldLayerName, newLayerName);
         }
@@ -395,7 +394,7 @@ public class SwiftBlobStore implements BlobStore {
 
                 // Cancel upload if image path will be deleted by this operation
                 if (key.startsWith(path)) {
-                    log.debug(
+                    log.fine(
                             taskQueue.remove(task)
                                     ? "Cancelled upload of " + key
                                     : "Failed to cancel upload of " + key);
@@ -406,7 +405,7 @@ public class SwiftBlobStore implements BlobStore {
         // Create task to delete this path and add it to the executor queue
         executor.execute(new SwiftDeleteTask(blobStore, path, config.getContainer(), notifier));
 
-        log.debug(String.format("Deleting Swift tile cache at %s/%s", config.getContainer(), path));
+        log.fine(String.format("Deleting Swift tile cache at %s/%s", config.getContainer(), path));
 
         // This operation can take a long time to complete and can
         // lead to timeout errors for the end-user when handled as a blocking

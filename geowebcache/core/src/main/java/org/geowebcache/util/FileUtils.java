@@ -23,12 +23,13 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 
 public class FileUtils {
     private static final File[] NO_FILES = new File[0];
-    static Log log = LogFactory.getLog(org.geowebcache.util.FileUtils.class);
+    static Logger log = Logging.getLogger(FileUtils.class.toString());
 
     public static boolean rmFileCacheDir(File path, ExtensionFileLister extfl) {
         if (path.exists()) {
@@ -45,7 +46,7 @@ public class FileUtils {
                     rmFileCacheDir(file, extfl);
                 } else {
                     if (!file.delete()) {
-                        log.error("Unable to delete " + file.getAbsolutePath());
+                        log.log(Level.SEVERE, "Unable to delete " + file.getAbsolutePath());
                     }
                 }
             }
@@ -135,8 +136,9 @@ public class FileUtils {
             moved = Files.move(srcPath, dstPath, StandardCopyOption.ATOMIC_MOVE);
         } catch (Exception e) {
             // Exception occurred falling back to the old renameTo
-            if (log.isDebugEnabled()) {
-                log.debug(
+            if (log.isLoggable(Level.FINE)) {
+                log.log(
+                        Level.FINE,
                         "An error occurred when executing atomic file renaming. Falling back to the old File.renameTo() method",
                         e);
             }

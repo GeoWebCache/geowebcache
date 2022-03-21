@@ -37,18 +37,18 @@ import java.util.Properties;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.util.FileUtils;
 import org.geowebcache.util.SuppressFBWarnings;
 
 public class LayerMetadataStore {
 
-    private static Log log =
-            LogFactory.getLog(org.geowebcache.storage.blobstore.file.LayerMetadataStore.class);
+    private static Logger log = Logging.getLogger(LayerMetadataStore.class.getName());
 
     public static final String PROPERTY_METADATA_MAX_RW_ATTEMPTS =
             "gwc.layermetadatastore.maxRWAttempts";
@@ -162,7 +162,7 @@ public class LayerMetadataStore {
         Properties metadata = loadLayerMetadata(metadataFile);
         long lastModified = metadataFile.lastModified();
 
-        log.debug("Start attempt to add key (key: " + key + ")");
+        log.fine("Start attempt to add key (key: " + key + ")");
 
         rwLock.writeLock().lock();
         try {
@@ -178,14 +178,14 @@ public class LayerMetadataStore {
                         // compare content between renamed file and memory content
                         Properties metadataAfterRename = loadLayerMetadata(metadataFile);
                         if (!metadata.equals(metadataAfterRename)) {
-                            log.debug(
+                            log.fine(
                                     "Renamed file content differs from expected saved content.\nCurrent:"
                                             + metadataAfterRename.toString()
                                             + "\nExpected: "
                                             + metadata.toString());
                             attempt++;
                         } else {
-                            log.debug(
+                            log.fine(
                                     "Temporary file renamed successfully (metadata: "
                                             + metadata.toString()
                                             + ")");
@@ -199,7 +199,7 @@ public class LayerMetadataStore {
                     }
                     tempFile.delete();
                 } else {
-                    log.debug(
+                    log.fine(
                             "Reattempting to write metadata file since timestamp changed (metadata: "
                                     + metadata.toString()
                                     + ")");
@@ -207,7 +207,7 @@ public class LayerMetadataStore {
                 // another process beat us, reload
                 // next line triggers a false-positive DLS_DEAD_LOCAL_STORE
                 if (metadata.isEmpty()) {
-                    log.debug(
+                    log.fine(
                             "Reattempting to write metadata file with empty metadata: "
                                     + metadata.toString()
                                     + ")");
@@ -217,7 +217,7 @@ public class LayerMetadataStore {
             }
             // optimistic write not possible
             if (maxAttempts == attempt) {
-                log.debug("Optimistic write reaches max number of attempts (" + maxAttempts + ")");
+                log.fine("Optimistic write reaches max number of attempts (" + maxAttempts + ")");
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -233,7 +233,7 @@ public class LayerMetadataStore {
                     File.createTempFile("tmp", LayerMetadataStore.METADATA_GZIP_EXTENSION, tmp);
             return this.writeMetadataFile(metadata, metadataFile);
         } catch (IOException e) {
-            log.error("Cannot create temporary file");
+            log.log(Level.SEVERE, "Cannot create temporary file");
             throw new UncheckedIOException(e);
         }
     }
@@ -297,7 +297,7 @@ public class LayerMetadataStore {
                         return props;
                     }
                     // Try again since some other GWC updated the file
-                    log.debug(
+                    log.fine(
                             "Reattempting to read metadata file since timestamp changed (metadata: "
                                     + props.toString()
                                     + ")");
@@ -307,7 +307,7 @@ public class LayerMetadataStore {
             }
             // optimistic read not possible
             if (maxAttempts == attempt) {
-                log.debug("Optimistic read reaches max number of attempts (" + maxAttempts + ")");
+                log.fine("Optimistic read reaches max number of attempts (" + maxAttempts + ")");
                 // throw new IOException("Max number of reading attempts reached
                 // ("+maxAttempts+")");
             }
@@ -391,7 +391,8 @@ public class LayerMetadataStore {
                 oldMetadataFile.delete();
                 return compressedNewFile;
             } catch (IOException e) {
-                log.error(
+                log.log(
+                        Level.SEVERE,
                         "Upgrading metadata.properties - Failure creating new compressed file or deleting uncompressed one "
                                 + newMetadataFile.getPath()
                                 + '-'

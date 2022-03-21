@@ -16,8 +16,9 @@ package org.geowebcache.diskquota;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.DefaultStorageBroker;
@@ -36,7 +37,7 @@ import org.springframework.util.Assert;
  */
 class QueuedQuotaUpdatesProducer implements BlobStoreListener {
 
-    private static final Log log = LogFactory.getLog(QueuedQuotaUpdatesProducer.class);
+    private static final Logger log = Logging.getLogger(QueuedQuotaUpdatesProducer.class.getName());
 
     private final BlockingQueue<QuotaUpdate> queuedUpdates;
 
@@ -149,8 +150,10 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
         try {
             quotaStore.renameLayer(oldLayerName, newLayerName);
         } catch (InterruptedException e) {
-            log.error(
-                    "Can't rename " + oldLayerName + " to " + newLayerName + " in quota store", e);
+            log.log(
+                    Level.SEVERE,
+                    "Can't rename " + oldLayerName + " to " + newLayerName + " in quota store",
+                    e);
             Thread.currentThread().interrupt();
         }
     }
@@ -205,7 +208,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
 
     private boolean cancelled(String layerName) {
         if (cancelled) {
-            log.debug(
+            log.fine(
                     "Quota updates listener cancelled. Avoiding adding update for layer "
                             + layerName
                             + " to quota information queue");

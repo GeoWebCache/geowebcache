@@ -22,12 +22,14 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageReader;
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
-import org.apache.log4j.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.io.FileResource;
 import org.geowebcache.io.Resource;
 
@@ -37,7 +39,7 @@ import org.geowebcache.io.Resource;
  */
 public class ImageDecoderImpl implements ImageDecoder {
     /** Logger used */
-    private static final Logger LOGGER = Logger.getLogger(ImageEncoderImpl.class);
+    private static final Logger LOGGER = Logging.getLogger(ImageEncoderImpl.class.getName());
 
     /** Default string used for exceptions */
     public static final String OPERATION_NOT_SUPPORTED = "Operation not supported";
@@ -74,7 +76,7 @@ public class ImageDecoderImpl implements ImageDecoder {
                     break;
                 }
             } catch (ClassNotFoundException e) {
-                LOGGER.error(e.getMessage(), e);
+                LOGGER.log(Level.SEVERE, e.getMessage(), e);
             }
         }
     }
@@ -131,7 +133,7 @@ public class ImageDecoderImpl implements ImageDecoder {
                     throw new IllegalArgumentException("Wrong input object");
                 }
             } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
+                LOGGER.log(Level.SEVERE, e.getMessage(), e);
                 throw e;
             } finally {
                 // reader disposal
@@ -143,7 +145,7 @@ public class ImageDecoderImpl implements ImageDecoder {
                     try {
                         stream.close();
                     } catch (IOException e) {
-                        LOGGER.error(e.getMessage(), e);
+                        LOGGER.log(Level.SEVERE, e.getMessage(), e);
                     }
                     stream = null;
                 }

@@ -19,8 +19,9 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.io.Resource;
 
 /**
@@ -29,7 +30,7 @@ import org.geowebcache.io.Resource;
  * @author Bjoern Saxe
  */
 public abstract class ArcGISCompactCache {
-    private static final Log logger = LogFactory.getLog(ArcGISCompactCache.class);
+    private static final Logger LOGGER = Logging.getLogger(ArcGISCompactCache.class.getName());
 
     protected static final String BUNDLX_EXT = ".bundlx";
 
@@ -113,7 +114,7 @@ public abstract class ArcGISCompactCache {
 
             result = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         } catch (IOException e) {
-            logger.warn("Failed to read from little endian file", e);
+            LOGGER.log(Level.WARNING, "Failed to read from little endian file", e);
         }
 
         return result;

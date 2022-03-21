@@ -18,17 +18,17 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 
 /** Some utilities objects and functions used internally. */
 final class Utils {
 
-    private static Log LOGGER = LogFactory.getLog(Utils.class);
+    private static Logger LOGGER = Logging.getLogger(Utils.class.getName());
 
     // if we get the windows path separator we need to escape it for regex use
     static final String REGEX_FILE_SEPARATOR =
@@ -86,13 +86,13 @@ final class Utils {
 
     static RuntimeException exception(String message, Object... arguments) {
         String finalMessage = String.format(message, arguments);
-        LOGGER.error(finalMessage);
+        LOGGER.severe(finalMessage);
         return new RuntimeException(finalMessage);
     }
 
     static RuntimeException exception(Exception exception, String message, Object... arguments) {
         String finalMessage = String.format(message, arguments);
-        LOGGER.error(finalMessage);
+        LOGGER.severe(finalMessage);
         return new RuntimeException(finalMessage, exception);
     }
 

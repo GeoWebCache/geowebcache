@@ -14,12 +14,12 @@
  */
 package org.geowebcache.grid;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.springframework.util.Assert;
 
 public class GridSetFactory {
-    private static Log log = LogFactory.getLog(GridSetFactory.class);
+    private static Logger log = Logging.getLogger(GridSetFactory.class.getName());
 
     /**
      * Default pixel size in meters, producing a default of 90.7 DPI
@@ -123,13 +123,13 @@ public class GridSetFactory {
                 gridSet.setMetersPerUnit(EPSG3857_TO_METERS);
             } else {
                 if (resolutions == null) {
-                    log.warn(
+                    log.config(
                             "GridSet "
                                     + name
                                     + " was defined without metersPerUnit, assuming 1m/unit."
                                     + " All scales will be off if this is incorrect.");
                 } else {
-                    log.warn(
+                    log.config(
                             "GridSet "
                                     + name
                                     + " was defined without metersPerUnit. "

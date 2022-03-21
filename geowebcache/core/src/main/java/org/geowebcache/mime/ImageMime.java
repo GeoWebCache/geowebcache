@@ -26,20 +26,21 @@ import java.awt.image.renderable.ParameterBlock;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageWriter;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.ExtremaDescriptor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 
 public class ImageMime extends MimeType {
 
     public static final String NATIVE_PNG_WRITER_CLASS_NAME =
             "com.sun.media.imageioimpl.plugins.png.CLibPNGImageWriter";
 
-    private static Log log = LogFactory.getLog(org.geowebcache.mime.ImageMime.class);
+    private static Logger log = Logging.getLogger(ImageMime.class.getName());
 
     boolean supportsAlphaChannel;
 
@@ -168,8 +169,8 @@ public class ImageMime extends MimeType {
 
         // TODO Making a special exception, generalize later
         if (!formatStr.equals("image/png; mode=24bit") && formatStr.contains(";")) {
-            if (log.isDebugEnabled()) {
-                log.debug("Slicing off " + formatStr.split(";")[1]);
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Slicing off " + formatStr.split(";")[1]);
             }
             formatStr = formatStr.split(";")[0];
         }

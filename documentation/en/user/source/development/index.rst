@@ -7,13 +7,13 @@ You are encouraged to help contribute code to GeoWebCache.  To do so, you will f
 
 This is the current prerequisites:
 
- * Java 7 (`Oracle JDK <http://www.oracle.com/technetwork/java/javase/downloads/index.html>`__ or `OpenJDK <http://openjdk.java.net>`__ )
+ * Java 8 (`OpenJDK <http://openjdk.java.net>`__ linux, `OpenJDK Temurin 8 <https://adoptium.net/?variant=openjdk8&jvmVariant=hotspot>` windows and macOS installers)
  * `Maven <http://maven.apache.org/>`_
  * `Git <http://git-scm.com>`_
 
-Please make sure you use **Java 7** to compile to ensure that we don't accidentally use new features only available in Java 8.
+Please make sure you use **Java 8** to compile to ensure that we don't accidentally use new features only available in Java 11.
 
-You are encouraged to join the `GeoWebCache Developers mailing list <https://lists.sourceforge.net/lists/listinfo/geowebcache-devel>`_ to discuss your work.  It is always a good idea to ask whether anyone else has already solved the same problem.
+You are encouraged to join the `GeoWebCache Developers mailing list <https://lists.sourceforge.net/lists/listinfo/geowebcache-devel>`__ to discuss your work.  It is always a good idea to ask whether anyone else has already solved the same problem.
 
 
 Setting Up
@@ -27,7 +27,7 @@ Setting Up
 
    .. code-block:: bash
 
-      set JAVA_HOME=C:\Program Files\Java\jdk1.7.0_79
+      set JAVA_HOME=c:\Program Files\Temurin\jdk8u322-b06
 
    Linux/OS X:
 
@@ -41,14 +41,14 @@ Setting Up
 
    .. code-block:: bash
 
-      set M2_HOME = C:\java\apache-maven-3.0.5
+      set M2_HOME = C:\java\apache-maven-3.8.5
       set PATH=%PATH%;%M2_HOME%\bin;%JAVA_HOME%\bin
 
    Linux:
 
    .. code-block:: bash
 
-      export M2_HOME = ~/java/apache-maven-3.0.5
+      export M2_HOME = ~/java/apache-maven-3.8.5
       export PATH=$PATH:$M2_HOME/bin:$JAVA_HOME/bin
 
    For more detail instructions on maven see the `download page <http://maven.apache.org/download.cgi>`_.
@@ -98,46 +98,15 @@ Build
 Setting up Eclipse
 ------------------
 
-#. Inside the source code directory, run:
+#. Open as Maven project, choose :file:`geowebcache` folder (containing root :file:`pom.xml`).
 
-   .. code-block:: bash
-
-      cd geowebcache
-      mvn eclipse:eclipse
-
-   This generates the :file:`.project` and :file:`.classpath` files used to define an Eclipse
-   project.
-
-#. Create a new workspace in Eclipse
-
-#. Configure the Maven repository
-
-   * Navigate to :menuselection:`Window --> Preferences --> Java --> Build Path --> Class Path Variables`
-   * Add a new variable M2_REPO, and set the path to :file:`.m2/repository` in your home directory
-     as shown below:
-
-     ==================== =========================================
-     System               PATH
-     ==================== =========================================
-     Windows              :file:`C:\\\\Users\\You\\.m2\\repository`
-     Linux or Mac         :file:`~/.m2/repository`
-     ==================== =========================================
-
-#. Next we will configure Eclipse for working on GeoWebCache files.
+#. Configure Eclipse for working on GeoWebCache files.
 
    * Navigate to to :menuselection:`Java --> Code Style --> Formatter`.
    * Click on Import, choose :file:`geowebcache/tools/formatter.xml`
 
 #. There is also a :file:`geowebcache/tools/codetemplates.xml` to assist
    with creating new files.
-
-#. Now we need to import the actual project:
-
-   * Open the appropriate wizard menuselection:`File --> Import --> Existing Projects into Workspace`
-   * Choose your :file:`geowebcache` folder
-
-   This step depends on the :file:`.project` and :file:`.classpath` files generated
-   by ``mvn eclipse:eclipse`` above.
 
 #. To run GeoWebCache use the main menu :menuselection:`Run --> Debug Configurations` and double-click on Java Configurations
 
@@ -146,6 +115,67 @@ Setting up Eclipse
    * For main class, set **Start**
 
    Then press :guilabel:`Close`, or :guilabel:`Debug` if you want to try it right away.
+
+Setting up InteliJ
+------------------
+
+#. Open as Maven project, choose :file:`geowebcache` folder (containing root :file:`pom.xml`).
+
+#. InteliJ has some succes loading Eclipse :file:`geowebcache/tools/codetemplates.xml` and :file:`geowebcache/tools/formatter.xml`.
+
+#. To setup a :command:`Run Configuration` for GeoWebCache uses:
+   
+   * :file:`org.geowebcache.jetty.Start` class
+   * program directory: :kbd:`$MODULE_DIR$`
+   
+   .. figure:: img/intelij-run.png
+      
+      IntellIiJ Run Configuration
+
+Setting up Logging
+------------------
+
+* GeoWebCache uses or bridges a number of logging frameworks, requiring the following configuration:
+
+  * :file:`log4j2.xml` - log4j configuration
+  * :file:`logging.properties` redirecting java util logging to log4j
+
+* Logging in web application controled by :file:`WEB-INF/classes/log4j.xml`.
+  
+  Used by :command:`mvn jetty:run-war`
+
+* Logging in test-cases is controlled by :file:`src/test/log4j2-test.xml`.
+  
+  Used by :command:`mvn jetty:run`
+
+* ``LoggingContextListener`` can override based on ``org.geowebcache.util.logging.policy`` parameter, see :ref:`troubleshooting` discussion of logging for details.
+  
+* Care is taken to exclude ``org.springframework:spring-jcl``:
+  
+  .. code-block:: xml
+     
+     <dependency>
+       <groupId>org.springframework</groupId>
+       <artifactId>spring-core</artifactId>
+       <exclusions>
+         <exclusion>
+           <artifactId>spring-jcl</artifactId>
+           <groupId>org.springframework</groupId>
+         </exclusion>
+       </exclusions>
+     </dependency>
+     
+  So that the implementation provided by Log4j is used:
+  
+  .. code-block::
+  
+     <dependency>
+       <groupId>org.apache.logging.log4j</groupId>
+       <artifactId>log4j-jcl</artifactId>
+     </dependency>
+     
+  
+  For more information see `org.apache.commons.logging <https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/apache/commons/logging/package-summary.html>`__ javadocs (although older `manual <https://docs.spring.io/spring-framework/docs/5.0.0.M5/spring-framework-reference/html/overview.html#overview-logging>`__ provides a better explanation on how exclusion works).
 
 Contributing patches
 --------------------

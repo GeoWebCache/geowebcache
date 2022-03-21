@@ -15,12 +15,13 @@
 package org.geowebcache.seed;
 
 import java.util.concurrent.Callable;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 
 class MTSeeder implements Callable<GWCTask> {
-    private static Log log = LogFactory.getLog(org.geowebcache.seed.MTSeeder.class);
+    private static Logger log = Logging.getLogger(MTSeeder.class.getName());
 
     protected GWCTask task = null;
 
@@ -32,12 +33,12 @@ class MTSeeder implements Callable<GWCTask> {
         try {
             task.doAction();
         } catch (GeoWebCacheException gwce) {
-            log.error(gwce.getMessage(), gwce);
+            log.log(Level.SEVERE, gwce.getMessage(), gwce);
         } catch (InterruptedException e) {
             log.info(task.getType() + " task #" + task.getTaskId() + " has been interrupted");
             Thread.currentThread().interrupt();
         } catch (RuntimeException e) {
-            log.error(task.getType() + " task #" + task.getTaskId() + " failed", e);
+            log.log(Level.SEVERE, task.getType() + " task #" + task.getTaskId() + " failed", e);
         }
         return task;
     }

@@ -166,7 +166,6 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <version>3.2.3</version>
         <executions>
@@ -191,6 +190,12 @@
           <webApp>
             <contextPath>/geowebcache</contextPath>
           </webApp>
+          <systemProperties>
+            <systemProperty>
+              <name>log4j2.configurationFile</name>
+              <value>src/test/resources/log4j2-test.xml</value>
+            </systemProperty>
+          </systemProperties>
           <scanIntervalSeconds>10</scanIntervalSeconds>
           <stopPort>9966</stopPort>
           <stopKey>foo</stopKey>

@@ -15,8 +15,8 @@
 package org.geowebcache.config;
 
 import java.util.Arrays;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensionPriority;
 import org.geowebcache.grid.BoundingBox;
@@ -30,7 +30,7 @@ import org.geowebcache.grid.SRS;
  * <p>Includes preconfigured EPSG:4326 and EPSG:3857 (or EPSG:900913) gridsets
  */
 public class DefaultGridsets extends SimpleGridSetConfiguration {
-    private static Log log = LogFactory.getLog(DefaultGridsets.class);
+    private static Logger log = Logging.getLogger(DefaultGridsets.class.getName());
 
     private final GridSet WORLD_EPSG4326;
 
@@ -135,7 +135,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
         addInternal(WORLD_EPSG4326x2);
 
         final SRS googleMapsCompatibleSRS = useEPSG900913 ? SRS.getEPSG900913() : SRS.getEPSG3857();
-        log.debug(
+        log.fine(
                 "Adding "
                         + googleMapsCompatibleSRS
                         + " grid set for Spherical Mercator / GoogleMapsCompatible");
@@ -183,7 +183,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
                         + "of 512x512 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
         addInternal(WORLD_EPSG3857x2);
 
-        log.debug("Adding GlobalCRS84Pixel");
+        log.fine("Adding GlobalCRS84Pixel");
         GridSet GlobalCRS84Pixel =
                 GridSetFactory.createGridSet(
                         "GlobalCRS84Pixel",
@@ -206,7 +206,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
                         + "and approximated pixel size in meters are only accurate near the equator.");
         addInternal(GlobalCRS84Pixel);
 
-        log.debug("Adding GlobalCRS84Scale");
+        log.fine("Adding GlobalCRS84Scale");
         GridSet GlobalCRS84Scale =
                 GridSetFactory.createGridSet(
                         "GlobalCRS84Scale",
@@ -228,7 +228,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
 
         addInternal(GlobalCRS84Scale);
 
-        log.debug("Adding GoogleCRS84Quad");
+        log.fine("Adding GoogleCRS84Quad");
         GridSet GoogleCRS84Quad =
                 GridSetFactory.createGridSet(
                         "GoogleCRS84Quad",
@@ -252,7 +252,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
 
         addInternal(GoogleCRS84Quad);
 
-        log.debug("Adding OGC TMS WebMercatorQuad");
+        log.fine("Adding OGC TMS WebMercatorQuad");
         WEB_MERCATOR_QUAD =
                 GridSetFactory.createGridSet(
                         "WebMercatorQuad",
@@ -302,7 +302,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
         addInternal(WEB_MERCATOR_QUAD);
         addx2Gridset(WEB_MERCATOR_QUAD);
 
-        log.debug("Adding OGC TMS WorldCRS84Quad");
+        log.fine("Adding OGC TMS WorldCRS84Quad");
         WORLD_CRS84_QUAD =
                 GridSetFactory.createGridSet(
                         "WorldCRS84Quad",
@@ -345,7 +345,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
         addInternal(WORLD_CRS84_QUAD);
         addx2Gridset(WORLD_CRS84_QUAD);
 
-        log.debug("Adding OGC TMS WorldMercatorWGS84Quad");
+        log.fine("Adding OGC TMS WorldMercatorWGS84Quad");
         WORLD_MERCATOR_WGS84_QUAD =
                 GridSetFactory.createGridSet(
                         "WorldMercatorWGS84Quad",
@@ -486,7 +486,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
         }
 
         // UPS Artic
-        log.debug("Adding OGC TMS UPSArcticWGS84Quad");
+        log.fine("Adding OGC TMS UPSArcticWGS84Quad");
         double[] upsScales = {
             458726544.4,
             229363272.2,
@@ -541,7 +541,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
         addx2Gridset(upsArctic);
 
         // UPS antarctic
-        log.debug("Adding OGC TMS UPSAntarcticWGS84Quad");
+        log.fine("Adding OGC TMS UPSAntarcticWGS84Quad");
         final GridSet upsAntarctic =
                 GridSetFactory.createGridSet(
                         "UPSAntarcticWGS84Quad",
@@ -565,7 +565,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
         addInternal(upsAntarctic);
         addx2Gridset(upsAntarctic);
 
-        log.debug("Adding OGC TMS EuropeanETRS89_LAEAQuad");
+        log.fine("Adding OGC TMS EuropeanETRS89_LAEAQuad");
         GridSet euETRS89LaeaQuad =
                 GridSetFactory.createGridSet(
                         "EuropeanETRS89_LAEAQuad",
@@ -605,7 +605,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
         addInternal(euETRS89LaeaQuad);
         addx2Gridset(euETRS89LaeaQuad);
 
-        log.debug("Adding OGC TMS CanadianNAD83_LCC");
+        log.fine("Adding OGC TMS CanadianNAD83_LCC");
         GridSet canadianNAD83Lcc =
                 GridSetFactory.createGridSet(
                         "CanadianNAD83_LCC",

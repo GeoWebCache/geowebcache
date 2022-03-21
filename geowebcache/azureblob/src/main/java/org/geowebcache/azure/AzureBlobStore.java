@@ -37,11 +37,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
@@ -62,7 +62,7 @@ import org.springframework.http.HttpStatus;
 
 public class AzureBlobStore implements BlobStore {
 
-    static Log log = LogFactory.getLog(AzureBlobStore.class);
+    static Logger log = Logging.getLogger(AzureBlobStore.class.getName());
 
     private final TMSKeyBuilder keyBuilder;
     private final BlobStoreListenerList listeners = new BlobStoreListenerList();
@@ -404,7 +404,7 @@ public class AzureBlobStore implements BlobStore {
 
     @Override
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
-        log.debug("No need to rename layers, AzureBlobStore uses layer id as key root");
+        log.fine("No need to rename layers, AzureBlobStore uses layer id as key root");
         if (client.listBlobs(oldLayerName, 1).size() > 0) {
             listeners.sendLayerRenamed(oldLayerName, newLayerName);
         }

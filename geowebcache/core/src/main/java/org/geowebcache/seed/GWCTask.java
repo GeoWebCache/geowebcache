@@ -15,14 +15,14 @@
 package org.geowebcache.seed;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 
 /** */
 public abstract class GWCTask {
 
-    private static final Log log = LogFactory.getLog(GWCTask.class);
+    private static final Logger log = Logging.getLogger(GWCTask.class.getName());
 
     public static enum TYPE {
         UNSET,

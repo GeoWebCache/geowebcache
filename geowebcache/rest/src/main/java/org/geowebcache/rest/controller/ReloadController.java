@@ -23,10 +23,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -50,7 +50,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "${gwc.context.suffix:}/rest")
 public class ReloadController implements ApplicationContextAware {
-    private static Log log = LogFactory.getLog(ReloadController.class);
+    private static Logger log = Logging.getLogger(ReloadController.class.getName());
 
     @Autowired TileLayerDispatcher layerDispatcher;
     private ApplicationContext applicationContext;

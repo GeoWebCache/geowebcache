@@ -17,13 +17,13 @@ package org.geowebcache.diskquota;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 /** Shared implementation for UsageStatsMonitor and QuotaUpdatesMonitor */
 public abstract class AbstractMonitor {
-    private static final Log log = LogFactory.getLog(AbstractMonitor.class);
+    private static final Logger log = Logging.getLogger(AbstractMonitor.class.getName());
 
     public AbstractMonitor() {
         super();
@@ -65,7 +65,7 @@ public abstract class AbstractMonitor {
                                     + " of "
                                     + maxAttempts
                                     + "...";
-                    log.warn(message);
+                    log.warning(message);
                     if (attempts == maxAttempts) {
                         throw new RuntimeException(message, e);
                     }

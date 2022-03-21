@@ -21,12 +21,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
@@ -43,7 +43,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "${gwc.context.suffix:}/rest")
 public class ByteStreamController {
-    private static Log log = LogFactory.getLog(ByteStreamController.class);
+    private static Logger log = Logging.getLogger(ByteStreamController.class.getName());
 
     volatile WebResourceBundle bundle;
 
@@ -59,7 +59,7 @@ public class ByteStreamController {
                         bundle = DEFAULT_BUNDLE;
                     } else {
                         if (result.size() > 1) {
-                            log.warn(
+                            log.warning(
                                     "Multiple web resource bundles present, using "
                                             + result.get(0).getClass().getName());
                         }

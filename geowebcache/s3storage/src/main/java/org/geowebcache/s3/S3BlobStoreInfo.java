@@ -27,9 +27,9 @@ import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.S3ClientOptions;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
@@ -40,7 +40,7 @@ import org.geowebcache.storage.StorageException;
 @SuppressWarnings("deprecation")
 public class S3BlobStoreInfo extends BlobStoreInfo {
 
-    static Log log = LogFactory.getLog(S3BlobStoreInfo.class);
+    static Logger log = Logging.getLogger(S3BlobStoreInfo.class.getName());
 
     private static final long serialVersionUID = 9072751143836460389L;
 
@@ -368,7 +368,7 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
         if (null != useGzip) {
             clientConfig.setUseGzip(useGzip);
         }
-        log.debug("Initializing AWS S3 connection");
+        log.fine("Initializing AWS S3 connection");
         AmazonS3Client client = new AmazonS3Client(getCredentialsProvider(), clientConfig);
         if (endpoint != null && !"".equals(endpoint)) {
             S3ClientOptions s3ClientOptions = new S3ClientOptions();

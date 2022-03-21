@@ -30,11 +30,11 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geotools.http.HTTPClientFinder;
 import org.geotools.ows.ServiceException;
 import org.geotools.ows.wms.CRSEnvelope;
@@ -45,6 +45,7 @@ import org.geotools.ows.wms.WebMapServer;
 import org.geotools.ows.wms.xml.Dimension;
 import org.geotools.ows.wms.xml.Extent;
 import org.geotools.util.PreventLocalEntityResolver;
+import org.geotools.util.logging.Logging;
 import org.geotools.xml.XMLHandlerHints;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ConfigurationException;
@@ -74,8 +75,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 public class GetCapabilitiesConfiguration implements TileLayerConfiguration, GridSetConfiguration {
 
-    private static Log log =
-            LogFactory.getLog(org.geowebcache.config.wms.GetCapabilitiesConfiguration.class);
+    private static Logger log =
+            Logging.getLogger(
+                    org.geowebcache.config.wms.GetCapabilitiesConfiguration.class.getName());
 
     // regex patterns used to parse legends urls parameters
     private static final Pattern LEGEND_WIDTH_PATTERN =
@@ -196,7 +198,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
         final List<TileLayer> layers = getLayers(wms, wmsUrl, urlVersion);
 
         if (layers == null || layers.isEmpty()) {
-            log.error("Unable to find any layers based on " + url);
+            log.log(Level.SEVERE, "Unable to find any layers based on " + url);
         } else {
             log.info("Loaded " + layers.size() + " layers from " + url);
         }
@@ -328,7 +330,9 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
                                     layer.getBoundingBoxes(),
                                     paramFilters);
                 } catch (GeoWebCacheException gwc) {
-                    log.error("Error creating " + layer.getName() + ": " + gwc.getMessage());
+                    log.log(
+                            Level.SEVERE,
+                            "Error creating " + layer.getName() + ": " + gwc.getMessage());
                 }
 
                 if (wmsLayer != null) {
@@ -449,11 +453,11 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
                 }
 
                 if (srs == null) {
-                    log.error(env.toString() + " has no EPSG code");
+                    log.log(Level.SEVERE, env.toString() + " has no EPSG code");
                 } else if (srs.getNumber() == 4326
                         || srs.getNumber() == 900913
                         || srs.getNumber() == 3857) {
-                    log.debug("Skipping " + srs.toString() + " for " + name);
+                    log.fine("Skipping " + srs.toString() + " for " + name);
                 } else {
                     String gridSetName = name + ":" + srs.toString();
                     BoundingBox extent =
@@ -561,8 +565,9 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
             layer.initialize(gridSetBroker);
             if (primaryConfig != null) {
                 primaryConfig.setDefaultValues(layer);
-            } else if (log.isErrorEnabled()) {
-                log.error(
+            } else if (log.isLoggable(Level.SEVERE)) {
+                log.log(
+                        Level.SEVERE,
                         "GetCapabilitiesConfiguration could not initialize a layer with default "
                                 + "values as it does not have a global configuration to delegate to.");
             }

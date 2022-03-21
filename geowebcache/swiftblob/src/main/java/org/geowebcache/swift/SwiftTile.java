@@ -19,8 +19,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.io.ByteStreams;
 import java.io.IOException;
 import java.io.InputStream;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.io.Resource;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
@@ -31,7 +31,7 @@ import org.jclouds.io.payloads.BaseMutableContentMetadata;
 import org.jclouds.io.payloads.ByteArrayPayload;
 
 public class SwiftTile {
-    static final Log log = LogFactory.getLog(SwiftBlobStore.class);
+    static final Logger log = Logging.getLogger("org.geowebcache.swift.SwiftBlobStore");
 
     private final String layerName;
     private final String gridSetId;
@@ -78,7 +78,7 @@ public class SwiftTile {
             metadata.setContentType(MimeType.createFromFormat(blobFormat).getMimeType());
         } catch (MimeException e) {
             // Do nothing if we cannot determine the mimeType;
-            log.warn("Could not determine mimetype for " + toString());
+            log.warning("Could not determine mimetype for " + toString());
         }
         return metadata;
     }

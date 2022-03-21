@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="info" dest="out">
+    <CustomLevels>
+      <CustomLevel name="CONFIG" intLevel="450" />
+      <CustomLevel name="FINEST" intLevel="700" />
+    </CustomLevels>>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%date{dd MMM HH:mm:ss} (%t) %-6level [%logger{2}] - %msg%n%throwable"/>
+        </Console>
+        <RollingFile name="Logfile">
+            <FileName>geowebcache.log</FileName>
+            <FilePattern>geowebcache.%d{dd-MMM}.%i.log.gz</FilePattern>
+            <ignoreExceptions>false</ignoreExceptions>
+            <PatternLayout pattern="%date{dd MMM HH:mm:ss} (%t) %-6level [%logger{2}] - %msg%n%throwable"/>
+            <Policies>
+               <SizeBasedTriggeringPolicy size="10MB"/>
+               <TimeBasedTriggeringPolicy/>
+             </Policies>
+             <DefaultRolloverStrategy max="3" />
+        </RollingFile>
+    </Appenders>
+    
+    <Loggers>
+        <Logger name="org.geowebcache.seed" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="Logfile"/>
+        </Logger>
+        <Logger name="org.geowebcache.seed" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="Logfile"/>
+        </Logger>
+        <Logger name="org.geowebcache" level="config" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="Logfile"/>
+        </Logger>
+        <Logger name="org.geotools" level="warn" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="Logfile"/>
+        </Logger>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="Logfile"/>
+        </Root>
+    </Loggers>
+</Configuration>

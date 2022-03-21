@@ -14,13 +14,14 @@
  */
 package org.geowebcache.swift;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.jclouds.blobstore.options.ListContainerOptions;
 import org.jclouds.openstack.swift.v1.blobstore.RegionScopedSwiftBlobStore;
 
 class SwiftDeleteTask implements Runnable {
-    static final Log log = LogFactory.getLog(SwiftDeleteTask.class);
+    static final Logger log = Logging.getLogger(SwiftDeleteTask.class.getName());
     static final String logStr = "%s, %s, %dms";
 
     private static final int RETRIES = 5;
@@ -56,7 +57,7 @@ class SwiftDeleteTask implements Runnable {
             try {
                 Thread.sleep(delayMs);
             } catch (InterruptedException e) {
-                log.debug(e.getMessage());
+                log.fine(e.getMessage());
             }
             delayMs *= 2; // Exponential backoff
 
@@ -72,7 +73,8 @@ class SwiftDeleteTask implements Runnable {
                 notifier.notifyListeners();
             }
         } else {
-            log.error(
+            log.log(
+                    Level.SEVERE,
                     String.format(
                             "Failed to delete Swift tile cache at %s/%s after %d retries.",
                             container, path, RETRIES));

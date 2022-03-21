@@ -20,12 +20,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.config.ConfigurationResourceProvider;
 import org.geowebcache.config.XMLFileResourceProvider;
@@ -45,7 +46,7 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationContextAware {
 
-    private static final Log log = LogFactory.getLog(JDBCQuotaStore.class);
+    private static final Logger log = Logging.getLogger(JDBCQuotaStore.class.getName());
 
     private static final String CONFIGURATION_FILE_NAME = "geowebcache-diskquota-jdbc.xml";
 
@@ -214,7 +215,8 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
                         c.close();
                     } catch (SQLException e) {
                         // nothing we can do about it, but at least let the admin know
-                        log.debug(
+                        log.log(
+                                Level.FINE,
                                 "An error occurred while closing the test JDBC connection: "
                                         + e.getMessage(),
                                 e);

@@ -44,6 +44,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -417,7 +418,8 @@ class S3Ops {
                                 bucketName, prefix));
                 throw e;
             } catch (Exception e) {
-                S3BlobStore.log.warn(
+                S3BlobStore.log.log(
+                        Level.WARNING,
                         String.format(
                                 "Unknown error performing bulk S3 delete of '%s/%s'",
                                 bucketName, prefix),

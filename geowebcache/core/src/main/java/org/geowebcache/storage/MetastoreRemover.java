@@ -24,9 +24,10 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.mime.MimeException;
@@ -45,7 +46,7 @@ import org.springframework.jdbc.datasource.SingleConnectionDataSource;
  */
 public class MetastoreRemover {
 
-    private static Log log = LogFactory.getLog(org.geowebcache.storage.MetastoreRemover.class);
+    private static Logger log = Logging.getLogger(MetastoreRemover.class.getName());
 
     private DefaultStorageFinder storageFinder;
 
@@ -90,7 +91,7 @@ public class MetastoreRemover {
         if (quotaRoot.exists()) {
             File version = new File(quotaRoot, "version.txt");
             if (!version.exists()) {
-                log.warn("Old style DiskQuota database found, removing it.");
+                log.warning("Old style DiskQuota database found, removing it.");
                 FileUtils.deleteDirectory(quotaRoot);
             }
         }
@@ -237,12 +238,13 @@ public class MetastoreRemover {
                                 file.setLastModified(created);
                             }
                         } catch (MimeException e) {
-                            log.error(
+                            log.log(
+                                    Level.SEVERE,
                                     "Failed to locate mime type for format '"
                                             + format
                                             + "', this should never happen!");
                         } catch (GeoWebCacheException e) {
-                            log.error("Failed to compute tile path", e);
+                            log.log(Level.SEVERE, "Failed to compute tile path", e);
                         }
 
                         count++;
@@ -298,10 +300,13 @@ public class MetastoreRemover {
             // grab the connection
             return DriverManager.getConnection(jdbcString, username, password);
         } catch (ClassNotFoundException e) {
-            log.warn("Could not find the metastore driver, skipping migration", e);
+            log.log(Level.WARNING, "Could not find the metastore driver, skipping migration", e);
             return null;
         } catch (SQLException e) {
-            log.warn("Failed to connect to the legacy metastore, skipping migration", e);
+            log.log(
+                    Level.WARNING,
+                    "Failed to connect to the legacy metastore, skipping migration",
+                    e);
             return null;
         }
     }

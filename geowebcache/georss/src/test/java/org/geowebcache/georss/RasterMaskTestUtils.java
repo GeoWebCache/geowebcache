@@ -17,9 +17,9 @@ package org.geowebcache.georss;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.locationtech.jts.geom.Geometry;
@@ -28,7 +28,7 @@ import org.locationtech.jts.io.WKTReader;
 
 public class RasterMaskTestUtils {
 
-    static final Log LOG = LogFactory.getLog(RasterMaskTestUtils.class);
+    static final Logger LOG = Logging.getLogger(RasterMaskTestUtils.class.getName());
 
     public static boolean debugToDisk;
 
