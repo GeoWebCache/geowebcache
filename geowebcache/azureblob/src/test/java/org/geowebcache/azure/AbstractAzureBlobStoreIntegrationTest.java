@@ -37,8 +37,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -69,7 +69,7 @@ import org.mockito.Mockito;
  */
 public abstract class AbstractAzureBlobStoreIntegrationTest {
 
-    private static Log log = LogFactory.getLog(PropertiesLoader.class);
+    private static Logger log = Logging.getLogger(PropertiesLoader.class.getName());
 
     private static final String DEFAULT_FORMAT = "png";
 
@@ -596,7 +596,7 @@ public abstract class AbstractAzureBlobStoreIntegrationTest {
             int max = (int) Math.pow(2, z);
             for (int x = 0; x < max; x++) {
                 for (int y = 0; y < max; y++) {
-                    log.debug(String.format("seeding %d,%d,%d", x, y, z));
+                    log.fine(String.format("seeding %d,%d,%d", x, y, z));
                     put(x, y, z, gridset, formatExtension, parameters);
                 }
             }

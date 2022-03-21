@@ -21,11 +21,11 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileJSONProvider;
@@ -38,7 +38,7 @@ import org.geowebcache.util.URLMangler;
 
 public class WMTSTileJSON {
 
-    private static Log log = LogFactory.getLog(org.geowebcache.service.wmts.WMTSTileJSON.class);
+    private static Logger log = Logging.getLogger(WMTSTileJSON.class.getName());
     private final String restBaseUrl;
     private String style;
     private ConveyorTile convTile;
@@ -86,7 +86,7 @@ public class WMTSTileJSON {
             mapper.writeValue(os, json);
             os.flush();
         } catch (IOException ioe) {
-            log.debug("Caught IOException" + ioe.getMessage());
+            log.fine("Caught IOException" + ioe.getMessage());
         }
     }
 

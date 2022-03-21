@@ -19,10 +19,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.servlet.ServletContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.config.BaseConfiguration;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.SuppressFBWarnings;
@@ -52,7 +53,7 @@ import org.springframework.web.context.WebApplicationContext;
 public class GeoWebCacheExtensions implements ApplicationContextAware, ApplicationListener {
 
     /** logger */
-    private static Log LOGGER = LogFactory.getLog(GeoWebCacheExtensions.class);
+    private static Logger LOGGER = Logging.getLogger(GeoWebCacheExtensions.class.getName());
 
     /**
      * Caches the names of the beans for a particular type, so that the lookup (expensive) wont' be
@@ -107,7 +108,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
                     // JD: this can happen during testing... if the application
                     // context has been closed and a non-one time setup test is
                     // run that triggers an extension lookup
-                    LOGGER.error("bean lookup error", e);
+                    LOGGER.log(Level.SEVERE, "bean lookup error", e);
                     return Collections.emptyList();
                 }
             } else {
@@ -227,15 +228,18 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
                 bean.deinitialize();
             } catch (Exception e) {
                 if (bean instanceof BaseConfiguration) {
-                    LOGGER.error(
+                    LOGGER.log(
+                            Level.SEVERE,
                             "Error while preparing configuration to reinitialize "
                                     + ((BaseConfiguration) bean).getIdentifier()
                                     + " from "
                                     + ((BaseConfiguration) bean).getLocation(),
                             e);
                 } else {
-                    LOGGER.error(
-                            "Error while preparing bean to reinitialize " + bean.toString(), e);
+                    LOGGER.log(
+                            Level.SEVERE,
+                            "Error while preparing bean to reinitialize " + bean.toString(),
+                            e);
                 }
             }
         }
@@ -244,14 +248,16 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
                 bean.reinitialize();
             } catch (Exception e) {
                 if (bean instanceof BaseConfiguration) {
-                    LOGGER.error(
+                    LOGGER.log(
+                            Level.SEVERE,
                             "Error while reinitializing configuration "
                                     + ((BaseConfiguration) bean).getIdentifier()
                                     + " from "
                                     + ((BaseConfiguration) bean).getLocation(),
                             e);
                 } else {
-                    LOGGER.error("Error while reinitializing bean " + bean.toString(), e);
+                    LOGGER.log(
+                            Level.SEVERE, "Error while reinitializing bean " + bean.toString(), e);
                 }
             }
         }
@@ -315,7 +321,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
     /** Checks the context, if null will issue a warning. */
     static void checkContext(ApplicationContext context) {
         if (context == null) {
-            LOGGER.fatal("Extension lookup occured, but ApplicationContext is unset.");
+            LOGGER.fine("Extension lookup occured, but ApplicationContext is unset.");
         }
     }
 
@@ -402,7 +408,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
             }
 
             if (result == null || result.equalsIgnoreCase("")) {
-                LOGGER.trace("Found " + typeStrs[j] + ": '" + propertyName + "' to be unset");
+                LOGGER.finer("Found " + typeStrs[j] + ": '" + propertyName + "' to be unset");
             } else {
                 break;
             }

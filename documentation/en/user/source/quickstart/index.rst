@@ -89,7 +89,7 @@ Replace:
       <constructor-arg value="map=name&amp;otherkey=othervalue"/>
 
 Cached vendor parameters
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 By default vendor parameters included in requests are ignored. To pass on the value of a vendor parameter to your wms server, and cache the result seperately depending on the given value, set the sixth ``constructor-arg`` value.
 

@@ -16,8 +16,9 @@ package org.geowebcache.diskquota;
 
 import java.math.BigInteger;
 import java.util.Set;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.diskquota.storage.LayerQuota;
 import org.geowebcache.diskquota.storage.Quota;
@@ -36,7 +37,7 @@ import org.springframework.beans.factory.DisposableBean;
  */
 public class CacheCleaner implements DisposableBean {
 
-    private static final Log log = LogFactory.getLog(CacheCleaner.class);
+    private static final Logger log = Logging.getLogger(CacheCleaner.class.getName());
 
     private final TileBreeder tileBreeder;
 
@@ -155,7 +156,7 @@ public class CacheCleaner implements DisposableBean {
             // same thing, check it every time
             ExpirationPolicy expirationPolicy = quotaResolver.getExpirationPolicy();
             if (null == expirationPolicy) {
-                log.warn(
+                log.warning(
                         "Aborting disk quota enforcement task, no expiration policy defined for layers "
                                 + layerNames);
                 return;
@@ -175,7 +176,7 @@ public class CacheCleaner implements DisposableBean {
                 limit = quotaResolver.getLimit();
                 Quota usedQuota = quotaResolver.getUsed();
                 if (excess.getBytes().compareTo(BigInteger.ZERO) > 0) {
-                    log.warn(
+                    log.warning(
                             "No more pages to expire, check if youd disk quota"
                                     + " database is out of date with your blob store. Quota: "
                                     + limit.toNiceString()
@@ -184,8 +185,8 @@ public class CacheCleaner implements DisposableBean {
                 }
                 return;
             }
-            if (log.isDebugEnabled()) {
-                log.debug(
+            if (log.isLoggable(Level.FINE)) {
+                log.fine(
                         "Expiring tile page "
                                 + tilePage
                                 + " based on the global "
@@ -216,9 +217,9 @@ public class CacheCleaner implements DisposableBean {
         } catch (MimeException e) {
             throw new RuntimeException(e);
         }
-        if (log.isTraceEnabled()) {
+        if (log.isLoggable(Level.FINER)) {
             if (parametersId != null) {
-                log.trace(
+                log.finer(
                         "Expiring page "
                                 + tilePage
                                 + "/"
@@ -226,7 +227,7 @@ public class CacheCleaner implements DisposableBean {
                                 + "/"
                                 + parametersId);
             } else {
-                log.trace("Expiring page " + tilePage + "/" + mimeType.getFormat());
+                log.finer("Expiring page " + tilePage + "/" + mimeType.getFormat());
             }
         }
         GWCTask truncateTask =
@@ -238,7 +239,7 @@ public class CacheCleaner implements DisposableBean {
             truncateTask.doAction();
             pageStore.setTruncated(tilePage);
         } catch (InterruptedException e) {
-            log.debug("Truncate task interrupted");
+            log.fine("Truncate task interrupted");
             Thread.currentThread().interrupt();
             return;
         } catch (GeoWebCacheException e) {

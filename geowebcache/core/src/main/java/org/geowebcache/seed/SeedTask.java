@@ -21,8 +21,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.request.RequestFilter;
@@ -35,7 +36,7 @@ import org.geowebcache.util.Sleeper;
 
 /** A GWCTask for seeding/reseeding the cache. */
 class SeedTask extends GWCTask {
-    private static Log log = LogFactory.getLog(org.geowebcache.seed.SeedTask.class);
+    private static Logger log = Logging.getLogger(SeedTask.class.getName());
 
     private final TileRangeIterator trIter;
 
@@ -168,14 +169,15 @@ class SeedTask extends GWCTask {
                                     + (tileFailureRetryCount + 1)
                                     + " attempts.";
                     if (fetchAttempt < tileFailureRetryCount) {
-                        log.debug(logMsg);
+                        log.fine(logMsg);
                         if (tileFailureRetryWaitTime > 0) {
-                            log.trace(
+                            log.finer(
                                     "Waiting " + tileFailureRetryWaitTime + " before trying again");
                             waitToRetry();
                         }
                     } else {
-                        log.warn(
+                        log.log(
+                                Level.WARNING,
                                 logMsg
                                         + " Skipping and continuing with next tile. Total failure count across threads is at: "
                                         + sharedFailureCount,
@@ -184,8 +186,8 @@ class SeedTask extends GWCTask {
                 }
             }
 
-            if (log.isTraceEnabled()) {
-                log.trace(getThreadName() + " seeded " + Arrays.toString(gridLoc));
+            if (log.isLoggable(Level.FINER)) {
+                log.finer(getThreadName() + " seeded " + Arrays.toString(gridLoc));
             }
 
             // final long totalTilesCompleted = trIter.getTilesProcessed();
@@ -303,7 +305,7 @@ class SeedTask extends GWCTask {
                 if (reqFilter.update(tl, gridSetId)) {
                     log.info("Updated request filter " + reqFilter.getName());
                 } else {
-                    log.debug(
+                    log.fine(
                             "Request filter " + reqFilter.getName() + " returned false on update.");
                 }
             }

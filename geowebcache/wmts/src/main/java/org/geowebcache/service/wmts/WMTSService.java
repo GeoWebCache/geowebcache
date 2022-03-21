@@ -157,7 +157,8 @@ public class WMTSService extends Service {
         }
     }
 
-    // private static Log log = LogFactory.getLog(org.geowebcache.service.wmts.WMTSService.class);
+    // private static Logger log =
+    // Logging.getLogger(org.geowebcache.service.wmts.WMTSService.class);
 
     private StorageBroker sb;
 

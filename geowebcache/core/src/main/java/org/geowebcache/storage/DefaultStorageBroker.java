@@ -16,8 +16,8 @@ package org.geowebcache.storage;
 
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileLayer;
 
@@ -26,7 +26,7 @@ import org.geowebcache.layer.TileLayer;
  * storage, delegating most work to a {@link BlobStore}
  */
 public class DefaultStorageBroker implements StorageBroker {
-    private static Log log = LogFactory.getLog(org.geowebcache.storage.DefaultStorageBroker.class);
+    private static Logger log = Logging.getLogger(DefaultStorageBroker.class.getName());
 
     private BlobStore blobStore;
 

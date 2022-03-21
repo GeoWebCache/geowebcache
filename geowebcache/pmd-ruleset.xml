@@ -23,7 +23,6 @@ GeoTools ruleset. See https://pmd.github.io/latest/pmd_userdocs_understanding_ru
 </description>
   <rule ref="category/java/bestpractices.xml/AvoidUsingHardCodedIP"/>
   <rule ref="category/java/bestpractices.xml/CheckResultSet"/>
-  <rule ref="category/java/bestpractices.xml/UnusedImports"/>
   <!--rule ref="category/java/bestpractices.xml/UnusedFormalParameter" /-->
   <rule ref="category/java/bestpractices.xml/UnusedLocalVariable"/>
   <rule ref="category/java/bestpractices.xml/UnusedPrivateField"/>
@@ -36,8 +35,11 @@ GeoTools ruleset. See https://pmd.github.io/latest/pmd_userdocs_understanding_ru
   <rule ref="category/java/bestpractices.xml/UseStandardCharsets" />
   <rule ref="category/java/performance.xml/UseArrayListInsteadOfVector" />
 
-  <rule ref="category/java/codestyle.xml/DontImportJavaLang"/>
-  <rule ref="category/java/codestyle.xml/DuplicateImports"/>
+  <!--rule ref="category/java/codestyle.xml/DontImportJavaLang"/-->
+  <!--rule ref="category/java/codestyle.xml/DuplicateImports"/-->
+  <!--rule ref="category/java/errorprone.xml/ImportFromSamePackage"/-->
+  <rule ref="category/java/codestyle.xml/UnnecessaryImport" />
+
   <rule ref="category/java/codestyle.xml/ExtendsObject"/>
   <rule ref="category/java/codestyle.xml/ForLoopShouldBeWhileLoop"/>
   <!--rule ref="category/java/codestyle.xml/TooManyStaticImports" / -->
@@ -74,7 +76,6 @@ GeoTools ruleset. See https://pmd.github.io/latest/pmd_userdocs_understanding_ru
   <rule ref="category/java/errorprone.xml/EmptySynchronizedBlock"/>
   <rule ref="category/java/errorprone.xml/EmptyTryBlock"/>
   <rule ref="category/java/errorprone.xml/EmptyWhileStmt"/>
-  <rule ref="category/java/errorprone.xml/ImportFromSamePackage"/>
   <rule ref="category/java/errorprone.xml/JumbledIncrementer"/>
   <rule ref="category/java/errorprone.xml/MisplacedNullCheck"/>
   <rule ref="category/java/errorprone.xml/OverrideBothEqualsAndHashcode"/>

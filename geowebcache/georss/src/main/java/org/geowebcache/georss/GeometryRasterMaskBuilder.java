@@ -21,13 +21,14 @@ import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.LiteShape;
 import org.geotools.referencing.operation.builder.GridToEnvelopeMapper;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.locationtech.jts.geom.Envelope;
@@ -50,7 +51,8 @@ public class GeometryRasterMaskBuilder {
 
     private static final double ENVELOPE_BUFFER_RATIO = 1;
 
-    private static final Log logger = LogFactory.getLog(GeometryRasterMaskBuilder.class);
+    private static final Logger LOGGER =
+            Logging.getLogger(GeometryRasterMaskBuilder.class.getName());
 
     private static final AffineTransform IDENTITY = new AffineTransform();
 
@@ -152,8 +154,8 @@ public class GeometryRasterMaskBuilder {
         // loop over only up to the configured max masking level
         final int endLevel = Math.min(maxLevel, this.maxMaskLevel);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Geom: " + geom);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Geom: " + geom);
         }
 
         if (aggregatedGeomBounds == null) {
@@ -164,14 +166,14 @@ public class GeometryRasterMaskBuilder {
 
         for (int level = startLevel; level <= endLevel; level++) {
             final Geometry geometryInGridCrs = transformToGridCrs(geom, level);
-            if (logger.isDebugEnabled()) {
-                logger.debug("Geom in grid CRS: " + geometryInGridCrs);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Geom in grid CRS: " + geometryInGridCrs);
             }
 
             final Geometry bufferedGeomInGridCrs = geometryInGridCrs.buffer(TILE_BUFFER_RATIO);
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("Buffered Geom in grid CRS: " + bufferedGeomInGridCrs);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Buffered Geom in grid CRS: " + bufferedGeomInGridCrs);
             }
 
             // do not generalize in LiteShape, it affects the expected masked pixels

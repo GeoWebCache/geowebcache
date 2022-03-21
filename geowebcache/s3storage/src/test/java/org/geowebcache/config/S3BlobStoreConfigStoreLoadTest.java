@@ -12,9 +12,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -43,7 +44,8 @@ public class S3BlobStoreConfigStoreLoadTest {
 
     private XMLConfiguration config;
 
-    private static final Log log = LogFactory.getLog(S3BlobStoreConfigStoreLoadTest.class);
+    private static final Logger log =
+            Logging.getLogger(S3BlobStoreConfigStoreLoadTest.class.getName());
 
     public PropertiesLoader testConfigLoader = new PropertiesLoader();
 
@@ -102,7 +104,7 @@ public class S3BlobStoreConfigStoreLoadTest {
             configLoad.afterPropertiesSet();
             createFromSavedConfig(configLoad);
         } catch (StorageException | GeoWebCacheException e) {
-            log.error(e.getMessage());
+            log.log(Level.SEVERE, e.getMessage(), e);
             fail("Error loading from " + configFile + " " + e.getMessage());
         }
     }
@@ -121,7 +123,7 @@ public class S3BlobStoreConfigStoreLoadTest {
             XMLConfiguration.validate(
                     XMLConfiguration.loadDocument(new FileInputStream(configFile)));
         } catch (SAXParseException e) {
-            log.error(e.getMessage());
+            log.log(Level.SEVERE, e.getMessage());
             fail("Error validating from " + configFile + " " + e.getMessage());
         }
     }

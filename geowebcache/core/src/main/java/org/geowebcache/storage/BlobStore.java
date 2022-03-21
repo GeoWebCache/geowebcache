@@ -21,9 +21,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.layer.TileLayer;
@@ -35,7 +35,7 @@ import org.geowebcache.layer.TileLayer;
  * for the blob fields.
  */
 public interface BlobStore {
-    static Log log = LogFactory.getLog(BlobStore.class);
+    static Logger log = Logging.getLogger(BlobStore.class.getName());
 
     /**
      * Delete the cache for the named layer

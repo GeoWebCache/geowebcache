@@ -24,12 +24,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
@@ -68,7 +69,8 @@ public class WMSService extends Service {
 
     static final String SERVICE_PATH = "/" + GeoWebCacheDispatcher.TYPE_SERVICE + "/" + SERVICE_WMS;
 
-    private static Log log = LogFactory.getLog(org.geowebcache.service.wms.WMSService.class);
+    private static Logger log =
+            Logging.getLogger(org.geowebcache.service.wms.WMSService.class.getName());
 
     // Recombine tiles to support regular WMS clients?
     private boolean fullWMS = false;
@@ -273,7 +275,7 @@ public class WMSService extends Service {
                     || gridSubset.getTileWidth() != tileWidth
                     || gridSubset.getTileHeight() != tileHeight
                     || !bbox.equals(gridSubset.boundsFromIndex(tileIndex), 0.02)) {
-                log.debug("Recombinining tiles to respond to WMS request");
+                log.fine("Recombinining tiles to respond to WMS request");
                 ConveyorTile tile = new ConveyorTile(sb, layers, request, response);
                 tile.setHint("getmap");
                 tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
@@ -322,7 +324,7 @@ public class WMSService extends Service {
                 } catch (SecurityException e) {
                     throw e;
                 } catch (Exception e) {
-                    log.debug(e);
+                    log.log(Level.FINE, e.getMessage(), e);
                 }
             } else if (tile.getHint().equalsIgnoreCase("getfeatureinfo")) {
                 getSecurityDispatcher().checkSecurity(tile);
@@ -385,7 +387,7 @@ public class WMSService extends Service {
         try {
             bbox = new BoundingBox(values.get("bbox"));
         } catch (NumberFormatException nfe) {
-            log.debug(nfe.getMessage());
+            log.fine(nfe.getMessage());
         }
 
         if (bbox == null || !bbox.isSane()) {
@@ -462,7 +464,7 @@ public class WMSService extends Service {
             outputStream.flush();
         } catch (IOException ioe) {
             tile.servletResp.setStatus(500);
-            log.error(ioe.getMessage());
+            log.log(Level.SEVERE, ioe.getMessage());
         }
     }
 

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="info" dest="out">
+    <CustomLevels>
+        <CustomLevel name="CONFIG" intLevel="450" />
+        <CustomLevel name="FINEST" intLevel="700" />
+    </CustomLevels>>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%date{HH:mm:ss} (%t) %-6level [%logger{2}] - %msg%n%throwable"/>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="org.geowebcache.seed" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="org.geowebcache.seed" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="org.geowebcache" level="config" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="org.geotools" level="warn" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Root level="config">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>

@@ -34,10 +34,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ContextualConfigurationProvider;
 import org.geowebcache.config.XMLConfiguration;
@@ -61,7 +62,7 @@ import org.springframework.web.context.WebApplicationContext;
 @Service
 public class SeedService {
 
-    static final Log log = LogFactory.getLog(SeedService.class);
+    static final Logger LOG = Logging.getLogger(SeedService.class.getName());
 
     @Autowired TileBreeder seeder;
 
@@ -110,7 +111,7 @@ public class SeedService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             return new ResponseEntity<>(obj.toString(), headers, HttpStatus.OK);
         } catch (JSONException jse) {
-            log.error(jse);
+            LOG.log(Level.SEVERE, jse.getMessage(), jse);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.TEXT_PLAIN);
             return new ResponseEntity<Object>("error", headers, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -23,9 +23,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.arcgis.compact.ArcGISCompactCache;
 import org.geowebcache.arcgis.compact.ArcGISCompactCacheV1;
@@ -59,7 +60,7 @@ import org.geowebcache.util.GWCVars;
  */
 public class ArcGISCacheLayer extends AbstractTileLayer {
 
-    private static final Log log = LogFactory.getLog(ArcGISCacheLayer.class);
+    private static final Logger log = Logging.getLogger(ArcGISCacheLayer.class.getName());
 
     /*
      * configuration properties
@@ -266,7 +267,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
             throw new IllegalStateException("No ArcGISCacheGridsetConfiguration could be found");
         } else {
             if (configs.size() > 1) {
-                log.warn("Multiple instances of ArcGISCacheGridsetConfiguration, using first");
+                log.warning("Multiple instances of ArcGISCacheGridsetConfiguration, using first");
             }
             return configs.iterator().next();
         }
@@ -328,29 +329,31 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
             if (getExpireCache(0) == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
                 if (backendExpire == -1) {
                     this.expireCacheList.set(0, new ExpirationRule(0, 7200));
-                    log.error(
+                    log.log(
+                            Level.SEVERE,
                             "Layer profile wants MaxAge from backend,"
                                     + " but backend does not provide this. Setting to 7200 seconds.");
                 } else {
                     this.expireCacheList.set(backendExpire, new ExpirationRule(0, 7200));
                 }
-                log.trace("Setting expireCache to: " + expireCache);
+                log.finer("Setting expireCache to: " + expireCache);
             }
             if (getExpireCache(0) == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
                 if (backendExpire == -1) {
                     this.expireClientsList.set(0, new ExpirationRule(0, 7200));
-                    log.error(
+                    log.log(
+                            Level.SEVERE,
                             "Layer profile wants MaxAge from backend,"
                                     + " but backend does not provide this. Setting to 7200 seconds.");
                 } else {
                     this.expireClientsList.set(0, new ExpirationRule(0, backendExpire));
-                    log.trace("Setting expireClients to: " + expireClients);
+                    log.finer("Setting expireClients to: " + expireClients);
                 }
             }
         } catch (Exception e) {
             // Sometimes this doesn't work (network conditions?),
             // and it's really not worth getting caught up on it.
-            log.debug(e);
+            log.log(Level.FINE, e.getMessage(), e);
         }
     }
 

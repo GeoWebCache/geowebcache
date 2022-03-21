@@ -25,10 +25,11 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.storage.BlobStore;
@@ -49,7 +50,7 @@ import org.junit.Test;
 public class MemoryBlobStoreTest {
 
     /** LOGGER */
-    public static final Log LOG = LogFactory.getLog(MemoryBlobStoreTest.class);
+    public static final Logger log = Logging.getLogger(MemoryBlobStoreTest.class.getName());
 
     public static final String TEST_BLOB_DIR_NAME = "gwcTestBlobs";
 
@@ -302,13 +303,13 @@ public class MemoryBlobStoreTest {
             try {
                 is.close();
             } catch (IOException e) {
-                LOG.error(e.getMessage(), e);
+                log.log(Level.SEVERE, e.getMessage(), e);
                 fail();
             }
             try {
                 is2.close();
             } catch (IOException e) {
-                LOG.error(e.getMessage(), e);
+                log.log(Level.SEVERE, e.getMessage(), e);
                 fail();
             }
         }

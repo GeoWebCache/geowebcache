@@ -20,12 +20,12 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
@@ -43,7 +43,7 @@ import org.jclouds.openstack.swift.v1.features.ContainerApi;
  */
 public class SwiftBlobStoreInfo extends BlobStoreInfo {
 
-    static Log log = LogFactory.getLog(SwiftBlobStoreInfo.class);
+    static Logger log = Logging.getLogger(SwiftBlobStoreInfo.class.getName());
 
     private static final long serialVersionUID = 9072751143836460389L;
 

@@ -16,8 +16,9 @@ package org.geowebcache.seed;
 
 import java.util.Iterator;
 import java.util.List;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.TileLayer;
@@ -25,7 +26,7 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.TileRange;
 
 class TruncateTask extends GWCTask {
-    private static Log log = LogFactory.getLog(TruncateTask.class);
+    private static Logger log = Logging.getLogger(TruncateTask.class.getName());
 
     private final TileRange tr;
 
@@ -53,7 +54,7 @@ class TruncateTask extends GWCTask {
             storageBroker.delete(tr);
         } catch (Exception e) {
             super.state = GWCTask.STATE.DEAD;
-            log.error("During truncate request", e);
+            log.log(Level.SEVERE, "During truncate request", e);
         }
 
         checkInterrupted();
@@ -63,7 +64,7 @@ class TruncateTask extends GWCTask {
 
         if (super.state != GWCTask.STATE.DEAD) {
             super.state = GWCTask.STATE.DONE;
-            log.debug("Completed truncate request.");
+            log.log(Level.FINE, "Completed truncate request.");
         }
     }
 
@@ -76,9 +77,10 @@ class TruncateTask extends GWCTask {
             while (iter.hasNext()) {
                 RequestFilter reqFilter = iter.next();
                 if (reqFilter.update(tl, tr.getGridSetId())) {
-                    log.debug("Updated request filter " + reqFilter.getName());
+                    log.log(Level.FINE, "Updated request filter " + reqFilter.getName());
                 } else {
-                    log.debug(
+                    log.log(
+                            Level.FINE,
                             "Request filter " + reqFilter.getName() + " returned false on update.");
                 }
             }

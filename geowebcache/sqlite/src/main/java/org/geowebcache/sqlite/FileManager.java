@@ -26,10 +26,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
@@ -84,7 +85,7 @@ import org.geowebcache.storage.TileRange;
  */
 final class FileManager {
 
-    private static Log LOGGER = LogFactory.getLog(FileManager.class);
+    private static Logger LOGGER = Logging.getLogger(FileManager.class.getName());
 
     private static final Pattern PATH_TEMPLATE_ATTRIBUTE_PATTERN = Pattern.compile("\\{(.+?)\\}");
 
@@ -112,7 +113,7 @@ final class FileManager {
 
     FileManager(
             File rootDirectory, String pathTemplate, long rowRangeCount, long columnRangeCount) {
-        if (LOGGER.isInfoEnabled()) {
+        if (LOGGER.isLoggable(Level.INFO)) {
             LOGGER.info(
                     String.format(
                             "Initiating file manager: [rootDirectory='%s', pathTemplate='%s', "

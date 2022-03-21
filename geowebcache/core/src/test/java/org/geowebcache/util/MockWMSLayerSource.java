@@ -14,8 +14,8 @@
  */
 package org.geowebcache.util;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.wms.WMSLayer;
@@ -29,7 +29,7 @@ import org.geowebcache.layer.wms.WMSSourceHelper;
  */
 public class MockWMSLayerSource {
 
-    private static final Log log = LogFactory.getLog(MockWMSLayerSource.class);
+    private static final Logger log = Logging.getLogger(MockWMSLayerSource.class.getName());
 
     public MockWMSLayerSource(TileLayerDispatcher tld) {
         log.info(

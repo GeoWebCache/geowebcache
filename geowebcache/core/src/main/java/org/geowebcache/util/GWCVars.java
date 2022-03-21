@@ -17,17 +17,18 @@ package org.geowebcache.util;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.servlet.ServletContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 
 public class GWCVars {
 
-    private static final Log log = LogFactory.getLog(GWCVars.class);
+    private static final Logger log = Logging.getLogger(GWCVars.class.toString());
 
     // everything here requires initialization
 
@@ -155,10 +156,10 @@ public class GWCVars {
         String value = v.getValue();
         String source = v.getType().getSource();
         String name = v.getName();
-        if (value == null && log.isTraceEnabled()) {
-            log.info("Not found " + source + " for " + name);
-        } else if (value != null && log.isInfoEnabled()) {
-            log.info("Found " + source + " for " + name + " set to " + value);
+        if (value == null && log.isLoggable(Level.FINER)) {
+            log.config("Not found " + source + " for " + name);
+        } else if (value != null && log.isLoggable(Level.INFO)) {
+            log.config("Found " + source + " for " + name + " set to " + value);
         }
         return v;
     }

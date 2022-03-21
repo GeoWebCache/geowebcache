@@ -22,10 +22,10 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.ConfigurationAggregator;
 import org.geowebcache.config.DefaultGridsets;
@@ -41,7 +41,7 @@ public class GridSetBroker
         implements ConfigurationAggregator<GridSetConfiguration>,
                 ApplicationContextAware,
                 InitializingBean {
-    private static Log log = LogFactory.getLog(GridSetBroker.class);
+    private static Logger log = Logging.getLogger(GridSetBroker.class.getName());
 
     private List<GridSetConfiguration> configurations;
 
@@ -115,7 +115,7 @@ public class GridSetBroker
     }
 
     public void addGridSet(GridSet gridSet) {
-        log.debug("Adding " + gridSet.getName());
+        log.fine("Adding " + gridSet.getName());
         getConfigurations().stream()
                 .filter(c -> c.canSave(gridSet))
                 .findFirst()
@@ -161,7 +161,7 @@ public class GridSetBroker
                                 getConfigurations(DefaultGridsets.class).iterator();
                         defaults = it.next();
                         if (it.hasNext()) {
-                            log.warn(
+                            log.warning(
                                     "GridSetBroker has more than one DefaultGridSets configuration");
                         }
                     } catch (NoSuchElementException ex) {
@@ -229,7 +229,7 @@ public class GridSetBroker
                                 GeoWebCacheExtensions.configurations(
                                         GridSetConfiguration.class, applicationContext);
                     } else {
-                        log.warn(
+                        log.fine(
                                 "GridSetBroker.initialize() called without having set application context");
                         configurations =
                                 GeoWebCacheExtensions.configurations(GridSetConfiguration.class);

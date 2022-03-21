@@ -18,10 +18,11 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
 import org.geowebcache.conveyor.ConveyorTile;
@@ -50,7 +51,7 @@ import org.geowebcache.storage.StorageBroker;
  * createOverlay and package
  */
 public class KMLService extends Service {
-    private static Log log = LogFactory.getLog(org.geowebcache.service.kml.KMLService.class);
+    private static Logger log = Logging.getLogger(KMLService.class.getName());
 
     public static final String SERVICE_KML = "kml";
 
@@ -219,7 +220,7 @@ public class KMLService extends Service {
                 try {
                     layer.getTile(tile);
                 } catch (Exception e) {
-                    log.debug(e);
+                    log.log(Level.FINE, e.getMessage(), e);
                 }
 
                 String mimeStr = getMimeTypeOverride(tile);
@@ -260,13 +261,13 @@ public class KMLService extends Service {
 
         if (tile.getTileIndex()[2] == -1) {
             // No tile index -> super overlay
-            if (log.isDebugEnabled()) {
-                log.debug("Request for super overlay for " + tile.getLayerId() + " received");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Request for super overlay for " + tile.getLayerId() + " received");
             }
             handleSuperOverlay(tile);
         } else {
-            if (log.isDebugEnabled()) {
-                log.debug("Request for overlay for " + tile.getLayerId());
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Request for overlay for " + tile.getLayerId());
             }
             handleOverlay(tile);
         }
@@ -450,7 +451,8 @@ public class KMLService extends Service {
                 try {
                     tileLayer.getTile(tile);
                 } catch (OutsideCoverageException oce) {
-                    log.error(
+                    log.log(
+                            Level.SEVERE,
                             "Out of bounds: "
                                     + Arrays.toString(tile.getTileIndex())
                                     + " should never habe been linked to.");
@@ -458,7 +460,7 @@ public class KMLService extends Service {
                 }
                 tile.setWrapperMimeType(XMLMime.kmz);
             } catch (IOException ioe) {
-                log.error(ioe);
+                log.log(Level.SEVERE, ioe.getMessage(), ioe);
                 throw new ServiceException(ioe.getMessage());
             }
 

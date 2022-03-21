@@ -28,9 +28,10 @@ import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.storage.TileObject;
@@ -49,7 +50,7 @@ import org.junit.Test;
 public class HazelcastCacheProviderTest {
 
     /** LOGGER */
-    public static final Log LOG = LogFactory.getLog(HazelcastCacheProviderTest.class);
+    public static final Logger LOG = Logging.getLogger(HazelcastCacheProviderTest.class.getName());
 
     /** Name of the application context */
     public static final String APP_CONTEXT_FILENAME = "applicationContextTest.xml";
@@ -236,13 +237,13 @@ public class HazelcastCacheProviderTest {
             try {
                 is.close();
             } catch (IOException e) {
-                LOG.error(e.getMessage(), e);
+                LOG.log(Level.SEVERE, e.getMessage(), e);
                 fail();
             }
             try {
                 is2.close();
             } catch (IOException e) {
-                LOG.error(e.getMessage(), e);
+                LOG.log(Level.SEVERE, e.getMessage(), e);
                 fail();
             }
         }

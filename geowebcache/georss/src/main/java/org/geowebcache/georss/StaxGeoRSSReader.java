@@ -26,19 +26,20 @@ import java.io.IOException;
 import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.georss.GML31ParsingUtils.GML;
 import org.locationtech.jts.geom.Geometry;
 
 class StaxGeoRSSReader implements GeoRSSReader {
 
-    private static final Log logger = LogFactory.getLog(StaxGeoRSSReader.class);
+    private static final Logger LOGGER = Logging.getLogger(StaxGeoRSSReader.class.getName());
 
     private static final class ATOM {
         public static final String NSURI = "http://www.w3.org/2005/Atom";
@@ -124,7 +125,7 @@ class StaxGeoRSSReader implements GeoRSSReader {
 
         Entry entry = new Entry();
 
-        logger.trace("Parsing GeoRSS entry...");
+        LOGGER.finer("Parsing GeoRSS entry...");
 
         while (true) {
             reader.next();
@@ -138,7 +139,7 @@ class StaxGeoRSSReader implements GeoRSSReader {
             }
         }
 
-        logger.trace("Done parsing GeoRSS entry.");
+        LOGGER.finer("Done parsing GeoRSS entry.");
 
         reader.require(END_ELEMENT, ATOM.NSURI, ATOM.entry.getLocalPart());
 
@@ -175,7 +176,7 @@ class StaxGeoRSSReader implements GeoRSSReader {
                 link = new URI(uri);
                 entry.setLink(link);
             } catch (URISyntaxException e) {
-                logger.info("Feed contains illegal 'link' element content:" + uri);
+                LOGGER.info("Feed contains illegal 'link' element content:" + uri);
             }
         } else if (ATOM.title.equals(memberName)) {
 
@@ -196,8 +197,8 @@ class StaxGeoRSSReader implements GeoRSSReader {
             QName nextTag = nextTag(reader);
             if (reader.isStartElement() && GML_NS_URI.equals(nextTag.getNamespaceURI())) {
                 Geometry where = geometry(reader);
-                if (logger.isTraceEnabled()) {
-                    logger.trace("Got geometry from feed: " + where);
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.finer("Got geometry from feed: " + where);
                 }
                 entry.setWhere(where);
             }

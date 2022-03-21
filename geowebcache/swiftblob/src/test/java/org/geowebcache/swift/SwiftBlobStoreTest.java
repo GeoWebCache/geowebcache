@@ -301,8 +301,6 @@ public class SwiftBlobStoreTest {
             assertFalse(result);
         } catch (StorageException e) {
             fail("A storage exception was not expected to be thrown");
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 

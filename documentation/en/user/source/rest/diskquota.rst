@@ -54,48 +54,48 @@ Getting the current Disk Quota configuration
 
 The following obtains the current disk quota configuration in XML format:
 
-  curl -u geowebcache:secured -v -XGET http://localhost:8080/geowebcache/rest/diskquota.xml
+.. code-block:: bash
 
-The response should look like:
+   curl -u geowebcache:secured -v -XGET http://localhost:8080/geowebcache/rest/diskquota.xml
 
-.. code-block:: xml
+The response should look like::
 
-	< HTTP/1.1 200 OK
-	< Date: Mon, 21 Mar 2011 13:50:49 GMT
-	< Server: Noelios-Restlet-Engine/1.0..8
-	< Content-Type: text/xml; charset=ISO-8859-1
-	< Content-Length: 422
-	<
-	<gwcQuotaConfiguration>
-	  <enabled>true</enabled>
-	  <cacheCleanUpFrequency>5</cacheCleanUpFrequency>
-	  <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
-	  <maxConcurrentCleanUps>5</maxConcurrentCleanUps>
-	  <globalExpirationPolicyName>LRU</globalExpirationPolicyName>
-	  <globalQuota>
-	    <value>100</value>
-	    <units>MiB</units>
-	  </globalQuota>
-	  <layerQuotas/>
-	</gwcQuotaConfiguration>
+   < HTTP/1.1 200 OK
+   < Date: Mon, 21 Mar 2011 13:50:49 GMT
+   < Server: Noelios-Restlet-Engine/1.0..8
+   < Content-Type: text/xml; charset=ISO-8859-1
+   < Content-Length: 422
+   <
+   <gwcQuotaConfiguration>
+     <enabled>true</enabled>
+     <cacheCleanUpFrequency>5</cacheCleanUpFrequency>
+     <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
+     <maxConcurrentCleanUps>5</maxConcurrentCleanUps>
+     <globalExpirationPolicyName>LRU</globalExpirationPolicyName>
+     <globalQuota>
+       <value>100</value>
+       <units>MiB</units>
+     </globalQuota>
+     <layerQuotas/>
+   </gwcQuotaConfiguration>
 
 The following obtains the current disk quota configuration in JSON format:
 
-  curl -u geowebcache:secured -v -XGET http://localhost:8080/geowebcache/rest/diskquota.json
+.. code-block:: bash
 
-The response should look like:
+   curl -u geowebcache:secured -v -XGET http://localhost:8080/geowebcache/rest/diskquota.json
 
-.. code-block:: xml
+The response should look like::
 
-	< HTTP/1.1 200 OK
-	< Date: Mon, 21 Mar 2011 13:53:42 GMT
-	< Server: Noelios-Restlet-Engine/1.0..8
-	< Content-Type: application/json; charset=ISO-8859-1
-	< Content-Length: 241
-	<
-	* Connection #0 to host localhost left intact
-	* Closing connection #0
-	{"gwcQuotaConfiguration":{"maxConcurrentCleanUps":5,"cacheCleanUpFrequency":5,"globalExpirationPolicyName":"LRU","globalQuota":{"value":"100","units":"MiB"},"cacheCleanUpUnits":"SECONDS"}}
+   < HTTP/1.1 200 OK
+   < Date: Mon, 21 Mar 2011 13:53:42 GMT
+   < Server: Noelios-Restlet-Engine/1.0..8
+   < Content-Type: application/json; charset=ISO-8859-1
+   < Content-Length: 241
+   <
+   * Connection #0 to host localhost left intact
+   * Closing connection #0
+   {"gwcQuotaConfiguration":{"maxConcurrentCleanUps":5,"cacheCleanUpFrequency":5,"globalExpirationPolicyName":"LRU","globalQuota":{"value":"100","units":"MiB"},"cacheCleanUpUnits":"SECONDS"}}
 
 
 Changing Disk Quota configuration
@@ -117,43 +117,47 @@ Invalid XML request:
 ^^^^^^^^^^^^^^^^^^^^
 Invalid parameter (here maxConcurrentCleanUps must be > 0) produce a 400 response code and contains the error message as plain text:
 
-  curl -v -u geowebcache:secured "http://localhost:8090/geowebcache/rest/diskquota.xml" -X PUT -d "<gwcQuotaConfiguration><maxConcurrentCleanUps>-1</maxConcurrentCleanUps></gwcQuotaConfiguration>"
+.. code-block:: bash
 
-.. code-block:: xml
+   curl -v -u geowebcache:secured "http://localhost:8090/geowebcache/rest/diskquota.xml" -X PUT -d "<gwcQuotaConfiguration><maxConcurrentCleanUps>-1</maxConcurrentCleanUps></gwcQuotaConfiguration>"
 
-	< HTTP/1.1 400 Bad Request
-	< Date: Fri, 18 Mar 2011 20:53:26 GMT
-	< Server: Noelios-Restlet-Engine/1.0..8
-	< Content-Type: text/plain; charset=ISO-8859-1
-	< Content-Length: 53
-	<
-	* Connection #0 to host localhost left intact
-	* Closing connection #0
-	maxConcurrentCleanUps shall be a positive integer: -1
+::
+
+   < HTTP/1.1 400 Bad Request
+   < Date: Fri, 18 Mar 2011 20:53:26 GMT
+   < Server: Noelios-Restlet-Engine/1.0..8
+   < Content-Type: text/plain; charset=ISO-8859-1
+   < Content-Length: 53
+   <
+   * Connection #0 to host localhost left intact
+   * Closing connection #0
+   maxConcurrentCleanUps shall be a positive integer: -1
 
 Invalid JSON request:
 ^^^^^^^^^^^^^^^^^^^^^
 
-  curl -v -u geowebcache:secured "http://localhost:8090/geowebcache/rest/diskquota.json" -X PUT -d "{"gwcQuotaConfiguration":{"globalQuota":{"value":"100","units":"ZZiB"}}}"
+.. code-block:: bash
 
-.. code-block:: xml
+   curl -v -u geowebcache:secured "http://localhost:8090/geowebcache/rest/diskquota.json" -X PUT -d "{"gwcQuotaConfiguration":{"globalQuota":{"value":"100","units":"ZZiB"}}}"
 
-	< HTTP/1.1 400 Bad Request
-	< Date: Fri, 18 Mar 2011 20:56:23 GMT
-	< Server: Noelios-Restlet-Engine/1.0..8
-	< Content-Type: text/plain; charset=ISO-8859-1
-	< Content-Length: 601
-	<
-	No enum const class org.geowebcache.diskquota.storage.StorageUnit.ZZiB : No enum const class org.geowebcache.diskquota.storage.StorageUnit.ZZiB
-	---- Debugging information ----
-	message             : No enum const class org.geowebcache.diskquota.storage.StorageUnit.ZZiB
-	cause-exception     : java.lang.IllegalArgumentException
-	cause-message       : No enum const class org.geowebcache.diskquota.storage.StorageUnit.ZZiB
-	class               : org.geowebcache.diskquota.DiskQuotaConfig
-	required-type       : org.geowebcache.diskquota.storage.Quota
-	line number         : -1
-	* Connection #0 to host localhost left intact
-	* Closing connection #0
+::
+
+   < HTTP/1.1 400 Bad Request
+   < Date: Fri, 18 Mar 2011 20:56:23 GMT
+   < Server: Noelios-Restlet-Engine/1.0..8
+   < Content-Type: text/plain; charset=ISO-8859-1
+   < Content-Length: 601
+   <
+   No enum const class org.geowebcache.diskquota.storage.StorageUnit.ZZiB : No enum const class org.geowebcache.diskquota.storage.StorageUnit.ZZiB
+   ---- Debugging information ----
+   message             : No enum const class org.geowebcache.diskquota.storage.StorageUnit.ZZiB
+   cause-exception     : java.lang.IllegalArgumentException
+   cause-message       : No enum const class org.geowebcache.diskquota.storage.StorageUnit.ZZiB
+   class               : org.geowebcache.diskquota.DiskQuotaConfig
+   required-type       : org.geowebcache.diskquota.storage.Quota
+   line number         : -1
+   * Connection #0 to host localhost left intact
+   * Closing connection #0
 
 Valid XML requests:
 ^^^^^^^^^^^^^^^^^^^
@@ -161,45 +165,49 @@ Valid XML requests:
 
 Change enabled and globalQuota in XML format:
 
-  curl -v -u geowebcache:secured "http://localhost:8090/geowebcache/rest/diskquota.xml" -X PUT -d "<gwcQuotaConfiguration><enabled>true</enabled><globalQuota><value>100</value><units>GiB</units></globalQuota></gwcQuotaConfiguration>"
+.. code-block:: bash
 
-.. code-block:: xml
+   curl -v -u geowebcache:secured "http://localhost:8090/geowebcache/rest/diskquota.xml" -X PUT -d "<gwcQuotaConfiguration><enabled>true</enabled><globalQuota><value>100</value><units>GiB</units></globalQuota></gwcQuotaConfiguration>"
 
-	< HTTP/1.1 200 OK
-	< Date: Fri, 18 Mar 2011 20:59:31 GMT
-	< Server: Noelios-Restlet-Engine/1.0..8
-	< Content-Type: text/xml; charset=ISO-8859-1
-	< Content-Length: 422
-	<
-	<gwcQuotaConfiguration>
-	  <enabled>true</enabled>
-	  <cacheCleanUpFrequency>5</cacheCleanUpFrequency>
-	  <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
-	  <maxConcurrentCleanUps>5</maxConcurrentCleanUps>
-	  <globalExpirationPolicyName>LFU</globalExpirationPolicyName>
-	  <globalQuota>
-	    <value>100</value>
-	    <units>GiB</units>
-	  </globalQuota>
-	  <layerQuotas/>
-	</gwcQuotaConfiguration>
+::
+
+   < HTTP/1.1 200 OK
+   < Date: Fri, 18 Mar 2011 20:59:31 GMT
+   < Server: Noelios-Restlet-Engine/1.0..8
+   < Content-Type: text/xml; charset=ISO-8859-1
+   < Content-Length: 422
+   <
+   <gwcQuotaConfiguration>
+     <enabled>true</enabled>
+     <cacheCleanUpFrequency>5</cacheCleanUpFrequency>
+     <cacheCleanUpUnits>SECONDS</cacheCleanUpUnits>
+     <maxConcurrentCleanUps>5</maxConcurrentCleanUps>
+     <globalExpirationPolicyName>LFU</globalExpirationPolicyName>
+     <globalQuota>
+       <value>100</value>
+       <units>GiB</units>
+     </globalQuota>
+     <layerQuotas/>
+   </gwcQuotaConfiguration>
 
 Valid JSON request:
 ^^^^^^^^^^^^^^^^^^^
 Change globalQuota and expirationPolicyName in JSON format:
 
-  curl -v -u geowebcache:secured "http://localhost:8090/geowebcache/rest/diskquota.json" -X PUT -d "{"gwcQuotaConfiguration":{"globalQuota":{"value":"100","units":"MiB"},"globalExpirationPolicyName":"LRU"}}"
+.. code-block:: bash
 
-.. code-block:: xml
+   curl -v -u geowebcache:secured "http://localhost:8090/geowebcache/rest/diskquota.json" -X PUT -d "{"gwcQuotaConfiguration":{"globalQuota":{"value":"100","units":"MiB"},"globalExpirationPolicyName":"LRU"}}"
 
-	< HTTP/1.1 200 OK
-	< Date: Fri, 18 Mar 2011 21:02:20 GMT
-	< Server: Noelios-Restlet-Engine/1.0..8
-	< Content-Type: application/json; charset=ISO-8859-1
-	< Content-Length: 241
-	<
-	* Connection #0 to host localhost left intact
-	* Closing connection #0
-	{"gwcQuotaConfiguration":{"maxConcurrentCleanUps":5,"cacheCleanUpFrequency":5,"globalExpirationPolicyName":"LRU","globalQuota":{"value":"100","units":"MiB"},"cacheCleanUpUnits":"SECONDS","layerQuotas":[]}}
+::
+
+   < HTTP/1.1 200 OK
+   < Date: Fri, 18 Mar 2011 21:02:20 GMT
+   < Server: Noelios-Restlet-Engine/1.0..8
+   < Content-Type: application/json; charset=ISO-8859-1
+   < Content-Length: 241
+   <
+   * Connection #0 to host localhost left intact
+   * Closing connection #0
+   {"gwcQuotaConfiguration":{"maxConcurrentCleanUps":5,"cacheCleanUpFrequency":5,"globalExpirationPolicyName":"LRU","globalQuota":{"value":"100","units":"MiB"},"cacheCleanUpUnits":"SECONDS","layerQuotas":[]}}
 
 

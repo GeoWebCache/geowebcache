@@ -15,10 +15,11 @@
 package org.geowebcache.service.ve;
 
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSetBroker;
@@ -35,7 +36,8 @@ import org.geowebcache.util.ServletUtils;
 public class VEConverter extends Service {
     public static final String SERVICE_VE = "ve";
 
-    private static Log log = LogFactory.getLog(org.geowebcache.service.ve.VEConverter.class);
+    private static Logger log =
+            Logging.getLogger(org.geowebcache.service.ve.VEConverter.class.getName());
 
     private StorageBroker sb;
 
@@ -170,7 +172,7 @@ public class VEConverter extends Service {
                 xPos += extent;
                 // Y stays
             } else {
-                log.error("Don't know how to interpret quadKey: " + strQuadKey);
+                log.log(Level.SEVERE, "Don't know how to interpret quadKey: " + strQuadKey);
                 return null;
             }
         }

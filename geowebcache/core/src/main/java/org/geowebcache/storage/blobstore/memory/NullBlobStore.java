@@ -23,9 +23,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.StorageException;
@@ -45,7 +45,7 @@ public class NullBlobStore implements BlobStore {
     private Map<String, Properties> metadataMap;
 
     /** {@link Logger} object used for logging exceptions */
-    private static final Log LOGGER = LogFactory.getLog(NullBlobStore.class);
+    private static final Logger LOGGER = Logging.getLogger(NullBlobStore.class.getName());
 
     public NullBlobStore() {
         // Map initialization
@@ -111,7 +111,7 @@ public class NullBlobStore implements BlobStore {
             try {
                 return URLDecoder.decode((String) properties.get(key), "UTF-8");
             } catch (UnsupportedEncodingException e) {
-                LOGGER.error(e.getLocalizedMessage(), e);
+                LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
             }
         }
         return null;
@@ -126,7 +126,7 @@ public class NullBlobStore implements BlobStore {
                 // If present adds the new property
                 props.setProperty(key, URLEncoder.encode(value, "UTF-8"));
             } catch (UnsupportedEncodingException e) {
-                LOGGER.error(e.getLocalizedMessage(), e);
+                LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
             }
         } else {
             // Else creates a new Property object and them adds the new property
@@ -134,7 +134,7 @@ public class NullBlobStore implements BlobStore {
             try {
                 props.setProperty(key, URLEncoder.encode(value, "UTF-8"));
             } catch (UnsupportedEncodingException e) {
-                LOGGER.error(e.getLocalizedMessage(), e);
+                LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
             }
             metadataMap.put(layerName, props);
         }

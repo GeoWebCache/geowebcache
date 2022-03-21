@@ -15,8 +15,9 @@
 package org.geowebcache.config;
 
 import java.io.Serializable;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -32,7 +33,7 @@ public class XMLGridSubset implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 2758612849329765806L;
 
-    private static Log log = LogFactory.getLog(XMLGridSubset.class);
+    private static Logger log = Logging.getLogger(XMLGridSubset.class.getName());
 
     private String gridSetName;
 
@@ -89,7 +90,7 @@ public class XMLGridSubset implements Serializable, Cloneable {
         GridSet gridSet = gridSetBroker.get(getGridSetName());
 
         if (gridSet == null) {
-            log.error("Unable to find GridSet for \"" + getGridSetName() + "\"");
+            log.log(Level.SEVERE, "Unable to find GridSet for \"" + getGridSetName() + "\"");
             return null;
         }
         return GridSubsetFactory.createGridSubSet(

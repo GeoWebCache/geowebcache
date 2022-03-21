@@ -33,9 +33,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.blobstore.memory.CacheConfiguration;
 import org.geowebcache.storage.blobstore.memory.CacheConfiguration.EvictionPolicy;
@@ -52,7 +52,7 @@ import org.geowebcache.util.SuppressFBWarnings;
 public class GuavaCacheProvider implements CacheProvider {
 
     /** {@link Logger} object used for logging exceptions */
-    private static final Log LOGGER = LogFactory.getLog(GuavaCacheProvider.class);
+    private static final Logger LOGGER = Logging.getLogger(GuavaCacheProvider.class.getName());
 
     /** Separator char used for creating Cache keys */
     public static final String SEPARATOR = "_";
@@ -133,8 +133,8 @@ public class GuavaCacheProvider implements CacheProvider {
 
     /** This method is used for creating a new cache object, from the defined configuration. */
     private void initCache(CacheConfiguration configuration) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Building new Cache");
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Building new Cache");
         }
         // Initialization step
         int concurrency = configuration.getConcurrencyLevel();
@@ -169,15 +169,15 @@ public class GuavaCacheProvider implements CacheProvider {
                                     final String tileKey = generateTileKey(obj);
                                     final String layerName = obj.getLayerName();
                                     multimap.removeTile(layerName, tileKey);
-                                    if (LOGGER.isDebugEnabled()) {
-                                        LOGGER.debug(
+                                    if (LOGGER.isLoggable(Level.FINE)) {
+                                        LOGGER.fine(
                                                 "Removed tile "
                                                         + tileKey
                                                         + " for layer "
                                                         + layerName
                                                         + " due to reason:"
                                                         + notification.getCause().toString());
-                                        LOGGER.debug(
+                                        LOGGER.fine(
                                                 "Removed tile was evicted? "
                                                         + notification.wasEvicted());
                                     }
@@ -186,14 +186,14 @@ public class GuavaCacheProvider implements CacheProvider {
         boolean configuredPolicy = false;
         if (policy != null && evictionTime > 0) {
             if (policy == EvictionPolicy.EXPIRE_AFTER_ACCESS) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Configuring Expire After Access eviction policy");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Configuring Expire After Access eviction policy");
                 }
                 newBuilder.expireAfterAccess(evictionTime, TimeUnit.SECONDS);
                 configuredPolicy = true;
             } else if (policy == EvictionPolicy.EXPIRE_AFTER_WRITE) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Configuring Expire After Write eviction policy");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Configuring Expire After Write eviction policy");
                 }
                 newBuilder.expireAfterWrite(evictionTime, TimeUnit.SECONDS);
                 configuredPolicy = true;
@@ -208,8 +208,8 @@ public class GuavaCacheProvider implements CacheProvider {
 
         // Configure a new scheduling task if needed
         if (configuredPolicy) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Configuring Scheduled Task for cache eviction");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Configuring Scheduled Task for cache eviction");
             }
             Runnable command =
                     () -> {
@@ -261,16 +261,16 @@ public class GuavaCacheProvider implements CacheProvider {
             // the configured parameter to false
             actualOperations.incrementAndGet();
             try {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Checking if the layer must not be cached");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Checking if the layer must not be cached");
                 }
                 // Check if the layer must be cached
                 if (layers.contains(obj.getLayerName())) {
                     // The layer must not be cached
                     return null;
                 }
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Retrieving TileObject: " + obj + " from cache");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Retrieving TileObject: " + obj + " from cache");
                 }
                 // Generate the TileObject key
                 String id = generateTileKey(obj);
@@ -294,16 +294,16 @@ public class GuavaCacheProvider implements CacheProvider {
             // the configured parameter to false
             actualOperations.incrementAndGet();
             try {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Checking if the layer must not be cached");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Checking if the layer must not be cached");
                 }
                 // Check if the layer must be cached
                 if (layers.contains(obj.getLayerName())) {
                     // The layer must not be cached
                     return;
                 }
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Adding TileObject: " + obj + " to cache");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Adding TileObject: " + obj + " to cache");
                 }
                 // Generate the TileObject key
                 String id = generateTileKey(obj);
@@ -327,16 +327,16 @@ public class GuavaCacheProvider implements CacheProvider {
             // the configured parameter to false
             actualOperations.incrementAndGet();
             try {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Checking if the layer must not be cached");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Checking if the layer must not be cached");
                 }
                 // Check if the layer must be cached
                 if (layers.contains(obj.getLayerName())) {
                     // The layer must not be cached
                     return;
                 }
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Removing TileObject: " + obj + " from cache");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Removing TileObject: " + obj + " from cache");
                 }
                 // Generate the TileObject key
                 String id = generateTileKey(obj);
@@ -359,16 +359,16 @@ public class GuavaCacheProvider implements CacheProvider {
             // the configured parameter to false
             actualOperations.incrementAndGet();
             try {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Checking if the layer must not be cached");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Checking if the layer must not be cached");
                 }
                 // Check if the layer must be cached
                 if (layers.contains(layername)) {
                     // The layer must not be cached
                     return;
                 }
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Removing Layer: " + layername + " from cache");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Removing Layer: " + layername + " from cache");
                 }
                 // Get all the TileObject ids associated to the Layer and removes them
                 Set<String> keys = multimap.removeLayer(layername);
@@ -392,8 +392,8 @@ public class GuavaCacheProvider implements CacheProvider {
             // the configured parameter to false
             actualOperations.incrementAndGet();
             try {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Flushing cache");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Flushing cache");
                 }
                 // Remove all the elements from the cache
                 if (cache != null) {
@@ -410,8 +410,8 @@ public class GuavaCacheProvider implements CacheProvider {
     @SuppressWarnings("PMD.EmptyWhileStmt")
     public void reset() {
         if (configured.getAndSet(false)) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Reset Cache internally");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Reset Cache internally");
             }
             // Avoid to call the While cycle before having started an operation with configured ==
             // false
@@ -419,16 +419,16 @@ public class GuavaCacheProvider implements CacheProvider {
             actualOperations.decrementAndGet();
             // Wait until all the operations are finished
             while (actualOperations.get() > 0) {}
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Flushing cache");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Flushing cache");
             }
             // Remove all the elements from the cache
             if (cache != null) {
                 cache.invalidateAll();
             }
             // Remove all the Layers configured for avoiding caching
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Removing Layers");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Removing Layers");
             }
             layers.clear();
             // Shutdown the current Executor service
@@ -437,8 +437,8 @@ public class GuavaCacheProvider implements CacheProvider {
                 try {
                     scheduledPool.awaitTermination(10, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
-                    if (LOGGER.isErrorEnabled()) {
-                        LOGGER.error(e.getMessage(), e);
+                    if (LOGGER.isLoggable(Level.SEVERE)) {
+                        LOGGER.log(Level.SEVERE, e.getMessage(), e);
                     }
                     Thread.currentThread().interrupt();
                 } finally {
@@ -446,8 +446,8 @@ public class GuavaCacheProvider implements CacheProvider {
                 }
             }
         } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Cache is already reset");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Cache is already reset");
             }
         }
     }
@@ -456,8 +456,8 @@ public class GuavaCacheProvider implements CacheProvider {
     public CacheStatistics getStatistics() {
         // Check if the cache has already been configured
         if (configured.get()) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Retrieving statistics");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Retrieving statistics");
             }
             // Increment the number of current operations
             // This behavior is used in order to wait
@@ -484,8 +484,8 @@ public class GuavaCacheProvider implements CacheProvider {
                 actualOperations.decrementAndGet();
             }
         } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Returning empty statistics");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Returning empty statistics");
             }
             // Else returns an empty CacheStatistics object
             return new CacheStatistics();
@@ -534,8 +534,8 @@ public class GuavaCacheProvider implements CacheProvider {
             // the configured parameter to false
             actualOperations.incrementAndGet();
             try {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Adding Layer:" + layername + " to avoid cache");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Adding Layer:" + layername + " to avoid cache");
                 }
                 // Adds the layer which should not be cached
                 layers.add(layername);
@@ -556,8 +556,8 @@ public class GuavaCacheProvider implements CacheProvider {
             // the configured parameter to false
             actualOperations.incrementAndGet();
             try {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Removing Layer:" + layername + " to avoid cache");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Removing Layer:" + layername + " to avoid cache");
                 }
                 // Configure a Layer for being cached again
                 layers.remove(layername);
@@ -578,8 +578,8 @@ public class GuavaCacheProvider implements CacheProvider {
             // the configured parameter to false
             actualOperations.incrementAndGet();
             try {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Checking if Layer:" + layername + " must not be cached");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Checking if Layer:" + layername + " must not be cached");
                 }
                 // Check if the layer must not be cached
                 return layers.contains(layername);
@@ -645,8 +645,8 @@ public class GuavaCacheProvider implements CacheProvider {
             readLock.lock();
             Set<String> tileKeys = layerMap.get(layer);
             if (tileKeys == null) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("No KeySet for Layer: " + layer);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("No KeySet for Layer: " + layer);
                 }
                 // If the Map is not present, we must add it
                 // So we do the unlock and try to acquire the writeLock
@@ -656,8 +656,8 @@ public class GuavaCacheProvider implements CacheProvider {
                     // Check again if the tileKey has not been added already
                     tileKeys = layerMap.get(layer);
                     if (tileKeys == null) {
-                        if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("Creating new KeySet for Layer: " + layer);
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine("Creating new KeySet for Layer: " + layer);
                         }
                         // If no key is present then a new KeySet is created and then added to the
                         // multimap
@@ -672,8 +672,8 @@ public class GuavaCacheProvider implements CacheProvider {
                 }
             }
             try {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Add the TileObject id to the Map");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Add the TileObject id to the Map");
                 }
                 // Finally the tile key is added.
                 tileKeys.add(id);
@@ -690,8 +690,8 @@ public class GuavaCacheProvider implements CacheProvider {
                 // KeySet associated to the image
                 Set<String> tileKeys = layerMap.get(layer);
                 if (tileKeys != null) {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Remove TileObject id to the Map");
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Remove TileObject id to the Map");
                     }
                     // Removal of the keys
                     tileKeys.remove(id);
@@ -724,8 +724,8 @@ public class GuavaCacheProvider implements CacheProvider {
         public Set<String> removeLayer(String layer) {
             writeLock.lock();
             try {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Removing KeySet for Layer: " + layer);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Removing KeySet for Layer: " + layer);
                 }
                 // Get the Set from the map
                 Set<String> layers = layerMap.get(layer);

@@ -22,12 +22,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.mbtiles.MBTilesFile;
 import org.geotools.mbtiles.MBTilesMetadata;
 import org.geotools.referencing.CRS;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.layer.meta.TileJSON;
 import org.geowebcache.layer.meta.VectorLayerMetadata;
@@ -39,7 +40,7 @@ import org.opengis.referencing.operation.TransformException;
 /** Info Object storing basic MBTiles Cached info */
 public class MBTilesInfo {
 
-    private static Log log = LogFactory.getLog(MBTilesInfo.class);
+    private static Logger log = Logging.getLogger(MBTilesInfo.class.getName());
 
     private static final CoordinateReferenceSystem WGS_84;
 
@@ -109,8 +110,8 @@ public class MBTilesInfo {
                         e);
             }
         } else {
-            if (log.isWarnEnabled()) {
-                log.warn(
+            if (log.isLoggable(Level.WARNING)) {
+                log.warning(
                         "Provided MBTile has a Null Envelope: "
                                 + file.getFile().getAbsolutePath()
                                 + ". Using full GridSet extent ");

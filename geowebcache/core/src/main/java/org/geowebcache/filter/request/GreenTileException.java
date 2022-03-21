@@ -16,8 +16,9 @@ package org.geowebcache.filter.request;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 
@@ -30,7 +31,7 @@ public class GreenTileException extends RequestFilterException {
     /** */
     private static final long serialVersionUID = -3369293469656922254L;
 
-    private static Log log = LogFactory.getLog(GreenTileException.class);
+    private static Logger log = Logging.getLogger(GreenTileException.class.getName());
 
     private static volatile Resource greenTile;
 
@@ -45,7 +46,7 @@ public class GreenTileException extends RequestFilterException {
             int ret = is.read(green);
             log.info("Read " + ret + " from gree PNG file (expected 659).");
         } catch (IOException ioe) {
-            log.error(ioe.getMessage());
+            log.log(Level.SEVERE, ioe.getMessage());
         }
 
         return new ByteArrayResource(green);

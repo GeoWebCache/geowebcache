@@ -21,8 +21,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 
 /**
  * Loads the configuration from a properties file {@code $HOME/.gwc_s3_tests.properties}, which must
@@ -35,7 +36,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class PropertiesLoader {
 
-    private static Log log = LogFactory.getLog(PropertiesLoader.class);
+    private static Logger log = Logging.getLogger(PropertiesLoader.class.getName());
 
     private Properties properties = new Properties();
 
@@ -57,10 +58,13 @@ public class PropertiesLoader {
                         null != properties.getProperty("secretKey"),
                         "secretKey not provided in config file " + configFile.getAbsolutePath());
             } catch (IOException e) {
-                log.fatal("Error loading S3 tests config: " + configFile.getAbsolutePath(), e);
+                log.log(
+                        Level.SEVERE,
+                        "Error loading S3 tests config: " + configFile.getAbsolutePath(),
+                        e);
             }
         } else {
-            log.warn(
+            log.warning(
                     "S3 storage config file not found. GWC S3 tests will be ignored. "
                             + configFile.getAbsolutePath());
         }

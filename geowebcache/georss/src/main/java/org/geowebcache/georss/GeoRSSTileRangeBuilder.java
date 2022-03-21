@@ -15,8 +15,8 @@
 package org.geowebcache.georss;
 
 import java.io.IOException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.locationtech.jts.geom.Geometry;
@@ -30,7 +30,7 @@ import org.locationtech.jts.geom.Geometry;
  */
 class GeoRSSTileRangeBuilder {
 
-    private static final Log logger = LogFactory.getLog(GeoRSSTileRangeBuilder.class);
+    private static final Logger LOGGER = Logging.getLogger(GeoRSSTileRangeBuilder.class.getName());
 
     private final TileLayer layer;
 
@@ -83,7 +83,7 @@ class GeoRSSTileRangeBuilder {
         try {
             while ((entry = reader.nextEntry()) != null) {
                 if (entry.getUpdated() != null && entry.getUpdated().equals(previousEntryUpdate)) {
-                    logger.warn(
+                    LOGGER.warning(
                             "Skipping entry with id "
                                     + entry.getId()
                                     + " since it has the same date as our last feed update.");

@@ -18,8 +18,9 @@ import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Locale;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 
 public class BoundingBox implements Serializable {
 
@@ -34,7 +35,7 @@ public class BoundingBox implements Serializable {
         return COORD_FORMATTER;
     }
 
-    private static Log log = LogFactory.getLog(org.geowebcache.grid.BoundingBox.class);
+    private static Logger log = Logging.getLogger(BoundingBox.class.getName());
 
     private static String DELIMITER = ",";
 
@@ -66,15 +67,15 @@ public class BoundingBox implements Serializable {
 
     public BoundingBox(String BBOX) {
         setFromBBOXString(BBOX, 0);
-        if (log.isTraceEnabled()) {
-            log.trace("Created BBOX: " + getReadableString());
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("Created BBOX: " + getReadableString());
         }
     }
 
     public BoundingBox(String[] BBOX) {
         setFromStringArray(BBOX);
-        if (log.isTraceEnabled()) {
-            log.trace("Created BBOX: " + getReadableString());
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("Created BBOX: " + getReadableString());
         }
     }
 
@@ -84,8 +85,8 @@ public class BoundingBox implements Serializable {
         coords[2] = maxx;
         coords[3] = maxy;
 
-        if (log.isTraceEnabled()) {
-            log.trace("Created BBOX: " + getReadableString());
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("Created BBOX: " + getReadableString());
         }
     }
 
@@ -149,7 +150,7 @@ public class BoundingBox implements Serializable {
         } else if (recWatch < 4) {
             setFromBBOXString(BBOX[0], recWatch);
         } else {
-            log.error("Doesnt understand " + Arrays.toString(BBOX));
+            log.severe("Doesnt understand " + Arrays.toString(BBOX));
         }
     }
 

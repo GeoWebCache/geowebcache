@@ -37,17 +37,18 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geotools.jdbc.util.SqlUtil;
 import org.geotools.mbtiles.MBTilesFile;
 import org.geotools.mbtiles.MBTilesMetadata;
 import org.geotools.mbtiles.MBTilesTile;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
@@ -61,7 +62,7 @@ import org.geowebcache.storage.TileRange;
 /** Blobstore that store the tiles in a sqlite database using the mbtiles specification. */
 public final class MbtilesBlobStore extends SqliteBlobStore {
 
-    private static Log LOGGER = LogFactory.getLog(MbtilesBlobStore.class);
+    private static Logger LOGGER = Logging.getLogger(MbtilesBlobStore.class.getName());
 
     // pattern for matching the name of a file that contains mbtiles metadata (layerName.properties)
     private static final Pattern MBTILES_METADATA_FILE_NAME_PATTERN =
@@ -107,7 +108,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
             try (DirectoryStream<Path> ds =
                     Files.newDirectoryStream(configuration.getRootDirectoryFile().toPath())) {
                 for (@SuppressWarnings("unused") Path p : ds) {
-                    LOGGER.error("Found file: " + p);
+                    LOGGER.severe("Found file: " + p);
                     empty = false;
                     break;
                 }
@@ -134,7 +135,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         gzipVector = configuration.isGzipVector();
 
         initMbtilesLayersMetadata(configuration.getMbtilesMetadataDirectory());
-        if (LOGGER.isInfoEnabled()) {
+        if (LOGGER.isLoggable(Level.INFO)) {
             LOGGER.info(
                     String.format(
                             "MBTiles blob store initiated: [eagerDelete='%b', useCreateTime='%b'.",
@@ -149,8 +150,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
     @Override
     public void put(TileObject tile) throws StorageException {
         File file = fileManager.getFile(tile);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(String.format("Tile '%s' mapped to file '%s'.", tile, file));
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(String.format("Tile '%s' mapped to file '%s'.", tile, file));
         }
         initDatabaseFileIfNeeded(file, tile.getLayerName(), tile.getBlobFormat());
         // do work in write mode
@@ -197,9 +198,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                                     tile.getXYZ()[1],
                                     System.currentTimeMillis());
                         }
-                        if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug(
-                                    String.format("Tile '%s' saved in file '%s'.", tile, file));
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine(String.format("Tile '%s' saved in file '%s'.", tile, file));
                         }
                         if (listeners.isEmpty()) {
                             // no listeners to update we are done
@@ -224,8 +224,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
     @Override
     public boolean get(final TileObject tile) throws StorageException {
         File file = fileManager.getFile(tile);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(String.format("Tile '%s' mapped to file '%s'.", tile, file));
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(String.format("Tile '%s' mapped to file '%s'.", tile, file));
         }
         initDatabaseFileIfNeeded(file, tile.getLayerName(), tile.getBlobFormat());
         // do work in readonly mode
@@ -264,8 +264,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                                     }
                                     tile.setBlob(Utils.byteArrayToResource(bytes));
 
-                                    if (LOGGER.isDebugEnabled()) {
-                                        LOGGER.debug(
+                                    if (LOGGER.isLoggable(Level.FINE)) {
+                                        LOGGER.fine(
                                                 String.format(
                                                         "Tile '%s' found on file '%s'.",
                                                         tile, file));
@@ -279,8 +279,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                                         tile,
                                         file);
                             }
-                            if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug(
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine(
                                         String.format(
                                                 "Tile '%s' not found on file '%s'.", tile, file));
                             }
@@ -308,13 +308,13 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
     @Override
     public boolean delete(TileObject tile) throws StorageException {
         File file = fileManager.getFile(tile);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(String.format("Tile '%s' mapped to file '%s'.", tile, file));
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(String.format("Tile '%s' mapped to file '%s'.", tile, file));
         }
         if (!file.exists()) {
             // database file doesn't exists so nothing to do
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(
                         String.format(
                                 "Containing file '%s' for tile '%s' doesn't exists.", file, tile));
             }
@@ -352,8 +352,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                                         tile.getXYZ()[0],
                                         tile.getXYZ()[1]);
                             }
-                            if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug(
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine(
                                         String.format(
                                                 "Tile '%s' deleted from file '%s'.", tile, file));
                             }
@@ -366,9 +366,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                                 tile,
                                 file);
                     }
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug(
-                                String.format("Tile '%s' not found on file '%s'.", tile, file));
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format("Tile '%s' not found on file '%s'.", tile, file));
                     }
                     return false;
                 });
@@ -386,7 +385,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                 layerName,
                 key,
                 value);
-        if (LOGGER.isInfoEnabled()) {
+        if (LOGGER.isLoggable(Level.INFO)) {
             LOGGER.info(
                     String.format(
                             "Metadata for layer '%s' for key '%s' inserted or updated on file '%s'.",
@@ -404,8 +403,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                             if (resultSet.next()) {
                                 // metadata value is available
                                 String value = resultSet.getString(1);
-                                if (LOGGER.isDebugEnabled()) {
-                                    LOGGER.debug(
+                                if (LOGGER.isLoggable(Level.FINE)) {
+                                    LOGGER.fine(
                                             String.format(
                                                     "Metadata for layer '%s' with key '%s' found '%s'.",
                                                     layerName, key, value));
@@ -413,8 +412,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                                 return value;
                             }
                             // metadata value not found
-                            if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug(
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine(
                                         String.format(
                                                 "Metadata for layer '%s' with key '%s' not found.",
                                                 layerName, key));
@@ -429,8 +428,9 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                     key);
         } catch (Exception exception) {
             // probably because the metadata table doesn't exists
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error(
+            if (LOGGER.isLoggable(Level.SEVERE)) {
+                LOGGER.log(
+                        Level.SEVERE,
                         String.format("Error getting metadata from file '%s'.", metadataFile),
                         exception);
             }
@@ -472,8 +472,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         Map<File, List<long[]>> files = fileManager.getFiles(tileRange);
         if (files.isEmpty()) {
             // no files so nothing to do
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Nothing to do.");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Nothing to do.");
             }
             return false;
         }
@@ -495,8 +495,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                 // we need to delete all tiles that belong to the tiles range and are stored in the
                 // current file
                 for (long[] range : entry.getValue()) {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug(
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(
                                 String.format(
                                         "Deleting tiles range [minx=%d, miny=%d, maxx=%d, maxxy=%d, zoom=%d] in file '%s'.",
                                         range[0], range[1], range[2], range[3], range[4], file));
@@ -566,8 +566,9 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         try {
             executorService.awaitTermination(5, TimeUnit.SECONDS);
         } catch (Exception exception) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Error when waiting for executor task to finish.", exception);
+            if (LOGGER.isLoggable(Level.SEVERE)) {
+                LOGGER.log(
+                        Level.SEVERE, "Error when waiting for executor task to finish.", exception);
             }
         }
     }
@@ -575,7 +576,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
     /** Helper method that delete the provided files. */
     private boolean deleteFiles(List<File> files) throws StorageException {
         if (files.isEmpty()) {
-            if (LOGGER.isInfoEnabled()) {
+            if (LOGGER.isLoggable(Level.INFO)) {
                 LOGGER.info("No files to delete.");
             }
             return false;
@@ -596,8 +597,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                 throw Utils.exception(exception, "Something bad happen when deleting files.");
             }
         }
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Files deleted.");
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Files deleted.");
         }
         return true;
     }
@@ -615,8 +616,9 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                     y);
         } catch (Exception exception) {
             // probably the table doesn't exists
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error(
+            if (LOGGER.isLoggable(Level.SEVERE)) {
+                LOGGER.log(
+                        Level.SEVERE,
                         String.format(
                                 "Something bad happen when deleting create time for tile '%d-%d-%d'.",
                                 x, y, z),
@@ -645,8 +647,9 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                     y);
         } catch (Exception exception) {
             // probably the table doesn't exists
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error(
+            if (LOGGER.isLoggable(Level.SEVERE)) {
+                LOGGER.log(
+                        Level.SEVERE,
                         String.format(
                                 "Something bad happen when querying create time for tile '%d-%d-%d'.",
                                 x, y, z),
@@ -749,7 +752,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
     /** Reads user provided mbtiles metadata for a layer. */
     private void initMbtilesLayersMetadata(String mbtilesMetadataDirectoryPath) {
         if (mbtilesMetadataDirectoryPath == null) {
-            if (LOGGER.isInfoEnabled()) {
+            if (LOGGER.isLoggable(Level.INFO)) {
                 LOGGER.info(
                         "Mbtiles metadata directory path is NULL, no mbtiles metadata will be parsed.");
             }
@@ -757,7 +760,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         }
         File mbtilesMetadataDirectory = new File(mbtilesMetadataDirectoryPath);
         if (!mbtilesMetadataDirectory.exists()) {
-            if (LOGGER.isInfoEnabled()) {
+            if (LOGGER.isLoggable(Level.INFO)) {
                 LOGGER.info(
                         String.format(
                                 "Mbtiles metadata directory '%s' doesn't exists, no mbtiles metadata will be parsed.",
@@ -767,7 +770,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         }
         File[] files = mbtilesMetadataDirectory.listFiles();
         if (files == null) {
-            if (LOGGER.isInfoEnabled()) {
+            if (LOGGER.isLoggable(Level.INFO)) {
                 LOGGER.info(
                         String.format(
                                 "No files present in mbtiles metadata directory '%s', no mbtiles metadata will be parsed.",
@@ -799,7 +802,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                 gtMetadata.setVersion(metadata.getProperty("version"));
                 // index the parsed mbtiles metadata
                 layersMetadata.put(layerName, gtMetadata);
-                if (LOGGER.isInfoEnabled()) {
+                if (LOGGER.isLoggable(Level.INFO)) {
                     LOGGER.info(
                             String.format("Parsed mbtiles metadata for layer '%s'.", layerName));
                 }
@@ -828,8 +831,9 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                     layerName);
         } catch (Exception exception) {
             // probably because the metadata table doesn't exists
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error(
+            if (LOGGER.isLoggable(Level.SEVERE)) {
+                LOGGER.log(
+                        Level.SEVERE,
                         String.format("Error getting metadata from file '%s'.", metadataFile),
                         exception);
             }

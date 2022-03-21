@@ -44,9 +44,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.MockWepAppContextRule;
 import org.geowebcache.config.legends.LegendRawInfo;
@@ -73,7 +74,7 @@ import org.xml.sax.SAXParseException;
 
 public class XMLConfigurationTest {
 
-    private static final Log log = LogFactory.getLog(XMLConfigurationTest.class);
+    private static final Logger log = Logging.getLogger(XMLConfigurationTest.class.getName());
 
     private File configDir;
 
@@ -267,7 +268,7 @@ public class XMLConfigurationTest {
             XMLConfiguration.validate(
                     XMLConfiguration.loadDocument(new FileInputStream(configFile)));
         } catch (SAXParseException e) {
-            log.error(e.getMessage());
+            log.log(Level.SEVERE, e.getMessage());
             fail(e.getMessage());
         }
 
@@ -404,7 +405,7 @@ public class XMLConfigurationTest {
             XMLConfiguration.validate(
                     XMLConfiguration.loadDocument(new FileInputStream(configFile)));
         } catch (SAXParseException e) {
-            log.error(e.getMessage());
+            log.log(Level.SEVERE, e.getMessage());
             fail(e.getMessage());
         }
 
@@ -516,7 +517,7 @@ public class XMLConfigurationTest {
             XMLConfiguration.validate(
                     XMLConfiguration.loadDocument(new FileInputStream(configFile)));
         } catch (SAXParseException e) {
-            log.error(e.getMessage());
+            log.log(Level.SEVERE, e.getMessage());
             fail(e.getMessage());
         }
 

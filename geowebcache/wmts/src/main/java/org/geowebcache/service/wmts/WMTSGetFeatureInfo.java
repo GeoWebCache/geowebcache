@@ -18,9 +18,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.conveyor.ConveyorTile;
@@ -34,7 +34,7 @@ import org.geowebcache.util.ServletUtils;
 
 public class WMTSGetFeatureInfo {
 
-    private static Log log = LogFactory.getLog(org.geowebcache.service.wmts.WMTSService.class);
+    private static Logger log = Logging.getLogger("org.geowebcache.service.wmts.WMTSService");
 
     private ConveyorTile convTile;
 
@@ -115,7 +115,7 @@ public class WMTSGetFeatureInfo {
             data.transferTo(Channels.newChannel(os));
             os.flush();
         } catch (IOException ioe) {
-            log.debug("Caught IOException" + ioe.getMessage());
+            log.fine("Caught IOException" + ioe.getMessage());
         }
     }
 }
