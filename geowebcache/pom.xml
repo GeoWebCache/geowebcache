@@ -84,6 +84,7 @@
     <pom.fmt.action>sort</pom.fmt.action>
     <pom.fmt.skip>${spotless.apply.skip}</pom.fmt.skip>
     <jackson.version>2.13.2</jackson.version>
+    <jackson.databind.version>2.13.2.1</jackson.databind.version>
     <jetty.version>9.4.18.v20190429</jetty.version>
     <errorProneFlags></errorProneFlags>
     <errorProne.version>2.10.0</errorProne.version>
@@ -416,7 +417,7 @@
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>${jackson.version}</version>
+        <version>${jackson.databind.version}</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
