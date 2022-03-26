@@ -83,7 +83,7 @@
     <spotless.apply.skip>false</spotless.apply.skip>
     <pom.fmt.action>sort</pom.fmt.action>
     <pom.fmt.skip>${spotless.apply.skip}</pom.fmt.skip>
-    <jackson.version>2.13.2</jackson.version>
+    <jackson.version>2.13.2.1</jackson.version>
     <jetty.version>9.4.18.v20190429</jetty.version>
     <errorProneFlags></errorProneFlags>
     <errorProne.version>2.10.0</errorProne.version>
