@@ -19,6 +19,7 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import java.net.URI;
 import java.util.Collection;
 import org.geowebcache.rest.controller.GWCController;
 import org.springframework.http.MediaType;
@@ -96,8 +97,12 @@ public class XStreamListAliasWrapper {
                             MvcUriComponentsBuilder.fromMethodName(
                                             controllerClass, alias + "Get", name)
                                     .buildAndExpand("");
-                    writer.addAttribute(
-                            "href", uriComponents.encode().toUriString().replace("$", "") + ".xml");
+                    // build URI with URI.normalize() to remove double slashes
+                    String normalizedLayerUri =
+                            URI.create(uriComponents.encode().toUriString().replace("$", ""))
+                                    .normalize()
+                                    .toASCIIString();
+                    writer.addAttribute("href", normalizedLayerUri + ".xml");
                     writer.addAttribute("type", MediaType.TEXT_XML.toString());
 
                     writer.endNode();
