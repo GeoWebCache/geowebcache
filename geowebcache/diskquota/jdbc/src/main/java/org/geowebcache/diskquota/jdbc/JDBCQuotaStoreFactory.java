@@ -22,10 +22,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
+import org.geotools.util.factory.GeoTools;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.config.ConfigurationResourceProvider;
@@ -175,12 +175,14 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         return store;
     }
 
-    private DataSource getDataSource(JDBCConfiguration config) throws ConfigurationException {
+    protected DataSource getDataSource(JDBCConfiguration config) throws ConfigurationException {
         try {
             DataSource ds = null;
             if (config.getJNDISource() != null) {
-                InitialContext context = new InitialContext();
-                ds = (DataSource) context.lookup(config.getJNDISource());
+                ds = (DataSource) GeoTools.jndiLookup(config.getJNDISource());
+                if (ds == null)
+                    throw new ConfigurationException(
+                            "Failed to get a datasource from: " + config.getJNDISource());
             } else if (config.getConnectionPool() != null) {
                 ConnectionPoolConfiguration cp = config.getConnectionPool();
 
