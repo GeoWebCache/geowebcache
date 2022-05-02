@@ -24,11 +24,12 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.DateUtils;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
@@ -56,7 +57,7 @@ import org.springframework.http.MediaType;
  */
 public final class ResponseUtils {
 
-    private static Log log = LogFactory.getLog(ResponseUtils.class);
+    private static Logger log = Logging.getLogger(ResponseUtils.class);
 
     private ResponseUtils() {}
 
@@ -259,7 +260,7 @@ public final class ResponseUtils {
                 runtimeStats.log(contentLength, cacheRes);
 
             } catch (IOException ioe) {
-                log.debug("Caught IOException: " + ioe.getMessage() + "\n\n" + ioe.toString());
+                log.fine("Caught IOException: " + ioe.getMessage() + "\n\n" + ioe.toString());
             }
         }
     }
@@ -277,17 +278,17 @@ public final class ResponseUtils {
                 try {
                     loadBlankTile(blankTile, fh.toURI().toURL());
                 } catch (IOException e) {
-                    log.error(e.getMessage(), e);
+                    log.log(Level.SEVERE, e.getMessage(), e);
                 }
 
                 if (fileSize == blankTile.getSize()) {
                     log.info("Loaded blank tile from " + blankTilePath);
                 } else {
-                    log.error("Failed to load blank tile from " + blankTilePath);
+                    log.log(Level.SEVERE, "Failed to load blank tile from " + blankTilePath);
                 }
 
             } else {
-                log.error("" + blankTilePath + " does not exist or is not readable.");
+                log.log(Level.SEVERE, "" + blankTilePath + " does not exist or is not readable.");
             }
         }
 
@@ -300,7 +301,7 @@ public final class ResponseUtils {
                 int ret = (int) blankTile.getSize();
                 log.info("Read " + ret + " from blank PNG file (expected 425).");
             } catch (IOException ioe) {
-                log.error(ioe.getMessage());
+                log.log(Level.SEVERE, ioe.getMessage());
             }
         }
 
@@ -312,7 +313,7 @@ public final class ResponseUtils {
                 ReadableByteChannel ch = Channels.newChannel(inputStream)) {
             blankTile.transferFrom(ch);
         } catch (IOException e) {
-            log.debug(e);
+            log.log(Level.FINE, e.getMessage(), e);
         }
     }
 
@@ -328,7 +329,7 @@ public final class ResponseUtils {
             int httpCode,
             String errorMsg,
             RuntimeStats runtimeStats) {
-        log.debug(errorMsg);
+        log.fine(errorMsg);
         errorMsg =
                 "<html>\n"
                         + ServletUtils.gwcHtmlHeader("../", "GWC Error")
@@ -357,7 +358,7 @@ public final class ResponseUtils {
             int httpCode,
             String errorMsg,
             RuntimeStats runtimeStats) {
-        log.debug(errorMsg);
+        log.fine(errorMsg);
         writePage(response, httpCode, errorMsg, runtimeStats, MediaType.APPLICATION_XML_VALUE);
     }
 

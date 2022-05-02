@@ -21,10 +21,11 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
@@ -38,7 +39,7 @@ public class WMSRasterFilter extends RasterFilter {
 
     private static final long serialVersionUID = 5565794752696452109L;
 
-    private static Log log = LogFactory.getLog(RasterFilter.class);
+    private static Logger log = Logging.getLogger(RasterFilter.class.getName());
 
     private String wmsLayers;
 
@@ -79,14 +80,14 @@ public class WMSRasterFilter extends RasterFilter {
     protected BufferedImage loadMatrix(TileLayer tlayer, String gridSetId, int z)
             throws IOException, GeoWebCacheException {
         if (!(tlayer instanceof WMSLayer)) {
-            log.error("WMSRasterFilter can only be used with WMS layers.");
+            log.log(Level.SEVERE, "WMSRasterFilter can only be used with WMS layers.");
             return null;
         }
 
         WMSLayer layer = (WMSLayer) tlayer;
 
         if (!(layer.getSourceHelper() instanceof WMSHttpHelper)) {
-            log.error("WMSRasterFilter can only be used with WMS layers.");
+            log.log(Level.SEVERE, "WMSRasterFilter can only be used with WMS layers.");
         }
 
         WMSHttpHelper srcHelper = (WMSHttpHelper) layer.getSourceHelper();
@@ -204,7 +205,7 @@ public class WMSRasterFilter extends RasterFilter {
             try {
                 this.setMatrix(layer, gridSetId, z, true);
             } catch (Exception e) {
-                log.error(e.getMessage());
+                log.log(Level.SEVERE, e.getMessage());
             }
         }
         return true;
@@ -216,7 +217,7 @@ public class WMSRasterFilter extends RasterFilter {
             try {
                 this.setMatrix(layer, gridSetId, z, true);
             } catch (Exception e) {
-                log.error(e.getMessage());
+                log.log(Level.SEVERE, e.getMessage());
             }
         }
     }

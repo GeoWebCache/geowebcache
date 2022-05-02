@@ -17,9 +17,10 @@ package org.geowebcache.rest.controller;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.config.ContextualConfigurationProvider.Context;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.io.GeoWebCacheXStream;
@@ -45,7 +46,7 @@ import org.springframework.web.context.WebApplicationContext;
 @RequestMapping(path = "${gwc.context.suffix:}/rest")
 public class MemoryCacheController {
     /** {@link Log} used for logging the exceptions */
-    public static Log LOG = LogFactory.getLog(MemoryCacheController.class);
+    public static Logger log = Logging.getLogger(MemoryCacheController.class.getName());
 
     /** Store associated to the StorageBroker to use */
     @Autowired StorageBroker broker;
@@ -78,8 +79,8 @@ public class MemoryCacheController {
     public ResponseEntity<?> doGet(HttpServletRequest request) {
         ResponseEntity<?> entity;
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Getting BlobStore from the storage broker");
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Getting BlobStore from the storage broker");
         }
 
         // Getting the BlobStore if present
@@ -88,8 +89,8 @@ public class MemoryCacheController {
         }
 
         if (store != null && store instanceof MemoryBlobStore) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Memory Blobstore found, now getting statistics");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Memory Blobstore found, now getting statistics");
             }
             // Getting statistics
             MemoryBlobStore memoryStore = (MemoryBlobStore) store;

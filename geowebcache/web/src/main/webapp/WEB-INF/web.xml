@@ -7,7 +7,13 @@
     <param-name>contextConfigLocation</param-name>
     <param-value>/WEB-INF/geowebcache-servlet.xml</param-value>
   </context-param>
-  
+
+  <!-- Use one of SLF4J, LOG4J2, LOG4J1, CommonsLogging, JavaLogging -->
+  <context-param>
+    <param-name>org.geowebcache.util.logging.policy</param-name>
+    <param-value></param-value>
+  </context-param>
+
   <filter>
     <filter-name>springSecurityFilterChain</filter-name>
     <filter-class>
@@ -19,8 +25,12 @@
     <filter-name>springSecurityFilterChain</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
-  
-  
+
+  <!-- logging initializer, should execute before spring context startup -->
+  <listener>
+    <listener-class>org.geowebcache.util.LoggingContextListener</listener-class>
+  </listener>
+
   <!--  spring context loader -->
   <listener>
     <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>

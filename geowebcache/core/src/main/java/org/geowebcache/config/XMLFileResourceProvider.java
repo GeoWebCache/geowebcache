@@ -24,11 +24,12 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.geowebcache.util.GWCVars;
@@ -38,8 +39,7 @@ import org.springframework.web.context.WebApplicationContext;
 /** Default implementation of ConfigurationResourceProvider that uses the file system. */
 public class XMLFileResourceProvider implements ConfigurationResourceProvider {
 
-    private static Log log =
-            LogFactory.getLog(org.geowebcache.config.XMLFileResourceProvider.class);
+    private static Logger log = Logging.getLogger(XMLFileResourceProvider.class.getName());
 
     public static final String GWC_CONFIG_DIR_VAR = "GEOWEBCACHE_CONFIG_DIR";
 
@@ -76,7 +76,7 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
             // Use the given path
             if (new File(configFileDirectory).isAbsolute()) {
 
-                log.info(
+                log.config(
                         "Provided configuration directory as absolute path '"
                                 + configFileDirectory
                                 + "'");
@@ -85,7 +85,7 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
                 ServletContext servletContext = context.getServletContext();
                 if (servletContext != null) {
                     String baseDir = servletContext.getRealPath("");
-                    log.info(
+                    log.config(
                             "Provided configuration directory relative to servlet context '"
                                     + baseDir
                                     + "': "
@@ -100,7 +100,7 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
             // Otherwise use the storage directory
             this.configDirectory = new File(storageDirFinder.getDefaultPath());
         }
-        log.info("Will look for " + configFileName + " in '" + configDirectory + "'");
+        log.config("Will look for " + configFileName + " in '" + configDirectory + "'");
     }
 
     public XMLFileResourceProvider(
@@ -204,7 +204,7 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
         try {
             return f.getCanonicalPath();
         } catch (IOException ex) {
-            log.error("Could not canonize config path", ex);
+            log.log(Level.SEVERE, "Could not canonize config path", ex);
             return f.getPath();
         }
     }
@@ -213,9 +213,9 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
         File xmlFile = findConfigFile();
 
         if (xmlFile.exists()) {
-            log.info("Found configuration file in " + configDirectory.getAbsolutePath());
+            log.config("Found configuration file in " + configDirectory.getAbsolutePath());
         } else if (templateLocation != null) {
-            log.warn(
+            log.warning(
                     "Found no configuration file in config directory, will create one at '"
                             + xmlFile.getAbsolutePath()
                             + "' from template "
@@ -241,7 +241,7 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
         String backUpFileName = "geowebcache_" + timeStamp + ".bak";
         File parentFile = xmlFile.getParentFile();
 
-        log.debug("Backing up config file " + xmlFile.getName() + " to " + backUpFileName);
+        log.fine("Backing up config file " + xmlFile.getName() + " to " + backUpFileName);
 
         String[] previousBackUps =
                 parentFile.list(
@@ -259,7 +259,7 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
         if (previousBackUps != null && previousBackUps.length > maxBackups) {
             Arrays.sort(previousBackUps);
             String oldest = previousBackUps[0];
-            log.debug(
+            log.fine(
                     "Deleting oldest config backup "
                             + oldest
                             + " to keep a maximum of "
@@ -270,7 +270,7 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
 
         File backUpFile = new File(parentFile, backUpFileName);
         FileUtils.copyFile(xmlFile, backUpFile);
-        log.debug("Config backup done");
+        log.fine("Config backup done");
     }
 
     @Override

@@ -1,3 +1,15 @@
+/**
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.geowebcache.jetty;
 
 import java.io.File;
@@ -6,8 +18,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
 import java.util.function.Consumer;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -15,6 +27,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.geotools.util.logging.Logging;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -29,7 +42,7 @@ public class JettyRule extends org.junit.rules.ExternalResource {
 
     private static final String JETTY_PORT_PROPERTY = "jetty.port";
 
-    private static final Log log = LogFactory.getLog(JettyRule.class);
+    private static final Logger log = Logging.getLogger(JettyRule.class.getName());
 
     Integer port = null;
 
@@ -143,7 +156,8 @@ public class JettyRule extends org.junit.rules.ExternalResource {
             jettyServer.start();
         } catch (Exception e) {
             if (e instanceof BindException) {
-                log.error(
+                log.log(
+                        Level.SEVERE,
                         "Could not bind to port "
                                 + port
                                 + ", "
@@ -168,7 +182,7 @@ public class JettyRule extends org.junit.rules.ExternalResource {
         try {
             jettyServer.stop();
         } catch (Exception e) {
-            log.error("Could not stop Jetty server: " + e.getMessage());
+            log.log(Level.SEVERE, "Could not stop Jetty server: " + e.getMessage());
         }
     }
 }

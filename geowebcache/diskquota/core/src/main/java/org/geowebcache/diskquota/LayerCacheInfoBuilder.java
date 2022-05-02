@@ -26,9 +26,10 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.diskquota.storage.LayerQuota;
 import org.geowebcache.diskquota.storage.Quota;
 import org.geowebcache.diskquota.storage.TilePage;
@@ -47,7 +48,7 @@ import org.geowebcache.util.FileUtils;
  */
 final class LayerCacheInfoBuilder {
 
-    private static final Log log = LogFactory.getLog(LayerCacheInfoBuilder.class);
+    private static final Logger log = Logging.getLogger(LayerCacheInfoBuilder.class.getName());
 
     private final File rootCacheDir;
 
@@ -134,7 +135,7 @@ final class LayerCacheInfoBuilder {
                     Future<ZoomLevelVisitor.Stats> cacheTask = threadPool.submit(cacheInfoBuilder);
 
                     perLayerRunningTasks.get(layerName).add(cacheTask);
-                    log.debug(
+                    log.fine(
                             "Submitted background task to gather cache info for '"
                                     + layerName
                                     + "'/"
@@ -237,7 +238,7 @@ final class LayerCacheInfoBuilder {
                             + "/zlevel:"
                             + tileZ;
             try {
-                log.debug("Gathering cache information for '" + zLevelKey);
+                log.fine("Gathering cache information for '" + zLevelKey);
                 stats.numTiles = 0L;
                 stats.runTimeMillis = 0L;
                 long runTime = System.currentTimeMillis();
@@ -245,12 +246,12 @@ final class LayerCacheInfoBuilder {
                 runTime = System.currentTimeMillis() - runTime;
                 stats.runTimeMillis = runTime;
             } catch (TraversalCanceledException cancel) {
-                log.debug("Gathering cache information for " + zLevelKey + " was canceled.");
+                log.fine("Gathering cache information for " + zLevelKey + " was canceled.");
                 return null;
             } catch (Exception e) {
                 throw e;
             }
-            log.debug(
+            log.fine(
                     "Cache information for "
                             + zLevelKey
                             + " collected in "
@@ -268,7 +269,7 @@ final class LayerCacheInfoBuilder {
                 throw new TraversalCanceledException();
             }
             if (file.isDirectory()) {
-                log.trace("Processing files in " + file.getAbsolutePath());
+                log.finer("Processing files in " + file.getAbsolutePath());
                 return true;
             }
 
@@ -334,7 +335,7 @@ final class LayerCacheInfoBuilder {
             }
             return numRunning > 0;
         } catch (Exception e) {
-            log.debug(e);
+            log.log(Level.FINE, e.getMessage(), e);
             return false;
         }
     }

@@ -15,15 +15,15 @@
 package org.geowebcache.mime;
 
 import java.io.Serializable;
+import java.util.logging.Logger;
 import javax.imageio.ImageWriteParam;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 
 public class FormatModifier implements Serializable {
 
     // TODO May want to add initialization with double locking instead of testing each time
 
-    private static Log log = LogFactory.getLog(org.geowebcache.mime.FormatModifier.class);
+    private static Logger log = Logging.getLogger(FormatModifier.class.getName());
 
     private String responseFormat;
 
@@ -56,7 +56,7 @@ public class FormatModifier implements Serializable {
             try {
                 reqFormat = MimeType.createFromFormat(requestFormat);
             } catch (MimeException e) {
-                log.debug(e.getMessage());
+                log.fine(e.getMessage());
             }
         }
 
@@ -68,7 +68,7 @@ public class FormatModifier implements Serializable {
             try {
                 resFormat = MimeType.createFromFormat(responseFormat);
             } catch (MimeException e) {
-                log.debug(e.getMessage());
+                log.fine(e.getMessage());
             }
         }
 
@@ -102,7 +102,7 @@ public class FormatModifier implements Serializable {
                     param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                     param.setCompressionQuality(getCompressionQuality());
                 } else {
-                    log.debug("FormatModifier only supports JPEG image parameters at this time.");
+                    log.fine("FormatModifier only supports JPEG image parameters at this time.");
                 }
             }
             imgWriteParam = param;

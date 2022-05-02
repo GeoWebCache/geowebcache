@@ -16,10 +16,10 @@ package org.geowebcache.conveyor;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.io.Resource;
@@ -32,7 +32,7 @@ import org.geowebcache.storage.TileObject;
 
 /** Represents a request for a tile and carries the information needed to complete it. */
 public class ConveyorTile extends Conveyor implements TileResponseReceiver {
-    private static Log log = LogFactory.getLog(org.geowebcache.conveyor.ConveyorTile.class);
+    private static Logger log = Logging.getLogger(ConveyorTile.class.getName());
 
     // Shared request information, this is stored by the cache key
     // protected long[] tileIndex = null;
@@ -235,7 +235,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
             return ret;
 
         } catch (StorageException se) {
-            log.warn(se.getMessage());
+            log.warning(se.getMessage());
             return false;
         }
     }

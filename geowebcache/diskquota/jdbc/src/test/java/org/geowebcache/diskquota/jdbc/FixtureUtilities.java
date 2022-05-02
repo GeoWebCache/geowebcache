@@ -22,8 +22,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 
 /**
  * This class comes from GeoTools
@@ -36,7 +37,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class FixtureUtilities {
 
-    static final Log log = LogFactory.getLog(FixtureUtilities.class);
+    static final Logger log = Logging.getLogger(FixtureUtilities.class.getName());
 
     /** Load {@link Properties} from a {@link File}. */
     public static Properties loadProperties(File file) {
@@ -94,7 +95,7 @@ public class FixtureUtilities {
                             + fixtureFile.getCanonicalPath()
                             + " not found.");
         } catch (Exception e) {
-            log.debug(e);
+            log.log(Level.FINE, e.getMessage(), e);
         }
     }
 

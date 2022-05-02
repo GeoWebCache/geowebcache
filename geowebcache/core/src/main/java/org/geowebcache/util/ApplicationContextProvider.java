@@ -16,8 +16,9 @@
 package org.geowebcache.util;
 
 import java.util.Optional;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -25,8 +26,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 public class ApplicationContextProvider implements ApplicationContextAware {
 
-    private static Log log =
-            LogFactory.getLog(org.geowebcache.util.ApplicationContextProvider.class);
+    private static Logger log = Logging.getLogger(ApplicationContextProvider.class.toString());
 
     WebApplicationContext ctx;
 
@@ -41,7 +41,7 @@ public class ApplicationContextProvider implements ApplicationContextAware {
     public String getSystemVar(String varName, String defaultValue) {
         if (ctx == null) {
             String msg = "Application context was not set yet! Damn you Spring Framework :( ";
-            log.error(msg);
+            log.log(Level.SEVERE, msg);
             throw new RuntimeException(msg);
         }
 

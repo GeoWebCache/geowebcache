@@ -1,16 +1,29 @@
+/**
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this
+ * program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.geowebcache.jetty;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.geotools.util.logging.Logging;
 
 /**
  * Jetty starter, will run GeoWebCache inside the Jetty web container.<br>
@@ -21,7 +34,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
  */
 @SuppressWarnings("PMD.CloseResource")
 public class Start {
-    private static final Log log = LogFactory.getLog(Start.class);
+    private static final Logger log = Logging.getLogger(Start.class.getName());
 
     public static void main(String[] args) {
         final Server jettyServer = new Server();
@@ -77,13 +90,16 @@ public class Start {
             stopThread.setDaemon(true);
             stopThread.run();
         } catch (Exception e) {
-            log.error("Could not start the Jetty server: " + e.getMessage(), e);
+            log.log(Level.SEVERE, "Could not start the Jetty server: " + e.getMessage(), e);
 
             if (jettyServer != null) {
                 try {
                     jettyServer.stop();
                 } catch (Exception e1) {
-                    log.error("Unable to stop the " + "Jetty server:" + e1.getMessage(), e1);
+                    log.log(
+                            Level.SEVERE,
+                            "Unable to stop the " + "Jetty server:" + e1.getMessage(),
+                            e1);
                 }
             }
         }

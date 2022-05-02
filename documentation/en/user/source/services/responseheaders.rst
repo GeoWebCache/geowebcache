@@ -22,19 +22,22 @@ Whenever GeoWebCache serves a tile request, it will write the following custom h
  
 This is a sample request/response using cURL:
 
-.. code-block:: xml
+.. code-block:: bash
 
-  curl -v "http://localhost:8080/geowebcache/service/wms?LAYERS=sde%3Abmworld&FORMAT=image%2Fpng&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&SRS=EPSG%3A4326&BBOX=-180,-38,-52,90&WIDTH=256&HEIGHT=256&tiled=true">/dev/null 
- < HTTP/1.1 200 OK
- < geowebcache-tile-index: [0, 1, 2]
- < geowebcache-cache-result: HIT
- < geowebcache-tile-index: [0, 1, 2]
- < geowebcache-tile-bounds: -180.0,-38.0,-52.0,90.0
- < geowebcache-gridset: GlobalCRS84Pixel
- < geowebcache-crs: EPSG:4326
- < Content-Type: image/png
- < Content-Length: 102860
- < Server: Jetty(6.1.8)
+   curl -v "http://localhost:8080/geowebcache/service/wms?LAYERS=sde%3Abmworld&FORMAT=image%2Fpng&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&SRS=EPSG%3A4326&BBOX=-180,-38,-52,90&WIDTH=256&HEIGHT=256&tiled=true">/dev/null 
+
+::
+
+   < HTTP/1.1 200 OK
+   < geowebcache-tile-index: [0, 1, 2]
+   < geowebcache-cache-result: HIT
+   < geowebcache-tile-index: [0, 1, 2]
+   < geowebcache-tile-bounds: -180.0,-38.0,-52.0,90.0
+   < geowebcache-gridset: GlobalCRS84Pixel
+   < geowebcache-crs: EPSG:4326
+   < Content-Type: image/png
+   < Content-Length: 102860
+   < Server: Jetty(6.1.8)
  
 
 Last-Modified and If-Modified-Since
@@ -55,47 +58,56 @@ conditional GET operation found that the resource was available and not modified
 
 Try it yourself:
 
-.. code-block:: xml
+.. code-block:: bash
 
- curl -v "http://localhost:8080/geowebcache/service/wms?LAYERS=img%20states&FORMAT=image%2Fpng&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&EXCEPTIONS=application%2Fvnd.ogc.se_inimage&SRS=EPSG%3A4326&BBOX=-135,45,-90,90&WIDTH=256&HEIGHT=256">/dev/null 
- > Host: localhost:8080
- > Accept: */*
- >
- < HTTP/1.1 200 OK
- ...
- < Last-Modified: Wed, 25 Jul 2012 00:42:00 GMT
- < Content-Type: image/png
- < Content-Length: 31192
+   curl -v "http://localhost:8080/geowebcache/service/wms?LAYERS=img%20states&FORMAT=image%2Fpng&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&EXCEPTIONS=application%2Fvnd.ogc.se_inimage&SRS=EPSG%3A4326&BBOX=-135,45,-90,90&WIDTH=256&HEIGHT=256">/dev/null 
+
+::
+
+   > Host: localhost:8080
+   > Accept: */*
+   >
+   < HTTP/1.1 200 OK
+   ...
+   < Last-Modified: Wed, 25 Jul 2012 00:42:00 GMT
+   < Content-Type: image/png
+   < Content-Length: 31192
 
 Now use the value of the returned ``Last-Modified`` response header in the request and check thre response code. No content is 
 actually transferred, but the client is informed it's copy of the tile is up to date:
 
 
-.. code-block:: xml
+.. code-block:: bash
 
- curl --header "If-Modified-Since: Wed, 25 Jul 2012 00:42:00 GMT" -v "http://localhost:8080/geowebcache/service/wms?...">/dev/null 
- > Host: localhost:8080
- > Accept: */*
- > If-Modified-Since: Wed, 25 Jul 2012 00:42:00 GMT
- > 
- < HTTP/1.1 304 Not Modified
- < Last-Modified: Wed, 25 Jul 2012 00:42:00 GMT
- < Content-Type: image/png
- < Content-Length: 31192
+   curl --header "If-Modified-Since: Wed, 25 Jul 2012 00:42:00 GMT" -v "http://localhost:8080/geowebcache/service/wms?...">/dev/null 
+
+::
+
+   > Host: localhost:8080
+   > Accept: */*
+   > If-Modified-Since: Wed, 25 Jul 2012 00:42:00 GMT
+   > 
+   < HTTP/1.1 304 Not Modified
+   < Last-Modified: Wed, 25 Jul 2012 00:42:00 GMT
+   < Content-Type: image/png
+   < Content-Length: 31192
 
 Set the If-Modified-Since header to one second before, and you should get a 200 status code and the tile content instead:
 
-.. code-block:: xml
+.. code-block:: bash
 
- curl --header "If-Modified-Since: Wed, 25 Jul 2012 00:41:59 GMT" -v "http://localhost:8080/geowebcache/service/wms?...">/dev/null 
- > Host: localhost:8080
- > Accept: */*
- > If-Modified-Since: Wed, 25 Jul 2012 00:41:59 GMT
- > 
- < HTTP/1.1 200 OK
- ...
- < Last-Modified: Wed, 25 Jul 2012 00:42:00 GMT
- < Content-Type: image/png
- < Content-Length: 31192
+   curl --header "If-Modified-Since: Wed, 25 Jul 2012 00:41:59 GMT" -v "http://localhost:8080/geowebcache/service/wms?...">/dev/null 
+
+::
+
+   > Host: localhost:8080
+   > Accept: */*
+   > If-Modified-Since: Wed, 25 Jul 2012 00:41:59 GMT
+   > 
+   < HTTP/1.1 200 OK
+   ...
+   < Last-Modified: Wed, 25 Jul 2012 00:42:00 GMT
+   < Content-Type: image/png
+   < Content-Length: 31192
 
 

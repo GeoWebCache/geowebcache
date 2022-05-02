@@ -10,7 +10,7 @@ Configuration problems
 
 Configuring OpenLayers with GeoWebCache can be complicated because the grid alignment can be determined from a large number of sources. Note that the "base layer" has a special meaning in these applications; certain options pertain to all layers added to the client. The best advice is therefore to look closely at the source code of the automatically generated demos (available at ``http://<GEOWEBCACHE_URL>/demo/``), and customize them to your needs.
 
-If you receive a "broken tile", you can use a tool like `Firebug <http://getfirebug.com>`_ to examine the response or attempt to view it as a separate page. Often these tiles are really plain text and contain an error message. For instance, you may be told that the resolution does not match one that is available, or that the grid is misaligned.
+If you receive a "broken tile", you can use the browser developer tools to examine the response or attempt to view it as a separate page. Often these tiles are really plain text and contain an error message. For instance, you may be told that the resolution does not match one that is available, or that the grid is misaligned.
 
 Errors caused by incorrectly configured clients are usually not logged on the server, because a incorrectly configured client could easily fill up the logs.
 
@@ -29,7 +29,28 @@ Note that you can safely modify gridsubsets, but the gridset should always be th
 Logging
 -------
 
-Logging can be controlled through :file:`WEB-INF/classes/log4j.properties`. By default, log messages will end up in the standard log of the container, which is for Apache Tomcat is inside the :file:`logs` directory.
+The default logging configuration is defined by :file:`WEB-INF/classes/log4j2.xml`:
+
+.. literalinclude:: /../../../../geowebcache/web/src/main/resources/log4j2.xml
+   :language: xml
+
+To provide your own logging configuration use the system property ``-Dlog4j2.configurationFile=<filename>``.
+
+Here is an example that logs to the console and a rolling file appender (recording up to three files daily):
+
+.. literalinclude:: /../../../../geowebcache/web/src/main/resources/log4j2-rollingfile.xml
+   :language: xml
+
+For more information please see the `Log4J Manual <https://logging.apache.org/log4j/2.x/manual/configuration.html>`__.
+
+If you would prefer to use another logging framework use the property  ``org.geowebcache.util.logging.policy`` (as a system property, context parameter, or environmental variable) can be set to one of the following values:
+
+* ``SLF4J``: Requires :file:`WEB-INF/classes/logback.xml` configuration file.
+* ``LOG4J2``: Use ``log4j2.configurationFile`` property to supply configuration file.
+* ``LOG4J1``: Use  ``log4j.configuration`` property to supply configuration file.
+* ``CommonsLogging``: Modify :file:`WEB-INF/classes/commons-logging.properties`, or override with ``org.apache.commons.logging.Log`` property.
+* ``JavaLogging``: Modify :file:`WEB-INF/classes/logging.properties.xml`
+* ``Provided``: Used when embedded GeoWebCache as a library
 
 XStream
 -------

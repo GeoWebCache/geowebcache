@@ -22,13 +22,14 @@ import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.io.Resource;
 
 /** @author Bjoern Saxe */
 public class BundleFileResource implements Resource {
-    private static Log log = LogFactory.getLog(BundleFileResource.class);
+    private static Logger log = Logging.getLogger(BundleFileResource.class.getName());
 
     private final String bundleFilePath;
 
@@ -74,7 +75,8 @@ public class BundleFileResource implements Resource {
         FileInputStream fis = new FileInputStream(bundleFilePath);
         long skipped = fis.skip(tileOffset);
         if (skipped != tileOffset) {
-            log.error(
+            log.log(
+                    Level.SEVERE,
                     "tried to skip to tile offset "
                             + tileOffset
                             + " in "

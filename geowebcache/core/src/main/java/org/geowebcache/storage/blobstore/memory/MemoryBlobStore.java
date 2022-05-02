@@ -29,9 +29,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.storage.BlobStore;
@@ -57,7 +58,7 @@ import org.springframework.context.ApplicationContextAware;
 public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
 
     /** {@link Log} object used for logging exceptions */
-    private static final Log LOG = LogFactory.getLog(MemoryBlobStore.class);
+    private static final Logger log = Logging.getLogger(MemoryBlobStore.class.getName());
 
     /** {@link BlobStore} to use when no element is found */
     private BlobStore store;
@@ -121,18 +122,18 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public boolean delete(String layerName) throws StorageException {
         componentsStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Removing layer: " + layerName + " from cache provider");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Removing layer: " + layerName + " from cache provider");
             }
             // Remove from cacheProvider
             cacheProvider.removeLayer(layerName);
             // Remove the layer. Wait other scheduled tasks
             boolean executed = executeBlobStoreTask(BlobStoreAction.DELETE_LAYER, store, layerName);
-            if (LOG.isDebugEnabled()) {
+            if (log.isLoggable(Level.FINE)) {
                 if (executed) {
-                    LOG.debug("Delete Layer Task executed");
+                    log.fine("Delete Layer Task executed");
                 } else {
-                    LOG.debug("Delete LayerTask failed");
+                    log.fine("Delete LayerTask failed");
                 }
             }
             // Returns the result
@@ -146,13 +147,13 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public boolean deleteByGridsetId(String layerName, String gridSetId) throws StorageException {
         componentsStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Removing Layer: " + layerName);
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Removing Layer: " + layerName);
             }
             // Remove the layer from the cacheProvider
             cacheProvider.removeLayer(layerName);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Scheduling GridSet: " + gridSetId + " removal for Layer: " + layerName);
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Scheduling GridSet: " + gridSetId + " removal for Layer: " + layerName);
             }
             // Remove selected gridsets
             executorService.submit(
@@ -167,14 +168,14 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public boolean delete(TileObject obj) throws StorageException {
         componentsStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Removing TileObject: " + obj);
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Removing TileObject: " + obj);
             }
             // Remove from cacheProvider
             cacheProvider.removeTileObj(obj);
             // Remove selected TileObject
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Scheduling removal of TileObject: " + obj);
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Scheduling removal of TileObject: " + obj);
             }
             executorService.submit(new BlobStoreTask(store, BlobStoreAction.DELETE_SINGLE, obj));
             return true;
@@ -187,8 +188,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public boolean delete(TileRange obj) throws StorageException {
         componentsStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
+            if (log.isLoggable(Level.FINE)) {
+                log.fine(
                         "Removing TileObjects for Layer: "
                                 + obj.getLayerName()
                                 + ", min/max levels: "
@@ -202,8 +203,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
             // Remove layer for the cacheProvider
             cacheProvider.removeLayer(obj.getLayerName());
             // Remove selected TileObject
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
+            if (log.isLoggable(Level.FINE)) {
+                log.fine(
                         "Scheduling removal of TileObjects for Layer: "
                                 + obj.getLayerName()
                                 + ", min/max levels: "
@@ -226,14 +227,14 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public boolean get(TileObject obj) throws StorageException {
         componentsStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Checking if TileObject:" + obj + " is present");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Checking if TileObject:" + obj + " is present");
             }
             TileObject cached = cacheProvider.getTileObj(obj);
             boolean found = false;
             if (cached == null) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug(
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine(
                             "TileObject:"
                                     + obj
                                     + " not found. Try to get it from the wrapped blobstore");
@@ -243,8 +244,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
 
                 // If the file has been found, it is inserted in cacheProvider
                 if (found) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("TileObject:" + obj + " found. Put it in cache");
+                    if (log.isLoggable(Level.FINE)) {
+                        log.fine("TileObject:" + obj + " found. Put it in cache");
                     }
                     // Get the Cached TileObject
                     cached = getByteResourceTile(obj);
@@ -257,8 +258,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
             }
             // If found add its resource to the input TileObject
             if (found) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("TileObject:" + obj + " found, update the input TileObject");
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("TileObject:" + obj + " found, update the input TileObject");
                 }
                 Resource resource = cached.getBlob();
                 obj.setBlob(resource);
@@ -276,17 +277,17 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public void put(TileObject obj) throws StorageException {
         componentsStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Convert Input resource into a Byte Array");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Convert Input resource into a Byte Array");
             }
             TileObject cached = getByteResourceTile(obj);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Adding TileObject: " + obj + " to cache");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Adding TileObject: " + obj + " to cache");
             }
             cacheProvider.putTileObj(cached);
             // Add selected TileObject. Wait other scheduled tasks
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Adding TileObject: " + obj + " to the wrapped blobstore");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Adding TileObject: " + obj + " to the wrapped blobstore");
             }
             // Variable containing the execution result
             executeBlobStoreTask(BlobStoreAction.PUT, store, obj);
@@ -299,8 +300,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public void clear() throws StorageException {
         componentsStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Flushing cache");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Flushing cache");
             }
             // flush the cacheProvider
             cacheProvider.clear();
@@ -315,14 +316,14 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public void destroy() {
         blobStoreStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Reset cache");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Reset cache");
             }
             // flush the cacheProvider
             cacheProvider.reset();
             // Remove all the files
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Destroy wrapped store");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Destroy wrapped store");
             }
             executeBlobStoreTask(BlobStoreAction.DESTROY, store, "");
             // Stop the pending tasks
@@ -336,8 +337,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public void addListener(BlobStoreListener listener) {
         componentsStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Adding a new Listener");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Adding a new Listener");
             }
             // Add a new Listener
             store.addListener(listener);
@@ -350,8 +351,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public boolean removeListener(BlobStoreListener listener) {
         componentsStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Removing listener");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Removing listener");
             }
             // Remove a listener
             return store.removeListener(listener);
@@ -365,13 +366,13 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         componentsStateLock.lock();
         try {
             // flush the cacheProvider
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Flushing cache");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Flushing cache");
             }
             cacheProvider.clear();
             // Rename the layer. Wait other scheduled tasks
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Executing Layer rename task");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Executing Layer rename task");
             }
             // Variable containing the execution result
             boolean executed =
@@ -386,8 +387,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public String getLayerMetadata(String layerName, String key) {
         componentsStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Getting metadata for Layer: " + layerName);
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Getting metadata for Layer: " + layerName);
             }
             // Get the Layer metadata
             return store.getLayerMetadata(layerName, key);
@@ -400,8 +401,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public void putLayerMetadata(String layerName, String key, String value) {
         componentsStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Adding metadata for Layer: " + layerName);
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Adding metadata for Layer: " + layerName);
             }
             // Add a new Layer Metadata
             store.putLayerMetadata(layerName, key, value);
@@ -414,8 +415,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public CacheStatistics getCacheStatistics() {
         componentsStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Getting Cache Statistics");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Getting Cache Statistics");
             }
             return cacheProvider.getStatistics();
         } finally {
@@ -427,8 +428,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public void setStore(BlobStore store) {
         blobStoreStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Setting the wrapped store");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Setting the wrapped store");
             }
             if (store == null) {
                 throw new NullPointerException("Input BlobStore cannot be null");
@@ -443,8 +444,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public BlobStore getStore() {
         componentsStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Returning the wrapped store");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Returning the wrapped store");
             }
             return store;
         } finally {
@@ -456,8 +457,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public void setCacheProvider(CacheProvider cache) {
         blobStoreStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Setting cache provided");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Setting cache provided");
             }
             if (cache == null) {
                 throw new IllegalArgumentException("Input BlobStore cannot be null");
@@ -481,15 +482,15 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         final ByteArrayResource finalBlob;
         // If it is a ByteArrayResource, the result is simply copied
         if (obj.getBlob() instanceof ByteArrayResource) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Resource is already a Byte Array, only a copy is needed");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Resource is already a Byte Array, only a copy is needed");
             }
             ByteArrayResource byteArrayResource = (ByteArrayResource) obj.getBlob();
             byte[] contents = byteArrayResource.getContents();
             finalBlob = new ByteArrayResource(contents);
         } else {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Resource is not a Byte Array, data must be transferred");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Resource is not a Byte Array, data must be transferred");
             }
             // Else the result is written to a new WritableByteChannel
             try (ByteArrayOutputStream bOut = new ByteArrayOutputStream();
@@ -521,8 +522,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public void setCacheBeanName(String cacheBeanName) {
         blobStoreStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Setting cache providee name");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Setting cache providee name");
             }
             this.cacheBeanName = cacheBeanName;
         } finally {
@@ -586,14 +587,14 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
                     }
                 }
                 if (!configured) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("CacheProvider not configured, use default configuration");
+                    if (log.isLoggable(Level.FINE)) {
+                        log.fine("CacheProvider not configured, use default configuration");
                     }
                 }
             }
         } else {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("CacheProvider already configured");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("CacheProvider already configured");
             }
         }
     }
@@ -602,15 +603,15 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         Future<Boolean> future = executorService.submit(new BlobStoreTask(store, action, objs));
         // Variable containing the execution result
         boolean executed = false;
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Waiting scheduled Tasks");
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Waiting scheduled Tasks");
         }
         try {
             // Waiting tasks
             executed = future.get();
         } catch (InterruptedException | ExecutionException e) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error(e.getMessage(), e);
+            if (log.isLoggable(Level.SEVERE)) {
+                log.log(Level.SEVERE, e.getMessage(), e);
             }
         }
         return executed;
@@ -646,8 +647,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
                 // Execution of the requested operation
                 result = action.executeOperation(store, objs);
             } catch (StorageException s) {
-                if (LOG.isErrorEnabled()) {
-                    LOG.error(s.getMessage(), s);
+                if (log.isLoggable(Level.SEVERE)) {
+                    log.log(Level.SEVERE, s.getMessage(), s);
                 }
             }
             return result;
@@ -782,13 +783,13 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
             throws StorageException {
         componentsStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Removing Layer: " + layerName);
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Removing Layer: " + layerName);
             }
             // Remove the layer from the cacheProvider
             cacheProvider.removeLayer(layerName);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
+            if (log.isLoggable(Level.FINE)) {
+                log.fine(
                         "Scheduling Parameters: "
                                 + parametersId
                                 + " removal for Layer: "
@@ -808,8 +809,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public Set<Map<String, String>> getParameters(String layerName) throws StorageException {
         componentsStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Getting parameters for Layer: " + layerName);
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Getting parameters for Layer: " + layerName);
             }
             return store.getParameters(layerName);
         } finally {
@@ -820,8 +821,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public Map<String, Optional<Map<String, String>>> getParametersMapping(String layerName) {
         componentsStateLock.lock();
         try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Getting parameters for Layer: " + layerName);
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Getting parameters for Layer: " + layerName);
             }
             return store.getParametersMapping(layerName);
         } finally {

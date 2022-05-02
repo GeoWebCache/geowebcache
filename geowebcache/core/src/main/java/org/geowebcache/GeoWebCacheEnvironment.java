@@ -16,9 +16,10 @@ package org.geowebcache;
 
 import java.util.Optional;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.PlaceholderConfigurerSupport;
 import org.springframework.core.Constants;
@@ -47,7 +48,7 @@ import org.springframework.util.PropertyPlaceholderHelper.PlaceholderResolver;
 public class GeoWebCacheEnvironment {
 
     /** logger */
-    public static Log LOGGER = LogFactory.getLog(GeoWebCacheEnvironment.class);
+    public static Logger LOGGER = Logging.getLogger(GeoWebCacheEnvironment.class.getName());
 
     private static final Constants constants = new Constants(PlaceholderConfigurerSupport.class);
 
@@ -111,8 +112,8 @@ public class GeoWebCacheEnvironment {
             }
             return value;
         } catch (Throwable ex) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Could not access system property '" + key + "': " + ex);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Could not access system property '" + key + "': " + ex);
             }
             return null;
         }

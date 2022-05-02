@@ -14,12 +14,20 @@ This section is a work in progress, and will eventually be extended to cover top
 
 Operating Environment
 ---------------------
+
 Java Settings
 +++++++++++++
 
-GeoWebCache speed depends in part on the chosen Java Runtime Environment (JRE). For best performance use a Java 6 JRE. If not possible, use a Java 5 JRE. JREs other than those released by Sun may work correctly, but are not tested nor supported.
+GeoWebCache speed depends in part on the chosen Java Runtime Environment (JRE). GeoWebCache is tested with both OpenJDK 8 and OpenJDK 11. JREs other than these may work correctly, but are not tested nor supported.
 
 GeoWebCache does not need a lot of heap memory assigned to the JVM. Usually 512M is just fine if its the only web application running on the servlet container.
+
+Java Advanced Imaging / ImageIO
++++++++++++++++++++++++++++++++
+
+GeoWebCache uses the Java Advanced Imaging library (for image processing) and ImageIO for image encoding/decoding. 
+
+The Java 8 plugin system offered native code additions for these two libraries. We no longer recommend use of these plugins due improvements in JIT performance, and native code posing a risk to system stability. 
 
 Servlet container settings
 ++++++++++++++++++++++++++

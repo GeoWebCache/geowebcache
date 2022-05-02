@@ -23,8 +23,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.diskquota.storage.PagePyramid.PageLevelInfo;
 import org.geowebcache.grid.GridSet;
@@ -38,7 +38,7 @@ import org.junit.Test;
 
 public class PagePyramidTest {
 
-    static final Log LOG = LogFactory.getLog(PagePyramidTest.class);
+    static final Logger LOG = Logging.getLogger(PagePyramidTest.class.getName());
 
     GridSet world_EPSG3857 =
             new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, false)))

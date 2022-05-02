@@ -25,11 +25,12 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.rest.exception.RestException;
@@ -55,7 +56,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "${gwc.context.suffix:}/rest")
 public class MassTruncateController extends GWCSeedingController {
-    private static Log log = LogFactory.getLog(MassTruncateController.class);
+    private static Logger log = Logging.getLogger(MassTruncateController.class.getName());
 
     @Autowired private StorageBroker broker;
 
@@ -105,8 +106,8 @@ public class MassTruncateController extends GWCSeedingController {
             sb.append(" <requestType>");
             sb.append(alias);
             sb.append("</requestType>");
-            if (!result.add(alias) && log.isWarnEnabled()) {
-                log.warn("Duplicate MassTruncate RestException type: " + alias);
+            if (!result.add(alias) && log.isLoggable(Level.WARNING)) {
+                log.warning("Duplicate MassTruncate RestException type: " + alias);
             }
         }
 

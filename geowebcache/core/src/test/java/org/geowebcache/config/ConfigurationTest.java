@@ -261,8 +261,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         testAdd();
         I goodGridSet =
                 requirePresent(
-                        getInfos(config)
-                                .stream()
+                        getInfos(config).stream()
                                 .filter(i -> i.getName().equals("test"))
                                 .findAny());
         doModifyInfo(goodGridSet, 2);

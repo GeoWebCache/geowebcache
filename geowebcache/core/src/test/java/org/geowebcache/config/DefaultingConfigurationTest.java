@@ -140,9 +140,7 @@ public class DefaultingConfigurationTest {
             }
 
             @Override
-            public void afterPropertiesSet() throws GeoWebCacheException {
-                return;
-            }
+            public void afterPropertiesSet() throws GeoWebCacheException {}
 
             @Override
             public String getIdentifier() {
@@ -155,9 +153,7 @@ public class DefaultingConfigurationTest {
             }
 
             @Override
-            public void deinitialize() throws Exception {
-                return;
-            }
+            public void deinitialize() throws Exception {}
         };
     }
 

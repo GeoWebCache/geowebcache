@@ -8,3 +8,6 @@ release.rb
 # Intellij
 .idea/
 *.iml
+# spotless up to date checks
+.spotless-index
+

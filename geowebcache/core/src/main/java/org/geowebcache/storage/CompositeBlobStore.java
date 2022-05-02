@@ -24,10 +24,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.BlobStoreConfigurationListener;
@@ -61,7 +62,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
     static final String GEOWEBCACHE_BLOBSTORE_SUITABILITY_CHECK =
             "GEOWEBCACHE_BLOBSTORE_SUITABILITY_CHECK";
 
-    private static Log log = LogFactory.getLog(CompositeBlobStore.class);
+    private static Logger log = Logging.getLogger(CompositeBlobStore.class.getName());
 
     public static final String DEFAULT_STORE_DEFAULT_ID = "_DEFAULT_STORE_";
 
@@ -204,7 +205,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
                     bs.liveInstance.destroy();
                 }
             } catch (Exception e) {
-                log.error("Error disposing BlobStore " + bs.config.getName(), e);
+                log.log(Level.SEVERE, "Error disposing BlobStore " + bs.config.getName(), e);
             }
         }
         blobStores.clear();
@@ -232,9 +233,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
         return readFunction(
                 () -> {
                     this.listeners.removeListener(listener);
-                    return blobStores
-                            .values()
-                            .stream()
+                    return blobStores.values().stream()
                             .filter(bs -> bs.config.isEnabled())
                             .map(bs -> bs.liveInstance.removeListener(listener))
                             .collect(Collectors.reducing((x, y) -> x || y)) // Don't use anyMatch or
@@ -277,9 +276,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
     public boolean layerExists(String layerName) {
         return readFunction(
                 () ->
-                        blobStores
-                                .values()
-                                .stream()
+                        blobStores.values().stream()
                                 .anyMatch(
                                         bs ->
                                                 bs.config.isEnabled()
@@ -583,7 +580,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
                     }
                 } else {
                     // This should probably not happen
-                    log.warn("Changing default blobstore during rename, this should not happen");
+                    log.warning("Changing default blobstore during rename, this should not happen");
                     loadBlobStoreOverwritingDefault(blobStores, modifiedBlobStore);
                 }
             } else {

@@ -18,8 +18,8 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 import java.io.Serializable;
 import java.util.Iterator;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.storage.StorageBroker;
@@ -35,7 +35,7 @@ public class TruncateAllRequest implements MassTruncateRequest, Serializable {
     /** serialVersionUID */
     private static final long serialVersionUID = -4730372010898498464L;
 
-    private static final Log log = LogFactory.getLog(TruncateAllRequest.class);
+    private static final Logger log = Logging.getLogger(TruncateAllRequest.class.getName());
 
     @XStreamOmitField private StringBuilder trucatedLayers = new StringBuilder();
 

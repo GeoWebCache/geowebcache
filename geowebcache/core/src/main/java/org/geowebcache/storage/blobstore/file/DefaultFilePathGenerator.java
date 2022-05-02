@@ -24,8 +24,8 @@ import static org.geowebcache.util.FileUtils.listFilesNullSafe;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Map;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageException;
@@ -35,7 +35,7 @@ import org.geowebcache.storage.TileRange;
 public class DefaultFilePathGenerator implements FilePathGenerator {
 
     @SuppressWarnings("unused")
-    private static Log log = LogFactory.getLog(DefaultFilePathGenerator.class);
+    private static Logger log = Logging.getLogger(DefaultFilePathGenerator.class.getName());
 
     String cacheRoot;
 

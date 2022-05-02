@@ -21,9 +21,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.diskquota.storage.PagePyramid.PageLevelInfo;
 import org.geowebcache.grid.GridSubset;
@@ -40,7 +41,7 @@ import org.springframework.util.Assert;
  */
 public class TilePageCalculator {
 
-    private static final Log log = LogFactory.getLog(TilePageCalculator.class);
+    private static final Logger log = Logging.getLogger(TilePageCalculator.class.getName());
 
     private TileLayerDispatcher tld;
 
@@ -183,7 +184,8 @@ public class TilePageCalculator {
                     try {
                         return sb.getCachedParameterIds(layerName);
                     } catch (StorageException e) {
-                        log.error(
+                        log.log(
+                                Level.SEVERE,
                                 "Error while retreiving cached parameter IDs for layer "
                                         + layerName,
                                 e);

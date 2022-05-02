@@ -29,13 +29,11 @@
       <groupId>org.geotools</groupId>
       <artifactId>gt-wms</artifactId>
       <version>${gt.version}</version>
-      <!-- optional>true</optional -->
     </dependency>
 
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>${httpcomponents.version}</version>
     </dependency>
 
     <dependency>

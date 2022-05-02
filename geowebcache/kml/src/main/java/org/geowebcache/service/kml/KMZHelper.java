@@ -19,10 +19,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.request.GreenTileException;
@@ -42,7 +43,7 @@ import org.geowebcache.storage.StorageBroker;
  */
 public class KMZHelper {
 
-    private static Log log = LogFactory.getLog(org.geowebcache.service.kml.KMZHelper.class);
+    private static Logger log = Logging.getLogger(KMZHelper.class.getName());
 
     /**
      * Filters the given gridlocation
@@ -101,7 +102,7 @@ public class KMZHelper {
                     try {
                         tileLayer.getTile(tile);
                     } catch (IOException ioe) {
-                        log.error(ioe.getMessage());
+                        log.log(Level.SEVERE, ioe.getMessage());
                         linkGridLocs[i][2] = -1;
                     } catch (GeoWebCacheException gwce) {
                         linkGridLocs[i][2] = -1;

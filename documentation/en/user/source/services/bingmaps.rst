@@ -7,7 +7,7 @@ Bing Maps, formerly known as Microsoft Virtual Earth, is another mapping service
 
 It appears that the Bing Maps API continues to use ``VETileSourceSpecification`` objects. The following code has not been tested exhaustively for some time, please send feedback to the geowebcache-users mailinglist.
 
-.. code-block:: html
+.. code-block:: javascript
 
    var map = new VEMap('myMap');
    var tileSourceSpec = 
@@ -18,14 +18,10 @@ It appears that the Bing Maps API continues to use ``VETileSourceSpecification``
    tileSourceSpec.Opacity = 0.5;
    map.AddTileLayer(tileSourceSpec, true);
 
-   ...
+.. code-block:: html
  
    <body onload="GetMap();">
 
-   ...
-
-
 In the above example you must replace ``layer-name`` and ``http://localhost:8080/geowebcache`` as appropriate. You may also change ``image/png``. Bing Maps will automatically replace ``%4`` with the quad-key for the tile.
 
-  
 

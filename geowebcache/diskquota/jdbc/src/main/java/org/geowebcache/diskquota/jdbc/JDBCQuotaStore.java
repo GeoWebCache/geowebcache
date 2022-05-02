@@ -30,10 +30,11 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.diskquota.QuotaStore;
 import org.geowebcache.diskquota.storage.PageStats;
 import org.geowebcache.diskquota.storage.PageStatsPayload;
@@ -61,7 +62,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 public class JDBCQuotaStore implements QuotaStore {
 
-    private static final Log log = LogFactory.getLog(JDBCQuotaStore.class);
+    private static final Logger log = Logging.getLogger(JDBCQuotaStore.class.getName());
 
     /** The constant identifying the global quota tile set key */
     public static final String GLOBAL_QUOTA_NAME = "___GLOBAL_QUOTA___";
@@ -398,8 +399,8 @@ public class JDBCQuotaStore implements QuotaStore {
 
     private boolean createTileSet(TileSet tset) {
 
-        if (log.isDebugEnabled()) {
-            log.debug("Creating tileset " + tset);
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Creating tileset " + tset);
         }
 
         String createTileSet =
@@ -472,7 +473,7 @@ public class JDBCQuotaStore implements QuotaStore {
                     }
 
                     private void updateQuotas(final TileSet tileSet, final Quota quotaDiff) {
-                        if (log.isDebugEnabled()) {
+                        if (log.isLoggable(Level.FINE)) {
                             log.info(
                                     "Applying quota diff "
                                             + quotaDiff.getBytes()
@@ -491,7 +492,7 @@ public class JDBCQuotaStore implements QuotaStore {
                     }
 
                     private void upsertTilePageFillFactor(PageStatsPayload payload) {
-                        if (log.isDebugEnabled()) {
+                        if (log.isLoggable(Level.FINE)) {
                             log.info("Applying page stats payload " + payload);
                         }
 
@@ -537,8 +538,11 @@ public class JDBCQuotaStore implements QuotaStore {
                                     modified = createNewPageStats(stats, page);
                                 }
                             } catch (DeadlockLoserDataAccessException e) {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Deadlock while updating page stats, will retry", e);
+                                if (log.isLoggable(Level.FINE)) {
+                                    log.log(
+                                            Level.FINE,
+                                            "Deadlock while updating page stats, will retry",
+                                            e);
                                 }
                             }
                         }
@@ -569,7 +573,7 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     private int updatePageFillFactor(TilePage page, PageStats stats, float oldFillFactor) {
-        if (log.isDebugEnabled()) {
+        if (log.isLoggable(Level.FINE)) {
             log.info(
                     "Updating page "
                             + page
@@ -590,7 +594,7 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     private int setPageFillFactor(TilePage page, PageStats stats) {
-        if (log.isDebugEnabled()) {
+        if (log.isLoggable(Level.FINE)) {
             log.info("Setting page " + page + " fill factor to " + stats.getFillFactor());
         }
 
@@ -602,7 +606,7 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     private int createNewPageStats(PageStats stats, TilePage page) {
-        if (log.isDebugEnabled()) {
+        if (log.isLoggable(Level.FINE)) {
             log.info("Creating new page stats: " + stats);
         }
 
@@ -700,7 +704,7 @@ public class JDBCQuotaStore implements QuotaStore {
                 tt.execute(
                         (TransactionCallback<Object>)
                                 status -> {
-                                    if (log.isDebugEnabled()) {
+                                    if (log.isLoggable(Level.FINE)) {
                                         log.info("Truncating page " + page);
                                     }
 
@@ -844,7 +848,7 @@ public class JDBCQuotaStore implements QuotaStore {
                         String tileSetId = payload.getPage().getTileSetId();
                         tset = getTileSetByIdInternal(tileSetId);
                         if (tset == null) {
-                            log.warn(
+                            log.warning(
                                     "Could not locate tileset with id "
                                             + tileSetId
                                             + ", skipping page stats update: "
@@ -866,7 +870,7 @@ public class JDBCQuotaStore implements QuotaStore {
         private PageStats upsertTilePageHitAccessTime(PageStatsPayload payload) {
             TilePage page = payload.getPage();
 
-            if (log.isDebugEnabled()) {
+            if (log.isLoggable(Level.FINE)) {
                 log.info("Updating page " + page + " with payload " + payload);
             }
 
@@ -914,8 +918,8 @@ public class JDBCQuotaStore implements QuotaStore {
                         modified = createNewPageStats(stats, page);
                     }
                 } catch (DeadlockLoserDataAccessException e) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Deadlock while updating page stats, will retry", e);
+                    if (log.isLoggable(Level.FINE)) {
+                        log.log(Level.FINE, "Deadlock while updating page stats, will retry", e);
                     }
                 }
             }

@@ -20,9 +20,9 @@ import static org.geowebcache.util.FileUtils.listFilesNullSafe;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.grid.GridSet;
@@ -49,7 +49,7 @@ public class XYZFilePathGenerator implements FilePathGenerator {
     };
 
     @SuppressWarnings("unused")
-    private static Log log = LogFactory.getLog(XYZFilePathGenerator.class);
+    private static Logger log = Logging.getLogger(XYZFilePathGenerator.class.getName());
 
     protected final TileLayerDispatcher layers;
     protected final String cacheRoot;

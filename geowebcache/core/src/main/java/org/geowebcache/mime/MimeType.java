@@ -15,8 +15,8 @@
 package org.geowebcache.mime;
 
 import java.io.IOException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.io.Resource;
 
 public class MimeType {
@@ -30,7 +30,7 @@ public class MimeType {
 
     protected boolean supportsTiling;
 
-    private static Log log = LogFactory.getLog(org.geowebcache.mime.MimeType.class);
+    private static Logger log = Logging.getLogger(MimeType.class.getName());
 
     protected MimeType(
             String mimeType,
@@ -149,7 +149,7 @@ public class MimeType {
             return mimeType;
         }
 
-        log.debug("Unsupported MIME type: " + fileExtension + ", returning null");
+        log.fine("Unsupported MIME type: " + fileExtension + ", returning null");
         return null;
     }
 

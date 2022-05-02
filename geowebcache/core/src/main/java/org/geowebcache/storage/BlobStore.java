@@ -21,9 +21,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.layer.TileLayer;
@@ -35,7 +35,7 @@ import org.geowebcache.layer.TileLayer;
  * for the blob fields.
  */
 public interface BlobStore {
-    static Log log = LogFactory.getLog(BlobStore.class);
+    static Logger log = Logging.getLogger(BlobStore.class.getName());
 
     /**
      * Delete the cache for the named layer
@@ -122,9 +122,7 @@ public interface BlobStore {
     /** Get the cached parameter maps for a layer */
     public default Set<Map<String, String>> getParameters(String layerName)
             throws StorageException {
-        return getParametersMapping(layerName)
-                .values()
-                .stream()
+        return getParametersMapping(layerName).values().stream()
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toSet());
@@ -191,8 +189,7 @@ public interface BlobStore {
                         return parameters.size() != parameterFilters.size()
                                 || // Should have the same number of parameters as the layer has
                                 // filters
-                                parameterFilters
-                                        .stream()
+                                parameterFilters.stream()
                                         .allMatch(
                                                 pfilter -> { // Do all the parameter filters on the
                                                     // layer consider their parameter legal
@@ -208,9 +205,7 @@ public interface BlobStore {
                                                 });
                     };
 
-            return getParametersMapping(layer.getName())
-                    .entrySet()
-                    .stream()
+            return getParametersMapping(layer.getName()).entrySet().stream()
                     .filter(
                             parameterMapping -> {
                                 return parameterMapping

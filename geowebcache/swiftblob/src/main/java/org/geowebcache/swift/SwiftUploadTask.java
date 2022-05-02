@@ -17,8 +17,9 @@ package org.geowebcache.swift;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.storage.BlobStoreListenerList;
 import org.jclouds.http.HttpResponseException;
 import org.jclouds.io.Payload;
@@ -26,7 +27,7 @@ import org.jclouds.openstack.swift.v1.domain.SwiftObject;
 import org.jclouds.openstack.swift.v1.features.ObjectApi;
 
 class SwiftUploadTask implements Runnable {
-    static final Log log = LogFactory.getLog(SwiftUploadTask.class);
+    static final Logger log = Logging.getLogger(SwiftUploadTask.class.getName());
     static final String logStr = "%s, %s, %dms";
 
     private final String key;
@@ -50,8 +51,8 @@ class SwiftUploadTask implements Runnable {
         long getWithoutBody = System.nanoTime();
         SwiftObject object = objectApi.getWithoutBody(key);
 
-        if (log.isDebugEnabled()) {
-            log.debug(
+        if (log.isLoggable(Level.FINE)) {
+            log.fine(
                     String.format(
                             logStr,
                             time.format(DateTimeFormatter.ISO_DATE_TIME),
@@ -65,7 +66,7 @@ class SwiftUploadTask implements Runnable {
         try (Payload payload = object.getPayload()) {
             tile.setExisted(payload.getContentMetadata().getContentLength());
         } catch (IOException e) {
-            log.warn(e.getMessage());
+            log.warning(e.getMessage());
             // pass
         }
     }
@@ -76,7 +77,7 @@ class SwiftUploadTask implements Runnable {
 
     @Override
     public void run() {
-        log.debug("Processing " + key);
+        log.fine("Processing " + key);
 
         checkExisted();
 
@@ -86,8 +87,8 @@ class SwiftUploadTask implements Runnable {
             long upload = System.nanoTime();
             objectApi.put(key, payload);
 
-            if (log.isDebugEnabled()) {
-                log.debug(
+            if (log.isLoggable(Level.FINE)) {
+                log.fine(
                         String.format(
                                 localLogStr,
                                 time.format(DateTimeFormatter.ISO_DATE_TIME),
@@ -97,7 +98,7 @@ class SwiftUploadTask implements Runnable {
             }
             tile.notifyListeners(listeners);
         } catch (HttpResponseException e) {
-            log.warn(String.format("Swift tile upload failed: %s", e.getMessage()));
+            log.warning(String.format("Swift tile upload failed: %s", e.getMessage()));
         } catch (IOException e) {
             // pass
         }
