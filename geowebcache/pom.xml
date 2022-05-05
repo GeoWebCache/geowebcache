@@ -51,7 +51,7 @@
   </distributionManagement>
 
   <properties>
-    <gt.version>27-SNAPSHOT</gt.version>
+    <gt.version>27-SNAPSHOT-SNAPSHOT</gt.version>
     <jts.version>1.18.2</jts.version>
     <jaiext.version>1.1.22</jaiext.version>
     <spring.version>5.2.20.RELEASE</spring.version>
