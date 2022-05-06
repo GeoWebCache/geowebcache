@@ -29,7 +29,10 @@ import com.amazonaws.services.s3.S3ClientOptions;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.SerializationUtils;
 import org.geotools.util.logging.Logging;
+import org.geowebcache.GeoWebCacheEnvironment;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
@@ -334,7 +337,38 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
         checkState(
                 isEnabled(),
                 "Can't call S3BlobStoreConfig.createInstance() is blob store is not enabled");
-        return new S3BlobStore(this, layers, lockProvider);
+        final GeoWebCacheEnvironment gwcEnvironment =
+                GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
+        return new S3BlobStore(this.clone(gwcEnvironment, true), layers, lockProvider);
+    }
+
+    public S3BlobStoreInfo clone(
+            GeoWebCacheEnvironment gwcEnvironment, Boolean allowEnvParametrization) {
+        S3BlobStoreInfo blobStore = SerializationUtils.clone(this);
+
+        if (allowEnvParametrization && gwcEnvironment != null) {
+            blobStore.setName(getName());
+            blobStore.setEnabled(isEnabled());
+            blobStore.setDefault(isDefault());
+            blobStore.setAccess(getAccess());
+            blobStore.setPrefix(getPrefix());
+            blobStore.setUseHTTPS(isUseHTTPS());
+            blobStore.setUseGzip(isUseGzip());
+
+            blobStore.setBucket((String) gwcEnvironment.resolveValue(getBucket()));
+            blobStore.setAwsAccessKey((String) gwcEnvironment.resolveValue(getAwsAccessKey()));
+            blobStore.setAwsSecretKey((String) gwcEnvironment.resolveValue(getAwsSecretKey()));
+            blobStore.setMaxConnections((Integer) gwcEnvironment.resolveValue(getMaxConnections()));
+            blobStore.setProxyDomain((String) gwcEnvironment.resolveValue(getProxyDomain()));
+            blobStore.setProxyWorkstation(
+                    (String) gwcEnvironment.resolveValue(getProxyWorkstation()));
+            blobStore.setProxyHost((String) gwcEnvironment.resolveValue(getProxyHost()));
+            blobStore.setProxyPort((Integer) gwcEnvironment.resolveValue(getProxyPort()));
+            blobStore.setProxyUsername((String) gwcEnvironment.resolveValue(getProxyUsername()));
+            blobStore.setProxyPassword((String) gwcEnvironment.resolveValue(getProxyPassword()));
+            blobStore.setEndpoint((String) gwcEnvironment.resolveValue(getEndpoint()));
+        }
+        return blobStore;
     }
 
     @Override
