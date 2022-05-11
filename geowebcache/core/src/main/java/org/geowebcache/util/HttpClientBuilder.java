@@ -68,7 +68,7 @@ public class HttpClientBuilder {
         } else {
             this.setHttpCredentials(httpUsername, httpPassword, AuthScope.ANY);
         }
-
+        this.setBackendTimeout(backendTimeout);
         setConnectionConfig(
                 RequestConfig.custom()
                         .setCookieSpec(CookieSpecs.DEFAULT)
@@ -82,7 +82,6 @@ public class HttpClientBuilder {
         clientBuilder.useSystemProperties();
         clientBuilder.setConnectionManager(connectionManager);
         clientBuilder.setMaxConnTotal(concurrency);
-        this.setBackendTimeout(backendTimeout);
     }
 
     /*

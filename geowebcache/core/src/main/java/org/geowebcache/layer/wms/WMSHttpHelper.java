@@ -50,7 +50,7 @@ import org.springframework.util.Assert;
 
 /** This class is a wrapper for HTTP interaction with WMS backend */
 public class WMSHttpHelper extends WMSSourceHelper {
-    private static Logger log = Logging.getLogger(WMSHttpHelper.class.getName());
+    private static final Logger log = Logging.getLogger(WMSHttpHelper.class.getName());
 
     private final URL proxyUrl;
 
@@ -58,7 +58,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
 
     private final String httpPassword;
 
-    private volatile HttpClient client;
+    protected volatile HttpClient client;
 
     public WMSHttpHelper() {
         this(null, null, null);
@@ -168,13 +168,25 @@ public class WMSHttpHelper extends WMSSourceHelper {
 
         HttpResponse method = null;
         final int responseCode;
-        final int responseLength;
+        int responseLength = 0;
 
         try {
             method = executeRequest(wmsBackendUrl, wmsParams, backendTimeout, httpRequestMode);
             responseCode = method.getStatusLine().getStatusCode();
-            responseLength = Integer.parseInt(method.getFirstHeader("length").getValue());
-
+            if (responseCode == 200) {
+                if (method.getFirstHeader("length") != null) {
+                    responseLength = Integer.parseInt(method.getFirstHeader("length").getValue());
+                } else if (method.getFirstHeader("Content-Length") != null) {
+                    responseLength =
+                            Integer.parseInt(method.getFirstHeader("Content-Length").getValue());
+                } else if (method.getEntity() != null) {
+                    responseLength = Math.toIntExact(method.getEntity().getContentLength());
+                } else {
+                    throw new ServiceException(
+                            "Unable to determine response length from: "
+                                    + wmsBackendUrl.toString());
+                }
+            }
             // Do not set error at this stage
         } catch (IOException ce) {
             if (log.isLoggable(Level.FINE)) {
@@ -275,7 +287,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
     }
 
     /**
-     * sets up a HTTP request to a URL and configures authentication.
+     * sets up an HTTP request to a URL and configures authentication.
      *
      * @param url endpoint to talk to
      * @param queryParams parameters for the query string
@@ -330,7 +342,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
         if (log.isLoggable(Level.FINER)) {
             log.finer(method.toString());
         }
-        return client.execute(method);
+        return getHttpClient().execute(method);
     }
 
     private String processRequestParameters(Map<String, String> parameters)
