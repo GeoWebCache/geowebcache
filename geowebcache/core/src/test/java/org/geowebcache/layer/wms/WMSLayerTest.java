@@ -67,6 +67,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
+import org.apache.http.client.HttpClient;
 import org.apache.http.message.BasicHeader;
 import org.easymock.Capture;
 import org.easymock.CaptureType;
@@ -302,6 +303,57 @@ public class WMSLayerTest extends TileLayerTest {
         // check the lock provider was called in a symmetric way
         lockProvider.verify();
         lockProvider.clear();
+    }
+
+    @Test
+    public void testHttpClientPassedIn() throws Exception {
+        final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
+        MockHttpServletRequest servletReq = new MockHttpServletRequest();
+        MockHttpServletResponse servletResp = new MockHttpServletResponse();
+        ConveyorTile tile = new ConveyorTile(mockStorageBroker, "name", servletReq, servletResp);
+        // setup the layer
+        WMSLayer layer = createWMSLayer("image/png");
+        final byte[] responseBody = "Fake body".getBytes();
+        HttpResponse response = EasyMock.createNiceMock(HttpResponse.class);
+        StatusLine statusLine = EasyMock.createMock(StatusLine.class);
+        expect(response.getStatusLine()).andReturn(statusLine);
+
+        HttpEntity entity = EasyMock.createMock(HttpEntity.class);
+
+        expect(entity.getContent()).andReturn(new ByteArrayInputStream(responseBody));
+        expect(response.getEntity()).andReturn(entity);
+        Header contentEncoding = new BasicHeader("ContentEncoding", "UTF-8");
+        expect(entity.getContentEncoding()).andReturn(contentEncoding);
+        expect(response.getFirstHeader("Content-Type"))
+                .andReturn(new BasicHeader("Content-Type", "image/png"));
+
+        replay(entity);
+        replay(response);
+        HttpClient httpClient = EasyMock.createNiceMock(HttpClient.class);
+        expect(httpClient.execute(anyObject())).andReturn(response);
+        replay(httpClient);
+        WMSHttpHelper httpHelper =
+                new WMSHttpHelper() {
+                    public WMSHttpHelper setClient(HttpClient httpClient) {
+                        this.client = httpClient;
+                        return this;
+                    }
+                }.setClient(httpClient);
+        httpHelper.setBackendTimeout(10);
+        layer.setSourceHelper(httpHelper);
+
+        // proxy the request, and check the response
+        layer.proxyRequest(tile);
+        assertEquals(200, servletResp.getStatus());
+        assertEquals("Fake body", servletResp.getContentAsString());
+    }
+
+    @Test
+    public void testHttpClientNeedsToBeCreated() throws Exception {
+        WMSHttpHelper httpHelper = new WMSHttpHelper();
+        assertNull(httpHelper.client);
+        assertNotNull(httpHelper.getHttpClient());
+        assertNotNull(httpHelper.client);
     }
 
     @Test
