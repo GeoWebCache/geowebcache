@@ -1,3 +1,16 @@
+GeoWebCache 1.21.0 (2022-05-20)
+-------------------------------
+
+Stable release for 1.21.x series.
+
+Improvements:
++++++++++++++
+- Update JAI-Ext 1.1.23
+
+Fixes:
+++++++
+- Fix WMSHttpHelper NPE when requesting WMS
+
 GeoWebCache 1.21-RC (2022-05-05)
 --------------------------------
 
