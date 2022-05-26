@@ -74,7 +74,7 @@
     <jalopy.srcExcludesPattern>disabled</jalopy.srcExcludesPattern>
     <test.maxHeapSize>64M</test.maxHeapSize>
     <maven.test.jvmargs></maven.test.jvmargs>
-    <imageio-ext.version>1.4.4</imageio-ext.version>
+    <imageio-ext.version>1.4.5</imageio-ext.version>
     <hazelcast.version>3.11-BETA-1</hazelcast.version>
     <joda-time.version>2.8.1</joda-time.version>
     <spotless.action>apply</spotless.action>
