@@ -114,6 +114,9 @@ public class WMSTileFuser {
     /** Canvas dimensions */
     int[] canvasSize = new int[2];
 
+    // Wrapper around canvas and gfx
+    BufferedImageWrapper bufferedImageWrapper;
+
     static class SpatialOffsets {
         double top;
         double bottom;
@@ -132,10 +135,6 @@ public class WMSTileFuser {
     PixelOffsets canvOfs = new PixelOffsets();
 
     SpatialOffsets boundOfs = new SpatialOffsets();
-    /** Mosaic image */
-    BufferedImage canvas;
-    /** Graphics object used for drawing the tiles into a mosaic */
-    Graphics2D gfx;
 
     /** Layer parameters */
     private Map<String, String> fullParameters;
@@ -551,22 +550,8 @@ public class WMSTileFuser {
             }
         }
 
-        // Create the actual canvas and graphics object
-        canvas = new BufferedImage(canvasSize[0], canvasSize[1], canvasType);
-        gfx = (Graphics2D) canvas.getGraphics();
-
-        if (bgColor != null) {
-            gfx.setColor(bgColor);
-            gfx.fillRect(0, 0, canvasSize[0], canvasSize[1]);
-        }
-
-        // Hints settings
-        RenderingHints hintsTemp = HintsLevel.DEFAULT.getRenderingHints();
-
-        if (hints != null) {
-            hintsTemp = hints;
-        }
-        gfx.addRenderingHints(hintsTemp);
+        // Create the canvas and graphics object wrapper
+        bufferedImageWrapper = new BufferedImageWrapper(canvasSize, canvasType, bgColor, hints);
     }
 
     protected void renderCanvas()
@@ -704,18 +689,20 @@ public class WMSTileFuser {
                                 + ",null) "
                                 + Arrays.toString(gridLoc));
 
-                gfx.drawImage(tileImg, canvasx, canvasy, null); // imageObserver
+                bufferedImageWrapper.drawImage(tileImg, canvasx, canvasy);
             }
         }
-
-        gfx.dispose();
+        if (bufferedImageWrapper != null) {
+            bufferedImageWrapper.disposeGraphics();
+        }
     }
 
     protected void scaleRaster() {
-        if (canvasSize[0] != reqWidth || canvasSize[1] != reqHeight) {
-            BufferedImage preTransform = canvas;
+        if (bufferedImageWrapper != null && canvasSize[0] != reqWidth
+                || canvasSize[1] != reqHeight) {
+            BufferedImage preTransform = bufferedImageWrapper.getCanvas();
 
-            canvas = new BufferedImage(reqWidth, reqHeight, preTransform.getType());
+            BufferedImage canvas = new BufferedImage(reqWidth, reqHeight, preTransform.getType());
 
             Graphics2D gfx = canvas.createGraphics();
 
@@ -753,7 +740,7 @@ public class WMSTileFuser {
         AccountingOutputStream aos = null;
         RenderedImage finalImage = null;
         try {
-            finalImage = canvas;
+            finalImage = bufferedImageWrapper.getCanvas();
 
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType(this.outputFormat.getMimeType());
