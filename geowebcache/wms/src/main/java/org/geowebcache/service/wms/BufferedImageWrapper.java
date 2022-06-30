@@ -69,6 +69,10 @@ class BufferedImageWrapper {
         return canvas;
     }
 
+    public void updateCanvas(BufferedImage canvas) {
+        this.canvas = canvas;
+    }
+
     public Graphics2D getGraphics() {
         if (gfx == null) {
             gfx = (Graphics2D) getCanvas().getGraphics();

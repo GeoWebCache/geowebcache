@@ -23,6 +23,8 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.DefaultGridsets;
@@ -364,7 +367,13 @@ public class WMSTileFuserTest {
                 tileFuser.writeResponse(
                         response, new RuntimeStats(1, Arrays.asList(1), Arrays.asList("desc")));
 
-                assertTrue(response.getContentAsString().length() > 0);
+                // check the result is a valid PNG
+                assertEquals("image/png", response.getContentType());
+                BufferedImage image =
+                        ImageIO.read(new ByteArrayInputStream(response.getContentAsByteArray()));
+                // and it's the expected size
+                assertEquals(width, image.getWidth());
+                assertEquals(height, image.getHeight());
             }
         } finally {
             temp.delete();

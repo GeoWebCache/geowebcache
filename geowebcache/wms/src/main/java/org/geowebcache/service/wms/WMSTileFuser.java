@@ -702,9 +702,9 @@ public class WMSTileFuser {
                 || canvasSize[1] != reqHeight) {
             BufferedImage preTransform = bufferedImageWrapper.getCanvas();
 
-            BufferedImage canvas = new BufferedImage(reqWidth, reqHeight, preTransform.getType());
+            BufferedImage rescaled = new BufferedImage(reqWidth, reqHeight, preTransform.getType());
 
-            Graphics2D gfx = canvas.createGraphics();
+            Graphics2D gfx = rescaled.createGraphics();
 
             AffineTransform affineTrans =
                     AffineTransform.getScaleInstance(
@@ -725,6 +725,10 @@ public class WMSTileFuser {
             gfx.addRenderingHints(hintsTemp);
             gfx.drawRenderedImage(preTransform, affineTrans);
             gfx.dispose();
+
+            // replace the preview image with the scaled down version
+            // (otherwise the write part will use the image at tile resolution)
+            bufferedImageWrapper.updateCanvas(rescaled);
         }
     }
 
