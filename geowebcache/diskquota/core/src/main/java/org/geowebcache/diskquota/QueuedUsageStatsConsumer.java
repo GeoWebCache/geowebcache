@@ -128,7 +128,7 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
                     performAggregatedUpdate(requestedTile);
                 }
             } catch (InterruptedException e) {
-                log.info("Shutting down quota update background task due to interrupted exception");
+                log.fine("Shutting down quota update background task due to interrupted exception");
                 Thread.currentThread().interrupt();
                 break;
                 // it doesn't matter

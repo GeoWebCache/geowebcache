@@ -66,11 +66,10 @@ public class GeoRSSPoller {
 
         schedulingPollExecutorService.submit(
                 () -> {
-                    LOGGER.info("Initializing GeoRSS poller in a background job...");
-
                     findEnabledPolls();
 
                     if (pollCount() > 0) {
+                        LOGGER.fine("Initializing GeoRSS poller in a background job...");
 
                         final TimeUnit seconds = TimeUnit.SECONDS;
                         for (PollDef poll : scheduledPolls) {
@@ -78,7 +77,7 @@ public class GeoRSSPoller {
                             GeoRSSFeedDefinition pollDef = poll.getPollDef();
                             long period = pollDef.getPollInterval();
 
-                            LOGGER.info(
+                            LOGGER.config(
                                     "Scheduling layer "
                                             + poll.getLayer().getName()
                                             + " to poll the GeoRSS feed "
@@ -91,14 +90,14 @@ public class GeoRSSPoller {
 
                             scheduledTasks.add(command);
                         }
-                        LOGGER.info(
+                        LOGGER.fine(
                                 "Will wait "
                                         + startUpDelaySecs
                                         + " seconds before launching the "
                                         + pollCount()
                                         + " GeoRSS polls found");
                     } else {
-                        LOGGER.info("No enabled GeoRSS feeds found, poller will not run.");
+                        LOGGER.fine("No enabled GeoRSS feeds found, poller will not run.");
                     }
                 });
     }
@@ -157,7 +156,7 @@ public class GeoRSSPoller {
 
     /** Destroy method for Spring */
     public void destroy() {
-        LOGGER.info("destroy() invoked");
+        LOGGER.fine("destroy() invoked");
         if (schedulingPollExecutorService != null) {
             schedulingPollExecutorService.shutdown();
         }
