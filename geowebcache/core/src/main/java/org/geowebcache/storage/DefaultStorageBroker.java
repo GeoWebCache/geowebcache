@@ -87,7 +87,7 @@ public class DefaultStorageBroker implements StorageBroker {
     }
 
     public void destroy() {
-        log.info("Destroying StorageBroker");
+        log.fine("Destroying StorageBroker");
     }
 
     public String getLayerMetadata(final String layerName, final String key) {

@@ -277,7 +277,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         Assert.isTrue(diskQuotaEnabled, "shutDown called but DiskQuotaMonitor is disabled!");
         Assert.isTrue(timeOutSecs > 0, "timeOut for shutdown must be > 0: " + timeOutSecs);
         try {
-            log.info("Disk quota monitor shutting down...");
+            log.fine("Disk quota monitor shutting down...");
             if (this.cacheInfoBuilder != null) {
                 this.cacheInfoBuilder.shutDown();
             }
@@ -286,10 +286,10 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
                 this.cleanUpExecutorService.shutdownNow();
             }
 
-            log.info("Shutting down quota usage monitor...");
+            log.fine("Shutting down quota usage monitor...");
             quotaUsageMonitor.shutDownNow();
 
-            log.info("Shutting down quota statistics gathering monitor...");
+            log.fine("Shutting down quota statistics gathering monitor...");
             usageStatsMonitor.shutDownNow();
 
             quotaUsageMonitor.awaitTermination(timeOutSecs * 1000, TimeUnit.MILLISECONDS);

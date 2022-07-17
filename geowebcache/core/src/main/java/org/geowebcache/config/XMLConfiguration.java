@@ -26,7 +26,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -759,15 +758,9 @@ public class XMLConfiguration
                 validate(rootNode);
                 log.config("TileLayerConfiguration file validated fine.");
             } catch (SAXException e) {
-                String msg = "*** GWC configuration validation error: " + e.getMessage();
-                char[] c = new char[4 + msg.length()];
-                Arrays.fill(c, '*');
-                String warndecoration = new String(c).substring(0, 80);
-                log.warning(warndecoration);
-                log.warning(msg);
+                log.warning("GWC configuration validation error: " + e.getMessage());
                 log.warning(
-                        "*** Will try to use configuration anyway. Please check the order of declared elements against the schema.");
-                log.warning(warndecoration);
+                        "Will try to use configuration anyway. Please check the order of declared elements against the schema.");
             } catch (IOException e) {
                 throw new RuntimeException(e.getMessage(), e);
             }

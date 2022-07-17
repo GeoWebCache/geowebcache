@@ -76,7 +76,7 @@ public class QuotaUpdatesMonitor extends AbstractMonitor {
 
     @Override
     protected void shutDown(final boolean cancel) {
-        log.info("Shutting down quota usage monitor...");
+        log.fine("Shutting down quota usage monitor...");
         try {
             storageBroker.removeBlobStoreListener(quotaDiffsProducer);
         } catch (RuntimeException e) {
