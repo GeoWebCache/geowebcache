@@ -203,7 +203,7 @@ public class BlobStoreAggregator {
         int blobStoreCount = config.getBlobStoreCount();
 
         if (blobStoreCount <= 0) {
-            log.info(
+            log.config(
                     "BlobStoreConfiguration "
                             + config.getIdentifier()
                             + " contained no blob store infos.");
