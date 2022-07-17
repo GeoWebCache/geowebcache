@@ -493,18 +493,18 @@ public class WMSService extends Service {
         }
         // Log if fullWMS is enabled
         if (this.fullWMS) {
-            log.info("Will recombine tiles for non-tiling clients.");
+            log.config("Will recombine tiles for non-tiling clients.");
         } else {
-            log.info("Will NOT recombine tiles for non-tiling clients.");
+            log.config("Will NOT recombine tiles for non-tiling clients.");
         }
     }
 
     public void setProxyRequests(String trueFalse) {
         this.proxyRequests = Boolean.parseBoolean(trueFalse);
         if (this.proxyRequests) {
-            log.info("Will proxy requests to backend that are not getmap or getcapabilities.");
+            log.config("Will proxy requests to backend that are not getmap or getcapabilities.");
         } else {
-            log.info("Will NOT proxy non-getMap requests to backend.");
+            log.config("Will NOT proxy non-getMap requests to backend.");
         }
     }
 

@@ -146,7 +146,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             this.servletPrefix = servletPrefix;
         }
 
-        LOG.info("Invoked setServletPrefix(" + servletPrefix + ")");
+        LOG.config("Invoked setServletPrefix(" + servletPrefix + ")");
     }
     /**
      * GeoServer and other solutions that embedded this dispatcher will prepend a path, this is used
@@ -348,7 +348,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * destroy="destroy">...</bean>
      */
     public void destroy() {
-        LOG.info("GeoWebCacheDispatcher.destroy() was invoked, shutting down.");
+        LOG.fine("GeoWebCacheDispatcher.destroy() was invoked, shutting down.");
     }
 
     /**

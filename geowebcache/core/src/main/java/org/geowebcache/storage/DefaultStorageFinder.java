@@ -130,9 +130,9 @@ public class DefaultStorageFinder {
             if (tmpDir != null) {
                 File temp = new File(tmpDir, "geowebcache");
                 logMsg =
-                        "Reverting to java.io.tmpdir "
-                                + this.defaultPrefix
-                                + " for storage. "
+                        "Reverting to java.io.tmpdir '"
+                                + temp.getAbsolutePath()
+                                + "' for storage. "
                                 + "Please set "
                                 + GWC_CACHE_DIR
                                 + ".";
@@ -159,15 +159,6 @@ public class DefaultStorageFinder {
 
             logMsg = msgPrefix + ", using it as the default prefix.";
         }
-
-        String warnStr = "*** " + logMsg + " ***";
-        StringBuilder stars = new StringBuilder();
-        for (int i = 0; i < warnStr.length(); i++) {
-            stars.append("*");
-        }
-
-        log.info(stars.toString());
-        log.info(warnStr);
-        log.info(stars.toString());
+        log.config(logMsg);
     }
 }
