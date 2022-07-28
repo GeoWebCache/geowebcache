@@ -1,3 +1,18 @@
+GeoWebCache 1.21.1 (2022-07-27)
+-------------------------------
+
+Stable release.
+
+Improvements:
++++++++++++++
+- Update to imageio-ext 1.4.5
+- Update to GeoTools 27.1
+- Review startup warning, info and config logging
+
+Fixes:
+++++++
+- WMS full does not correctly rescale when requested resolution is between tile values
+
 GeoWebCache 1.21.0 (2022-05-20)
 -------------------------------
 
