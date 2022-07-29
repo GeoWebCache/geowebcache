@@ -4,7 +4,7 @@ Seeding and truncating through the REST API
 ===========================================
 
 The REST API for cache seeding and truncation provides a RESTful interface through which clients can 
-programatically add or remove tiles from the cache, on a layer by layer basis.
+programmatically add or remove tiles from the cache, on a layer by layer basis.
 
 Operations
 ----------
@@ -188,10 +188,10 @@ Operations
 Getting the current state of the seeding threads
 ++++++++++++++++++++++++++++++++++++++++++++++++
 
-Sending a GET reques to the ``/rest/seed.json`` resource returns a list of pending (scheduled) and running
+Sending a GET request to the ``/rest/seed.json`` resource returns a list of pending (scheduled) and running
 tasks for all the layers.
 
-Sending a GET reques to the ``/rest/seed/<layer name>.json`` resource returns a list of pending (scheduled) and running
+Sending a GET request to the ``/rest/seed/<layer name>.json`` resource returns a list of pending (scheduled) and running
 tasks for that specific layer.
 
 The returned content is a JSON array of the form:
@@ -207,7 +207,12 @@ If there are no pending or running tasks, the returned array is empty:
    {"long-array-array":[]}
    
 The returned array of arrays contains one array per seeding/truncate Task.
-The meaning of each long value in each thread array is: ``[tiles processed, total # of tiles to process, expected remaining time in seconds, Task ID, Task status]``.
+The meaning of each long value in each thread array is: 
+
+.. code-block:: json 
+
+   [tiles processed, total # of tiles to process, estimated remaining time (in seconds), Task ID, Task status]
+   
 The meaning of the ``Task status`` field is:
 -1 = ABORTED, 
 0 = PENDING, 
@@ -242,7 +247,7 @@ Sample response:
 
    {"long-array-array":[[2240,327426,1564,2,1],[2368,327426,1477,3,1],[2272,327426,1541,4,1],[2176,327426,1611,5,1],[1056,15954794690,79320691,6,1],[1088,15954794690,76987729,7,1],[1040,15954794690,80541010,8,1],[1104,15954794690,75871965,9,1]]}
   
-The sample response response above contains the list of tasks for all the layers.
+The sample response above contains the list of tasks for all the layers.
 
 
 Terminating running tasks
