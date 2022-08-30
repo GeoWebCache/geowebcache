@@ -347,13 +347,13 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
         S3BlobStoreInfo blobStore = SerializationUtils.clone(this);
 
         if (allowEnvParametrization && gwcEnvironment != null) {
-            blobStore.setName(getName());
-            blobStore.setEnabled(isEnabled());
-            blobStore.setDefault(isDefault());
-            blobStore.setAccess(getAccess());
-            blobStore.setPrefix(getPrefix());
-            blobStore.setUseHTTPS(isUseHTTPS());
-            blobStore.setUseGzip(isUseGzip());
+            blobStore.setName((String) gwcEnvironment.resolveValue(getName()));
+            blobStore.setEnabled((Boolean) gwcEnvironment.resolveValue(isEnabled()));
+            blobStore.setDefault((Boolean) gwcEnvironment.resolveValue(isDefault()));
+            blobStore.setAccess((Access) gwcEnvironment.resolveValue(getAccess()));
+            blobStore.setPrefix((String) gwcEnvironment.resolveValue(getPrefix()));
+            blobStore.setUseHTTPS((Boolean) gwcEnvironment.resolveValue(isUseHTTPS()));
+            blobStore.setUseGzip((Boolean) gwcEnvironment.resolveValue(isUseGzip()));
 
             blobStore.setBucket((String) gwcEnvironment.resolveValue(getBucket()));
             blobStore.setAwsAccessKey((String) gwcEnvironment.resolveValue(getAwsAccessKey()));
