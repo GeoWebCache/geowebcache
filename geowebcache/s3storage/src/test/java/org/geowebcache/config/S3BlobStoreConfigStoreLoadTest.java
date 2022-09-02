@@ -1,5 +1,6 @@
 package org.geowebcache.config;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -16,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.geotools.util.logging.Logging;
+import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -81,6 +83,31 @@ public class S3BlobStoreConfigStoreLoadTest {
 
         saveConfig(store1, store2);
         validateAndLoadSavedConfig();
+    }
+
+    @Test
+    public void testParameterizedS3BlobStore() {
+        Assume.assumeTrue(tempFolder.isConfigured());
+
+        GeoWebCacheEnvironment genv = new GeoWebCacheEnvironment();
+        genv.setProps(testConfigLoader.getProperties());
+
+        S3BlobStoreInfo store = new S3BlobStoreInfo("999");
+        store.setDefault(true);
+        store.setEnabled(true);
+        store.setBucket("${bucket}");
+        store.setAwsAccessKey("${accessKey}");
+        store.setAwsSecretKey("${secretKey}");
+
+        S3BlobStoreInfo storedData = store.clone(genv, true);
+        assertEquals(
+                testConfigLoader.getProperties().getProperty("bucket"), storedData.getBucket());
+        assertEquals(
+                testConfigLoader.getProperties().getProperty("accessKey"),
+                storedData.getAwsAccessKey());
+        assertEquals(
+                testConfigLoader.getProperties().getProperty("secretKey"),
+                storedData.getAwsSecretKey());
     }
 
     private void saveConfig(S3BlobStoreInfo store1, S3BlobStoreInfo store2) throws IOException {
