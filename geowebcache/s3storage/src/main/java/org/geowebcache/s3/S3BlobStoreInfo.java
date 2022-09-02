@@ -347,23 +347,22 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
         S3BlobStoreInfo blobStore = SerializationUtils.clone(this);
 
         if (allowEnvParametrization && gwcEnvironment != null) {
-            blobStore.setName((String) gwcEnvironment.resolveValue(getName()));
-            blobStore.setEnabled((Boolean) gwcEnvironment.resolveValue(isEnabled()));
-            blobStore.setDefault((Boolean) gwcEnvironment.resolveValue(isDefault()));
-            blobStore.setAccess((Access) gwcEnvironment.resolveValue(getAccess()));
-            blobStore.setPrefix((String) gwcEnvironment.resolveValue(getPrefix()));
-            blobStore.setUseHTTPS((Boolean) gwcEnvironment.resolveValue(isUseHTTPS()));
-            blobStore.setUseGzip((Boolean) gwcEnvironment.resolveValue(isUseGzip()));
-
+            blobStore.setName(getName());
+            blobStore.setEnabled(isEnabled());
+            blobStore.setDefault(isDefault());
+            blobStore.setAccess(getAccess());
+            blobStore.setPrefix(getPrefix());
+            blobStore.setUseHTTPS(isUseHTTPS());
+            blobStore.setUseGzip(isUseGzip());
+            blobStore.setMaxConnections(getMaxConnections());
+            blobStore.setProxyPort(getProxyPort());
             blobStore.setBucket((String) gwcEnvironment.resolveValue(getBucket()));
             blobStore.setAwsAccessKey((String) gwcEnvironment.resolveValue(getAwsAccessKey()));
             blobStore.setAwsSecretKey((String) gwcEnvironment.resolveValue(getAwsSecretKey()));
-            blobStore.setMaxConnections((Integer) gwcEnvironment.resolveValue(getMaxConnections()));
             blobStore.setProxyDomain((String) gwcEnvironment.resolveValue(getProxyDomain()));
             blobStore.setProxyWorkstation(
                     (String) gwcEnvironment.resolveValue(getProxyWorkstation()));
             blobStore.setProxyHost((String) gwcEnvironment.resolveValue(getProxyHost()));
-            blobStore.setProxyPort((Integer) gwcEnvironment.resolveValue(getProxyPort()));
             blobStore.setProxyUsername((String) gwcEnvironment.resolveValue(getProxyUsername()));
             blobStore.setProxyPassword((String) gwcEnvironment.resolveValue(getProxyPassword()));
             blobStore.setEndpoint((String) gwcEnvironment.resolveValue(getEndpoint()));
