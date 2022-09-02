@@ -229,6 +229,12 @@ Properties:
 * **proxyPassword**: Optional. The proxy password to use when connecting through a proxy.
 * **useGzip**: Optional, default: ``true``. Whether gzip compression should be used when transferring tiles to/from S3.
 
+**Note**: It is possible to set above properties from environment variable as long as they are of string type. In the example below, The awsAccessKey is set from environment variable named AWS_ACCESS_KEY
+
+.. code-block:: xml
+
+      <awsAccessKey>${AWS_ACCESS_KEY}</awsAccessKey>
+
 Additional Information:
 ```````````````````````
 
