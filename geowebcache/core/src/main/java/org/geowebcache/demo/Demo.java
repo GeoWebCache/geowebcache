@@ -307,6 +307,7 @@ public class Demo {
                 .append("ol.css' type='text/css'>\n");
         buf.append(
                 "<script type=\"text/javascript\">\n"
+                        + "//# sourceURL=gwc_page.js\n" // this makes debugging in chrome possible
                         + "function init(){\n"
                         + "function ScaleControl(opt_options) {\n"
                         + "  var options = opt_options || {};\n"

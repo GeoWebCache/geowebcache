@@ -226,6 +226,32 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
     }
 
+    // "/geoserver/topp/gwc/demo/topp:states" --> "/demo/topp:states"
+    //    (workspace "topp" would have been put in LocalWorkspace already)
+    // "/geoserver/gwc/demo/topp:states" --> "/demo/topp:states"
+    String normalizeURL(HttpServletRequest request) {
+        // contextPath: typically "/geoserver/gwc" - embedded GWC in GS
+        // contextPath: typically "/gwc" - standalone GWC
+        String contextPath = request.getContextPath();
+        String requestURI = request.getRequestURI();
+        if (requestURI.contains(contextPath)) {
+            // simple case "/geoserver/gwc/demo/topp:states" --> "/demo/topp:states"
+            requestURI = requestURI.replaceFirst(contextPath, "");
+            if (servletPrefix != null) {
+                requestURI = requestURI.replace(servletPrefix, "");
+            }
+            return requestURI;
+        }
+
+        if (request.getPathInfo() != null) {
+            requestURI = request.getPathInfo();
+        }
+        if (servletPrefix != null) {
+            requestURI = requestURI.replace(servletPrefix, "");
+        }
+        return requestURI;
+    }
+
     /**
      * Spring function for MVC, this is the entry point for the application.
      *
@@ -246,18 +272,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
         // Break the request into components, {type, service name}
         String[] requestComps = null;
         try {
-            String normalizedURI =
-                    request.getRequestURI().replaceFirst(request.getContextPath(), "");
-
-            if (servletPrefix != null) {
-                normalizedURI =
-                        normalizedURI.replaceFirst(
-                                servletPrefix,
-                                ""); // getRequestURI().replaceFirst(request.getContextPath()+,
-                // "");
-            }
+            String normalizedURI = normalizeURL(request);
             requestComps = parseRequest(normalizedURI);
-            // requestComps = parseRequest(request.getRequestURI());
         } catch (GeoWebCacheException gwce) {
             ResponseUtils.writeErrorPage(response, 400, gwce.getMessage(), runtimeStats);
             return null;
