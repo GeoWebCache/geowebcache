@@ -1,3 +1,17 @@
+GeoWebCache 1.20.4 (2022-09-14)
+-------------------------------
+
+Maintenance release for the 1.20.x series
+
+Improvements:
++++++++++++++
+- Update PostgreSQL driver to 42.4.1
+
+Fixes:
+++++++
+- Fix S3 blobstore geowebcache parameterization issue
+
+
 GeoWebCache 1.20.3 (2022-06-30)
 -------------------------------
 
