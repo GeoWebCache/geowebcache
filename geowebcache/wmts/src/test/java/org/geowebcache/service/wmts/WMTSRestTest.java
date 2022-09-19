@@ -229,6 +229,7 @@ public class WMTSRestTest {
         when(tileLayerJson.getGridSubset(eq(googleMercator))).thenReturn(subset);
 
         when(tileLayerDispatcher.getLayerList()).thenReturn(Arrays.asList(tileLayerJson));
+        when(tileLayerDispatcher.getLayerListFiltered()).thenReturn(Arrays.asList(tileLayerJson));
     }
 
     public MockHttpServletResponse dispatch(MockHttpServletRequest req) throws Exception {
@@ -458,6 +459,7 @@ public class WMTSRestTest {
         when(tileLayer.getGridSubsets()).thenReturn(subsets.keySet());
 
         when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
+        when(tld.getLayerListFiltered()).thenReturn(Arrays.asList(tileLayer));
 
         when(tileLayer.getTile(any(ConveyorTile.class)))
                 .thenAnswer(

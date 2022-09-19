@@ -323,7 +323,7 @@ public class WMSTileFuserTest {
         temp.mkdirs();
         try {
             TileLayerDispatcher dispatcher =
-                    new TileLayerDispatcher(gridSetBroker) {
+                    new TileLayerDispatcher(gridSetBroker, null) {
 
                         @Override
                         public TileLayer getTileLayer(String layerName)

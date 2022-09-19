@@ -129,7 +129,7 @@ public class BDBQuotaStoreTest {
                 BaseConfiguration.class);
         GridSetBroker gridSetBroker = new GridSetBroker();
         gridSetBroker.setApplicationContext(context.getMockContext());
-        layerDispatcher = new TileLayerDispatcher(gridSetBroker);
+        layerDispatcher = new TileLayerDispatcher(gridSetBroker, null);
         layerDispatcher.setApplicationContext(context.getMockContext());
 
         tilePageCalculator = new TilePageCalculator(layerDispatcher, storageBroker);

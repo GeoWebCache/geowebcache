@@ -280,7 +280,7 @@ public class WMSGetCapabilities {
 
     private void capabilityRequestGetMap(XMLBuilder xml) throws IOException {
         // Find all the formats we support
-        Iterable<TileLayer> layerIter = tld.getLayerList();
+        Iterable<TileLayer> layerIter = tld.getLayerListFiltered();
 
         HashSet<String> formats = new HashSet<>();
 
@@ -306,7 +306,7 @@ public class WMSGetCapabilities {
     private void capabilityRequestGetFeatureInfo(XMLBuilder xml) throws IOException {
 
         // Find all the info formats we support
-        Iterable<TileLayer> layerIter = tld.getLayerList();
+        Iterable<TileLayer> layerIter = tld.getLayerListFiltered();
 
         HashSet<String> formats = new HashSet<>();
 
@@ -351,7 +351,7 @@ public class WMSGetCapabilities {
 
     private void capabilityVendorSpecific(XMLBuilder xml) throws IOException {
         xml.indentElement("VendorSpecificCapabilities");
-        Iterable<TileLayer> layerIter = tld.getLayerList();
+        Iterable<TileLayer> layerIter = tld.getLayerListFiltered();
         for (TileLayer layer : layerIter) {
             if (!layer.isEnabled() || !layer.isAdvertised()) {
                 continue;
@@ -502,7 +502,7 @@ public class WMSGetCapabilities {
                 true);
         xml.latLonBoundingBox(-180.0, -90.0, 180.0, 90.0);
 
-        Iterable<TileLayer> layerIter = tld.getLayerList();
+        Iterable<TileLayer> layerIter = tld.getLayerListFiltered();
         for (TileLayer layer : layerIter) {
             if (!layer.isEnabled() || !layer.isAdvertised()) {
                 continue;

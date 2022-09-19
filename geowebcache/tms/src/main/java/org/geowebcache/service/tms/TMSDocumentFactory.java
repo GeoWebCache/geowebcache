@@ -133,7 +133,7 @@ public class TMSDocumentFactory {
             // <ContactElectronicMailAddress>pramsey@refractions.net</ContactElectronicMailAddress>
             // </ContactInformation>
             xml.indentElement("TileMaps");
-            Iterable<TileLayer> iter = tld.getLayerList();
+            Iterable<TileLayer> iter = tld.getLayerListFiltered();
             for (TileLayer layer : iter) {
                 if (!layer.isEnabled() || !layer.isAdvertised()) {
                     continue;

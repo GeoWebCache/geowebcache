@@ -83,7 +83,7 @@ public class BoundsControllerTest {
         LinkedList<TileLayerConfiguration> configList = new LinkedList<>();
         configList.add(xmlConfig);
 
-        tld = new TileLayerDispatcher(gridSetBroker, configList);
+        tld = new TileLayerDispatcher(gridSetBroker, configList, null);
         bc = new BoundsController();
         bc.setTileLayerDispatcher(tld);
         this.mockMvc = MockMvcBuilders.standaloneSetup(bc).build();
