@@ -72,7 +72,7 @@ public class ReloadTest {
         GridSetBroker gridSetBroker =
                 new GridSetBroker(MockGridSetConfiguration.withDefaults(gridSet));
 
-        tld = new TileLayerDispatcher(gridSetBroker);
+        tld = new TileLayerDispatcher(gridSetBroker, null);
         reload = new ReloadController();
         reload.setTileLayerDispatcher(tld);
 

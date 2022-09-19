@@ -429,7 +429,7 @@ public class WMTSGetCapabilities {
 
     private void contents(XMLBuilder xml) throws IOException {
         xml.indentElement("Contents");
-        Iterable<TileLayer> iter = tld.getLayerList();
+        Iterable<TileLayer> iter = tld.getLayerListFiltered();
         Set<GridSet> usedGridsets = new HashSet<>();
         for (TileLayer layer : iter) {
             if (!layer.isEnabled() || !layer.isAdvertised()) {

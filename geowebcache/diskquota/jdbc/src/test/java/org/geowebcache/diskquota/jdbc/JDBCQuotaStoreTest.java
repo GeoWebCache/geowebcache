@@ -133,7 +133,7 @@ public abstract class JDBCQuotaStoreTest {
             xmlConfig.setGridSetBroker(broker);
             extraConfig.setGridSetBroker(broker);
 
-            layerDispatcher = new TileLayerDispatcher(broker);
+            layerDispatcher = new TileLayerDispatcher(broker, null);
 
             layerDispatcher.setApplicationContext(extensions.getMockContext());
 
