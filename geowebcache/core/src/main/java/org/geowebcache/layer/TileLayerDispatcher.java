@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
@@ -56,6 +57,8 @@ public class TileLayerDispatcher
                 ApplicationContextAware,
                 ConfigurationAggregator<TileLayerConfiguration> {
 
+    TileLayerDispatcherFilter tileLayerDispatcherFilter;
+
     private List<TileLayerConfiguration> configs;
 
     private GridSetBroker gridSetBroker;
@@ -69,13 +72,19 @@ public class TileLayerDispatcher
      * configurations are loaded from the application context, the {@code config} parameter will be
      * overwritten
      */
-    public TileLayerDispatcher(GridSetBroker gridSetBroker, List<TileLayerConfiguration> configs) {
+    public TileLayerDispatcher(
+            GridSetBroker gridSetBroker,
+            List<TileLayerConfiguration> configs,
+            TileLayerDispatcherFilter tileLayerDispatcherFilter) {
         this.gridSetBroker = gridSetBroker;
         this.configs = configs == null ? new ArrayList<>() : configs;
+        this.tileLayerDispatcherFilter = tileLayerDispatcherFilter;
     }
 
-    public TileLayerDispatcher(GridSetBroker gridSetBroker) {
+    public TileLayerDispatcher(
+            GridSetBroker gridSetBroker, TileLayerDispatcherFilter tileLayerDispatcherFilter) {
         this.gridSetBroker = gridSetBroker;
+        this.tileLayerDispatcherFilter = tileLayerDispatcherFilter;
     }
 
     public boolean layerExists(final String layerName) {
@@ -143,7 +152,24 @@ public class TileLayerDispatcher
             perConfigLayers.add((Iterable<TileLayer>) config.getLayers());
         }
 
-        return new CompositeIterable<>(perConfigLayers);
+        Iterable<TileLayer> result = new CompositeIterable<>(perConfigLayers);
+        return result;
+    }
+
+    /**
+     * This is the same as {@link #getLayerList()} filtered based on the tileLayerDispatcherFilter.
+     *
+     * @return all layers, but filtered based on the tileLayerDispatcherFilter.
+     */
+    public Iterable<TileLayer> getLayerListFiltered() {
+        Iterable<TileLayer> result = getLayerList();
+        if (tileLayerDispatcherFilter != null) {
+            Stream s =
+                    StreamSupport.stream(result.spliterator(), false)
+                            .filter(x -> !tileLayerDispatcherFilter.exclude(x));
+            result = s::iterator;
+        }
+        return result;
     }
 
     public ServiceInformation getServiceInformation() {

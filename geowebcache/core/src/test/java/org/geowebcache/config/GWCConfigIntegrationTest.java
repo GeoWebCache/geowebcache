@@ -56,7 +56,8 @@ public abstract class GWCConfigIntegrationTest {
 
         gridSetBroker = testSupport.getGridSetBroker();
         tileLayerDispatcher =
-                new TileLayerDispatcher(gridSetBroker, testSupport.getTileLayerConfigurations());
+                new TileLayerDispatcher(
+                        gridSetBroker, testSupport.getTileLayerConfigurations(), null);
         blobStoreAggregator =
                 new BlobStoreAggregator(
                         Collections.singletonList(testSupport.getBlobStoreConfiguration()),

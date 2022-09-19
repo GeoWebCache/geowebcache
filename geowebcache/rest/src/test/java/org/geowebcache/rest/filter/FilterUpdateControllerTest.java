@@ -64,7 +64,7 @@ public class FilterUpdateControllerTest {
         LinkedList<TileLayerConfiguration> configList = new LinkedList<>();
         configList.add(xmlConfig);
 
-        tld = new TileLayerDispatcher(gridSetBroker, configList);
+        tld = new TileLayerDispatcher(gridSetBroker, configList, null);
         fc = new FilterUpdateController();
         fc.setTileLayerDispatcher(tld);
         this.mockMvc = MockMvcBuilders.standaloneSetup(fc).build();

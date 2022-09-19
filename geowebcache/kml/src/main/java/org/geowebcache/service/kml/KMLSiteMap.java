@@ -80,7 +80,7 @@ public class KMLSiteMap {
         OutputStream os = tile.servletResp.getOutputStream();
         String urlPrefix = tile.getUrlPrefix();
 
-        Iterable<TileLayer> iter = tLD.getLayerList();
+        Iterable<TileLayer> iter = tLD.getLayerListFiltered();
 
         for (TileLayer tl : iter) {
             if (!tl.isEnabled()) {
