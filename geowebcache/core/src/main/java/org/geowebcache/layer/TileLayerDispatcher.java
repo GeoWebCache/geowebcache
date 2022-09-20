@@ -161,13 +161,14 @@ public class TileLayerDispatcher
      *
      * @return all layers, but filtered based on the tileLayerDispatcherFilter.
      */
+    @SuppressWarnings("unchecked")
     public Iterable<TileLayer> getLayerListFiltered() {
         Iterable<TileLayer> result = getLayerList();
         if (tileLayerDispatcherFilter != null) {
             Stream s =
                     StreamSupport.stream(result.spliterator(), false)
                             .filter(x -> !tileLayerDispatcherFilter.exclude(x));
-            result = s::iterator;
+            result = (Iterable<TileLayer>) s::iterator;
         }
         return result;
     }
