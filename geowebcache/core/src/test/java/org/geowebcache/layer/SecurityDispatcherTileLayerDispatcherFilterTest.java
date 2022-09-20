@@ -14,52 +14,57 @@
  */
 package org.geowebcache.layer;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.security.SecurityDispatcher;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 public class SecurityDispatcherTileLayerDispatcherFilterTest {
 
     /**
-     * Tests that the SecurityDispatcherTileLayerDispatcherFilter passes the request off to the SecurityDispatcher.
-     * If the SecurityDispatcher#checkSecurity() doesn't throw, then that TileLayer is NOT filtered ("false").
+     * Tests that the SecurityDispatcherTileLayerDispatcherFilter passes the request off to the
+     * SecurityDispatcher. If the SecurityDispatcher#checkSecurity() doesn't throw, then that
+     * TileLayer is NOT filtered ("false").
      */
     @Test
     public void testFilterIn() throws GeoWebCacheException {
         SecurityDispatcher securityDispatcher = Mockito.mock(SecurityDispatcher.class);
 
-        SecurityDispatcherTileLayerDispatcherFilter filter = new SecurityDispatcherTileLayerDispatcherFilter(securityDispatcher);
-        TileLayer tileLayer =  Mockito.mock(TileLayer.class);
-        //doesn't throw -> filter.exclude() will be false
-        Mockito.doNothing().when(securityDispatcher).checkSecurity(tileLayer,null,null);
+        SecurityDispatcherTileLayerDispatcherFilter filter =
+                new SecurityDispatcherTileLayerDispatcherFilter(securityDispatcher);
+        TileLayer tileLayer = Mockito.mock(TileLayer.class);
+        // doesn't throw -> filter.exclude() will be false
+        Mockito.doNothing().when(securityDispatcher).checkSecurity(tileLayer, null, null);
 
         boolean result = filter.exclude(tileLayer);
 
         assertFalse(result);
-        Mockito.verify(securityDispatcher).checkSecurity(tileLayer,null,null);
+        Mockito.verify(securityDispatcher).checkSecurity(tileLayer, null, null);
     }
 
-
     /**
-     * Tests that the SecurityDispatcherTileLayerDispatcherFilter passes the request off to the SecurityDispatcher.
-     * If the SecurityDispatcher#checkSecurity() throws, then that TileLayer is filtered out ("true").
+     * Tests that the SecurityDispatcherTileLayerDispatcherFilter passes the request off to the
+     * SecurityDispatcher. If the SecurityDispatcher#checkSecurity() throws, then that TileLayer is
+     * filtered out ("true").
      */
     @Test
     public void testFilterOut() throws GeoWebCacheException {
         SecurityDispatcher securityDispatcher = Mockito.mock(SecurityDispatcher.class);
 
-        SecurityDispatcherTileLayerDispatcherFilter filter = new SecurityDispatcherTileLayerDispatcherFilter(securityDispatcher);
-        TileLayer tileLayer =  Mockito.mock(TileLayer.class);
-        //throws -> filter.exclude() will be true
-        Mockito.doThrow(new GeoWebCacheException("")).when(securityDispatcher).checkSecurity(tileLayer,null,null);
+        SecurityDispatcherTileLayerDispatcherFilter filter =
+                new SecurityDispatcherTileLayerDispatcherFilter(securityDispatcher);
+        TileLayer tileLayer = Mockito.mock(TileLayer.class);
+        // throws -> filter.exclude() will be true
+        Mockito.doThrow(new GeoWebCacheException(""))
+                .when(securityDispatcher)
+                .checkSecurity(tileLayer, null, null);
 
         boolean result = filter.exclude(tileLayer);
 
         assertTrue(result);
-        Mockito.verify(securityDispatcher).checkSecurity(tileLayer,null,null);
+        Mockito.verify(securityDispatcher).checkSecurity(tileLayer, null, null);
     }
 }
