@@ -814,11 +814,13 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
             HttpEntity entity = httpResponse.getEntity();
             try (InputStream is = entity.getContent()) {
                 HttpServletResponse response = tile.servletResp;
-                Header contentEncoding = entity.getContentEncoding();
-                response.setCharacterEncoding(contentEncoding.getValue());
                 org.apache.http.Header contentType = httpResponse.getFirstHeader("Content-Type");
                 if (contentType != null) {
                     response.setContentType(contentType.getValue());
+                    Header contentEncoding = entity.getContentEncoding();
+                    if (!MimeType.isBinary(contentType.getValue())) {
+                        response.setCharacterEncoding(contentEncoding.getValue());
+                    }
                 }
 
                 int read = 0;

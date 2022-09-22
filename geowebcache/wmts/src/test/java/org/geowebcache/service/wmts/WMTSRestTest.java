@@ -116,7 +116,7 @@ public class WMTSRestTest {
         MockHttpServletResponse resp = dispatch(req);
 
         assertEquals(200, resp.getStatus());
-        assertEquals("text/xml", resp.getContentType());
+        assertEquals("text/xml;charset=UTF-8", resp.getContentType());
         final Document doc = XMLUnit.buildTestDocument(resp.getContentAsString());
         assertXpathExists("//wmts:Contents/wmts:Layer", doc);
         assertXpathExists("//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer']", doc);
