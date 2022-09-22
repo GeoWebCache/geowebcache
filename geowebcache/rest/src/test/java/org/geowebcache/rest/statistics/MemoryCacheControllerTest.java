@@ -49,6 +49,9 @@ public class MemoryCacheControllerTest {
     MemoryCacheController mcc;
 
     @Before
+    @SuppressWarnings(
+            "deprecation") // setUseSuffixPatternMatch is deprecated because Spring wants to
+    // discourage extensions in paths
     public void setup() throws GeoWebCacheException {
         GridSetBroker gridSetBroker =
                 new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
@@ -57,7 +60,7 @@ public class MemoryCacheControllerTest {
         xmlConfig.afterPropertiesSet();
 
         mcc = new MemoryCacheController(null);
-        this.mockMvc = MockMvcBuilders.standaloneSetup(mcc).build();
+        this.mockMvc = MockMvcBuilders.standaloneSetup(mcc).setUseSuffixPatternMatch(true).build();
     }
 
     @Test
@@ -73,7 +76,7 @@ public class MemoryCacheControllerTest {
         mbs.setCacheProvider(cache);
 
         this.mockMvc
-                .perform(get("/rest/statistics.xml").contextPath(""))
+                .perform(get("/rest/statistics").accept("application/xml").contextPath(""))
                 .andExpect(status().is2xxSuccessful());
     }
 
@@ -90,7 +93,7 @@ public class MemoryCacheControllerTest {
         mbs.setCacheProvider(cache);
 
         this.mockMvc
-                .perform(get("/rest/statistics.json").contextPath(""))
+                .perform(get("/rest/statistics").accept("application/json").contextPath(""))
                 .andExpect(status().is2xxSuccessful());
     }
 
