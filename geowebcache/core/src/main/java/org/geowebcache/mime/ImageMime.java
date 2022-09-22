@@ -232,6 +232,11 @@ public class ImageMime extends MimeType {
         return supportsAlphaChannel;
     }
 
+    @Override
+    protected boolean isBinary() {
+        return true;
+    }
+
     public ImageWriter getImageWriter(RenderedImage image) {
         Iterator<ImageWriter> it = javax.imageio.ImageIO.getImageWritersByFormatName(internalName);
         ImageWriter writer = it.next();

@@ -748,7 +748,6 @@ public class WMSTileFuser {
 
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType(this.outputFormat.getMimeType());
-            response.setCharacterEncoding("UTF-8");
 
             @SuppressWarnings("PMD.CloseResource") // managed by servlet container
             ServletOutputStream os = response.getOutputStream();

@@ -16,6 +16,8 @@ package org.geowebcache.mime;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -70,6 +72,9 @@ public class ApplicationMime extends MimeType {
     static Set<ApplicationMime> ALL =
             ImmutableSet.of(bil16, bil32, json, topojson, geojson, utfgrid, mapboxVector);
 
+    private static final List<String> BINARY_FORMATS =
+            Arrays.asList(bil16.mimeType, bil32.mimeType, mapboxVector.mimeType, utfgrid.mimeType);
+
     private static Map<String, ApplicationMime> BY_FORMAT =
             Maps.uniqueIndex(ALL, mimeType -> mimeType.getFormat());
 
@@ -108,5 +113,10 @@ public class ApplicationMime extends MimeType {
     @Override
     public boolean isVector() {
         return vector;
+    }
+
+    @Override
+    protected boolean isBinary() {
+        return BINARY_FORMATS.contains(this.getMimeType());
     }
 }
