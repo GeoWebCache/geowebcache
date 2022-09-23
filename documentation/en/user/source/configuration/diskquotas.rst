@@ -38,7 +38,7 @@ All disk quota policy settings will be contained in this file.  You can also cre
           <expirationPolicyName>LRU</expirationPolicyName>
           <quota>
             <value>100</value>
-            <units>GiB</value>
+            <units>GiB</units>
           </quota>
         </LayerQuota>
         <!-- Other layers -->
