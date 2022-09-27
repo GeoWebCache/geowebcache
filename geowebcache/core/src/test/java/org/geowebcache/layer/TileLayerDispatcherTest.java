@@ -21,6 +21,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.GWCConfigIntegrationTest;
@@ -31,6 +34,7 @@ import org.geowebcache.grid.GridSetFactory;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 public class TileLayerDispatcherTest extends GWCConfigIntegrationTest {
 
@@ -255,5 +259,49 @@ public class TileLayerDispatcherTest extends GWCConfigIntegrationTest {
         } catch (IllegalStateException e) {
 
         }
+    }
+
+    /**
+     * this tests that the GetLayerListFiltered is working correctly. It should be the results of
+     * getLayerList() run through the TileLayerDispatcherFilter.
+     */
+    @Test
+    public void testGetLayerListFiltered() {
+        // we don't really care about the internals of these layer, just making sure that exclude()
+        // is called on them
+        TileLayer tileLayer1 = Mockito.mock(TileLayer.class);
+        TileLayer tileLayer2 = Mockito.mock(TileLayer.class);
+
+        // setup the tileLayerDispatcherFilter so that
+        // tileLayer1 -> excluded
+        // tileLayer2 -> NOT excluded
+        TileLayerDispatcherFilter tileLayerDispatcherFilter =
+                Mockito.mock(TileLayerDispatcherFilter.class);
+        Mockito.doReturn(true).when(tileLayerDispatcherFilter).exclude(tileLayer1);
+        Mockito.doReturn(false).when(tileLayerDispatcherFilter).exclude(tileLayer2);
+
+        // we use mokito spy to make testing the getLayerListFiltered() method easy
+        // tileLayerDispatcher will return the list [tileLayer1,tileLayer2] when getLayerList()
+        // called
+        TileLayerDispatcher tileLayerDispatcher =
+                new TileLayerDispatcher(null, tileLayerDispatcherFilter);
+        TileLayerDispatcher tileLayerDispatcherSpy = Mockito.spy(tileLayerDispatcher);
+        Mockito.doReturn(Arrays.asList(tileLayer1, tileLayer2))
+                .when(tileLayerDispatcherSpy)
+                .getLayerList();
+
+        // run our actual method
+        Iterable<TileLayer> filteredResult = tileLayerDispatcherSpy.getLayerListFiltered();
+        // iterator->list
+        List<TileLayer> result = new ArrayList<>();
+        filteredResult.forEach(result::add);
+
+        // should only have tileLayer2 in the result
+        assertEquals(1, result.size());
+        assertEquals(tileLayer2, result.get(0));
+
+        // verify that exclude(tileLayer1) and exclude(tileLayer2) were called
+        Mockito.verify(tileLayerDispatcherFilter).exclude(tileLayer1);
+        Mockito.verify(tileLayerDispatcherFilter).exclude(tileLayer2);
     }
 }

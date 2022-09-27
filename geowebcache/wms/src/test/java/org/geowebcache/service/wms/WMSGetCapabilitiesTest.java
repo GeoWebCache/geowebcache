@@ -128,6 +128,8 @@ public class WMSGetCapabilitiesTest {
         unAdvertisedLayer.setAdvertised(false);
 
         expect(tld.getLayerList()).andStubReturn(Arrays.asList(advertisedLayer, unAdvertisedLayer));
+        expect(tld.getLayerListFiltered())
+                .andStubReturn(Arrays.asList(advertisedLayer, unAdvertisedLayer));
 
         replay(tld, servReq, response, servInfo);
 

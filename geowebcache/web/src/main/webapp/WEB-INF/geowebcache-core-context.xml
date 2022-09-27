@@ -72,13 +72,19 @@
     </property>
     
   </bean-->
-  
+
+  <bean id="gwcSecurityDispatcherTileLayerDispatcherFilter" class="org.geowebcache.layer.SecurityDispatcherTileLayerDispatcherFilter">
+    <constructor-arg ref="gwcSecurityDispatcher"/>
+  </bean>
+
+
   <!-- For each configuration bean above, add them below to activate -->
   <bean id="gwcTLDispatcher" class="org.geowebcache.layer.TileLayerDispatcher">
     <description>
       TileLayerDispatcher serves up TileLayers from the available Configurations in the application context
     </description>
     <constructor-arg ref="gwcGridSetBroker"/>
+    <constructor-arg ref="gwcSecurityDispatcherTileLayerDispatcherFilter"/>
   </bean>
 
   <bean id="gwcBlobStoreAggregator" class="org.geowebcache.storage.BlobStoreAggregator">

@@ -77,17 +77,24 @@ public class ByteStreamController {
 
     static final Pattern UNSAFE_RESOURCE = Pattern.compile("^/|/\\.\\./|^\\.\\./|\\.class$");
 
+    // "gwc/rest/web/openlayers3/ol.js" -> openlayers3/ol.js
+    // "/rest/web/openlayers3/ol.js" -> openlayers3/ol.js
+    String getFileName(HttpServletRequest request) {
+        String path = request.getPathInfo();
+        if (path.indexOf("/rest/web") != 0) {
+            path = path.substring(path.indexOf("/rest/web"));
+        }
+        return path.substring("/rest/web/".length());
+    }
+
     @RequestMapping(value = "/web/**", method = RequestMethod.GET)
     ResponseEntity<?> doGet(HttpServletRequest request, HttpServletResponse response) {
-
         final String filename;
         try {
-            filename =
-                    URLDecoder.decode(
-                            request.getPathInfo().substring("/rest/web/".length()), "UTF-8");
+            filename = URLDecoder.decode(getFileName(request), "UTF-8");
         } catch (UnsupportedEncodingException e1) {
             throw new IllegalStateException(
-                    "Cound not decode encoding UTF-8", e1); // Should never happen
+                    "Could not decode encoding UTF-8", e1); // Should never happen
         }
 
         // Just to make sure we don't allow access to arbitrary resources
