@@ -211,7 +211,7 @@ The meaning of each long value in each thread array is:
 
 .. code-block:: json 
 
-   [tiles processed, total # of tiles to process, estimated remaining time (in seconds), Task ID, Task status]
+   ["tiles processed", "total # of tiles to process", "estimated remaining time (in seconds)", "Task ID", "Task status"]
    
 The meaning of the ``Task status`` field is:
 -1 = ABORTED, 
