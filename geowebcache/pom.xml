@@ -51,7 +51,7 @@
   </distributionManagement>
 
   <properties>
-    <gt.version>28-SNAPSHOT-SNAPSHOT</gt.version>
+    <gt.version>29-SNAPSHOT</gt.version>
     <jts.version>1.19.0</jts.version>
     <jaiext.version>1.1.24</jaiext.version>
     <spring.version>5.2.20.RELEASE</spring.version>
@@ -663,7 +663,7 @@
             <descriptor>release/war.xml</descriptor>
             <descriptor>release/doc.xml</descriptor>
           </descriptors>
-          <finalName>geowebcache-1.22-SNAPSHOT</finalName>
+          <finalName>geowebcache-1.23-SNAPSHOT</finalName>
           <outputDirectory>${project.build.directory}/release</outputDirectory>
         </configuration>
       </plugin>
