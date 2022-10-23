@@ -1,3 +1,22 @@
+GeoWebCache 1.21.2 (2022-10-22)
+-------------------------------
+
+Stable release
+
+Improvements:
++++++++++++++
+- GWC WMTS data security improvements
+- Update JAI-Ext 1.1.24
+- Update PostgreSQL driver to 42.4.1
+
+Fixes:
+++++++
+- Fix S3 blobstore geowebcache parameterization
+
+Internals:
+++++++++++
+- TiledLayerDispatcher.getLayerListFiltered() added to list layers available to user
+
 GeoWebCache 1.21.1 (2022-07-27)
 -------------------------------
 
