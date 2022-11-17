@@ -1,3 +1,13 @@
+GeoWebCache 1.22.0 (2022-11-17)
+-------------------------------
+
+First stable release for the 1.22.x series.
+
+Improvements
+++++++++++++
+Bump jackson-databind from 2.13.2.1 to 2.13.4.1
+
+
 GeoWebCache 1.22-RC (2022-10-19)
 --------------------------------
 
