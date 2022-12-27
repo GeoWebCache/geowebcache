@@ -1,5 +1,6 @@
 package org.geowebcache.diskquota;
 
+import static org.easymock.EasyMock.newCapture;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -94,7 +95,7 @@ public class BDBQuotaStoreTest {
                 .anyTimes();
         EasyMock.replay(cacheDirFinder);
 
-        Capture<String> layerNameCap = new Capture<>();
+        Capture<String> layerNameCap = newCapture();
         storageBroker = EasyMock.createMock(StorageBroker.class);
         EasyMock.expect(storageBroker.getCachedParameterIds(EasyMock.capture(layerNameCap)))
                 .andStubAnswer(

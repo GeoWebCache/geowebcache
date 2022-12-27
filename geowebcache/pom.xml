@@ -93,7 +93,7 @@
     <lint>deprecation,unchecked</lint>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <jclouds.version>2.3.0</jclouds.version>
-    <mockito.version>3.8.0</mockito.version>
+    <mockito.version>3.12.4</mockito.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -289,13 +289,7 @@
       <dependency>
         <groupId>org.easymock</groupId>
         <artifactId>easymock</artifactId>
-        <version>3.2</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.easymock</groupId>
-        <artifactId>easymockclassextension</artifactId>
-        <version>3.2</version>
+        <version>5.0.1</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -576,10 +570,10 @@
 
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.0</version>
+        <version>3.10.1</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+          <source>11</source>
+          <target>11</target>
           <encoding>UTF-8</encoding>
         </configuration>
       </plugin>
@@ -610,7 +604,7 @@
             <java.util.logging.config.file>src/test/resources/logging.properties</java.util.logging.config.file>
             <java.awt.headless>true</java.awt.headless>
           </systemPropertyVariables>
-          <argLine>${maven.test.jvmargs} -XX:+IgnoreUnrecognizedVMOptions --illegal-access=warn</argLine>
+          <argLine>${maven.test.jvmargs} -XX:+IgnoreUnrecognizedVMOptions --illegal-access=warn --add-exports=java.desktop/sun.awt.image=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED</argLine>
           <!-- prevent ForkedBooter focus steal on macOS -->
         </configuration>
       </plugin>
@@ -752,7 +746,7 @@
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
-          <source>1.8</source>
+          <source>11</source>
           <version>false</version>
           <noqualifier>all</noqualifier>
           <maxmemory>256M</maxmemory>
@@ -846,11 +840,9 @@
       </build>
     </profile>
 
-    <!-- for those using JDK 11 -->
     <profile>
       <id>errorprone</id>
       <activation>
-        <jdk>(1.8,)</jdk>
         <property>
           <name>qa</name>
         </property>
@@ -881,42 +873,6 @@
       </build>
     </profile>
 
-    <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
-    <profile>
-      <id>errorprone8</id>
-      <activation>
-        <jdk>1.8</jdk>
-        <property>
-          <name>qa</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.8.0</version>
-            <configuration>
-              <fork>true</fork>
-              <compilerArgs combine.children="append">
-                <arg>-XDcompilePolicy=simple</arg>
-                <arg>-Xplugin:ErrorProne -XepExcludedPaths:${project.build.directory}/generated-sources/.* ${errorProneFlags}</arg>
-                <arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${javac.version}/javac-${javac.version}.jar</arg>
-                <arg>-Xlint:${lint}</arg>
-                <arg>-Werror</arg>
-              </compilerArgs>
-              <annotationProcessorPaths>
-                <path>
-                  <groupId>com.google.errorprone</groupId>
-                  <artifactId>error_prone_core</artifactId>
-                  <version>${errorProne.version}</version>
-                </path>
-              </annotationProcessorPaths>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
     <profile>
       <id>spotbugs</id>
       <activation>
@@ -929,7 +885,7 @@
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>3.1.10</version>
+            <version>4.0.0</version>
             <executions>
               <execution>
                 <goals>

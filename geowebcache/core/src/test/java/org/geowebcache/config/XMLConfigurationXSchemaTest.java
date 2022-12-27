@@ -86,7 +86,7 @@ public class XMLConfigurationXSchemaTest {
         EasyMock.expect(wac.getBeansOfType(XMLConfigurationProvider.class))
                 .andReturn(Collections.singletonMap("provider", provider));
         EasyMock.expect(wac.getBean("provider")).andReturn(provider);
-        final Capture<XStream> xsCap = new Capture<>();
+        final Capture<XStream> xsCap = EasyMock.newCapture();
         EasyMock.expect(provider.getConfiguredXStream(EasyMock.capture(xsCap)))
                 .andStubAnswer(
                         () -> {

@@ -1,5 +1,6 @@
 package org.geowebcache.diskquota.jdbc;
 
+import static org.easymock.EasyMock.newCapture;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -142,7 +143,7 @@ public abstract class JDBCQuotaStoreTest {
             extraConfig.afterPropertiesSet();
             layerDispatcher.afterPropertiesSet();
 
-            Capture<String> layerNameCap = new Capture<>();
+            Capture<String> layerNameCap = newCapture();
             storageBroker = EasyMock.createMock(StorageBroker.class);
             EasyMock.expect(storageBroker.getCachedParameterIds(EasyMock.capture(layerNameCap)))
                     .andStubAnswer(
