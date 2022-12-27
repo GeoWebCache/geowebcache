@@ -81,7 +81,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
 
     @Test
     public void testStoreTile() throws Exception {
-        BlobStoreListener listener = EasyMock.createMock(BlobStoreListener.class);
+        BlobStoreListener listener = EasyMock.createNiceMock(BlobStoreListener.class);
         store.addListener(listener);
         TileObject toCache =
                 TileObject.createCompleteTileObject(
@@ -131,7 +131,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
 
     @Test
     public void testStoreTilesInMultipleLayers() throws Exception {
-        BlobStoreListener listener = EasyMock.createMock(BlobStoreListener.class);
+        BlobStoreListener listener = EasyMock.createNiceMock(BlobStoreListener.class);
         store.addListener(listener);
         TileObject toCache1 =
                 TileObject.createCompleteTileObject(
@@ -213,7 +213,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
 
     @Test
     public void testDeleteTile() throws Exception {
-        BlobStoreListener listener = EasyMock.createMock(BlobStoreListener.class);
+        BlobStoreListener listener = EasyMock.createNiceMock(BlobStoreListener.class);
         store.addListener(listener);
         TileObject toCache =
                 TileObject.createCompleteTileObject(
@@ -230,7 +230,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
                 TileObject.createQueryTileObject(
                         "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", null);
 
-        Capture<Long> sizeCapture = new Capture<>();
+        Capture<Long> sizeCapture = EasyMock.newCapture();
         if (events) {
             listener.tileStored(
                     eq("testLayer"),
@@ -274,7 +274,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
 
     @Test
     public void testUpdateTile() throws Exception {
-        BlobStoreListener listener = EasyMock.createMock(BlobStoreListener.class);
+        BlobStoreListener listener = EasyMock.createNiceMock(BlobStoreListener.class);
         store.addListener(listener);
         TileObject toCache1 =
                 TileObject.createCompleteTileObject(
@@ -297,7 +297,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
                 TileObject.createQueryTileObject(
                         "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", null);
 
-        Capture<Long> sizeCapture = new Capture<>();
+        Capture<Long> sizeCapture = EasyMock.newCapture();
         if (events) {
             listener.tileStored(
                     eq("testLayer"),
@@ -348,7 +348,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
 
     @Test
     public void testGridsets() throws Exception {
-        BlobStoreListener listener = EasyMock.createMock(BlobStoreListener.class);
+        BlobStoreListener listener = EasyMock.createNiceMock(BlobStoreListener.class);
         store.addListener(listener);
         TileObject toCache1 =
                 TileObject.createCompleteTileObject(
@@ -387,8 +387,8 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
                 TileObject.createQueryTileObject(
                         "testLayer", new long[] {0L, 0L, 0L}, "testGridSet2", "image/png", null);
 
-        Capture<Long> sizeCapture1 = new Capture<>();
-        Capture<Long> sizeCapture2 = new Capture<>();
+        Capture<Long> sizeCapture1 = EasyMock.newCapture();
+        Capture<Long> sizeCapture2 = EasyMock.newCapture();
         if (events) {
             listener.tileStored(
                     eq("testLayer"),
@@ -471,7 +471,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
 
     @Test
     public void testDeleteGridset() throws Exception {
-        BlobStoreListener listener = EasyMock.createMock(BlobStoreListener.class);
+        BlobStoreListener listener = EasyMock.createNiceMock(BlobStoreListener.class);
         store.addListener(listener);
         TileObject toCache1 =
                 TileObject.createCompleteTileObject(
@@ -590,7 +590,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
 
     @Test
     public void testParameters() throws Exception {
-        BlobStoreListener listener = EasyMock.createMock(BlobStoreListener.class);
+        BlobStoreListener listener = EasyMock.createNiceMock(BlobStoreListener.class);
         store.addListener(listener);
         Map<String, String> params1 = Collections.singletonMap("testKey", "testValue1");
         Map<String, String> params2 = Collections.singletonMap("testKey", "testValue2");
@@ -632,10 +632,10 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
                 TileObject.createQueryTileObject(
                         "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", params2);
 
-        Capture<Long> sizeCapture1 = new Capture<>();
-        Capture<Long> sizeCapture2 = new Capture<>();
-        Capture<String> pidCapture1 = new Capture<>();
-        Capture<String> pidCapture2 = new Capture<>();
+        Capture<Long> sizeCapture1 = EasyMock.newCapture();
+        Capture<Long> sizeCapture2 = EasyMock.newCapture();
+        Capture<String> pidCapture1 = EasyMock.newCapture();
+        Capture<String> pidCapture2 = EasyMock.newCapture();
         if (events) {
             listener.tileStored(
                     eq("testLayer"),
@@ -855,7 +855,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
                         "image/png",
                         params2,
                         new ByteArrayResource("7,8,9,10 test".getBytes(StandardCharsets.UTF_8)));
-        BlobStoreListener listener = EasyMock.createMock(BlobStoreListener.class);
+        BlobStoreListener listener = EasyMock.createNiceMock(BlobStoreListener.class);
         store.addListener(listener);
         final long size1 = toCache1.getBlobSize();
         final long size2 = toCache2.getBlobSize();
@@ -972,7 +972,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
 
     @Test
     public void testPurgeOrphans() throws Exception {
-        TileLayer layer = EasyMock.createMock("layer", TileLayer.class);
+        TileLayer layer = EasyMock.createNiceMock("layer", TileLayer.class);
         EasyMock.expect(layer.getName()).andStubReturn("testLayer");
         StringParameterFilter testFilter = new StringParameterFilter();
         testFilter.setDefaultValue("DEFAULT");
@@ -1001,7 +1001,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
                         "image/png",
                         params2,
                         new ByteArrayResource("7,8,9,10 test".getBytes(StandardCharsets.UTF_8)));
-        BlobStoreListener listener = EasyMock.createMock(BlobStoreListener.class);
+        BlobStoreListener listener = EasyMock.createNiceMock(BlobStoreListener.class);
         store.addListener(listener);
         final long size1 = toCache1.getBlobSize();
         final long size2 = toCache2.getBlobSize();
@@ -1136,7 +1136,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
 
     @Test
     public void testPurgeOrphansWithDefault() throws Exception {
-        TileLayer layer = EasyMock.createMock("layer", TileLayer.class);
+        TileLayer layer = EasyMock.createNiceMock("layer", TileLayer.class);
         final String layerName = "testLayer";
         final String paramKey = "testKey";
 
@@ -1154,7 +1154,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         String paramID2 = ParametersUtils.getId(params2);
         final String gridset = "testGridSet";
         final String format = "image/png";
-        BlobStoreListener listener = EasyMock.createMock(BlobStoreListener.class);
+        BlobStoreListener listener = EasyMock.createNiceMock(BlobStoreListener.class);
         store.addListener(listener);
 
         if (events) {
@@ -1210,7 +1210,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
 
     @Test
     public void testDeleteRangeSingleLevel() throws StorageException {
-        TileLayer layer = EasyMock.createMock("layer", TileLayer.class);
+        TileLayer layer = EasyMock.createNiceMock("layer", TileLayer.class);
         final String layerName = "testLayer";
         EasyMock.expect(layer.getName()).andStubReturn(layerName);
         GridSet gridSet = new DefaultGridsets(true, false).worldEpsg4326();
@@ -1242,7 +1242,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
 
     @Test
     public void testDeleteRangeMultiLevel() throws StorageException {
-        TileLayer layer = EasyMock.createMock("layer", TileLayer.class);
+        TileLayer layer = EasyMock.createNiceMock("layer", TileLayer.class);
         final String layerName = "testLayer";
         EasyMock.expect(layer.getName()).andStubReturn(layerName);
         GridSet gridSet = new DefaultGridsets(true, false).worldEpsg4326();

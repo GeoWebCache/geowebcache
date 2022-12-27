@@ -132,7 +132,7 @@ public class WMSLayerTest extends TileLayerTest {
         layer.setLockProvider(lockProvider);
 
         final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
-        Capture<TileObject> captured = new Capture<>();
+        Capture<TileObject> captured = EasyMock.newCapture();
         expect(mockStorageBroker.put(EasyMock.capture(captured))).andReturn(true).anyTimes();
         replay(mockStorageBroker);
 
@@ -214,7 +214,7 @@ public class WMSLayerTest extends TileLayerTest {
                     } else {
                         assertEquals("image/png", format);
                         // verify the image has been paletted
-                        try (InputStream inputStream = to.getBlob().getInputStream(); ) {
+                        try (InputStream inputStream = to.getBlob().getInputStream()) {
                             BufferedImage image = ImageIO.read(inputStream);
                             assertThat(image.getColorModel(), instanceOf(IndexColorModel.class));
                         }
@@ -269,7 +269,7 @@ public class WMSLayerTest extends TileLayerTest {
         layer.setLockProvider(lockProvider);
 
         final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
-        Capture<TileObject> captured = new Capture<>(CaptureType.ALL);
+        Capture<TileObject> captured = EasyMock.newCapture(CaptureType.ALL);
         expect(mockStorageBroker.put(EasyMock.capture(captured)))
                 .andAnswer(tileVerifier)
                 .anyTimes();
@@ -755,31 +755,23 @@ public class WMSLayerTest extends TileLayerTest {
         private void installSourceHelper(WMSLayer tl) throws Exception {
             // WMSSourceHelper that on makeRequest() returns always the same fake image
             WMSSourceHelper mockSourceHelper = EasyMock.createMock(WMSSourceHelper.class);
-
-            Capture<WMSMetaTile> wmsRequestsCapturer =
-                    new Capture<WMSMetaTile>() {
-
-                        @Override
-                        public void setValue(WMSMetaTile o) {
-                            wmsMetaRequestCounter.incrementAndGet();
-                        }
-                    };
-            Capture<Resource> resourceCapturer =
-                    new Capture<Resource>() {
-
-                        @Override
-                        public void setValue(Resource target) {
-                            try {
-                                target.transferFrom(
-                                        Channels.newChannel(
-                                                new ByteArrayInputStream(fakeWMSResponse)));
-                                tileTransferCounter.incrementAndGet();
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    };
-            mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
+            Capture<WMSMetaTile> metaTileCapturer = EasyMock.newCapture();
+            Capture<Resource> resourceCapturer = EasyMock.newCapture();
+            mockSourceHelper.makeRequest(capture(metaTileCapturer), capture(resourceCapturer));
+            EasyMock.expectLastCall()
+                    .andAnswer(
+                            () -> {
+                                Resource resource = resourceCapturer.getValue();
+                                wmsMetaRequestCounter.incrementAndGet();
+                                try {
+                                    resource.transferFrom(
+                                            Channels.newChannel(
+                                                    new ByteArrayInputStream(fakeWMSResponse)));
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                return null;
+                            });
             expectLastCall().anyTimes().asStub();
             mockSourceHelper.setConcurrency(32);
             mockSourceHelper.setBackendTimeout(120);
@@ -808,35 +800,31 @@ public class WMSLayerTest extends TileLayerTest {
                             })
                     .anyTimes();
 
-            storageBroker.putTransient(
-                    capture(
-                            new Capture<TileObject>() {
-
-                                @Override
-                                public void setValue(TileObject tile) {
-                                    String key = TransientCache.computeTransientKey(tile);
-                                    synchronized (transientCache) {
-                                        transientCache.put(key, tile.getBlob());
-                                    }
+            Capture<TileObject> tileCapturer = EasyMock.newCapture();
+            storageBroker.putTransient(capture(tileCapturer));
+            expectLastCall()
+                    .andAnswer(
+                            () -> {
+                                TileObject tile = tileCapturer.getValue();
+                                String key = TransientCache.computeTransientKey(tile);
+                                synchronized (transientCache) {
+                                    transientCache.put(key, tile.getBlob());
                                 }
-                            }));
-            expectLastCall().anyTimes();
+                                return null;
+                            })
+                    .anyTimes();
 
             final HashSet<String> puts = new HashSet<>();
-            expect(
-                            storageBroker.put(
-                                    capture(
-                                            new Capture<TileObject>() {
-                                                @Override
-                                                public void setValue(TileObject value) {
-                                                    puts.add(
-                                                            TransientCache.computeTransientKey(
-                                                                    value));
-                                                    storagePutCounter.incrementAndGet();
-                                                }
-                                            })))
-                    .andReturn(true)
+            expect(storageBroker.put(capture(tileCapturer)))
+                    .andAnswer(
+                            () -> {
+                                TileObject tile = tileCapturer.getValue();
+                                puts.add(TransientCache.computeTransientKey(tile));
+                                storagePutCounter.incrementAndGet();
+                                return true;
+                            })
                     .anyTimes();
+
             expect(storageBroker.get(anyObject()))
                     .andAnswer(
                             () -> {
