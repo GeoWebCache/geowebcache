@@ -245,7 +245,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         final GridSetBuilder gsBuilder = new GridSetBuilder();
         GridSet gridSet = gsBuilder.buildGridset(layerName, info, layerBounds);
 
-        getGridsetConfiguration(gridSetBroker).addInternal(gridSet);
+        gridSetBroker.put(gridSet);
 
         final List<LODInfo> lodInfos = tileCacheInfo.getLodInfos();
         Integer zoomStart = lodInfos.get(0).getLevelID();
@@ -257,20 +257,6 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         HashMap<String, GridSubset> subsets = new HashMap<>();
         subsets.put(gridSet.getName(), subSet);
         return subsets;
-    }
-
-    private ArcGISCacheGridsetConfiguration getGridsetConfiguration(
-            final GridSetBroker gridSetBroker) {
-        List<? extends ArcGISCacheGridsetConfiguration> configs =
-                gridSetBroker.getConfigurations(ArcGISCacheGridsetConfiguration.class);
-        if (configs.isEmpty()) {
-            throw new IllegalStateException("No ArcGISCacheGridsetConfiguration could be found");
-        } else {
-            if (configs.size() > 1) {
-                log.warning("Multiple instances of ArcGISCacheGridsetConfiguration, using first");
-            }
-            return configs.iterator().next();
-        }
     }
 
     /** @see org.geowebcache.layer.TileLayer#getTile(org.geowebcache.conveyor.ConveyorTile) */
