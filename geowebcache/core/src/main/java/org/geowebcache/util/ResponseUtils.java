@@ -42,6 +42,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
+import org.geowebcache.layer.EmptyTileException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.ImageMime;
@@ -103,6 +104,14 @@ public final class ResponseUtils {
             writeData(convTile, runtimeStats);
 
             // Alternatively:
+        } catch (EmptyTileException e) {
+            writeEmpty(
+                    defaultStorageFinder,
+                    convTile,
+                    e.getMessage(),
+                    runtimeStats,
+                    e.getMime().getMimeType(),
+                    e.getContents());
         } catch (OutsideCoverageException e) {
             writeEmpty(defaultStorageFinder, convTile, e.getMessage(), runtimeStats);
         }
@@ -171,15 +180,13 @@ public final class ResponseUtils {
                 servletResp, httpCode, mimeType, blob, cacheResult, contentLength, runtimeStats);
     }
 
-    /**
-     * Writes a transparent, 8 bit PNG to avoid having clients like OpenLayers showing lots of pink
-     * tiles
-     */
     private static void writeEmpty(
             DefaultStorageFinder defaultStorageFinder,
             ConveyorTile tile,
             String message,
-            RuntimeStats runtimeStats) {
+            RuntimeStats runtimeStats,
+            String mimeType,
+            ByteArrayResource emptyTileContents) {
         tile.servletResp.setHeader("geowebcache-message", message);
         TileLayer layer = tile.getLayer();
         if (layer != null) {
@@ -196,13 +203,34 @@ public final class ResponseUtils {
             }
         }
 
+        // handle no-content in case we have to return no result at all (e.g., expected for pbf)
+        int status = emptyTileContents == null ? 204 : 200;
+
         writeFixedResponse(
                 tile.servletResp,
-                200,
-                ImageMime.png.getMimeType(),
-                loadBlankTile(defaultStorageFinder),
+                status,
+                mimeType,
+                emptyTileContents,
                 CacheResult.OTHER,
                 runtimeStats);
+    }
+
+    /**
+     * Writes a transparent, 8 bit PNG to avoid having clients like OpenLayers showing lots of pink
+     * tiles
+     */
+    private static void writeEmpty(
+            DefaultStorageFinder defaultStorageFinder,
+            ConveyorTile tile,
+            String message,
+            RuntimeStats runtimeStats) {
+        writeEmpty(
+                defaultStorageFinder,
+                tile,
+                message,
+                runtimeStats,
+                ImageMime.png.getMimeType(),
+                loadBlankTile(defaultStorageFinder));
     }
 
     /**
