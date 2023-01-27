@@ -41,9 +41,9 @@ import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
-import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.layer.AbstractTileLayer;
+import org.geowebcache.layer.EmptyTileException;
 import org.geowebcache.layer.ExpirationRule;
 import org.geowebcache.layer.TileJSONProvider;
 import org.geowebcache.layer.meta.TileJSON;
@@ -221,10 +221,15 @@ public class MBTilesLayer extends AbstractTileLayer implements TileJSONProvider 
 
     /** @see org.geowebcache.layer.TileLayer#getTile(org.geowebcache.conveyor.ConveyorTile) */
     @Override
-    public ConveyorTile getTile(final ConveyorTile tile)
-            throws IOException, OutsideCoverageException {
+    public ConveyorTile getTile(final ConveyorTile tile) throws IOException, GeoWebCacheException {
 
         long[] tileIndex = tile.getTileIndex();
+
+        // check request is within coverage
+        String tileGridSetId = tile.getGridSetId();
+        GridSubset gridSubset = getGridSubset(tileGridSetId);
+        gridSubset.checkCoverage(tileIndex);
+
         int zl = (int) tileIndex[2];
         int row = (int) tileIndex[1];
         int column = (int) tileIndex[0];
@@ -238,13 +243,29 @@ public class MBTilesLayer extends AbstractTileLayer implements TileJSONProvider 
             tile.setBlob(new ByteArrayResource(content));
             tile.setCacheResult(CacheResult.HIT);
         } else {
+            // not in the file, but still within the coverage
             tile.setCacheResult(CacheResult.MISS);
-            throw new OutsideCoverageException(tile.getTileIndex(), 0, 0);
+            throw new EmptyTileException(getLayerMime());
         }
 
         saveExpirationInformation((int) (tile.getExpiresHeader() / 1000));
 
         return tile;
+    }
+
+    private MimeType getLayerMime() {
+        switch (tilesInfo.getFormat()) {
+            case PNG:
+                return ImageMime.png;
+            case JPG:
+            case JPEG:
+                return ImageMime.jpeg;
+            case PBF:
+                return ApplicationMime.mapboxVector;
+            default:
+                // unknown format
+                return null;
+        }
     }
 
     private byte[] getPbfFromTile(byte[] raw) throws IOException {

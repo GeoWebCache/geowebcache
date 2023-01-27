@@ -43,6 +43,8 @@ import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.XMLConfigurationProvider;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSubset;
+import org.geowebcache.grid.OutsideCoverageException;
+import org.geowebcache.layer.EmptyTileException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.meta.TileJSON;
@@ -51,6 +53,7 @@ import org.geowebcache.mime.ApplicationMime;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 public class MBTilesLayerTest {
@@ -66,6 +69,9 @@ public class MBTilesLayerTest {
     private static final String TEST_POINTS_FILENAME = "manypoints_test.mbtiles";
 
     public @Rule MockWepAppContextRule extensions = new MockWepAppContextRule();
+
+    @Rule public ExpectedException exception = ExpectedException.none();
+
     protected TileLayerConfiguration config;
 
     @Before
@@ -223,5 +229,44 @@ public class MBTilesLayerTest {
 
         keys.removeAll(TEST_FIELDS);
         assertTrue(keys.isEmpty());
+    }
+
+    @Test
+    public void testOutsideRange() throws GeoWebCacheException, IOException {
+        MBTilesLayer testLayer = (MBTilesLayer) config.getLayer("testName").get();
+        ConveyorTile conveyorTile =
+                new ConveyorTile(
+                        null,
+                        testLayer.getId(),
+                        "EPSG:900913",
+                        new long[] {38L, 42L, 6L},
+                        ApplicationMime.mapboxVector,
+                        null,
+                        null,
+                        null);
+        exception.expect(OutsideCoverageException.class);
+        exception.expectMessage(
+                "Coverage [minx,miny,maxx,maxy] is [38, 39, 39, 39, 6], index [x,y,z] is [38, 42, 6]");
+        testLayer.getTile(conveyorTile);
+    }
+
+    @Test
+    public void testEmptyTile() throws GeoWebCacheException, IOException {
+        try {
+            MBTilesLayer testLayer = (MBTilesLayer) config.getLayer("testName").get();
+            ConveyorTile conveyorTile =
+                    new ConveyorTile(
+                            null,
+                            testLayer.getId(),
+                            "EPSG:900913",
+                            new long[] {38L, 39L, 6L},
+                            ApplicationMime.mapboxVector,
+                            null,
+                            null,
+                            null);
+            testLayer.getTile(conveyorTile);
+        } catch (EmptyTileException e) {
+            assertEquals(ApplicationMime.mapboxVector, e.getMime());
+        }
     }
 }
