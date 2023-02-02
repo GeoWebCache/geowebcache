@@ -53,6 +53,16 @@
       <param name="id" value="user" />
     </antcall>
   </target>
+
+  <target name="package" depends="docs"
+    description="Generate zip documentation">
+    <echo>Generating geowebcache_${project.version}-docs.zip</echo>
+    <zip destfile="${build.directory}/geowebcache_${project.version}-docs.zip"
+         level="0"
+         basedir="${build.directory}/user/html"
+         includes="**"
+         excludes="**/.gitignore, .DS_Store"/>
+  </target>
   
   <target name="site"
     description="Generate html documentation">
