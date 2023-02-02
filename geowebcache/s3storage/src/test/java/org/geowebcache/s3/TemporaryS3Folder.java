@@ -92,10 +92,10 @@ public class TemporaryS3Folder extends ExternalResource {
             config.setEndpoint(properties.getProperty("endpoint"));
         }
         if (properties.getProperty("maxConnections") != null) {
-            config.setMaxConnections(Integer.valueOf(properties.getProperty("maxConnections")));
+            config.setMaxConnections(properties.getProperty("maxConnections"));
         }
         if (properties.getProperty("useHTTPS") != null) {
-            config.setUseHTTPS(Boolean.valueOf(properties.getProperty("useHTTPS")));
+            config.setUseHTTPS(properties.getProperty("useHTTPS"));
         }
         if (properties.getProperty("proxyDomain") != null) {
             config.setProxyDomain(properties.getProperty("proxyDomain"));
@@ -107,7 +107,7 @@ public class TemporaryS3Folder extends ExternalResource {
             config.setProxyHost(properties.getProperty("proxyHost"));
         }
         if (properties.getProperty("proxyPort") != null) {
-            config.setProxyPort(Integer.valueOf(properties.getProperty("proxyPort")));
+            config.setProxyPort(properties.getProperty("proxyPort"));
         }
         if (properties.getProperty("proxyUsername") != null) {
             config.setProxyUsername(properties.getProperty("proxyUsername"));
@@ -116,9 +116,9 @@ public class TemporaryS3Folder extends ExternalResource {
             config.setProxyPassword(properties.getProperty("proxyPassword"));
         }
         if (properties.getProperty("useGzip") == null) {
-            config.setUseGzip(true);
+            config.setUseGzip("true");
         } else {
-            config.setUseGzip(Boolean.valueOf(properties.getProperty("useGzip")));
+            config.setUseGzip(properties.getProperty("useGzip"));
         }
         return config;
     }

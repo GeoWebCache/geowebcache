@@ -27,6 +27,7 @@ import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.S3ClientOptions;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.SerializationUtils;
@@ -57,9 +58,9 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
 
     private Access access = Access.PUBLIC;
 
-    private Integer maxConnections;
+    private String maxConnections;
 
-    private Boolean useHTTPS = true;
+    private String useHTTPS = "true";
 
     private String proxyDomain;
 
@@ -67,13 +68,13 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
 
     private String proxyHost;
 
-    private Integer proxyPort;
+    private String proxyPort;
 
     private String proxyUsername;
 
     private String proxyPassword;
 
-    private Boolean useGzip;
+    private String useGzip;
 
     private String endpoint;
 
@@ -137,22 +138,22 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
     }
 
     /** @return The maximum number of allowed open HTTP connections. */
-    public Integer getMaxConnections() {
+    public String getMaxConnections() {
         return maxConnections;
     }
 
     /** Sets the maximum number of allowed open HTTP connections. */
-    public void setMaxConnections(Integer maxConnections) {
+    public void setMaxConnections(String maxConnections) {
         this.maxConnections = maxConnections;
     }
 
     /** @return whether to use HTTPS (true) or HTTP (false) when talking to S3 (defaults to true) */
-    public Boolean isUseHTTPS() {
+    public String getUseHTTPS() {
         return useHTTPS;
     }
 
     /** @param useHTTPS whether to use HTTPS (true) or HTTP (false) when talking to S3 */
-    public void setUseHTTPS(Boolean useHTTPS) {
+    public void setUseHTTPS(String useHTTPS) {
         this.useHTTPS = useHTTPS;
     }
 
@@ -225,7 +226,7 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
      *
      * @return The proxy port the client will connect through.
      */
-    public Integer getProxyPort() {
+    public String getProxyPort() {
         return proxyPort;
     }
 
@@ -234,7 +235,7 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
      *
      * @param proxyPort The proxy port the client will connect through.
      */
-    public void setProxyPort(Integer proxyPort) {
+    public void setProxyPort(String proxyPort) {
         this.proxyPort = proxyPort;
     }
 
@@ -315,7 +316,7 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
      *
      * @return if gzip compression is used
      */
-    public Boolean isUseGzip() {
+    public String getUseGzip() {
         return useGzip;
     }
 
@@ -324,7 +325,7 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
      *
      * @param use whether gzip compression should be used
      */
-    public void setUseGzip(Boolean use) {
+    public void setUseGzip(String use) {
         this.useGzip = use;
     }
 
@@ -351,23 +352,49 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
             blobStore.setEnabled(isEnabled());
             blobStore.setDefault(isDefault());
             blobStore.setAccess(getAccess());
-            blobStore.setPrefix(getPrefix());
-            blobStore.setUseHTTPS(isUseHTTPS());
-            blobStore.setUseGzip(isUseGzip());
-            blobStore.setMaxConnections(getMaxConnections());
-            blobStore.setProxyPort(getProxyPort());
-            blobStore.setBucket((String) gwcEnvironment.resolveValue(getBucket()));
-            blobStore.setAwsAccessKey((String) gwcEnvironment.resolveValue(getAwsAccessKey()));
-            blobStore.setAwsSecretKey((String) gwcEnvironment.resolveValue(getAwsSecretKey()));
-            blobStore.setProxyDomain((String) gwcEnvironment.resolveValue(getProxyDomain()));
+            blobStore.setPrefix(nullSafeResolveString(getPrefix(), gwcEnvironment));
+            blobStore.setUseHTTPS(nullSafeResolveString(getUseHTTPS(), gwcEnvironment));
+            blobStore.setUseGzip(nullSafeResolveString(getUseGzip(), gwcEnvironment));
+            blobStore.setMaxConnections(nullSafeResolveString(getMaxConnections(), gwcEnvironment));
+            blobStore.setProxyPort(nullSafeResolveString(getProxyPort(), gwcEnvironment));
+            blobStore.setBucket(nullSafeResolveString(getBucket(), gwcEnvironment));
+            blobStore.setAwsAccessKey(nullSafeResolveString(getAwsAccessKey(), gwcEnvironment));
+            blobStore.setAwsSecretKey(nullSafeResolveString(getAwsSecretKey(), gwcEnvironment));
+            blobStore.setProxyDomain(nullSafeResolveString(getProxyDomain(), gwcEnvironment));
             blobStore.setProxyWorkstation(
-                    (String) gwcEnvironment.resolveValue(getProxyWorkstation()));
-            blobStore.setProxyHost((String) gwcEnvironment.resolveValue(getProxyHost()));
-            blobStore.setProxyUsername((String) gwcEnvironment.resolveValue(getProxyUsername()));
-            blobStore.setProxyPassword((String) gwcEnvironment.resolveValue(getProxyPassword()));
-            blobStore.setEndpoint((String) gwcEnvironment.resolveValue(getEndpoint()));
+                    nullSafeResolveString(getProxyWorkstation(), gwcEnvironment));
+            blobStore.setProxyHost(nullSafeResolveString(getProxyHost(), gwcEnvironment));
+            blobStore.setProxyUsername(nullSafeResolveString(getProxyUsername(), gwcEnvironment));
+            blobStore.setProxyPassword(nullSafeResolveString(getProxyPassword(), gwcEnvironment));
+            blobStore.setEndpoint(nullSafeResolveString(getEndpoint(), gwcEnvironment));
         }
         return blobStore;
+    }
+
+    private String nullSafeResolveString(String value, GeoWebCacheEnvironment gwcEnvironment) {
+        if (value == null) {
+            return null;
+        }
+        return gwcEnvironment.resolveValue(value).toString();
+    }
+
+    private Integer toInteger(String value) {
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(value);
+        } catch (NumberFormatException e) {
+            log.log(Level.WARNING, "Unable to parse S3BlobStoreInfo value: " + value, e);
+            return null;
+        }
+    }
+
+    private Boolean toBoolean(String value) {
+        if (value == null) {
+            return null;
+        }
+        return Boolean.valueOf(value);
     }
 
     @Override
@@ -384,20 +411,24 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
     /** @return {@link AmazonS3Client} constructed from this {@link S3BlobStoreInfo}. */
     public AmazonS3Client buildClient() {
         ClientConfiguration clientConfig = new ClientConfiguration();
+        Boolean useHTTPS = toBoolean(this.getUseHTTPS());
         if (null != useHTTPS) {
             clientConfig.setProtocol(useHTTPS ? Protocol.HTTPS : Protocol.HTTP);
         }
+        Integer maxConnections = toInteger(this.getMaxConnections());
         if (null != maxConnections && maxConnections > 0) {
             clientConfig.setMaxConnections(maxConnections);
         }
         clientConfig.setProxyDomain(proxyDomain);
         clientConfig.setProxyWorkstation(proxyWorkstation);
         clientConfig.setProxyHost(proxyHost);
+        Integer proxyPort = toInteger(this.getProxyPort());
         if (null != proxyPort) {
             clientConfig.setProxyPort(proxyPort);
         }
         clientConfig.setProxyUsername(proxyUsername);
         clientConfig.setProxyPassword(proxyPassword);
+        Boolean useGzip = toBoolean(this.getUseGzip());
         if (null != useGzip) {
             clientConfig.setUseGzip(useGzip);
         }
