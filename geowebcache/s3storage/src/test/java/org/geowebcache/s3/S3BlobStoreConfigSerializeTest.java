@@ -14,6 +14,7 @@
  */
 package org.geowebcache.s3;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -21,6 +22,7 @@ import static org.junit.Assert.assertThat;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.XStreamException;
+import org.geowebcache.util.PropertyRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -100,5 +102,36 @@ public class S3BlobStoreConfigSerializeTest {
         exception.expect(XStreamException.class);
         xs.fromXML(
                 "<S3BlobStore><id>test</id><enabled>false</enabled><access>NOT_A_REAL_ACCESS_TYPE</access><useHTTPS>true</useHTTPS></S3BlobStore>");
+    }
+
+    @Rule public PropertyRule envParametrization = PropertyRule.system("ALLOW_ENV_PARAMETRIZATION");
+    @Rule public PropertyRule awsSecretKey = PropertyRule.system("AWS_SECRET_KEY");
+    @Rule public PropertyRule awsAccessKey = PropertyRule.system("AWS_ACCESS_KEY");
+    @Rule public PropertyRule bucket = PropertyRule.system("BUCKET");
+
+    /**
+     * Test that the AWS keys are not converted from parameter form in xstream if
+     * ALLOW_ENV_PARAMETRIZATION
+     *
+     * @throws Exception if something goes wrong
+     */
+    @Test
+    public void testAWSKeysNotConverted() throws Exception {
+        envParametrization.setValue("true");
+        awsSecretKey.setValue("secret");
+        awsAccessKey.setValue("access");
+        bucket.setValue("myBucket");
+        S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
+        XStream xs = provider.getConfiguredXStream(new XStream());
+        S3BlobStoreInfo config =
+                (S3BlobStoreInfo)
+                        xs.fromXML(
+                                "<S3BlobStore default=\"false\"><id>coviddatavizblob</id><enabled>true</enabled>"
+                                        + "<bucket>${BUCKET}</bucket><prefix>blobpre99</prefix><awsAccessKey>${AWS_ACCESS_KEY}</awsAccessKey>"
+                                        + "<awsSecretKey>${AWS_SECRET_KEY}</awsSecretKey><access>PUBLIC</access><maxConnections>50</maxConnections>"
+                                        + "<useHTTPS>true</useHTTPS><useGzip>false</useGzip></S3BlobStore>");
+        assertThat(config, hasProperty("awsSecretKey", equalTo("${AWS_SECRET_KEY}")));
+        assertThat(config, hasProperty("awsAccessKey", equalTo("${AWS_ACCESS_KEY}")));
+        assertThat(config, hasProperty("bucket", equalTo("${BUCKET}")));
     }
 }
