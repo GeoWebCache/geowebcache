@@ -5,9 +5,13 @@ bin
 target
 .DS_Store
 release.rb
+
 # Intellij
 .idea/
 *.iml
+
 # spotless up to date checks
 .spotless-index
 
+# os specific files
+.DS_Store
