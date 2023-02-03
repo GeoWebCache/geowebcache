@@ -1,6 +1,8 @@
-<project name="geowebcache-docs" default="docs">
+<project name="geowebcache-docs" default="docs"
+  xmlns:if="ant:if"
+  xmlns:unless="ant:unless"
+>
 
-  <property name="build" value="html"/>
   <property name="build.directory" value="${basedir}/target"/>
 
   <property environment="env"/>
@@ -52,6 +54,10 @@
     <antcall target="sphinx">
       <param name="id" value="user" />
     </antcall>
+    <property name="file" value="${build.directory}/user/html/index.html"/>
+    <available file="${file}" type="file" property="file.present"/>
+    <echo level="info" if:set="file.present">File generated ${file}</echo>
+    <echo level="error" unless:set="file.present">File not generated ${file}</echo>
   </target>
 
   <target name="package" depends="docs"
@@ -75,9 +81,9 @@
 
   <target name="sphinx" if="sphinx.available">
     <local name="argLine"/>
-    <property name="argLine" value="-D release=${project.version} -q -W --keep-going -b ${build} -d &quot;${build.directory}/${id}/doctrees&quot; . &quot;${build.directory}/${id}/${build}&quot;"/>
+    <property name="argLine" value="-D release=${project.version} -q -W --keep-going -b html -d &quot;${build.directory}/user/doctrees&quot; . &quot;${build.directory}/user/html&quot;"/>
     <echo message="Running sphinx-build ${argLine}"/> 
-    <exec executable="sphinx-build" failonerror="true" dir="${basedir}/${id}/source">
+    <exec executable="sphinx-build" failonerror="true" dir="${basedir}/user/source">
       <arg line="${argLine}"/>
     </exec>
   </target>
@@ -85,9 +91,9 @@
   
   <target name="autobuild" if="autobuild.available">
     <local name="argLine"/>
-    <property name="argLine" value="-D release=${project.version} -q -W -b ${build} -d &quot;${build.directory}/${id}/doctrees&quot; . &quot;${build.directory}/${id}/${build}&quot;"/>
+    <property name="argLine" value="-D release=${project.version} -q -W -b html -d &quot;${build.directory}/user/doctrees&quot; . &quot;${build.directory}/user/html&quot;"/>
     <echo message="Running sphinx-autobuild ${argLine}"/> 
-    <exec executable="sphinx-autobuild" failonerror="true" dir="${basedir}/${id}/source">
+    <exec executable="sphinx-autobuild" failonerror="true" dir="${basedir}/user/source">
       <arg line="${argLine} --open-browser"/>
     </exec>
   </target>
