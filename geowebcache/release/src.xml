@@ -7,7 +7,7 @@
   <fileSets>
     <fileSet>
       <directory>${project.basedir}</directory>
-      <outputDirectory>geowebcache-<!-- GWC VERSION -->1.21.4<!-- /GWC VERSION -->/</outputDirectory>
+      <outputDirectory>geowebcache-<!-- GWC VERSION -->1.21.1<!-- /GWC VERSION -->/</outputDirectory>
       <useDefaultExcludes>true</useDefaultExcludes>
       <excludes>
         <exclude>**/${project.build.directory}/**</exclude>
