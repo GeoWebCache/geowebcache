@@ -1,3 +1,11 @@
+GeoWebCache 1.21.4 (2023-02-16)
+-------------------------------
+
+Fixes:
+++++++
+- GWC S3 Blobstore Parameters Get Converted back to plain text after GeoServer restart
+- Return an empty response when no tile is found in MBTiles, with a 204 status, rather than an empty PNG
+
 GeoWebCache 1.21.3 (2022-12-27)
 -------------------------------
 
