@@ -62,7 +62,7 @@
     <commons-collections.version>4.2</commons-collections.version>
     <commons-codec.version>1.10</commons-codec.version>
     <commons-text.version>1.4</commons-text.version>
-    <commons-fileupload.version>1.3.3</commons-fileupload.version>
+    <commons-fileupload.version>1.5</commons-fileupload.version>
     <guava.version>27.0-jre</guava.version>
     <jsr305.version>3.0.1</jsr305.version>
     <log4j.version>2.17.2</log4j.version>
