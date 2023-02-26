@@ -23,6 +23,7 @@ public class S3BlobStoreConfigProvider implements XMLConfigurationProvider {
     public XStream getConfiguredXStream(XStream xs) {
         xs.alias("S3BlobStore", S3BlobStoreInfo.class);
         xs.aliasField("id", S3BlobStoreInfo.class, "name");
+        xs.allowTypes(new Class[] {S3BlobStoreInfo.class});
         return xs;
     }
 
