@@ -25,6 +25,7 @@ public class AzureBlobStoreConfigProvider implements XMLConfigurationProvider {
         Class<AzureBlobStoreInfo> clazz = AzureBlobStoreInfo.class;
         xs.alias("AzureBlobStore", clazz);
         xs.aliasField("id", clazz, "name");
+        xs.allowTypes(new Class[] {AzureBlobStoreInfo.class});
         return xs;
     }
 
