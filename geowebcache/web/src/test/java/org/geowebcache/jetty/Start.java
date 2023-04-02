@@ -88,7 +88,7 @@ public class Start {
                         }
                     };
             stopThread.setDaemon(true);
-            stopThread.run();
+            stopThread.start();
         } catch (Exception e) {
             log.log(Level.SEVERE, "Could not start the Jetty server: " + e.getMessage(), e);
 

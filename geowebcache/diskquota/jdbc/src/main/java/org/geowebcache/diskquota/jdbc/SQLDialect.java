@@ -49,9 +49,10 @@ public class SQLDialect {
     protected static final int TILESET_KEY_SIZE = 320;
     protected static final int TILEPAGE_KEY_SIZE = TILESET_KEY_SIZE;
 
-    @SuppressWarnings("serial")
+    // in this case we need a mutable, order preserving map, so keeping the double brace init
+    @SuppressWarnings({"serial", "DoubleBraceInitialization"})
     protected final Map<String, List<String>> TABLE_CREATION_MAP =
-            new LinkedHashMap<String, List<String>>() {
+            new LinkedHashMap<>() {
                 {
                     put(
                             "TILESET",

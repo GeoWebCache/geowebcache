@@ -29,7 +29,7 @@ import org.mockito.Mockito;
 public class JDBCQuotaStoreFactoryTest {
 
     @Test
-    @SuppressWarnings("PMD.CloseResource")
+    @SuppressWarnings({"PMD.CloseResource", "BanJNDI"})
     public void testJNDILookup() throws Exception {
         // setup mock initial context (need a JNDI provider otherwise, like simple-jndi)
         InitialContext ctx = Mockito.mock(InitialContext.class);
