@@ -85,7 +85,7 @@
     <jackson.databind.version>2.13.4.1</jackson.databind.version>
     <jetty.version>9.4.18.v20190429</jetty.version>
     <errorProneFlags></errorProneFlags>
-    <errorProne.version>2.10.0</errorProne.version>
+    <errorProne.version>2.18.0</errorProne.version>
     <javac.version>9+181-r4173-1</javac.version>
     <pmd.version>6.42.0</pmd.version>
     <checkstyle.skip>false</checkstyle.skip>
