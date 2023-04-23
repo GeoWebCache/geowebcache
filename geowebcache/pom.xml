@@ -885,7 +885,7 @@
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.0.0</version>
+            <version>4.7.3.4</version>
             <executions>
               <execution>
                 <goals>
@@ -894,12 +894,12 @@
               </execution>
             </executions>
             <configuration>
+              <fork>false</fork>
               <effort>More</effort>
               <!--threshold>High</threshold-->
               <xmlOutput>true</xmlOutput>
               <maxRank>15</maxRank>
               <excludeFilterFile>${geowebcacheBaseDir}/spotbugs-exclude.xml</excludeFilterFile>
-              <jvmArgs>-XX:+TieredCompilation -XX:TieredStopAtLevel=1</jvmArgs>
             </configuration>
           </plugin>
         </plugins>
