@@ -43,7 +43,8 @@ public class ProxyDispatcher extends AbstractController {
             throw new ServletException("Expected url parameter.");
         }
 
-        synchronized (this) {
+        // lastRequest is static, static synchronization needed
+        synchronized (ProxyDispatcher.class) {
             long time = System.currentTimeMillis();
             if (time - lastRequest < 1000) {
                 throw new ServletException("Only one request per second please.");
