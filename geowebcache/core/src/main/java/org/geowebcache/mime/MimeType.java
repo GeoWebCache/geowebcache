@@ -169,6 +169,7 @@ public class MimeType {
         return null;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (obj != null && obj.getClass() == this.getClass()) {
             MimeType mimeObj = (MimeType) obj;
@@ -179,6 +180,7 @@ public class MimeType {
         return false;
     }
 
+    @Override
     public int hashCode() {
         return format.hashCode();
     }

@@ -160,6 +160,7 @@ public class TileLayerController extends GWCController {
         return new ResponseEntity<Object>(layerName + " deleted", HttpStatus.OK);
     }
 
+    @SuppressWarnings("PMD.EmptyControlStatement")
     protected TileLayer checkLayer(String layerName, TileLayer newLayer)
             throws RestException, IOException {
         if (!newLayer.getName().equals(layerName)) {
@@ -172,7 +173,7 @@ public class TileLayerController extends GWCController {
         // Check that the parameter filters deserialized correctly
         if (newLayer.getParameterFilters() != null) {
             try {
-                for (@SuppressWarnings("unused")
+                for (@SuppressWarnings({"unused"})
                 ParameterFilter filter : newLayer.getParameterFilters()) {
                     // Don't actually need to do anything here.  Just iterate over the elements
                     // casting them into ParameterFilter

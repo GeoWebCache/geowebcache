@@ -32,7 +32,7 @@ import org.geotools.util.logging.Logging;
  *
  * @author wolf
  */
-@SuppressWarnings("PMD.CloseResource")
+@SuppressWarnings({"PMD.CloseResource", "PMD.AvoidPrintStackTrace"})
 public class Start {
     private static final Logger log = Logging.getLogger(Start.class.getName());
 

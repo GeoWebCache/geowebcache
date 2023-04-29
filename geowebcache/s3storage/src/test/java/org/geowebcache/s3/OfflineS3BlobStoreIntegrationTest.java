@@ -41,6 +41,7 @@ public class OfflineS3BlobStoreIntegrationTest extends AbstractS3BlobStoreIntegr
         api.stop();
     }
 
+    @Override
     protected S3BlobStoreInfo getConfiguration() {
         S3BlobStoreInfo config = new S3BlobStoreInfo();
         config.setAwsAccessKey("");

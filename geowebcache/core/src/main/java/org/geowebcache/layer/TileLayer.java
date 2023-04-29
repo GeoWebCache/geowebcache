@@ -95,6 +95,7 @@ public abstract class TileLayer implements Info {
     public abstract void setBlobStoreId(@Nullable String blobStoreId);
 
     /** Then name of the layer */
+    @Override
     public abstract String getName();
 
     /** @return {@code true} if the layer is enabled, {@code false} otherwise */

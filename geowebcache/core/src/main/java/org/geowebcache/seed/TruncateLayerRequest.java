@@ -35,6 +35,7 @@ public class TruncateLayerRequest implements MassTruncateRequest {
 
     String layerName;
 
+    @Override
     public boolean doTruncate(StorageBroker sb, TileBreeder breeder) throws StorageException {
         try {
             TileLayer tLayer = breeder.findTileLayer(layerName);

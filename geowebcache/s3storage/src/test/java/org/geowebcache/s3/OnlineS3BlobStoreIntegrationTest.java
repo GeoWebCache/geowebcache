@@ -30,6 +30,7 @@ public class OnlineS3BlobStoreIntegrationTest extends AbstractS3BlobStoreIntegra
     @Rule
     public TemporaryS3Folder tempFolder = new TemporaryS3Folder(testConfigLoader.getProperties());
 
+    @Override
     protected S3BlobStoreInfo getConfiguration() {
         Assume.assumeTrue(tempFolder.isConfigured());
         return tempFolder.getConfig();

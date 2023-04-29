@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class NullURLMangler implements URLMangler {
 
+    @Override
     public String buildURL(String baseURL, String contextPath, String path) {
         final String context = StringUtils.strip(contextPath, "/");
 

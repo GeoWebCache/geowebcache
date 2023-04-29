@@ -59,6 +59,7 @@ public class ImageEncoderContainer implements ApplicationContextAware {
         return mapEncoders.get(mimeType).isAggressiveOutputStreamSupported();
     }
 
+    @Override
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         encoders = context.getBeansOfType(ImageEncoder.class).values();
         if (encoders == null || encoders.isEmpty()) {

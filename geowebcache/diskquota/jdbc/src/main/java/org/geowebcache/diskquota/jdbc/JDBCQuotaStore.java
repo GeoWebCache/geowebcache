@@ -174,6 +174,7 @@ public class JDBCQuotaStore implements QuotaStore {
                 });
     }
 
+    @Override
     public void createLayer(String layerName) throws InterruptedException {
         createLayerInternal(layerName);
     }
@@ -199,14 +200,17 @@ public class JDBCQuotaStore implements QuotaStore {
                 });
     }
 
+    @Override
     public Quota getGloballyUsedQuota() throws InterruptedException {
         return nonNullQuota(getUsedQuotaByTileSetIdInternal(GLOBAL_QUOTA_NAME));
     }
 
+    @Override
     public Quota getUsedQuotaByTileSetId(String tileSetId) {
         return nonNullQuota(getUsedQuotaByTileSetIdInternal(tileSetId));
     }
 
+    @Override
     public Quota getUsedQuotaByLayerName(String layerName) {
         String sql = dialect.getUsedQuotaByLayerName(schema, "layerName");
         return nonNullQuota(
@@ -270,6 +274,7 @@ public class JDBCQuotaStore implements QuotaStore {
         }
     }
 
+    @Override
     public void deleteLayer(final String layerName) {
         tt.execute(
                 new TransactionCallbackWithoutResult() {
@@ -281,6 +286,7 @@ public class JDBCQuotaStore implements QuotaStore {
                 });
     }
 
+    @Override
     public void deleteGridSubset(final String layerName, final String gridSetId) {
         tt.execute(
                 new TransactionCallbackWithoutResult() {
@@ -335,6 +341,7 @@ public class JDBCQuotaStore implements QuotaStore {
                 });
     }
 
+    @Override
     public void renameLayer(final String oldLayerName, final String newLayerName)
             throws InterruptedException {
         tt.execute(
@@ -352,6 +359,7 @@ public class JDBCQuotaStore implements QuotaStore {
                 });
     }
 
+    @Override
     public Set<TileSet> getTileSets() {
         String getTileSet = dialect.getTileSetsQuery(schema);
         List<TileSet> tilesets = jt.query(getTileSet, new TileSetRowMapper());
@@ -366,6 +374,7 @@ public class JDBCQuotaStore implements QuotaStore {
         return result;
     }
 
+    @Override
     public void accept(final TileSetVisitor visitor) {
         String getTileSet = dialect.getTileSetsQuery(schema);
         final TileSetRowMapper tileSetMapper = new TileSetRowMapper();
@@ -379,6 +388,7 @@ public class JDBCQuotaStore implements QuotaStore {
                 });
     }
 
+    @Override
     public TileSet getTileSetById(String tileSetId) throws InterruptedException {
         // locate the tileset
         TileSet result = getTileSetByIdInternal(tileSetId);
@@ -444,10 +454,12 @@ public class JDBCQuotaStore implements QuotaStore {
                 lastException);
     }
 
+    @Override
     public TilePageCalculator getTilePageCalculator() {
         return calculator;
     }
 
+    @Override
     public void addToQuotaAndTileCounts(
             final TileSet tileSet,
             final Quota quotaDiff,
@@ -658,6 +670,7 @@ public class JDBCQuotaStore implements QuotaStore {
                 Collections.singletonMap("key", pageStatsKey));
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public Future<List<PageStats>> addHitsAndSetAccesTime(
             final Collection<PageStatsPayload> statsUpdates) {
@@ -665,16 +678,19 @@ public class JDBCQuotaStore implements QuotaStore {
                 () -> (List<PageStats>) tt.execute(new QuotaStoreCallback(statsUpdates)));
     }
 
+    @Override
     public long[][] getTilesForPage(TilePage page) throws InterruptedException {
         TileSet tileSet = getTileSetById(page.getTileSetId());
         long[][] gridCoverage = calculator.toGridCoverage(tileSet, page);
         return gridCoverage;
     }
 
+    @Override
     public TilePage getLeastFrequentlyUsedPage(Set<String> layerNames) throws InterruptedException {
         return getSinglePage(layerNames, true);
     }
 
+    @Override
     public TilePage getLeastRecentlyUsedPage(Set<String> layerNames) throws InterruptedException {
         return getSinglePage(layerNames, false);
     }
@@ -699,6 +715,7 @@ public class JDBCQuotaStore implements QuotaStore {
         return jt.queryForOptionalObject(select, mapper, params);
     }
 
+    @Override
     public PageStats setTruncated(final TilePage page) throws InterruptedException {
         return (PageStats)
                 tt.execute(
@@ -725,6 +742,7 @@ public class JDBCQuotaStore implements QuotaStore {
                                 });
     }
 
+    @Override
     public void close() throws Exception {
         log.info("Closing up the JDBC quota store ");
 
@@ -746,6 +764,7 @@ public class JDBCQuotaStore implements QuotaStore {
      * @author Andrea Aime - GeoSolutions
      */
     static class DiskQuotaMapper implements RowMapper<Quota> {
+        @Override
         public Quota mapRow(ResultSet rs, int rowNum) throws SQLException {
             BigDecimal bytes = rs.getBigDecimal(1);
             if (bytes == null) {
@@ -762,6 +781,7 @@ public class JDBCQuotaStore implements QuotaStore {
      */
     static class TileSetRowMapper implements RowMapper<TileSet> {
 
+        @Override
         public TileSet mapRow(ResultSet rs, int rowNum) throws SQLException {
             String key = rs.getString(1);
             String layerName = rs.getString(2);
@@ -783,6 +803,7 @@ public class JDBCQuotaStore implements QuotaStore {
      */
     static class TilePageRowMapper implements RowMapper<TilePage> {
 
+        @Override
         public TilePage mapRow(ResultSet rs, int rowNum) throws SQLException {
             String tileSetId = rs.getString(1);
             int pageX = rs.getInt(2);
@@ -832,6 +853,7 @@ public class JDBCQuotaStore implements QuotaStore {
             this.statsUpdates = statsUpdates;
         }
 
+        @Override
         public Object doInTransaction(TransactionStatus status) {
             List<PageStats> result = new ArrayList<>();
             if (statsUpdates != null) {

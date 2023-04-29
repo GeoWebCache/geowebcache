@@ -37,28 +37,34 @@ public class DefaultStorageBroker implements StorageBroker {
         this.transientCache = transientCache;
     }
 
+    @Override
     public void addBlobStoreListener(BlobStoreListener listener) {
         blobStore.addListener(listener);
     }
 
+    @Override
     public boolean removeBlobStoreListener(BlobStoreListener listener) {
         return blobStore.removeListener(listener);
     }
 
+    @Override
     public boolean delete(String layerName) throws StorageException {
         return blobStore.delete(layerName);
     }
 
+    @Override
     public boolean deleteByGridSetId(final String layerName, final String gridSetId)
             throws StorageException {
         return blobStore.deleteByGridsetId(layerName, gridSetId);
     }
 
+    @Override
     public boolean deleteByParameters(final String layerName, final Map<String, String> parameters)
             throws StorageException {
         return blobStore.deleteByParameters(layerName, parameters);
     }
 
+    @Override
     public boolean deleteByParametersId(final String layerName, String parametersId)
             throws StorageException {
         return blobStore.deleteByParametersId(layerName, parametersId);
@@ -69,35 +75,43 @@ public class DefaultStorageBroker implements StorageBroker {
         return blobStore.purgeOrphans(layer);
     }
 
+    @Override
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
         return blobStore.rename(oldLayerName, newLayerName);
     }
 
+    @Override
     public boolean delete(TileRange trObj) throws StorageException {
         return blobStore.delete(trObj);
     }
 
+    @Override
     public boolean get(TileObject tileObj) throws StorageException {
         return blobStore.get(tileObj);
     }
 
+    @Override
     public boolean put(TileObject tileObj) throws StorageException {
         blobStore.put(tileObj);
         return true;
     }
 
+    @Override
     public void destroy() {
         log.fine("Destroying StorageBroker");
     }
 
+    @Override
     public String getLayerMetadata(final String layerName, final String key) {
         return this.blobStore.getLayerMetadata(layerName, key);
     }
 
+    @Override
     public void putLayerMetadata(final String layerName, final String key, final String value) {
         this.blobStore.putLayerMetadata(layerName, key, value);
     }
 
+    @Override
     public boolean getTransient(TileObject tile) {
         String key = TransientCache.computeTransientKey(tile);
         Resource resource;
@@ -108,6 +122,7 @@ public class DefaultStorageBroker implements StorageBroker {
         return resource != null;
     }
 
+    @Override
     public void putTransient(TileObject tile) {
         String key = TransientCache.computeTransientKey(tile);
         synchronized (transientCache) {

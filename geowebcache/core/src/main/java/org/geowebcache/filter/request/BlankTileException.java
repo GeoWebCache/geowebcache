@@ -55,6 +55,7 @@ public class BlankTileException extends RequestFilterException {
         return null;
     }
 
+    @Override
     public Resource getResponse() {
         Resource ret = BlankTileException.blankTile;
         if (ret == null) {

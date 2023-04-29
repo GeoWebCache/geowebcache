@@ -818,6 +818,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         }
     }
 
+    @Override
     public Map<String, Optional<Map<String, String>>> getParametersMapping(String layerName) {
         componentsStateLock.lock();
         try {

@@ -228,6 +228,7 @@ final class LayerCacheInfoBuilder {
         }
 
         /** @see java.util.concurrent.Callable#call() */
+        @Override
         public Stats call() throws Exception {
             final String zLevelKey =
                     layerName
@@ -264,6 +265,7 @@ final class LayerCacheInfoBuilder {
         }
 
         /** @see java.io.FileFilter#accept(java.io.File) */
+        @Override
         public boolean accept(final File file) {
             if (closed) {
                 throw new TraversalCanceledException();

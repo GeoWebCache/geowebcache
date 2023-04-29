@@ -351,6 +351,7 @@ public class ConfigLoader {
      */
     private static final class QuotaXSTreamConverter implements Converter {
         /** @see com.thoughtworks.xstream.converters.ConverterMatcher#canConvert(java.lang.Class) */
+        @Override
         public boolean canConvert(Class type) {
             return Quota.class.equals(type);
         }
@@ -360,6 +361,7 @@ public class ConfigLoader {
          *     com.thoughtworks.xstream.converters.Converter#unmarshal(com.thoughtworks.xstream.io.HierarchicalStreamReader,
          *     com.thoughtworks.xstream.converters.UnmarshallingContext)
          */
+        @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
 
             Quota quota = new Quota();
@@ -393,6 +395,7 @@ public class ConfigLoader {
          *     com.thoughtworks.xstream.io.HierarchicalStreamWriter,
          *     com.thoughtworks.xstream.converters.MarshallingContext)
          */
+        @Override
         public void marshal(
                 Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             Quota quota = (Quota) source;

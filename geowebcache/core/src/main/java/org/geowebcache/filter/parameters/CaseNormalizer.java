@@ -92,6 +92,7 @@ public class CaseNormalizer implements Function<String, String>, Serializable, C
      *
      * @return The normalised string.
      */
+    @Override
     public String apply(String input) {
         return getCase().apply(input, getLocale());
     }

@@ -86,6 +86,7 @@ class GeoRSSPollTask implements Runnable {
      * Called by the thread executor when the poll def's interval has elapsed (or as soon as
      * possible after it elapsed).
      */
+    @Override
     public void run() {
         /*
          * This method cannot throw an exception or the thread scheduler will discard the task.

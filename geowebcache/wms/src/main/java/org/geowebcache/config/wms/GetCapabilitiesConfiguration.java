@@ -167,6 +167,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
      *
      * @return the URL given to the constructor
      */
+    @Override
     public String getIdentifier() {
         return url;
     }
@@ -558,6 +559,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
         return 20037508.34 * Math.log(Math.tan(tmp)) / Math.PI;
     }
 
+    @Override
     public void afterPropertiesSet() throws GeoWebCacheException {
         List<TileLayer> tileLayers = getTileLayers(true);
         Set<String> brokerNames = gridSetBroker.getGridSetNames();
@@ -583,32 +585,38 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     }
 
     /** @see TileLayerConfiguration#getLayers() */
+    @Override
     public Collection<? extends TileLayer> getLayers() {
         return Collections.unmodifiableList(new ArrayList<>(layers.values()));
     }
 
     /** @see TileLayerConfiguration#getLayerNames() */
+    @Override
     public Set<String> getLayerNames() {
         return new HashSet<>(layers.keySet());
     }
 
     /** @see TileLayerConfiguration#containsLayer(java.lang.String) */
+    @Override
     public boolean containsLayer(String layerName) {
         return getLayer(layerName) != null;
     }
 
     /** @see TileLayerConfiguration#getTileLayer(java.lang.String) */
+    @Override
     public Optional<TileLayer> getLayer(String layerName) {
         return Optional.ofNullable(layers.get(layerName));
     }
 
     /** @see TileLayerConfiguration#getLayerCount() */
+    @Override
     public int getLayerCount() {
         return layers.size();
     }
 
     /** @see TileLayerConfiguration#removeLayer(java.lang.String) */
     // TODO: Why doesn't this throw an IllegalArgument exception: read-only?
+    @Override
     public void removeLayer(String layerName) throws NoSuchElementException {
         if (layers.remove(layerName) == null) {
             throw new NoSuchElementException("Layer " + layerName + " does not exist");
@@ -616,12 +624,14 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     }
 
     /** @see TileLayerConfiguration#modifyLayer(org.geowebcache.layer.TileLayer) */
+    @Override
     public void modifyLayer(TileLayer tl) throws NoSuchElementException {
         throw new UnsupportedOperationException(
                 "modifyLayer is not supported by " + getClass().getSimpleName());
     }
 
     /** @see TileLayerConfiguration#renameLayer(String, String) */
+    @Override
     public void renameLayer(String oldName, String newName)
             throws NoSuchElementException, IllegalArgumentException {
         throw new UnsupportedOperationException(
@@ -632,11 +642,13 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
      * @return {@code false}
      * @see TileLayerConfiguration#canSave(org.geowebcache.layer.TileLayer)
      */
+    @Override
     public boolean canSave(TileLayer tl) {
         return false;
     }
 
     /** @see TileLayerConfiguration#addLayer(org.geowebcache.layer.TileLayer) */
+    @Override
     public void addLayer(TileLayer tl) throws IllegalArgumentException {
         if (tl == null) {
             throw new NullPointerException();

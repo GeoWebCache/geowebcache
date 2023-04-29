@@ -156,6 +156,7 @@ public class NullBlobStore implements BlobStore {
         return Collections.emptySet();
     }
 
+    @Override
     public Map<String, Optional<Map<String, String>>> getParametersMapping(String layerName) {
         return Collections.emptyMap();
     }

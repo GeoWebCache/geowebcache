@@ -45,6 +45,7 @@ public class MbtilesBlobStoreSuitabilityTest extends FileBasedBlobStoreSuitabili
         };
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     protected Matcher<Object> existing() {
         return directoryContaining((Matcher) hasItem(named("metadata.sqlite")));

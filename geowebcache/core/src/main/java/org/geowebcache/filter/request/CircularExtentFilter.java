@@ -32,6 +32,7 @@ public class CircularExtentFilter extends RequestFilter {
 
     CircularExtentFilter() {}
 
+    @Override
     public void apply(ConveyorTile convTile) throws RequestFilterException {
         TileLayer tl = convTile.getLayer();
         // SRS srs = convTile.getSRS();
@@ -67,20 +68,24 @@ public class CircularExtentFilter extends RequestFilter {
         }
     }
 
+    @Override
     public void initialize(TileLayer layer) throws GeoWebCacheException {
         // Do nothing
     }
 
+    @Override
     public void update(TileLayer layer, String gridSetId, int zoomStart, int zoomStop)
             throws GeoWebCacheException {
         // Do nothing
     }
 
+    @Override
     public void update(byte[] filterData, TileLayer layer, String gridSetId, int z)
             throws GeoWebCacheException {
         // Do nothing
     }
 
+    @Override
     public boolean update(TileLayer layer, String gridSetId) {
         // Do nothing
         return false;

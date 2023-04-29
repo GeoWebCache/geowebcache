@@ -27,6 +27,7 @@ public class OnlineAzureBlobStoreIntegrationTest extends AbstractAzureBlobStoreI
     public TemporaryAzureFolder tempFolder =
             new TemporaryAzureFolder(testConfigLoader.getProperties());
 
+    @Override
     protected AzureBlobStoreData getConfiguration() {
         Assume.assumeTrue("Configuration not found or incomplee", tempFolder.isConfigured());
         return tempFolder.getConfig();

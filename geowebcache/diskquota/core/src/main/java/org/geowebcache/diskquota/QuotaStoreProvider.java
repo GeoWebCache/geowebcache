@@ -37,6 +37,7 @@ public class QuotaStoreProvider
         this.loader = loader;
     }
 
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
@@ -45,10 +46,12 @@ public class QuotaStoreProvider
         return store;
     }
 
+    @Override
     public void destroy() throws Exception {
         store.close();
     }
 
+    @Override
     public void afterPropertiesSet() throws Exception {
         reloadQuotaStore();
     }

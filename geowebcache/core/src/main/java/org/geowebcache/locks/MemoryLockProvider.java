@@ -43,6 +43,7 @@ public class MemoryLockProvider implements LockProvider {
         }
     }
 
+    @Override
     public Lock getLock(String lockKey) {
         final int idx = getIndex(lockKey);
         if (LOGGER.isLoggable(Level.FINE))
@@ -55,6 +56,7 @@ public class MemoryLockProvider implements LockProvider {
 
             boolean released = false;
 
+            @Override
             public void release() throws GeoWebCacheException {
                 if (!released) {
                     released = true;

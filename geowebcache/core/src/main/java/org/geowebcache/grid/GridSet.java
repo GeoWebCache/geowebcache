@@ -465,6 +465,7 @@ public class GridSet implements Info {
     }
 
     /** @return the name */
+    @Override
     public String getName() {
         return name;
     }

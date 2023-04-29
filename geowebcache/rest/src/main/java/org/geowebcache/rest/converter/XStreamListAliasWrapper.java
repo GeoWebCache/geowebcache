@@ -67,6 +67,7 @@ public class XStreamListAliasWrapper {
             /**
              * @see com.thoughtworks.xstream.converters.ConverterMatcher#canConvert(java.lang.Class)
              */
+            @Override
             public boolean canConvert(Class type) {
                 return collectionClass.isAssignableFrom(type);
             }
@@ -76,6 +77,7 @@ public class XStreamListAliasWrapper {
              *     com.thoughtworks.xstream.io.HierarchicalStreamWriter,
              *     com.thoughtworks.xstream.converters.MarshallingContext)
              */
+            @Override
             public void marshal(
                     Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
 
@@ -116,6 +118,7 @@ public class XStreamListAliasWrapper {
              *     com.thoughtworks.xstream.converters.Converter#unmarshal(com.thoughtworks.xstream.io.HierarchicalStreamReader,
              *     com.thoughtworks.xstream.converters.UnmarshallingContext)
              */
+            @Override
             public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
                 throw new UnsupportedOperationException();
             }
