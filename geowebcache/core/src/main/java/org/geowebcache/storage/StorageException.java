@@ -30,6 +30,7 @@ public class StorageException extends IOException {
         initCause(cause);
     }
 
+    @Override
     public String getMessage() {
         return msg;
     }

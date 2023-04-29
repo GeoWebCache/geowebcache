@@ -47,6 +47,7 @@ public class GridCoverage {
         return ret;
     }
 
+    @Override
     public String toString() {
         return Arrays.toString(coverage);
     }

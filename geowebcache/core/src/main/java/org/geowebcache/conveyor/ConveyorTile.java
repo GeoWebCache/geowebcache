@@ -152,18 +152,22 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         return stObj.getCreated();
     }
 
+    @Override
     public int getStatus() {
         return (int) status;
     }
 
+    @Override
     public void setStatus(int status) {
         this.status = status;
     }
 
+    @Override
     public String getErrorMessage() {
         return this.errorMsg;
     }
 
+    @Override
     public void setErrorMessage(String errorMessage) {
         this.errorMsg = errorMessage;
     }
@@ -240,6 +244,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         }
     }
 
+    @Override
     public String toString() {
         StringBuilder str = new StringBuilder();
         str.append("ConveyorTile[");

@@ -76,6 +76,7 @@ public class ImageEncoderImpl implements ImageEncoder {
                 "image/png24",
                 "image/png; mode=24bit",
                 "image/png;%20mode=24bit") {
+            @Override
             public ImageWriteParam prepareParameters(
                     ImageWriter writer,
                     String compression,
@@ -105,6 +106,7 @@ public class ImageEncoderImpl implements ImageEncoder {
                 return params;
             }
 
+            @Override
             public RenderedImage prepareImage(RenderedImage image, MimeType type) {
                 boolean isPNG8 = type == ImageMime.png8;
                 if (isPNG8) {
@@ -114,6 +116,7 @@ public class ImageEncoderImpl implements ImageEncoder {
             }
         },
         JPEG("image/jpeg") {
+            @Override
             protected ImageWriteParam prepareParameters(
                     ImageWriter writer,
                     String compression,
@@ -146,6 +149,7 @@ public class ImageEncoderImpl implements ImageEncoder {
             }
         },
         GIF("image/gif") {
+            @Override
             public RenderedImage prepareImage(RenderedImage image, MimeType type) {
                 return applyPalette(image);
             }
@@ -247,6 +251,7 @@ public class ImageEncoderImpl implements ImageEncoder {
      * @param aggressiveOutputStreamOptimization Parameter used if aggressive outputStream
      *     optimization must be used.
      */
+    @Override
     public void encode(
             RenderedImage image,
             Object destination,
@@ -322,6 +327,7 @@ public class ImageEncoderImpl implements ImageEncoder {
      *
      * @return supportedMimeTypes List of all the supported Mime Types
      */
+    @Override
     public List<String> getSupportedMimeTypes() {
         return supportedMimeTypes;
     }
@@ -332,6 +338,7 @@ public class ImageEncoderImpl implements ImageEncoder {
      * @return isAggressiveOutputStreamSupported Boolean indicating if the selected encoder supports
      *     an aggressive output stream optimization
      */
+    @Override
     public boolean isAggressiveOutputStreamSupported() {
         return isAggressiveOutputStreamSupported;
     }

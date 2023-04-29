@@ -52,6 +52,7 @@ public class GMapsConverter extends Service {
         this.gsb = gsb;
     }
 
+    @Override
     public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response)
             throws ServiceException, GeoWebCacheException {
         String layerId = super.getLayersParameter(request);

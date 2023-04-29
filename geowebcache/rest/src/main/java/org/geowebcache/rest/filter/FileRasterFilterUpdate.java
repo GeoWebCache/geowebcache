@@ -28,6 +28,7 @@ public class FileRasterFilterUpdate extends XmlFilterUpdate {
     int zoomStart;
     int zoomStop;
 
+    @Override
     public void runUpdate(RequestFilter filter, TileLayer tl) throws IOException, RestException {
         if (!(filter instanceof WMSRasterFilter)) {
             throw new RestException(

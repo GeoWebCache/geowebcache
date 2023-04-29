@@ -212,34 +212,42 @@ public class MetaTile implements TileResponseReceiver {
         return metaTileHeight;
     }
 
+    @Override
     public int getStatus() {
         return (int) status;
     }
 
+    @Override
     public void setStatus(int status) {
         this.status = status;
     }
 
+    @Override
     public boolean getError() {
         return this.error;
     }
 
+    @Override
     public void setError() {
         this.error = true;
     }
 
+    @Override
     public String getErrorMessage() {
         return this.errorMessage;
     }
 
+    @Override
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
     }
 
+    @Override
     public long getExpiresHeader() {
         return this.expiresHeader;
     }
 
+    @Override
     public void setExpiresHeader(long seconds) {
         this.expiresHeader = seconds;
     }

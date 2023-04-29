@@ -66,6 +66,7 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
 
     public void acquireLayerLock() {}
 
+    @Override
     public ConveyorTile doNonMetatilingRequest(ConveyorTile tile) throws GeoWebCacheException {
         return null;
     }
@@ -74,18 +75,22 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
         return new BoundingBox(-180.0, -90.0, 180.0, 90.0);
     }
 
+    @Override
     public MimeType getDefaultMimeType() {
         return null;
     }
 
+    @Override
     public int[] getMetaTilingFactors() {
         return null;
     }
 
+    @Override
     public List<MimeType> getMimeTypes() {
         return null;
     }
 
+    @Override
     public String getName() {
         return "Debug grid";
     }
@@ -99,6 +104,7 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
         return null;
     }
 
+    @Override
     public ConveyorTile getTile(ConveyorTile tile) throws GeoWebCacheException, IOException {
         long[] gridLoc = tile.getTileIndex();
 
@@ -159,6 +165,7 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
         return tile;
     }
 
+    @Override
     public String getStyles() {
         return null;
     }
@@ -197,18 +204,21 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
         return 25;
     }
 
+    @Override
     public boolean initializeInternal(GridSetBroker gridSetBroker) {
         return true;
     }
 
     public void releaseLayerLock() {}
 
+    @Override
     public void setExpirationHeader(HttpServletResponse response, int zoomLevel) {}
 
     public String supportsBbox(SRS srs, BoundingBox bounds) throws GeoWebCacheException {
         return null;
     }
 
+    @Override
     public boolean supportsFormat(String formatStr) throws GeoWebCacheException {
         return false;
     }

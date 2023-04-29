@@ -30,6 +30,7 @@ public class WMSUtilities implements ApplicationContextAware {
 
     public WMSUtilities() {}
 
+    @Override
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         this.applicationContext = context;
     }

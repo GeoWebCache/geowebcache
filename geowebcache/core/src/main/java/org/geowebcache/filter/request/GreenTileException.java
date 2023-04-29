@@ -52,6 +52,7 @@ public class GreenTileException extends RequestFilterException {
         return new ByteArrayResource(green);
     }
 
+    @Override
     public Resource getResponse() {
         Resource ret = greenTile;
         if (ret == null) {

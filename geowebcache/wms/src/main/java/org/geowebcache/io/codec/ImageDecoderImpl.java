@@ -89,6 +89,7 @@ public class ImageDecoderImpl implements ImageDecoder {
      * @param aggressiveInputStreamOptimization Parameter used if aggressive outputStream
      *     optimization must be used.
      */
+    @Override
     public BufferedImage decode(
             Object source, boolean aggressiveInputStreamOptimization, Map<String, Object> map)
             throws Exception {
@@ -165,6 +166,7 @@ public class ImageDecoderImpl implements ImageDecoder {
      *
      * @return supportedMimeTypes List of all the supported Mime Types
      */
+    @Override
     public List<String> getSupportedMimeTypes() {
         return supportedMimeTypes;
     }
@@ -175,6 +177,7 @@ public class ImageDecoderImpl implements ImageDecoder {
      * @return isAggressiveInputStreamSupported Boolean indicating if the selected decoder supports
      *     an aggressive input stream optimization
      */
+    @Override
     public boolean isAggressiveInputStreamSupported() {
         return isAggressiveInputStreamSupported;
     }

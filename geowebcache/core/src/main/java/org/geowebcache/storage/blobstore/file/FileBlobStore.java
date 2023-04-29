@@ -181,6 +181,7 @@ public class FileBlobStore implements BlobStore {
     }
 
     /** Destroy method for Spring */
+    @Override
     public void destroy() {
         if (deleteExecutorService != null) {
             deleteExecutorService.shutdown();
@@ -195,6 +196,7 @@ public class FileBlobStore implements BlobStore {
             this.directory = directory;
         }
 
+        @Override
         public void run() {
             try {
                 deleteDirectory(directory);
@@ -241,6 +243,7 @@ public class FileBlobStore implements BlobStore {
     }
 
     /** @see org.geowebcache.storage.BlobStore#delete(java.lang.String) */
+    @Override
     public boolean delete(final String layerName) throws StorageException {
         final File source = getLayerPath(layerName);
         final String target = filteredLayerName(layerName);
@@ -287,6 +290,7 @@ public class FileBlobStore implements BlobStore {
     /**
      * @see org.geowebcache.storage.BlobStore#deleteByGridsetId(java.lang.String, java.lang.String)
      */
+    @Override
     public boolean deleteByGridsetId(final String layerName, final String gridSetId)
             throws StorageException {
 
@@ -326,6 +330,7 @@ public class FileBlobStore implements BlobStore {
      * @throws StorageException if the target directory already exists
      * @see org.geowebcache.storage.BlobStore#rename
      */
+    @Override
     public boolean rename(final String oldLayerName, final String newLayerName)
             throws StorageException {
         final File oldLayerPath = getLayerPath(oldLayerName);
@@ -365,6 +370,7 @@ public class FileBlobStore implements BlobStore {
     }
 
     /** Delete a particular tile */
+    @Override
     public boolean delete(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, null);
         boolean ret = false;
@@ -394,6 +400,7 @@ public class FileBlobStore implements BlobStore {
     }
 
     /** Delete tiles within a range. */
+    @Override
     public boolean delete(TileRange trObj) throws StorageException {
 
         String prefix = path + File.separator + filteredLayerName(trObj.getLayerName());
@@ -457,6 +464,7 @@ public class FileBlobStore implements BlobStore {
      * @param stObj the tile to load. Its setBlob() method will be called.
      * @return true if successful, false otherwise
      */
+    @Override
     public boolean get(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, null);
         if (!fh.exists()) {
@@ -472,6 +480,7 @@ public class FileBlobStore implements BlobStore {
     }
 
     /** Store a tile. */
+    @Override
     public void put(TileObject stObj) throws StorageException {
 
         // an update to ParameterMap file is required !!!
@@ -591,16 +600,19 @@ public class FileBlobStore implements BlobStore {
         }
     }
 
+    @Override
     public void clear() throws StorageException {
         throw new StorageException("Not implemented yet!");
     }
 
     /** Add an event listener */
+    @Override
     public void addListener(BlobStoreListener listener) {
         listeners.addListener(listener);
     }
 
     /** Remove an event listener */
+    @Override
     public boolean removeListener(BlobStoreListener listener) {
         return listeners.removeListener(listener);
     }
@@ -636,6 +648,7 @@ public class FileBlobStore implements BlobStore {
     /**
      * @see org.geowebcache.storage.BlobStore#getLayerMetadata(java.lang.String, java.lang.String)
      */
+    @Override
     public String getLayerMetadata(final String layerName, final String key) {
         try {
             return layerMetadata.getEntry(layerName, key);
@@ -658,6 +671,7 @@ public class FileBlobStore implements BlobStore {
      * @see org.geowebcache.storage.BlobStore#putLayerMetadata(java.lang.String, java.lang.String,
      *     java.lang.String)
      */
+    @Override
     public void putLayerMetadata(final String layerName, final String key, final String value) {
         try {
             layerMetadata.putEntry(layerName, key, value);

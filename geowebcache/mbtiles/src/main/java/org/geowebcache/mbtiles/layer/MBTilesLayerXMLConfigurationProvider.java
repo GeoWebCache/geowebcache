@@ -24,6 +24,7 @@ import org.geowebcache.config.XMLConfigurationProvider;
  */
 public class MBTilesLayerXMLConfigurationProvider implements XMLConfigurationProvider {
 
+    @Override
     public XStream getConfiguredXStream(final XStream xs) {
         xs.alias("mbtilesLayer", MBTilesLayer.class);
         return xs;

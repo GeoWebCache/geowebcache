@@ -280,6 +280,7 @@ public class TileRangeIteratorTest {
             this.tri = tri;
         }
 
+        @Override
         public Long call() throws Exception {
             long nprocessed = 0;
             long[] gridLoc = new long[3];

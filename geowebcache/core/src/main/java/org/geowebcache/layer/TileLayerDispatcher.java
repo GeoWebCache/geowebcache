@@ -183,6 +183,7 @@ public class TileLayerDispatcher
     }
 
     /** @see org.springframework.beans.factory.DisposableBean#destroy() */
+    @Override
     public void destroy() throws Exception {
         //
     }

@@ -28,10 +28,12 @@ public class BDBQuotaStoreFactory implements QuotaStoreFactory {
 
     public static final String STORE_NAME = "BDB";
 
+    @Override
     public List<String> getSupportedStoreNames() {
         return Arrays.asList(STORE_NAME);
     }
 
+    @Override
     public QuotaStore getQuotaStore(ApplicationContext ctx, String quotaStoreName)
             throws IOException, ConfigurationException {
         if (!STORE_NAME.equals(quotaStoreName)) {

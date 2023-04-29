@@ -90,6 +90,7 @@ public class MassTruncateController extends GWCSeedingController {
     Class<?>[] requestTypes;
 
     /** Responds with a simple XML document indicating the available MassRequest types. */
+    @Override
     @RequestMapping(value = "/masstruncate", method = RequestMethod.GET)
     public ResponseEntity<?> doGet(HttpServletRequest req) {
         // Just use this for figuring out what the correct element names are
@@ -153,6 +154,7 @@ public class MassTruncateController extends GWCSeedingController {
         return mtr.getResponse(contentType);
     }
 
+    @Override
     protected void handleRequest(HttpServletRequest req, HttpServletResponse resp, Object obj) {
         MassTruncateRequest mtr = (MassTruncateRequest) obj;
         try {

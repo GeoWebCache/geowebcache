@@ -111,6 +111,7 @@ public class AzureBlobStoreSuitabilityTest extends BlobStoreSuitabilityTest {
                 return super.methodBlock(method);
             } else {
                 return new Statement() {
+                    @Override
                     public void evaluate() {
                         assumeFalse("Azure unavailable", true);
                     }

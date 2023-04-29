@@ -74,6 +74,7 @@ public abstract class Service {
         return layers;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof Service) {
             Service other = (Service) obj;
@@ -85,6 +86,7 @@ public abstract class Service {
         return false;
     }
 
+    @Override
     public int hashCode() {
         return pathName.hashCode();
     }

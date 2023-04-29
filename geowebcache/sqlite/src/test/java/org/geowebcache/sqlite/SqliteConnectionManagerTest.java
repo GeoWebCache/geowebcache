@@ -48,12 +48,14 @@ public final class SqliteConnectionManagerTest extends TestSupport {
 
     private List<SqliteConnectionManager> connectionManagersToClean;
 
+    @Override
     @Before
     public void beforeTest() throws Exception {
         super.beforeTest();
         connectionManagersToClean = new ArrayList<>();
     }
 
+    @Override
     @After
     public void afterTest() throws Exception {
         for (SqliteConnectionManager connectionManager : connectionManagersToClean) {

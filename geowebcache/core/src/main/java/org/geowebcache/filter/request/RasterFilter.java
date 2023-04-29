@@ -107,6 +107,7 @@ public abstract class RasterFilter extends RequestFilter {
         this.debug = debug;
     }
 
+    @Override
     public void apply(ConveyorTile convTile) throws RequestFilterException {
         long[] idx = convTile.getTileIndex().clone();
         String gridSetId = convTile.getGridSetId();
@@ -201,6 +202,7 @@ public abstract class RasterFilter extends RequestFilter {
     }
 
     /** Loops over all the zoom levels and initializes the lookup images. */
+    @Override
     public void initialize(TileLayer layer) throws GeoWebCacheException {
         if (preload != null && preload) {
             for (String gridSetId : layer.getGridSubsets()) {

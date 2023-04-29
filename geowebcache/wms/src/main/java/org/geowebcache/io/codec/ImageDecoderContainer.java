@@ -55,6 +55,7 @@ public class ImageDecoderContainer implements ApplicationContextAware {
         return mapDecoders.get(mimeType).isAggressiveInputStreamSupported();
     }
 
+    @Override
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         decoders = context.getBeansOfType(ImageDecoder.class).values();
         if (decoders == null || decoders.isEmpty()) {

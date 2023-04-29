@@ -5,11 +5,17 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.dbcp.BasicDataSource;
+import org.geotools.util.logging.Logging;
 import org.junit.Assume;
 
 public class OracleQuotaStoreTest extends JDBCQuotaStoreTest {
 
+    static final Logger LOGGER = Logging.getLogger(OracleQuotaStoreTest.class);
+
+    @Override
     protected SQLDialect getDialect() {
         return new OracleDialect();
     }
@@ -40,6 +46,7 @@ public class OracleQuotaStoreTest extends JDBCQuotaStoreTest {
         };
     }
 
+    @Override
     protected BasicDataSource getDataSource() throws IOException, SQLException {
         BasicDataSource dataSource = super.getDataSource();
 
@@ -49,13 +56,13 @@ public class OracleQuotaStoreTest extends JDBCQuotaStoreTest {
             try {
                 st.execute("DROP TABLE TILEPAGE CASCADE CONSTRAINTS");
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
                 // fine
             }
             try {
                 st.execute("DROP TABLE TILESET CASCADE CONSTRAINTS");
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
                 // fine too
             }
         }

@@ -30,6 +30,7 @@ public class ApplicationContextProvider implements ApplicationContextAware {
 
     WebApplicationContext ctx;
 
+    @Override
     public void setApplicationContext(ApplicationContext arg0) throws BeansException {
         ctx = (WebApplicationContext) arg0;
     }

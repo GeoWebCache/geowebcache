@@ -48,6 +48,7 @@ public class OWSException extends Exception {
         return new ByteArrayResource(this.toString().getBytes());
     }
 
+    @Override
     public String toString() {
         StringBuilder str = new StringBuilder();
         str.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");

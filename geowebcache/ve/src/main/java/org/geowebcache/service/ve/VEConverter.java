@@ -57,6 +57,7 @@ public class VEConverter extends Service {
         this.gsb = gsb;
     }
 
+    @Override
     public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response)
             throws ServiceException {
         Map<String, String[]> params = request.getParameterMap();
@@ -138,7 +139,7 @@ public class VEConverter extends Service {
      *
      * @return internal representation
      */
-    @SuppressWarnings("PMD.EmptyIfStmt")
+    @SuppressWarnings("PMD.EmptyControlStatement")
     public static long[] convert(String strQuadKey) {
         char[] quadArray = strQuadKey.toCharArray();
 

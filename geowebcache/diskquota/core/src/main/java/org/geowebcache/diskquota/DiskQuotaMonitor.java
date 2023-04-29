@@ -165,6 +165,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      * @see #startUp()
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
+    @Override
     public void afterPropertiesSet() throws Exception {
         if (!diskQuotaEnabled) {
             return;
@@ -181,6 +182,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      * @see #shutDown(int)
      * @see org.springframework.beans.factory.DisposableBean#destroy()
      */
+    @Override
     public void destroy() throws Exception {
         if (!diskQuotaEnabled) {
             return;

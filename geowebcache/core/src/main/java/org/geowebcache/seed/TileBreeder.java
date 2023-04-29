@@ -156,6 +156,7 @@ public class TileBreeder implements ApplicationContextAware {
      * @see
      *     org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         String retryCount = GWCVars.findEnvVar(applicationContext, GWC_SEED_RETRY_COUNT);
         String retryWait = GWCVars.findEnvVar(applicationContext, GWC_SEED_RETRY_WAIT);

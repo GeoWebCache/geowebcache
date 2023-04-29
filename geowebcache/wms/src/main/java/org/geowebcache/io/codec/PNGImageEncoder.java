@@ -82,11 +82,13 @@ public class PNGImageEncoder extends ImageEncoderImpl {
         this.isAggressiveSupported = (!this.disablePNG);
     }
 
+    @Override
     public boolean isAggressiveOutputStreamSupported() {
         // If Default PNG Writer must not be used, then Aggressive OutputStream is not supported.
         return super.isAggressiveOutputStreamSupported() && isAggressiveSupported;
     }
 
+    @Override
     public void encode(
             RenderedImage image,
             Object destination,

@@ -44,12 +44,14 @@ public class BundleFileResource implements Resource {
     }
 
     /** @see org.geowebcache.io.Resource#getSize() */
+    @Override
     public long getSize() {
         return tileSize;
     }
 
     /** @see org.geowebcache.io.Resource#transferTo(WritableByteChannel) */
-    @SuppressWarnings("PMD.EmptyWhileStmt")
+    @Override
+    @SuppressWarnings("PMD.EmptyControlStatement")
     public long transferTo(WritableByteChannel target) throws IOException {
         try (FileInputStream fin = new FileInputStream(new File(bundleFilePath));
                 FileChannel in = fin.getChannel()) {
@@ -65,12 +67,14 @@ public class BundleFileResource implements Resource {
      *
      * @see org.geowebcache.io.Resource#transferFrom(ReadableByteChannel)
      */
+    @Override
     public long transferFrom(ReadableByteChannel channel) throws IOException {
         // unsupported
         return 0;
     }
 
     /** @see org.geowebcache.io.Resource#getInputStream() */
+    @Override
     public InputStream getInputStream() throws IOException {
         FileInputStream fis = new FileInputStream(bundleFilePath);
         long skipped = fis.skip(tileOffset);
@@ -93,12 +97,14 @@ public class BundleFileResource implements Resource {
      *
      * @see org.geowebcache.io.Resource#getOutputStream()
      */
+    @Override
     public OutputStream getOutputStream() throws IOException {
         // unsupported
         return null;
     }
 
     /** @see org.geowebcache.io.Resource#getLastModified() */
+    @Override
     public long getLastModified() {
         File f = new File(bundleFilePath);
 

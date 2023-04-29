@@ -110,6 +110,7 @@ public class OracleDialect extends SQLDialect {
         sb.append("FROM DUAL");
     }
 
+    @Override
     public String getLeastFrequentlyUsedPage(String schema, List<String> layerParamNames) {
         StringBuilder sb = new StringBuilder("SELECT * FROM (");
         sb.append("SELECT TILESET_ID, PAGE_X, PAGE_Y, PAGE_Z, CREATION_TIME_MINUTES FROM ");
@@ -135,6 +136,7 @@ public class OracleDialect extends SQLDialect {
         return sb.toString();
     }
 
+    @Override
     public String getLeastRecentlyUsedPage(String schema, List<String> layerParamNames) {
         StringBuilder sb = new StringBuilder("SELECT * FROM (");
         sb.append("SELECT TILESET_ID, PAGE_X, PAGE_Y, PAGE_Z, CREATION_TIME_MINUTES FROM ");
