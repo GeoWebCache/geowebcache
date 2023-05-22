@@ -18,7 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,7 +68,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
 
     @Override
     public List<String> getSupportedStoreNames() {
-        var supportedStores = Arrays.asList(HSQL_STORE, JDBC_STORE);
+        var supportedStores = new ArrayList<>(List.of(HSQL_STORE, JDBC_STORE));
         try {
             // check if H2 driver is in the classpath
             Class.forName("org.h2.Driver");

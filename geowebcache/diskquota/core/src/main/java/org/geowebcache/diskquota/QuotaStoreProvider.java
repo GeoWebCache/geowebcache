@@ -59,7 +59,7 @@ public class QuotaStoreProvider
     public void reloadQuotaStore() throws IOException, ConfigurationException {
         DiskQuotaConfig config = loader.loadConfig();
         // migrate existing H2 DB selection to HSQL DB
-        if(config.getQuotaStore().equals("H2")) {
+        if (config.getQuotaStore().equals("H2")) {
             config.setQuotaStore("HSQL");
             loader.saveConfig(config);
         }
