@@ -123,6 +123,7 @@ public class MetastoreRemover {
 
                     long count = 0;
 
+                    @Override
                     public void processRow(ResultSet rs) throws SQLException {
                         String layer = rs.getString(1);
                         String gridset = rs.getString(2);
@@ -214,6 +215,7 @@ public class MetastoreRemover {
 
                     int count = 0;
 
+                    @Override
                     public void processRow(ResultSet rs) throws SQLException {
                         // read the result set
                         String layer = rs.getString(1);

@@ -526,6 +526,7 @@ public class S3BlobStore implements BlobStore {
                 .collect(Collectors.toSet());
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public Map<String, Optional<Map<String, String>>> getParametersMapping(String layerName) {
         return s3Ops.objectStream(keyBuilder.parametersMetadataPrefix(layerName))

@@ -457,10 +457,12 @@ public abstract class AbstractTileLayer extends TileLayer {
         return retVal;
     }
 
+    @Override
     public List<ParameterFilter> getParameterFilters() {
         return parameterFilters;
     }
 
+    @Override
     public List<RequestFilter> getRequestFilters() {
         return requestFilters;
     }

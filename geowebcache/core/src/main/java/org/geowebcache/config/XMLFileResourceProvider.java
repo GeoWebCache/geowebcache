@@ -199,6 +199,7 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
         return xmlFile;
     }
 
+    @Override
     public String getLocation() throws IOException {
         File f = findConfigFile();
         try {

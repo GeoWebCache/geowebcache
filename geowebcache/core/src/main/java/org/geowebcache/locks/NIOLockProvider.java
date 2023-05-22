@@ -65,6 +65,7 @@ public class NIOLockProvider implements LockProvider {
         this.maxLockAttempts = 120 * 1000 / waitBeforeRetry;
     }
 
+    @Override
     @SuppressWarnings({"PMD.CloseResource", "PMD.UseTryWithResources"})
     // complex but seemingly correct resource handling
     public LockProvider.Lock getLock(final String lockKey) throws GeoWebCacheException {
@@ -132,6 +133,7 @@ public class NIOLockProvider implements LockProvider {
 
                     boolean released;
 
+                    @Override
                     public void release() throws GeoWebCacheException {
                         if (released) {
                             return;

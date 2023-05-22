@@ -169,6 +169,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long> {
     }
 
     /** @see java.util.concurrent.Callable#call() */
+    @Override
     public Long call() {
         while (true) {
             if (Thread.interrupted()) {

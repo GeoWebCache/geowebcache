@@ -24,6 +24,7 @@ import org.geowebcache.GeoWebCacheException;
  */
 public class NoOpLockProvider implements LockProvider {
 
+    @Override
     public LockProvider.Lock getLock(String lockKey) throws GeoWebCacheException {
         return () -> {
             // nothing to do

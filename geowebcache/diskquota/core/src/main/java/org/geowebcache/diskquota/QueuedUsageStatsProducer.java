@@ -43,6 +43,7 @@ public class QueuedUsageStatsProducer implements TileLayerListener {
     }
 
     /** @see org.geowebcache.layer.TileLayerListener#tileRequested */
+    @Override
     public void tileRequested(TileLayer layer, ConveyorTile tile) {
         String layerName = layer.getName();
         if (cancelled(layerName)) {

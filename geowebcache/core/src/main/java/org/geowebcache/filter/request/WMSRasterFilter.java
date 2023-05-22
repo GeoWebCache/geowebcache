@@ -77,6 +77,7 @@ public class WMSRasterFilter extends RasterFilter {
         this.backendTimeout = backendTimeout;
     }
 
+    @Override
     protected BufferedImage loadMatrix(TileLayer tlayer, String gridSetId, int z)
             throws IOException, GeoWebCacheException {
         if (!(tlayer instanceof WMSLayer)) {
@@ -194,12 +195,14 @@ public class WMSRasterFilter extends RasterFilter {
         return params;
     }
 
+    @Override
     public void update(byte[] filterData, TileLayer layer, String gridSetId, int z)
             throws GeoWebCacheException {
         throw new GeoWebCacheException(
                 "update(byte[] filterData, TileLayer layer, String gridSetId, int z) is not appropriate for WMSRasterFilters");
     }
 
+    @Override
     public boolean update(TileLayer layer, String gridSetId) {
         for (int z = super.getZoomStart(); z <= super.getZoomStop(); z++) {
             try {
@@ -211,6 +214,7 @@ public class WMSRasterFilter extends RasterFilter {
         return true;
     }
 
+    @Override
     public void update(TileLayer layer, String gridSetId, int zStart, int zStop)
             throws GeoWebCacheException {
         for (int z = zStart; z <= zStop; z++) {

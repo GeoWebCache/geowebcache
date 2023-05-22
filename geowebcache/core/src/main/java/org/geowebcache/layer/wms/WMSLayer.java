@@ -166,6 +166,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         this.wmsQueryLayers = wmsQueryLayers;
     }
 
+    @Override
     protected Object readResolve() {
         super.readResolve();
         return this;
@@ -249,6 +250,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
      * @param tile The tile request
      * @return The resulting tile request
      */
+    @Override
     public ConveyorTile getTile(ConveyorTile tile)
             throws GeoWebCacheException, IOException, OutsideCoverageException {
         MimeType mime = tile.getMimeType();
@@ -291,6 +293,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     }
 
     /** Used for seeding */
+    @Override
     public void seedTile(ConveyorTile tile, boolean tryCache)
             throws GeoWebCacheException, IOException {
         GridSubset gridSubset = getGridSubset(tile.getGridSetId());
@@ -482,6 +485,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         return false;
     }
 
+    @Override
     public ConveyorTile doNonMetatilingRequest(ConveyorTile tile) throws GeoWebCacheException {
         tile.setTileLayer(this);
 
@@ -746,6 +750,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         return ret;
     }
 
+    @Override
     public ConveyorTile getNoncachedTile(ConveyorTile tile) throws GeoWebCacheException {
 
         // Should we do mime type checks?
@@ -789,6 +794,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         this.lockProvider = lockProvider;
     }
 
+    @Override
     public void proxyRequest(ConveyorTile tile) throws GeoWebCacheException {
         String queryStr = tile.servletReq.getQueryString();
         String serverStr = getWMSurl()[0];

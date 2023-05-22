@@ -73,6 +73,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
      *
      * <p>This is the context that is used for methods which dont supply their own context.
      */
+    @Override
     @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         GeoWebCacheExtensions.context = context;
@@ -314,6 +315,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
         return beans.get(0);
     }
 
+    @Override
     public void onApplicationEvent(ApplicationEvent event) {
         if (event instanceof ContextRefreshedEvent) extensionsCache.clear();
     }

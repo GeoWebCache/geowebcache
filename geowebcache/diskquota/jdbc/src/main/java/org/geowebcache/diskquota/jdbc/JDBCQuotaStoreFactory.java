@@ -66,6 +66,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         this.defaultResourceProvider = resourceProvider;
     }
 
+    @Override
     public List<String> getSupportedStoreNames() {
         var supportedStores = Arrays.asList(HSQL_STORE, JDBC_STORE);
         try {
@@ -78,6 +79,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         return supportedStores;
     }
 
+    @Override
     public QuotaStore getQuotaStore(ApplicationContext ctx, String quotaStoreName)
             throws ConfigurationException {
         // lookup dependencies in the classpath
@@ -319,6 +321,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         return dataSource;
     }
 
+    @Override
     public void setApplicationContext(ApplicationContext appContext) throws BeansException {
         this.appContext = appContext;
     }

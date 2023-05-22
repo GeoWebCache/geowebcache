@@ -71,6 +71,7 @@ class CacheCleanerTask implements Runnable {
      *
      * @see java.lang.Runnable#run()
      */
+    @Override
     public void run() {
         try {
             innerRun();
@@ -216,6 +217,7 @@ class CacheCleanerTask implements Runnable {
         }
 
         /** @see java.util.concurrent.Callable#call() */
+        @Override
         public Object call() throws Exception {
             try {
                 monitor.expireByLayerNames(layerNames, quotaResolver);

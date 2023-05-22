@@ -299,6 +299,7 @@ public class WMSService extends Service {
                 response);
     }
 
+    @Override
     public void handleRequest(Conveyor conv) throws GeoWebCacheException {
 
         ConveyorTile tile = (ConveyorTile) conv;

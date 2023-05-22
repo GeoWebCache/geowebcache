@@ -55,6 +55,7 @@ public class ImageMime extends MimeType {
             new ImageMime("image/png", "png", "png", "image/png", true, true, true) {
 
                 /** Any response mime starting with image/png will do */
+                @Override
                 public boolean isCompatible(String otherMimeType) {
                     return super.isCompatible(otherMimeType)
                             || otherMimeType.startsWith("image/png");
@@ -316,6 +317,7 @@ public class ImageMime extends MimeType {
             }
         }
 
+        @Override
         public ImageWriter getImageWriter(RenderedImage image) {
             if (isBestFormatJpeg(image)) {
                 return jpegDelegate.getImageWriter(image);
@@ -324,6 +326,7 @@ public class ImageMime extends MimeType {
             }
         }
 
+        @Override
         public String getMimeType(org.geowebcache.io.Resource resource) throws IOException {
             try (DataInputStream dis = new DataInputStream(resource.getInputStream())) {
                 final int head = dis.readInt();

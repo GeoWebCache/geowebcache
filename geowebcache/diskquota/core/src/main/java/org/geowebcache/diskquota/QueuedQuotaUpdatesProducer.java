@@ -70,6 +70,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
      *
      * @see org.geowebcache.storage.BlobStoreListener#tileStored
      */
+    @Override
     public void tileStored(
             final String layerName,
             final String gridSetId,
@@ -87,6 +88,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
     }
 
     /** @see org.geowebcache.storage.BlobStoreListener#tileDeleted */
+    @Override
     public void tileDeleted(
             final String layerName,
             final String gridSetId,
@@ -109,6 +111,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
     }
 
     /** @see org.geowebcache.storage.BlobStoreListener#tileUpdated */
+    @Override
     public void tileUpdated(
             String layerName,
             String gridSetId,
@@ -134,18 +137,22 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
      * @see org.geowebcache.storage.BlobStoreListener#layerDeleted(java.lang.String)
      * @see QuotaStore#deleteLayer(String)
      */
+    @Override
     public void layerDeleted(final String layerName) {
         quotaStore.deleteLayer(layerName);
     }
 
+    @Override
     public void gridSubsetDeleted(String layerName, String gridSetId) {
         quotaStore.deleteGridSubset(layerName, gridSetId);
     }
 
+    @Override
     public void parametersDeleted(String layerName, String parametersId) {
         quotaStore.deleteParameters(layerName, parametersId);
     }
 
+    @Override
     public void layerRenamed(String oldLayerName, String newLayerName) {
         try {
             quotaStore.renameLayer(oldLayerName, newLayerName);

@@ -53,6 +53,7 @@ public class TreeSetConverter extends CollectionConverter {
         super(mapper, TreeSet.class);
     }
 
+    @Override
     public void marshal(
             Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
         SortedSet sortedSet = (SortedSet) source;
@@ -60,6 +61,7 @@ public class TreeSetConverter extends CollectionConverter {
         super.marshal(source, writer, context);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
         TreeSet<Object> result = null;

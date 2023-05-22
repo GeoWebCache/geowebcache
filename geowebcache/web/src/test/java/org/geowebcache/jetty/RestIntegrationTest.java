@@ -1249,6 +1249,7 @@ public class RestIntegrationTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.EmptyControlStatement")
     public void testNewFileBlobstoreDontDeleteExistingContent() throws Exception {
         // The directory already has stuff in it
         File bsDir = temp.newFolder();

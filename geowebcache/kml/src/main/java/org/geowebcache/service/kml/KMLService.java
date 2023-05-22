@@ -140,6 +140,7 @@ public class KMLService extends Service {
      * This is the entry point, this is where we tell the dispatcher whether we want to handle the
      * request or forward it to the tile layer (just a PNG).
      */
+    @Override
     public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response)
             throws GeoWebCacheException {
         String[] parsed = null;
@@ -205,6 +206,7 @@ public class KMLService extends Service {
     }
 
     /** Let the service handle the request */
+    @Override
     public void handleRequest(Conveyor conv) throws GeoWebCacheException {
 
         ConveyorKMLTile tile = (ConveyorKMLTile) conv;

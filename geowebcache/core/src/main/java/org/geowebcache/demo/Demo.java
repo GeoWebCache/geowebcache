@@ -49,6 +49,7 @@ import org.springframework.util.Assert;
 
 public class Demo {
 
+    @SuppressWarnings("PMD.AvoidPrintStackTrace")
     public static void makeMap(
             TileLayerDispatcher tileLayerDispatcher,
             GridSetBroker gridSetBroker,

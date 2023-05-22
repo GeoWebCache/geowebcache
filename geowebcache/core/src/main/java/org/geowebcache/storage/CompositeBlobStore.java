@@ -515,6 +515,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
                         });
     }
 
+    @Override
     public Map<String, Optional<Map<String, String>>> getParametersMapping(String layerName) {
         return readFunction(() -> store(layerName).getParametersMapping(layerName));
     }

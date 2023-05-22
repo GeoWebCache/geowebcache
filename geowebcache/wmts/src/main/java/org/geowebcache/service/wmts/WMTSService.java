@@ -558,6 +558,7 @@ public class WMTSService extends Service {
         return convTile;
     }
 
+    @Override
     public void handleRequest(Conveyor conv) throws OWSException, GeoWebCacheException {
 
         // let's see if any extension wants to handle this request

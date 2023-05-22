@@ -810,6 +810,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         }
     }
 
+    @Override
     public Map<String, Optional<Map<String, String>>> getParametersMapping(String layerName) {
         try {
             return connectionManager.executeQuery(

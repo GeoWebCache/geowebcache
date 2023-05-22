@@ -108,6 +108,7 @@ class StaxGeoRSSReader implements GeoRSSReader {
     }
 
     /** @see org.geowebcache.georss.GeoRSSReader#nextEntry() */
+    @Override
     public Entry nextEntry() throws IOException {
         if (reader == null) {
             // reached EOF

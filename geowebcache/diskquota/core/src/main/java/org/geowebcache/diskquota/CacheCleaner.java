@@ -62,14 +62,17 @@ public class CacheCleaner implements DisposableBean {
             this.store = store;
         }
 
+        @Override
         public Quota getLimit() {
             return config.getGlobalQuota();
         }
 
+        @Override
         public Quota getUsed() throws InterruptedException {
             return store.getGloballyUsedQuota();
         }
 
+        @Override
         public ExpirationPolicy getExpirationPolicy() {
             return config.getGlobalExpirationPolicyName();
         }
@@ -85,6 +88,7 @@ public class CacheCleaner implements DisposableBean {
             this.store = store;
         }
 
+        @Override
         public Quota getLimit() {
             Quota limit = layerQuota.getQuota();
             if (limit == null) {
@@ -94,12 +98,14 @@ public class CacheCleaner implements DisposableBean {
             return limit;
         }
 
+        @Override
         public Quota getUsed() throws InterruptedException {
             String layer = layerQuota.getLayer();
             Quota usedQuotaByLayerName = store.getUsedQuotaByLayerName(layer);
             return usedQuotaByLayerName;
         }
 
+        @Override
         public ExpirationPolicy getExpirationPolicy() {
             ExpirationPolicy expirationPolicy = layerQuota.getExpirationPolicyName();
             return expirationPolicy;
@@ -112,6 +118,7 @@ public class CacheCleaner implements DisposableBean {
     }
 
     /** @see org.springframework.beans.factory.DisposableBean#destroy() */
+    @Override
     public void destroy() throws Exception {
         this.shutDown = true;
     }

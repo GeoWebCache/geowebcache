@@ -354,6 +354,7 @@ public class SeedTaskTest {
             this.members = members;
         }
 
+        @Override
         public int compareTo(Tuple<T> o) {
             if (members == null) {
                 if (o.members == null) {
@@ -390,6 +391,7 @@ public class SeedTaskTest {
             return 0 == compareTo((Tuple<T>) o);
         }
 
+        @Override
         public int hashCode() {
             return 17 * Arrays.hashCode(members);
         }

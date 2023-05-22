@@ -52,6 +52,7 @@ public class MGMapsConverter extends Service {
         this.gsb = gsb;
     }
 
+    @Override
     public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response)
             throws ServiceException {
         String layerId = super.getLayersParameter(request);

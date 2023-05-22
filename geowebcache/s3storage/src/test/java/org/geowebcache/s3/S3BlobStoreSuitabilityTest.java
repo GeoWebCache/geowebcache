@@ -105,6 +105,7 @@ public class S3BlobStoreSuitabilityTest extends BlobStoreSuitabilityTest {
                 return super.methodBlock(method);
             } else {
                 return new Statement() {
+                    @Override
                     public void evaluate() {
                         assumeFalse("S3 unavailable", true);
                     }

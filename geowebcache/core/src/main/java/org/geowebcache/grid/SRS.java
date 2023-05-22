@@ -135,6 +135,7 @@ public class SRS implements Comparable<SRS>, Serializable {
         return number;
     }
 
+    @Override
     public String toString() {
         return "EPSG:" + Integer.toString(number);
     }
@@ -152,6 +153,7 @@ public class SRS implements Comparable<SRS>, Serializable {
     }
 
     /** @see java.lang.Comparable#compareTo(java.lang.Object) */
+    @Override
     public int compareTo(SRS other) {
         return number - other.number;
     }

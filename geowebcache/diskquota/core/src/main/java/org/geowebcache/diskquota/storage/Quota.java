@@ -171,6 +171,7 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
     }
 
     /** @see java.lang.Comparable#compareTo(java.lang.Object) */
+    @Override
     public int compareTo(Quota o) {
         if (o == null) {
             throw new NullPointerException("Can't compare against null");

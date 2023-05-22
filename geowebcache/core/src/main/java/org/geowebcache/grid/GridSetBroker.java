@@ -61,6 +61,7 @@ public class GridSetBroker
                         .get();
     }
 
+    @Override
     public void afterPropertiesSet() {
         getConfigurations();
     }
@@ -208,6 +209,7 @@ public class GridSetBroker
         return internalDefault3857GridSet;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <GSC extends GridSetConfiguration> List<? extends GSC> getConfigurations(
             Class<GSC> type) {

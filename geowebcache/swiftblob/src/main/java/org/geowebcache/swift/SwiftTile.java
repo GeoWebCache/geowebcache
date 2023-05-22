@@ -106,6 +106,7 @@ public class SwiftTile {
         }
     }
 
+    @Override
     public String toString() {
         String format = "%s, %s, %s, %s, xyz=%d,%d,%d";
         return String.format(format, layerName, gridSetId, blobFormat, parametersId, x, y, z);

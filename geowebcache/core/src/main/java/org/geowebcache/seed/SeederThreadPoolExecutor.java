@@ -39,6 +39,7 @@ public class SeederThreadPoolExecutor extends ThreadPoolExecutor implements Disp
      *
      * @see org.springframework.beans.factory.DisposableBean#destroy()
      */
+    @Override
     public void destroy() throws Exception {
         log.info("Initiating shut down for running and pending seed tasks...");
         this.shutdownNow();

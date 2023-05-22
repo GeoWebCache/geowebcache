@@ -50,6 +50,7 @@ public class FileRasterFilter extends RasterFilter {
         this.fileExtension = fileExtension;
     }
 
+    @Override
     protected BufferedImage loadMatrix(TileLayer layer, String gridSetId, int zoomLevel)
             throws IOException, GeoWebCacheException {
         File fh = new File(createFilePath(gridSetId, zoomLevel));
@@ -104,6 +105,7 @@ public class FileRasterFilter extends RasterFilter {
         }
     }
 
+    @Override
     public void update(byte[] filterData, TileLayer layer, String gridSetId, int z)
             throws GeoWebCacheException {
         try {
@@ -126,12 +128,14 @@ public class FileRasterFilter extends RasterFilter {
         }
     }
 
+    @Override
     public void update(TileLayer layer, String gridSetId, int zoomStart, int zoomStop)
             throws GeoWebCacheException {
         throw new GeoWebCacheException(
                 "TileLayer layer, String gridSetId, int z) is not appropriate for FileRasterFilters");
     }
 
+    @Override
     public boolean update(TileLayer layer, String gridSetId) {
         return false;
     }
