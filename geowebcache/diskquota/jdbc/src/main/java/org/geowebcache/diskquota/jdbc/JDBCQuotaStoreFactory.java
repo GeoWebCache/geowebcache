@@ -68,7 +68,9 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
 
     @Override
     public List<String> getSupportedStoreNames() {
-        var supportedStores = new ArrayList<>(List.of(HSQL_STORE, JDBC_STORE));
+        List<String> supportedStores = new ArrayList<String>();
+        supportedStores.add(HSQL_STORE);
+        supportedStores.add(JDBC_STORE);
         try {
             // check if H2 driver is in the classpath
             Class.forName("org.h2.Driver");
