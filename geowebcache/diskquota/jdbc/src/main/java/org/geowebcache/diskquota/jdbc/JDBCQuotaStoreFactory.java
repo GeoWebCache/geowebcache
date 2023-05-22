@@ -16,7 +16,6 @@ package org.geowebcache.diskquota.jdbc;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
