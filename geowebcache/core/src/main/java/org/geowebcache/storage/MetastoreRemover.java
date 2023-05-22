@@ -300,7 +300,7 @@ public class MetastoreRemover {
             // grab the connection
             return DriverManager.getConnection(jdbcString, username, password);
         } catch (ClassNotFoundException e) {
-            log.log(Level.WARNING, "Could not find the metastore driver, skipping migration", e);
+            log.log(Level.WARNING, "Could not find the metastore driver, skipping migration");
             return null;
         } catch (SQLException e) {
             log.log(
