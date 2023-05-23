@@ -68,7 +68,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
 
     @Override
     public List<String> getSupportedStoreNames() {
-        List<String> supportedStores = new ArrayList<String>();
+        List<String> supportedStores = new ArrayList<>();
         supportedStores.add(HSQL_STORE);
         supportedStores.add(JDBC_STORE);
         try {
