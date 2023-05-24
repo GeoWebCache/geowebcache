@@ -17,7 +17,7 @@ public class HSQLQuotaStoreTest extends JDBCQuotaStoreTest {
             protected Properties createOfflineFixture() {
                 Properties fixture = new Properties();
                 fixture.put("driver", "org.hsqldb.jdbcDriver");
-                fixture.put("url", "jdbc:hsqldb:file:./target/quota-hsql;shutdown=true");
+                fixture.put("url", "jdbc:hsqldb:file:./target/quota-hsql");
                 fixture.put("username", "sa");
                 fixture.put("password", "");
                 return fixture;

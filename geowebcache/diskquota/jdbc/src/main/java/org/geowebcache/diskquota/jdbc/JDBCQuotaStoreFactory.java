@@ -56,6 +56,10 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
 
     public static final String JDBC_STORE = "JDBC";
 
+    // this will be set to true only for integration tests
+    // not recommended for production usage
+    public static boolean ENABLE_HSQL_AUTO_SHUTDOWN = false;
+
     private ApplicationContext appContext;
 
     private ConfigurationResourceProvider defaultResourceProvider;
@@ -76,7 +80,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
             Class.forName("org.h2.Driver");
             supportedStores.add(H2_STORE);
         } catch (Exception e) {
-            // don't add h2 when h2 driver is not there
+            // don't add h2 when its driver is not there
         }
         return supportedStores;
     }
@@ -313,7 +317,10 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
 
         dataSource.setDriverClassName("org.hsqldb.jdbcDriver");
         String database = new File(storeDirectory, "diskquota").getAbsolutePath();
-        dataSource.setUrl("jdbc:hsqldb:file:" + database + ";shutdown=true");
+        dataSource.setUrl(
+                "jdbc:hsqldb:file:"
+                        + database
+                        + (ENABLE_HSQL_AUTO_SHUTDOWN ? ";shutdown=true" : ""));
         dataSource.setUsername("sa");
         dataSource.setPoolPreparedStatements(true);
         dataSource.setAccessToUnderlyingConnectionAllowed(true);

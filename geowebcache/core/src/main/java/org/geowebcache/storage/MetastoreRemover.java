@@ -302,7 +302,10 @@ public class MetastoreRemover {
             // grab the connection
             return DriverManager.getConnection(jdbcString, username, password);
         } catch (ClassNotFoundException e) {
-            log.log(Level.WARNING, "Could not find the metastore driver, skipping migration");
+            Level logLevel = Level.WARNING;
+            if (getVariable(DefaultStorageFinder.GWC_METASTORE_DRIVER_CLASS, null) == null)
+                logLevel = Level.FINE;
+            log.log(logLevel, "Could not find the metastore driver, skipping migration", e);
             return null;
         } catch (SQLException e) {
             log.log(
