@@ -27,7 +27,7 @@ public class HSQLDialect extends SQLDialect {
         TABLE_CREATION_MAP.put(
                 "TILESET",
                 Arrays.asList( //
-                        "CREATE TABLE ${schema}TILESET (\n"
+                        "CREATE CACHED TABLE ${schema}TILESET (\n"
                                 + //
                                 "  KEY VARCHAR("
                                 + TILESET_KEY_SIZE
@@ -60,7 +60,7 @@ public class HSQLDialect extends SQLDialect {
         TABLE_CREATION_MAP.put(
                 "TILEPAGE",
                 Arrays.asList(
-                        "CREATE TABLE ${schema}TILEPAGE (\n"
+                        "CREATE CACHED TABLE ${schema}TILEPAGE (\n"
                                 + //
                                 " KEY VARCHAR("
                                 + TILEPAGE_KEY_SIZE

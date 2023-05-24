@@ -313,7 +313,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
 
         dataSource.setDriverClassName("org.hsqldb.jdbcDriver");
         String database = new File(storeDirectory, "diskquota").getAbsolutePath();
-        dataSource.setUrl("jdbc:hsqldb:" + database + ";shutdown=true");
+        dataSource.setUrl("jdbc:hsqldb:file:" + database + ";shutdown=true");
         dataSource.setUsername("sa");
         dataSource.setPoolPreparedStatements(true);
         dataSource.setAccessToUnderlyingConnectionAllowed(true);
