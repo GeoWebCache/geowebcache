@@ -77,11 +77,14 @@ public class JDBCConfiguration implements Serializable {
             throws ConfigurationException {
         if (conf.getDialect() == null) {
             throw new ConfigurationException(
-                    "A dialect must be provided, possible values are H2, Oracle, PostgresSQL");
+                    "A dialect must be provided, possible values are H2, HSQL, Oracle, PostgresSQL");
         }
 
         ConnectionPoolConfiguration cp = conf.getConnectionPool();
-        if (conf.getJNDISource() == null && cp == null && !"H2".equals(conf.getDialect())) {
+        if (conf.getJNDISource() == null
+                && cp == null
+                && !"H2".equals(conf.getDialect())
+                && !"HSQL".equals(conf.getDialect())) {
             throw new ConfigurationException(
                     "No data source provided, either configure JNDISource or connectionPool");
         }
