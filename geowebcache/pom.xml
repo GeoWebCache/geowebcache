@@ -57,7 +57,7 @@
     <spring.version>5.3.25</spring.version>
     <spring.security.version>5.7.6</spring.security.version>
     <xstream.version>1.4.20</xstream.version>
-    <commons-io.version>2.8.0</commons-io.version>
+    <commons-io.version>2.12.0</commons-io.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
     <commons-collections.version>4.2</commons-collections.version>
     <commons-codec.version>1.10</commons-codec.version>
