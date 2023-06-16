@@ -5,7 +5,7 @@ Google Maps
 
 Google Maps is based on spherical mercator, so the layer must available in EPSG:900913 (now known as EPSG:3857) to use this API.
 
-.. code-block:: html
+.. code-block:: javascript
 
    var tilelayer = new GTileLayer(null, null, null, {
          tileUrlTemplate: 'http://localhost:8080/geowebcache/service/gmaps?layers=layer-name&zoom={Z}&x={X}&y={Y}&format=image/png', 

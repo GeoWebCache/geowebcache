@@ -34,11 +34,13 @@ public class FileResource implements Resource {
     }
 
     /** @see org.geowebcache.io.Resource#getLastModified() */
+    @Override
     public long getLastModified() {
         return file.lastModified();
     }
 
     /** @see org.geowebcache.io.Resource#getSize() */
+    @Override
     public long getSize() {
         // avoid a (relatively expensive) call to File.exists(), file.length() returns 0 if the file
         // doesn't exist anyway
@@ -46,6 +48,7 @@ public class FileResource implements Resource {
         return size == 0 ? -1 : size;
     }
 
+    @Override
     public long transferTo(WritableByteChannel target) throws IOException {
         // FileLock lock = in.lock();
 
@@ -59,6 +62,7 @@ public class FileResource implements Resource {
         }
     }
 
+    @Override
     public long transferFrom(ReadableByteChannel channel) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(file);
                 FileChannel out = fos.getChannel();
@@ -73,10 +77,12 @@ public class FileResource implements Resource {
         }
     }
 
+    @Override
     public InputStream getInputStream() throws IOException {
         return new FileInputStream(file);
     }
 
+    @Override
     public OutputStream getOutputStream() throws IOException {
         return new FileOutputStream(file);
     }

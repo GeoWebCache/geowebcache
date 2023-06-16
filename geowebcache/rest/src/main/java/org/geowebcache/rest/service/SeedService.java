@@ -34,10 +34,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ContextualConfigurationProvider;
 import org.geowebcache.config.XMLConfiguration;
@@ -61,7 +62,7 @@ import org.springframework.web.context.WebApplicationContext;
 @Service
 public class SeedService {
 
-    static final Log log = LogFactory.getLog(SeedService.class);
+    static final Logger LOG = Logging.getLogger(SeedService.class.getName());
 
     @Autowired TileBreeder seeder;
 
@@ -78,42 +79,57 @@ public class SeedService {
             XStream xs = new GeoWebCacheXStream(new JsonHierarchicalStreamDriver());
             long[][] list = seeder.getStatusList();
             JSONObject obj = new JSONObject(xs.toXML(list));
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            return new ResponseEntity<>(obj.toString(), headers, HttpStatus.OK);
+            return constructResponse(MediaType.APPLICATION_JSON, obj.toString(), HttpStatus.OK);
         } catch (JSONException jse) {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.TEXT_PLAIN);
-            return new ResponseEntity<Object>("error", headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return constructResponse(
+                    MediaType.TEXT_PLAIN, "error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     /** GET method for querying running tasks for the provided layer */
-    public ResponseEntity<?> getRunningLayerTasks(HttpServletRequest request, String layer) {
+    public ResponseEntity<?> getRunningLayerTasks(String layer) {
         try {
             XStream xs = new GeoWebCacheXStream(new JsonHierarchicalStreamDriver());
             long[][] list;
-            if (null == layer) {
-                list = seeder.getStatusList();
-            } else {
-                try {
-                    seeder.findTileLayer(layer);
-                } catch (GeoWebCacheException e) {
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.setContentType(MediaType.TEXT_PLAIN);
-                    return new ResponseEntity<>(e.getMessage(), headers, HttpStatus.BAD_REQUEST);
-                }
-                list = seeder.getStatusList(layer);
+            try {
+                list = findTileLayer(layer);
+            } catch (GeoWebCacheException e) {
+                return constructResponse(
+                        MediaType.TEXT_PLAIN, e.getMessage(), HttpStatus.BAD_REQUEST);
             }
             JSONObject obj = new JSONObject(xs.toXML(list));
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            return new ResponseEntity<>(obj.toString(), headers, HttpStatus.OK);
+            return constructResponse(MediaType.APPLICATION_JSON, obj.toString(), HttpStatus.OK);
         } catch (JSONException jse) {
-            log.error(jse);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.TEXT_PLAIN);
-            return new ResponseEntity<Object>("error", headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            LOG.log(Level.SEVERE, jse.getMessage(), jse);
+            return constructResponse(
+                    MediaType.TEXT_PLAIN, "error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public ResponseEntity<?> getRunningLayerTasksXml(String layer) {
+        XStream xs = new GeoWebCacheXStream();
+        long[][] list;
+        try {
+            list = findTileLayer(layer);
+        } catch (GeoWebCacheException e) {
+            return constructResponse(MediaType.TEXT_PLAIN, e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        return constructResponse(MediaType.APPLICATION_XML, xs.toXML(list), HttpStatus.OK);
+    }
+
+    private ResponseEntity<?> constructResponse(
+            MediaType mediaType, String message, HttpStatus status) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(mediaType);
+        return new ResponseEntity<>(message, headers, status);
+    }
+
+    private long[][] findTileLayer(String layer) throws GeoWebCacheException {
+        if (null == layer) {
+            return seeder.getStatusList();
+        } else {
+            seeder.findTileLayer(layer);
+            return seeder.getStatusList(layer);
         }
     }
 

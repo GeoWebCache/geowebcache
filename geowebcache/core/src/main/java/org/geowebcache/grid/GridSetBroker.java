@@ -22,10 +22,10 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.ConfigurationAggregator;
 import org.geowebcache.config.DefaultGridsets;
@@ -41,7 +41,7 @@ public class GridSetBroker
         implements ConfigurationAggregator<GridSetConfiguration>,
                 ApplicationContextAware,
                 InitializingBean {
-    private static Log log = LogFactory.getLog(GridSetBroker.class);
+    private static Logger log = Logging.getLogger(GridSetBroker.class.getName());
 
     private List<GridSetConfiguration> configurations;
 
@@ -54,14 +54,14 @@ public class GridSetBroker
     public GridSetBroker(List<GridSetConfiguration> configurations) {
         this.configurations = configurations;
         defaults =
-                configurations
-                        .stream()
+                configurations.stream()
                         .filter(DefaultGridsets.class::isInstance)
                         .findFirst()
                         .map(DefaultGridsets.class::cast)
                         .get();
     }
 
+    @Override
     public void afterPropertiesSet() {
         getConfigurations();
     }
@@ -91,16 +91,14 @@ public class GridSetBroker
     }
 
     public Set<String> getGridSetNames() {
-        return getConfigurations()
-                .stream()
+        return getConfigurations().stream()
                 .map(GridSetConfiguration::getGridSetNames)
                 .flatMap(Set::stream)
                 .collect(Collectors.toSet());
     }
 
     public Collection<GridSet> getGridSets() {
-        return getConfigurations()
-                .stream()
+        return getConfigurations().stream()
                 .map(GridSetConfiguration::getGridSets)
                 .flatMap(Collection::stream)
                 .collect(
@@ -118,9 +116,8 @@ public class GridSetBroker
     }
 
     public void addGridSet(GridSet gridSet) {
-        log.debug("Adding " + gridSet.getName());
-        getConfigurations()
-                .stream()
+        log.fine("Adding " + gridSet.getName());
+        getConfigurations().stream()
                 .filter(c -> c.canSave(gridSet))
                 .findFirst()
                 .orElseThrow(
@@ -148,8 +145,7 @@ public class GridSetBroker
     }
 
     public synchronized void removeGridSet(final String gridSetName) {
-        getConfigurations()
-                .stream()
+        getConfigurations().stream()
                 .filter(c -> c.getGridSet(gridSetName).isPresent())
                 .forEach(
                         c -> {
@@ -166,7 +162,7 @@ public class GridSetBroker
                                 getConfigurations(DefaultGridsets.class).iterator();
                         defaults = it.next();
                         if (it.hasNext()) {
-                            log.warn(
+                            log.warning(
                                     "GridSetBroker has more than one DefaultGridSets configuration");
                         }
                     } catch (NoSuchElementException ex) {
@@ -213,6 +209,7 @@ public class GridSetBroker
         return internalDefault3857GridSet;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <GSC extends GridSetConfiguration> List<? extends GSC> getConfigurations(
             Class<GSC> type) {
@@ -234,7 +231,7 @@ public class GridSetBroker
                                 GeoWebCacheExtensions.configurations(
                                         GridSetConfiguration.class, applicationContext);
                     } else {
-                        log.warn(
+                        log.fine(
                                 "GridSetBroker.initialize() called without having set application context");
                         configurations =
                                 GeoWebCacheExtensions.configurations(GridSetConfiguration.class);

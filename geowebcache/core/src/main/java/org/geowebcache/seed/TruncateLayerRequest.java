@@ -16,8 +16,8 @@ package org.geowebcache.seed;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import java.util.Iterator;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.storage.StorageBroker;
@@ -31,10 +31,11 @@ import org.geowebcache.storage.StorageException;
 @XStreamAlias("truncateLayer")
 public class TruncateLayerRequest implements MassTruncateRequest {
 
-    private static final Log log = LogFactory.getLog(TruncateLayerRequest.class);
+    private static final Logger log = Logging.getLogger(TruncateLayerRequest.class.getName());
 
     String layerName;
 
+    @Override
     public boolean doTruncate(StorageBroker sb, TileBreeder breeder) throws StorageException {
         try {
             TileLayer tLayer = breeder.findTileLayer(layerName);

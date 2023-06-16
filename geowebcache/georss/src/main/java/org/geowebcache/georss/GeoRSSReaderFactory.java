@@ -19,23 +19,25 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.util.HttpClientBuilder;
 
 class GeoRSSReaderFactory {
 
-    private static final Log log = LogFactory.getLog(GeoRSSReaderFactory.class);
+    private static final Logger log = Logging.getLogger(GeoRSSReaderFactory.class.getName());
 
     public GeoRSSReader createReader(final URL url, final String username, final String password)
             throws IOException {
 
-        if (log.isDebugEnabled()) {
-            log.debug(
+        if (log.isLoggable(Level.FINE)) {
+            log.fine(
                     "Creating GeoRSS reader for URL "
                             + url.toExternalForm()
                             + " with user "
@@ -48,22 +50,17 @@ class GeoRSSReaderFactory {
 
         HttpClient httpClient = builder.buildClient();
 
-        GetMethod getMethod = new GetMethod(url.toString());
-        getMethod.setRequestHeader("Connection", "close");
-        if (builder.isDoAuthentication()) {
-            getMethod.setDoAuthentication(true);
-            httpClient.getParams().setAuthenticationPreemptive(true);
-        }
+        HttpGet getMethod = new HttpGet(url.toString());
 
-        if (log.isDebugEnabled()) {
-            log.debug("Executing HTTP GET requesr for feed URL " + url.toExternalForm());
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Executing HTTP GET requesr for feed URL " + url.toExternalForm());
         }
-        httpClient.executeMethod(getMethod);
+        HttpResponse response = httpClient.execute(getMethod);
 
-        if (log.isDebugEnabled()) {
-            log.debug("Building GeoRSS reader out of URL response");
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Building GeoRSS reader out of URL response");
         }
-        String contentEncoding = getMethod.getResponseCharSet();
+        String contentEncoding = response.getEntity().getContentEncoding().getValue();
         if (contentEncoding == null) {
             contentEncoding = "UTF-8";
         }
@@ -71,10 +68,9 @@ class GeoRSSReaderFactory {
         @SuppressWarnings("PMD.CloseResource") // The stream will be kept open to get new events
         Reader reader =
                 new BufferedReader(
-                        new InputStreamReader(
-                                getMethod.getResponseBodyAsStream(), contentEncoding));
-        if (log.isDebugEnabled()) {
-            log.debug("GeoRSS reader created, returning.");
+                        new InputStreamReader(response.getEntity().getContent(), contentEncoding));
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("GeoRSS reader created, returning.");
         }
         return createReader(reader);
     }

@@ -22,11 +22,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.config.legends.LegendsRawInfo;
@@ -56,7 +58,7 @@ import org.geowebcache.util.GWCVars;
 /** A tile layer backed by a WMS server */
 public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
-    private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSLayer.class);
+    private static Logger log = Logging.getLogger(WMSLayer.class.getName());
 
     public enum RequestType {
         MAP,
@@ -164,6 +166,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         this.wmsQueryLayers = wmsQueryLayers;
     }
 
+    @Override
     protected Object readResolve() {
         super.readResolve();
         return this;
@@ -180,7 +183,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         }
 
         if (null == this.sourceHelper) {
-            log.warn(
+            log.config(
                     this.name
                             + " is configured without a source, which is a bug unless you're running tests that don't care.");
         }
@@ -221,7 +224,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
                 try {
                     iter.next().initialize(this);
                 } catch (GeoWebCacheException e) {
-                    log.error(e.getMessage());
+                    log.severe(e.getMessage());
                 }
             }
         }
@@ -247,6 +250,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
      * @param tile The tile request
      * @return The resulting tile request
      */
+    @Override
     public ConveyorTile getTile(ConveyorTile tile)
             throws GeoWebCacheException, IOException, OutsideCoverageException {
         MimeType mime = tile.getMimeType();
@@ -289,6 +293,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     }
 
     /** Used for seeding */
+    @Override
     public void seedTile(ConveyorTile tile, boolean tryCache)
             throws GeoWebCacheException, IOException {
         GridSubset gridSubset = getGridSubset(tile.getGridSetId());
@@ -472,7 +477,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
             try {
                 return tile.retrieve(expireCache * 1000L);
             } catch (GeoWebCacheException gwce) {
-                log.error(gwce.getMessage());
+                log.severe(gwce.getMessage());
                 tile.setErrorMsg(gwce.getMessage());
                 return false;
             }
@@ -480,6 +485,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         return false;
     }
 
+    @Override
     public ConveyorTile doNonMetatilingRequest(ConveyorTile tile) throws GeoWebCacheException {
         tile.setTileLayer(this);
 
@@ -513,29 +519,31 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
             if (getExpireCache(0) == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
                 if (backendExpire == -1) {
                     this.expireCacheList.set(0, new ExpirationRule(0, 7200));
-                    log.error(
+                    log.log(
+                            Level.SEVERE,
                             "Layer profile wants MaxAge from backend,"
                                     + " but backend does not provide this. Setting to 7200 seconds.");
                 } else {
                     this.expireCacheList.set(backendExpire, new ExpirationRule(0, 7200));
                 }
-                log.trace("Setting expireCache to: " + expireCache);
+                log.finer("Setting expireCache to: " + expireCache);
             }
             if (getExpireCache(0) == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
                 if (backendExpire == -1) {
                     this.expireClientsList.set(0, new ExpirationRule(0, 7200));
-                    log.error(
+                    log.log(
+                            Level.SEVERE,
                             "Layer profile wants MaxAge from backend,"
                                     + " but backend does not provide this. Setting to 7200 seconds.");
                 } else {
                     this.expireClientsList.set(0, new ExpirationRule(0, backendExpire));
-                    log.trace("Setting expireClients to: " + expireClients);
+                    log.finer("Setting expireClients to: " + expireClients);
                 }
             }
         } catch (Exception e) {
             // Sometimes this doesn't work (network conditions?),
             // and it's really not worth getting caught up on it.
-            log.debug(e);
+            log.log(Level.FINE, e.getMessage(), e);
         }
     }
 
@@ -692,7 +700,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
     /** Mandatory */
     public void setSourceHelper(WMSSourceHelper source) {
-        log.debug("Setting sourceHelper on " + this.name);
+        log.fine("Setting sourceHelper on " + this.name);
         this.sourceHelper = source;
         if (concurrency != null) {
             this.sourceHelper.setConcurrency(concurrency);
@@ -742,6 +750,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         return ret;
     }
 
+    @Override
     public ConveyorTile getNoncachedTile(ConveyorTile tile) throws GeoWebCacheException {
 
         // Should we do mime type checks?
@@ -785,11 +794,12 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         this.lockProvider = lockProvider;
     }
 
+    @Override
     public void proxyRequest(ConveyorTile tile) throws GeoWebCacheException {
         String queryStr = tile.servletReq.getQueryString();
         String serverStr = getWMSurl()[0];
 
-        HttpMethodBase method = null;
+        HttpResponse httpResponse = null;
         try {
             URL url;
             if (serverStr.contains("?")) {
@@ -804,15 +814,19 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
                         "Can only proxy if WMS Layer is backed by an HTTP backend");
             }
 
-            method =
+            httpResponse =
                     ((WMSHttpHelper) helper)
                             .executeRequest(url, null, getBackendTimeout(), getHttpRequestMode());
-            try (InputStream is = method.getResponseBodyAsStream()) {
+            HttpEntity entity = httpResponse.getEntity();
+            try (InputStream is = entity.getContent()) {
                 HttpServletResponse response = tile.servletResp;
-                response.setCharacterEncoding(method.getResponseCharSet());
-                Header contentType = method.getResponseHeader("Content-Type");
+                org.apache.http.Header contentType = httpResponse.getFirstHeader("Content-Type");
                 if (contentType != null) {
                     response.setContentType(contentType.getValue());
+                    Header contentEncoding = entity.getContentEncoding();
+                    if (!MimeType.isBinary(contentType.getValue())) {
+                        response.setCharacterEncoding(contentEncoding.getValue());
+                    }
                 }
 
                 int read = 0;
@@ -827,11 +841,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
             }
         } catch (IOException ioe) {
             tile.servletResp.setStatus(500);
-            log.error(ioe.getMessage());
-        } finally {
-            if (method != null) {
-                method.releaseConnection();
-            }
+            log.log(Level.SEVERE, ioe.getMessage());
         }
     }
 

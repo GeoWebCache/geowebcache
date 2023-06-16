@@ -33,6 +33,7 @@ public class CompositeIterable<T> implements Iterable<T> {
         this.iterables = new ArrayList<>(iteratbles);
     }
 
+    @Override
     public Iterator<T> iterator() {
         List<Iterator<T>> iterators = new ArrayList<>(4);
         for (Iterable<T> iterable : iterables) {

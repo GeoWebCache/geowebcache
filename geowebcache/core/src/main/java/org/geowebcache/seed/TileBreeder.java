@@ -32,8 +32,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
@@ -103,7 +104,7 @@ public class TileBreeder implements ApplicationContextAware {
 
     private static final String GWC_SEED_RETRY_COUNT = "GWC_SEED_RETRY_COUNT";
 
-    private static Log log = LogFactory.getLog(TileBreeder.class);
+    private static Logger log = Logging.getLogger(TileBreeder.class.getName());
 
     private ThreadPoolExecutor threadPool;
 
@@ -155,6 +156,7 @@ public class TileBreeder implements ApplicationContextAware {
      * @see
      *     org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         String retryCount = GWCVars.findEnvVar(applicationContext, GWC_SEED_RETRY_COUNT);
         String retryWait = GWCVars.findEnvVar(applicationContext, GWC_SEED_RETRY_WAIT);
@@ -185,7 +187,7 @@ public class TileBreeder implements ApplicationContextAware {
         try {
             return Long.valueOf(paramVal);
         } catch (NumberFormatException e) {
-            log.warn(
+            log.warning(
                     "Invalid environment parameter for "
                             + varName
                             + ": '"
@@ -271,7 +273,7 @@ public class TileBreeder implements ApplicationContextAware {
             throws GeoWebCacheException {
 
         if (threadCount < 1) {
-            log.trace("Forcing thread count to 1");
+            log.finer("Forcing thread count to 1");
             threadCount = 1;
         }
 
@@ -334,7 +336,7 @@ public class TileBreeder implements ApplicationContextAware {
             try {
                 mimeType = MimeType.createFromFormat(format);
             } catch (MimeException e4) {
-                log.debug(e4);
+                log.log(Level.FINE, e4.getMessage(), e4);
             }
         }
 

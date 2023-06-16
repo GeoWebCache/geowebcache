@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn" dest="out">
+    <CustomLevels>
+      <CustomLevel name="CONFIG" intLevel="450" />
+      <CustomLevel name="FINEST" intLevel="700" />
+    </CustomLevels>>
+    <Appenders>
+        <Console name="ConsoleAppender" target="SYSTEM_OUT">
+            <PatternLayout
+            pattern="%d [%t] %-5level %logger{36} - %msg%n%throwable"/>
+            <!-- pattern="%date{HH:mm:ss} %-6level [%logger{2}] - %msg%n%throwable"/ -->
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Logger name="org.geowebcache.sqlite.SqliteConnectionManage" level="info" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+        </Logger>
+        <Logger name=".org.geowebcache.sqlite.SqliteConnectionManagerTest" level="info" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+        </Logger>
+        <Logger name="org.geowebcache" level="info" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+        </Logger>
+        <Logger name="org.geotools" level="warn" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+        </Logger>
+        <Root level="info">
+            <AppenderRef ref="ConsoleAppender"/>
+        </Root>
+    </Loggers>
+</Configuration>

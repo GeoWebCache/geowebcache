@@ -30,10 +30,11 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.diskquota.QuotaStore;
 import org.geowebcache.diskquota.storage.PageStats;
 import org.geowebcache.diskquota.storage.PageStatsPayload;
@@ -61,7 +62,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 public class JDBCQuotaStore implements QuotaStore {
 
-    private static final Log log = LogFactory.getLog(JDBCQuotaStore.class);
+    private static final Logger log = Logging.getLogger(JDBCQuotaStore.class.getName());
 
     /** The constant identifying the global quota tile set key */
     public static final String GLOBAL_QUOTA_NAME = "___GLOBAL_QUOTA___";
@@ -173,6 +174,7 @@ public class JDBCQuotaStore implements QuotaStore {
                 });
     }
 
+    @Override
     public void createLayer(String layerName) throws InterruptedException {
         createLayerInternal(layerName);
     }
@@ -198,14 +200,17 @@ public class JDBCQuotaStore implements QuotaStore {
                 });
     }
 
+    @Override
     public Quota getGloballyUsedQuota() throws InterruptedException {
         return nonNullQuota(getUsedQuotaByTileSetIdInternal(GLOBAL_QUOTA_NAME));
     }
 
+    @Override
     public Quota getUsedQuotaByTileSetId(String tileSetId) {
         return nonNullQuota(getUsedQuotaByTileSetIdInternal(tileSetId));
     }
 
+    @Override
     public Quota getUsedQuotaByLayerName(String layerName) {
         String sql = dialect.getUsedQuotaByLayerName(schema, "layerName");
         return nonNullQuota(
@@ -269,6 +274,7 @@ public class JDBCQuotaStore implements QuotaStore {
         }
     }
 
+    @Override
     public void deleteLayer(final String layerName) {
         tt.execute(
                 new TransactionCallbackWithoutResult() {
@@ -280,6 +286,7 @@ public class JDBCQuotaStore implements QuotaStore {
                 });
     }
 
+    @Override
     public void deleteGridSubset(final String layerName, final String gridSetId) {
         tt.execute(
                 new TransactionCallbackWithoutResult() {
@@ -334,6 +341,7 @@ public class JDBCQuotaStore implements QuotaStore {
                 });
     }
 
+    @Override
     public void renameLayer(final String oldLayerName, final String newLayerName)
             throws InterruptedException {
         tt.execute(
@@ -351,6 +359,7 @@ public class JDBCQuotaStore implements QuotaStore {
                 });
     }
 
+    @Override
     public Set<TileSet> getTileSets() {
         String getTileSet = dialect.getTileSetsQuery(schema);
         List<TileSet> tilesets = jt.query(getTileSet, new TileSetRowMapper());
@@ -365,6 +374,7 @@ public class JDBCQuotaStore implements QuotaStore {
         return result;
     }
 
+    @Override
     public void accept(final TileSetVisitor visitor) {
         String getTileSet = dialect.getTileSetsQuery(schema);
         final TileSetRowMapper tileSetMapper = new TileSetRowMapper();
@@ -378,6 +388,7 @@ public class JDBCQuotaStore implements QuotaStore {
                 });
     }
 
+    @Override
     public TileSet getTileSetById(String tileSetId) throws InterruptedException {
         // locate the tileset
         TileSet result = getTileSetByIdInternal(tileSetId);
@@ -398,8 +409,8 @@ public class JDBCQuotaStore implements QuotaStore {
 
     private boolean createTileSet(TileSet tset) {
 
-        if (log.isDebugEnabled()) {
-            log.debug("Creating tileset " + tset);
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Creating tileset " + tset);
         }
 
         String createTileSet =
@@ -443,10 +454,12 @@ public class JDBCQuotaStore implements QuotaStore {
                 lastException);
     }
 
+    @Override
     public TilePageCalculator getTilePageCalculator() {
         return calculator;
     }
 
+    @Override
     public void addToQuotaAndTileCounts(
             final TileSet tileSet,
             final Quota quotaDiff,
@@ -472,7 +485,7 @@ public class JDBCQuotaStore implements QuotaStore {
                     }
 
                     private void updateQuotas(final TileSet tileSet, final Quota quotaDiff) {
-                        if (log.isDebugEnabled()) {
+                        if (log.isLoggable(Level.FINE)) {
                             log.info(
                                     "Applying quota diff "
                                             + quotaDiff.getBytes()
@@ -491,7 +504,7 @@ public class JDBCQuotaStore implements QuotaStore {
                     }
 
                     private void upsertTilePageFillFactor(PageStatsPayload payload) {
-                        if (log.isDebugEnabled()) {
+                        if (log.isLoggable(Level.FINE)) {
                             log.info("Applying page stats payload " + payload);
                         }
 
@@ -537,8 +550,11 @@ public class JDBCQuotaStore implements QuotaStore {
                                     modified = createNewPageStats(stats, page);
                                 }
                             } catch (DeadlockLoserDataAccessException e) {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Deadlock while updating page stats, will retry", e);
+                                if (log.isLoggable(Level.FINE)) {
+                                    log.log(
+                                            Level.FINE,
+                                            "Deadlock while updating page stats, will retry",
+                                            e);
                                 }
                             }
                         }
@@ -569,7 +585,7 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     private int updatePageFillFactor(TilePage page, PageStats stats, float oldFillFactor) {
-        if (log.isDebugEnabled()) {
+        if (log.isLoggable(Level.FINE)) {
             log.info(
                     "Updating page "
                             + page
@@ -590,7 +606,7 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     private int setPageFillFactor(TilePage page, PageStats stats) {
-        if (log.isDebugEnabled()) {
+        if (log.isLoggable(Level.FINE)) {
             log.info("Setting page " + page + " fill factor to " + stats.getFillFactor());
         }
 
@@ -602,7 +618,7 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     private int createNewPageStats(PageStats stats, TilePage page) {
-        if (log.isDebugEnabled()) {
+        if (log.isLoggable(Level.FINE)) {
             log.info("Creating new page stats: " + stats);
         }
 
@@ -654,184 +670,27 @@ public class JDBCQuotaStore implements QuotaStore {
                 Collections.singletonMap("key", pageStatsKey));
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public Future<List<PageStats>> addHitsAndSetAccesTime(
             final Collection<PageStatsPayload> statsUpdates) {
         return executor.submit(
-                () ->
-                        (List<PageStats>)
-                                tt.execute(
-                                        new TransactionCallback<Object>() {
-
-                                            public Object doInTransaction(
-                                                    TransactionStatus status) {
-                                                List<PageStats> result = new ArrayList<>();
-                                                if (statsUpdates != null) {
-                                                    // sort the payloads by page id as a deadlock
-                                                    // avoidance measure, out
-                                                    // of order updates may result in deadlock with
-                                                    // the addHitsAndSetAccessTime method
-                                                    List<PageStatsPayload> sorted =
-                                                            sortPayloads(statsUpdates);
-                                                    for (PageStatsPayload payload : sorted) {
-                                                        // verify the stats are referring to an
-                                                        // existing tile set id
-                                                        TileSet tset = payload.getTileSet();
-                                                        if (tset == null) {
-                                                            String tileSetId =
-                                                                    payload.getPage()
-                                                                            .getTileSetId();
-                                                            tset =
-                                                                    getTileSetByIdInternal(
-                                                                            tileSetId);
-                                                            if (tset == null) {
-                                                                log.warn(
-                                                                        "Could not locate tileset with id "
-                                                                                + tileSetId
-                                                                                + ", skipping page stats update: "
-                                                                                + payload);
-                                                            }
-                                                        } else {
-                                                            getOrCreateTileSet(tset);
-                                                        }
-
-                                                        // update the stats
-                                                        PageStats stats =
-                                                                upsertTilePageHitAccessTime(
-                                                                        payload);
-                                                        result.add(stats);
-                                                    }
-                                                }
-
-                                                return result;
-                                            }
-
-                                            private PageStats upsertTilePageHitAccessTime(
-                                                    PageStatsPayload payload) {
-                                                TilePage page = payload.getPage();
-
-                                                if (log.isDebugEnabled()) {
-                                                    log.info(
-                                                            "Updating page "
-                                                                    + page
-                                                                    + " with payload "
-                                                                    + payload);
-                                                }
-
-                                                int modified = 0;
-                                                int count = 0;
-                                                PageStats stats = null;
-                                                while (modified == 0 && count < maxLoops) {
-                                                    try {
-                                                        count++;
-                                                        stats = getPageStats(page.getKey());
-                                                        if (stats != null) {
-                                                            // gather the old values, we'll use them
-                                                            // for the optimistic locking
-                                                            final BigInteger oldHits =
-                                                                    stats.getNumHits();
-                                                            final float oldFrequency =
-                                                                    stats
-                                                                            .getFrequencyOfUsePerMinute();
-                                                            final int oldAccessTime =
-                                                                    stats
-                                                                            .getLastAccessTimeMinutes();
-                                                            // update the page so that it computes
-                                                            // the new stats
-                                                            updatePageStats(payload, page, stats);
-
-                                                            // update the record in the db
-                                                            String update =
-                                                                    dialect.updatePageStats(
-                                                                            schema,
-                                                                            "key",
-                                                                            "newHits",
-                                                                            "oldHits",
-                                                                            "newFrequency",
-                                                                            "oldFrequency",
-                                                                            "newAccessTime",
-                                                                            "oldAccessTime");
-                                                            Map<String, Object> params =
-                                                                    new HashMap<>();
-                                                            params.put("key", page.getKey());
-                                                            params.put(
-                                                                    "newHits",
-                                                                    new BigDecimal(
-                                                                            stats.getNumHits()));
-                                                            params.put(
-                                                                    "oldHits",
-                                                                    new BigDecimal(oldHits));
-                                                            params.put(
-                                                                    "newFrequency",
-                                                                    stats
-                                                                            .getFrequencyOfUsePerMinute());
-                                                            params.put(
-                                                                    "oldFrequency", oldFrequency);
-                                                            params.put(
-                                                                    "newAccessTime",
-                                                                    stats
-                                                                            .getLastAccessTimeMinutes());
-                                                            params.put(
-                                                                    "oldAccessTime", oldAccessTime);
-                                                            modified = jt.update(update, params);
-                                                        } else {
-                                                            // create the new stats and insert it
-                                                            stats = new PageStats(0);
-                                                            updatePageStats(payload, page, stats);
-                                                            modified =
-                                                                    createNewPageStats(stats, page);
-                                                        }
-                                                    } catch (DeadlockLoserDataAccessException e) {
-                                                        if (log.isDebugEnabled()) {
-                                                            log.debug(
-                                                                    "Deadlock while updating page stats, will retry",
-                                                                    e);
-                                                        }
-                                                    }
-                                                }
-
-                                                if (modified == 0) {
-                                                    throw new ConcurrencyFailureException(
-                                                            "Failed to create or update page stats for page "
-                                                                    + payload.getPage()
-                                                                    + " after "
-                                                                    + count
-                                                                    + " attempts");
-                                                }
-
-                                                return stats;
-                                            }
-
-                                            private void updatePageStats(
-                                                    PageStatsPayload payload,
-                                                    TilePage page,
-                                                    PageStats stats) {
-                                                final int addedHits = payload.getNumHits();
-                                                final int lastAccessTimeMinutes =
-                                                        (int)
-                                                                (payload.getLastAccessTime()
-                                                                        / 1000
-                                                                        / 60);
-                                                final int creationTimeMinutes =
-                                                        page.getCreationTimeMinutes();
-                                                stats.addHitsAndAccessTime(
-                                                        addedHits,
-                                                        lastAccessTimeMinutes,
-                                                        creationTimeMinutes);
-                                            }
-                                        }));
+                () -> (List<PageStats>) tt.execute(new QuotaStoreCallback(statsUpdates)));
     }
 
+    @Override
     public long[][] getTilesForPage(TilePage page) throws InterruptedException {
         TileSet tileSet = getTileSetById(page.getTileSetId());
         long[][] gridCoverage = calculator.toGridCoverage(tileSet, page);
         return gridCoverage;
     }
 
+    @Override
     public TilePage getLeastFrequentlyUsedPage(Set<String> layerNames) throws InterruptedException {
         return getSinglePage(layerNames, true);
     }
 
+    @Override
     public TilePage getLeastRecentlyUsedPage(Set<String> layerNames) throws InterruptedException {
         return getSinglePage(layerNames, false);
     }
@@ -856,12 +715,13 @@ public class JDBCQuotaStore implements QuotaStore {
         return jt.queryForOptionalObject(select, mapper, params);
     }
 
+    @Override
     public PageStats setTruncated(final TilePage page) throws InterruptedException {
         return (PageStats)
                 tt.execute(
                         (TransactionCallback<Object>)
                                 status -> {
-                                    if (log.isDebugEnabled()) {
+                                    if (log.isLoggable(Level.FINE)) {
                                         log.info("Truncating page " + page);
                                     }
 
@@ -882,6 +742,7 @@ public class JDBCQuotaStore implements QuotaStore {
                                 });
     }
 
+    @Override
     public void close() throws Exception {
         log.info("Closing up the JDBC quota store ");
 
@@ -903,6 +764,7 @@ public class JDBCQuotaStore implements QuotaStore {
      * @author Andrea Aime - GeoSolutions
      */
     static class DiskQuotaMapper implements RowMapper<Quota> {
+        @Override
         public Quota mapRow(ResultSet rs, int rowNum) throws SQLException {
             BigDecimal bytes = rs.getBigDecimal(1);
             if (bytes == null) {
@@ -919,6 +781,7 @@ public class JDBCQuotaStore implements QuotaStore {
      */
     static class TileSetRowMapper implements RowMapper<TileSet> {
 
+        @Override
         public TileSet mapRow(ResultSet rs, int rowNum) throws SQLException {
             String key = rs.getString(1);
             String layerName = rs.getString(2);
@@ -940,6 +803,7 @@ public class JDBCQuotaStore implements QuotaStore {
      */
     static class TilePageRowMapper implements RowMapper<TilePage> {
 
+        @Override
         public TilePage mapRow(ResultSet rs, int rowNum) throws SQLException {
             String tileSetId = rs.getString(1);
             int pageX = rs.getInt(2);
@@ -979,5 +843,126 @@ public class JDBCQuotaStore implements QuotaStore {
                         jt.update(statement, params);
                     }
                 });
+    }
+
+    private class QuotaStoreCallback implements TransactionCallback<Object> {
+
+        private final Collection<PageStatsPayload> statsUpdates;
+
+        public QuotaStoreCallback(Collection<PageStatsPayload> statsUpdates) {
+            this.statsUpdates = statsUpdates;
+        }
+
+        @Override
+        public Object doInTransaction(TransactionStatus status) {
+            List<PageStats> result = new ArrayList<>();
+            if (statsUpdates != null) {
+                // sort the payloads by page id as a deadlock
+                // avoidance measure, out
+                // of order updates may result in deadlock with
+                // the addHitsAndSetAccessTime method
+                List<PageStatsPayload> sorted = sortPayloads(statsUpdates);
+                for (PageStatsPayload payload : sorted) {
+                    // verify the stats are referring to an
+                    // existing tile set id
+                    TileSet tset = payload.getTileSet();
+                    if (tset == null) {
+                        String tileSetId = payload.getPage().getTileSetId();
+                        tset = getTileSetByIdInternal(tileSetId);
+                        if (tset == null) {
+                            log.warning(
+                                    "Could not locate tileset with id "
+                                            + tileSetId
+                                            + ", skipping page stats update: "
+                                            + payload);
+                        }
+                    } else {
+                        getOrCreateTileSet(tset);
+                    }
+
+                    // update the stats
+                    PageStats stats = upsertTilePageHitAccessTime(payload);
+                    result.add(stats);
+                }
+            }
+
+            return result;
+        }
+
+        private PageStats upsertTilePageHitAccessTime(PageStatsPayload payload) {
+            TilePage page = payload.getPage();
+
+            if (log.isLoggable(Level.FINE)) {
+                log.info("Updating page " + page + " with payload " + payload);
+            }
+
+            int modified = 0;
+            int count = 0;
+            PageStats stats = null;
+            while (modified == 0 && count < maxLoops) {
+                try {
+                    count++;
+                    stats = getPageStats(page.getKey());
+                    if (stats != null) {
+                        // gather the old values, we'll use them
+                        // for the optimistic locking
+                        final BigInteger oldHits = stats.getNumHits();
+                        final float oldFrequency = stats.getFrequencyOfUsePerMinute();
+                        final int oldAccessTime = stats.getLastAccessTimeMinutes();
+                        // update the page so that it computes
+                        // the new stats
+                        updatePageStats(payload, page, stats);
+
+                        // update the record in the db
+                        String update =
+                                dialect.updatePageStats(
+                                        schema,
+                                        "key",
+                                        "newHits",
+                                        "oldHits",
+                                        "newFrequency",
+                                        "oldFrequency",
+                                        "newAccessTime",
+                                        "oldAccessTime");
+                        Map<String, Object> params = new HashMap<>();
+                        params.put("key", page.getKey());
+                        params.put("newHits", new BigDecimal(stats.getNumHits()));
+                        params.put("oldHits", new BigDecimal(oldHits));
+                        params.put("newFrequency", stats.getFrequencyOfUsePerMinute());
+                        params.put("oldFrequency", oldFrequency);
+                        params.put("newAccessTime", stats.getLastAccessTimeMinutes());
+                        params.put("oldAccessTime", oldAccessTime);
+                        modified = jt.update(update, params);
+                    } else {
+                        // create the new stats and insert it
+                        stats = new PageStats(0);
+                        updatePageStats(payload, page, stats);
+                        modified = createNewPageStats(stats, page);
+                    }
+                } catch (DeadlockLoserDataAccessException e) {
+                    if (log.isLoggable(Level.FINE)) {
+                        log.log(Level.FINE, "Deadlock while updating page stats, will retry", e);
+                    }
+                }
+            }
+
+            if (modified == 0) {
+                throw new ConcurrencyFailureException(
+                        "Failed to create or update page stats for page "
+                                + payload.getPage()
+                                + " after "
+                                + count
+                                + " attempts");
+            }
+
+            return stats;
+        }
+
+        private void updatePageStats(PageStatsPayload payload, TilePage page, PageStats stats) {
+            final int addedHits = payload.getNumHits();
+            final int lastAccessTimeMinutes = (int) (payload.getLastAccessTime() / 1000 / 60);
+            final int creationTimeMinutes = page.getCreationTimeMinutes();
+            stats.addHitsAndAccessTime(addedHits, lastAccessTimeMinutes, creationTimeMinutes);
+        }
     }
 }

@@ -18,14 +18,15 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
-import javax.naming.InitialContext;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.factory.GeoTools;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.config.ConfigurationResourceProvider;
 import org.geowebcache.config.XMLFileResourceProvider;
@@ -39,19 +40,25 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 /**
- * Builds the quota store for the JDBC family (either H2 or JDBC)
+ * Builds the quota store for the JDBC family (either H2, HSQL or JDBC)
  *
  * @author Andrea Aime - GeoSolutions
  */
 public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationContextAware {
 
-    private static final Log log = LogFactory.getLog(JDBCQuotaStore.class);
+    private static final Logger log = Logging.getLogger(JDBCQuotaStore.class.getName());
 
     private static final String CONFIGURATION_FILE_NAME = "geowebcache-diskquota-jdbc.xml";
 
     public static final String H2_STORE = "H2";
 
+    public static final String HSQL_STORE = "HSQL";
+
     public static final String JDBC_STORE = "JDBC";
+
+    // this will be set to true only for integration tests
+    // not recommended for production usage
+    public static boolean ENABLE_HSQL_AUTO_SHUTDOWN = false;
 
     private ApplicationContext appContext;
 
@@ -63,10 +70,22 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         this.defaultResourceProvider = resourceProvider;
     }
 
+    @Override
     public List<String> getSupportedStoreNames() {
-        return Arrays.asList(H2_STORE, JDBC_STORE);
+        List<String> supportedStores = new ArrayList<>();
+        supportedStores.add(HSQL_STORE);
+        supportedStores.add(JDBC_STORE);
+        try {
+            // check if H2 driver is in the classpath
+            Class.forName("org.h2.Driver");
+            supportedStores.add(H2_STORE);
+        } catch (Exception e) {
+            // don't add h2 when its driver is not there
+        }
+        return supportedStores;
     }
 
+    @Override
     public QuotaStore getQuotaStore(ApplicationContext ctx, String quotaStoreName)
             throws ConfigurationException {
         // lookup dependencies in the classpath
@@ -77,6 +96,8 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
 
         if (H2_STORE.equals(quotaStoreName)) {
             return initializeH2Store(cacheDirFinder, tilePageCalculator);
+        } else if (HSQL_STORE.equals(quotaStoreName)) {
+            return initializeHSQLStore(cacheDirFinder, tilePageCalculator);
         } else if (JDBC_STORE.equals(quotaStoreName)) {
             return getJDBCStore(cacheDirFinder, tilePageCalculator);
         }
@@ -174,12 +195,14 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         return store;
     }
 
-    private DataSource getDataSource(JDBCConfiguration config) throws ConfigurationException {
+    protected DataSource getDataSource(JDBCConfiguration config) throws ConfigurationException {
         try {
             DataSource ds = null;
             if (config.getJNDISource() != null) {
-                InitialContext context = new InitialContext();
-                ds = (DataSource) context.lookup(config.getJNDISource());
+                ds = (DataSource) GeoTools.jndiLookup(config.getJNDISource());
+                if (ds == null)
+                    throw new ConfigurationException(
+                            "Failed to get a datasource from: " + config.getJNDISource());
             } else if (config.getConnectionPool() != null) {
                 ConnectionPoolConfiguration cp = config.getConnectionPool();
 
@@ -203,7 +226,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
 
             // verify the datasource works
             Connection c = null;
-            try {
+            try { // NOPMD try-with-resources would just lead to an unused variable violation
                 c = ds.getConnection();
             } catch (SQLException e) {
                 throw new ConfigurationException(
@@ -214,7 +237,8 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
                         c.close();
                     } catch (SQLException e) {
                         // nothing we can do about it, but at least let the admin know
-                        log.debug(
+                        log.log(
+                                Level.FINE,
                                 "An error occurred while closing the test JDBC connection: "
                                         + e.getMessage(),
                                 e);
@@ -245,6 +269,23 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         return store;
     }
 
+    private QuotaStore initializeHSQLStore(
+            DefaultStorageFinder cacheDirFinder, TilePageCalculator tilePageCalculator)
+            throws ConfigurationException {
+        // get a default data source located in the cache directory
+        DataSource ds = getHSQLDataSource(cacheDirFinder);
+
+        // build up the store
+        JDBCQuotaStore store = new JDBCQuotaStore(cacheDirFinder, tilePageCalculator);
+        store.setDataSource(ds);
+        store.setDialect(new HSQLDialect());
+
+        // initialize it
+        store.initialize();
+
+        return store;
+    }
+
     /** Prepares a simple data source for the embedded H2 */
     private DataSource getH2DataSource(DefaultStorageFinder cacheDirFinder)
             throws ConfigurationException {
@@ -265,6 +306,31 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         return dataSource;
     }
 
+    /** Prepares a simple data source for the embedded HSQL */
+    private DataSource getHSQLDataSource(DefaultStorageFinder cacheDirFinder)
+            throws ConfigurationException {
+        File storeDirectory =
+                new File(cacheDirFinder.getDefaultPath(), "diskquota_page_store_hsql");
+        storeDirectory.mkdirs();
+
+        BasicDataSource dataSource = new BasicDataSource();
+
+        dataSource.setDriverClassName("org.hsqldb.jdbcDriver");
+        String database = new File(storeDirectory, "diskquota").getAbsolutePath();
+        dataSource.setUrl(
+                "jdbc:hsqldb:file:"
+                        + database
+                        + (ENABLE_HSQL_AUTO_SHUTDOWN ? ";shutdown=true" : ""));
+        dataSource.setUsername("sa");
+        dataSource.setPoolPreparedStatements(true);
+        dataSource.setAccessToUnderlyingConnectionAllowed(true);
+        dataSource.setMinIdle(1);
+        dataSource.setMaxActive(-1); // boundless
+        dataSource.setMaxWait(5000);
+        return dataSource;
+    }
+
+    @Override
     public void setApplicationContext(ApplicationContext appContext) throws BeansException {
         this.appContext = appContext;
     }

@@ -24,12 +24,12 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.httpclient.util.DateParseException;
-import org.apache.commons.httpclient.util.DateUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.http.client.utils.DateUtils;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor;
@@ -42,6 +42,7 @@ import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
+import org.geowebcache.layer.EmptyTileException;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.ImageMime;
@@ -57,7 +58,7 @@ import org.springframework.http.MediaType;
  */
 public final class ResponseUtils {
 
-    private static Log log = LogFactory.getLog(ResponseUtils.class);
+    private static Logger log = Logging.getLogger(ResponseUtils.class);
 
     private ResponseUtils() {}
 
@@ -103,6 +104,14 @@ public final class ResponseUtils {
             writeData(convTile, runtimeStats);
 
             // Alternatively:
+        } catch (EmptyTileException e) {
+            writeEmpty(
+                    defaultStorageFinder,
+                    convTile,
+                    e.getMessage(),
+                    runtimeStats,
+                    e.getMime().getMimeType(),
+                    e.getContents());
         } catch (OutsideCoverageException e) {
             writeEmpty(defaultStorageFinder, convTile, e.getMessage(), runtimeStats);
         }
@@ -135,28 +144,19 @@ public final class ResponseUtils {
         // (e.g. 'Sun, 06 Nov 1994 08:49:37 GMT'). See
         // http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3.1
 
-        final String lastModified =
-                org.apache.commons.httpclient.util.DateUtil.formatDate(new Date(tileTimeStamp));
+        final String lastModified = DateUtils.formatDate(new Date(tileTimeStamp));
         servletResp.setHeader("Last-Modified", lastModified);
 
         final Date ifModifiedSince;
         if (ifModSinceHeader != null && ifModSinceHeader.length() > 0) {
-            try {
-                ifModifiedSince = DateUtil.parseDate(ifModSinceHeader);
-                // the HTTP header has second precision
-                long ifModSinceSeconds = 1000 * (ifModifiedSince.getTime() / 1000);
-                long tileTimeStampSeconds = 1000 * (tileTimeStamp / 1000);
-                if (ifModSinceSeconds >= tileTimeStampSeconds) {
-                    httpCode = HttpServletResponse.SC_NOT_MODIFIED;
-                    blob = null;
-                }
-            } catch (DateParseException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug(
-                            "Can't parse client's If-Modified-Since header: '"
-                                    + ifModSinceHeader
-                                    + "'");
-                }
+
+            ifModifiedSince = DateUtils.parseDate(ifModSinceHeader);
+            // the HTTP header has second precision
+            long ifModSinceSeconds = 1000 * (ifModifiedSince.getTime() / 1000);
+            long tileTimeStampSeconds = 1000 * (tileTimeStamp / 1000);
+            if (ifModSinceSeconds >= tileTimeStampSeconds) {
+                httpCode = HttpServletResponse.SC_NOT_MODIFIED;
+                blob = null;
             }
         }
 
@@ -180,15 +180,13 @@ public final class ResponseUtils {
                 servletResp, httpCode, mimeType, blob, cacheResult, contentLength, runtimeStats);
     }
 
-    /**
-     * Writes a transparent, 8 bit PNG to avoid having clients like OpenLayers showing lots of pink
-     * tiles
-     */
     private static void writeEmpty(
             DefaultStorageFinder defaultStorageFinder,
             ConveyorTile tile,
             String message,
-            RuntimeStats runtimeStats) {
+            RuntimeStats runtimeStats,
+            String mimeType,
+            ByteArrayResource emptyTileContents) {
         tile.servletResp.setHeader("geowebcache-message", message);
         TileLayer layer = tile.getLayer();
         if (layer != null) {
@@ -205,13 +203,34 @@ public final class ResponseUtils {
             }
         }
 
+        // handle no-content in case we have to return no result at all (e.g., expected for pbf)
+        int status = emptyTileContents == null ? 204 : 200;
+
         writeFixedResponse(
                 tile.servletResp,
-                200,
-                ImageMime.png.getMimeType(),
-                loadBlankTile(defaultStorageFinder),
+                status,
+                mimeType,
+                emptyTileContents,
                 CacheResult.OTHER,
                 runtimeStats);
+    }
+
+    /**
+     * Writes a transparent, 8 bit PNG to avoid having clients like OpenLayers showing lots of pink
+     * tiles
+     */
+    private static void writeEmpty(
+            DefaultStorageFinder defaultStorageFinder,
+            ConveyorTile tile,
+            String message,
+            RuntimeStats runtimeStats) {
+        writeEmpty(
+                defaultStorageFinder,
+                tile,
+                message,
+                runtimeStats,
+                ImageMime.png.getMimeType(),
+                loadBlankTile(defaultStorageFinder));
     }
 
     /**
@@ -269,7 +288,7 @@ public final class ResponseUtils {
                 runtimeStats.log(contentLength, cacheRes);
 
             } catch (IOException ioe) {
-                log.debug("Caught IOException: " + ioe.getMessage() + "\n\n" + ioe.toString());
+                log.fine("Caught IOException: " + ioe.getMessage() + "\n\n" + ioe.toString());
             }
         }
     }
@@ -287,17 +306,17 @@ public final class ResponseUtils {
                 try {
                     loadBlankTile(blankTile, fh.toURI().toURL());
                 } catch (IOException e) {
-                    log.error(e.getMessage(), e);
+                    log.log(Level.SEVERE, e.getMessage(), e);
                 }
 
                 if (fileSize == blankTile.getSize()) {
                     log.info("Loaded blank tile from " + blankTilePath);
                 } else {
-                    log.error("Failed to load blank tile from " + blankTilePath);
+                    log.log(Level.SEVERE, "Failed to load blank tile from " + blankTilePath);
                 }
 
             } else {
-                log.error("" + blankTilePath + " does not exist or is not readable.");
+                log.log(Level.SEVERE, "" + blankTilePath + " does not exist or is not readable.");
             }
         }
 
@@ -310,7 +329,7 @@ public final class ResponseUtils {
                 int ret = (int) blankTile.getSize();
                 log.info("Read " + ret + " from blank PNG file (expected 425).");
             } catch (IOException ioe) {
-                log.error(ioe.getMessage());
+                log.log(Level.SEVERE, ioe.getMessage());
             }
         }
 
@@ -322,7 +341,7 @@ public final class ResponseUtils {
                 ReadableByteChannel ch = Channels.newChannel(inputStream)) {
             blankTile.transferFrom(ch);
         } catch (IOException e) {
-            log.debug(e);
+            log.log(Level.FINE, e.getMessage(), e);
         }
     }
 
@@ -338,7 +357,7 @@ public final class ResponseUtils {
             int httpCode,
             String errorMsg,
             RuntimeStats runtimeStats) {
-        log.debug(errorMsg);
+        log.fine(errorMsg);
         errorMsg =
                 "<html>\n"
                         + ServletUtils.gwcHtmlHeader("../", "GWC Error")
@@ -367,7 +386,7 @@ public final class ResponseUtils {
             int httpCode,
             String errorMsg,
             RuntimeStats runtimeStats) {
-        log.debug(errorMsg);
+        log.fine(errorMsg);
         writePage(response, httpCode, errorMsg, runtimeStats, MediaType.APPLICATION_XML_VALUE);
     }
 

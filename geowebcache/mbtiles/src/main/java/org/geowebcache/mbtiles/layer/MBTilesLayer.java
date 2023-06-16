@@ -22,15 +22,16 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geotools.mbtiles.MBTilesFile;
 import org.geotools.mbtiles.MBTilesMetadata;
 import org.geotools.mbtiles.MBTilesTile;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
@@ -40,9 +41,9 @@ import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
-import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.layer.AbstractTileLayer;
+import org.geowebcache.layer.EmptyTileException;
 import org.geowebcache.layer.ExpirationRule;
 import org.geowebcache.layer.TileJSONProvider;
 import org.geowebcache.layer.meta.TileJSON;
@@ -69,7 +70,7 @@ public class MBTilesLayer extends AbstractTileLayer implements TileJSONProvider 
 
     private static final int DEFAULT_TILE_SIZE = TILE_SIZE_256;
 
-    private static final Log LOG = LogFactory.getLog(MBTilesLayer.class);
+    private static final Logger log = Logging.getLogger(MBTilesLayer.class.getName());
 
     /*
      * configuration properties
@@ -220,10 +221,15 @@ public class MBTilesLayer extends AbstractTileLayer implements TileJSONProvider 
 
     /** @see org.geowebcache.layer.TileLayer#getTile(org.geowebcache.conveyor.ConveyorTile) */
     @Override
-    public ConveyorTile getTile(final ConveyorTile tile)
-            throws IOException, OutsideCoverageException {
+    public ConveyorTile getTile(final ConveyorTile tile) throws IOException, GeoWebCacheException {
 
         long[] tileIndex = tile.getTileIndex();
+
+        // check request is within coverage
+        String tileGridSetId = tile.getGridSetId();
+        GridSubset gridSubset = getGridSubset(tileGridSetId);
+        gridSubset.checkCoverage(tileIndex);
+
         int zl = (int) tileIndex[2];
         int row = (int) tileIndex[1];
         int column = (int) tileIndex[0];
@@ -237,13 +243,29 @@ public class MBTilesLayer extends AbstractTileLayer implements TileJSONProvider 
             tile.setBlob(new ByteArrayResource(content));
             tile.setCacheResult(CacheResult.HIT);
         } else {
+            // not in the file, but still within the coverage
             tile.setCacheResult(CacheResult.MISS);
-            throw new OutsideCoverageException(tile.getTileIndex(), 0, 0);
+            throw new EmptyTileException(getLayerMime());
         }
 
         saveExpirationInformation((int) (tile.getExpiresHeader() / 1000));
 
         return tile;
+    }
+
+    private MimeType getLayerMime() {
+        switch (tilesInfo.getFormat()) {
+            case PNG:
+                return ImageMime.png;
+            case JPG:
+            case JPEG:
+                return ImageMime.jpeg;
+            case PBF:
+                return ApplicationMime.mapboxVector;
+            default:
+                // unknown format
+                return null;
+        }
     }
 
     private byte[] getPbfFromTile(byte[] raw) throws IOException {
@@ -274,38 +296,39 @@ public class MBTilesLayer extends AbstractTileLayer implements TileJSONProvider 
             if (getExpireCache(0) == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
                 if (backendExpire == -1) {
                     this.expireCacheList.set(0, new ExpirationRule(0, 7200));
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(
+                    if (log.isLoggable(Level.FINE)) {
+                        log.fine(
                                 "Layer profile wants MaxAge from backend,"
                                         + " but backend does not provide this. Setting to 7200 seconds.");
                     }
                 } else {
                     this.expireCacheList.set(backendExpire, new ExpirationRule(0, 7200));
                 }
-                if (LOG.isTraceEnabled()) {
-                    LOG.trace("Setting expireCache to: " + expireCache);
+                if (log.isLoggable(Level.FINER)) {
+                    log.finer("Setting expireCache to: " + expireCache);
                 }
             }
             if (getExpireCache(0) == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
                 if (backendExpire == -1) {
                     this.expireClientsList.set(0, new ExpirationRule(0, 7200));
-                    if (LOG.isDebugEnabled()) {
-                        LOG.error(
+                    if (log.isLoggable(Level.FINE)) {
+                        log.log(
+                                Level.SEVERE,
                                 "Layer profile wants MaxAge from backend,"
                                         + " but backend does not provide this. Setting to 7200 seconds.");
                     }
                 } else {
                     this.expireClientsList.set(0, new ExpirationRule(0, backendExpire));
-                    if (LOG.isTraceEnabled()) {
-                        LOG.trace("Setting expireClients to: " + expireClients);
+                    if (log.isLoggable(Level.FINER)) {
+                        log.finer("Setting expireClients to: " + expireClients);
                     }
                 }
             }
         } catch (Exception e) {
             // Sometimes this doesn't work (network conditions?),
             // and it's really not worth getting caught up on it.
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(e);
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, e.getMessage(), e);
             }
         }
     }

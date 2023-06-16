@@ -18,8 +18,9 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSubset;
@@ -40,7 +41,7 @@ public abstract class RasterFilter extends RequestFilter {
 
     private static final long serialVersionUID = -5695649347572928323L;
 
-    private static Log log = LogFactory.getLog(RasterFilter.class);
+    private static Logger log = Logging.getLogger(RasterFilter.class.getName());
 
     private Integer zoomStart;
 
@@ -106,6 +107,7 @@ public abstract class RasterFilter extends RequestFilter {
         this.debug = debug;
     }
 
+    @Override
     public void apply(ConveyorTile convTile) throws RequestFilterException {
         long[] idx = convTile.getTileIndex().clone();
         String gridSetId = convTile.getGridSetId();
@@ -153,7 +155,8 @@ public abstract class RasterFilter extends RequestFilter {
             try {
                 setMatrix(convTile.getLayer(), gridSetId, (int) idx[2], false);
             } catch (Exception e) {
-                log.error(
+                log.log(
+                        Level.SEVERE,
                         "Failed to load matrix for "
                                 + this.getName()
                                 + ", "
@@ -199,6 +202,7 @@ public abstract class RasterFilter extends RequestFilter {
     }
 
     /** Loops over all the zoom levels and initializes the lookup images. */
+    @Override
     public void initialize(TileLayer layer) throws GeoWebCacheException {
         if (preload != null && preload) {
             for (String gridSetId : layer.getGridSubsets()) {
@@ -208,7 +212,8 @@ public abstract class RasterFilter extends RequestFilter {
                     try {
                         setMatrix(layer, grid.getName(), i, false);
                     } catch (Exception e) {
-                        log.error(
+                        log.log(
+                                Level.SEVERE,
                                 "Failed to load matrix for "
                                         + this.getName()
                                         + ", "
@@ -276,7 +281,8 @@ public abstract class RasterFilter extends RequestFilter {
                     }
                 }
             } catch (ArrayIndexOutOfBoundsException aioob) {
-                log.error(
+                log.log(
+                        Level.SEVERE,
                         "x:"
                                 + x
                                 + "  y:"
@@ -344,7 +350,8 @@ public abstract class RasterFilter extends RequestFilter {
                     y = startY;
                 }
             } catch (ArrayIndexOutOfBoundsException aioob) {
-                log.error(
+                log.log(
+                        Level.SEVERE,
                         "x:"
                                 + x
                                 + "  y:"

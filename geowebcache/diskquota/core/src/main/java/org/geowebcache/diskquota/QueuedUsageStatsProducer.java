@@ -15,8 +15,8 @@
 package org.geowebcache.diskquota;
 
 import java.util.concurrent.BlockingQueue;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.diskquota.storage.TileSet;
 import org.geowebcache.layer.TileLayer;
@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
  */
 public class QueuedUsageStatsProducer implements TileLayerListener {
 
-    private static final Log log = LogFactory.getLog(QueuedQuotaUpdatesProducer.class);
+    private static final Logger log = Logging.getLogger(QueuedQuotaUpdatesProducer.class.getName());
 
     private final BlockingQueue<UsageStats> usageStatsQueue;
 
@@ -43,6 +43,7 @@ public class QueuedUsageStatsProducer implements TileLayerListener {
     }
 
     /** @see org.geowebcache.layer.TileLayerListener#tileRequested */
+    @Override
     public void tileRequested(TileLayer layer, ConveyorTile tile) {
         String layerName = layer.getName();
         if (cancelled(layerName)) {
@@ -75,7 +76,7 @@ public class QueuedUsageStatsProducer implements TileLayerListener {
 
     private boolean cancelled(String layerName) {
         if (cancelled) {
-            log.debug(
+            log.fine(
                     "Quota usage stats listener cancelled. Avoiding adding update for layer "
                             + layerName
                             + " to tile page store");

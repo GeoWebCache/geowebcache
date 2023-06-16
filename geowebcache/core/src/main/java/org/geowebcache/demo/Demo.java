@@ -49,6 +49,7 @@ import org.springframework.util.Assert;
 
 public class Demo {
 
+    @SuppressWarnings("PMD.AvoidPrintStackTrace")
     public static void makeMap(
             TileLayerDispatcher tileLayerDispatcher,
             GridSetBroker gridSetBroker,
@@ -200,8 +201,7 @@ public class Demo {
 
                 buf.append("</td><td>OpenLayers: [");
                 buf.append(
-                        layer.getMimeTypes()
-                                .stream()
+                        layer.getMimeTypes().stream()
                                 .filter(type -> type.supportsTiling() || type.isVector())
                                 .map(
                                         type ->
@@ -214,35 +214,7 @@ public class Demo {
                 buf.append("]</td><td>\n");
 
                 if (gridSubset.getName().equals(gridSetBroker.getWorldEpsg4326().getName())) {
-                    buf.append(" &nbsp; KML: [");
-                    String prefix = "";
-
-                    buf.append(
-                            layer.getMimeTypes()
-                                    .stream()
-                                    .filter(
-                                            type ->
-                                                    type instanceof ImageMime
-                                                            || type == XMLMime.kml
-                                                            || type == XMLMime.kmz)
-                                    .map(
-                                            type -> {
-                                                if (type == XMLMime.kmz) {
-                                                    return String.format(
-                                                            "<a href=\"%sservice/kml/%s.kml.kmz\">kmz</a>",
-                                                            prefix, layer.getName());
-                                                } else {
-                                                    return String.format(
-                                                            "<a href=\"%sservice/kml/%s.%s.kml\">%s</a>",
-                                                            prefix,
-                                                            layer.getName(),
-                                                            type.getFileExtension(),
-                                                            type.getFileExtension());
-                                                }
-                                            })
-                                    .collect(Collectors.joining(", ")));
-
-                    buf.append("]");
+                    outputKMLSupport(buf, layer);
                 }
                 buf.append("</td></tr>");
             }
@@ -250,6 +222,37 @@ public class Demo {
             buf.append("</table></td>\n");
             buf.append("</tr>\n");
         }
+    }
+
+    private static void outputKMLSupport(StringBuffer buf, TileLayer layer) {
+        buf.append(" &nbsp; KML: [");
+        String prefix = "";
+
+        buf.append(
+                layer.getMimeTypes().stream()
+                        .filter(
+                                type ->
+                                        type instanceof ImageMime
+                                                || type == XMLMime.kml
+                                                || type == XMLMime.kmz)
+                        .map(
+                                type -> {
+                                    if (type == XMLMime.kmz) {
+                                        return String.format(
+                                                "<a href=\"%sservice/kml/%s.kml.kmz\">kmz</a>",
+                                                prefix, layer.getName());
+                                    } else {
+                                        return String.format(
+                                                "<a href=\"%sservice/kml/%s.%s.kml\">%s</a>",
+                                                prefix,
+                                                layer.getName(),
+                                                type.getFileExtension(),
+                                                type.getFileExtension());
+                                    }
+                                })
+                        .collect(Collectors.joining(", ")));
+
+        buf.append("]");
     }
 
     private static String generateDemoUrl(String layerName, String gridSetId, MimeType type) {
@@ -305,6 +308,7 @@ public class Demo {
                 .append("ol.css' type='text/css'>\n");
         buf.append(
                 "<script type=\"text/javascript\">\n"
+                        + "//# sourceURL=gwc_page.js\n" // this makes debugging in chrome possible
                         + "function init(){\n"
                         + "function ScaleControl(opt_options) {\n"
                         + "  var options = opt_options || {};\n"

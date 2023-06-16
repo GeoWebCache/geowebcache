@@ -15,8 +15,8 @@
 package org.geowebcache.config;
 
 import java.util.Arrays;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensionPriority;
 import org.geowebcache.grid.BoundingBox;
@@ -30,7 +30,7 @@ import org.geowebcache.grid.SRS;
  * <p>Includes preconfigured EPSG:4326 and EPSG:3857 (or EPSG:900913) gridsets
  */
 public class DefaultGridsets extends SimpleGridSetConfiguration {
-    private static Log log = LogFactory.getLog(DefaultGridsets.class);
+    private static Logger log = Logging.getLogger(DefaultGridsets.class.getName());
 
     private final GridSet WORLD_EPSG4326;
 
@@ -39,6 +39,12 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
     private final GridSet WORLD_EPSG3857;
 
     private final GridSet WORLD_EPSG3857x2;
+
+    private final GridSet WEB_MERCATOR_QUAD;
+
+    private final GridSet WORLD_CRS84_QUAD;
+
+    private final GridSet WORLD_MERCATOR_WGS84_QUAD;
 
     public GridSet worldEpsg4326() {
         return new GridSet(WORLD_EPSG4326);
@@ -54,6 +60,18 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
 
     public GridSet worldEpsg3857x2() {
         return new GridSet(WORLD_EPSG3857x2);
+    }
+
+    public GridSet webMercatorQuad() {
+        return new GridSet(WEB_MERCATOR_QUAD);
+    }
+
+    public GridSet worldCRS84Quad() {
+        return new GridSet(WORLD_CRS84_QUAD);
+    }
+
+    public GridSet worldMercatorWGS84Quad() {
+        return new GridSet(WORLD_MERCATOR_WGS84_QUAD);
     }
 
     /**
@@ -117,7 +135,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
         addInternal(WORLD_EPSG4326x2);
 
         final SRS googleMapsCompatibleSRS = useEPSG900913 ? SRS.getEPSG900913() : SRS.getEPSG3857();
-        log.debug(
+        log.fine(
                 "Adding "
                         + googleMapsCompatibleSRS
                         + " grid set for Spherical Mercator / GoogleMapsCompatible");
@@ -165,7 +183,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
                         + "of 512x512 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
         addInternal(WORLD_EPSG3857x2);
 
-        log.debug("Adding GlobalCRS84Pixel");
+        log.fine("Adding GlobalCRS84Pixel");
         GridSet GlobalCRS84Pixel =
                 GridSetFactory.createGridSet(
                         "GlobalCRS84Pixel",
@@ -186,10 +204,9 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
                         + "Some values have been chosen to coincide with original pixel size of commonly used global"
                         + "products like STRM (1\" and 3\"), GTOPO (30\") or ETOPO (2' and 5'). Scale denominator"
                         + "and approximated pixel size in meters are only accurate near the equator.");
-
         addInternal(GlobalCRS84Pixel);
 
-        log.debug("Adding GlobalCRS84Scale");
+        log.fine("Adding GlobalCRS84Scale");
         GridSet GlobalCRS84Scale =
                 GridSetFactory.createGridSet(
                         "GlobalCRS84Scale",
@@ -211,7 +228,7 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
 
         addInternal(GlobalCRS84Scale);
 
-        log.debug("Adding GoogleCRS84Quad");
+        log.fine("Adding GoogleCRS84Quad");
         GridSet GoogleCRS84Quad =
                 GridSetFactory.createGridSet(
                         "GoogleCRS84Quad",
@@ -234,6 +251,443 @@ public class DefaultGridsets extends SimpleGridSetConfiguration {
                         + " tiles of 256x256 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
 
         addInternal(GoogleCRS84Quad);
+
+        log.fine("Adding OGC TMS WebMercatorQuad");
+        WEB_MERCATOR_QUAD =
+                GridSetFactory.createGridSet(
+                        "WebMercatorQuad",
+                        SRS.getEPSG3857(),
+                        BoundingBox.WORLD3857,
+                        true,
+                        null,
+                        new double[] {
+                            559082264.028717,
+                            279541132.014358,
+                            139770566.007179,
+                            69885283.0035897,
+                            34942641.5017948,
+                            17471320.7508974,
+                            8735660.37544871,
+                            4367830.18772435,
+                            2183915.09386217,
+                            1091957.54693108,
+                            545978.773465544,
+                            272989.386732772,
+                            136494.693366386,
+                            68247.346683193,
+                            34123.6733415964,
+                            17061.8366707982,
+                            8530.91833539913,
+                            4265.45916769956,
+                            2132.72958384978,
+                            1066.36479192489,
+                            533.182395962445,
+                            266.591197981222,
+                            133.295598990611,
+                            66.6477994953056,
+                            33.3238997476528
+                        },
+                        1d,
+                        GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                        new String[] {
+                            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+                            "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"
+                        },
+                        256,
+                        256,
+                        true);
+        // copied from the OGC TMS spec
+        WEB_MERCATOR_QUAD.setDescription(
+                "This tile matrix set is the most used tile matrix set in the mass market: for example, by Google Maps, Microsoft Bing Maps and Open Street Map tiles. Nevertheless, it has been long criticized because it is a based on a spherical Mercator instead of an ellipsoid. The use of WebMercatorQuad should be limited to visualization. Any additional use (including distance measurements, routing etc.) needs to use the Mercator spherical expressions to transform the coordinate to an appropriate CRS first. The risks caused by imprecision in the use of Web Mercator is also emphasized by the US National Geospatial Agency (NGA). NGA has issued an Advisory Notice on web Mercator (http://earth-info.nga.mil/GandG/wgs84/web_mercator/index.html) that says that “it may cause geo-location / geo-coordinate errors up to 40,000 meters. This erroneous geospatial positioning information poses an unacceptable risk to global safety of navigation activities, and department of defense, intelligence community, and allied partner systems, missions, and operations that require accurate and precise positioning and navigation information.” The use of WorldMercatorWGS84Quad is recommended.");
+        addInternal(WEB_MERCATOR_QUAD);
+        addx2Gridset(WEB_MERCATOR_QUAD);
+
+        log.fine("Adding OGC TMS WorldCRS84Quad");
+        WORLD_CRS84_QUAD =
+                GridSetFactory.createGridSet(
+                        "WorldCRS84Quad",
+                        SRS.getEPSG4326(),
+                        BoundingBox.WORLD4326,
+                        true,
+                        null,
+                        new double[] {
+                            279541132.0143589,
+                            139770566.0071794,
+                            69885283.00358972,
+                            34942641.50179486,
+                            17471320.75089743,
+                            8735660.375448715,
+                            4367830.187724357,
+                            2183915.093862179,
+                            1091957.546931089,
+                            545978.7734655447,
+                            272989.3867327723,
+                            136494.6933663862,
+                            68247.34668319309,
+                            34123.67334159654,
+                            17061.83667079827,
+                            8530.918335399136,
+                            4265.459167699568,
+                            2132.729583849784,
+                        },
+                        null,
+                        GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                        new String[] {
+                            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+                            "13", "14", "15", "16", "17", "18"
+                        },
+                        256,
+                        256,
+                        true);
+        // copied from the OGC TMS spec
+        WORLD_CRS84_QUAD.setDescription(
+                "This Tile Matrix Set defines tiles in the Equirectangular Plate Carrée projection in the CRS84 CRS for the whole world.");
+        addInternal(WORLD_CRS84_QUAD);
+        addx2Gridset(WORLD_CRS84_QUAD);
+
+        log.fine("Adding OGC TMS WorldMercatorWGS84Quad");
+        WORLD_MERCATOR_WGS84_QUAD =
+                GridSetFactory.createGridSet(
+                        "WorldMercatorWGS84Quad",
+                        SRS.getSRS(3395),
+                        new BoundingBox(
+                                -20037508.3427892,
+                                -20037508.3427892,
+                                20037508.3427892,
+                                20037508.3427892),
+                        true,
+                        null,
+                        new double[] {
+                            559082264.028717,
+                            279541132.014358,
+                            139770566.007179,
+                            69885283.0035897,
+                            34942641.5017948,
+                            17471320.7508974,
+                            8735660.37544871,
+                            4367830.18772435,
+                            2183915.09386217,
+                            1091957.54693108,
+                            545978.773465544,
+                            272989.386732772,
+                            136494.693366386,
+                            68247.346683193,
+                            34123.6733415964,
+                            17061.8366707982,
+                            8530.91833539913,
+                            4265.45916769956,
+                            2132.72958384978,
+                            1066.36479192489,
+                            533.182395962445,
+                            266.591197981222,
+                            133.295598990611,
+                            66.6477994953056,
+                            33.3238997476528,
+                        },
+                        1d,
+                        GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                        new String[] {
+                            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+                            "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"
+                        },
+                        256,
+                        256,
+                        true);
+        // not from the spec, it does not have one
+        WORLD_MERCATOR_WGS84_QUAD.setDescription(
+                "This Tile Matrix Set defines tiles in the Mercator projection in the WGS84 CRS for the whole world.");
+        addInternal(WORLD_MERCATOR_WGS84_QUAD);
+        addx2Gridset(WORLD_MERCATOR_WGS84_QUAD);
+
+        // family of UTM WGS84 quads from OGC TMS spec. Covers 60 zones, refers to the north CRSs
+        double[] UTM_SCALES = {
+            279072704.500914,
+            139536352.250457,
+            69768176.1252285,
+            34884088.0626143,
+            17442044.0313071,
+            8721022.01565356,
+            4360511.00782678,
+            2180255.50391339,
+            1090127.7519567,
+            545063.875978348,
+            272531.937989174,
+            136265.968994587,
+            68132.9844972935,
+            34066.4922486467,
+            17033.2461243234,
+            8516.62306216168,
+            4258.31153108084,
+            2129.15576554042,
+            1064.57788277021,
+            532.288941385105,
+            266.144470692553,
+            133.072235346276,
+            66.5361176731382,
+            33.2680588365691,
+        };
+
+        // the 60 UTM zones from the OGC TMS specification
+        for (int i = 1; i <= 60; i++) {
+            String id = "UTM" + (i < 10 ? "0" : "") + i + "WGS84Quad";
+            GridSet utmGridset =
+                    GridSetFactory.createGridSet(
+                            id,
+                            SRS.getSRS(32600 + i),
+                            new BoundingBox(
+                                    -9501965.72931276,
+                                    -20003931.4586255,
+                                    10501965.7293128,
+                                    20003931.4586255),
+                            true,
+                            null,
+                            new double[] {
+                                279072704.500914,
+                                139536352.250457,
+                                69768176.1252285,
+                                34884088.0626143,
+                                17442044.0313071,
+                                8721022.01565356,
+                                4360511.00782678,
+                                2180255.50391339,
+                                1090127.7519567,
+                                545063.875978348,
+                                272531.937989174,
+                                136265.968994587,
+                                68132.9844972935,
+                                34066.4922486467,
+                                17033.2461243234,
+                                8516.62306216168,
+                                4258.31153108084,
+                                2129.15576554042,
+                                1064.57788277021,
+                                532.288941385105,
+                                266.144470692553,
+                                133.072235346276,
+                                66.5361176731382,
+                                33.2680588365691
+                            },
+                            1d,
+                            GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                            new String[] {
+                                "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+                                "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23",
+                                "24"
+                            },
+                            256,
+                            256,
+                            true);
+            // not from the spec, it does not have one
+            utmGridset.setDescription(
+                    "This Tile Matrix Set defines tiles in the Universal Transverse Mercator, zone "
+                            + i);
+            addInternal(utmGridset);
+            addx2Gridset(utmGridset);
+        }
+
+        // UPS Artic
+        log.fine("Adding OGC TMS UPSArcticWGS84Quad");
+        double[] upsScales = {
+            458726544.4,
+            229363272.2,
+            114681636.1,
+            57340818.05,
+            28670409.02,
+            14335204.51,
+            7167602.256,
+            3583801.128,
+            1791900.564,
+            895950.282,
+            447975.141,
+            223987.5705,
+            111993.7852,
+            55996.89262,
+            27998.44631,
+            13999.22316,
+            6999.611578,
+            3499.805789,
+            1749.902894,
+            874.9514472,
+            437.4757236,
+            218.7378618,
+            109.3689309,
+            54.68446545,
+            27.34223273
+        };
+        BoundingBox upsBounds =
+                new BoundingBox(
+                        -14440759.350252, -14440759.350252, 18440759.350252, 18440759.350252);
+        final GridSet upsArctic =
+                GridSetFactory.createGridSet(
+                        "UPSArcticWGS84Quad",
+                        SRS.getSRS(5041),
+                        upsBounds,
+                        true,
+                        null,
+                        upsScales,
+                        1d,
+                        GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                        new String[] {
+                            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+                            "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"
+                        },
+                        256,
+                        256,
+                        true);
+        // not from the spec, it does not have one
+        upsArctic.setDescription(
+                "This Tile Matrix Set defines tiles in the Universal Polar Stereographics for the arctic");
+        addInternal(upsArctic);
+        addx2Gridset(upsArctic);
+
+        // UPS antarctic
+        log.fine("Adding OGC TMS UPSAntarcticWGS84Quad");
+        final GridSet upsAntarctic =
+                GridSetFactory.createGridSet(
+                        "UPSAntarcticWGS84Quad",
+                        SRS.getSRS(5042),
+                        upsBounds,
+                        true,
+                        null,
+                        upsScales,
+                        1d,
+                        GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                        new String[] {
+                            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+                            "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"
+                        },
+                        256,
+                        256,
+                        true);
+        // not from the spec, it does not have one
+        upsAntarctic.setDescription(
+                "This Tile Matrix Set defines tiles in the Universal Polar Stereographics for the Antarctic");
+        addInternal(upsAntarctic);
+        addx2Gridset(upsAntarctic);
+
+        log.fine("Adding OGC TMS EuropeanETRS89_LAEAQuad");
+        GridSet euETRS89LaeaQuad =
+                GridSetFactory.createGridSet(
+                        "EuropeanETRS89_LAEAQuad",
+                        SRS.getSRS(3035),
+                        new BoundingBox(2000000.0, 1000000.0, 6500000, 5500000.0),
+                        true,
+                        null,
+                        new double[] {
+                            62779017.857142866,
+                            31389508.928571433,
+                            15694754.464285716,
+                            7847377.232142858,
+                            3923688.616071429,
+                            1961844.3080357146,
+                            980922.1540178573,
+                            490461.07700892864,
+                            245230.53850446432,
+                            122615.26925223216,
+                            61307.63462611608,
+                            30653.81731305804,
+                            15326.90865652902,
+                            7663.45432826451,
+                            3831.727164132255,
+                            1915.8635820661275,
+                        },
+                        1d,
+                        GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                        new String[] {
+                            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+                            "13", "14", "15"
+                        },
+                        256,
+                        256,
+                        true);
+        // not from the spec, it does not have one
+        euETRS89LaeaQuad.setDescription("Lambert Azimuthal Equal Area ETRS89 for Europe");
+        addInternal(euETRS89LaeaQuad);
+        addx2Gridset(euETRS89LaeaQuad);
+
+        log.fine("Adding OGC TMS CanadianNAD83_LCC");
+        GridSet canadianNAD83Lcc =
+                GridSetFactory.createGridSet(
+                        "CanadianNAD83_LCC",
+                        SRS.getSRS(3978),
+                        new BoundingBox(
+                                -7786476.885838887,
+                                -5153821.09213678,
+                                7148753.233541353,
+                                7928343.534071138),
+                        true,
+                        null,
+                        new double[] {
+                            137016643.080905,
+                            80320101.1163925,
+                            47247118.3037603,
+                            28348270.9822562,
+                            16536491.4063161,
+                            9449423.66075207,
+                            5669654.19645125,
+                            3307298.28126323,
+                            1889884.73215041,
+                            1133930.83929025,
+                            661459.656252643,
+                            396875.793751586,
+                            236235.591518802,
+                            137016.643080905,
+                            80320.1011163925,
+                            47247.1183037603,
+                            28348.2709822562,
+                            16536.4914063161,
+                            9449.42366075207,
+                            5669.65419645125,
+                            3307.29828126323,
+                            1889.88473215041,
+                            1133.93083929025,
+                            661.459656252643,
+                            396.875793751586,
+                            236.235591518802
+                        },
+                        1d,
+                        GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                        new String[] {
+                            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+                            "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24",
+                            "25"
+                        },
+                        256,
+                        256,
+                        true);
+        // not from the spec, it does not have one
+        canadianNAD83Lcc.setDescription("Lambert Conformal Conic for Canada");
+        addInternal(canadianNAD83Lcc);
+        addx2Gridset(canadianNAD83Lcc);
+    }
+
+    private void addx2Gridset(GridSet base) {
+        assert base.getTileWidth() == 256 && base.getTileHeight() == 256;
+
+        // twice the real estate, half the scale (it's like zooming in, assuming same DPI)
+        int levels = base.getNumLevels();
+        double[] scales = new double[levels];
+        String[] scaleNames = new String[levels];
+        for (int i = 0; i < levels; i++) {
+            scales[i] = base.getGrid(i).getScaleDenominator() / 2;
+            scaleNames[i] = base.getGrid(i).getName();
+        }
+
+        GridSet x2 =
+                GridSetFactory.createGridSet(
+                        base.getName() + "x2",
+                        base.getSrs(),
+                        base.getOriginalExtent(),
+                        base.isTopLeftAligned(),
+                        null,
+                        scales,
+                        base.getMetersPerUnit(),
+                        base.getPixelSize(),
+                        scaleNames,
+                        512,
+                        512,
+                        base.isyCoordinateFirst());
+        addInternal(x2);
     }
 
     private double[] halveResolutions(double[] resolutions) {

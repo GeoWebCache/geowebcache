@@ -37,11 +37,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.LockProvider.Lock;
 import org.geowebcache.storage.StorageException;
+import org.geowebcache.util.TMSKeyBuilder;
 import org.springframework.http.HttpStatus;
 
 /**
@@ -293,7 +295,8 @@ class DeleteManager implements Closeable {
                                 client.getContainerName(), prefix));
                 throw e;
             } catch (Exception e) {
-                log.warn(
+                log.log(
+                        Level.WARNING,
                         String.format(
                                 "Unknown error performing bulk Azure blobs delete of '%s/%s'",
                                 client.getContainerName(), prefix),
@@ -314,8 +317,7 @@ class DeleteManager implements Closeable {
                 ContainerURL container, BlobFlatListSegment segment, Predicate<BlobItem> filter)
                 throws ExecutionException, InterruptedException {
             List<Future<Object>> collect =
-                    segment.blobItems()
-                            .stream()
+                    segment.blobItems().stream()
                             .filter(item -> filter.test(item))
                             .map(
                                     item ->
@@ -367,8 +369,8 @@ class DeleteManager implements Closeable {
             long count = 0L;
             try {
                 checkInterrupted();
-                if (log.isTraceEnabled()) {
-                    log.trace(
+                if (log.isLoggable(Level.FINER)) {
+                    log.finer(
                             String.format(
                                     "Running delete delete on list of items on '%s':%s ... (only the first 100 items listed)",
                                     client.getContainerName(),
@@ -381,10 +383,10 @@ class DeleteManager implements Closeable {
                     deleteItems(container, keys.subList(i, Math.min(i + PAGE_SIZE, keys.size())));
                 }
             } catch (InterruptedException | IllegalStateException e) {
-                log.info("Azure bulk delete aborted", e);
+                log.log(Level.INFO, "Azure bulk delete aborted", e);
                 throw e;
             } catch (Exception e) {
-                log.warn("Unknown error performing bulk Azure delete", e);
+                log.log(Level.WARNING, "Unknown error performing bulk Azure delete", e);
                 throw e;
             }
 
@@ -398,8 +400,7 @@ class DeleteManager implements Closeable {
         private long deleteItems(ContainerURL container, List<String> itemNames)
                 throws ExecutionException, InterruptedException {
             List<Future<Object>> collect =
-                    itemNames
-                            .stream()
+                    itemNames.stream()
                             .map(
                                     item ->
                                             deleteExecutor.submit(

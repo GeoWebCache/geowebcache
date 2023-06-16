@@ -14,16 +14,21 @@
  */
 package org.geowebcache.util;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.servlet.ServletContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.geowebcache.storage.DefaultStorageFinder;
+import org.geotools.util.logging.Logging;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 
 public class GWCVars {
 
-    private static final Log log = LogFactory.getLog(GWCVars.class);
+    private static final Logger log = Logging.getLogger(GWCVars.class.toString());
 
     // everything here requires initialization
 
@@ -35,46 +40,127 @@ public class GWCVars {
 
     public static final int CACHE_USE_WMS_BACKEND_VALUE = -4;
 
-    public static String findEnvVar(ApplicationContext context, String varStr) {
-        ServletContext serlvCtx = null;
-        if (context instanceof WebApplicationContext) {
-            serlvCtx = ((WebApplicationContext) context).getServletContext();
-        }
-
-        final String[] typeStrs = {
-            "Java environment variable ",
-            "servlet context parameter ",
-            "system environment variable "
+    /**
+     * enum containing and describing the possible sources of lookup for "environment variables", in
+     * order of precedence.
+     */
+    public static enum VariableType {
+        ENV("Java system property") {
+            protected @Override String apply(ApplicationContext context, String varName) {
+                return System.getProperty(varName);
+            }
+        },
+        SERVLET("servlet context parameter") {
+            protected @Override String apply(ApplicationContext context, String varName) {
+                if (context instanceof WebApplicationContext) {
+                    ServletContext servletContext =
+                            ((WebApplicationContext) context).getServletContext();
+                    return servletContext == null ? null : servletContext.getInitParameter(varName);
+                }
+                return null;
+            }
+        },
+        SYSTEM("system environment variable") {
+            protected @Override String apply(ApplicationContext context, String varName) {
+                return System.getenv(varName);
+            }
         };
 
-        String value = null;
+        private final String source;
 
-        for (int j = 0; j < typeStrs.length && value == null; j++) {
-            String typeStr = typeStrs[j];
-
-            switch (j) {
-                case 0:
-                    value = System.getProperty(varStr);
-                    break;
-                case 1:
-                    if (serlvCtx != null) {
-                        value = serlvCtx.getInitParameter(varStr);
-                    }
-                    break;
-                case 2:
-                    value = System.getenv(varStr);
-                    break;
-            }
-
-            if (value != null) {
-                if (varStr.equals(DefaultStorageFinder.GWC_METASTORE_PASSWORD)) {
-                    log.info("Found " + typeStr + " for " + varStr + " set to <hidden>");
-                } else {
-                    log.info("Found " + typeStr + " for " + varStr + " set to " + value);
-                }
-            }
+        private VariableType(String source) {
+            this.source = source;
         }
 
-        return value;
+        public String getSource() {
+            return source;
+        }
+
+        protected abstract String apply(ApplicationContext context, String varName);
+
+        /**
+         * @return a non-null {@literal Variable} with the evaluated value for the given variable
+         *     name, possibly {@literal null}.
+         */
+        Variable get(ApplicationContext context, String varName) {
+            return Variable.ofNullable(this, varName, this.apply(context, varName));
+        }
+    }
+
+    /**
+     * Type holder for the result of a variable lookup of a given
+     * {@link VariableType}. The {@link #getValue() value) may be {@literal null}.
+     */
+    public static class Variable {
+        private final VariableType type;
+        private final String name;
+        private final String value;
+
+        private Variable(VariableType type, String name, String value) {
+            this.type = type;
+            this.name = name;
+            this.value = value;
+        }
+
+        public VariableType getType() {
+            return type;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        static Variable ofNullable(VariableType type, String name, String nullableValue) {
+            Objects.requireNonNull(type);
+            Objects.requireNonNull(name);
+            return new Variable(type, name, nullableValue);
+        }
+    }
+
+    /**
+     * The first non-null value for the given variable name in the order of lookup precedence
+     * defined by {@link VariableType} (that is, Java system property -> servlet context parameter
+     * -> system environment variable)
+     */
+    public static String findEnvVar(ApplicationContext context, String varStr) {
+        return lookup(context, varStr)
+                .map(GWCVars::log)
+                .filter(GWCVars::nonNullValue)
+                .findFirst()
+                .map(Variable::getValue)
+                .orElse(null);
+    }
+
+    /**
+     * @return all the results of a given variable look up in order of precedence, without filtering
+     *     for null (i.e. not set) values
+     */
+    public static List<Variable> findVariable(ApplicationContext context, String varName) {
+        return lookup(context, varName).collect(Collectors.toList());
+    }
+
+    private static Stream<Variable> lookup(ApplicationContext context, String varName) {
+
+        return Arrays.stream(VariableType.values()).map(t -> t.get(context, varName));
+    }
+
+    private static boolean nonNullValue(Variable v) {
+        return v.getValue() == null ? false : true;
+    }
+
+    private static Variable log(Variable v) {
+        String value = v.getValue();
+        String source = v.getType().getSource();
+        String name = v.getName();
+        if (value == null && log.isLoggable(Level.FINER)) {
+            log.config("Not found " + source + " for " + name);
+        } else if (value != null && log.isLoggable(Level.INFO)) {
+            log.config("Found " + source + " for " + name + " set to " + value);
+        }
+        return v;
     }
 }

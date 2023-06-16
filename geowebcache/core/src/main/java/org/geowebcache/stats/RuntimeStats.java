@@ -16,13 +16,14 @@ package org.geowebcache.stats;
 
 import java.time.Clock;
 import java.util.List;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.util.ServletUtils;
 
 public class RuntimeStats {
-    private static Log log = LogFactory.getLog(RuntimeStats.class);
+    private static Logger log = Logging.getLogger(RuntimeStats.class.getName());
 
     final int pollInterval;
 
@@ -89,18 +90,19 @@ public class RuntimeStats {
         this.pollInterval = pollInterval;
 
         if (intervals.size() != intervalDescs.size()) {
-            log.fatal("The interval and interval description lists must be of the same size!");
+            log.severe("The interval and interval description lists must be of the same size!");
         }
 
         if (pollInterval < 1) {
-            log.error("poll interval cannot be less than 1 second");
+            log.log(Level.SEVERE, "poll interval cannot be less than 1 second");
         }
 
         this.intervals = new int[intervals.size()];
         for (int i = 0; i < intervals.size(); i++) {
             int curVal = intervals.get(i);
             if (curVal % pollInterval != 0) {
-                log.error(
+                log.log(
+                        Level.SEVERE,
                         "The interval ("
                                 + curVal
                                 + ") must be a multiple of the poll interval "
@@ -395,6 +397,7 @@ public class RuntimeStats {
             this.stats = runtimeStats;
         }
 
+        @Override
         public void run() {
             try {
                 while (run) {

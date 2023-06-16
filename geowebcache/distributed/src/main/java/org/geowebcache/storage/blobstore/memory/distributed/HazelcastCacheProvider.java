@@ -24,9 +24,9 @@ import com.hazelcast.query.PredicateBuilder;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.blobstore.memory.CacheConfiguration;
 import org.geowebcache.storage.blobstore.memory.CacheConfiguration.EvictionPolicy;
@@ -51,7 +51,7 @@ import org.springframework.beans.factory.DisposableBean;
 public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
 
     /** {@link Logger} object used for logging operations */
-    private static final Log LOGGER = LogFactory.getLog(HazelcastCacheProvider.class);
+    private static final Logger LOGGER = Logging.getLogger(HazelcastCacheProvider.class.getName());
 
     /** Fixed name for the Hazelcast map */
     public static final String HAZELCAST_MAP_DEFINITION = "CacheProviderMap";
@@ -84,14 +84,14 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
                                     .getMaxSizeConfig()
                                     .getSize()
                             * MB_TO_BYTES;
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Configured Hazelcast Cache");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Configured Hazelcast Cache");
             }
         } else {
             map = null;
             totalSize = 0;
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Hazelcast Cache not configured");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Hazelcast Cache not configured");
             }
         }
     }
@@ -105,14 +105,14 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
     @Override
     public TileObject getTileObj(TileObject obj) {
         if (configured) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Getting TileObject:" + obj);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Getting TileObject:" + obj);
             }
             String key = GuavaCacheProvider.generateTileKey(obj);
             return map.get(key);
         } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Cache not configured");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Cache not configured");
             }
             return null;
         }
@@ -121,14 +121,14 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
     @Override
     public void putTileObj(TileObject obj) {
         if (configured) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Adding TileObject:" + obj);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Adding TileObject:" + obj);
             }
             String key = GuavaCacheProvider.generateTileKey(obj);
             map.put(key, obj);
         } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Cache not configured");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Cache not configured");
             }
         }
     }
@@ -136,14 +136,14 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
     @Override
     public void removeTileObj(TileObject obj) {
         if (configured) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Removing TileObject:" + obj);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Removing TileObject:" + obj);
             }
             String key = GuavaCacheProvider.generateTileKey(obj);
             map.remove(key);
         } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Cache not configured");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Cache not configured");
             }
         }
     }
@@ -151,8 +151,8 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
     @Override
     public void removeLayer(String layername) {
         if (configured) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Removing Layer:" + layername);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Removing Layer:" + layername);
             }
             // Creation of the Predicate
             EntryObject e = new PredicateBuilder().getEntryObject();
@@ -162,8 +162,8 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
             // Execution of the Processor
             map.executeOnEntries(entryProcessor, predicate);
         } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Cache not configured");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Cache not configured");
             }
         }
     }
@@ -171,13 +171,13 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
     @Override
     public void clear() {
         if (configured) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Clearing cache");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Clearing cache");
             }
             map.clear();
         } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Cache not configured");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Cache not configured");
             }
         }
     }
@@ -185,13 +185,13 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
     @Override
     public void reset() {
         if (configured) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Resetting cache");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Resetting cache");
             }
             map.clear();
         } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Cache not configured");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Cache not configured");
             }
         }
     }
@@ -199,13 +199,13 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
     @Override
     public void destroy() throws Exception {
         if (configured) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Destroying cache");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Destroying cache");
             }
             map.destroy();
         } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Cache not configured");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Cache not configured");
             }
         }
     }
@@ -213,16 +213,16 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
     @Override
     public CacheStatistics getStatistics() {
         if (configured) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Getting cache statistics");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Getting cache statistics");
             }
             // Getting statistics and then creating a new HazelcastCacheStatistics instance
             LocalMapStats localMapStats = map.getLocalMapStats();
             CacheStatistics stats = new HazelcastCacheStatistics(localMapStats, totalSize);
             return stats;
         } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Cache not configured");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Cache not configured");
             }
         }
         return new CacheStatistics();

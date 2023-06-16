@@ -18,14 +18,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 public class SeederThreadPoolExecutor extends ThreadPoolExecutor implements DisposableBean {
 
-    private static final Log log = LogFactory.getLog(SeederThreadPoolExecutor.class);
+    private static final Logger log = Logging.getLogger(SeederThreadPoolExecutor.class.getName());
 
     private static final ThreadFactory tf = new CustomizableThreadFactory("GWC Seeder Thread-");
 
@@ -39,11 +39,12 @@ public class SeederThreadPoolExecutor extends ThreadPoolExecutor implements Disp
      *
      * @see org.springframework.beans.factory.DisposableBean#destroy()
      */
+    @Override
     public void destroy() throws Exception {
         log.info("Initiating shut down for running and pending seed tasks...");
         this.shutdownNow();
         while (!this.isTerminated()) {
-            log.debug("Waiting for pending tasks to terminate....");
+            log.fine("Waiting for pending tasks to terminate....");
             Thread.sleep(500);
         }
         log.info("Seeder thread pool executor shut down complete.");

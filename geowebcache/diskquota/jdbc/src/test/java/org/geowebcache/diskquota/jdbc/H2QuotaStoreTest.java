@@ -4,6 +4,7 @@ import java.util.Properties;
 
 public class H2QuotaStoreTest extends JDBCQuotaStoreTest {
 
+    @Override
     protected SQLDialect getDialect() {
         return new H2Dialect();
     }

@@ -233,7 +233,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         assertThat(retrieved, isPresent());
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings("unchecked")
     @Test
     public void testCantModifyReturnedCollection() throws Exception {
         I info = getGoodInfo("test", 1);
@@ -261,8 +261,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         testAdd();
         I goodGridSet =
                 requirePresent(
-                        getInfos(config)
-                                .stream()
+                        getInfos(config).stream()
                                 .filter(i -> i.getName().equals("test"))
                                 .findAny());
         doModifyInfo(goodGridSet, 2);

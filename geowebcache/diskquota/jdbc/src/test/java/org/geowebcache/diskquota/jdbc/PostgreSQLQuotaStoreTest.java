@@ -4,6 +4,7 @@ import java.util.Properties;
 
 public class PostgreSQLQuotaStoreTest extends JDBCQuotaStoreTest {
 
+    @Override
     protected SQLDialect getDialect() {
         return new PostgreSQLDialect();
     }

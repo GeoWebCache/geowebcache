@@ -17,19 +17,20 @@ package org.geowebcache.proxy;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
 
 public class ProxyDispatcher extends AbstractController {
-    private static Log log = LogFactory.getLog(org.geowebcache.proxy.ProxyDispatcher.class);
+    private static Logger log = Logging.getLogger(ProxyDispatcher.class.getName());
 
     private static long lastRequest = System.currentTimeMillis();
 
+    @Override
     protected ModelAndView handleRequestInternal(
             HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -43,7 +44,8 @@ public class ProxyDispatcher extends AbstractController {
             throw new ServletException("Expected url parameter.");
         }
 
-        synchronized (this) {
+        // lastRequest is static, static synchronization needed
+        synchronized (ProxyDispatcher.class) {
             long time = System.currentTimeMillis();
             if (time - lastRequest < 1000) {
                 throw new ServletException("Only one request per second please.");

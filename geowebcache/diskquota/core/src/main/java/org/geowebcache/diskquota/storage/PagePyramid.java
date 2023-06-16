@@ -185,8 +185,8 @@ class PagePyramid {
                         coverageMaxX,
                         coverageMaxY);
 
-        // if (log.isDebugEnabled()) {
-        // log.debug("Coverage: " + Arrays.toString(coverage) + " (" + coverageTilesWide + "x"
+        // if (log.isLoggable(Level.FINE)) {
+        // log.fine("Coverage: " + Arrays.toString(coverage) + " (" + coverageTilesWide + "x"
         // + coverageTilesHigh + ") tiles. Tiles perpage: " + tilesPerPageX + " x "
         // + tilesPerPageY + " for a total of " + numPagesX + " x " + numPagesY
         // + " pages and " + (tilesPerPageX * (long) tilesPerPageY) + " tiles per page");

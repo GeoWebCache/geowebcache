@@ -33,8 +33,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.storage.StorageException;
 import org.junit.After;
 import org.junit.Before;
@@ -43,16 +44,18 @@ import org.junit.Test;
 
 public final class SqliteConnectionManagerTest extends TestSupport {
 
-    private static Log LOGGER = LogFactory.getLog(SqliteConnectionManagerTest.class);
+    private static Logger LOGGER = Logging.getLogger(SqliteConnectionManagerTest.class.getName());
 
     private List<SqliteConnectionManager> connectionManagersToClean;
 
+    @Override
     @Before
     public void beforeTest() throws Exception {
         super.beforeTest();
         connectionManagersToClean = new ArrayList<>();
     }
 
+    @Override
     @After
     public void afterTest() throws Exception {
         for (SqliteConnectionManager connectionManager : connectionManagersToClean) {
@@ -162,8 +165,8 @@ public final class SqliteConnectionManagerTest extends TestSupport {
         Random random = new Random();
         List<Future<Tuple<File, String>>> results = new ArrayList<>();
         for (int i = 0; i < workersNumber; i++) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format("Submitted worker '%d'\\'%d'.", i, workersNumber));
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format("Submitted worker '%d'\\'%d'.", i, workersNumber));
             }
             executor.submit(
                     () -> {

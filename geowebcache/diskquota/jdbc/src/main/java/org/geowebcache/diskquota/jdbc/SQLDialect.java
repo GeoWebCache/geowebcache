@@ -49,9 +49,10 @@ public class SQLDialect {
     protected static final int TILESET_KEY_SIZE = 320;
     protected static final int TILEPAGE_KEY_SIZE = TILESET_KEY_SIZE;
 
-    @SuppressWarnings("serial")
+    // in this case we need a mutable, order preserving map, so keeping the double brace init
+    @SuppressWarnings({"serial", "DoubleBraceInitialization"})
     protected final Map<String, List<String>> TABLE_CREATION_MAP =
-            new LinkedHashMap<String, List<String>>() {
+            new LinkedHashMap<>() {
                 {
                     put(
                             "TILESET",
@@ -153,22 +154,17 @@ public class SQLDialect {
                     JdbcUtils.extractDatabaseMetaData(
                             ds,
                             dbmd -> {
-                                ResultSet rs = null;
-                                try {
-                                    rs =
-                                            dbmd.getTables(
-                                                    null, schema, tableName.toLowerCase(), null);
+                                try (ResultSet rs =
+                                        dbmd.getTables(
+                                                null, schema, tableName.toLowerCase(), null)) {
                                     boolean exists = rs.next();
                                     rs.close();
                                     if (exists) {
                                         return true;
                                     }
-                                    rs = dbmd.getTables(null, schema, tableName, null);
+                                }
+                                try (ResultSet rs = dbmd.getTables(null, schema, tableName, null)) {
                                     return rs.next();
-                                } finally {
-                                    if (rs != null) {
-                                        rs.close();
-                                    }
                                 }
                             });
         } catch (MetaDataAccessException e) {

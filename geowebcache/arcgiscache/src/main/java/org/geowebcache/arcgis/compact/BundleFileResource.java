@@ -22,13 +22,14 @@ import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.io.Resource;
 
 /** @author Bjoern Saxe */
 public class BundleFileResource implements Resource {
-    private static Log log = LogFactory.getLog(BundleFileResource.class);
+    private static Logger log = Logging.getLogger(BundleFileResource.class.getName());
 
     private final String bundleFilePath;
 
@@ -43,12 +44,14 @@ public class BundleFileResource implements Resource {
     }
 
     /** @see org.geowebcache.io.Resource#getSize() */
+    @Override
     public long getSize() {
         return tileSize;
     }
 
     /** @see org.geowebcache.io.Resource#transferTo(WritableByteChannel) */
-    @SuppressWarnings("PMD.EmptyWhileStmt")
+    @Override
+    @SuppressWarnings("PMD.EmptyControlStatement")
     public long transferTo(WritableByteChannel target) throws IOException {
         try (FileInputStream fin = new FileInputStream(new File(bundleFilePath));
                 FileChannel in = fin.getChannel()) {
@@ -64,17 +67,20 @@ public class BundleFileResource implements Resource {
      *
      * @see org.geowebcache.io.Resource#transferFrom(ReadableByteChannel)
      */
+    @Override
     public long transferFrom(ReadableByteChannel channel) throws IOException {
         // unsupported
         return 0;
     }
 
     /** @see org.geowebcache.io.Resource#getInputStream() */
+    @Override
     public InputStream getInputStream() throws IOException {
         FileInputStream fis = new FileInputStream(bundleFilePath);
         long skipped = fis.skip(tileOffset);
         if (skipped != tileOffset) {
-            log.error(
+            log.log(
+                    Level.SEVERE,
                     "tried to skip to tile offset "
                             + tileOffset
                             + " in "
@@ -91,12 +97,14 @@ public class BundleFileResource implements Resource {
      *
      * @see org.geowebcache.io.Resource#getOutputStream()
      */
+    @Override
     public OutputStream getOutputStream() throws IOException {
         // unsupported
         return null;
     }
 
     /** @see org.geowebcache.io.Resource#getLastModified() */
+    @Override
     public long getLastModified() {
         File f = new File(bundleFilePath);
 

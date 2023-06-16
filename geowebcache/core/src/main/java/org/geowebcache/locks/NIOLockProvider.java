@@ -19,9 +19,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.storage.DefaultStorageFinder;
@@ -34,7 +35,7 @@ import org.geowebcache.util.IOUtils;
  */
 public class NIOLockProvider implements LockProvider {
 
-    public static Log LOGGER = LogFactory.getLog(NIOLockProvider.class);
+    public static Logger LOGGER = Logging.getLogger(NIOLockProvider.class.getName());
 
     private final String root;
 
@@ -64,6 +65,7 @@ public class NIOLockProvider implements LockProvider {
         this.maxLockAttempts = 120 * 1000 / waitBeforeRetry;
     }
 
+    @Override
     @SuppressWarnings({"PMD.CloseResource", "PMD.UseTryWithResources"})
     // complex but seemingly correct resource handling
     public LockProvider.Lock getLock(final String lockKey) throws GeoWebCacheException {
@@ -108,8 +110,8 @@ public class NIOLockProvider implements LockProvider {
                                     + " attempts");
                 }
 
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine(
                             "Lock "
                                     + lockKey
                                     + " acquired by thread "
@@ -131,6 +133,7 @@ public class NIOLockProvider implements LockProvider {
 
                     boolean released;
 
+                    @Override
                     public void release() throws GeoWebCacheException {
                         if (released) {
                             return;
@@ -141,8 +144,8 @@ public class NIOLockProvider implements LockProvider {
                             if (!lock.isValid()) {
                                 // do not crap out, locks usage in GWC is only there to prevent
                                 // duplication of work
-                                if (LOGGER.isDebugEnabled()) {
-                                    LOGGER.debug(
+                                if (LOGGER.isLoggable(Level.FINE)) {
+                                    LOGGER.fine(
                                             "Lock key "
                                                     + lockKey
                                                     + " for releasing lock is unkonwn, it means "
@@ -160,8 +163,8 @@ public class NIOLockProvider implements LockProvider {
                                 IOUtils.closeQuietly(fos);
                                 lockFile.delete();
 
-                                if (LOGGER.isDebugEnabled()) {
-                                    LOGGER.debug(
+                                if (LOGGER.isLoggable(Level.FINE)) {
+                                    LOGGER.fine(
                                             "Lock "
                                                     + lockKey
                                                     + " on file "

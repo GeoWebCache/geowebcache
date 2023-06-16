@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.geowebcache</groupId>
     <artifactId>geowebcache</artifactId>
-    <version>1.20-SNAPSHOT</version>
+    <version>1.24-SNAPSHOT</version>
     <!-- GWC VERSION -->
   </parent>
   <groupId>org.geowebcache</groupId>
@@ -29,19 +29,11 @@
       <groupId>org.geotools</groupId>
       <artifactId>gt-wms</artifactId>
       <version>${gt.version}</version>
-      <!-- optional>true</optional -->
-    </dependency>
-
-    <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>3.1</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.5.11</version>
     </dependency>
 
     <dependency>

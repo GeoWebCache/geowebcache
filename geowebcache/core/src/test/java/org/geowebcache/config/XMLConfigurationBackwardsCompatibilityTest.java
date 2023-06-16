@@ -14,13 +14,13 @@
  */
 package org.geowebcache.config;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -41,7 +41,6 @@ import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.ImageMime;
 import org.junit.Test;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 
 public class XMLConfigurationBackwardsCompatibilityTest {
 
@@ -210,10 +209,10 @@ public class XMLConfigurationBackwardsCompatibilityTest {
 
     private XMLConfiguration loadConfig(String fileName) throws Exception {
 
-        try (InputStream is = XMLConfiguration.class.getResourceAsStream(fileName); ) {
-            Node root = XMLConfiguration.loadDocument(is);
-            print(root.getOwnerDocument());
-        }
+        // try (InputStream is = XMLConfiguration.class.getResourceAsStream(fileName); ) {
+        //     Node root = XMLConfiguration.loadDocument(is);
+        //     print(root.getOwnerDocument());
+        // }
 
         XMLConfiguration xmlConfig =
                 new XMLConfiguration(
@@ -251,6 +250,6 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         tx.setOutputProperty(OutputKeys.INDENT, "yes");
 
         tx.transform(
-                new DOMSource(dom), new StreamResult(new OutputStreamWriter(System.out, "utf-8")));
+                new DOMSource(dom), new StreamResult(new OutputStreamWriter(System.out, UTF_8)));
     }
 }

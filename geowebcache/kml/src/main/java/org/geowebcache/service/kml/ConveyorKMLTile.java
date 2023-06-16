@@ -60,10 +60,12 @@ public class ConveyorKMLTile extends ConveyorTile {
         this.errorMsg = message;
     }
 
+    @Override
     public String getHint() {
         return hint;
     }
 
+    @Override
     public void setHint(String hint) {
         this.hint = hint;
     }

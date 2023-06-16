@@ -19,11 +19,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.servlet.ServletContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.config.BaseConfiguration;
+import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.SuppressFBWarnings;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -51,7 +53,7 @@ import org.springframework.web.context.WebApplicationContext;
 public class GeoWebCacheExtensions implements ApplicationContextAware, ApplicationListener {
 
     /** logger */
-    private static Log LOGGER = LogFactory.getLog(GeoWebCacheExtensions.class);
+    private static Logger LOGGER = Logging.getLogger(GeoWebCacheExtensions.class.getName());
 
     /**
      * Caches the names of the beans for a particular type, so that the lookup (expensive) wont' be
@@ -71,6 +73,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
      *
      * <p>This is the context that is used for methods which dont supply their own context.
      */
+    @Override
     @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         GeoWebCacheExtensions.context = context;
@@ -106,7 +109,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
                     // JD: this can happen during testing... if the application
                     // context has been closed and a non-one time setup test is
                     // run that triggers an extension lookup
-                    LOGGER.error("bean lookup error", e);
+                    LOGGER.log(Level.SEVERE, "bean lookup error", e);
                     return Collections.emptyList();
                 }
             } else {
@@ -200,8 +203,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
      */
     public static <T extends BaseConfiguration> List<T> configurations(
             Class<T> extensionPoint, ApplicationContext context) {
-        return extensions(extensionPoint, context)
-                .stream()
+        return extensions(extensionPoint, context).stream()
                 .sorted(
                         (x, y) ->
                                 Integer.signum(
@@ -227,15 +229,18 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
                 bean.deinitialize();
             } catch (Exception e) {
                 if (bean instanceof BaseConfiguration) {
-                    LOGGER.error(
+                    LOGGER.log(
+                            Level.SEVERE,
                             "Error while preparing configuration to reinitialize "
                                     + ((BaseConfiguration) bean).getIdentifier()
                                     + " from "
                                     + ((BaseConfiguration) bean).getLocation(),
                             e);
                 } else {
-                    LOGGER.error(
-                            "Error while preparing bean to reinitialize " + bean.toString(), e);
+                    LOGGER.log(
+                            Level.SEVERE,
+                            "Error while preparing bean to reinitialize " + bean.toString(),
+                            e);
                 }
             }
         }
@@ -244,14 +249,16 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
                 bean.reinitialize();
             } catch (Exception e) {
                 if (bean instanceof BaseConfiguration) {
-                    LOGGER.error(
+                    LOGGER.log(
+                            Level.SEVERE,
                             "Error while reinitializing configuration "
                                     + ((BaseConfiguration) bean).getIdentifier()
                                     + " from "
                                     + ((BaseConfiguration) bean).getLocation(),
                             e);
                 } else {
-                    LOGGER.error("Error while reinitializing bean " + bean.toString(), e);
+                    LOGGER.log(
+                            Level.SEVERE, "Error while reinitializing bean " + bean.toString(), e);
                 }
             }
         }
@@ -308,6 +315,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
         return beans.get(0);
     }
 
+    @Override
     public void onApplicationEvent(ApplicationEvent event) {
         if (event instanceof ContextRefreshedEvent) extensionsCache.clear();
     }
@@ -315,7 +323,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
     /** Checks the context, if null will issue a warning. */
     static void checkContext(ApplicationContext context) {
         if (context == null) {
-            LOGGER.fatal("Extension lookup occured, but ApplicationContext is unset.");
+            LOGGER.fine("Extension lookup occured, but ApplicationContext is unset.");
         }
     }
 
@@ -347,13 +355,10 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
      * @param propertyName The property name to be searched
      * @param context The Spring context (may be null)
      * @return The property value, or null if not found
+     * @see GWCVars#findEnvVar(ApplicationContext, String)
      */
     public static String getProperty(String propertyName, ApplicationContext context) {
-        if (context instanceof WebApplicationContext) {
-            return getProperty(propertyName, ((WebApplicationContext) context).getServletContext());
-        } else {
-            return getProperty(propertyName, (ServletContext) null);
-        }
+        return GWCVars.findEnvVar(context, propertyName);
     }
 
     /**
@@ -370,7 +375,9 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
      * @param propertyName The property name to be searched
      * @param context The servlet context used to look into web.xml (may be null)
      * @return The property value, or null if not found
+     * @deprecated since 1.21, use {@link GWCVars#findEnvVar(ApplicationContext, String)} instead
      */
+    @Deprecated
     public static String getProperty(String propertyName, ServletContext context) {
         // TODO: this code comes from the data directory lookup and it's useful as
         // long as we don't provide a way for the user to manually inspect the three contexts
@@ -403,7 +410,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
             }
 
             if (result == null || result.equalsIgnoreCase("")) {
-                LOGGER.trace("Found " + typeStrs[j] + ": '" + propertyName + "' to be unset");
+                LOGGER.finer("Found " + typeStrs[j] + ": '" + propertyName + "' to be unset");
             } else {
                 break;
             }

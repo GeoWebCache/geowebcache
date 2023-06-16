@@ -38,11 +38,12 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.filter.parameters.ParametersUtils;
@@ -65,8 +66,8 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 /** See BlobStore interface description for details */
 public class FileBlobStore implements BlobStore {
 
-    private static Log log =
-            LogFactory.getLog(org.geowebcache.storage.blobstore.file.FileBlobStore.class);
+    private static Logger log =
+            Logging.getLogger(org.geowebcache.storage.blobstore.file.FileBlobStore.class.getName());
 
     static final int DEFAULT_DISK_BLOCK_SIZE = 4096;
 
@@ -138,7 +139,10 @@ public class FileBlobStore implements BlobStore {
             // In future it should store key value pairs.
             metadataFile.createNewFile();
         } catch (IOException e) {
-            log.error("Error while writing blobstore metadata file " + metadataFile.getPath(), e);
+            log.log(
+                    Level.SEVERE,
+                    "Error while writing blobstore metadata file " + metadataFile.getPath(),
+                    e);
         }
 
         stagingArea = new File(path, "_gwc_in_progress_deletes_");
@@ -177,6 +181,7 @@ public class FileBlobStore implements BlobStore {
     }
 
     /** Destroy method for Spring */
+    @Override
     public void destroy() {
         if (deleteExecutorService != null) {
             deleteExecutorService.shutdown();
@@ -191,11 +196,13 @@ public class FileBlobStore implements BlobStore {
             this.directory = directory;
         }
 
+        @Override
         public void run() {
             try {
                 deleteDirectory(directory);
             } catch (IOException e) {
-                log.warn(
+                log.log(
+                        Level.WARNING,
                         "Exception occurred while deleting '" + directory.getAbsolutePath() + "'",
                         e);
             } catch (InterruptedException e) {
@@ -236,6 +243,7 @@ public class FileBlobStore implements BlobStore {
     }
 
     /** @see org.geowebcache.storage.BlobStore#delete(java.lang.String) */
+    @Override
     public boolean delete(final String layerName) throws StorageException {
         final File source = getLayerPath(layerName);
         final String target = filteredLayerName(layerName);
@@ -282,6 +290,7 @@ public class FileBlobStore implements BlobStore {
     /**
      * @see org.geowebcache.storage.BlobStore#deleteByGridsetId(java.lang.String, java.lang.String)
      */
+    @Override
     public boolean deleteByGridsetId(final String layerName, final String gridSetId)
             throws StorageException {
 
@@ -321,6 +330,7 @@ public class FileBlobStore implements BlobStore {
      * @throws StorageException if the target directory already exists
      * @see org.geowebcache.storage.BlobStore#rename
      */
+    @Override
     public boolean rename(final String oldLayerName, final String newLayerName)
             throws StorageException {
         final File oldLayerPath = getLayerPath(oldLayerName);
@@ -360,6 +370,7 @@ public class FileBlobStore implements BlobStore {
     }
 
     /** Delete a particular tile */
+    @Override
     public boolean delete(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, null);
         boolean ret = false;
@@ -377,7 +388,7 @@ public class FileBlobStore implements BlobStore {
 
             ret = true;
         } else {
-            log.trace("delete unexistant file " + fh.toString());
+            log.finer("delete unexistant file " + fh.toString());
         }
 
         // Look at the parent directory to prune it if empty
@@ -389,6 +400,7 @@ public class FileBlobStore implements BlobStore {
     }
 
     /** Delete tiles within a range. */
+    @Override
     public boolean delete(TileRange trObj) throws StorageException {
 
         String prefix = path + File.separator + filteredLayerName(trObj.getLayerName());
@@ -452,6 +464,7 @@ public class FileBlobStore implements BlobStore {
      * @param stObj the tile to load. Its setBlob() method will be called.
      * @return true if successful, false otherwise
      */
+    @Override
     public boolean get(TileObject stObj) throws StorageException {
         File fh = getFileHandleTile(stObj, null);
         if (!fh.exists()) {
@@ -467,6 +480,7 @@ public class FileBlobStore implements BlobStore {
     }
 
     /** Store a tile. */
+    @Override
     public void put(TileObject stObj) throws StorageException {
 
         // an update to ParameterMap file is required !!!
@@ -486,7 +500,10 @@ public class FileBlobStore implements BlobStore {
             try {
                 fh.setLastModified(stObj.getCreated());
             } catch (Exception e) {
-                log.debug("Failed to set the last modified time to match the tile request time", e);
+                log.log(
+                        Level.FINE,
+                        "Failed to set the last modified time to match the tile request time",
+                        e);
             }
         }
 
@@ -507,7 +524,7 @@ public class FileBlobStore implements BlobStore {
         try {
             mimeType = MimeType.createFromFormat(stObj.getBlobFormat());
         } catch (MimeException me) {
-            log.error(me.getMessage());
+            log.log(Level.SEVERE, me.getMessage());
             throw new RuntimeException(me);
         }
 
@@ -520,7 +537,7 @@ public class FileBlobStore implements BlobStore {
 
         // check if it's required to create tile folder
         if (onTileFolderCreation != null) {
-            log.debug("Creating parent tile folder and updating ParameterMap");
+            log.fine("Creating parent tile folder and updating ParameterMap");
             File parent = tilePath.getParentFile();
             mkdirs(parent, stObj);
             onTileFolderCreation.run();
@@ -565,7 +582,7 @@ public class FileBlobStore implements BlobStore {
         } finally {
 
             if (temp != null) {
-                log.warn(
+                log.warning(
                         "Tile "
                                 + target.getPath()
                                 + " was already written by another thread/process");
@@ -583,16 +600,19 @@ public class FileBlobStore implements BlobStore {
         }
     }
 
+    @Override
     public void clear() throws StorageException {
         throw new StorageException("Not implemented yet!");
     }
 
     /** Add an event listener */
+    @Override
     public void addListener(BlobStoreListener listener) {
         listeners.addListener(listener);
     }
 
     /** Remove an event listener */
+    @Override
     public boolean removeListener(BlobStoreListener listener) {
         return listeners.removeListener(listener);
     }
@@ -628,11 +648,12 @@ public class FileBlobStore implements BlobStore {
     /**
      * @see org.geowebcache.storage.BlobStore#getLayerMetadata(java.lang.String, java.lang.String)
      */
+    @Override
     public String getLayerMetadata(final String layerName, final String key) {
         try {
             return layerMetadata.getEntry(layerName, key);
         } catch (IOException e) {
-            log.debug("Optimistic read of metadata key failed");
+            log.fine("Optimistic read of metadata key failed");
         }
         return null;
     }
@@ -650,13 +671,14 @@ public class FileBlobStore implements BlobStore {
      * @see org.geowebcache.storage.BlobStore#putLayerMetadata(java.lang.String, java.lang.String,
      *     java.lang.String)
      */
+    @Override
     public void putLayerMetadata(final String layerName, final String key, final String value) {
         try {
             layerMetadata.putEntry(layerName, key, value);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
-            log.debug("Optimistic read of metadata during writing process failed");
+            log.fine("Optimistic read of metadata during writing process failed");
         }
     }
 
@@ -761,11 +783,10 @@ public class FileBlobStore implements BlobStore {
         try {
             p = layerMetadata.getLayerMetadata(layerName);
         } catch (IOException e) {
-            log.debug("Optimistic read of metadata mappings failed");
+            log.fine("Optimistic read of metadata mappings failed");
             return null;
         }
-        return getParameterIds(layerName)
-                .stream()
+        return getParameterIds(layerName).stream()
                 .collect(
                         Collectors.toMap(
                                 (id) -> id,

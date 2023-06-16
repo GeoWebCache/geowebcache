@@ -17,10 +17,10 @@ package org.geowebcache.rest.filter;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.TileLayer;
@@ -29,7 +29,7 @@ import org.geowebcache.util.ServletUtils;
 import org.springframework.http.HttpStatus;
 
 public class ZipFilterUpdate {
-    private static Log log = LogFactory.getLog(ZipFilterUpdate.class);
+    private static Logger log = Logging.getLogger(ZipFilterUpdate.class.getName());
 
     InputStream is;
 
@@ -37,8 +37,8 @@ public class ZipFilterUpdate {
         this.is = is;
     }
 
+    @SuppressWarnings("PMD.UseTryWithResources") // is is a field, cannot be handled using ITWR
     public void runUpdate(RequestFilter filter, TileLayer tl) throws RestException {
-
         try (ZipInputStream zis = new ZipInputStream(is)) {
             ZipEntry ze = zis.getNextEntry();
 

@@ -21,12 +21,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
@@ -43,7 +43,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "${gwc.context.suffix:}/rest")
 public class ByteStreamController {
-    private static Log log = LogFactory.getLog(ByteStreamController.class);
+    private static Logger log = Logging.getLogger(ByteStreamController.class.getName());
 
     volatile WebResourceBundle bundle;
 
@@ -59,7 +59,7 @@ public class ByteStreamController {
                         bundle = DEFAULT_BUNDLE;
                     } else {
                         if (result.size() > 1) {
-                            log.warn(
+                            log.warning(
                                     "Multiple web resource bundles present, using "
                                             + result.get(0).getClass().getName());
                         }
@@ -77,17 +77,24 @@ public class ByteStreamController {
 
     static final Pattern UNSAFE_RESOURCE = Pattern.compile("^/|/\\.\\./|^\\.\\./|\\.class$");
 
+    // "gwc/rest/web/openlayers3/ol.js" -> openlayers3/ol.js
+    // "/rest/web/openlayers3/ol.js" -> openlayers3/ol.js
+    String getFileName(HttpServletRequest request) {
+        String path = request.getPathInfo();
+        if (path.indexOf("/rest/web") != 0) {
+            path = path.substring(path.indexOf("/rest/web"));
+        }
+        return path.substring("/rest/web/".length());
+    }
+
     @RequestMapping(value = "/web/**", method = RequestMethod.GET)
     ResponseEntity<?> doGet(HttpServletRequest request, HttpServletResponse response) {
-
         final String filename;
         try {
-            filename =
-                    URLDecoder.decode(
-                            request.getPathInfo().substring("/rest/web/".length()), "UTF-8");
+            filename = URLDecoder.decode(getFileName(request), "UTF-8");
         } catch (UnsupportedEncodingException e1) {
             throw new IllegalStateException(
-                    "Cound not decode encoding UTF-8", e1); // Should never happen
+                    "Could not decode encoding UTF-8", e1); // Should never happen
         }
 
         // Just to make sure we don't allow access to arbitrary resources

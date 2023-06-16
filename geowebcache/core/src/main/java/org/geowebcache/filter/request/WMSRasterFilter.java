@@ -21,10 +21,11 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpResponse;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
@@ -38,7 +39,7 @@ public class WMSRasterFilter extends RasterFilter {
 
     private static final long serialVersionUID = 5565794752696452109L;
 
-    private static Log log = LogFactory.getLog(RasterFilter.class);
+    private static Logger log = Logging.getLogger(RasterFilter.class.getName());
 
     private String wmsLayers;
 
@@ -76,17 +77,18 @@ public class WMSRasterFilter extends RasterFilter {
         this.backendTimeout = backendTimeout;
     }
 
+    @Override
     protected BufferedImage loadMatrix(TileLayer tlayer, String gridSetId, int z)
             throws IOException, GeoWebCacheException {
         if (!(tlayer instanceof WMSLayer)) {
-            log.error("WMSRasterFilter can only be used with WMS layers.");
+            log.log(Level.SEVERE, "WMSRasterFilter can only be used with WMS layers.");
             return null;
         }
 
         WMSLayer layer = (WMSLayer) tlayer;
 
         if (!(layer.getSourceHelper() instanceof WMSHttpHelper)) {
-            log.error("WMSRasterFilter can only be used with WMS layers.");
+            log.log(Level.SEVERE, "WMSRasterFilter can only be used with WMS layers.");
         }
 
         WMSHttpHelper srcHelper = (WMSHttpHelper) layer.getSourceHelper();
@@ -114,43 +116,32 @@ public class WMSRasterFilter extends RasterFilter {
             backendTimeout = 120;
         }
 
-        GetMethod getMethod = null;
+        HttpResponse httpResponse = null;
         BufferedImage img = null;
 
-        try {
-            getMethod =
-                    (GetMethod)
-                            srcHelper.executeRequest(
-                                    wmsUrl,
-                                    requestParams,
-                                    backendTimeout,
-                                    WMSLayer.HttpRequestMode.Get);
+        httpResponse =
+                srcHelper.executeRequest(
+                        wmsUrl, requestParams, backendTimeout, WMSLayer.HttpRequestMode.Get);
 
-            if (getMethod.getStatusCode() != 200) {
-                throw new GeoWebCacheException(
-                        "Received response code " + getMethod.getStatusCode() + "\n");
-            }
-
-            if (!getMethod.getResponseHeader("Content-Type").getValue().startsWith("image/")) {
-                throw new GeoWebCacheException(
-                        "Unexpected response content type "
-                                + getMethod.getResponseHeader("Content-Type").getValue()
-                                + " , request was "
-                                + urlStr
-                                + "\n");
-            }
-
-            byte[] ret = ServletUtils.readStream(getMethod.getResponseBodyAsStream(), 16384, 2048);
-
-            InputStream is = new ByteArrayInputStream(ret);
-
-            img = ImageIO.read(is);
-
-        } finally {
-            if (getMethod != null) {
-                getMethod.releaseConnection();
-            }
+        int statusCode = httpResponse.getStatusLine().getStatusCode();
+        if (statusCode != 200) {
+            throw new GeoWebCacheException("Received response code " + statusCode + "\n");
         }
+
+        if (!httpResponse.getFirstHeader("Content-Type").getValue().startsWith("image/")) {
+            throw new GeoWebCacheException(
+                    "Unexpected response content type "
+                            + httpResponse.getFirstHeader("Content-Type").getValue()
+                            + " , request was "
+                            + urlStr
+                            + "\n");
+        }
+
+        byte[] ret = ServletUtils.readStream(httpResponse.getEntity().getContent(), 16384, 2048);
+
+        InputStream is = new ByteArrayInputStream(ret);
+
+        img = ImageIO.read(is);
 
         if (img.getWidth() != widthHeight[0] || img.getHeight() != widthHeight[1]) {
             String msg =
@@ -204,30 +195,33 @@ public class WMSRasterFilter extends RasterFilter {
         return params;
     }
 
+    @Override
     public void update(byte[] filterData, TileLayer layer, String gridSetId, int z)
             throws GeoWebCacheException {
         throw new GeoWebCacheException(
                 "update(byte[] filterData, TileLayer layer, String gridSetId, int z) is not appropriate for WMSRasterFilters");
     }
 
+    @Override
     public boolean update(TileLayer layer, String gridSetId) {
         for (int z = super.getZoomStart(); z <= super.getZoomStop(); z++) {
             try {
                 this.setMatrix(layer, gridSetId, z, true);
             } catch (Exception e) {
-                log.error(e.getMessage());
+                log.log(Level.SEVERE, e.getMessage());
             }
         }
         return true;
     }
 
+    @Override
     public void update(TileLayer layer, String gridSetId, int zStart, int zStop)
             throws GeoWebCacheException {
         for (int z = zStart; z <= zStop; z++) {
             try {
                 this.setMatrix(layer, gridSetId, z, true);
             } catch (Exception e) {
-                log.error(e.getMessage());
+                log.log(Level.SEVERE, e.getMessage());
             }
         }
     }

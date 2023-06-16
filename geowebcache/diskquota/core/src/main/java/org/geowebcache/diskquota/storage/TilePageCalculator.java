@@ -17,12 +17,14 @@ package org.geowebcache.diskquota.storage;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.diskquota.storage.PagePyramid.PageLevelInfo;
 import org.geowebcache.grid.GridSubset;
@@ -39,7 +41,7 @@ import org.springframework.util.Assert;
  */
 public class TilePageCalculator {
 
-    private static final Log log = LogFactory.getLog(TilePageCalculator.class);
+    private static final Logger log = Logging.getLogger(TilePageCalculator.class.getName());
 
     private TileLayerDispatcher tld;
 
@@ -144,24 +146,17 @@ public class TilePageCalculator {
         Collection<String> parameterIds =
                 getParameterIds(layerName, (Optional<Collection<String>>) optParameterIds);
 
-        return gridsetNames
-                .stream()
-                .flatMap(
-                        gridset ->
-                                formatNames
-                                        .stream()
-                                        .flatMap(
-                                                format ->
-                                                        parameterIds
-                                                                .stream()
-                                                                .map(
-                                                                        parametersId ->
-                                                                                new TileSet(
-                                                                                        layerName,
-                                                                                        gridset,
-                                                                                        format,
-                                                                                        parametersId))))
-                .collect(Collectors.toSet());
+        // keeping as loop (was a nested flatmap stream), to avoid too deep nesting
+        Set<TileSet> set = new HashSet<>();
+        for (String gridset : gridsetNames) {
+            for (String format : formatNames) {
+                for (String parametersId : parameterIds) {
+                    TileSet tileSet = new TileSet(layerName, gridset, format, parametersId);
+                    set.add(tileSet);
+                }
+            }
+        }
+        return set;
     }
 
     private Collection<String> getGridSubsetNames(
@@ -189,7 +184,8 @@ public class TilePageCalculator {
                     try {
                         return sb.getCachedParameterIds(layerName);
                     } catch (StorageException e) {
-                        log.error(
+                        log.log(
+                                Level.SEVERE,
                                 "Error while retreiving cached parameter IDs for layer "
                                         + layerName,
                                 e);

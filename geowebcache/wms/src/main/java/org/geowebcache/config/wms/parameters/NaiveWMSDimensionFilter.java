@@ -54,20 +54,24 @@ public class NaiveWMSDimensionFilter extends ParameterFilter implements WMSDimen
         this.setDefaultValue(extent.getDefaultValue());
     }
 
+    @Override
     public String apply(String str) throws ParameterException {
         if (str == null || str.isEmpty()) return getDefaultValue();
         return str;
     }
 
+    @Override
     public List<String> getLegalValues() {
         return null;
     }
 
+    @Override
     public void appendDimensionElement(StringBuilder str, String indent) {
         str.append(indent).append("<Dimension name=\"").append(dimension.getName());
         str.append("\" units=\"").append(dimension.getUnits()).append("\"></Dimension>\n");
     }
 
+    @Override
     public void appendExtentElement(StringBuilder str, String indent) {
         str.append(indent).append("<Extent name=\"" + extent.getName() + "\"");
         if (extent.getDefaultValue() != null) {

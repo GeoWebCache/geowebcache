@@ -57,8 +57,7 @@ public class ListenerCollection<Listener> {
     public synchronized void safeForEach(HandlerMethod<Listener> method)
             throws GeoWebCacheException, IOException {
         LinkedList<Exception> exceptions =
-                listeners
-                        .stream()
+                listeners.stream()
                         .map(
                                 l -> {
                                     try {

@@ -37,6 +37,7 @@ public class QuotaStoreProvider
         this.loader = loader;
     }
 
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
@@ -45,12 +46,24 @@ public class QuotaStoreProvider
         return store;
     }
 
+    @Override
     public void destroy() throws Exception {
         store.close();
     }
 
+    @Override
     public void afterPropertiesSet() throws Exception {
+        replaceH2WithHsql();
         reloadQuotaStore();
+    }
+
+    private void replaceH2WithHsql() throws IOException, ConfigurationException {
+        // migrate existing H2 DB selection to HSQL DB
+        DiskQuotaConfig config = loader.loadConfig();
+        if (config.getQuotaStore() != null && config.getQuotaStore().equals("H2")) {
+            config.setQuotaStore("HSQL");
+            loader.saveConfig(config);
+        }
     }
 
     public void reloadQuotaStore() throws IOException, ConfigurationException {

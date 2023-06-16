@@ -16,8 +16,9 @@ package org.geowebcache.diskquota;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.diskquota.storage.TilePageCalculator;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -27,7 +28,7 @@ import org.springframework.util.Assert;
 
 public class UsageStatsMonitor extends AbstractMonitor {
 
-    private static final Log log = LogFactory.getLog(UsageStatsMonitor.class);
+    private static final Logger log = Logging.getLogger(UsageStatsMonitor.class.getName());
 
     private static final CustomizableThreadFactory tf =
             new CustomizableThreadFactory("GWC DiskQuota Usage Stats Gathering Thread-");
@@ -90,7 +91,8 @@ public class UsageStatsMonitor extends AbstractMonitor {
             try {
                 layer.removeLayerListener(usageStatsProducer);
             } catch (RuntimeException e) {
-                log.error(
+                log.log(
+                        Level.SEVERE,
                         "Unexpected exception while removing the usage stats "
                                 + "listener from layer '"
                                 + layer

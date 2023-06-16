@@ -1,0 +1,101 @@
+<project name="geowebcache-docs" default="docs"
+  xmlns:if="ant:if"
+  xmlns:unless="ant:unless"
+>
+
+  <property name="build.directory" value="${basedir}/target"/>
+
+  <property environment="env"/>
+
+  <condition property="sphinx.available">
+    <or>
+      <available file="sphinx-build" filepath="${env.PATH}"/>
+      <available file="sphinx-build.exe" filepath="${env.Path}"/>
+      <available file="sphinx-build.exe" filepath="${env.PATH}"/>
+    </or>
+  </condition>
+  
+  <condition property="autobuild.available">
+    <or>
+      <available file="sphinx-autobuild" filepath="${env.PATH}"/>
+      <available file="sphinx-autobuild.exe" filepath="${env.Path}"/>
+      <available file="sphinx-autobuild.exe" filepath="${env.PATH}"/>
+    </or>
+  </condition>
+
+  <loadfile
+    encoding="UTF-8"
+    property="project.version"
+    srcFile="../../geowebcache/pom.xml" >
+    <filterchain>
+      <tokenfilter>
+        <containsregex pattern="^\s*&lt;version&gt;(\S*)&lt;/version&gt;$" replace="\1" />
+      </tokenfilter>
+      <filterreader classname="org.apache.tools.ant.filters.HeadFilter">
+        <param name="lines" value="1"/>
+      </filterreader>
+      <striplinebreaks/>
+    </filterchain>
+  </loadfile>
+
+  <target name="clean"
+    description="Clear target/html documentation">
+    <delete includeemptydirs="true" failonerror="false">
+      <fileset dir="${build.directory}" defaultexcludes="false">
+        <include name="**/" />
+      </fileset>
+    </delete>
+  </target>
+  
+  <target name="docs"
+    description="Generate html documentation">
+    
+    <mkdir dir="${build.directory}"/>
+    <antcall target="sphinx">
+      <param name="id" value="user" />
+    </antcall>
+    <property name="file" value="${build.directory}/user/html/index.html"/>
+    <available file="${file}" type="file" property="file.present"/>
+    <echo level="info" if:set="file.present">File generated ${file}</echo>
+    <echo level="error" unless:set="file.present">File not generated ${file}</echo>
+  </target>
+
+  <target name="package" depends="docs"
+    description="Generate zip documentation">
+    <echo>Generating geowebcache_${project.version}-docs.zip</echo>
+    <zip destfile="${build.directory}/geowebcache_${project.version}-docs.zip"
+         level="0"
+         basedir="${build.directory}/user/html"
+         includes="**"
+         excludes="**/.gitignore, .DS_Store"/>
+  </target>
+  
+  <target name="site"
+    description="Generate html documentation">
+    
+    <mkdir dir="${build.directory}"/>
+    <antcall target="autobuild">
+      <param name="id" value="user" />
+    </antcall>
+  </target>
+
+  <target name="sphinx" if="sphinx.available">
+    <local name="argLine"/>
+    <property name="argLine" value="-D release=${project.version} -q -W --keep-going -b html -d &quot;${build.directory}/user/doctrees&quot; . &quot;${build.directory}/user/html&quot;"/>
+    <echo message="Running sphinx-build ${argLine}"/> 
+    <exec executable="sphinx-build" failonerror="true" dir="${basedir}/user/source">
+      <arg line="${argLine}"/>
+    </exec>
+  </target>
+
+  
+  <target name="autobuild" if="autobuild.available">
+    <local name="argLine"/>
+    <property name="argLine" value="-D release=${project.version} -q -W -b html -d &quot;${build.directory}/user/doctrees&quot; . &quot;${build.directory}/user/html&quot;"/>
+    <echo message="Running sphinx-autobuild ${argLine}"/> 
+    <exec executable="sphinx-autobuild" failonerror="true" dir="${basedir}/user/source">
+      <arg line="${argLine} --open-browser"/>
+    </exec>
+  </target>
+
+</project>

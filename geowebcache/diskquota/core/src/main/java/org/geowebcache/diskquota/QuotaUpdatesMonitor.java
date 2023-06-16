@@ -16,8 +16,9 @@ package org.geowebcache.diskquota;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.storage.StorageBroker;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
@@ -25,7 +26,7 @@ import org.springframework.util.Assert;
 
 public class QuotaUpdatesMonitor extends AbstractMonitor {
 
-    private static final Log log = LogFactory.getLog(QuotaUpdatesMonitor.class);
+    private static final Logger log = Logging.getLogger(QuotaUpdatesMonitor.class.getName());
     private static final CustomizableThreadFactory tf =
             new CustomizableThreadFactory("GWC DiskQuota Updates Gathering Thread-");
 
@@ -75,11 +76,12 @@ public class QuotaUpdatesMonitor extends AbstractMonitor {
 
     @Override
     protected void shutDown(final boolean cancel) {
-        log.info("Shutting down quota usage monitor...");
+        log.fine("Shutting down quota usage monitor...");
         try {
             storageBroker.removeBlobStoreListener(quotaDiffsProducer);
         } catch (RuntimeException e) {
-            log.error(
+            log.log(
+                    Level.SEVERE,
                     "Unexpected exception while removing the disk quota monitor listener from the StorageBroker."
                             + " Ignoring in order to continue with the monitor's shutdown "
                             + "process",

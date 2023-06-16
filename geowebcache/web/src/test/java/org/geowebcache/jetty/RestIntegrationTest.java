@@ -45,6 +45,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.geowebcache.util.FileMatchers;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.json.JSONArray;
@@ -875,18 +876,21 @@ public class RestIntegrationTest {
             assertEquals(200, response.getStatusLine().getStatusCode());
 
             Document doc = getResponseEntityAsXML(response);
-
-            assertThat(doc, hasXPath("count(/gridSets/gridSet)", equalTo("9")));
-            assertThat(doc, hasXPath("/gridSets/gridSet[1]/name", equalTo("EPSG:2163")));
+            assertThat(doc, hasXPath("count(/gridSets/gridSet)", equalTo("143")));
             assertThat(
                     doc,
                     hasXPath(
-                            "/gridSets/gridSet[1]/atom:link/@href",
-                            equalTo(jetty.getUri() + "rest/gridsets/EPSG:2163.xml")));
+                            "/gridSets/gridSet[name = 'WebMercatorQuad']/name",
+                            equalTo("WebMercatorQuad")));
             assertThat(
                     doc,
                     hasXPath(
-                            "/gridSets/gridSet[1]/atom:link/@type",
+                            "/gridSets/gridSet[name = 'WebMercatorQuad']/atom:link/@href",
+                            equalTo(jetty.getUri() + "rest/gridsets/WebMercatorQuad.xml")));
+            assertThat(
+                    doc,
+                    hasXPath(
+                            "/gridSets/gridSet[name = 'WebMercatorQuad']/atom:link/@type",
                             equalTo(MediaType.TEXT_XML_VALUE)));
         }
     }
@@ -898,8 +902,8 @@ public class RestIntegrationTest {
             assertEquals(200, response.getStatusLine().getStatusCode());
 
             JSONArray jsonArray = getResponseEntityAsJSONArray(response);
-            assertEquals(9, jsonArray.length());
-            assertEquals("EPSG:2163", jsonArray.get(0));
+            assertEquals(143, jsonArray.length());
+            assertThat(jsonArray, CoreMatchers.hasItem("WebMercatorQuad"));
         }
     }
 
@@ -1245,6 +1249,7 @@ public class RestIntegrationTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.EmptyControlStatement")
     public void testNewFileBlobstoreDontDeleteExistingContent() throws Exception {
         // The directory already has stuff in it
         File bsDir = temp.newFolder();

@@ -36,7 +36,9 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import org.easymock.Capture;
+import org.easymock.CaptureType;
 import org.easymock.EasyMock;
+import org.easymock.IAnswer;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.io.Resource;
@@ -87,27 +89,28 @@ public class SeedTaskTest {
         WMSSourceHelper mockSourceHelper = EasyMock.createMock(WMSSourceHelper.class);
 
         final AtomicInteger wmsRequestsCounter = new AtomicInteger();
-        Capture<WMSMetaTile> wmsRequestsCapturer =
-                new Capture<WMSMetaTile>() {
-                    /** Override because setValue with anyTimes() resets the list of values */
+        Capture<WMSMetaTile> wmsRequestsCapturer = EasyMock.newCapture();
+        Capture<Resource> resourceCapturer = EasyMock.newCapture();
+
+        IAnswer<Void> answer =
+                new IAnswer<Void>() {
                     @Override
-                    public void setValue(WMSMetaTile o) {
+                    public Void answer() throws Throwable {
                         wmsRequestsCounter.incrementAndGet();
-                    }
-                };
-        Capture<Resource> resourceCapturer =
-                new Capture<Resource>() {
-                    @Override
-                    public void setValue(Resource target) {
                         try {
-                            target.transferFrom(
-                                    Channels.newChannel(new ByteArrayInputStream(fakeWMSResponse)));
+                            resourceCapturer
+                                    .getValue()
+                                    .transferFrom(
+                                            Channels.newChannel(
+                                                    new ByteArrayInputStream(fakeWMSResponse)));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
+                        return null;
                     }
                 };
         mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
+        expectLastCall().andAnswer(answer).anyTimes();
         mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
         mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
         mockSourceHelper.setConcurrency(32);
@@ -267,12 +270,7 @@ public class SeedTaskTest {
         // create an image to be returned by the mock WMSSourceHelper
         // / final byte[] fakeWMSResponse = createFakeSourceImage(tl);
         // WMSSourceHelper that on makeRequest() returns always the saqme fake image
-        WMSSourceHelper mockSourceHelper =
-                new MockWMSSourceHelper(); // EasyMock.createMock(WMSSourceHelper.class);
-        // expect(mockSourceHelper.makeRequest((WMSMetaTile)
-        // anyObject())).andReturn(fakeWMSResponse)
-        // .anyTimes();
-        // replay(mockSourceHelper);
+        WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper();
         tl.setSourceHelper(mockSourceHelper);
 
         final String gridSetId = tl.getGridSubsets().iterator().next();
@@ -284,15 +282,9 @@ public class SeedTaskTest {
          * the TileObject the seeder requests it to store for further test validation
          */
         final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
-        Capture<TileObject> storedObjects =
-                new Capture<TileObject>() {
-                    /** Override because setValue with anyTimes() resets the list of values */
-                    @Override
-                    public void setValue(TileObject o) {
-                        super.getValues().add(o);
-                    }
-                };
+        Capture<TileObject> storedObjects = EasyMock.newCapture(CaptureType.ALL);
         expect(mockStorageBroker.put(capture(storedObjects))).andReturn(true).anyTimes();
+
         expect(mockStorageBroker.get(anyObject())).andReturn(false).anyTimes();
         replay(mockStorageBroker);
 
@@ -362,6 +354,7 @@ public class SeedTaskTest {
             this.members = members;
         }
 
+        @Override
         public int compareTo(Tuple<T> o) {
             if (members == null) {
                 if (o.members == null) {
@@ -398,6 +391,7 @@ public class SeedTaskTest {
             return 0 == compareTo((Tuple<T>) o);
         }
 
+        @Override
         public int hashCode() {
             return 17 * Arrays.hashCode(members);
         }

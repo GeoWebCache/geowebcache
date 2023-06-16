@@ -59,26 +59,32 @@ public class SeedController {
 
     /** GET method for querying running GWC tasks */
     @RequestMapping(
-        value = "/seed.json",
-        method = RequestMethod.GET,
-        produces = {MediaType.APPLICATION_JSON_VALUE}
-    )
+            value = "/seed.json",
+            method = RequestMethod.GET,
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> doGet(HttpServletRequest req) {
         return seedService.getRunningTasks(req);
     }
 
     /** GET method for querying running tasks for the provided layer */
     @RequestMapping(
-        value = "/seed/{layer}.json",
-        method = RequestMethod.GET,
-        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE}
-    )
-    public ResponseEntity<?> doGet(HttpServletRequest req, @PathVariable String layer) {
-        return seedService.getRunningLayerTasks(req, layer);
+            value = "/seed/{layer:.+}.json",
+            method = RequestMethod.GET,
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
+    public ResponseEntity<?> doGet(@PathVariable String layer) {
+        return seedService.getRunningLayerTasks(layer);
+    }
+
+    @RequestMapping(
+            value = "/seed/{layer:.+}.xml",
+            method = RequestMethod.GET,
+            produces = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_PLAIN_VALUE})
+    public ResponseEntity<?> doGetXml(@PathVariable String layer) {
+        return seedService.getRunningLayerTasksXml(layer);
     }
 
     /** GET method for displaying the GeoWebCache UI form. */
-    @RequestMapping(value = "/seed/{layer}", method = RequestMethod.GET)
+    @RequestMapping(value = "/seed/{layer:.+}", method = RequestMethod.GET)
     public ResponseEntity<?> doFormGet(HttpServletRequest request, @PathVariable String layer) {
         return formService.handleGet(request, layer);
     }
@@ -107,31 +113,50 @@ public class SeedController {
             InputStream inputStream,
             @PathVariable String layer,
             @RequestParam Map<String, String> params) {
-        String body =
-                new BufferedReader(new InputStreamReader(inputStream))
-                        .lines()
-                        .collect(Collectors.joining("\n"));
-        if (layer.indexOf(".") == -1) {
-            try {
-                // If Content-Type is not application/x-www-urlencoded, the form contents will still
-                // be in the body.
-                if (body != null && body.length() > 0) {
-                    Map<String, String> formMap = splitToMap(URLDecoder.decode(body, "UTF-8"));
-                    params.putAll(formMap);
-                }
-                return handleFormPostInternal(layer, params);
-            } catch (UnsupportedEncodingException e) {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.TEXT_PLAIN);
-                return new ResponseEntity<Object>(
-                        "Unable to parse form result.", headers, HttpStatus.BAD_REQUEST);
-            }
+        String body = readBody(inputStream);
 
-        } else {
-            String extension = layer.substring(layer.indexOf(".") + 1);
-            String layerName = layer.substring(0, layer.indexOf("."));
-            return seedService.doSeeding(request, layerName, extension, body);
+        try {
+            // If Content-Type is not application/x-www-urlencoded, the form contents will still
+            // be in the body.
+            if (body != null && body.length() > 0) {
+                Map<String, String> formMap = splitToMap(URLDecoder.decode(body, "UTF-8"));
+                params.putAll(formMap);
+            }
+            return handleFormPostInternal(layer, params);
+        } catch (UnsupportedEncodingException e) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.TEXT_PLAIN);
+            return new ResponseEntity<Object>(
+                    "Unable to parse form result.", headers, HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @RequestMapping(value = "/seed/{layer}.json", method = RequestMethod.POST)
+    public ResponseEntity<?> seedOrTruncateWithJsonPayload(
+            HttpServletRequest request,
+            InputStream inputStream,
+            @PathVariable(name = "layer") String layerName) {
+
+        String body = readBody(inputStream);
+        String extension = "json";
+        return seedService.doSeeding(request, layerName, extension, body);
+    }
+
+    @RequestMapping(value = "/seed/{layer}.xml", method = RequestMethod.POST)
+    public ResponseEntity<?> seedOrTruncateWithXmlPayload(
+            HttpServletRequest request,
+            InputStream inputStream,
+            @PathVariable(name = "layer") String layerName) {
+
+        String body = readBody(inputStream);
+        String extension = "xml";
+        return seedService.doSeeding(request, layerName, extension, body);
+    }
+
+    private String readBody(InputStream inputStream) {
+        return new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
     }
 
     private ResponseEntity<?> handleFormPostInternal(String layer, Map<String, String> params) {

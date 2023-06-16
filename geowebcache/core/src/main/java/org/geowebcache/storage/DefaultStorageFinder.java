@@ -15,12 +15,14 @@
 package org.geowebcache.storage;
 
 import java.io.File;
-import javax.servlet.ServletContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.geowebcache.util.GWCVars;
+import org.geowebcache.util.GWCVars.Variable;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
@@ -44,7 +46,7 @@ public class DefaultStorageFinder {
 
     public static final String GWC_BLANK_TILE_PATH = "GWC_BLANK_TILE_PATH";
 
-    private static Log log = LogFactory.getLog(org.geowebcache.storage.DefaultStorageFinder.class);
+    private static Logger log = Logging.getLogger(DefaultStorageFinder.class.getName());
 
     private String defaultPrefix = null;
 
@@ -81,39 +83,19 @@ public class DefaultStorageFinder {
      * C) System environment variable<br>
      */
     private void determineDefaultPrefix() {
-        ServletContext serlvCtx = context.getServletContext();
-
-        final String[] typeStrs = {
-            "Java environment variable ",
-            "Servlet context parameter ",
-            "System environment variable "
-        };
-
         final String[] varStrs = {GWC_CACHE_DIR, GS_DATA_DIR, "TEMP", "TMP"};
 
         String msgPrefix = null;
         int iVar = 0;
         for (int i = 0; i < varStrs.length && defaultPrefix == null; i++) {
-            for (int j = 0; j < typeStrs.length && defaultPrefix == null; j++) {
-                String value = null;
-                String varStr = varStrs[i];
-                String typeStr = typeStrs[j];
-
-                switch (j) {
-                    case 0:
-                        value = System.getProperty(varStr);
-                        break;
-                    case 1:
-                        value = serlvCtx.getInitParameter(varStr);
-                        break;
-                    case 2:
-                        value = System.getenv(varStr);
-                        break;
-                }
-
-                if (value == null || value.equalsIgnoreCase("")) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(typeStr + varStr + " is unset");
+            String varStr = varStrs[i];
+            List<Variable> found = GWCVars.findVariable(context, varStr);
+            for (Variable v : found) {
+                String typeStr = v.getType().getSource();
+                String value = v.getValue();
+                if (value == null || value.isEmpty()) {
+                    if (log.isLoggable(Level.FINE)) {
+                        log.fine(typeStr + varStr + " is unset");
                     }
                     continue;
                 }
@@ -124,15 +106,15 @@ public class DefaultStorageFinder {
                 msgPrefix = "Found " + typeStr + varStr + " set to " + value;
 
                 if (!fh.exists()) {
-                    log.error(msgPrefix + " , but this path does not exist");
+                    log.log(Level.SEVERE, msgPrefix + " , but this path does not exist");
                     continue;
                 }
                 if (!fh.isDirectory()) {
-                    log.error(msgPrefix + " , which is not a directory");
+                    log.log(Level.SEVERE, msgPrefix + " , which is not a directory");
                     continue;
                 }
                 if (!fh.canWrite()) {
-                    log.error(msgPrefix + " , which is not writeable");
+                    log.log(Level.SEVERE, msgPrefix + " , which is not writeable");
                     continue;
                 }
 
@@ -148,9 +130,9 @@ public class DefaultStorageFinder {
             if (tmpDir != null) {
                 File temp = new File(tmpDir, "geowebcache");
                 logMsg =
-                        "Reverting to java.io.tmpdir "
-                                + this.defaultPrefix
-                                + " for storage. "
+                        "Reverting to java.io.tmpdir '"
+                                + temp.getAbsolutePath()
+                                + "' for storage. "
                                 + "Please set "
                                 + GWC_CACHE_DIR
                                 + ".";
@@ -177,15 +159,6 @@ public class DefaultStorageFinder {
 
             logMsg = msgPrefix + ", using it as the default prefix.";
         }
-
-        String warnStr = "*** " + logMsg + " ***";
-        StringBuilder stars = new StringBuilder();
-        for (int i = 0; i < warnStr.length(); i++) {
-            stars.append("*");
-        }
-
-        log.info(stars.toString());
-        log.info(warnStr);
-        log.info(stars.toString());
+        log.config(logMsg);
     }
 }

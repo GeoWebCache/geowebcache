@@ -21,8 +21,9 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.diskquota.storage.PageStatsPayload;
 import org.geowebcache.diskquota.storage.TilePage;
 import org.geowebcache.diskquota.storage.TilePageCalculator;
@@ -32,7 +33,7 @@ import org.springframework.util.Assert;
 /** @author groldan */
 public class QueuedUsageStatsConsumer implements Callable<Long> {
 
-    private static final Log log = LogFactory.getLog(QueuedUsageStatsConsumer.class);
+    private static final Logger log = Logging.getLogger(QueuedUsageStatsConsumer.class.getName());
 
     private static final long serialVersionUID = -625181087112272266L;
 
@@ -90,10 +91,11 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
     }
 
     /** @see java.util.concurrent.Callable#call() */
+    @Override
     public Long call() {
         while (true) {
             if (Thread.interrupted()) {
-                log.debug(
+                log.fine(
                         "Job "
                                 + getClass().getSimpleName()
                                 + " finished due to interrupted thread.");
@@ -101,7 +103,7 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
             }
 
             if (terminate) {
-                log.debug("Exiting on explicit termination request: " + getClass().getSimpleName());
+                log.fine("Exiting on explicit termination request: " + getClass().getSimpleName());
                 break;
             }
 
@@ -127,14 +129,14 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
                     performAggregatedUpdate(requestedTile);
                 }
             } catch (InterruptedException e) {
-                log.info("Shutting down quota update background task due to interrupted exception");
+                log.fine("Shutting down quota update background task due to interrupted exception");
                 Thread.currentThread().interrupt();
                 break;
                 // it doesn't matter
             } catch (RuntimeException e) {
                 // we're running as a single task on a single thread... we need to be really sure if
                 // we should terminate... think how to handle recovery if at all
-                log.debug(e);
+                log.log(Level.FINE, e.getMessage(), e);
                 // throw e;
             }
         }
@@ -206,8 +208,8 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
         boolean tooManyPendingCommits = numAggregations >= MAX_AGGREGATES_BEFORE_COMMIT;
 
         if (timeout || tooManyPendingCommits) {
-            if (log.isTraceEnabled()) {
-                log.trace(
+            if (log.isLoggable(Level.FINER)) {
+                log.finer(
                         "Committing "
                                 + numAggregations
                                 + " aggregated usage stats to quota store due to "

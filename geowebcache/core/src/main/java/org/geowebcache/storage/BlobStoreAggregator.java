@@ -19,8 +19,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.BlobStoreConfiguration;
@@ -41,7 +42,7 @@ import org.springframework.util.Assert;
 public class BlobStoreAggregator {
 
     private List<BlobStoreConfiguration> configs;
-    private static Log log = LogFactory.getLog(org.geowebcache.storage.BlobStoreAggregator.class);
+    private static Logger log = Logging.getLogger(BlobStoreAggregator.class.getName());
     private ServiceInformation serviceInformation;
     private TileLayerDispatcher layers;
 
@@ -93,8 +94,7 @@ public class BlobStoreAggregator {
     public BlobStoreInfo getBlobStore(final String blobStoreName) throws GeoWebCacheException {
         Objects.requireNonNull(blobStoreName, "blobStoreName is null");
 
-        return getConfigs()
-                .stream()
+        return getConfigs().stream()
                 .map(c -> c.getBlobStore(blobStoreName))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
@@ -160,7 +160,6 @@ public class BlobStoreAggregator {
      *
      * @return a list view of this blob store aggregators's internal blob stores
      */
-    @SuppressWarnings("unchecked")
     public Iterable<BlobStoreInfo> getBlobStores() {
         List<Iterable<BlobStoreInfo>> perConfigBlobStores = new ArrayList<>(getConfigs().size());
 
@@ -172,7 +171,7 @@ public class BlobStoreAggregator {
     }
 
     private void initialize() {
-        log.debug("Thread initBlobStore(), initializing");
+        log.fine("Thread initBlobStore(), initializing");
 
         for (BlobStoreConfiguration config : getConfigs()) {
             initialize(config);
@@ -189,19 +188,22 @@ public class BlobStoreAggregator {
         try {
             configIdent = config.getIdentifier();
         } catch (Exception gwce) {
-            log.error("Error obtaining identify from BlobStoreConfiguration " + config, gwce);
+            log.log(
+                    Level.SEVERE,
+                    "Error obtaining identify from BlobStoreConfiguration " + config,
+                    gwce);
             return 0;
         }
 
         if (configIdent == null) {
-            log.warn("Got a GWC configuration with no identity, ignoring it:" + config);
+            log.warning("Got a GWC configuration with no identity, ignoring it:" + config);
             return 0;
         }
 
         int blobStoreCount = config.getBlobStoreCount();
 
         if (blobStoreCount <= 0) {
-            log.info(
+            log.config(
                     "BlobStoreConfiguration "
                             + config.getIdentifier()
                             + " contained no blob store infos.");
@@ -209,7 +211,7 @@ public class BlobStoreAggregator {
 
         // Check whether there is any general service information
         if (this.serviceInformation == null && config instanceof ServerConfiguration) {
-            log.debug("Reading service information.");
+            log.fine("Reading service information.");
             this.serviceInformation = ((ServerConfiguration) config).getServiceInformation();
         }
         return blobStoreCount;

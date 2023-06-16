@@ -25,6 +25,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
@@ -33,9 +35,9 @@ import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
-import org.apache.log4j.Logger;
 import org.geotools.image.ImageWorker;
 import org.geotools.image.ImageWorker.PNGImageWriteParam;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 
@@ -46,7 +48,7 @@ import org.geowebcache.mime.MimeType;
 public class ImageEncoderImpl implements ImageEncoder {
 
     /** Logger used */
-    private static final Logger LOGGER = Logger.getLogger(ImageEncoderImpl.class);
+    private static final Logger LOGGER = Logging.getLogger(ImageEncoderImpl.class.getName());
 
     /** Default string used for exceptions */
     public static final String OPERATION_NOT_SUPPORTED = "Operation not supported";
@@ -74,6 +76,7 @@ public class ImageEncoderImpl implements ImageEncoder {
                 "image/png24",
                 "image/png; mode=24bit",
                 "image/png;%20mode=24bit") {
+            @Override
             public ImageWriteParam prepareParameters(
                     ImageWriter writer,
                     String compression,
@@ -103,6 +106,7 @@ public class ImageEncoderImpl implements ImageEncoder {
                 return params;
             }
 
+            @Override
             public RenderedImage prepareImage(RenderedImage image, MimeType type) {
                 boolean isPNG8 = type == ImageMime.png8;
                 if (isPNG8) {
@@ -112,6 +116,7 @@ public class ImageEncoderImpl implements ImageEncoder {
             }
         },
         JPEG("image/jpeg") {
+            @Override
             protected ImageWriteParam prepareParameters(
                     ImageWriter writer,
                     String compression,
@@ -135,7 +140,7 @@ public class ImageEncoderImpl implements ImageEncoder {
                         jpegParams.setProgressiveMode(JPEGImageWriteParam.MODE_DEFAULT);
                     } catch (UnsupportedOperationException e) {
                         // Logged Exception
-                        LOGGER.error(e.getMessage(), e);
+                        LOGGER.log(Level.SEVERE, e.getMessage(), e);
                     }
 
                     params = jpegParams;
@@ -144,6 +149,7 @@ public class ImageEncoderImpl implements ImageEncoder {
             }
         },
         GIF("image/gif") {
+            @Override
             public RenderedImage prepareImage(RenderedImage image, MimeType type) {
                 return applyPalette(image);
             }
@@ -245,6 +251,7 @@ public class ImageEncoderImpl implements ImageEncoder {
      * @param aggressiveOutputStreamOptimization Parameter used if aggressive outputStream
      *     optimization must be used.
      */
+    @Override
     public void encode(
             RenderedImage image,
             Object destination,
@@ -264,7 +271,7 @@ public class ImageEncoderImpl implements ImageEncoder {
             // Creation of the associated Writer
             ImageWriter writer = null;
             ImageOutputStream stream = null;
-            try {
+            try { // NOPMD (complex instantiation of the image stream
                 writer = newSpi.createWriterInstance();
                 // Check if the input object is an OutputStream
                 if (destination instanceof OutputStream) {
@@ -290,7 +297,7 @@ public class ImageEncoderImpl implements ImageEncoder {
                     throw new IllegalArgumentException("Wrong output object");
                 }
             } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
+                LOGGER.log(Level.SEVERE, e.getMessage(), e);
                 throw e;
             } finally {
                 // Writer disposal
@@ -302,7 +309,7 @@ public class ImageEncoderImpl implements ImageEncoder {
                     try {
                         stream.close();
                     } catch (IOException e) {
-                        LOGGER.error(e.getMessage(), e);
+                        LOGGER.log(Level.SEVERE, e.getMessage(), e);
                     }
                     stream = null;
                 }
@@ -320,6 +327,7 @@ public class ImageEncoderImpl implements ImageEncoder {
      *
      * @return supportedMimeTypes List of all the supported Mime Types
      */
+    @Override
     public List<String> getSupportedMimeTypes() {
         return supportedMimeTypes;
     }
@@ -330,6 +338,7 @@ public class ImageEncoderImpl implements ImageEncoder {
      * @return isAggressiveOutputStreamSupported Boolean indicating if the selected encoder supports
      *     an aggressive output stream optimization
      */
+    @Override
     public boolean isAggressiveOutputStreamSupported() {
         return isAggressiveOutputStreamSupported;
     }
@@ -361,7 +370,7 @@ public class ImageEncoderImpl implements ImageEncoder {
                     break;
                 }
             } catch (ClassNotFoundException e) {
-                LOGGER.error(e.getMessage(), e);
+                LOGGER.log(Level.SEVERE, e.getMessage(), e);
             }
         }
 

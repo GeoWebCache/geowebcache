@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.geowebcache</groupId>
     <artifactId>geowebcache</artifactId>
-    <version>1.20-SNAPSHOT</version>
+    <version>1.24-SNAPSHOT</version>
     <!-- GWC VERSION -->
   </parent>
 
@@ -27,6 +27,12 @@
       <groupId>org.apache.jclouds.api</groupId>
       <artifactId>openstack-swift</artifactId>
       <version>${jclouds.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>aopalliance</artifactId>
+          <groupId>aopalliance</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <!-- 3rd party dependencies -->
     <dependency>

@@ -229,6 +229,12 @@ Properties:
 * **proxyPassword**: Optional. The proxy password to use when connecting through a proxy.
 * **useGzip**: Optional, default: ``true``. Whether gzip compression should be used when transferring tiles to/from S3.
 
+**Note**: It is possible to set above properties from environment variable as long as they are of string type. In the example below, The awsAccessKey is set from environment variable named AWS_ACCESS_KEY
+
+.. code-block:: xml
+
+      <awsAccessKey>${AWS_ACCESS_KEY}</awsAccessKey>
+
 Additional Information:
 ```````````````````````
 
@@ -357,7 +363,7 @@ a thorough assessment of costs associated to seeding and serving caches**. Yet w
   call.
 
 The following is an example OpenLayers 3 HTML/JavaScript to set up a map that fetches tiles from a pre-seeded geowebcache layer directly from Azure, assuming that
- the container access level has been set to "public" or "blob", so that direct access to the blobs is possible. We're using the typical
+the container access level has been set to "public" or "blob", so that direct access to the blobs is possible. We're using the typical
 GeoServer ``topp:states`` sample layer on a fictitious ``my-geowebcache-container`` bucket, using ``test-cache`` as the cache prefix, png8 tile format, and EPSG:4326 CRS.
 
 .. code-block:: html
@@ -744,52 +750,53 @@ Optional configuration parameters
 ``````````````````````````````````	
 In this section are described other available configuration parameters to configure:
 
-	* Cache expiration time:
-	
-			.. code-block:: xml
-				
-				<map name="CacheProviderMap">
-				...
-				
-					<time-to-live-seconds>0</time-to-live-seconds>
-					<max-idle-seconds>0</max-idle-seconds>
-				
-				</map>
-		Where *time-to-live-seconds* indicates how many seconds an entry can stay in cache and *max-idle-seconds* indicates how many seconds an entry may be not accessed before being evicted.
-		
-	* Near Cache.
-	
-			.. code-block:: xml
-	
-				<map name="CacheProviderMap">
-				...
-				<near-cache>
-				  <!--
-					Same configuration parameters of the Hazelcast Map. Note that size indicates the maximum number of 
-					entries in the near cache. A value of Integer.MAX_VALUE indicates no limit on the maximum 
-					size.
-				  -->
-				  <max-size>5000</max-size>
-				  <time-to-live-seconds>0</time-to-live-seconds>
-				  <max-idle-seconds>60</max-idle-seconds>
-				  <eviction-policy>LRU</eviction-policy>
+* Cache expiration time:
 
-				  <!--
-					Indicates if a cached entry can be evicted if the same value is modified in the Hazelcast Map. Default is true.
-				  -->
-				  <invalidate-on-change>true</invalidate-on-change>
+  .. code-block:: xml
+   
+     <map name="CacheProviderMap">
+     ...
+   
+         <time-to-live-seconds>0</time-to-live-seconds>
+         <max-idle-seconds>0</max-idle-seconds>
+   
+     </map>
+     
+  Where *time-to-live-seconds* indicates how many seconds an entry can stay in cache and *max-idle-seconds* indicates how many seconds an entry may be not accessed before being evicted.
 
-				  <!--
-					Indicates if local entries must be cached. Default is false.
-				  -->
-				  <cache-local-entries>false</cache-local-entries>
-				</near-cache>
-				
-				</map>	
+* Near Cache.
 
-		Near Cache is a local cache for each cluster instance which is used for caching entries in the other cluster instances. This behaviour avoids to request those entries each time by executing a remote call. This feature could be helpful in order to improve Hazelcast Cache performances.
-		
-		.. note:: A value of *max-size* bigger or equal to Integer.MAX_VALUE cannot be used in order to avoid an uncontrollable growth of the cache size.
+  .. code-block:: xml
+
+     <map name="CacheProviderMap">
+     ...
+     <near-cache>
+       <!--
+         Same configuration parameters of the Hazelcast Map. Note that size indicates the maximum number of 
+         entries in the near cache. A value of Integer.MAX_VALUE indicates no limit on the maximum 
+         size.
+       -->
+       <max-size>5000</max-size>
+       <time-to-live-seconds>0</time-to-live-seconds>
+       <max-idle-seconds>60</max-idle-seconds>
+       <eviction-policy>LRU</eviction-policy>
+
+       <!--
+         Indicates if a cached entry can be evicted if the same value is modified in the Hazelcast Map. Default is true.
+       -->
+       <invalidate-on-change>true</invalidate-on-change>
+
+       <!--
+         Indicates if local entries must be cached. Default is false.
+       -->
+       <cache-local-entries>false</cache-local-entries>
+     </near-cache>
+     
+     </map>	
+
+  Near Cache is a local cache for each cluster instance which is used for caching entries in the other cluster instances. This behaviour avoids to request those entries each time by executing a remote call. This feature could be helpful in order to improve Hazelcast Cache performances.
+
+  .. note:: A value of *max-size* bigger or equal to Integer.MAX_VALUE cannot be used in order to avoid an uncontrollable growth of the cache size.
 
 OpenStack Swift (Swift) Blob Store
 +++++++++++++++++++++++++++++++++++++++++++++

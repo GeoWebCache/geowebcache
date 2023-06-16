@@ -18,6 +18,7 @@ import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.newCapture;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.hamcrest.Matchers.is;
@@ -69,7 +70,7 @@ public class GetCapabilitiesConfigurationTest {
         req = createNiceMock(WMSRequest.class);
         gcOpType = createNiceMock(OperationType.class);
         globalConfig = createNiceMock(DefaultingConfiguration.class);
-        layerCapture = new Capture<>(CaptureType.LAST);
+        layerCapture = newCapture(CaptureType.LAST);
         broker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
         expect(server.getCapabilities()).andStubReturn(cap);

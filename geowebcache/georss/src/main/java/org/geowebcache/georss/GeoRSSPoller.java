@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.updatesource.GeoRSSFeedDefinition;
@@ -34,7 +34,7 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
  */
 public class GeoRSSPoller {
 
-    private static final Log logger = LogFactory.getLog(GeoRSSPoller.class);
+    private static final Logger LOGGER = Logging.getLogger(GeoRSSPoller.class.getName());
 
     private final TileBreeder seeder;
 
@@ -66,11 +66,10 @@ public class GeoRSSPoller {
 
         schedulingPollExecutorService.submit(
                 () -> {
-                    logger.info("Initializing GeoRSS poller in a background job...");
-
                     findEnabledPolls();
 
                     if (pollCount() > 0) {
+                        LOGGER.fine("Initializing GeoRSS poller in a background job...");
 
                         final TimeUnit seconds = TimeUnit.SECONDS;
                         for (PollDef poll : scheduledPolls) {
@@ -78,7 +77,7 @@ public class GeoRSSPoller {
                             GeoRSSFeedDefinition pollDef = poll.getPollDef();
                             long period = pollDef.getPollInterval();
 
-                            logger.info(
+                            LOGGER.config(
                                     "Scheduling layer "
                                             + poll.getLayer().getName()
                                             + " to poll the GeoRSS feed "
@@ -91,14 +90,14 @@ public class GeoRSSPoller {
 
                             scheduledTasks.add(command);
                         }
-                        logger.info(
+                        LOGGER.fine(
                                 "Will wait "
                                         + startUpDelaySecs
                                         + " seconds before launching the "
                                         + pollCount()
                                         + " GeoRSS polls found");
                     } else {
-                        logger.info("No enabled GeoRSS feeds found, poller will not run.");
+                        LOGGER.fine("No enabled GeoRSS feeds found, poller will not run.");
                     }
                 });
     }
@@ -110,7 +109,7 @@ public class GeoRSSPoller {
                 continue;
             }
             if (!layer.isEnabled()) {
-                logger.info(
+                LOGGER.info(
                         "Ignoring polling GeoRSS update sources for layer '"
                                 + layer.getName()
                                 + "' as the layer is disabled");
@@ -132,14 +131,14 @@ public class GeoRSSPoller {
                     }
 
                     if (georssDef.getPollInterval() > 0) {
-                        logger.info(
+                        LOGGER.info(
                                 "Scheduling GeoRSS feed for layer "
                                         + layer.getName()
                                         + ":"
                                         + georssDef);
                         scheduledPolls.add(new PollDef(layer, georssDef));
                     } else {
-                        logger.info(
+                        LOGGER.info(
                                 "Feed disabled for layer "
                                         + layer.getName()
                                         + ", ignoring: "
@@ -157,7 +156,7 @@ public class GeoRSSPoller {
 
     /** Destroy method for Spring */
     public void destroy() {
-        logger.info("destroy() invoked");
+        LOGGER.fine("destroy() invoked");
         if (schedulingPollExecutorService != null) {
             schedulingPollExecutorService.shutdown();
         }

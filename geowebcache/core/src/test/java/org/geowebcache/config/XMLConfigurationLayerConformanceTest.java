@@ -115,11 +115,13 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
     protected File configDir;
     protected File configFile;
 
+    @Override
     protected TileLayerConfiguration getConfig() throws Exception {
         makeConfigFile();
         return getConfig(extensions);
     }
 
+    @Override
     protected TileLayerConfiguration getSecondConfig() throws Exception {
         return getConfig(extensions2);
     }

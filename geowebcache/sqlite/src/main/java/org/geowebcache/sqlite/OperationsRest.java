@@ -20,11 +20,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.config.BlobStoreConfiguration;
 import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.config.ServerConfiguration;
@@ -43,7 +44,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("**/sqlite")
 public class OperationsRest {
 
-    private static Log LOGGER = LogFactory.getLog(OperationsRest.class);
+    private static Logger LOGGER = Logging.getLogger(OperationsRest.class.getName());
 
     @Autowired private TileLayerDispatcher tileLayerDispatcher;
 
@@ -94,8 +95,8 @@ public class OperationsRest {
                 blobStore.replace(file, destination);
             }
         } catch (Exception exception) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Error executing the replace operation.", exception);
+            if (LOGGER.isLoggable(Level.SEVERE)) {
+                LOGGER.log(Level.SEVERE, "Error executing the replace operation.", exception);
             }
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(exception.getMessage());
@@ -108,8 +109,8 @@ public class OperationsRest {
 
     private File handleFileUpload(MultipartFile uploadedFile, File workingDirectory)
             throws Exception {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Handling file upload.");
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Handling file upload.");
         }
         // getting the uploaded file content
         File outputFile = new File(workingDirectory, UUID.randomUUID().toString());

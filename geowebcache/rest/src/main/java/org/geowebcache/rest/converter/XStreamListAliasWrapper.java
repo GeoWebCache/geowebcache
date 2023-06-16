@@ -19,6 +19,7 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import java.net.URI;
 import java.util.Collection;
 import org.geowebcache.rest.controller.GWCController;
 import org.springframework.http.MediaType;
@@ -66,7 +67,8 @@ public class XStreamListAliasWrapper {
             /**
              * @see com.thoughtworks.xstream.converters.ConverterMatcher#canConvert(java.lang.Class)
              */
-            public boolean canConvert(@SuppressWarnings("rawtypes") Class type) {
+            @Override
+            public boolean canConvert(Class type) {
                 return collectionClass.isAssignableFrom(type);
             }
 
@@ -75,6 +77,7 @@ public class XStreamListAliasWrapper {
              *     com.thoughtworks.xstream.io.HierarchicalStreamWriter,
              *     com.thoughtworks.xstream.converters.MarshallingContext)
              */
+            @Override
             public void marshal(
                     Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
 
@@ -96,8 +99,12 @@ public class XStreamListAliasWrapper {
                             MvcUriComponentsBuilder.fromMethodName(
                                             controllerClass, alias + "Get", name)
                                     .buildAndExpand("");
-                    writer.addAttribute(
-                            "href", uriComponents.encode().toUriString().replace("$", "") + ".xml");
+                    // build URI with URI.normalize() to remove double slashes
+                    String normalizedLayerUri =
+                            URI.create(uriComponents.encode().toUriString().replace("$", ""))
+                                    .normalize()
+                                    .toASCIIString();
+                    writer.addAttribute("href", normalizedLayerUri + ".xml");
                     writer.addAttribute("type", MediaType.TEXT_XML.toString());
 
                     writer.endNode();
@@ -111,6 +118,7 @@ public class XStreamListAliasWrapper {
              *     com.thoughtworks.xstream.converters.Converter#unmarshal(com.thoughtworks.xstream.io.HierarchicalStreamReader,
              *     com.thoughtworks.xstream.converters.UnmarshallingContext)
              */
+            @Override
             public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
                 throw new UnsupportedOperationException();
             }

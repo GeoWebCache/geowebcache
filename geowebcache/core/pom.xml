@@ -5,25 +5,20 @@
   <parent>
     <groupId>org.geowebcache</groupId>
     <artifactId>geowebcache</artifactId>
-    <version>1.20-SNAPSHOT</version>
+    <version>1.24-SNAPSHOT</version>
     <!-- GWC VERSION -->
   </parent>
   <groupId>org.geowebcache</groupId>
   <artifactId>gwc-core</artifactId>
   <packaging>jar</packaging>
   <name>gwc-core</name>
-  <url>http://geowebcache.org</url>
+  <url>https://www.geowebcache.org</url>
 
   <dependencies>
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <exclusions>
-        <exclusion>
-          <artifactId>avalon-framework</artifactId>
-          <groupId>avalon-framework</groupId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-metadata</artifactId>
+      <version>${gt.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -44,11 +39,28 @@
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
+      <optional>true</optional>
     </dependency>
 
+    <!-- logging -->
+    <!-- log4j 2 -->
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+    </dependency>
+    <!-- commons-logging provided by log4j-jcl -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-jcl</artifactId>
+    </dependency>
+    <!-- route java util logging to log4j (see logging.properties) -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-jul</artifactId>
     </dependency>
 
     <dependency>
@@ -59,6 +71,12 @@
     <dependency>
       <groupId>com.thoughtworks.xstream</groupId>
       <artifactId>xstream</artifactId>
+      <exclusions>
+        <exclusion>
+          <artifactId>xpp3</artifactId>
+          <groupId>xpp3_min</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- Spring dependencies -->
@@ -69,6 +87,12 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
+      <exclusions>
+        <exclusion>
+          <artifactId>spring-jcl</artifactId>
+          <groupId>org.springframework</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
@@ -85,6 +109,12 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
+      <exclusions>
+        <exclusion>
+          <artifactId>failureaccess</artifactId>
+          <groupId>com.google.guava</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
@@ -146,11 +176,9 @@
     </dependency>
 
     <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>3.1</version>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
     </dependency>
-
     <!-- test dependencies -->
     <dependency>
       <groupId>junit</groupId>
@@ -200,7 +228,6 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <!-- if we're using the dummy api, we should disable all tests -->

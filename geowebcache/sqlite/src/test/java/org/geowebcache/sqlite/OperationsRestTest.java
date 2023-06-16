@@ -248,6 +248,7 @@ public class OperationsRestTest extends TestSupport {
                     directoryToZip,
                     new SimpleFileVisitor<Path>() {
 
+                        @Override
                         public FileVisitResult visitFile(
                                 Path file, BasicFileAttributes fileAttributes) throws IOException {
                             zipOutputStream.putNextEntry(
@@ -257,6 +258,7 @@ public class OperationsRestTest extends TestSupport {
                             return FileVisitResult.CONTINUE;
                         }
 
+                        @Override
                         public FileVisitResult preVisitDirectory(
                                 Path directory, BasicFileAttributes attrs) throws IOException {
                             if (directory.equals(directoryToZip)) {

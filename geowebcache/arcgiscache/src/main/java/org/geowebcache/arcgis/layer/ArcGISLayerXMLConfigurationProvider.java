@@ -26,6 +26,7 @@ import org.geowebcache.config.XMLConfigurationProvider;
  */
 public class ArcGISLayerXMLConfigurationProvider implements XMLConfigurationProvider {
 
+    @Override
     public XStream getConfiguredXStream(final XStream xs) {
         xs.alias("arcgisLayer", ArcGISCacheLayer.class);
         // xs.alias("compactCache", org.geowebcache.arcgis.compact.ArcGISCompactCache.class);

@@ -15,8 +15,8 @@
 package org.geowebcache.mime;
 
 import java.io.IOException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.io.Resource;
 
 public class MimeType {
@@ -30,7 +30,7 @@ public class MimeType {
 
     protected boolean supportsTiling;
 
-    private static Log log = LogFactory.getLog(org.geowebcache.mime.MimeType.class);
+    private static Logger log = Logging.getLogger(MimeType.class.getName());
 
     protected MimeType(
             String mimeType,
@@ -43,6 +43,22 @@ public class MimeType {
         this.internalName = internalName;
         this.format = format;
         this.supportsTiling = supportsTiling;
+    }
+
+    /**
+     * Checks if mime type is a binary type
+     *
+     * @param value mime type
+     * @return true if mime type is binary
+     * @throws MimeException if mime type is not supported
+     */
+    public static boolean isBinary(String value) throws MimeException {
+        MimeType mt = MimeType.createFromFormat(value);
+        return mt.isBinary();
+    }
+
+    protected boolean isBinary() {
+        return false;
     }
 
     /** The MIME identifier string for this format. */
@@ -149,10 +165,11 @@ public class MimeType {
             return mimeType;
         }
 
-        log.debug("Unsupported MIME type: " + fileExtension + ", returning null");
+        log.fine("Unsupported MIME type: " + fileExtension + ", returning null");
         return null;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (obj != null && obj.getClass() == this.getClass()) {
             MimeType mimeObj = (MimeType) obj;
@@ -163,6 +180,7 @@ public class MimeType {
         return false;
     }
 
+    @Override
     public int hashCode() {
         return format.hashCode();
     }

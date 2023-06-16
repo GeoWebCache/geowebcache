@@ -1,4 +1,4 @@
-.. _configuration.layers.parameterfilters:
+.. _configuration.layers.styleslegends:
 
 Styles Legends
 ==============

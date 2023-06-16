@@ -21,6 +21,7 @@ import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.WebApplicationContext;
 
 /**
  * Unit test suite for {@link GeoWebCacheExtensions}
@@ -155,20 +156,25 @@ public class GeoWebCacheExtensionsTest {
         assertEquals(
                 "ABC",
                 GeoWebCacheExtensions.getProperty("TEST_PROPERTY", (ApplicationContext) null));
-        assertEquals(
-                "ABC", GeoWebCacheExtensions.getProperty("TEST_PROPERTY", (ServletContext) null));
     }
 
     @Test
     public void testWebProperty() {
-        testProperty.setValue("ABC");
+        PropertyRule higerPrecedence = this.testProperty;
+        higerPrecedence.setValue("ABC");
         ServletContext servletContext = createMock(ServletContext.class);
         expect(servletContext.getInitParameter("TEST_PROPERTY")).andReturn("DEF").anyTimes();
         expect(servletContext.getInitParameter("WEB_PROPERTY")).andReturn("WWW").anyTimes();
         replay(servletContext);
 
-        assertEquals("ABC", GeoWebCacheExtensions.getProperty("TEST_PROPERTY", servletContext));
-        assertEquals("WWW", GeoWebCacheExtensions.getProperty("WEB_PROPERTY", servletContext));
+        WebApplicationContext webAppContext = createMock(WebApplicationContext.class);
+        expect(webAppContext.getServletContext()).andReturn(servletContext).anyTimes();
+        replay(webAppContext);
+
+        assertEquals(
+                higerPrecedence.getValue(),
+                GeoWebCacheExtensions.getProperty("TEST_PROPERTY", webAppContext));
+        assertEquals("WWW", GeoWebCacheExtensions.getProperty("WEB_PROPERTY", webAppContext));
     }
 
     @Test
@@ -205,6 +211,8 @@ public class GeoWebCacheExtensionsTest {
     private static final class BeanWithPriority implements GeoWebCacheExtensionPriority {
 
         final int priority;
+
+        @SuppressWarnings("unused")
         final String id;
 
         public BeanWithPriority(int priority, String id) {

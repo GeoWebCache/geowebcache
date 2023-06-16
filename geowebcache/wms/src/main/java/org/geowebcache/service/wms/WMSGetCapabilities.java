@@ -30,10 +30,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.legends.LegendInfo;
 import org.geowebcache.config.meta.ServiceContact;
@@ -56,7 +57,7 @@ import org.geowebcache.util.URLMangler;
 
 public class WMSGetCapabilities {
 
-    private static Log log = LogFactory.getLog(WMSGetCapabilities.class);
+    private static Logger log = Logging.getLogger(WMSGetCapabilities.class.getName());
 
     private TileLayerDispatcher tld;
 
@@ -101,7 +102,7 @@ public class WMSGetCapabilities {
             os.write(data);
             os.flush();
         } catch (IOException ioe) {
-            log.debug("Caught IOException" + ioe.getMessage());
+            log.fine("Caught IOException" + ioe.getMessage());
         }
     }
 
@@ -279,7 +280,7 @@ public class WMSGetCapabilities {
 
     private void capabilityRequestGetMap(XMLBuilder xml) throws IOException {
         // Find all the formats we support
-        Iterable<TileLayer> layerIter = tld.getLayerList();
+        Iterable<TileLayer> layerIter = tld.getLayerListFiltered();
 
         HashSet<String> formats = new HashSet<>();
 
@@ -305,7 +306,7 @@ public class WMSGetCapabilities {
     private void capabilityRequestGetFeatureInfo(XMLBuilder xml) throws IOException {
 
         // Find all the info formats we support
-        Iterable<TileLayer> layerIter = tld.getLayerList();
+        Iterable<TileLayer> layerIter = tld.getLayerListFiltered();
 
         HashSet<String> formats = new HashSet<>();
 
@@ -350,7 +351,7 @@ public class WMSGetCapabilities {
 
     private void capabilityVendorSpecific(XMLBuilder xml) throws IOException {
         xml.indentElement("VendorSpecificCapabilities");
-        Iterable<TileLayer> layerIter = tld.getLayerList();
+        Iterable<TileLayer> layerIter = tld.getLayerListFiltered();
         for (TileLayer layer : layerIter) {
             if (!layer.isEnabled() || !layer.isAdvertised()) {
                 continue;
@@ -378,7 +379,7 @@ public class WMSGetCapabilities {
                             capabilityVendorSpecificTileset(
                                     xml, layer, grid, format, style, legendsInfo.get(style));
                         } catch (GeoWebCacheException e) {
-                            log.error(e.getMessage());
+                            log.log(Level.SEVERE, e.getMessage());
                         }
                     }
                 }
@@ -501,7 +502,7 @@ public class WMSGetCapabilities {
                 true);
         xml.latLonBoundingBox(-180.0, -90.0, 180.0, 90.0);
 
-        Iterable<TileLayer> layerIter = tld.getLayerList();
+        Iterable<TileLayer> layerIter = tld.getLayerListFiltered();
         for (TileLayer layer : layerIter) {
             if (!layer.isEnabled() || !layer.isAdvertised()) {
                 continue;
@@ -509,7 +510,7 @@ public class WMSGetCapabilities {
             try {
                 capabilityLayerInner(xml, layer);
             } catch (GeoWebCacheException e) {
-                log.error(e.getMessage());
+                log.log(Level.SEVERE, e.getMessage());
             }
         }
 

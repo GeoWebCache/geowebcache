@@ -14,6 +14,8 @@
  */
 package org.geowebcache.config;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomReader;
 import java.io.FileNotFoundException;
@@ -24,7 +26,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +37,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
@@ -50,8 +53,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.ContextualConfigurationProvider.Context;
@@ -114,7 +116,7 @@ public class XMLConfiguration
 
     public static final String DEFAULT_CONFIGURATION_FILE_NAME = "geowebcache.xml";
 
-    private static Log log = LogFactory.getLog(org.geowebcache.config.XMLConfiguration.class);
+    private static Logger log = Logging.getLogger(XMLConfiguration.class.getName());
 
     /** Web app context, used to look up {@link XMLConfigurationProvider}s. */
     private final WebApplicationContext context;
@@ -133,7 +135,7 @@ public class XMLConfiguration
             new ListenerCollection<>();
 
     /**
-     * Base Constructor with custom ConfiguratioNResourceProvider
+     * Base Constructor with custom {@link ConfigurationResourceProvider}.
      *
      * @param appCtx use to lookup {@link XMLConfigurationProvider} extensions, may be {@code null}
      */
@@ -203,6 +205,7 @@ public class XMLConfiguration
     }
 
     /** @see ServerConfiguration#isRuntimeStatsEnabled() */
+    @Override
     public Boolean isRuntimeStatsEnabled() {
         if (getGwcConfig() == null || getGwcConfig().getRuntimeStats() == null) {
             return true;
@@ -212,17 +215,20 @@ public class XMLConfiguration
     }
 
     /** @see ServerConfiguration#setRuntimeStatsEnabled(Boolean) */
+    @Override
     public void setRuntimeStatsEnabled(Boolean isEnabled) throws IOException {
         getGwcConfig().setRuntimeStats(isEnabled);
         save();
     }
 
     /** @see ServerConfiguration#getServiceInformation() */
+    @Override
     public synchronized ServiceInformation getServiceInformation() {
         return getGwcConfig().getServiceInformation();
     }
 
     /** @see ServerConfiguration#setServiceInformation(ServiceInformation); */
+    @Override
     public void setServiceInformation(ServiceInformation serviceInfo) throws IOException {
         getGwcConfig().setServiceInformation(serviceInfo);
         save();
@@ -261,13 +267,14 @@ public class XMLConfiguration
             try {
                 if (getGwcConfig().getProxyUrl() != null) {
                     proxyUrl = new URL(getGwcConfig().getProxyUrl());
-                    log.debug("Using proxy " + proxyUrl.getHost() + ":" + proxyUrl.getPort());
+                    log.fine("Using proxy " + proxyUrl.getHost() + ":" + proxyUrl.getPort());
                 } else if (wl.getProxyUrl() != null) {
                     proxyUrl = new URL(wl.getProxyUrl());
-                    log.debug("Using proxy " + proxyUrl.getHost() + ":" + proxyUrl.getPort());
+                    log.fine("Using proxy " + proxyUrl.getHost() + ":" + proxyUrl.getPort());
                 }
             } catch (MalformedURLException e) {
-                log.error(
+                log.log(
+                        Level.SEVERE,
                         "could not parse proxy URL "
                                 + wl.getProxyUrl()
                                 + " ! continuing WITHOUT proxy!",
@@ -279,7 +286,7 @@ public class XMLConfiguration
             if (wl.getHttpUsername() != null) {
                 sourceHelper =
                         new WMSHttpHelper(wl.getHttpUsername(), wl.getHttpPassword(), proxyUrl);
-                log.debug(
+                log.fine(
                         "Using per-layer HTTP credentials for "
                                 + wl.getName()
                                 + ", "
@@ -291,10 +298,10 @@ public class XMLConfiguration
                                 getGwcConfig().getHttpUsername(),
                                 getGwcConfig().getHttpPassword(),
                                 proxyUrl);
-                log.debug("Using global HTTP credentials for " + wl.getName());
+                log.fine("Using global HTTP credentials for " + wl.getName());
             } else {
                 sourceHelper = new WMSHttpHelper(null, null, proxyUrl);
-                log.debug("Not using HTTP credentials for " + wl.getName());
+                log.fine("Not using HTTP credentials for " + wl.getName());
             }
 
             wl.setSourceHelper(sourceHelper);
@@ -304,13 +311,9 @@ public class XMLConfiguration
 
     private GeoWebCacheConfiguration loadConfiguration() throws ConfigurationException {
         Assert.isTrue(resourceProvider.hasInput(), "Resource provider must have an input");
-        InputStream in;
         try {
-            in = resourceProvider.in();
-            try {
+            try (InputStream in = resourceProvider.in()) {
                 return loadConfiguration(in);
-            } finally {
-                in.close();
             }
         } catch (IOException e) {
             throw new ConfigurationException(
@@ -336,7 +339,10 @@ public class XMLConfiguration
         try {
             resourceProvider.backup();
         } catch (Exception e) {
-            log.warn("Error creating back up of configuration file " + resourceProvider.getId(), e);
+            log.log(
+                    Level.WARNING,
+                    "Error creating back up of configuration file " + resourceProvider.getId(),
+                    e);
         }
 
         persistToFile();
@@ -475,7 +481,7 @@ public class XMLConfiguration
         // create the XStream for serializing the configuration
         XStream xs = getConfiguredXStreamWithContext(new GeoWebCacheXStream(), Context.PERSIST);
 
-        try (OutputStreamWriter writer = new OutputStreamWriter(resourceProvider.out(), "UTF-8")) {
+        try (OutputStreamWriter writer = new OutputStreamWriter(resourceProvider.out(), UTF_8)) {
             // set version to latest
             String currentSchemaVersion = getCurrentSchemaVersion();
             getGwcConfig().setVersion(currentSchemaVersion);
@@ -503,6 +509,7 @@ public class XMLConfiguration
      * @return {@code true} only if {@code tl instanceof WMSLayer}
      * @see TileLayerConfiguration#canSave(org.geowebcache.layer.TileLayer)
      */
+    @Override
     public boolean canSave(TileLayer tl) {
         if (tl.isTransientLayer()) {
             return false;
@@ -524,6 +531,7 @@ public class XMLConfiguration
      * @throws IllegalArgumentException if a layer named the same than {@code tl} already exists
      * @see TileLayerConfiguration#addLayer(org.geowebcache.layer.TileLayer)
      */
+    @Override
     public synchronized void addLayer(TileLayer tl) throws IllegalArgumentException {
         if (tl == null) {
             throw new NullPointerException();
@@ -556,6 +564,7 @@ public class XMLConfiguration
      * @param tl the new layer to overwrite the existing layer
      * @see TileLayerConfiguration#modifyLayer(org.geowebcache.layer.TileLayer)
      */
+    @Override
     public synchronized void modifyLayer(TileLayer tl) throws NoSuchElementException {
         TileLayer previous = findLayer(tl.getName());
         if (!canSaveIfNotTransient(tl)) {
@@ -590,6 +599,7 @@ public class XMLConfiguration
     }
 
     /** @see TileLayerConfiguration#renameLayer(String, String) */
+    @Override
     public void renameLayer(String oldName, String newName)
             throws NoSuchElementException, IllegalArgumentException {
         throw new UnsupportedOperationException(
@@ -597,6 +607,7 @@ public class XMLConfiguration
     }
 
     /** @see TileLayerConfiguration#removeLayer(java.lang.String) */
+    @Override
     public synchronized void removeLayer(final String layerName)
             throws NoSuchElementException, IllegalArgumentException {
         final TileLayer tileLayer = findLayer(layerName);
@@ -659,110 +670,106 @@ public class XMLConfiguration
         // debugPrint(rootNode);
 
         if (!rootNode.getNodeName().equals("gwcConfiguration")) {
-            log.info("The configuration file is of the pre 1.0 type, trying to convert.");
+            log.config("The configuration file is of the pre 1.0 type, trying to convert.");
             rootNode = applyTransform(rootNode, "geowebcache_pre10.xsl").getFirstChild();
         }
 
         // debugPrint(rootNode);
 
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.0.0")) {
-            log.info("Updating configuration from 1.0.0 to 1.0.1");
+            log.config("Updating configuration from 1.0.0 to 1.0.1");
             rootNode = applyTransform(rootNode, "geowebcache_100.xsl").getFirstChild();
         }
 
         // debugPrint(rootNode);
 
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.0.1")) {
-            log.info("Updating configuration from 1.0.1 to 1.0.2");
+            log.config("Updating configuration from 1.0.1 to 1.0.2");
             rootNode = applyTransform(rootNode, "geowebcache_101.xsl").getFirstChild();
         }
 
         // debugPrint(rootNode);
 
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.0.2")) {
-            log.info("Updating configuration from 1.0.2 to 1.1.0");
+            log.config("Updating configuration from 1.0.2 to 1.1.0");
             rootNode = applyTransform(rootNode, "geowebcache_102.xsl").getFirstChild();
         }
 
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.1.0")) {
-            log.info("Updating configuration from 1.1.0 to 1.1.3");
+            log.config("Updating configuration from 1.1.0 to 1.1.3");
             rootNode = applyTransform(rootNode, "geowebcache_110.xsl").getFirstChild();
         }
 
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.1.3")) {
-            log.info("Updating configuration from 1.1.3 to 1.1.4");
+            log.config("Updating configuration from 1.1.3 to 1.1.4");
             rootNode = applyTransform(rootNode, "geowebcache_113.xsl").getFirstChild();
         }
 
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.1.4")) {
-            log.info("Updating configuration from 1.1.4 to 1.1.5");
+            log.config("Updating configuration from 1.1.4 to 1.1.5");
             rootNode = applyTransform(rootNode, "geowebcache_114.xsl").getFirstChild();
         }
 
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.1.5")) {
-            log.info("Updating configuration from 1.1.5 to 1.2.0");
+            log.config("Updating configuration from 1.1.5 to 1.2.0");
             rootNode = applyTransform(rootNode, "geowebcache_115.xsl").getFirstChild();
         }
 
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.2.0")) {
-            log.info("Updating configuration from 1.2.0 to 1.2.1");
+            log.config("Updating configuration from 1.2.0 to 1.2.1");
             rootNode = applyTransform(rootNode, "geowebcache_120.xsl").getFirstChild();
         }
 
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.2.1")) {
-            log.info("Updating configuration from 1.2.1 to 1.2.2");
+            log.config("Updating configuration from 1.2.1 to 1.2.2");
             rootNode = applyTransform(rootNode, "geowebcache_121.xsl").getFirstChild();
         }
 
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.2.2")) {
-            log.info("Updating configuration from 1.2.2 to 1.2.4");
+            log.config("Updating configuration from 1.2.2 to 1.2.4");
             rootNode = applyTransform(rootNode, "geowebcache_122.xsl").getFirstChild();
         }
 
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.2.4")) {
-            log.info("Updating configuration from 1.2.4 to 1.2.5");
+            log.config("Updating configuration from 1.2.4 to 1.2.5");
             rootNode = applyTransform(rootNode, "geowebcache_124.xsl").getFirstChild();
         }
 
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.2.5")) {
-            log.info("Updating configuration from 1.2.5 to 1.2.6");
+            log.config("Updating configuration from 1.2.5 to 1.2.6");
             rootNode = applyTransform(rootNode, "geowebcache_125.xsl").getFirstChild();
         }
 
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.2.6")) {
-            log.info("Updating configuration from 1.2.6 to 1.5.0");
+            log.config("Updating configuration from 1.2.6 to 1.5.0");
             rootNode = applyTransform(rootNode, "geowebcache_126.xsl").getFirstChild();
         }
 
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.5.0")) {
-            log.info("Updating configuration from 1.5.0 to 1.5.1");
+            log.config("Updating configuration from 1.5.0 to 1.5.1");
             rootNode = applyTransform(rootNode, "geowebcache_150.xsl").getFirstChild();
         }
 
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.5.1")) {
-            log.info("Updating configuration from 1.5.1 to 1.6.0");
+            log.config("Updating configuration from 1.5.1 to 1.6.0");
             rootNode = applyTransform(rootNode, "geowebcache_151.xsl").getFirstChild();
         }
 
         // Check again after transform
         if (!rootNode.getNodeName().equals("gwcConfiguration")) {
-            log.error("Unable to parse file, expected gwcConfiguration at root after transform.");
+            log.log(
+                    Level.SEVERE,
+                    "Unable to parse file, expected gwcConfiguration at root after transform.");
             throw new ConfigurationException("Unable to parse after transform.");
         } else {
             // Parsing the schema file
             try {
                 validate(rootNode);
-                log.info("TileLayerConfiguration file validated fine.");
+                log.config("TileLayerConfiguration file validated fine.");
             } catch (SAXException e) {
-                String msg = "*** GWC configuration validation error: " + e.getMessage();
-                char[] c = new char[4 + msg.length()];
-                Arrays.fill(c, '*');
-                String warndecoration = new String(c).substring(0, 80);
-                log.warn(warndecoration);
-                log.warn(msg);
-                log.warn(
-                        "*** Will try to use configuration anyway. Please check the order of declared elements against the schema.");
-                log.warn(warndecoration);
+                log.warning("GWC configuration validation error: " + e.getMessage());
+                log.warning(
+                        "Will try to use configuration anyway. Please check the order of declared elements against the schema.");
             } catch (IOException e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
@@ -814,7 +821,7 @@ public class XMLConfiguration
                 transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(is));
                 transformer.transform(new DOMSource(oldRootNode), result);
             } catch (TransformerFactoryConfigurationError | TransformerException e) {
-                log.debug(e);
+                log.log(Level.FINE, e.getMessage(), e);
             }
 
             return result.getNode();
@@ -823,6 +830,7 @@ public class XMLConfiguration
         }
     }
 
+    @Override
     public void afterPropertiesSet() throws GeoWebCacheException {
 
         if (gridSetBroker == null) {
@@ -833,11 +841,11 @@ public class XMLConfiguration
             this.setGwcConfig(loadConfiguration());
         }
 
-        log.info("Initializing GridSets from " + getIdentifier());
+        log.config("Initializing GridSets from " + getIdentifier());
 
         getGridSetsInternal();
 
-        log.info("Initializing layers from " + getIdentifier());
+        log.config("Initializing layers from " + getIdentifier());
 
         // Loop over the layers and set appropriate values
         for (TileLayer layer : getGwcConfig().getLayers()) {
@@ -861,13 +869,11 @@ public class XMLConfiguration
     private void loadGridSets() {
         if (getGwcConfig().getGridSets() != null) {
             this.gridSets =
-                    getGwcConfig()
-                            .getGridSets()
-                            .stream()
+                    getGwcConfig().getGridSets().stream()
                             .map(
                                     (xmlGridSet) -> {
-                                        if (log.isDebugEnabled()) {
-                                            log.debug("Reading " + xmlGridSet.getName());
+                                        if (log.isLoggable(Level.FINE)) {
+                                            log.fine("Reading " + xmlGridSet.getName());
                                         }
 
                                         GridSet gridSet = xmlGridSet.makeGridSet();
@@ -895,28 +901,33 @@ public class XMLConfiguration
     }
 
     /** @see TileLayerConfiguration#getIdentifier() */
+    @Override
     public String getIdentifier() {
         return resourceProvider.getId();
     }
 
     public void setRelativePath(String relPath) {
-        log.error(
+        log.log(
+                Level.SEVERE,
                 "Specifying the relative path as a property is deprecated. "
                         + "Please pass it as the 4th argument to the constructor.");
     }
 
     public void setAbsolutePath(String absPath) {
-        log.error(
+        log.log(
+                Level.SEVERE,
                 "Specifying the absolute path as a property is deprecated. "
                         + "Please pass it as the 4th argument to the constructor.");
     }
 
     /** @see TileLayerConfiguration#getLayers() */
+    @Override
     public Collection<TileLayer> getLayers() {
         return Collections.unmodifiableList(getGwcConfig().getLayers());
     }
 
     /** @see TileLayerConfiguration#getLayer(java.lang.String) */
+    @Override
     public Optional<TileLayer> getLayer(String layerName) {
         return Optional.ofNullable(layers.get(layerName));
     }
@@ -935,20 +946,24 @@ public class XMLConfiguration
     }
 
     /** @see TileLayerConfiguration#containsLayer(java.lang.String) */
+    @Override
     public boolean containsLayer(String layerId) {
         return layers.containsKey(layerId);
     }
 
     /** @see TileLayerConfiguration#getLayerCount() */
+    @Override
     public int getLayerCount() {
         return layers.size();
     }
 
     /** @see TileLayerConfiguration#getLayerNames() */
+    @Override
     public Set<String> getLayerNames() {
         return Collections.unmodifiableSet(this.layers.keySet());
     }
 
+    @Override
     public String getVersion() {
         return getGwcConfig().getVersion();
     }
@@ -974,9 +989,7 @@ public class XMLConfiguration
     public List<BlobStoreInfo> getBlobStores() {
         // need to return an unmodifiable list of unmodifiable BlobStoreInfos
         return Collections.unmodifiableList(
-                getGwcConfig()
-                        .getBlobStores()
-                        .stream()
+                getGwcConfig().getBlobStores().stream()
                         .map(
                                 (info) -> {
                                     return (BlobStoreInfo) info.clone();
@@ -1115,9 +1128,7 @@ public class XMLConfiguration
     /** @see BlobStoreConfiguration#getBlobStoreNames() */
     @Override
     public Set<String> getBlobStoreNames() {
-        return getGwcConfig()
-                .getBlobStores()
-                .stream()
+        return getGwcConfig().getBlobStores().stream()
                 .map(
                         (info) -> {
                             return info.getName();
@@ -1190,8 +1201,8 @@ public class XMLConfiguration
         try {
             save();
 
-            if (log.isTraceEnabled()) {
-                log.trace(
+            if (log.isLoggable(Level.FINER)) {
+                log.finer(
                         String.format(
                                 "BlobStoreInfo rename from \"%s\" to \"%s\" successful.",
                                 oldName, newName));
@@ -1312,6 +1323,7 @@ public class XMLConfiguration
      * @param wmtsCiteStrictCompliant TRUE or FALSE, activating or deactivation CITE strict
      *     compliance mode for WMTS
      */
+    @Override
     public void setWmtsCiteCompliant(Boolean wmtsCiteStrictCompliant) throws IOException {
         if (gwcConfig != null) {
             // activate or deactivate CITE strict compliance mode for WMTS implementation
@@ -1351,7 +1363,7 @@ public class XMLConfiguration
         try {
             return this.resourceProvider.getLocation();
         } catch (IOException e) {
-            log.error("Could not get config location", e);
+            log.log(Level.SEVERE, "Could not get config location", e);
             return "Error, see log for details";
         }
     }
@@ -1366,9 +1378,7 @@ public class XMLConfiguration
             throw new IllegalArgumentException("GridSet " + gridSet.getName() + " already exists");
         }
 
-        assert getGwcConfig()
-                .getGridSets()
-                .stream()
+        assert getGwcConfig().getGridSets().stream()
                 .noneMatch(xgs -> xgs.getName().equals(gridSet.getName()));
 
         try {
@@ -1442,9 +1452,7 @@ public class XMLConfiguration
 
     @Override
     public Collection<GridSet> getGridSets() {
-        return getGridSetsInternal()
-                .values()
-                .stream()
+        return getGridSetsInternal().values().stream()
                 .map(GridSet::new)
                 .collect(Collectors.toList());
     }
@@ -1459,9 +1467,7 @@ public class XMLConfiguration
             throw new NoSuchElementException("GridSet " + gridSet.getName() + " does not exist");
         }
 
-        assert getGwcConfig()
-                .getGridSets()
-                .stream()
+        assert getGwcConfig().getGridSets().stream()
                 .anyMatch(xgs -> xgs.getName().equals(gridSet.getName()));
 
         try {

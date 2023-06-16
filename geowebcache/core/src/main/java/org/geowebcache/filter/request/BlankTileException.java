@@ -16,8 +16,9 @@ package org.geowebcache.filter.request;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
@@ -31,8 +32,7 @@ public class BlankTileException extends RequestFilterException {
     /** */
     private static final long serialVersionUID = 6910805463474341350L;
 
-    private static Log log =
-            LogFactory.getLog(org.geowebcache.filter.request.BlankTileException.class);
+    private static Logger log = Logging.getLogger(BlankTileException.class.getName());
 
     private static volatile Resource blankTile;
 
@@ -49,12 +49,13 @@ public class BlankTileException extends RequestFilterException {
 
             return new ByteArrayResource(blankTile);
         } catch (IOException ioe) {
-            log.error(ioe);
+            log.log(Level.SEVERE, ioe.getMessage(), ioe);
         }
 
         return null;
     }
 
+    @Override
     public Resource getResponse() {
         Resource ret = BlankTileException.blankTile;
         if (ret == null) {

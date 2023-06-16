@@ -22,8 +22,10 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.geotools.image.ImageWorker;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 
@@ -35,7 +37,7 @@ public class PNGImageEncoder extends ImageEncoderImpl {
     /** Filter type associated string */
     private static final String FILTER_TYPE = "filterType";
     /** Logger used */
-    private static final Logger LOGGER = Logger.getLogger(PNGImageEncoder.class);
+    private static final Logger LOGGER = Logging.getLogger(PNGImageEncoder.class.getName());
     /** Supported mime types */
     private static List<String> supportedMimeTypes;
     /** Boolean used for disabling the png encoding */
@@ -80,11 +82,13 @@ public class PNGImageEncoder extends ImageEncoderImpl {
         this.isAggressiveSupported = (!this.disablePNG);
     }
 
+    @Override
     public boolean isAggressiveOutputStreamSupported() {
         // If Default PNG Writer must not be used, then Aggressive OutputStream is not supported.
         return super.isAggressiveOutputStreamSupported() && isAggressiveSupported;
     }
 
+    @Override
     public void encode(
             RenderedImage image,
             Object destination,
@@ -104,8 +108,7 @@ public class PNGImageEncoder extends ImageEncoderImpl {
             // Creation of the associated Writer
             PNGWriter writer = new PNGWriter();
             OutputStream stream = null;
-            try {
-                // writer = new PNGJWriter();
+            try { // NOPMD stream not instantiated here
                 // Check if the input object is an OutputStream
                 if (destination instanceof OutputStream) {
                     boolean isScanlinePresent = writer.isScanlineSupported(image);
@@ -141,7 +144,7 @@ public class PNGImageEncoder extends ImageEncoderImpl {
                             "Only an OutputStream can be provided to the PNGEncoder");
                 }
             } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
+                LOGGER.log(Level.SEVERE, e.getMessage(), e);
                 throw e;
             } finally {
                 // Writer disposal
@@ -153,7 +156,7 @@ public class PNGImageEncoder extends ImageEncoderImpl {
                     try {
                         stream.close();
                     } catch (IOException e) {
-                        LOGGER.error(e.getMessage(), e);
+                        LOGGER.log(Level.SEVERE, e.getMessage(), e);
                     }
                     stream = null;
                 }

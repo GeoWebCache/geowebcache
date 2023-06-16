@@ -52,7 +52,6 @@ public abstract class BlobStoreSuitabilityTest {
         super();
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     @Theory
     public void emptyOk(Object persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY);
@@ -62,7 +61,6 @@ public abstract class BlobStoreSuitabilityTest {
         assertThat(store, notNullValue(BlobStore.class));
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     @Theory
     public void emptyFail(Object persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY);
@@ -73,7 +71,6 @@ public abstract class BlobStoreSuitabilityTest {
         BlobStore store = create(persistenceLocation);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Theory
     public void existingOk(Object persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EXISTING);
@@ -83,7 +80,6 @@ public abstract class BlobStoreSuitabilityTest {
         assertThat(store, notNullValue(BlobStore.class));
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Theory
     public void existingFail(Object persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EXISTING);

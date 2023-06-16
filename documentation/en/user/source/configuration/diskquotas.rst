@@ -38,7 +38,7 @@ All disk quota policy settings will be contained in this file.  You can also cre
           <expirationPolicyName>LRU</expirationPolicyName>
           <quota>
             <value>100</value>
-            <units>GiB</value>
+            <units>GiB</units>
           </quota>
         </LayerQuota>
         <!-- Other layers -->
@@ -58,7 +58,9 @@ To do so set the ``GWC_DISKQUOTA_DISABLED`` environment variable to ``true`` as 
 
 For example, if you are using the bash shell in GNU/Linux and deploying GWC into Apache Tomcat, you can do:
 
-    $export CATALINA_OPTS="-DGWC_DISKQUOTA_DISABLED=true` && bin/startup.sh
+.. code-block:: bash
+
+   $export CATALINA_OPTS="-DGWC_DISKQUOTA_DISABLED=true` && bin/startup.sh
 
 
 Expiration policies
@@ -70,7 +72,7 @@ Both policies are set in exactly the same way, with only the policy name changin
 
 .. code-block:: xml
 
-      <globalExpirationPolicyName>LFU</globalExpirationPolicyName>
+   <globalExpirationPolicyName>LFU</globalExpirationPolicyName>
 
 Global Quota
 ------------
@@ -82,10 +84,10 @@ When the global quota is exceeded, first any explicitly configured quota is enfo
 
 .. code-block:: xml
 
-      <globalQuota>
-        <value>512</value>
-        <units>GiB</units>
-      </globalQuota>
+   <globalQuota>
+     <value>512</value>
+     <units>GiB</units>
+   </globalQuota>
 
 
 Individual Layer Quotas
@@ -105,28 +107,28 @@ The syntax for a single disk quota policy is:
 
 .. code-block:: xml
 
-    <LayerQuota>
-      <layer>LAYER_NAME</layer>
-      <expirationPolicyName>POLICY</expirationPolicyName>
-      <quota>
-        <value>DISK_QUOTA_VALUE</value>
-        <units>DISK_QUOTA_UNITS</units>
-      </quota>
-    </LayerQuota>
+   <LayerQuota>
+     <layer>LAYER_NAME</layer>
+     <expirationPolicyName>POLICY</expirationPolicyName>
+     <quota>
+       <value>DISK_QUOTA_VALUE</value>
+       <units>DISK_QUOTA_UNITS</units>
+     </quota>
+   </LayerQuota>
 
 For example, setting a LFU policy on the ``topp:states`` layer, with a disk quota of 100 Mebibytes would look like:
 
 .. code-block:: xml
 
-  <layerQuotas>
-    <LayerQuota>
-      <layer>topp:states</layer>
-      <expirationPolicyName>LFU</expirationPolicyName>
-      <quota>
-        <value>100</value>
-        <units>MiB</units>
-      </quota>
-    </LayerQuota>
+   <layerQuotas>
+     <LayerQuota>
+       <layer>topp:states</layer>
+       <expirationPolicyName>LFU</expirationPolicyName>
+       <quota>
+         <value>100</value>
+         <units>MiB</units>
+       </quota>
+     </LayerQuota>
 
 
 Polling time

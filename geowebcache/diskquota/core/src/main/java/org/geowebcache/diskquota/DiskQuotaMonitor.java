@@ -22,8 +22,9 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.diskquota.CacheCleaner.GlobalQuotaResolver;
@@ -53,7 +54,7 @@ import org.springframework.util.Assert;
  */
 public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
-    private static final Log log = LogFactory.getLog(DiskQuotaMonitor.class);
+    private static final Logger log = Logging.getLogger(DiskQuotaMonitor.class.getName());
 
     /**
      * Name of the environment variable that if present disables completely the DiskQuotaMonitor,
@@ -111,10 +112,9 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
             final CacheCleaner cacheCleaner)
             throws IOException, ConfigurationException {
 
-        boolean disabled =
-                Boolean.valueOf(storageFinder.findEnvVar(GWC_DISKQUOTA_DISABLED)).booleanValue();
+        boolean disabled = Boolean.parseBoolean(storageFinder.findEnvVar(GWC_DISKQUOTA_DISABLED));
         if (disabled) {
-            log.warn(
+            log.warning(
                     " -- Found environment variable "
                             + GWC_DISKQUOTA_DISABLED
                             + " set to true. DiskQuotaMonitor is disabled.");
@@ -165,6 +165,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      * @see #startUp()
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
+    @Override
     public void afterPropertiesSet() throws Exception {
         if (!diskQuotaEnabled) {
             return;
@@ -181,6 +182,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
      * @see #shutDown(int)
      * @see org.springframework.beans.factory.DisposableBean#destroy()
      */
+    @Override
     public void destroy() throws Exception {
         if (!diskQuotaEnabled) {
             return;
@@ -214,7 +216,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
             startUpInternal();
             isRunning = true;
         } catch (InterruptedException e) {
-            log.info("DiskQuotaMonitor startup process interrupted", e);
+            log.log(Level.INFO, "DiskQuotaMonitor startup process interrupted", e);
             Thread.currentThread().interrupt();
         }
     }
@@ -277,7 +279,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         Assert.isTrue(diskQuotaEnabled, "shutDown called but DiskQuotaMonitor is disabled!");
         Assert.isTrue(timeOutSecs > 0, "timeOut for shutdown must be > 0: " + timeOutSecs);
         try {
-            log.info("Disk quota monitor shutting down...");
+            log.fine("Disk quota monitor shutting down...");
             if (this.cacheInfoBuilder != null) {
                 this.cacheInfoBuilder.shutDown();
             }
@@ -286,10 +288,10 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
                 this.cleanUpExecutorService.shutdownNow();
             }
 
-            log.info("Shutting down quota usage monitor...");
+            log.fine("Shutting down quota usage monitor...");
             quotaUsageMonitor.shutDownNow();
 
-            log.info("Shutting down quota statistics gathering monitor...");
+            log.fine("Shutting down quota statistics gathering monitor...");
             usageStatsMonitor.shutDownNow();
 
             quotaUsageMonitor.awaitTermination(timeOutSecs * 1000, TimeUnit.MILLISECONDS);
@@ -365,13 +367,13 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
 
             Quota usedQuota = quotaStore.getUsedQuotaByLayerName(layerName);
             if (usedQuota.getBytes().compareTo(BigInteger.ZERO) > 0) {
-                log.debug(
+                log.fine(
                         "Using saved quota information for layer "
                                 + layerName
                                 + ": "
                                 + usedQuota.toNiceString());
             } else {
-                log.debug(
+                log.fine(
                         layerName
                                 + " has no saved used quota information,"
                                 + "traversing layer cache to compute its disk usage.");
@@ -379,7 +381,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
                 try {
                     tileLayer = tileLayerDispatcher.getTileLayer(layerName);
                 } catch (GeoWebCacheException e) {
-                    log.debug(e);
+                    log.log(Level.FINE, e.getMessage(), e);
                     continue;
                 }
                 cacheInfoBuilder.buildCacheInfo(tileLayer);
@@ -391,7 +393,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
     private ScheduledExecutorService createCleanUpExecutor() {
 
         final int numCleaningThreads = quotaConfig.getMaxConcurrentCleanUps();
-        log.info("Setting up disk quota periodic enforcement task");
+        log.config("Setting up disk quota periodic enforcement task");
         CustomizableThreadFactory tf =
                 new CustomizableThreadFactory("GWC DiskQuota clean up thread-");
         tf.setThreadPriority(1 + (Thread.MAX_PRIORITY - Thread.MIN_PRIORITY) / 5);
@@ -411,7 +413,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         TimeUnit unit = quotaConfig.getCacheCleanUpUnits();
         cleanUpExecutorService.scheduleAtFixedRate(scheduledCleaningTask, delay, period, unit);
 
-        log.info("Disk quota periodic enforcement task set up every " + period + " " + unit);
+        log.config("Disk quota periodic enforcement task set up every " + period + " " + unit);
     }
 
     /**
@@ -435,7 +437,7 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
                 if (policyName != null) {
                     final Quota quota = layerQuota.getQuota();
                     explicitConfigs++;
-                    log.trace(
+                    log.finer(
                             "Attaching layer "
                                     + layerName
                                     + " to quota "
@@ -445,10 +447,10 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
                 }
             }
         }
-        log.info(explicitConfigs + " layers configured with their own quotas. ");
+        log.config(explicitConfigs + " layers configured with their own quotas. ");
         if (globalExpirationPolicy != null) {
             int globallyConfigured = tileLayerDispatcher.getLayerCount() - explicitConfigs;
-            log.info(
+            log.config(
                     globallyConfigured
                             + " layers attached to global quota "
                             + globalQuota.toNiceString());

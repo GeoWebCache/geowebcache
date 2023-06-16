@@ -157,7 +157,8 @@ public class WMTSService extends Service {
         }
     }
 
-    // private static Log log = LogFactory.getLog(org.geowebcache.service.wmts.WMTSService.class);
+    // private static Logger log =
+    // Logging.getLogger(org.geowebcache.service.wmts.WMTSService.class);
 
     private StorageBroker sb;
 
@@ -557,6 +558,7 @@ public class WMTSService extends Service {
         return convTile;
     }
 
+    @Override
     public void handleRequest(Conveyor conv) throws OWSException, GeoWebCacheException {
 
         // let's see if any extension wants to handle this request

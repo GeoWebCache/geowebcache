@@ -36,6 +36,7 @@ public final class DispatcherOutputStream extends ServletOutputStream {
     }
 
     /** @see OutputStream#flush() */
+    @Override
     public void flush() throws ClientStreamAbortedException {
         try {
             real.flush();
@@ -45,6 +46,7 @@ public final class DispatcherOutputStream extends ServletOutputStream {
     }
 
     /** @see OutputStream#write(byte[], int, int) */
+    @Override
     public void write(byte[] b, int off, int len) throws ClientStreamAbortedException {
         try {
             real.write(b, off, len);
@@ -54,6 +56,7 @@ public final class DispatcherOutputStream extends ServletOutputStream {
     }
 
     /** @see OutputStream#write(int) */
+    @Override
     public void write(int b) throws ClientStreamAbortedException {
         try {
             real.write(b);
@@ -63,6 +66,7 @@ public final class DispatcherOutputStream extends ServletOutputStream {
     }
 
     /** @see OutputStream#close() */
+    @Override
     public void close() throws ClientStreamAbortedException {
         try {
             real.close();

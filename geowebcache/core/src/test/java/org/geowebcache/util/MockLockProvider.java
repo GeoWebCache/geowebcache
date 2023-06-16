@@ -20,6 +20,7 @@ public class MockLockProvider extends MemoryLockProvider {
     public AtomicLong releases = new AtomicLong();
     public Map<String, String> keys = new ConcurrentHashMap<>();
 
+    @Override
     public Lock getLock(final String lockKey) {
         super.getLock(lockKey);
         acquires.incrementAndGet();

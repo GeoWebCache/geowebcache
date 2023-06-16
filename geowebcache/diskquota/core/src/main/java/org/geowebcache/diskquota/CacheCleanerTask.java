@@ -24,15 +24,16 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.diskquota.CacheCleaner.QuotaResolver;
 import org.geowebcache.diskquota.storage.LayerQuota;
 import org.geowebcache.diskquota.storage.Quota;
 
 class CacheCleanerTask implements Runnable {
 
-    static final Log log = LogFactory.getLog(CacheCleanerTask.class);
+    static final Logger LOG = Logging.getLogger(CacheCleanerTask.class.getName());
 
     /**
      * Maintains a set of per layer enforcement tasks, so that no enforcement task is spawn for a
@@ -70,14 +71,15 @@ class CacheCleanerTask implements Runnable {
      *
      * @see java.lang.Runnable#run()
      */
+    @Override
     public void run() {
         try {
             innerRun();
         } catch (InterruptedException e) {
-            log.info("CacheCleanerTask called for shut down", e);
+            LOG.log(Level.INFO, "CacheCleanerTask called for shut down", e);
             Thread.currentThread().interrupt();
         } catch (Exception e) {
-            log.error("Error running cache diskquota enforcement task", e);
+            LOG.log(Level.SEVERE, "Error running cache diskquota enforcement task", e);
         }
     }
 
@@ -86,7 +88,7 @@ class CacheCleanerTask implements Runnable {
 
         final DiskQuotaConfig quotaConfig = monitor.getConfig();
         if (!quotaConfig.isEnabled()) {
-            log.trace("DiskQuota disabled, ignoring run...");
+            LOG.finer("DiskQuota disabled, ignoring run...");
             return;
         }
 
@@ -101,8 +103,8 @@ class CacheCleanerTask implements Runnable {
         for (String layerName : configuredLayerNames) {
 
             if (monitor.isCacheInfoBuilderRunning(layerName)) {
-                if (log.isInfoEnabled()) {
-                    log.info(
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.info(
                             "Cache information is still being gathered for layer '"
                                     + layerName
                                     + "'. Skipping quota enforcement task for this layer.");
@@ -112,8 +114,8 @@ class CacheCleanerTask implements Runnable {
 
             Future<?> runningCleanup = perLayerRunningCleanUps.get(layerName);
             if (runningCleanup != null && !runningCleanup.isDone()) {
-                if (log.isDebugEnabled()) {
-                    log.debug(
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine(
                             "Cache clean up task still running for layer '"
                                     + layerName
                                     + "'. Ignoring it for this run.");
@@ -128,8 +130,8 @@ class CacheCleanerTask implements Runnable {
 
             Quota excedent = usedQuota.difference(quota);
             if (excedent.getBytes().compareTo(BigInteger.ZERO) > 0) {
-                if (log.isInfoEnabled()) {
-                    log.info(
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.info(
                             "Layer '"
                                     + layerName
                                     + "' exceeds its quota of "
@@ -159,7 +161,7 @@ class CacheCleanerTask implements Runnable {
             }
             final Quota globalQuota = quotaConfig.getGlobalQuota();
             if (globalQuota == null) {
-                log.info(
+                LOG.info(
                         "There's not a global disk quota configured. The following layers "
                                 + "will not be checked for excess of disk usage: "
                                 + globallyManagedLayerNames);
@@ -167,7 +169,7 @@ class CacheCleanerTask implements Runnable {
             }
 
             if (globalCleanUpTask != null && !globalCleanUpTask.isDone()) {
-                log.debug(
+                LOG.fine(
                         "Global cache quota enforcement task still running, avoiding issueing a new one...");
                 return;
             }
@@ -177,15 +179,15 @@ class CacheCleanerTask implements Runnable {
 
             if (excedent.getBytes().compareTo(BigInteger.ZERO) > 0) {
 
-                log.debug("Submitting global cache quota enforcement task");
+                LOG.fine("Submitting global cache quota enforcement task");
                 QuotaResolver quotaResolver = monitor.newGlobalQuotaResolver();
                 LayerQuotaEnforcementTask task =
                         new LayerQuotaEnforcementTask(
                                 globallyManagedLayerNames, quotaResolver, monitor);
                 this.globalCleanUpTask = this.cleanUpExecutorService.submit(task);
             } else {
-                if (log.isTraceEnabled()) {
-                    log.trace(
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.finer(
                             "Won't launch global quota enforcement task, "
                                     + globalUsedQuota.toNiceString()
                                     + " used out of "
@@ -215,15 +217,16 @@ class CacheCleanerTask implements Runnable {
         }
 
         /** @see java.util.concurrent.Callable#call() */
+        @Override
         public Object call() throws Exception {
             try {
                 monitor.expireByLayerNames(layerNames, quotaResolver);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                log.info("Layer quota enforcement task terminated prematurely");
+                LOG.info("Layer quota enforcement task terminated prematurely");
                 return null;
             } catch (Exception e) {
-                log.warn("Exception expiring tiles for " + layerNames, e);
+                LOG.log(Level.WARNING, "Exception expiring tiles for " + layerNames, e);
                 throw e;
             }
             return null;

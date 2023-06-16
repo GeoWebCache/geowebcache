@@ -26,13 +26,14 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.media.jai.PlanarImage;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.geotools.image.util.ImageUtilities;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.conveyor.ConveyorTile;
@@ -66,7 +67,7 @@ import org.springframework.context.ApplicationContext;
  * 5) GWC will then compress the raster to the desired output format and return the image. The image is not cached.
  */
 public class WMSTileFuser {
-    private static Log log = LogFactory.getLog(WMSTileFuser.class);
+    private static Logger log = Logging.getLogger(WMSTileFuser.class.getName());
 
     private ApplicationContext applicationContext;
 
@@ -113,6 +114,9 @@ public class WMSTileFuser {
     /** Canvas dimensions */
     int[] canvasSize = new int[2];
 
+    // Wrapper around canvas and gfx
+    BufferedImageWrapper bufferedImageWrapper;
+
     static class SpatialOffsets {
         double top;
         double bottom;
@@ -131,10 +135,6 @@ public class WMSTileFuser {
     PixelOffsets canvOfs = new PixelOffsets();
 
     SpatialOffsets boundOfs = new SpatialOffsets();
-    /** Mosaic image */
-    BufferedImage canvas;
-    /** Graphics object used for drawing the tiles into a mosaic */
-    Graphics2D gfx;
 
     /** Layer parameters */
     private Map<String, String> fullParameters;
@@ -406,7 +406,7 @@ public class WMSTileFuser {
             tmpResolution = xResolution;
         }
 
-        log.debug(
+        log.fine(
                 "x res: "
                         + xResolution
                         + " y res: "
@@ -430,7 +430,7 @@ public class WMSTileFuser {
             srcIdx = resArray.length - 1;
         }
 
-        log.debug("z: " + srcIdx + " , resolution: " + srcResolution + " (" + tmpResolution + ")");
+        log.fine("z: " + srcIdx + " , resolution: " + srcResolution + " (" + tmpResolution + ")");
 
         // At worst, we have the best resolution possible
     }
@@ -495,16 +495,16 @@ public class WMSTileFuser {
         assert Math.abs(canvOfs.right - naiveOfs.right) <= 1;
         assert Math.abs(canvOfs.top - naiveOfs.top) <= 1;
 
-        if (log.isDebugEnabled()) {
-            log.debug("intersection rectangle: " + Arrays.toString(srcRectangle));
-            log.debug("intersection bounds: " + srcBounds + " (" + reqBounds + ")");
-            log.debug(
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("intersection rectangle: " + Arrays.toString(srcRectangle));
+            log.fine("intersection bounds: " + srcBounds + " (" + reqBounds + ")");
+            log.fine(
                     "Bound offsets: "
                             + Arrays.toString(
                                     new double[] {
                                         boundOfs.left, boundOfs.bottom, boundOfs.right, boundOfs.top
                                     }));
-            log.debug(
+            log.fine(
                     "Canvas size: "
                             + Arrays.toString(canvasSize)
                             + "("
@@ -512,7 +512,7 @@ public class WMSTileFuser {
                             + ","
                             + reqHeight
                             + ")");
-            log.debug(
+            log.fine(
                     "Canvas offsets: "
                             + Arrays.toString(
                                     new int[] {
@@ -550,22 +550,8 @@ public class WMSTileFuser {
             }
         }
 
-        // Create the actual canvas and graphics object
-        canvas = new BufferedImage(canvasSize[0], canvasSize[1], canvasType);
-        gfx = (Graphics2D) canvas.getGraphics();
-
-        if (bgColor != null) {
-            gfx.setColor(bgColor);
-            gfx.fillRect(0, 0, canvasSize[0], canvasSize[1]);
-        }
-
-        // Hints settings
-        RenderingHints hintsTemp = HintsLevel.DEFAULT.getRenderingHints();
-
-        if (hints != null) {
-            hintsTemp = hints;
-        }
-        gfx.addRenderingHints(hintsTemp);
+        // Create the canvas and graphics object wrapper
+        bufferedImageWrapper = new BufferedImageWrapper(canvasSize, canvasType, bgColor, hints);
     }
 
     protected void renderCanvas()
@@ -630,7 +616,7 @@ public class WMSTileFuser {
                 try {
                     layer.applyRequestFilters(tile);
                 } catch (RequestFilterException e) {
-                    log.debug(e.getMessage(), e);
+                    log.log(Level.FINE, e.getMessage(), e);
                     continue;
                 }
 
@@ -674,14 +660,14 @@ public class WMSTileFuser {
 
                 // TODO We should really ensure we can never get here
                 if (tileWidth == 0 || tileHeight == 0) {
-                    log.debug("tileWidth: " + tileWidth + " tileHeight: " + tileHeight);
+                    log.fine("tileWidth: " + tileWidth + " tileHeight: " + tileHeight);
                     continue;
                 }
 
                 // Cut down the tile to the part we want
                 if (tileWidth != gridSubset.getTileWidth()
                         || tileHeight != gridSubset.getTileHeight()) {
-                    log.debug(
+                    log.fine(
                             "tileImg.getSubimage("
                                     + tilex
                                     + ","
@@ -695,7 +681,7 @@ public class WMSTileFuser {
                 }
 
                 // Render the tile on the big canvas
-                log.debug(
+                log.fine(
                         "drawImage(subtile,"
                                 + canvasx
                                 + ","
@@ -703,27 +689,29 @@ public class WMSTileFuser {
                                 + ",null) "
                                 + Arrays.toString(gridLoc));
 
-                gfx.drawImage(tileImg, canvasx, canvasy, null); // imageObserver
+                bufferedImageWrapper.drawImage(tileImg, canvasx, canvasy);
             }
         }
-
-        gfx.dispose();
+        if (bufferedImageWrapper != null) {
+            bufferedImageWrapper.disposeGraphics();
+        }
     }
 
     protected void scaleRaster() {
-        if (canvasSize[0] != reqWidth || canvasSize[1] != reqHeight) {
-            BufferedImage preTransform = canvas;
+        if (bufferedImageWrapper != null && canvasSize[0] != reqWidth
+                || canvasSize[1] != reqHeight) {
+            BufferedImage preTransform = bufferedImageWrapper.getCanvas();
 
-            canvas = new BufferedImage(reqWidth, reqHeight, preTransform.getType());
+            BufferedImage rescaled = new BufferedImage(reqWidth, reqHeight, preTransform.getType());
 
-            Graphics2D gfx = canvas.createGraphics();
+            Graphics2D gfx = rescaled.createGraphics();
 
             AffineTransform affineTrans =
                     AffineTransform.getScaleInstance(
                             ((double) reqWidth) / preTransform.getWidth(),
                             ((double) reqHeight) / preTransform.getHeight());
 
-            log.debug(
+            log.fine(
                     "AffineTransform: "
                             + (((double) reqWidth) / preTransform.getWidth())
                             + ","
@@ -737,6 +725,10 @@ public class WMSTileFuser {
             gfx.addRenderingHints(hintsTemp);
             gfx.drawRenderedImage(preTransform, affineTrans);
             gfx.dispose();
+
+            // replace the preview image with the scaled down version
+            // (otherwise the write part will use the image at tile resolution)
+            bufferedImageWrapper.updateCanvas(rescaled);
         }
     }
 
@@ -752,11 +744,10 @@ public class WMSTileFuser {
         AccountingOutputStream aos = null;
         RenderedImage finalImage = null;
         try {
-            finalImage = canvas;
+            finalImage = bufferedImageWrapper.getCanvas();
 
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType(this.outputFormat.getMimeType());
-            response.setCharacterEncoding("UTF-8");
 
             @SuppressWarnings("PMD.CloseResource") // managed by servlet container
             ServletOutputStream os = response.getOutputStream();
@@ -770,10 +761,13 @@ public class WMSTileFuser {
                     encoderMap.isAggressiveOutputStreamSupported(outputFormat.getMimeType()),
                     null);
 
-            log.debug("WMS response size: " + aos.getCount() + "bytes.");
+            log.fine("WMS response size: " + aos.getCount() + "bytes.");
             stats.log(aos.getCount(), CacheResult.WMS);
         } catch (Exception e) {
-            log.debug("IOException writing untiled response to client: " + e.getMessage(), e);
+            log.log(
+                    Level.FINE,
+                    "IOException writing untiled response to client: " + e.getMessage(),
+                    e);
 
             // closing the stream
             if (aos != null) {

@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.geowebcache</groupId>
     <artifactId>geowebcache</artifactId>
-    <version>1.20-SNAPSHOT</version>
+    <version>1.24-SNAPSHOT</version>
     <!-- GWC VERSION -->
   </parent>
   <groupId>org.geowebcache</groupId>
@@ -24,22 +24,12 @@
     <dependency>
       <groupId>org.locationtech.jts</groupId>
       <artifactId>jts-core</artifactId>
-      <version>${jts.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-coverage</artifactId>
       <version>${gt.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>stax</groupId>
-      <artifactId>stax-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>stax</groupId>
-      <artifactId>stax</artifactId>
     </dependency>
 
     <!-- test dependencies -->

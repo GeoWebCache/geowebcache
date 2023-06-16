@@ -228,6 +228,7 @@ public class WMSServiceTest {
                 Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
         TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames);
         when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
+        when(tld.getLayerListFiltered()).thenReturn(Arrays.asList(tileLayer));
 
         ConveyorTile conv = service.getConveyor(req, resp);
         assertNotNull(conv);
@@ -271,6 +272,7 @@ public class WMSServiceTest {
                 Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
         TileLayer tileLayer = mockTileLayer("möcklāyer😎", gridSetNames);
         when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
+        when(tld.getLayerListFiltered()).thenReturn(Arrays.asList(tileLayer));
 
         ConveyorTile conv = service.getConveyor(req, resp);
         assertNotNull(conv);
@@ -496,6 +498,7 @@ public class WMSServiceTest {
         TestLayer tileLayer = mock(TestLayer.class);
         when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
         when(tld.getLayerList()).thenReturn(Collections.singleton(tileLayer));
+        when(tld.getLayerListFiltered()).thenReturn(Collections.singleton(tileLayer));
 
         doThrow(new SecurityException()).when(secDisp).checkSecurity(Mockito.any());
 
@@ -531,6 +534,7 @@ public class WMSServiceTest {
         TestLayer tileLayer = mock(TestLayer.class);
         when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
         when(tld.getLayerList()).thenReturn(Collections.singleton(tileLayer));
+        when(tld.getLayerListFiltered()).thenReturn(Collections.singleton(tileLayer));
 
         MockHttpServletRequest req = new MockHttpServletRequest();
         MockHttpServletResponse resp = new MockHttpServletResponse();
@@ -577,6 +581,8 @@ public class WMSServiceTest {
         TestLayer tileLayer = mock(TestLayer.class);
         when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
         when(tld.getLayerList()).thenReturn(Collections.singleton(tileLayer));
+        when(tld.getLayerListFiltered()).thenReturn(Collections.singleton(tileLayer));
+
         when(tileLayer.getGridSubsetsForSRS(SRS.getEPSG4326()))
                 .thenReturn(Collections.singletonList(subset));
 
@@ -638,6 +644,8 @@ public class WMSServiceTest {
         TestLayer tileLayer = mock(TestLayer.class);
         when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
         when(tld.getLayerList()).thenReturn(Collections.singleton(tileLayer));
+        when(tld.getLayerListFiltered()).thenReturn(Collections.singleton(tileLayer));
+
         when(tileLayer.getGridSubsetsForSRS(SRS.getEPSG4326()))
                 .thenReturn(Collections.singletonList(subset));
 
@@ -692,6 +700,8 @@ public class WMSServiceTest {
         TestLayer tileLayer = mock(TestLayer.class);
         when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
         when(tld.getLayerList()).thenReturn(Collections.singleton(tileLayer));
+        when(tld.getLayerListFiltered()).thenReturn(Collections.singleton(tileLayer));
+
         when(tileLayer.getGridSubsetsForSRS(SRS.getEPSG4326()))
                 .thenReturn(Collections.singletonList(subset));
         when(tileLayer.getInfoMimeTypes()).thenReturn(Collections.singletonList(XMLMime.gml));
@@ -756,6 +766,8 @@ public class WMSServiceTest {
         TestLayer tileLayer = mock(TestLayer.class);
         when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
         when(tld.getLayerList()).thenReturn(Collections.singleton(tileLayer));
+        when(tld.getLayerListFiltered()).thenReturn(Collections.singleton(tileLayer));
+
         when(tileLayer.getGridSubsetsForSRS(SRS.getEPSG4326()))
                 .thenReturn(Collections.singletonList(subset));
         when(tileLayer.getInfoMimeTypes()).thenReturn(Collections.singletonList(XMLMime.gml));

@@ -23,10 +23,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.Info;
 import org.geowebcache.conveyor.ConveyorTile;
@@ -61,7 +62,7 @@ import org.geowebcache.util.ServletUtils;
  */
 public abstract class TileLayer implements Info {
 
-    private static Log log = LogFactory.getLog(org.geowebcache.layer.TileLayer.class);
+    private static Logger log = Logging.getLogger(TileLayer.class.getName());
 
     protected static final ThreadLocal<ByteArrayResource> WMS_BUFFER = new ThreadLocal<>();
 
@@ -94,6 +95,7 @@ public abstract class TileLayer implements Info {
     public abstract void setBlobStoreId(@Nullable String blobStoreId);
 
     /** Then name of the layer */
+    @Override
     public abstract String getName();
 
     /** @return {@code true} if the layer is enabled, {@code false} otherwise */
@@ -521,7 +523,9 @@ public abstract class TileLayer implements Info {
                 try {
                     boolean completed = metaTile.writeTileToStream(i, resource);
                     if (!completed) {
-                        log.error("metaTile.writeTileToStream returned false, no tiles saved");
+                        log.log(
+                                Level.SEVERE,
+                                "metaTile.writeTileToStream returned false, no tiles saved");
                     }
                     if (store) {
                         long[] idx = {gridPos[0], gridPos[1], gridPos[2]};
@@ -548,7 +552,10 @@ public abstract class TileLayer implements Info {
                         }
                     }
                 } catch (IOException ioe) {
-                    log.error("Unable to write image tile to " + "ByteArrayOutputStream", ioe);
+                    log.log(
+                            Level.SEVERE,
+                            "Unable to write image tile to " + "ByteArrayOutputStream",
+                            ioe);
                 }
             }
         }

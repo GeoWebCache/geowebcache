@@ -1,15 +1,15 @@
 package org.geowebcache.storage;
 
 import java.io.File;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
 import org.junit.Test;
 
 public class StorageBrokerTest {
-    static final Log LOG = LogFactory.getLog(StorageBrokerTest.class);
+    static final Logger LOG = Logging.getLogger(StorageBrokerTest.class.getName());
 
     public static final String TEST_DB_NAME = "gwcTestStorageBroker";
 
@@ -154,6 +154,7 @@ public class StorageBrokerTest {
             this.iterations = iterations;
         }
 
+        @Override
         public void run() {
             try {
                 for (long i = 0; i < iterations; i++) {

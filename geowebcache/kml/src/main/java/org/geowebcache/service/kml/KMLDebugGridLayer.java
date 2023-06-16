@@ -40,8 +40,8 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
 
     public static final int IS_KMZ = 100;
 
-    // private static Log log =
-    // LogFactory.getLog(org.geowebcache.service.kml.KMLDebugGridLayer.class);
+    // private static Logger log =
+    // Logging.getLogger(org.geowebcache.service.kml.KMLDebugGridLayer.class);
 
     // This is completely isolated anyway
     private static GridSetBroker gridSetBroker =
@@ -66,6 +66,7 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
 
     public void acquireLayerLock() {}
 
+    @Override
     public ConveyorTile doNonMetatilingRequest(ConveyorTile tile) throws GeoWebCacheException {
         return null;
     }
@@ -74,18 +75,22 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
         return new BoundingBox(-180.0, -90.0, 180.0, 90.0);
     }
 
+    @Override
     public MimeType getDefaultMimeType() {
         return null;
     }
 
+    @Override
     public int[] getMetaTilingFactors() {
         return null;
     }
 
+    @Override
     public List<MimeType> getMimeTypes() {
         return null;
     }
 
+    @Override
     public String getName() {
         return "Debug grid";
     }
@@ -99,6 +104,7 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
         return null;
     }
 
+    @Override
     public ConveyorTile getTile(ConveyorTile tile) throws GeoWebCacheException, IOException {
         long[] gridLoc = tile.getTileIndex();
 
@@ -159,12 +165,13 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
         return tile;
     }
 
+    @Override
     public String getStyles() {
         return null;
     }
 
     public int[][] getZoomInGridLoc(SRS srs, int[] gridLoc) {
-        // log.warn("done - getZoomInGridLoc(srsIdx, gridLoc)");
+        // log.warning("done - getZoomInGridLoc(srsIdx, gridLoc)");
 
         int[][] retVal = new int[4][3];
 
@@ -197,18 +204,21 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
         return 25;
     }
 
+    @Override
     public boolean initializeInternal(GridSetBroker gridSetBroker) {
         return true;
     }
 
     public void releaseLayerLock() {}
 
+    @Override
     public void setExpirationHeader(HttpServletResponse response, int zoomLevel) {}
 
     public String supportsBbox(SRS srs, BoundingBox bounds) throws GeoWebCacheException {
         return null;
     }
 
+    @Override
     public boolean supportsFormat(String formatStr) throws GeoWebCacheException {
         return false;
     }
@@ -264,7 +274,7 @@ public class KMLDebugGridLayer extends AbstractTileLayer {
     }
 
     public int[] getZoomedOutGridLoc(SRS srs) {
-        // log.warn("done - getZoomedOutGridLoc");
+        // log.warning("done - getZoomedOutGridLoc");
         int[] zoomedOutGridLoc = new int[3];
         zoomedOutGridLoc[0] = -1;
         zoomedOutGridLoc[1] = -1;

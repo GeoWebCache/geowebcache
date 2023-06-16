@@ -22,12 +22,12 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.config.ContextualConfigurationProvider.Context;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.diskquota.ConfigLoader;
@@ -57,7 +57,7 @@ public class DiskQuotaController {
         context = appCtx == null ? null : appCtx.getApplicationContext();
     }
 
-    static final Log log = LogFactory.getLog(DiskQuotaController.class);
+    static final Logger LOG = Logging.getLogger(DiskQuotaController.class.getName());
 
     @Autowired DiskQuotaMonitor monitor;
 

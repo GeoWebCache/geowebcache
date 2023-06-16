@@ -25,12 +25,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.config.BaseConfiguration;
 import org.geowebcache.config.BlobStoreInfo;
 import org.geowebcache.config.ConfigurationException;
@@ -69,7 +70,8 @@ import org.xml.sax.SAXException;
 
 /** This is the main router for requests of all types. */
 public class GeoWebCacheDispatcher extends AbstractController {
-    private static Log log = LogFactory.getLog(org.geowebcache.GeoWebCacheDispatcher.class);
+
+    private static Logger LOG = Logging.getLogger(GeoWebCacheDispatcher.class.getName());
 
     public static final String TYPE_SERVICE = "service";
 
@@ -126,7 +128,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
     public void setStorageBroker() {
         // This is just to force initialization
-        log.debug("GeoWebCacheDispatcher received StorageBroker : " + storageBroker.toString());
+        LOG.fine("GeoWebCacheDispatcher received StorageBroker : " + storageBroker.toString());
     }
 
     public void setDefaultStorageFinder(DefaultStorageFinder defaultStorageFinder) {
@@ -144,7 +146,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             this.servletPrefix = servletPrefix;
         }
 
-        log.info("Invoked setServletPrefix(" + servletPrefix + ")");
+        LOG.config("Invoked setServletPrefix(" + servletPrefix + ")");
     }
     /**
      * GeoServer and other solutions that embedded this dispatcher will prepend a path, this is used
@@ -162,7 +164,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * to add new services.
      */
     private Map<String, Service> loadServices() {
-        log.info("Loading GWC Service extensions...");
+        LOG.info("Loading GWC Service extensions...");
 
         List<Service> plugins = GeoWebCacheExtensions.extensions(Service.class);
         Map<String, Service> services = new HashMap<>();
@@ -170,7 +172,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         for (Service aService : plugins) {
             services.put(aService.getPathName(), aService);
         }
-        log.info(
+        LOG.info(
                 "Done loading GWC Service extensions. Found : "
                         + new ArrayList<>(services.keySet()));
         return services;
@@ -188,18 +190,18 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 try {
                     loadBlankTile(blankTile, fh.toURI().toURL());
                 } catch (IOException e) {
-                    log.debug("Failed to load the blank tile", e);
+                    LOG.log(Level.FINE, "Failed to load the blank tile", e);
                 }
 
                 if (fileSize == blankTile.getSize()) {
-                    log.info("Loaded blank tile from " + blankTilePath);
+                    LOG.info("Loaded blank tile from " + blankTilePath);
                 } else {
-                    log.error("Failed to load blank tile from " + blankTilePath);
+                    LOG.severe("Failed to load blank tile from " + blankTilePath);
                 }
 
                 return;
             } else {
-                log.error("" + blankTilePath + " does not exist or is not readable.");
+                LOG.severe("" + blankTilePath + " does not exist or is not readable.");
             }
         }
 
@@ -209,9 +211,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
             blankTile = new ByteArrayResource();
             loadBlankTile(blankTile, url);
             int ret = (int) blankTile.getSize();
-            log.info("Read " + ret + " from blank PNG file (expected 425).");
+            LOG.info("Read " + ret + " from blank PNG file (expected 425).");
         } catch (IOException ioe) {
-            log.error(ioe);
+            LOG.log(Level.SEVERE, "Built-in blank.png unavailable", ioe);
         }
     }
 
@@ -220,8 +222,34 @@ public class GeoWebCacheDispatcher extends AbstractController {
                 ReadableByteChannel ch = Channels.newChannel(inputStream)) {
             blankTile.transferFrom(ch);
         } catch (IOException e) {
-            log.error("Failed to load blank tile", e);
+            LOG.log(Level.SEVERE, "Failed to load blank tile", e);
         }
+    }
+
+    // "/geoserver/topp/gwc/demo/topp:states" --> "/demo/topp:states"
+    //    (workspace "topp" would have been put in LocalWorkspace already)
+    // "/geoserver/gwc/demo/topp:states" --> "/demo/topp:states"
+    String normalizeURL(HttpServletRequest request) {
+        // contextPath: typically "/geoserver/gwc" - embedded GWC in GS
+        // contextPath: typically "/gwc" - standalone GWC
+        String contextPath = request.getContextPath();
+        String requestURI = request.getRequestURI();
+        if (requestURI.contains(contextPath)) {
+            // simple case "/geoserver/gwc/demo/topp:states" --> "/demo/topp:states"
+            requestURI = requestURI.replaceFirst(contextPath, "");
+            if (servletPrefix != null) {
+                requestURI = requestURI.replace(servletPrefix, "");
+            }
+            return requestURI;
+        }
+
+        if (request.getPathInfo() != null) {
+            requestURI = request.getPathInfo();
+        }
+        if (servletPrefix != null) {
+            requestURI = requestURI.replace(servletPrefix, "");
+        }
+        return requestURI;
     }
 
     /**
@@ -244,18 +272,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
         // Break the request into components, {type, service name}
         String[] requestComps = null;
         try {
-            String normalizedURI =
-                    request.getRequestURI().replaceFirst(request.getContextPath(), "");
-
-            if (servletPrefix != null) {
-                normalizedURI =
-                        normalizedURI.replaceFirst(
-                                servletPrefix,
-                                ""); // getRequestURI().replaceFirst(request.getContextPath()+,
-                // "");
-            }
+            String normalizedURI = normalizeURL(request);
             requestComps = parseRequest(normalizedURI);
-            // requestComps = parseRequest(request.getRequestURI());
         } catch (GeoWebCacheException gwce) {
             ResponseUtils.writeErrorPage(response, 400, gwce.getMessage(), runtimeStats);
             return null;
@@ -309,18 +327,18 @@ public class GeoWebCacheDispatcher extends AbstractController {
                     new ByteArrayResource("Not Authorized".getBytes()),
                     CacheResult.OTHER,
                     runtimeStats);
-            log.warn(e.getMessage());
+            LOG.warning(e.getMessage());
         } catch (Exception e) {
-            if (!(e instanceof BadTileException) || log.isDebugEnabled()) {
-                log.error(e.getMessage() + " " + request.getRequestURL().toString());
+            if (!(e instanceof BadTileException) || LOG.isLoggable(Level.FINE)) {
+                LOG.severe(e.getMessage() + " " + request.getRequestURL().toString());
             }
 
             ResponseUtils.writeErrorPage(response, 400, e.getMessage(), runtimeStats);
 
             if (!isClientStreamAbortedException(e)) {
-                log.error("Request failed", e);
-            } else if (log.isDebugEnabled()) {
-                log.debug("Request failed, client closed connection", e);
+                LOG.log(Level.SEVERE, "Request failed", e);
+            } else if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Request failed, client closed connection", e);
             }
         }
         return null;
@@ -335,7 +353,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             else current = current.getCause();
         }
         if (current instanceof ClientStreamAbortedException) {
-            log.debug("Client has closed stream", t);
+            LOG.log(Level.FINE, "Client has closed stream", t);
             return true;
         }
         return false;
@@ -346,7 +364,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * destroy="destroy">...</bean>
      */
     public void destroy() {
-        log.info("GeoWebCacheDispatcher.destroy() was invoked, shutting down.");
+        LOG.fine("GeoWebCacheDispatcher.destroy() was invoked, shutting down.");
     }
 
     /**
@@ -549,13 +567,13 @@ public class GeoWebCacheDispatcher extends AbstractController {
             configLoc = config.getConfigLocation();
         } catch (ConfigurationException | NullPointerException ex) {
             configLoc = "Error";
-            log.error("Could not find config location", ex);
+            LOG.log(Level.SEVERE, "Could not find config location", ex);
         }
         try {
             localStorageLoc = defaultStorageFinder.getDefaultPath();
         } catch (ConfigurationException ex) {
             localStorageLoc = "Error";
-            log.error("Could not find local cache location", ex);
+            LOG.log(Level.SEVERE, "Could not find local cache location", ex);
         }
         str.append("<tr><th scope=\"row\">Config file:</th><td><tt>")
                 .append(configLoc)
@@ -595,8 +613,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
         // Searches for the BlobStore inside the StorageBroker
         BlobStore blobStore = null;
-        if (log.isDebugEnabled()) {
-            log.debug("Searching for the blobstore used");
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Searching for the blobstore used");
         }
         // Getting the BlobStore if present
         if (storageBroker instanceof DefaultStorageBroker) {
@@ -605,20 +623,20 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
         // If it is not present, or it is not a memory blobstore, nothing is done
         if (blobStore == null || !(blobStore instanceof MemoryBlobStore)) {
-            if (log.isDebugEnabled()) {
-                log.debug("No Memory BlobStore found");
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("No Memory BlobStore found");
             }
             return;
         }
-        if (log.isDebugEnabled()) {
-            log.debug("Memory BlobStore found");
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Memory BlobStore found");
         }
 
         // Get the MemoryBlobStore if present
         MemoryBlobStore store = (MemoryBlobStore) blobStore;
 
-        if (log.isDebugEnabled()) {
-            log.debug("Getting statistics");
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Getting statistics");
         }
         // Get the statistics
         CacheStatistics statistics = store.getCacheStatistics();

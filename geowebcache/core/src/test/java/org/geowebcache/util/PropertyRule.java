@@ -26,11 +26,13 @@ public class PropertyRule extends SetSingletonRule<String> {
     }
 
     /** Set the original value of the property */
+    @Override
     public String getOldValue() {
         return oldValue;
     }
 
     /** Set the value of the property */
+    @Override
     public void setValue(String value) {
         if (Objects.nonNull(value)) {
             props.setProperty(name, value);

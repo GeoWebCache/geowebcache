@@ -17,9 +17,10 @@ package org.geowebcache.azure;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.BlobStoreInfo;
@@ -39,7 +40,7 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
      */
     public static final int DEFAULT_CONNECTIONS = 100;
 
-    static Log log = LogFactory.getLog(AzureBlobStoreInfo.class);
+    static Logger log = Logging.getLogger(AzureBlobStoreInfo.class.getName());
 
     private String container;
 
@@ -226,8 +227,8 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
         checkState(
                 isEnabled(),
                 "Can't call AzureBlobStoreConfig.createInstance() is blob store is not enabled");
-        if (log.isDebugEnabled())
-            log.debug("Creating Azure Blob Store instance [name=" + getName() + "]");
+        if (log.isLoggable(Level.FINE))
+            log.fine("Creating Azure Blob Store instance [name=" + getName() + "]");
         final AzureBlobStoreData storeData =
                 new AzureBlobStoreData(
                         this, GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class));

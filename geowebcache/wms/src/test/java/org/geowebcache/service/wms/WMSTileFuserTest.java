@@ -15,10 +15,16 @@
 package org.geowebcache.service.wms;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,6 +33,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.DefaultGridsets;
@@ -118,6 +126,59 @@ public class WMSTileFuserTest {
         tileFuser.setSecurityDispatcher(secDisp);
         tileFuser.determineSourceResolution();
         assertEquals(10, tileFuser.srcIdx);
+    }
+
+    @Test
+    public void testTileFuserLazyCanvasLoading() throws Exception {
+        WMSLayer layer = createWMSLayer();
+        LockProvider lockProvider = mock(LockProvider.class);
+        LockProvider.Lock lock = mock(LockProvider.Lock.class);
+        doReturn(lock).when(lockProvider).getLock(anyString());
+        layer.setLockProvider(lockProvider);
+        // request fits inside -30.0,15.0,45.0,30
+        BoundingBox bounds = new BoundingBox(-25.0, 17.0, 40.0, 22);
+        // One in between
+        int width = (int) bounds.getWidth() * 10;
+        int height = (int) bounds.getHeight() * 10;
+        GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
+        TileLayerDispatcher tld = mock(TileLayerDispatcher.class);
+        Mockito.when(tld.getTileLayer("test:layer")).thenReturn(layer);
+        StorageBroker sb = mock(StorageBroker.class);
+        WMSTileFuser tileFuser =
+                new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
+        AtomicInteger count = new AtomicInteger();
+        Mockito.when(sb.get(ArgumentMatchers.any(TileObject.class)))
+                .thenAnswer(
+                        invoc -> {
+                            TileObject stObj = (TileObject) invoc.getArguments()[0];
+                            final File imageTile =
+                                    new File(getClass().getResource("/image.png").toURI());
+                            stObj.setBlob(new FileResource(imageTile));
+                            stObj.setCreated((new Date()).getTime());
+                            stObj.setBlobSize(1000);
+                            if (count.incrementAndGet() == 1) {
+                                // first time, canvas should be null
+                                assertNull(tileFuser.bufferedImageWrapper.canvas);
+                                return true;
+                            } else {
+                                assertNotNull(tileFuser.bufferedImageWrapper.canvas);
+                                return true;
+                            }
+                        });
+
+        try (ClassPathXmlApplicationContext context =
+                new ClassPathXmlApplicationContext("appContextTest.xml")) {
+            tileFuser.setApplicationContext(context);
+
+            tileFuser.setSecurityDispatcher(secDisp);
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            RuntimeStats stats = mock(RuntimeStats.class);
+
+            assertNull(tileFuser.bufferedImageWrapper);
+            tileFuser.writeResponse(response, stats);
+            assertNotNull(tileFuser.bufferedImageWrapper);
+            assertNotNull(tileFuser.bufferedImageWrapper.canvas);
+        }
     }
 
     @Test
@@ -262,7 +323,7 @@ public class WMSTileFuserTest {
         temp.mkdirs();
         try {
             TileLayerDispatcher dispatcher =
-                    new TileLayerDispatcher(gridSetBroker) {
+                    new TileLayerDispatcher(gridSetBroker, null) {
 
                         @Override
                         public TileLayer getTileLayer(String layerName)
@@ -306,7 +367,13 @@ public class WMSTileFuserTest {
                 tileFuser.writeResponse(
                         response, new RuntimeStats(1, Arrays.asList(1), Arrays.asList("desc")));
 
-                assertTrue(response.getContentAsString().length() > 0);
+                // check the result is a valid PNG
+                assertEquals("image/png", response.getContentType());
+                BufferedImage image =
+                        ImageIO.read(new ByteArrayInputStream(response.getContentAsByteArray()));
+                // and it's the expected size
+                assertEquals(width, image.getWidth());
+                assertEquals(height, image.getHeight());
             }
         } finally {
             temp.delete();

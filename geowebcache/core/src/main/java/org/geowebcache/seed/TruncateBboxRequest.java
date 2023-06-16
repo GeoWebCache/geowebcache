@@ -19,6 +19,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.UncheckedGeoWebCacheException;
@@ -58,6 +59,22 @@ public class TruncateBboxRequest implements MassTruncateRequest {
         final GridSubset subSet = tileLayer.getGridSubset(gridSetId);
         final int minZ = Optional.fromNullable(subSet.getMinCachedZoom()).or(subSet.getZoomStart());
         final int maxZ = Optional.fromNullable(subSet.getMaxCachedZoom()).or(subSet.getZoomStop());
+        // Create seed request for each combination of params and format
+        Function<Map<String, String>, Stream<SeedRequest>> seedRequestMapper =
+                params ->
+                        allFormats.stream()
+                                .map(
+                                        format ->
+                                                new SeedRequest(
+                                                        layerName,
+                                                        bounds,
+                                                        gridSetId,
+                                                        1,
+                                                        minZ,
+                                                        maxZ,
+                                                        format.getMimeType(),
+                                                        GWCTask.TYPE.TRUNCATE,
+                                                        params));
         try {
             int taskCount =
                     Stream.concat(
@@ -65,25 +82,7 @@ public class TruncateBboxRequest implements MassTruncateRequest {
                                     Stream.of(
                                             (Map<String, String>)
                                                     null)) // Add null for the default parameters
-                            .flatMap(
-                                    params ->
-                                            allFormats
-                                                    .stream()
-                                                    .map(
-                                                            format ->
-                                                                    // Create seed request for each
-                                                                    // combination of params and
-                                                                    // format
-                                                                    new SeedRequest(
-                                                                            layerName,
-                                                                            bounds,
-                                                                            gridSetId,
-                                                                            1,
-                                                                            minZ,
-                                                                            maxZ,
-                                                                            format.getMimeType(),
-                                                                            GWCTask.TYPE.TRUNCATE,
-                                                                            params)))
+                            .flatMap(seedRequestMapper)
                             .map(
                                     request -> {
                                         try {

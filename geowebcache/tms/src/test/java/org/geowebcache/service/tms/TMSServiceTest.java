@@ -284,6 +284,7 @@ public class TMSServiceTest {
                 mockTileLayer(
                         tld, gridsetBroker, "mockLayer", gridSetNames, Collections.emptyList());
         when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
+        when(tld.getLayerListFiltered()).thenReturn(Arrays.asList(tileLayer));
 
         Conveyor conv = service.getConveyor(req, resp);
         Assert.assertNotNull(conv);

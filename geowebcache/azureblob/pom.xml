@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.geowebcache</groupId>
     <artifactId>geowebcache</artifactId>
-    <version>1.20-SNAPSHOT</version>
+    <version>1.24-SNAPSHOT</version>
     <!-- GWC VERSION -->
   </parent>
 
@@ -23,6 +23,11 @@
       <artifactId>azure-storage-blob</artifactId>
       <!-- at the time of writing 11.0.1 was available but pom on repoes was corrupted -->
       <version>11.0.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
     </dependency>
 
     <dependency>

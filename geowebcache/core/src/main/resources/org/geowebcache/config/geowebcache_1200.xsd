@@ -172,7 +172,7 @@
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:element name="wmsLayer" type="gwc:WmsLayer" />
               <xs:element ref="gwc:arcgisLayer" />
-			  <xs:element ref="gwc:mbtilesLayer" />
+              <xs:element ref="gwc:mbtilesLayer" />
             </xs:choice>
           </xs:complexType>
         </xs:element>	        
@@ -871,7 +871,6 @@
       </xs:element>
     </xs:sequence>
   </xs:complexType>
-
 
   <xs:element name="mbtilesLayer" type="gwc:MBTilesLayerType">
     <xs:annotation>

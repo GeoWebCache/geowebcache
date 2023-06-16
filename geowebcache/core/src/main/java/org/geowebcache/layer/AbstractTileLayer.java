@@ -21,9 +21,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.config.XMLOldGrid;
@@ -44,7 +45,7 @@ import org.geowebcache.util.GWCVars;
 /** Default statefull base class for {@link TileLayer} implementations */
 public abstract class AbstractTileLayer extends TileLayer {
 
-    private static Log log = LogFactory.getLog(org.geowebcache.layer.AbstractTileLayer.class);
+    private static Logger log = Logging.getLogger(AbstractTileLayer.class.getName());
 
     private static final int[] DEFAULT_METATILING_FACTORS = {1, 1};
 
@@ -265,7 +266,7 @@ public abstract class AbstractTileLayer extends TileLayer {
                 formats.add(1, MimeType.createFromFormat("image/jpeg"));
             }
         } catch (GeoWebCacheException gwce) {
-            log.error(gwce);
+            log.log(Level.SEVERE, gwce.getMessage(), gwce);
         }
 
         try {
@@ -282,7 +283,7 @@ public abstract class AbstractTileLayer extends TileLayer {
                 infoFormats.add(MimeType.createFromFormat("application/vnd.ogc.gml"));
             }
         } catch (GeoWebCacheException gwce) {
-            log.error(gwce);
+            log.log(Level.SEVERE, gwce.getMessage(), gwce);
         }
 
         if (subSets == null) {
@@ -297,7 +298,8 @@ public abstract class AbstractTileLayer extends TileLayer {
             GridSubset gridSubset = xmlGridSubset.getGridSubSet(gridSetBroker);
 
             if (gridSubset == null) {
-                log.error(
+                log.log(
+                        Level.SEVERE,
                         xmlGridSubset.getGridSetName()
                                 + " is not known by the GridSetBroker, skipping for layer "
                                 + name);
@@ -319,7 +321,7 @@ public abstract class AbstractTileLayer extends TileLayer {
             grids = null;
         }
 
-        if (this.subSets.size() == 0) {
+        if (this.subSets.isEmpty()) {
             subSets.put(
                     gridSetBroker.getWorldEpsg4326().getName(),
                     GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326()));
@@ -455,10 +457,12 @@ public abstract class AbstractTileLayer extends TileLayer {
         return retVal;
     }
 
+    @Override
     public List<ParameterFilter> getParameterFilters() {
         return parameterFilters;
     }
 
+    @Override
     public List<RequestFilter> getRequestFilters() {
         return requestFilters;
     }

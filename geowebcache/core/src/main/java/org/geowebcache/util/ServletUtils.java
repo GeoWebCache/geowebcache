@@ -30,13 +30,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.geotools.util.logging.Logging;
 
 public class ServletUtils {
-    private static Log log = LogFactory.getLog(org.geowebcache.util.ServletUtils.class);
+    private static Logger log =
+            Logging.getLogger(org.geowebcache.util.ServletUtils.class.toString());
 
     // Calendar objects are unfortunately expensive and not thread safe :(
     private static Calendar calendar = new GregorianCalendar();
@@ -248,7 +249,7 @@ public class ServletUtils {
             try {
                 format.parse(expiresHeader);
             } catch (ParseException pe) {
-                log.debug("Cannot parse " + expiresHeader + ", " + pe.getMessage());
+                log.fine("Cannot parse " + expiresHeader + ", " + pe.getMessage());
                 return -1;
             }
 
@@ -316,7 +317,7 @@ public class ServletUtils {
         try {
             ret = URLEncoder.encode(str, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            log.debug(e.getMessage());
+            log.fine(e.getMessage());
         }
 
         return ret;
@@ -329,14 +330,14 @@ public class ServletUtils {
             try {
                 ret = URLDecoder.decode(str, encoding);
             } catch (UnsupportedEncodingException e) {
-                log.debug(e.getMessage());
+                log.fine(e.getMessage());
             }
         }
 
         try {
             ret = URLDecoder.decode(str, "UTF-8");
         } catch (UnsupportedEncodingException e1) {
-            log.debug(e1.getMessage());
+            log.fine(e1.getMessage());
         }
 
         return ret;

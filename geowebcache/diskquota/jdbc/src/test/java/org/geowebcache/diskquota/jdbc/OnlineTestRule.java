@@ -25,15 +25,16 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.junit.Assume;
 import org.junit.AssumptionViolatedException;
 import org.junit.rules.ExternalResource;
 
 public class OnlineTestRule extends ExternalResource {
 
-    static final Log LOG = LogFactory.getLog(OnlineTestRule.class);
+    static final Logger LOG = Logging.getLogger(OnlineTestRule.class.getName());
 
     /** System property set to totally disable any online tests */
     public static final String ONLINE_TEST_PROFILE = "onlineTestProfile";
@@ -84,7 +85,7 @@ public class OnlineTestRule extends ExternalResource {
         } catch (Throwable t) {
             LOG.info(
                     "Skipping " + fixtureId + " tests, resources not available: " + t.getMessage());
-            t.printStackTrace();
+            LOG.log(Level.WARNING, t.getMessage(), t);
             available = Boolean.FALSE;
         }
         OnlineTestRule.online.put(fixtureId, available);
@@ -135,7 +136,7 @@ public class OnlineTestRule extends ExternalResource {
                     FixtureUtilities.printSkipNotice(fixtureId, fixtureFile);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                LOG.log(Level.WARNING, e.getMessage(), e);
             }
         }
     }
@@ -156,7 +157,7 @@ public class OnlineTestRule extends ExternalResource {
             LOG.info("Wrote example fixture file to " + exFixtureFile);
         } catch (IOException ioe) {
             LOG.info("Unable to write out example fixture " + exFixtureFile);
-            ioe.printStackTrace();
+            LOG.log(Level.WARNING, ioe.getMessage(), ioe);
         }
     }
 

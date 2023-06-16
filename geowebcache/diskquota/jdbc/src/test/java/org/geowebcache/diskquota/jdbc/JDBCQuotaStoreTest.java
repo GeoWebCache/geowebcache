@@ -1,5 +1,6 @@
 package org.geowebcache.diskquota.jdbc;
 
+import static org.easymock.EasyMock.newCapture;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -133,7 +134,7 @@ public abstract class JDBCQuotaStoreTest {
             xmlConfig.setGridSetBroker(broker);
             extraConfig.setGridSetBroker(broker);
 
-            layerDispatcher = new TileLayerDispatcher(broker);
+            layerDispatcher = new TileLayerDispatcher(broker, null);
 
             layerDispatcher.setApplicationContext(extensions.getMockContext());
 
@@ -142,7 +143,7 @@ public abstract class JDBCQuotaStoreTest {
             extraConfig.afterPropertiesSet();
             layerDispatcher.afterPropertiesSet();
 
-            Capture<String> layerNameCap = new Capture<>();
+            Capture<String> layerNameCap = newCapture();
             storageBroker = EasyMock.createMock(StorageBroker.class);
             EasyMock.expect(storageBroker.getCachedParameterIds(EasyMock.capture(layerNameCap)))
                     .andStubAnswer(
@@ -157,15 +158,12 @@ public abstract class JDBCQuotaStoreTest {
                             .map(ParametersUtils::getMap)
                             .collect(Collectors.toSet()));
             parameterIdsMap =
-                    parametersMap
-                            .entrySet()
-                            .stream()
+                    parametersMap.entrySet().stream()
                             .collect(
                                     Collectors.toMap(
                                             Map.Entry::getKey,
                                             e ->
-                                                    e.getValue()
-                                                            .stream()
+                                                    e.getValue().stream()
                                                             .map(ParametersUtils::getKvp)
                                                             .collect(Collectors.toSet())));
 
@@ -434,8 +432,7 @@ public abstract class JDBCQuotaStoreTest {
         assertThat(
                 store.getTileSets(),
                 containsInAnyOrder(
-                        expectedTileSets
-                                .stream()
+                        expectedTileSets.stream()
                                 .map(Matchers::equalTo)
                                 .collect(Collectors.toSet())));
 
@@ -444,8 +441,7 @@ public abstract class JDBCQuotaStoreTest {
         assertThat(
                 store.getTileSets(),
                 containsInAnyOrder(
-                        expectedTileSets
-                                .stream()
+                        expectedTileSets.stream()
                                 .filter(
                                         ts ->
                                                 !(ts.getGridsetId().equals("EPSG:4326")
@@ -494,8 +490,7 @@ public abstract class JDBCQuotaStoreTest {
         assertThat(
                 store.getTileSets(),
                 containsInAnyOrder(
-                        expectedTileSets
-                                .stream()
+                        expectedTileSets.stream()
                                 .map(Matchers::equalTo)
                                 .collect(Collectors.toSet())));
 
@@ -504,8 +499,7 @@ public abstract class JDBCQuotaStoreTest {
         assertThat(
                 store.getTileSets(),
                 containsInAnyOrder(
-                        expectedTileSets
-                                .stream()
+                        expectedTileSets.stream()
                                 .filter(
                                         ts ->
                                                 !(Objects.equal(ts.getParametersId(), paramIds[1])

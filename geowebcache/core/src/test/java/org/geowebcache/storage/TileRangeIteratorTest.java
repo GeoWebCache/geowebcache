@@ -16,8 +16,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
@@ -35,7 +35,7 @@ import org.springframework.util.StopWatch;
 
 public class TileRangeIteratorTest {
 
-    static final Log LOG = LogFactory.getLog(TileRangeIteratorTest.class);
+    static final Logger LOG = Logging.getLogger(TileRangeIteratorTest.class.getName());
 
     private MimeType mimeType;
 
@@ -280,6 +280,7 @@ public class TileRangeIteratorTest {
             this.tri = tri;
         }
 
+        @Override
         public Long call() throws Exception {
             long nprocessed = 0;
             long[] gridLoc = new long[3];

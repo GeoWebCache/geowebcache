@@ -74,6 +74,7 @@ public class RasterMask implements TileRangeMask {
         this.noDataValue = noDataValue;
     }
 
+    @Override
     public long[][] getGridCoverages() {
         return coveredBounds;
     }
@@ -82,6 +83,7 @@ public class RasterMask implements TileRangeMask {
         return lookup(idx[0], idx[1], (int) idx[2]);
     }
 
+    @Override
     public boolean lookup(final long x, final long y, final int z) {
         long tileX = x;
         long tileY = y;

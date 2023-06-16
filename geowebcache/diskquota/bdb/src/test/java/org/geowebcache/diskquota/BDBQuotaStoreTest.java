@@ -1,5 +1,6 @@
 package org.geowebcache.diskquota;
 
+import static org.easymock.EasyMock.newCapture;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -94,7 +95,7 @@ public class BDBQuotaStoreTest {
                 .anyTimes();
         EasyMock.replay(cacheDirFinder);
 
-        Capture<String> layerNameCap = new Capture<>();
+        Capture<String> layerNameCap = newCapture();
         storageBroker = EasyMock.createMock(StorageBroker.class);
         EasyMock.expect(storageBroker.getCachedParameterIds(EasyMock.capture(layerNameCap)))
                 .andStubAnswer(
@@ -109,15 +110,12 @@ public class BDBQuotaStoreTest {
                         .map(ParametersUtils::getMap)
                         .collect(Collectors.toSet()));
         parameterIdsMap =
-                parametersMap
-                        .entrySet()
-                        .stream()
+                parametersMap.entrySet().stream()
                         .collect(
                                 Collectors.toMap(
                                         Map.Entry::getKey,
                                         e ->
-                                                e.getValue()
-                                                        .stream()
+                                                e.getValue().stream()
                                                         .map(ParametersUtils::getKvp)
                                                         .collect(Collectors.toSet())));
         XMLConfiguration xmlConfig = loadXMLConfig();
@@ -132,7 +130,7 @@ public class BDBQuotaStoreTest {
                 BaseConfiguration.class);
         GridSetBroker gridSetBroker = new GridSetBroker();
         gridSetBroker.setApplicationContext(context.getMockContext());
-        layerDispatcher = new TileLayerDispatcher(gridSetBroker);
+        layerDispatcher = new TileLayerDispatcher(gridSetBroker, null);
         layerDispatcher.setApplicationContext(context.getMockContext());
 
         tilePageCalculator = new TilePageCalculator(layerDispatcher, storageBroker);
@@ -316,9 +314,7 @@ public class BDBQuotaStoreTest {
         String gridSetId = "EPSG:4326";
 
         long quotaToDelete =
-                tilePageCalculator
-                        .getTileSetsFor(layerName)
-                        .stream()
+                tilePageCalculator.getTileSetsFor(layerName).stream()
                         .filter(ts -> ts.getGridsetId().equals(gridSetId))
                         .map(
                                 ts -> {
@@ -338,9 +334,7 @@ public class BDBQuotaStoreTest {
                         .collect(Collectors.summingLong(mb -> mb * 1024 * 1024));
         assertThat(quotaToDelete, greaterThan(0L));
         long quotaToKeep =
-                tilePageCalculator
-                        .getTileSetsFor(layerName)
-                        .stream()
+                tilePageCalculator.getTileSetsFor(layerName).stream()
                         .filter(ts -> !ts.getGridsetId().equals(gridSetId))
                         .map(
                                 ts -> {
@@ -373,9 +367,7 @@ public class BDBQuotaStoreTest {
         String parametersId = parameterIdsMap.get(layerName).iterator().next();
 
         long quotaToDelete =
-                tilePageCalculator
-                        .getTileSetsFor(layerName)
-                        .stream()
+                tilePageCalculator.getTileSetsFor(layerName).stream()
                         .filter(ts -> ts.getParametersId().equals(parametersId))
                         .map(
                                 ts -> {
@@ -395,9 +387,7 @@ public class BDBQuotaStoreTest {
                         .collect(Collectors.summingLong(mb -> mb * 1024 * 1024));
         assertThat(quotaToDelete, greaterThan(0L));
         long quotaToKeep =
-                tilePageCalculator
-                        .getTileSetsFor(layerName)
-                        .stream()
+                tilePageCalculator.getTileSetsFor(layerName).stream()
                         .filter(ts -> !ts.getParametersId().equals(parametersId))
                         .map(
                                 ts -> {

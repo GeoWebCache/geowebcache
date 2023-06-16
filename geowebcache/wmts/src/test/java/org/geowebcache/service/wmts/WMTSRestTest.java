@@ -37,8 +37,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpStatus;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.geowebcache.GeoWebCacheException;
@@ -116,7 +116,7 @@ public class WMTSRestTest {
         MockHttpServletResponse resp = dispatch(req);
 
         assertEquals(200, resp.getStatus());
-        assertEquals("text/xml", resp.getContentType());
+        assertEquals("text/xml;charset=UTF-8", resp.getContentType());
         final Document doc = XMLUnit.buildTestDocument(resp.getContentAsString());
         assertXpathExists("//wmts:Contents/wmts:Layer", doc);
         assertXpathExists("//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer']", doc);
@@ -229,6 +229,7 @@ public class WMTSRestTest {
         when(tileLayerJson.getGridSubset(eq(googleMercator))).thenReturn(subset);
 
         when(tileLayerDispatcher.getLayerList()).thenReturn(Arrays.asList(tileLayerJson));
+        when(tileLayerDispatcher.getLayerListFiltered()).thenReturn(Arrays.asList(tileLayerJson));
     }
 
     public MockHttpServletResponse dispatch(MockHttpServletRequest req) throws Exception {
@@ -458,6 +459,7 @@ public class WMTSRestTest {
         when(tileLayer.getGridSubsets()).thenReturn(subsets.keySet());
 
         when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
+        when(tld.getLayerListFiltered()).thenReturn(Arrays.asList(tileLayer));
 
         when(tileLayer.getTile(any(ConveyorTile.class)))
                 .thenAnswer(

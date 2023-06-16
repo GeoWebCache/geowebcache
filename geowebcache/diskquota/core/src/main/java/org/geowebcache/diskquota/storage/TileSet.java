@@ -130,6 +130,7 @@ public class TileSet implements Comparable<TileSet> {
     }
 
     /** @see java.lang.Comparable#compareTo(java.lang.Object) */
+    @Override
     public int compareTo(TileSet o) {
         int val = layerName.compareTo(o.layerName);
         if (val != 0) {

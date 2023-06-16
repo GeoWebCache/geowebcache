@@ -219,6 +219,7 @@ public class TMSService extends Service {
         return Optional.of(parsed);
     }
 
+    @Override
     public void handleRequest(Conveyor conv) throws GeoWebCacheException {
         // get all elements of the pathInfo after the leading "/tms/1.0.0/" part.
         String pathInfo = conv.servletReq.getPathInfo();

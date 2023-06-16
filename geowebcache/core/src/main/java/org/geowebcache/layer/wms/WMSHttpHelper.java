@@ -16,19 +16,27 @@ package org.geowebcache.layer.wms;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicNameValuePair;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileResponseReceiver;
@@ -42,7 +50,7 @@ import org.springframework.util.Assert;
 
 /** This class is a wrapper for HTTP interaction with WMS backend */
 public class WMSHttpHelper extends WMSSourceHelper {
-    private static Log log = LogFactory.getLog(org.geowebcache.layer.wms.WMSHttpHelper.class);
+    private static final Logger log = Logging.getLogger(WMSHttpHelper.class.getName());
 
     private final URL proxyUrl;
 
@@ -50,9 +58,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
 
     private final String httpPassword;
 
-    private volatile HttpClient client;
-
-    private boolean doAuthentication;
+    protected volatile HttpClient client;
 
     public WMSHttpHelper() {
         this(null, null, null);
@@ -80,7 +86,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
                                 httpPassword,
                                 proxyUrl,
                                 getConcurrency());
-                doAuthentication = builder.isDoAuthentication();
+
                 client = builder.buildClient();
             }
         }
@@ -160,124 +166,128 @@ public class WMSHttpHelper extends WMSSourceHelper {
             WMSLayer.HttpRequestMode httpRequestMode)
             throws GeoWebCacheException {
 
-        HttpMethodBase method = null;
+        HttpResponse method = null;
         final int responseCode;
-        final int responseLength;
+        int responseLength = 0;
 
-        try { // finally
-            try {
-                method = executeRequest(wmsBackendUrl, wmsParams, backendTimeout, httpRequestMode);
-                responseCode = method.getStatusCode();
-                responseLength = (int) method.getResponseContentLength();
-
-                // Do not set error at this stage
-            } catch (IOException ce) {
-                if (log.isDebugEnabled()) {
-                    String message = "Error forwarding request " + wmsBackendUrl.toString();
-                    log.debug(message, ce);
-                }
-                throw new GeoWebCacheException(ce);
-            }
-            // Check that the response code is okay
-            tileRespRecv.setStatus(responseCode);
-            if (responseCode != 200 && responseCode != 204) {
-                tileRespRecv.setError();
-                throw new ServiceException(
-                        "Unexpected response code from backend: "
-                                + responseCode
-                                + " for "
-                                + wmsBackendUrl.toString());
-            }
-
-            // Check that we're not getting an error MIME back.
-            String responseMime = method.getResponseHeader("Content-Type").getValue();
-            if (responseCode != 204
-                    && responseMime != null
-                    && !requestMimeType.isCompatible(responseMime)) {
-                String message = null;
-                if (responseMime.equalsIgnoreCase(ErrorMime.vnd_ogc_se_inimage.getFormat())) {
-                    // TODO: revisit: I don't understand why it's trying to create a String message
-                    // out of an ogc_se_inimage response?
-
-                    try (InputStream stream = method.getResponseBodyAsStream()) {
-                        byte[] error = IOUtils.toByteArray(stream);
-                        message = new String(error);
-                    } catch (IOException ioe) {
-                        // Do nothing
-                    }
-                } else if (responseMime != null
-                        && responseMime.toLowerCase().startsWith("application/vnd.ogc.se_xml")) {
-                    try (InputStream stream = method.getResponseBodyAsStream()) {
-                        message = IOUtils.toString(stream, "UTF-8");
-                    } catch (IOException e) {
-                        //
-                    }
-                }
-                String msg =
-                        "MimeType mismatch, expected "
-                                + requestMimeType
-                                + " but got "
-                                + responseMime
-                                + " from "
-                                + wmsBackendUrl.toString()
-                                + (message == null ? "" : (":\n" + message));
-                tileRespRecv.setError();
-                tileRespRecv.setErrorMessage(msg);
-                log.warn(msg);
-            }
-
-            // Everything looks okay, try to save expiration
-            if (tileRespRecv.getExpiresHeader() == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
-                String expireValue = method.getResponseHeader("Expires").getValue();
-                long expire = ServletUtils.parseExpiresHeader(expireValue);
-                if (expire != -1) {
-                    tileRespRecv.setExpiresHeader(expire / 1000);
+        try {
+            method = executeRequest(wmsBackendUrl, wmsParams, backendTimeout, httpRequestMode);
+            responseCode = method.getStatusLine().getStatusCode();
+            if (responseCode == 200) {
+                if (method.getFirstHeader("length") != null) {
+                    responseLength = Integer.parseInt(method.getFirstHeader("length").getValue());
+                } else if (method.getFirstHeader("Content-Length") != null) {
+                    responseLength =
+                            Integer.parseInt(method.getFirstHeader("Content-Length").getValue());
+                } else if (method.getEntity() != null) {
+                    responseLength = Math.toIntExact(method.getEntity().getContentLength());
+                } else {
+                    throw new ServiceException(
+                            "Unable to determine response length from: "
+                                    + wmsBackendUrl.toString());
                 }
             }
+            // Do not set error at this stage
+        } catch (IOException ce) {
+            if (log.isLoggable(Level.FINE)) {
+                String message = "Error forwarding request " + wmsBackendUrl.toString();
+                log.log(Level.FINE, message, ce);
+            }
+            throw new GeoWebCacheException(ce);
+        }
+        // Check that the response code is okay
+        tileRespRecv.setStatus(responseCode);
+        if (responseCode != 200 && responseCode != 204) {
+            tileRespRecv.setError();
+            throw new ServiceException(
+                    "Unexpected response code from backend: "
+                            + responseCode
+                            + " for "
+                            + wmsBackendUrl.toString());
+        }
 
-            // Read the actual data
-            if (responseCode != 204) {
-                try (InputStream inStream = method.getResponseBodyAsStream()) {
-                    if (inStream == null) {
-                        String uri = method.getURI().getURI();
-                        log.error("No response for " + method.getName() + " " + uri);
-                    } else {
-                        try (ReadableByteChannel channel = Channels.newChannel(inStream)) {
-                            target.transferFrom(channel);
-                        }
-                    }
-                    if (responseLength > 0) {
-                        int readAccu = (int) target.getSize();
-                        if (readAccu != responseLength) {
-                            tileRespRecv.setError();
-                            throw new GeoWebCacheException(
-                                    "Responseheader advertised "
-                                            + responseLength
-                                            + " bytes, but only received "
-                                            + readAccu
-                                            + " from "
-                                            + wmsBackendUrl.toString());
-                        }
-                    }
+        // Check that we're not getting an error MIME back.
+        String responseMime = method.getFirstHeader("Content-Type").getValue();
+        if (responseCode != 204
+                && responseMime != null
+                && !requestMimeType.isCompatible(responseMime)) {
+            String message = null;
+            if (responseMime.equalsIgnoreCase(ErrorMime.vnd_ogc_se_inimage.getFormat())) {
+                // TODO: revisit: I don't understand why it's trying to create a String message
+                // out of an ogc_se_inimage response?
+
+                try (InputStream stream = method.getEntity().getContent()) {
+                    byte[] error = IOUtils.toByteArray(stream);
+                    message = new String(error);
                 } catch (IOException ioe) {
-                    tileRespRecv.setError();
-                    log.error(
-                            "Caught IO exception, "
-                                    + wmsBackendUrl.toString()
-                                    + " "
-                                    + ioe.getMessage());
+                    // Do nothing
+                }
+            } else if (responseMime != null
+                    && responseMime.toLowerCase().startsWith("application/vnd.ogc.se_xml")) {
+                try (InputStream stream = method.getEntity().getContent()) {
+                    message = IOUtils.toString(stream, StandardCharsets.UTF_8);
+                } catch (IOException e) {
+                    //
                 }
             }
+            String msg =
+                    "MimeType mismatch, expected "
+                            + requestMimeType
+                            + " but got "
+                            + responseMime
+                            + " from "
+                            + wmsBackendUrl.toString()
+                            + (message == null ? "" : (":\n" + message));
+            tileRespRecv.setError();
+            tileRespRecv.setErrorMessage(msg);
+            log.warning(msg);
+        }
 
-        } finally {
-            if (method != null) {
-                method.releaseConnection();
+        // Everything looks okay, try to save expiration
+        if (tileRespRecv.getExpiresHeader() == GWCVars.CACHE_USE_WMS_BACKEND_VALUE) {
+            String expireValue = method.getFirstHeader("Expires").getValue();
+            long expire = ServletUtils.parseExpiresHeader(expireValue);
+            if (expire != -1) {
+                tileRespRecv.setExpiresHeader(expire / 1000);
+            }
+        }
+
+        // Read the actual data
+        if (responseCode != 204) {
+            try (InputStream inStream = method.getEntity().getContent()) {
+                if (inStream == null) {
+                    log.severe("No response for " + method);
+                } else {
+                    try (ReadableByteChannel channel = Channels.newChannel(inStream)) {
+                        target.transferFrom(channel);
+                    }
+                }
+                if (responseLength > 0) {
+                    int readAccu = (int) target.getSize();
+                    if (readAccu != responseLength) {
+                        tileRespRecv.setError();
+                        throw new GeoWebCacheException(
+                                "Responseheader advertised "
+                                        + responseLength
+                                        + " bytes, but only received "
+                                        + readAccu
+                                        + " from "
+                                        + wmsBackendUrl.toString());
+                    }
+                }
+            } catch (IOException ioe) {
+                tileRespRecv.setError();
+                log.severe(
+                        "Caught IO exception, "
+                                + wmsBackendUrl.toString()
+                                + " "
+                                + ioe.getMessage());
             }
         }
     }
 
     /**
-     * sets up a HTTP request to a URL and configures authentication.
+     * sets up an HTTP request to a URL and configures authentication.
      *
      * @param url endpoint to talk to
      * @param queryParams parameters for the query string
@@ -286,14 +296,12 @@ public class WMSHttpHelper extends WMSSourceHelper {
      *     org.geowebcache.layer.wms.WMSLayer.HttpRequestMode#Get} will be used
      * @return executed method (that has to be closed after reading the response!)
      */
-    public HttpMethodBase executeRequest(
+    public HttpResponse executeRequest(
             final URL url,
             final Map<String, String> queryParams,
             final Integer backendTimeout,
             WMSLayer.HttpRequestMode httpRequestMode)
             throws IOException {
-        // grab the client
-        HttpClient httpClient = getHttpClient();
 
         // prepare the request
         NameValuePair[] params = null;
@@ -302,31 +310,53 @@ public class WMSHttpHelper extends WMSSourceHelper {
             params = new NameValuePair[queryParams.size()];
             int i = 0;
             for (Map.Entry<String, String> e : queryParams.entrySet()) {
-                params[i] = new NameValuePair(e.getKey(), e.getValue());
+                params[i] = new BasicNameValuePair(e.getKey(), e.getValue());
                 i++;
             }
         }
 
-        HttpMethodBase method;
+        HttpRequestBase method;
+        String urlString = url.toString();
         if (httpRequestMode == WMSLayer.HttpRequestMode.FormPost) {
-            PostMethod pm = new PostMethod(url.toString());
+            HttpPost pm = new HttpPost(urlString);
             if (queryParams != null && !queryParams.isEmpty()) {
-                pm.setRequestBody(params);
+                HttpEntity requestEntity = new StringEntity(processRequestParameters(queryParams));
+                pm.setEntity(requestEntity);
             }
             method = pm;
         } else {
-            method = new GetMethod(url.toString());
             if (queryParams != null && !queryParams.isEmpty()) {
-                method.setQueryString(params);
+                String qs = processRequestParameters(queryParams);
+                if (urlString.contains("?")) {
+                    urlString = urlString + "&" + qs;
+                } else if (urlString.endsWith("?")) {
+                    urlString += qs;
+                } else {
+                    urlString = urlString + "?" + qs;
+                }
             }
+            method = new HttpGet(urlString);
         }
-        method.setDoAuthentication(doAuthentication);
 
         // fire!
-        if (log.isDebugEnabled()) {
-            log.trace(method.getURI().getURI());
+        if (log.isLoggable(Level.FINER)) {
+            log.finer(method.toString());
         }
-        httpClient.executeMethod(method);
-        return method;
+        return getHttpClient().execute(method);
+    }
+
+    private String processRequestParameters(Map<String, String> parameters)
+            throws UnsupportedEncodingException {
+        StringBuilder sb = new StringBuilder();
+        for (String parameterName : parameters.keySet()) {
+            sb.append(parameterName)
+                    .append('=')
+                    .append(
+                            URLEncoder.encode(
+                                    parameters.get(parameterName),
+                                    StandardCharsets.UTF_8.toString()))
+                    .append('&');
+        }
+        return sb.substring(0, sb.length() - 1);
     }
 }

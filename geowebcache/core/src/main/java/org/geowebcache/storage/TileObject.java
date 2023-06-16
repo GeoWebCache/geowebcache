@@ -134,10 +134,12 @@ public class TileObject extends StorageObject implements Serializable {
         return parameters;
     }
 
+    @Override
     public String getType() {
         return TYPE;
     }
 
+    @Override
     public String toString() {
         return "[" + layer_name + "," + gridSetId + ",{" + Arrays.toString(xyz) + "}]";
     }

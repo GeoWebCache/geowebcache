@@ -33,25 +33,30 @@ public class AccountingOutputStream extends ServletOutputStream {
         this.os = os;
     }
 
+    @Override
     public void write(int b) throws IOException {
         count++;
         os.write(b);
     }
 
+    @Override
     public void write(byte[] b) throws IOException {
         count += b.length;
         os.write(b);
     }
 
+    @Override
     public void write(byte[] b, int off, int len) throws IOException {
         count += len;
         os.write(b, off, len);
     }
 
+    @Override
     public void flush() throws IOException {
         os.flush();
     }
 
+    @Override
     public void close() throws IOException {
         os.close();
     }

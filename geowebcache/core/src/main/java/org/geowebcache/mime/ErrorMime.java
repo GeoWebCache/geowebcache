@@ -14,11 +14,12 @@
  */
 package org.geowebcache.mime;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 
 public class ErrorMime extends MimeType {
-    private static Log log = LogFactory.getLog(org.geowebcache.mime.ErrorMime.class);
+    private static Logger log = Logging.getLogger(ErrorMime.class.getName());
 
     public static final ErrorMime vnd_ogc_se_inimage =
             new ErrorMime("application/vnd.ogc.se_inimage");
@@ -41,7 +42,8 @@ public class ErrorMime extends MimeType {
         if (mimeType.equalsIgnoreCase("application/vnd.ogc.se_inimage")) {
             return vnd_ogc_se_inimage;
         } else {
-            log.error(
+            log.log(
+                    Level.SEVERE,
                     "Unsupported MIME type: "
                             + mimeType
                             + ", falling back to application/vnd.ogc.se_inimage.");

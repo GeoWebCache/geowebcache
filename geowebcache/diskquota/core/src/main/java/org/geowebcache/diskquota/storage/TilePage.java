@@ -68,8 +68,7 @@ public class TilePage {
                 .append(',')
                 .append(pageY)
                 .append(',')
-                .append(pageZ)
-                .toString();
+                .append(pageZ);
     }
 
     public long getId() {
@@ -114,6 +113,7 @@ public class TilePage {
         return creationTimeMinutes;
     }
 
+    @Override
     public String toString() {
         return new StringBuilder(getClass().getSimpleName())
                 .append('[')

@@ -16,11 +16,11 @@ package org.geowebcache.grid;
 
 import java.util.Map;
 import java.util.TreeMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 
 public class GridSubsetFactory {
-    private static Log log = LogFactory.getLog(GridSubsetFactory.class);
+    private static Logger log = Logging.getLogger(GridSubsetFactory.class.getName());
 
     public static GridSubset createGridSubSet(GridSet gridSet) {
 
@@ -63,7 +63,7 @@ public class GridSubsetFactory {
                             + maxLevel
                             + ". Limiting GridSubset to zoomStop = "
                             + maxLevel;
-            log.warn(message);
+            log.warning(message);
             zoomStop = maxLevel;
         }
 

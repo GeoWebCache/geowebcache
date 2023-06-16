@@ -32,11 +32,13 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
@@ -68,7 +70,7 @@ import org.springframework.util.Assert;
  */
 public class ConfigLoader {
 
-    private static final Log log = LogFactory.getLog(ConfigLoader.class);
+    private static final Logger log = Logging.getLogger(ConfigLoader.class.getName());
 
     private static final String CONFIGURATION_FILE_NAME = "geowebcache-diskquota.xml";
 
@@ -117,17 +119,21 @@ public class ConfigLoader {
     /** Saves the configuration to the root cache directory */
     public void saveConfig(DiskQuotaConfig config) throws IOException, ConfigurationException {
         if (!resourceProvider.hasOutput()) {
-            log.error("Unable to save DiskQuota to resource :" + resourceProvider.getLocation());
+            log.log(
+                    Level.SEVERE,
+                    "Unable to save DiskQuota to resource :" + resourceProvider.getLocation());
             return;
         }
 
         XStream xStream = getConfiguredXStream(new GeoWebCacheXStream());
 
-        log.debug("Saving disk quota config to " + resourceProvider.getLocation());
+        log.fine("Saving disk quota config to " + resourceProvider.getLocation());
         try (OutputStream configOut = resourceProvider.out()) {
-            xStream.toXML(config, new OutputStreamWriter(configOut, "UTF-8"));
+            xStream.toXML(config, new OutputStreamWriter(configOut, StandardCharsets.UTF_8));
         } catch (RuntimeException e) {
-            log.error("Error saving DiskQuota config to file :" + resourceProvider.getLocation());
+            log.log(
+                    Level.SEVERE,
+                    "Error saving DiskQuota config to file :" + resourceProvider.getLocation());
         }
     }
 
@@ -135,7 +141,7 @@ public class ConfigLoader {
         DiskQuotaConfig quotaConfig = null;
 
         if (resourceProvider.hasInput()) {
-            log.info("Quota config is: " + resourceProvider.getLocation());
+            log.config("Quota config is: " + resourceProvider.getLocation());
 
             try (InputStream configIn = resourceProvider.in()) {
                 quotaConfig = loadConfiguration(configIn);
@@ -144,7 +150,8 @@ public class ConfigLoader {
                             "Couldn't parse configuration file " + resourceProvider.getLocation());
                 }
             } catch (IOException | RuntimeException e) {
-                log.error(
+                log.log(
+                        Level.SEVERE,
                         "Error loading DiskQuota configuration from "
                                 + resourceProvider.getLocation()
                                 + ": "
@@ -153,7 +160,8 @@ public class ConfigLoader {
                         e);
             }
         } else {
-            log.info("DiskQuota configuration is not readable: " + resourceProvider.getLocation());
+            log.config(
+                    "DiskQuota configuration is not readable: " + resourceProvider.getLocation());
         }
 
         if (quotaConfig == null) {
@@ -206,7 +214,8 @@ public class ConfigLoader {
         try {
             tileLayerDispatcher.getTileLayer(layer);
         } catch (GeoWebCacheException e) {
-            log.error(
+            log.log(
+                    Level.SEVERE,
                     "LayerQuota configuration error: layer "
                             + layer
                             + " does not exist. Removing quota from runtime configuration.",
@@ -232,7 +241,8 @@ public class ConfigLoader {
         try {
             validateQuota(quota);
         } catch (ConfigurationException e) {
-            log.error(
+            log.log(
+                    Level.SEVERE,
                     "LayerQuota configuration error for layer "
                             + layer
                             + ". Error message is: "
@@ -251,13 +261,13 @@ public class ConfigLoader {
             throw new ConfigurationException("Limit shall be >= 0: " + limit + ". " + quota);
         }
 
-        log.debug("Quota validated: " + quota);
+        log.fine("Quota validated: " + quota);
     }
 
     private DiskQuotaConfig loadConfiguration(final InputStream configStream)
             throws XStreamException {
         XStream xstream = getConfiguredXStream(new GeoWebCacheXStream());
-        try (Reader reader = new InputStreamReader(configStream, "UTF-8")) {
+        try (Reader reader = new InputStreamReader(configStream, StandardCharsets.UTF_8)) {
             DiskQuotaConfig fromXML = loadConfiguration(reader, xstream);
             return fromXML;
         } catch (IOException e) {
@@ -341,6 +351,7 @@ public class ConfigLoader {
      */
     private static final class QuotaXSTreamConverter implements Converter {
         /** @see com.thoughtworks.xstream.converters.ConverterMatcher#canConvert(java.lang.Class) */
+        @Override
         public boolean canConvert(Class type) {
             return Quota.class.equals(type);
         }
@@ -350,6 +361,7 @@ public class ConfigLoader {
          *     com.thoughtworks.xstream.converters.Converter#unmarshal(com.thoughtworks.xstream.io.HierarchicalStreamReader,
          *     com.thoughtworks.xstream.converters.UnmarshallingContext)
          */
+        @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
 
             Quota quota = new Quota();
@@ -383,6 +395,7 @@ public class ConfigLoader {
          *     com.thoughtworks.xstream.io.HierarchicalStreamWriter,
          *     com.thoughtworks.xstream.converters.MarshallingContext)
          */
+        @Override
         public void marshal(
                 Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             Quota quota = (Quota) source;

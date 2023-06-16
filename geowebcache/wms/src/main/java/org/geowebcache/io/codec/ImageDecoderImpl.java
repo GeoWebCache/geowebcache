@@ -22,12 +22,14 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageReader;
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
-import org.apache.log4j.Logger;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.io.FileResource;
 import org.geowebcache.io.Resource;
 
@@ -37,7 +39,7 @@ import org.geowebcache.io.Resource;
  */
 public class ImageDecoderImpl implements ImageDecoder {
     /** Logger used */
-    private static final Logger LOGGER = Logger.getLogger(ImageEncoderImpl.class);
+    private static final Logger LOGGER = Logging.getLogger(ImageEncoderImpl.class.getName());
 
     /** Default string used for exceptions */
     public static final String OPERATION_NOT_SUPPORTED = "Operation not supported";
@@ -74,7 +76,7 @@ public class ImageDecoderImpl implements ImageDecoder {
                     break;
                 }
             } catch (ClassNotFoundException e) {
-                LOGGER.error(e.getMessage(), e);
+                LOGGER.log(Level.SEVERE, e.getMessage(), e);
             }
         }
     }
@@ -87,6 +89,7 @@ public class ImageDecoderImpl implements ImageDecoder {
      * @param aggressiveInputStreamOptimization Parameter used if aggressive outputStream
      *     optimization must be used.
      */
+    @Override
     public BufferedImage decode(
             Object source, boolean aggressiveInputStreamOptimization, Map<String, Object> map)
             throws Exception {
@@ -102,7 +105,7 @@ public class ImageDecoderImpl implements ImageDecoder {
             // Creation of the associated Writer
             ImageReader reader = null;
             ImageInputStream stream = null;
-            try {
+            try { // NOPMD (handling of stream is complicated)
                 reader = newSpi.createReaderInstance();
                 if (source instanceof FileResource) {
                     // file
@@ -131,7 +134,7 @@ public class ImageDecoderImpl implements ImageDecoder {
                     throw new IllegalArgumentException("Wrong input object");
                 }
             } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
+                LOGGER.log(Level.SEVERE, e.getMessage(), e);
                 throw e;
             } finally {
                 // reader disposal
@@ -143,7 +146,7 @@ public class ImageDecoderImpl implements ImageDecoder {
                     try {
                         stream.close();
                     } catch (IOException e) {
-                        LOGGER.error(e.getMessage(), e);
+                        LOGGER.log(Level.SEVERE, e.getMessage(), e);
                     }
                     stream = null;
                 }
@@ -163,6 +166,7 @@ public class ImageDecoderImpl implements ImageDecoder {
      *
      * @return supportedMimeTypes List of all the supported Mime Types
      */
+    @Override
     public List<String> getSupportedMimeTypes() {
         return supportedMimeTypes;
     }
@@ -173,6 +177,7 @@ public class ImageDecoderImpl implements ImageDecoder {
      * @return isAggressiveInputStreamSupported Boolean indicating if the selected decoder supports
      *     an aggressive input stream optimization
      */
+    @Override
     public boolean isAggressiveInputStreamSupported() {
         return isAggressiveInputStreamSupported;
     }
