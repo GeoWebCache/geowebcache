@@ -37,7 +37,8 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.util.Assert;
 
@@ -52,7 +53,8 @@ import org.springframework.util.Assert;
  *
  * @author Gabriel Roldan
  */
-public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
+public class DiskQuotaMonitor
+        implements DisposableBean, ApplicationListener<ContextRefreshedEvent> {
 
     private static final Logger log = Logging.getLogger(DiskQuotaMonitor.class.getName());
 
@@ -156,21 +158,21 @@ public class DiskQuotaMonitor implements InitializingBean, DisposableBean {
         return isRunning;
     }
 
-    /**
-     * Called when the framework calls this bean for initialization
-     *
-     * <p>Defers to {@link #startUp()}, or does nothing if {@code isEnabled() == false}
-     *
-     * @see #isEnabled()
-     * @see #startUp()
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
+    /** Startup monitor once application is initialized. */
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void onApplicationEvent(ContextRefreshedEvent event) {
         if (!diskQuotaEnabled) {
             return;
         }
-        startUp();
+        if (isRunning) {
+            // monitor may already be running if application is refreshed
+            return;
+        }
+        try {
+            startUp();
+        } catch (Exception unableToStart) {
+            log.log(Level.WARNING, "Unable to start disk quota monitor", unableToStart);
+        }
     }
 
     /**
