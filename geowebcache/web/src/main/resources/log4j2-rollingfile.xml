@@ -3,7 +3,7 @@
     <CustomLevels>
       <CustomLevel name="CONFIG" intLevel="450" />
       <CustomLevel name="FINEST" intLevel="700" />
-    </CustomLevels>>
+    </CustomLevels>
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%date{dd MMM HH:mm:ss} (%t) %-6level [%logger{2}] - %msg%n%throwable"/>
