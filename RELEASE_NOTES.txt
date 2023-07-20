@@ -1,3 +1,12 @@
+GeoWebCache 1.23.1 (2023-07-20)
+-------------------------------
+
+Stable release for the 1.23.x series
+
+Improvements:
++++++++++++++
+- Add hsql to disk quota make H2 optional
+
 GeoWebCache 1.23.0 (2023-04-03)
 -------------------------------
 
