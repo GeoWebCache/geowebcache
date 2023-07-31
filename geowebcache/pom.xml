@@ -55,7 +55,7 @@
     <jts.version>1.19.0</jts.version>
     <jaiext.version>1.1.25</jaiext.version>
     <spring.version>5.3.25</spring.version>
-    <spring.security.version>5.7.6</spring.security.version>
+    <spring.security.version>5.7.10</spring.security.version>
     <xstream.version>1.4.20</xstream.version>
     <commons-io.version>2.6</commons-io.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
