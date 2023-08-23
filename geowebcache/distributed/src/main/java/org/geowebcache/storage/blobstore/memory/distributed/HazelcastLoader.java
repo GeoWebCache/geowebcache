@@ -16,7 +16,7 @@ package org.geowebcache.storage.blobstore.memory.distributed;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.config.MapConfig;
-import com.hazelcast.config.MaxSizeConfig;
+import com.hazelcast.config.MaxSizePolicy;
 import com.hazelcast.config.NearCacheConfig;
 import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
@@ -134,12 +134,13 @@ public class HazelcastLoader implements InitializingBean {
                 MapConfig mapConfig =
                         config.getMapConfig(HazelcastCacheProvider.HAZELCAST_MAP_DEFINITION);
                 // Check size policy
-                boolean sizeDefined = mapConfig.getMaxSizeConfig().getSize() > 0;
+                boolean sizeDefined = mapConfig.getEvictionConfig().getSize() > 0;
                 boolean policyExists =
-                        mapConfig.getEvictionPolicy() != MapConfig.DEFAULT_EVICTION_POLICY;
+                        mapConfig.getEvictionConfig().getEvictionPolicy()
+                                != MapConfig.DEFAULT_EVICTION_POLICY;
                 boolean sizeFromHeap =
-                        mapConfig.getMaxSizeConfig().getMaxSizePolicy()
-                                == MaxSizeConfig.MaxSizePolicy.USED_HEAP_SIZE;
+                        mapConfig.getEvictionConfig().getMaxSizePolicy()
+                                == MaxSizePolicy.USED_HEAP_SIZE;
 
                 // Check Near Cache size
                 boolean nearCacheAccepted = true;

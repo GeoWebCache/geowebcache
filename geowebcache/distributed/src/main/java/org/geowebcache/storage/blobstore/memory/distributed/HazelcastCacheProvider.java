@@ -14,13 +14,12 @@
  */
 package org.geowebcache.storage.blobstore.memory.distributed;
 
-import com.hazelcast.core.IMap;
-import com.hazelcast.map.EntryBackupProcessor;
 import com.hazelcast.map.EntryProcessor;
-import com.hazelcast.monitor.LocalMapStats;
-import com.hazelcast.query.EntryObject;
+import com.hazelcast.map.IMap;
+import com.hazelcast.map.LocalMapStats;
 import com.hazelcast.query.Predicate;
 import com.hazelcast.query.PredicateBuilder;
+import com.hazelcast.query.impl.PredicateBuilderImpl;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -81,7 +80,7 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
                     loader.getInstance()
                                     .getConfig()
                                     .getMapConfig(HAZELCAST_MAP_DEFINITION)
-                                    .getMaxSizeConfig()
+                                    .getEvictionConfig()
                                     .getSize()
                             * MB_TO_BYTES;
             if (LOGGER.isLoggable(Level.FINE)) {
@@ -155,8 +154,10 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
                 LOGGER.fine("Removing Layer:" + layername);
             }
             // Creation of the Predicate
-            EntryObject e = new PredicateBuilder().getEntryObject();
-            Predicate predicate = e.get("layer_name").equal(layername);
+            PredicateBuilder.EntryObject e = new PredicateBuilderImpl().getEntryObject();
+            @SuppressWarnings("unchecked")
+            Predicate<String, TileObject> predicate =
+                    (Predicate<String, TileObject>) e.get("layer_name").equal(layername);
             // Creation of the processor
             CacheEntryProcessor entryProcessor = new CacheEntryProcessor();
             // Execution of the Processor
@@ -306,7 +307,7 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
      *
      * @author Nicola Lagomarsini Geosolutions
      */
-    static class CacheEntryProcessor implements EntryProcessor<String, TileObject> {
+    static class CacheEntryProcessor implements EntryProcessor<String, TileObject, Object> {
 
         @Override
         public Object process(Entry<String, TileObject> entry) {
@@ -316,7 +317,7 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
         }
 
         @Override
-        public EntryBackupProcessor<String, TileObject> getBackupProcessor() {
+        public EntryProcessor<String, TileObject, Object> getBackupProcessor() {
             return null;
         }
     }
