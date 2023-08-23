@@ -20,9 +20,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.hazelcast.config.Config;
+import com.hazelcast.config.TcpIpConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.instance.HazelcastInstanceFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
@@ -77,9 +77,12 @@ public class HazelcastCacheProviderTest {
     public static void initialSetup() throws UnknownHostException {
         Config config = new Config();
         config.getMapConfig("default").setBackupCount(1).setAsyncBackupCount(0);
-        HazelcastInstance h1 = HazelcastInstanceFactory.newHazelcastInstance(new Config());
-        HazelcastInstance h2 = HazelcastInstanceFactory.newHazelcastInstance(new Config());
-
+        config.setClusterName("gwc");
+        TcpIpConfig tcpIpConfig = config.getNetworkConfig().getJoin().getTcpIpConfig();
+        tcpIpConfig.setEnabled(true);
+        tcpIpConfig.getMembers().add("localhost");
+        HazelcastInstance h1 = Hazelcast.newHazelcastInstance(config);
+        HazelcastInstance h2 = Hazelcast.newHazelcastInstance(config);
         // Create a nullblobstore to add to the memory blobstore
         NullBlobStore nbs = new NullBlobStore();
 
