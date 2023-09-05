@@ -24,6 +24,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.geotools.api.geometry.Bounds;
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.mbtiles.MBTilesFile;
 import org.geotools.mbtiles.MBTilesMetadata;
@@ -32,10 +36,6 @@ import org.geotools.util.logging.Logging;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.layer.meta.TileJSON;
 import org.geowebcache.layer.meta.VectorLayerMetadata;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
 
 /** Info Object storing basic MBTiles Cached info */
 public class MBTilesInfo {
@@ -96,7 +96,7 @@ public class MBTilesInfo {
         minZoom = metadata.getMinZoom();
         maxZoom = metadata.getMaxZoom();
 
-        Envelope env = metadata.getBounds();
+        Bounds env = metadata.getBounds();
         ReferencedEnvelope envelope = null;
         if (env != null) {
             try {
@@ -122,7 +122,7 @@ public class MBTilesInfo {
         bounds = getBBoxFromEnvelope(envelope);
     }
 
-    private BoundingBox getBBoxFromEnvelope(Envelope envelope) {
+    private BoundingBox getBBoxFromEnvelope(Bounds envelope) {
         BoundingBox bbox = null;
         if (envelope != null) {
             bbox =
