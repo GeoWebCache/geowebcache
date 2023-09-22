@@ -1,3 +1,22 @@
+GeoWebCache 1.24-RC (2023-09-22)
+--------------------------------
+
+Release candidate for the 1.24.x series.
+
+Improvements:
++++++++++++++
+- Follow up on GeoTools "org.opengis" package removal (now "org.geotools.api")
+- Updated Hazelcast to 5.3.1
+- Updated Jackson to 2.15.2
+- Bump aws-java-sdk-s3 from 1.11.371 to 1.12.261
+- Add support for HSQL disk quota database, and make H2 1.x dependency optional
+
+Fixes:
+++++++
+- Startup DiskQuotaMonitor on context init, rather than immediatley after bean properties are set
+
+
+
 GeoWebCache 1.23-RC (pending)
 --------------------------------------
 
