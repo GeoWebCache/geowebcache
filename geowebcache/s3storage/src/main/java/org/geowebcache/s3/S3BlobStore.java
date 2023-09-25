@@ -311,7 +311,7 @@ public class S3BlobStore implements BlobStore {
     @Override
     public boolean delete(final TileRange tileRange) throws StorageException {
 
-        final String coordsPrefix = keyBuilder.coordinatesPrefix(tileRange, false);
+        final String coordsPrefix = keyBuilder.coordinatesPrefix(tileRange, true);
         if (!s3Ops.prefixExists(coordsPrefix)) {
             return false;
         }
