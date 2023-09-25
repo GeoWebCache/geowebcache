@@ -194,7 +194,7 @@ public final class TMSKeyBuilder {
      * @return the key prefix up to the coordinates (i.e. {@code
      *     "<prefix>/<layer>/<gridset>/<format>/<parametersId>"})
      */
-    public String coordinatesPrefix(TileRange obj, boolean endWithSlah) {
+    public String coordinatesPrefix(TileRange obj, boolean endWithSlash) {
         checkNotNull(obj.getLayerName());
         checkNotNull(obj.getGridSetId());
         checkNotNull(obj.getMimeType());
@@ -215,7 +215,7 @@ public final class TMSKeyBuilder {
         }
         String shortFormat = mimeType.getFileExtension(); // png, png8, png24, etc
 
-        String key = join(endWithSlah, prefix, layer, gridset, shortFormat, parametersId);
+        String key = join(endWithSlash, prefix, layer, gridset, shortFormat, parametersId);
         return key;
     }
 
