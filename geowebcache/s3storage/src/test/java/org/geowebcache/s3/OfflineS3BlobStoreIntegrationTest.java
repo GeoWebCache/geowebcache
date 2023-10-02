@@ -52,7 +52,6 @@ public class OfflineS3BlobStoreIntegrationTest extends AbstractS3BlobStoreIntegr
     }
 
     @Override
-    @Ignore // randomly fails
     @Test
     public void testTruncateOptimizationIfNoListeners() throws StorageException, MimeException {
         super.testTruncateOptimizationIfNoListeners();
