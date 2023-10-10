@@ -14,6 +14,9 @@
  */
 package org.geowebcache.demo;
 
+import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
+import static org.owasp.encoder.Encode.forJavaScript;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,10 +28,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.text.StringEscapeUtils;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -45,9 +50,12 @@ import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.util.ServletUtils;
+import org.owasp.encoder.Encode;
 import org.springframework.util.Assert;
 
 public class Demo {
+
+    private static Logger LOGGER = Logging.getLogger(Demo.class.getName());
 
     public static void makeMap(
             TileLayerDispatcher tileLayerDispatcher,
@@ -97,7 +105,7 @@ public class Demo {
                     response.sendRedirect(
                             response.encodeRedirectURL(reqUri.substring(0, reqUri.length() - 1)));
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    LOGGER.log(Level.WARNING, "Error sending redirect response", e);
                 }
                 return;
             } else {
@@ -181,11 +189,12 @@ public class Demo {
             if (!layer.isAdvertised()) {
                 continue;
             }
+            String escapedLayerName = escapeHtml4(layer.getName());
             buf.append("<tr><td style=\"min-width: 100px;\"><strong>")
-                    .append(layer.getName())
+                    .append(escapedLayerName)
                     .append("</strong><br />\n");
             buf.append("<a href=\"rest/seed/")
-                    .append(layer.getName())
+                    .append(escapedLayerName)
                     .append("\">Seed this layer</a>\n");
             buf.append("</td><td>").append(layer.isEnabled()).append("</td>");
             buf.append("<td><table width=\"100%\">");
@@ -196,6 +205,7 @@ public class Demo {
                 if (gridSetName.length() > 20) {
                     gridSetName = gridSetName.substring(0, 20) + "...";
                 }
+                gridSetName = escapeHtml4(gridSetName);
                 buf.append("<tr><td style=\"width: 170px;\">").append(gridSetName);
 
                 buf.append("</td><td>OpenLayers: [");
@@ -205,8 +215,8 @@ public class Demo {
                                 .map(
                                         type ->
                                                 generateDemoUrl(
-                                                        layer.getName(),
-                                                        gridSubset.getName(),
+                                                        escapedLayerName,
+                                                        escapeHtml4(gridSubset.getName()),
                                                         type))
                                 .collect(Collectors.joining(", ")));
 
@@ -239,12 +249,12 @@ public class Demo {
                                     if (type == XMLMime.kmz) {
                                         return String.format(
                                                 "<a href=\"%sservice/kml/%s.kml.kmz\">kmz</a>",
-                                                prefix, layer.getName());
+                                                prefix, escapeHtml4(layer.getName()));
                                     } else {
                                         return String.format(
                                                 "<a href=\"%sservice/kml/%s.%s.kml\">%s</a>",
                                                 prefix,
-                                                layer.getName(),
+                                                escapeHtml4(layer.getName()),
                                                 type.getFileExtension(),
                                                 type.getFileExtension());
                                     }
@@ -287,9 +297,9 @@ public class Demo {
 
         buf.append("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>\n");
         buf.append("<meta http-equiv=\"imagetoolbar\" content=\"no\">\n" + "<title>")
-                .append(layerName);
-        buf.append(" ").append(gridSubset.getName());
-        buf.append(" ").append(formatStr);
+                .append(escapeHtml4(layerName));
+        buf.append(" ").append(escapeHtml4(gridSubset.getName()));
+        buf.append(" ").append(escapeHtml4(formatStr));
         buf.append("</title>\n");
         buf.append(
                 "<style type=\"text/css\">\n"
@@ -368,17 +378,17 @@ public class Demo {
                         + "}\n"
                         + "\n");
         buf.append("var gridsetName = '")
-                .append(gridSubset.getGridSet().getName())
+                .append(forJavaScript(gridSubset.getGridSet().getName()))
                 .append("';\n" + "var gridNames = ")
                 .append(
                         Arrays.stream(gridSubset.getGridNames())
-                                .map(StringEscapeUtils::escapeEcmaScript)
+                                .map(Encode::forJavaScript)
                                 .map(s -> String.format("'%s'", s))
                                 .collect(Collectors.joining(", ", "[", "]")))
                 .append(";\n" + "var baseUrl = '../service/wmts';\n" + "var style = '';\n");
-        buf.append("var format = '").append(formatStr).append("';\n");
+        buf.append("var format = '").append(forJavaScript(formatStr)).append("';\n");
         buf.append("var infoFormat = 'text/html';\n");
-        buf.append("var layerName = '").append(layerName).append("';\n");
+        buf.append("var layerName = '").append(forJavaScript(layerName)).append("';\n");
 
         String unit = "";
         double mpu = gridSet.getMetersPerUnit();
@@ -672,7 +682,10 @@ public class Demo {
             String key = pf.getKey();
             String defaultValue = pf.getDefaultValue();
             List<String> legalValues = pf.getLegalValues();
-            doc.append("<tr><td>").append(key.toUpperCase()).append(": ").append("</td><td>");
+            doc.append("<tr><td>")
+                    .append(escapeHtml4(key.toUpperCase()))
+                    .append(": ")
+                    .append("</td><td>");
             String parameterId = key;
             if (pf instanceof StringParameterFilter) {
                 Map<String, String> keysValues = makeParametersMap(defaultValue, legalValues);
@@ -721,7 +734,11 @@ public class Demo {
     private static void makePullDown(
             StringBuilder doc, String id, Map<String, String> keysValues, String defaultKey) {
         doc.append(
-                "<select name=\"" + id + "\" onchange=\"window.setParam('" + id + "', value)\">\n");
+                "<select name=\""
+                        + escapeHtml4(id)
+                        + "\" onchange=\"window.setParam('"
+                        + forJavaScript(id)
+                        + "', value)\">\n");
 
         Iterator<Entry<String, String>> iter = keysValues.entrySet().iterator();
 
@@ -732,16 +749,16 @@ public class Demo {
             if ((key == null && defaultKey == null) || (key != null && key.equals(defaultKey))) {
                 doc.append(
                         "<option value=\""
-                                + entry.getValue()
+                                + escapeHtml4(entry.getValue())
                                 + "\" selected=\"selected\">"
-                                + entry.getKey()
+                                + escapeHtml4(entry.getKey())
                                 + "</option>\n");
             } else {
                 doc.append(
                         "<option value=\""
-                                + entry.getValue()
+                                + escapeHtml4(entry.getValue())
                                 + "\">"
-                                + entry.getKey()
+                                + escapeHtml4(entry.getKey())
                                 + "</option>\n");
             }
         }
@@ -752,11 +769,11 @@ public class Demo {
     private static void makeTextInput(StringBuilder doc, String id, int size) {
         doc.append(
                 "<input name=\""
-                        + id
+                        + escapeHtml4(id)
                         + "\" type=\"text\" size=\""
                         + size
                         + "\" onblur=\"window.setParam('"
-                        + id
+                        + forJavaScript(id)
                         + "', value)\" />\n");
     }
 
