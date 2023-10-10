@@ -18,8 +18,11 @@ import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -27,11 +30,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.collections4.iterators.EmptyIterator;
 import org.easymock.EasyMock;
 import org.geowebcache.MockWepAppContextRule;
+import org.geowebcache.filter.parameters.ParameterFilter;
+import org.geowebcache.filter.parameters.RegexParameterFilter;
+import org.geowebcache.filter.parameters.StringParameterFilter;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
@@ -56,6 +63,41 @@ public class FormServiceTest {
         service = new FormService();
         breeder = EasyMock.createNiceMock("breeder", TileBreeder.class);
         service.setTileBreeder(breeder);
+    }
+
+    @Test
+    public void testEscaping() throws Exception {
+        String unescapedLayer = "layer\"><";
+        String escapedLayer = "layer&quot;&gt;&lt;";
+        String unescapedString = "string\"><";
+        String escapedString = "string&quot;&gt;&lt;";
+        String unescapedRegex = "regex\"><";
+        String escapedRegex = "regex&quot;&gt;&lt;";
+        StringParameterFilter stringFilter = new StringParameterFilter();
+        stringFilter.setKey(unescapedString);
+        RegexParameterFilter regexFilter = new RegexParameterFilter();
+        regexFilter.setKey(unescapedRegex);
+        List<ParameterFilter> filters = Arrays.asList(stringFilter, regexFilter);
+
+        TileLayer tl = EasyMock.createMock("tl", TileLayer.class);
+        expect(breeder.findTileLayer(unescapedLayer)).andReturn(tl);
+        expect(tl.getName()).andStubReturn(unescapedLayer);
+        expect(breeder.getRunningAndPendingTasks()).andReturn(Collections.emptyIterator()).times(2);
+        expect(tl.getGridSubsets()).andReturn(Collections.emptySet()).times(4);
+        expect(tl.getMimeTypes()).andReturn(Collections.emptyList());
+        expect(tl.getParameterFilters()).andReturn(filters);
+        replay(tl, breeder);
+        ResponseEntity<?> response = service.handleGet(null, unescapedLayer);
+        verify(tl, breeder);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        String body = (String) response.getBody();
+        assertThat(body, not(containsString(unescapedLayer)));
+        assertThat(body, containsString(escapedLayer));
+        assertThat(body, not(containsString(unescapedString)));
+        assertThat(body, containsString(escapedString));
+        assertThat(body, not(containsString(unescapedRegex)));
+        assertThat(body, containsString(escapedRegex));
     }
 
     @Test
