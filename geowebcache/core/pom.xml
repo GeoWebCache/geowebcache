@@ -220,7 +220,7 @@
     <dependency>
       <groupId>org.owasp.encoder</groupId>
       <artifactId>encoder</artifactId>
-      <version>1.1</version>
+      <version>1.2.3</version>
     </dependency>
 
   </dependencies>
