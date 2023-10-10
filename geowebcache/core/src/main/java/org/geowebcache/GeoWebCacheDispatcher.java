@@ -14,6 +14,8 @@
  */
 package org.geowebcache;
 
+import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -473,7 +475,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
             baseUrl = "";
         } else {
             String[] strs = request.getRequestURL().toString().split("/");
-            baseUrl = strs[strs.length - 1] + "/";
+            baseUrl = escapeHtml4(strs[strs.length - 1]) + "/";
         }
 
         StringBuilder str = new StringBuilder();
@@ -576,10 +578,10 @@ public class GeoWebCacheDispatcher extends AbstractController {
             LOG.log(Level.SEVERE, "Could not find local cache location", ex);
         }
         str.append("<tr><th scope=\"row\">Config file:</th><td><tt>")
-                .append(configLoc)
+                .append(escapeHtml4(configLoc))
                 .append("</tt></td></tr>");
         str.append("<tr><th scope=\"row\">Local Storage:</th><td><tt>")
-                .append(localStorageLoc)
+                .append(escapeHtml4(localStorageLoc))
                 .append("</tt></td></tr>");
         str.append("</tbody>");
         if (!blobStoreLocations.isEmpty()) {
@@ -587,9 +589,9 @@ public class GeoWebCacheDispatcher extends AbstractController {
             str.append("<tr><th scope=\"rowgroup\" colspan=\"2\">Blob Stores</th></tr>");
             for (Map.Entry<String, String> e : blobStoreLocations.entrySet()) {
                 str.append("<tr><th scope=\"row\">")
-                        .append(e.getKey())
+                        .append(escapeHtml4(e.getKey()))
                         .append(":</th><td><tt>")
-                        .append(e.getValue())
+                        .append(escapeHtml4(e.getValue()))
                         .append("</tt></td></tr>");
             }
             str.append("</tbody>");
