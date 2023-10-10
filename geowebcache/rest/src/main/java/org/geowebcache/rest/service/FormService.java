@@ -18,6 +18,7 @@
  */
 package org.geowebcache.rest.service;
 
+import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 import static org.geowebcache.seed.TileBreeder.TILE_FAILURE_RETRY_COUNT_DEFAULT;
 import static org.geowebcache.seed.TileBreeder.TILE_FAILURE_RETRY_WAIT_TIME_DEFAULT;
 import static org.geowebcache.seed.TileBreeder.TOTAL_FAILURES_BEFORE_ABORTING_DEFAULT;
@@ -356,7 +357,10 @@ public class FormService {
             String key = pf.getKey();
             String defaultValue = pf.getDefaultValue();
             List<String> legalValues = pf.getLegalValues();
-            doc.append("<tr><td>").append(key.toUpperCase()).append(": ").append("</td><td>");
+            doc.append("<tr><td>")
+                    .append(escapeHtml4(key.toUpperCase()))
+                    .append(": ")
+                    .append("</td><td>");
             String parameterId = "parameter_" + key;
             if (pf instanceof StringParameterFilter) {
                 Map<String, String> keysValues = makeParametersMap(defaultValue, legalValues);
@@ -487,7 +491,7 @@ public class FormService {
             GridSubset subset = tl.getGridSubset(gridSetId);
             doc.append(
                     "<li>"
-                            + gridSetId
+                            + escapeHtml4(gridSetId)
                             + ":   "
                             + subset.getOriginalExtent().toString()
                             + "</li>\n");
@@ -501,11 +505,11 @@ public class FormService {
     private void makeTextInput(StringBuilder doc, String id, int size, String defaultValue) {
         doc.append(
                 "<input name=\""
-                        + id
+                        + escapeHtml4(id)
                         + "\" type=\"text\" size=\""
                         + size
                         + "\" value=\""
-                        + defaultValue
+                        + escapeHtml4(defaultValue)
                         + "\"/>");
     }
 
@@ -603,7 +607,7 @@ public class FormService {
 
     private void makePullDown(
             StringBuilder doc, String id, Map<String, String> keysValues, String defaultKey) {
-        doc.append("<select name=\"" + id + "\">\n");
+        doc.append("<select name=\"" + escapeHtml4(id) + "\">\n");
 
         Iterator<Map.Entry<String, String>> iter = keysValues.entrySet().iterator();
 
@@ -612,16 +616,16 @@ public class FormService {
             if (entry.getKey().equals(defaultKey)) {
                 doc.append(
                         "<option value=\""
-                                + entry.getValue()
+                                + escapeHtml4(entry.getValue())
                                 + "\" selected=\"selected\">"
-                                + entry.getKey()
+                                + escapeHtml4(entry.getKey())
                                 + "</option>\n");
             } else {
                 doc.append(
                         "<option value=\""
-                                + entry.getValue()
+                                + escapeHtml4(entry.getValue())
                                 + "\">"
-                                + entry.getKey()
+                                + escapeHtml4(entry.getKey())
                                 + "</option>\n");
             }
         }
@@ -631,7 +635,10 @@ public class FormService {
 
     private void makeFormHeader(StringBuilder doc, TileLayer tl) {
         doc.append("<h4>Create a new task:</h4>\n");
-        doc.append("<form id=\"seed\" action=\"./" + tl.getName() + "\" method=\"post\">\n");
+        doc.append(
+                "<form id=\"seed\" action=\"./"
+                        + escapeHtml4(tl.getName())
+                        + "\" method=\"post\">\n");
         doc.append("<table border=\"0\" cellspacing=\"10\">\n");
     }
 
@@ -720,9 +727,9 @@ public class FormService {
             doc.append("<td style=\"text-align:right\">").append(task.getTaskId()).append("</td>");
             doc.append("<td>");
             if (!layerName.equals(task.getLayerName())) {
-                doc.append("<a href=\"./").append(task.getLayerName()).append("\">");
+                doc.append("<a href=\"./").append(escapeHtml4(task.getLayerName())).append("\">");
             }
-            doc.append(task.getLayerName());
+            doc.append(escapeHtml4(task.getLayerName()));
             if (!layerName.equals(task.getLayerName())) {
                 doc.append("</a>");
             }
@@ -745,7 +752,7 @@ public class FormService {
         if (tasks) {
             doc.append("</table>");
         }
-        doc.append("<p><a href=\"./" + layerName + "\">Refresh list</a></p>\n");
+        doc.append("<p><a href=\"./" + escapeHtml4(layerName) + "\">Refresh list</a></p>\n");
     }
 
     private String toTimeString(long timeSeconds, final long tilesDone, final long tilesTotal) {
@@ -786,7 +793,7 @@ public class FormService {
     private String makeThreadKillForm(Long key, TileLayer tl) {
         String ret =
                 "<form form id=\"kill\" action=\"./"
-                        + tl.getName()
+                        + escapeHtml4(tl.getName())
                         + "\" method=\"post\">"
                         + "<input type=\"hidden\" name=\"kill_thread\"  value=\"1\" />"
                         + "<input type=\"hidden\" name=\"thread_id\"  value=\""
@@ -814,7 +821,7 @@ public class FormService {
 
         doc.append("<table><tr><td>");
         doc.append("<form form id=\"list\" action=\"./")
-                .append(layerName)
+                .append(escapeHtml4(layerName))
                 .append("\" method=\"post\">\n");
         doc.append("List ");
         doc.append("<select name=\"list\" onchange=\"this.form.submit();\">\n");
@@ -839,7 +846,7 @@ public class FormService {
         doc.append("</td></tr><tr><td>");
 
         doc.append("<form form id=\"kill\" action=\"./")
-                .append(layerName)
+                .append(escapeHtml4(layerName))
                 .append("\" method=\"post\">\n");
         doc.append("<span>Kill \n");
         doc.append("<select name=\"kill_all\">\n");
@@ -847,7 +854,7 @@ public class FormService {
         doc.append("<option value=\"running\">running</option>\n");
         doc.append("<option value=\"pending\">pending</option>\n");
         doc.append("</select>\n");
-        doc.append(" Tasks for Layer '").append(layerName).append("'.");
+        doc.append(" Tasks for Layer '").append(escapeHtml4(layerName)).append("'.");
         doc.append("<input type=\"submit\" value=\" Submit\">");
         doc.append("</span>\n");
         doc.append("</form>\n");
