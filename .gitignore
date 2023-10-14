@@ -5,6 +5,7 @@ bin
 target
 .DS_Store
 release.rb
+Gemfile
 
 # Intellij
 .idea/
