@@ -1,3 +1,13 @@
+GeoWebCache 1.24.0 (2023-10-13)
+--------------------------------
+
+Initial release for 1.24.x series.
+
+Improvements:
++++++++++++++
+* Update to org.json:json to 20230618
+* Update to GeoTools 30.0
+
 GeoWebCache 1.24-RC (2023-09-22)
 --------------------------------
 
@@ -15,7 +25,27 @@ Fixes:
 ++++++
 - Startup DiskQuotaMonitor on context init, rather than immediatley after bean properties are set
 
+GeoWebCache 1.23.1 (2023-07-20)
+-------------------------------
 
+Stable release for the 1.23.x series
+
+Improvements:
++++++++++++++
+- Add hsql to disk quota make H2 optional
+
+GeoWebCache 1.23.0 (2023-04-03)
+-------------------------------
+
+Initial release for the 1.23 series
+
+Improvements:
++++++++++++++
+- Java 11 minimum
+
+Fixes:
+++++++
+- Seeding GWC doesn't work for layers with a dot in the name (GEOS-10006)
 
 GeoWebCache 1.23-RC (pending)
 --------------------------------------
@@ -30,6 +60,43 @@ Fixes:
 ++++++
 - <Bug fix>
 
+GeoWebCache 1.22.2 (2023-05-04)
+-------------------------------
+
+Stable release for 1.22.x series.
+
+Improvements:
++++++++++++++
+- Bump commons-fileupload from 1.3.3 to 1.5
+
+Fixes:
+++++++
+- Seeding GWC doesn't work for layers with a dot in the name
+
+
+GeoWebCache 1.22.1 (2023-02-20)
+-------------------------------
+
+Stable release for 1.22.x series.
+
+Fixes:
+++++++
+- GWC S3 Blobstore Parameters Get Converted back to plain text after GeoServer restart
+- Return an empty response when no tile is found in MBTiles, with a 204 status, rather than an empty PNG
+
+Internals:
+++++++++++
+- ant build for documentation with live preview
+
+
+GeoWebCache 1.22.0 (2022-11-17)
+-------------------------------
+
+First stable release for the 1.22.x series.
+
+Improvements
+++++++++++++
+Bump jackson-databind from 2.13.2.1 to 2.13.4.1
 
 GeoWebCache 1.22-RC (pending)
 -----------------------------
@@ -47,6 +114,87 @@ Fixes:
 Improvements:
 +++++++++++++
 - Updated to imageio-ext-1.4.0 supporting GDAL 3
+
+GeoWebCache 1.21.5 (2023-05-05)
+-------------------------------
+
+Stable release for 1.21.x series.
+
+Improvements:
++++++++++++++
+- Bump commons-fileupload from 1.3.3 to 1.5
+
+Fixes:
+++++++
+- Seeding GWC doesn't work for layers with a dot in the name
+
+
+GeoWebCache 1.21.4 (2023-02-16)
+-------------------------------
+
+Fixes:
+++++++
+- GWC S3 Blobstore Parameters Get Converted back to plain text after GeoServer restart
+- Return an empty response when no tile is found in MBTiles, with a 204 status, rather than an empty PNG
+
+GeoWebCache 1.21.3 (2022-12-27)
+-------------------------------
+
+First maintenance release of the 1.21.x series.
+
+Improvements:
++++++++++++++
+- Updated Jettison to 1.5.1
+- Updated PostgreSQL driver to 42.4.3
+- Updated Jackson-databind to 2.13.4.1
+
+
+GeoWebCache 1.21.2 (2022-10-22)
+-------------------------------
+
+Stable release
+
+Improvements:
++++++++++++++
+- GWC WMTS data security improvements
+- Update JAI-Ext 1.1.24
+- Update PostgreSQL driver to 42.4.1
+
+Fixes:
+++++++
+- Fix S3 blobstore geowebcache parameterization
+
+Internals:
+++++++++++
+- TiledLayerDispatcher.getLayerListFiltered() added to list layers available to user
+
+GeoWebCache 1.21.1 (2022-07-27)
+-------------------------------
+
+Stable release.
+
+Improvements:
++++++++++++++
+- Update to imageio-ext 1.4.5
+- Update to GeoTools 27.1
+- Review startup warning, info and config logging
+
+Fixes:
+++++++
+- WMS full does not correctly rescale when requested resolution is between tile values
+
+GeoWebCache 1.21.0 (2022-05-20)
+-------------------------------
+
+Stable release for 1.21.x series.
+
+Improvements:
++++++++++++++
+- Update JAI-Ext 1.1.23
+
+Fixes:
+++++++
+- Fix WMSHttpHelper NPE when requesting WMS
 
 GeoWebCache 1.21-RC (2022-05-05)
 --------------------------------
