@@ -6,7 +6,7 @@ Initial release for 1.24.x series.
 Improvements:
 +++++++++++++
 * Update to org.json:json to 20230618
-* Update to GeoTools 30.0
+* Update to GeoTools 30.0 (remove-opengis update)
 
 GeoWebCache 1.24-RC (2023-09-22)
 --------------------------------
