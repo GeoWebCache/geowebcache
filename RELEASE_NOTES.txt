@@ -1,3 +1,19 @@
+GeoWebCache 1.23.2 (2023-10-30)
+-------------------------------
+
+Stable release for the 1.23.x series
+
+Improvements:
++++++++++++++
+- Bump org.json:json from 20230618 to 20231013
+- [GWC-1172] Improve handling special characters in the GWC Seed Form
+- Update to sphinx-build 7, fixing style error
+
+Fixes:
+++++++
+- #1157: Fix for S3BlobStore bulk delete (without listeners)
+
+
 GeoWebCache 1.23.1 (2023-07-20)
 -------------------------------
 
