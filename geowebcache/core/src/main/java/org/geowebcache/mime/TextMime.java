@@ -52,7 +52,7 @@ public class TextMime extends MimeType {
                 return txtXml;
             } else if (formatStr.startsWith("text/css")) {
                 return txtCss;
-            } else if (formatStr.startsWith("text/javscript")) {
+            } else if (formatStr.startsWith("text/javascript")) {
                 return txtJs;
             }
         }
