@@ -1,3 +1,20 @@
+GeoWebCache 1.24.1 (2023-11-23)
+-------------------------------
+
+Stable release for 1.24.x series.
+
+Improvements:
++++++++++++++
+- Improve handling special characters in the GWC Seed Form
+- Improve handling special characters in the GWC Demos Page
+- Bump org.json:json from 20230618 to 20231013 
+- Bump org.springframework.security:spring-security-config to 5.7.10
+
+Fixes:
+++++++
+- Fix for S3BlobStore bulk delete (without listener
+- Fix mime type text/javascript
+
 GeoWebCache 1.24.0 (2023-10-13)
 --------------------------------
 
@@ -51,14 +68,6 @@ GeoWebCache 1.23-RC (pending)
 --------------------------------------
 
 Release candidate for 1.22.x series.
-
-Improvements:
-+++++++++++++
-- <New feature>
-
-Fixes:
-++++++
-- <Bug fix>
 
 GeoWebCache 1.22.2 (2023-05-04)
 -------------------------------
