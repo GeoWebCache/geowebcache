@@ -206,15 +206,6 @@ public class WMSHttpHelper extends WMSSourceHelper {
             } catch (IOException ex) {
                 log.log(Level.WARNING, "failed to release connection");
             }
-            //            try (InputStream stream = method.getEntity().getContent()) {
-            //                byte[] error = IOUtils.toByteArray(stream);
-            //                String message = new String(error);
-            //                System.out.println(
-            //                        "error with the backend: " + message + " try to release
-            // content");
-            //                // release the connection to the poll
-            //            } catch (IOException ioe) {
-            //            }
             throw new ServiceException(
                     "Unexpected response code from backend: "
                             + responseCode
