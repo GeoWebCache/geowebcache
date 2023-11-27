@@ -81,6 +81,7 @@ public class HttpClientBuilder {
         clientBuilder = org.apache.http.impl.client.HttpClientBuilder.create();
         clientBuilder.useSystemProperties();
         clientBuilder.setConnectionManager(connectionManager);
+        clientBuilder.setDefaultRequestConfig(getConnectionConfig());
         clientBuilder.setMaxConnTotal(concurrency);
     }
 
