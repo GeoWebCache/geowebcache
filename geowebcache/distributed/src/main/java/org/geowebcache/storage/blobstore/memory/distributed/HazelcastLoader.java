@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.filefilter.NameFileFilter;
 import org.geotools.util.logging.Logging;
+import org.geotools.xml.XMLUtils;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -53,6 +54,18 @@ public class HazelcastLoader implements InitializingBean {
 
     /** Hazelcast instance to pass to the {@link HazelcastCacheProvider} class */
     private HazelcastInstance instance;
+
+    // Disable Hazelcast's XXE protection if the XML libraries don't support JAXP 1.5
+    static {
+        if (System.getProperty("hazelcast.ignoreXxeProtectionFailures") == null) {
+            try {
+                XMLUtils.checkSupportForJAXP15Properties();
+            } catch (IllegalStateException e) {
+                LOGGER.warning("Disabling Hazelcast XXE protection because " + e.getMessage());
+                System.setProperty("hazelcast.ignoreXxeProtectionFailures", "true");
+            }
+        }
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception {
