@@ -1,3 +1,19 @@
+GeoWebCache 1.23.3 (2023-12-20)
+-------------------------------
+
+Stable release for the 1.23.x series
+
+Improvements:
++++++++++++++
+- Bump com.google.guava:guava from 27.0-jre to 32.0.0-jre in /geowebcache
+- Bump org.springframework.security:spring-security-config in /geowebcache
+- [GWC-1171] Improve handling special characters in the GWC Demos Page
+
+Fixes:
+++++++
+- Fix typo in TextMime for text/javascript
+
+
 GeoWebCache 1.23.2 (2023-10-30)
 -------------------------------
 
