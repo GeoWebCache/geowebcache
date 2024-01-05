@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.logging.Logger;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.config.DefaultGridsets;
@@ -76,7 +75,7 @@ public class PagePyramidTest {
     }
 
     private void printPyramid(int zoomStart, int zoomStop, PagePyramid pp) {
-        NumberFormat nf = NumberFormat.getInstance(new Locale("es"));
+        NumberFormat nf = NumberFormat.getInstance();
         nf.setGroupingUsed(true);
 
         long totalPages = 0;

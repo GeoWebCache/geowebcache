@@ -88,6 +88,7 @@ import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.UnsuitableStorageException;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.geowebcache.util.ExceptionUtils;
+import org.geowebcache.util.URLs;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -266,10 +267,10 @@ public class XMLConfiguration
             URL proxyUrl = null;
             try {
                 if (getGwcConfig().getProxyUrl() != null) {
-                    proxyUrl = new URL(getGwcConfig().getProxyUrl());
+                    proxyUrl = URLs.of(getGwcConfig().getProxyUrl());
                     log.fine("Using proxy " + proxyUrl.getHost() + ":" + proxyUrl.getPort());
                 } else if (wl.getProxyUrl() != null) {
-                    proxyUrl = new URL(wl.getProxyUrl());
+                    proxyUrl = URLs.of(wl.getProxyUrl());
                     log.fine("Using proxy " + proxyUrl.getHost() + ":" + proxyUrl.getPort());
                 }
             } catch (MalformedURLException e) {

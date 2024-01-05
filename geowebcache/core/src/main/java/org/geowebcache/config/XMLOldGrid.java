@@ -22,6 +22,7 @@ import org.geowebcache.grid.GridSetFactory;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
+import org.geowebcache.util.SuppressFBWarnings;
 
 /**
  * This class exists mainly to parse the old XML objects using XStream
@@ -29,6 +30,11 @@ import org.geowebcache.grid.SRS;
  * <p>The problem is that it cannot use the GridSetBroker, so we end up with one GridSet per layer
  * anyway.
  */
+@SuppressFBWarnings({
+    "NP_UNWRITTEN_FIELD",
+    "NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD",
+    "UWF_NULL_FIELD"
+}) // field assignment done by XStream
 public class XMLOldGrid implements Serializable {
 
     private static final long serialVersionUID = 1413422643636728997L;

@@ -37,6 +37,7 @@ import org.geowebcache.seed.TileBreeder;
 import org.geowebcache.storage.DiscontinuousTileRange;
 import org.geowebcache.storage.RasterMask;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.util.URLs;
 
 /**
  * A task to run a GeoRSS feed poll and launch the seeding process
@@ -128,7 +129,7 @@ class GeoRSSPollTask implements Runnable {
         final String previousUpdatedEntry = storageBroker.getLayerMetadata(layerName, LAST_UPDATED);
 
         final String gridSetId = pollDef.getGridSetId();
-        final URL feedUrl = new URL(templateFeedUrl(pollDef.getFeedUrl(), previousUpdatedEntry));
+        URL feedUrl = URLs.of(templateFeedUrl(pollDef.getFeedUrl(), previousUpdatedEntry));
         final String httpUsername = pollDef.getHttpUsername();
         final String httpPassword = pollDef.getHttpUsername();
 

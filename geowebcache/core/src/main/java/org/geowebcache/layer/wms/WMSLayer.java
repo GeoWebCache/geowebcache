@@ -54,6 +54,7 @@ import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.util.GWCVars;
+import org.geowebcache.util.URLs;
 
 /** A tile layer backed by a WMS server */
 public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
@@ -803,9 +804,9 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         try {
             URL url;
             if (serverStr.contains("?")) {
-                url = new URL(serverStr + "&" + queryStr);
+                url = URLs.of(serverStr + "&" + queryStr);
             } else {
-                url = new URL(serverStr + queryStr);
+                url = URLs.of(serverStr + queryStr);
             }
 
             WMSSourceHelper helper = getSourceHelper();

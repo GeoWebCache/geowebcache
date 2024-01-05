@@ -345,6 +345,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
                 defaultCount + 10,
                 getInfoNames(config).size());
         // get a thread pool
+        @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService pool =
                 Executors.newFixedThreadPool(
                         16, (Runnable r) -> new Thread(r, "Info Concurrency Test for ADD"));
@@ -389,6 +390,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
                 defaultCount + 100,
                 getInfoNames(config).size());
         // get a thread pool
+        @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService pool =
                 Executors.newFixedThreadPool(
                         16, (Runnable r) -> new Thread(r, "Info Concurrency Test for DELETE"));
@@ -431,6 +433,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
                 defaultCount + 100,
                 getInfoNames(config).size());
         // get a thread pool
+        @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService pool =
                 Executors.newFixedThreadPool(
                         16, (Runnable r) -> new Thread(r, "Info Concurrency Test for MODIFY"));

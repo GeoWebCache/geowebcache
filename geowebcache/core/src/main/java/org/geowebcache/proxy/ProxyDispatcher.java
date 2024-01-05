@@ -22,6 +22,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.geotools.util.logging.Logging;
+import org.geowebcache.util.URLs;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
 
@@ -62,7 +63,7 @@ public class ProxyDispatcher extends AbstractController {
         }
         String decodedUrl = URLDecoder.decode(urlStr, charEnc);
 
-        URL url = new URL(decodedUrl);
+        URL url = URLs.of(decodedUrl);
         HttpURLConnection wmsBackendCon = (HttpURLConnection) url.openConnection();
 
         if (wmsBackendCon.getContentEncoding() != null) {

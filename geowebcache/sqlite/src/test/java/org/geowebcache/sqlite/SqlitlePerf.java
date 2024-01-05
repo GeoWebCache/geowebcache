@@ -80,6 +80,7 @@ final class SqlitlePerf {
         }
         FileUtils.copyFile(seedFile, databaseFile);
         // submitting the select tasks
+        @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService executor = Executors.newFixedThreadPool(WORKERS);
         long startTime = System.currentTimeMillis();
         try (Connection connection =
@@ -124,6 +125,7 @@ final class SqlitlePerf {
         }
         FileUtils.copyFile(seedFile, databaseFile);
         // submitting the select tasks
+        @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService executor = Executors.newFixedThreadPool(WORKERS);
         SqliteConnectionManager connectionManager = new SqliteConnectionManager(10, 2000);
         long startTime = System.currentTimeMillis();
@@ -179,6 +181,7 @@ final class SqlitlePerf {
         }
         FileUtils.copyFile(seedFile, databaseFile);
         // submitting the select tasks
+        @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService executor = Executors.newFixedThreadPool(WORKERS);
         long startTime = System.currentTimeMillis();
         // mbtiles store configuration
@@ -240,6 +243,7 @@ final class SqlitlePerf {
             LOGGER.info(String.format("Start reading from directory'%s'.", seedDirectory));
         }
         // submitting the read tasks
+        @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService executor = Executors.newFixedThreadPool(WORKERS);
         long startTime = System.currentTimeMillis();
         // instantiate the file blobstore

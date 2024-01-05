@@ -601,6 +601,7 @@ public class WMSLayerTest extends TileLayerTest {
         long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
 
         // six concurrent requests max
+        @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService requests = Executors.newFixedThreadPool(6);
         ExecutorCompletionService<ConveyorTile> completer =
                 new ExecutorCompletionService<>(requests);

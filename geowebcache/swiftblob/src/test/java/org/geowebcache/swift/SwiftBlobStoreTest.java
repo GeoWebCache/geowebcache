@@ -696,6 +696,7 @@ public class SwiftBlobStoreTest {
     @Ignore // unreliable test timing
     public void deleteWhenUploadExists() throws Exception {
         BlockingQueue<Runnable> taskQueue = spy(new LinkedBlockingQueue<>(1000));
+        @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ThreadPoolExecutor executor =
                 spy(
                         new ThreadPoolExecutor(
