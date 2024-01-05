@@ -113,7 +113,7 @@ public class TileLayerDispatcher
         }
         throw new GeoWebCacheException(
                 "Thread "
-                        + Thread.currentThread().getId()
+                        + Thread.currentThread().getName()
                         + " Unknown layer "
                         + layerName
                         + ". Check the logfiles,"

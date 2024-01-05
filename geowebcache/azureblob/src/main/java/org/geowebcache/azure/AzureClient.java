@@ -40,7 +40,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Proxy;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -48,6 +47,7 @@ import java.util.List;
 import java.util.Properties;
 import javax.annotation.Nullable;
 import org.geowebcache.storage.StorageException;
+import org.geowebcache.util.URLs;
 import org.springframework.http.HttpStatus;
 
 class AzureClient implements Closeable {
@@ -86,7 +86,7 @@ class AzureClient implements Closeable {
             PipelineOptions options = new PipelineOptions().withClient(client);
             ServiceURL serviceURL =
                     new ServiceURL(
-                            new URL(getServiceURL(configuration)),
+                            URLs.of(getServiceURL(configuration)),
                             StorageURL.createPipeline(creds, options));
 
             String containerName = configuration.getContainer();

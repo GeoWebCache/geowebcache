@@ -16,7 +16,6 @@ package org.geowebcache.config.wms;
 
 import com.google.common.collect.Sets;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -70,6 +69,7 @@ import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.meta.MetadataURL;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.util.URLs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -521,7 +521,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     WebMapServer getWMS() throws IOException, ServiceException {
         Map<String, Object> hints = new HashMap<>();
         hints.put(XMLHandlerHints.ENTITY_RESOLVER, PreventLocalEntityResolver.INSTANCE);
-        return new WebMapServer(new URL(url), HTTPClientFinder.createClient(), hints);
+        return new WebMapServer(URLs.of(url), HTTPClientFinder.createClient(), hints);
     }
 
     private String parseVersion(String url) {

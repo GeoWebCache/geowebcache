@@ -46,6 +46,7 @@ import org.geowebcache.service.ServiceException;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.HttpClientBuilder;
 import org.geowebcache.util.ServletUtils;
+import org.geowebcache.util.URLs;
 import org.springframework.util.Assert;
 
 /** This class is a wrapper for HTTP interaction with WMS backend */
@@ -115,7 +116,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
             String requestUrl = layer.nextWmsURL();
 
             try {
-                wmsBackendUrl = new URL(requestUrl);
+                wmsBackendUrl = URLs.of(requestUrl);
             } catch (MalformedURLException maue) {
                 throw new GeoWebCacheException(
                         "Malformed URL: " + requestUrl + " " + maue.getMessage());

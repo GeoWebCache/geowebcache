@@ -16,7 +16,6 @@ package org.geowebcache.diskquota.storage;
 
 import java.math.BigInteger;
 import java.text.NumberFormat;
-import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import org.geowebcache.grid.GridSubset;
@@ -84,7 +83,7 @@ class PagePyramid {
 
         @Override
         public String toString() {
-            NumberFormat nf = NumberFormat.getInstance(new Locale("es"));
+            NumberFormat nf = NumberFormat.getInstance();
             nf.setGroupingUsed(true);
 
             return "Pages: "

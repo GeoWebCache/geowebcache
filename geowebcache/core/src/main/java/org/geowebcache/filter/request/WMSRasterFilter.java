@@ -34,6 +34,7 @@ import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.util.ServletUtils;
+import org.geowebcache.util.URLs;
 
 public class WMSRasterFilter extends RasterFilter {
 
@@ -110,7 +111,7 @@ public class WMSRasterFilter extends RasterFilter {
                         + ") , "
                         + urlStr);
 
-        URL wmsUrl = new URL(urlStr);
+        URL wmsUrl = URLs.of(urlStr);
 
         if (backendTimeout == null) {
             backendTimeout = 120;

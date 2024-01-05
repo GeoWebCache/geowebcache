@@ -85,6 +85,7 @@ import org.geowebcache.service.OWSException;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
+import org.geowebcache.util.URLs;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -358,7 +359,7 @@ public class WMTSServiceTest {
             // add some layer metadata
             MetadataURL metadataURL =
                     new MetadataURL(
-                            "some-type", "some-format", new URL("http://localhost:8080/some-url"));
+                            "some-type", "some-format", URLs.of("http://localhost:8080/some-url"));
             when(tileLayer.getMetadataURLs()).thenReturn(Collections.singletonList(metadataURL));
         }
 

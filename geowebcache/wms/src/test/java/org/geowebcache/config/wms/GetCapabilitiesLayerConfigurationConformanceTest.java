@@ -19,7 +19,6 @@ import static org.easymock.EasyMock.expect;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,6 +37,7 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.util.URLs;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Assume;
@@ -120,7 +120,7 @@ public class GetCapabilitiesLayerConfigurationConformanceTest extends LayerConfi
         expect(req.getGetCapabilities()).andStubReturn(gcOpType);
         expect(gcOpType.getGet())
                 .andStubReturn(
-                        new URL(
+                        URLs.of(
                                 "http://test/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities"));
         expect(cap.getVersion()).andStubReturn("1.1.1");
         EasyMock.replay(server, cap, req, gcOpType, globalConfig);

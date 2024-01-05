@@ -103,7 +103,7 @@ public class BlobStoreAggregator {
                         () ->
                                 new GeoWebCacheException(
                                         "Thread "
-                                                + Thread.currentThread().getId()
+                                                + Thread.currentThread().getName()
                                                 + " Unknown blob store "
                                                 + blobStoreName
                                                 + ". Check the logfiles,"

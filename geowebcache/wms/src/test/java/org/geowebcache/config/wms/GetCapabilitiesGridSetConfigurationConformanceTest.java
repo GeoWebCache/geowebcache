@@ -22,7 +22,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.base.Objects;
-import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,6 +40,7 @@ import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.util.URLs;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
 import org.junit.Assume;
@@ -97,7 +97,7 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
         expect(req.getGetCapabilities()).andStubReturn(gcOpType);
         expect(gcOpType.getGet())
                 .andStubReturn(
-                        new URL(
+                        URLs.of(
                                 "http://test/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities"));
         expect(cap.getVersion()).andStubReturn("1.1.1");
         EasyMock.replay(server, cap, req, gcOpType, globalConfig);

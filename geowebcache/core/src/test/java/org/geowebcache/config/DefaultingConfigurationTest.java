@@ -27,6 +27,7 @@ import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSHttpHelper;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.util.URLs;
 import org.junit.Test;
 
 public class DefaultingConfigurationTest {
@@ -111,9 +112,9 @@ public class DefaultingConfigurationTest {
                     URL proxyUrl = null;
                     try {
                         if (getGwcConfig().getProxyUrl() != null) {
-                            proxyUrl = new URL(getGwcConfig().getProxyUrl());
+                            proxyUrl = URLs.of(getGwcConfig().getProxyUrl());
                         } else if (wl.getProxyUrl() != null) {
-                            proxyUrl = new URL(wl.getProxyUrl());
+                            proxyUrl = URLs.of(wl.getProxyUrl());
                         }
                     } catch (MalformedURLException e) {
                     }
