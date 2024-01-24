@@ -1,4 +1,4 @@
-GeoWebCache 1.24.2 (2023-11-23)
+GeoWebCache 1.24.2 (2024-01-23)
 -------------------------------
 
 Stable release for 1.24.x series.
