@@ -1,3 +1,13 @@
+GeoWebCache 1.24.2 (2023-11-23)
+-------------------------------
+
+Stable release for 1.24.x series.
+
+Improvements:
++++++++++++++
+- [GWC-1198] Upgrade Hazelcast from 5.3.1 to 5.3.6
+- Bump com.google.guava:guava from 27.0-jre to 32.0.0-jre in /geowebcache
+
 GeoWebCache 1.24.1 (2023-11-23)
 -------------------------------
 
@@ -41,6 +51,36 @@ Improvements:
 Fixes:
 ++++++
 - Startup DiskQuotaMonitor on context init, rather than immediatley after bean properties are set
+
+GeoWebCache 1.23.3 (2023-12-20)
+-------------------------------
+
+Stable release for the 1.23.x series
+
+Improvements:
++++++++++++++
+- Bump com.google.guava:guava from 27.0-jre to 32.0.0-jre in /geowebcache
+- Bump org.springframework.security:spring-security-config in /geowebcache
+- [GWC-1171] Improve handling special characters in the GWC Demos Page
+
+Fixes:
+++++++
+- Fix typo in TextMime for text/javascript
+
+GeoWebCache 1.23.2 (2023-10-30)
+-------------------------------
+
+Stable release for the 1.23.x series
+
+Improvements:
++++++++++++++
+- Bump org.json:json from 20230618 to 20231013
+- [GWC-1172] Improve handling special characters in the GWC Seed Form
+- Update to sphinx-build 7, fixing style error
+
+Fixes:
+++++++
+- #1157: Fix for S3BlobStore bulk delete (without listeners)
 
 GeoWebCache 1.23.1 (2023-07-20)
 -------------------------------
