@@ -6,7 +6,7 @@ Stable release for 1.24.x series.
 Improvements:
 +++++++++++++
 - [GWC-1198] Upgrade Hazelcast from 5.3.1 to 5.3.6
-- Bump com.google.guava:guava from 27.0-jre to 32.0.0-jre in /geowebcache
+- Bump com.google.guava:guava from 27.0-jre to 32.0.0-jre
 
 GeoWebCache 1.24.1 (2023-11-23)
 -------------------------------
