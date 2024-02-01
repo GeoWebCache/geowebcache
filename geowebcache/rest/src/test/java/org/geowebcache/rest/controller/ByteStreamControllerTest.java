@@ -15,10 +15,12 @@
 package org.geowebcache.rest.controller;
 
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assume.assumeTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -98,6 +100,20 @@ public class ByteStreamControllerTest {
     @Test
     public void testBackreference2() throws Exception {
         mockMvc.perform(get("/rest/web/foo/../../../shouldnt/access/test.png"))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void testBackreferenceWindows() throws Exception {
+        assumeTrue(SystemUtils.IS_OS_WINDOWS);
+        mockMvc.perform(get("/rest/web/..\\..\\shouldnt/access/test.png"))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void testBackreferenceWindows2() throws Exception {
+        assumeTrue(SystemUtils.IS_OS_WINDOWS);
+        mockMvc.perform(get("/rest/web/foo\\..\\..\\..\\shouldnt/access/test.png"))
                 .andExpect(status().is4xxClientError());
     }
 }
