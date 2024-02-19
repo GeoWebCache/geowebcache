@@ -1,3 +1,14 @@
+GeoWebCache 1.23.4 (2024-02-19)
+-------------------------------
+
+Maintenance release for the 1.23.x series.
+
+Improvements:
++++++++++++++
+- [GWC-1210] Improve input validation in ByteStreamController
+- Bump org.springframework.security:spring-security-config in from 5.7.10 to 5.7.11
+
+
 GeoWebCache 1.23.3 (2023-12-20)
 -------------------------------
 
