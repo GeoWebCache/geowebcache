@@ -1,35 +1,178 @@
+GeoWebCache 1.24-RC (2024-03-01)
+--------------------------------
 
-
-GeoWebCache 1.23-RC (pending)
---------------------------------------
-
-Release candidate for 1.22.x series.
+Release candidate for 1.25.x series.
 
 Improvements:
 +++++++++++++
-- <New feature>
+- Updating Spring to 5.3.32
+- Bump org.postgresql:postgresql from 42.4.3 to 42.7.2
+- Bump org.springframework.security:spring-security-config 5.7.11
 
 Fixes:
 ++++++
-- <Bug fix>
+- [GWC-1210] Improve input validation in ByteStreamController (#1211)
 
 
-GeoWebCache 1.22-RC (pending)
------------------------------
+Internals:
+++++++++++
+- Upgrade spotbugs-maven-plugin:4.7.3.4 -> 4.8.2.0
+- Fix PMD errors in core when run with Java 21
+- Allow building with QA on Java 17 and 21
 
-Release candidate for 1.22.x series.
+GeoWebCache 1.24.2 (2024-01-23)
+-------------------------------
+
+Stable release for 1.24.x series.
 
 Improvements:
 +++++++++++++
-- <Improvement>
+- [GWC-1198] Upgrade Hazelcast from 5.3.1 to 5.3.6
+- Bump com.google.guava:guava from 27.0-jre to 32.0.0-jre
+
+GeoWebCache 1.24.1 (2023-11-23)
+-------------------------------
+
+Stable release for 1.24.x series.
+
+Improvements:
++++++++++++++
+- Improve handling special characters in the GWC Seed Form
+- Improve handling special characters in the GWC Demos Page
+- Bump org.json:json from 20230618 to 20231013 
+- Bump org.springframework.security:spring-security-config to 5.7.10
 
 Fixes:
 ++++++
-- <Bug fix>
+- Fix for S3BlobStore bulk delete (without listener
+- Fix mime type text/javascript
+
+GeoWebCache 1.24.0 (2023-10-13)
+--------------------------------
+
+Initial release for 1.24.x series.
 
 Improvements:
 +++++++++++++
-- Updated to imageio-ext-1.4.0 supporting GDAL 3
+* Update to org.json:json to 20230618
+* Update to GeoTools 30.0
+
+GeoWebCache 1.24-RC (2023-09-22)
+--------------------------------
+
+Release candidate for the 1.24.x series.
+
+Improvements:
++++++++++++++
+- Follow up on GeoTools "org.opengis" package removal (now "org.geotools.api")
+- Updated Hazelcast to 5.3.1
+- Updated Jackson to 2.15.2
+- Bump aws-java-sdk-s3 from 1.11.371 to 1.12.261
+- Add support for HSQL disk quota database, and make H2 1.x dependency optional
+
+Fixes:
+++++++
+- Startup DiskQuotaMonitor on context init, rather than immediatley after bean properties are set
+
+GeoWebCache 1.23.4 (2024-02-19)
+-------------------------------
+
+Maintenance release for the 1.23.x series.
+
+Improvements:
++++++++++++++
+- [GWC-1210] Improve input validation in ByteStreamController
+- Bump org.springframework.security:spring-security-config in from 5.7.10 to 5.7.11
+
+
+GeoWebCache 1.23.3 (2023-12-20)
+-------------------------------
+
+Stable release for the 1.23.x series
+
+Improvements:
++++++++++++++
+- Bump com.google.guava:guava from 27.0-jre to 32.0.0-jre in /geowebcache
+- Bump org.springframework.security:spring-security-config in /geowebcache
+- [GWC-1171] Improve handling special characters in the GWC Demos Page
+
+Fixes:
+++++++
+- Fix typo in TextMime for text/javascript
+
+
+GeoWebCache 1.23.2 (2023-10-30)
+-------------------------------
+
+Stable release for the 1.23.x series
+
+Improvements:
++++++++++++++
+- Bump org.json:json from 20230618 to 20231013
+- [GWC-1172] Improve handling special characters in the GWC Seed Form
+- Update to sphinx-build 7, fixing style error
+
+Fixes:
+++++++
+- #1157: Fix for S3BlobStore bulk delete (without listeners)
+
+
+GeoWebCache 1.23.1 (2023-07-20)
+-------------------------------
+
+Stable release for the 1.23.x series
+
+Improvements:
++++++++++++++
+- Add hsql to disk quota make H2 optional
+
+GeoWebCache 1.23.0 (2023-04-03)
+-------------------------------
+
+Initial release for the 1.23 series
+
+Improvements:
++++++++++++++
+- Java 11 minimum
+
+Fixes:
+++++++
+- Seeding GWC doesn't work for layers with a dot in the name (GEOS-10006)
+
+
+GeoWebCache 1.23-RC1 (2023-03-09)
+---------------------------------
+
+Release candidate for the 1.23 series.
+
+Improvements:
++++++++++++++
+- Upgraded Spring to 5.3.25
+- Upgraded Spring security to 5.7.6
+
+GeoWebCache 1.22.1 (2023-02-20)
+-------------------------------
+
+Stable release for 1.22.x series.
+
+Fixes:
+++++++
+- GWC S3 Blobstore Parameters Get Converted back to plain text after GeoServer restart
+- Return an empty response when no tile is found in MBTiles, with a 204 status, rather than an empty PNG
+
+Internals:
+++++++++++
+- ant build for documentation with live preview
+
+GeoWebCache 1.22.0 (2022-11-17)
+-------------------------------
+
+First stable release for the 1.22.x series.
+
+Improvements
+++++++++++++
+Bump jackson-databind from 2.13.2.1 to 2.13.4.1
+
 
 GeoWebCache 1.21-RC (2022-05-05)
 --------------------------------
