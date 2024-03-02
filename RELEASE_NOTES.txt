@@ -1,20 +1,6 @@
 GeoWebCache 1.25-RC (2024-03-01)
 --------------------------------
 
-<Release Description>
-
-Improvements:
-+++++++++++++
-- <New feature>
-
-Fixes:
-++++++
-- <Bug fix>
-
-
-GeoWebCache 1.24-RC (2024-03-01)
---------------------------------
-
 Release candidate for 1.25.x series.
 
 Improvements:
@@ -26,7 +12,6 @@ Improvements:
 Fixes:
 ++++++
 - [GWC-1210] Improve input validation in ByteStreamController (#1211)
-
 
 Internals:
 ++++++++++
