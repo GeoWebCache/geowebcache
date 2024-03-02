@@ -1,4 +1,4 @@
-GeoWebCache 1.24-RC (2024-03-01)
+GeoWebCache 1.25-RC (2024-03-01)
 --------------------------------
 
 Release candidate for 1.25.x series.
