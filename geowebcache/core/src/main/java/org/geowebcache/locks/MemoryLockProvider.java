@@ -14,12 +14,12 @@
  */
 package org.geowebcache.locks;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.geotools.util.logging.Logging;
-import org.geowebcache.GeoWebCacheException;
 
 /**
  * An in memory lock provider based on a striped lock
@@ -30,48 +30,66 @@ public class MemoryLockProvider implements LockProvider {
 
     private static Logger LOGGER = Logging.getLogger(MemoryLockProvider.class.getName());
 
-    java.util.concurrent.locks.Lock[] locks;
-
-    public MemoryLockProvider() {
-        this(1024);
-    }
-
-    public MemoryLockProvider(int concurrency) {
-        locks = new java.util.concurrent.locks.Lock[concurrency];
-        for (int i = 0; i < locks.length; i++) {
-            locks[i] = new ReentrantLock();
-        }
-    }
+    ConcurrentHashMap<String, LockAndCounter> lockAndCounters = new ConcurrentHashMap<>();
 
     @Override
     public Lock getLock(String lockKey) {
-        final int idx = getIndex(lockKey);
-        if (LOGGER.isLoggable(Level.FINE))
-            LOGGER.fine("Mapped lock key " + lockKey + " to index " + idx + ". Acquiring lock.");
-        locks[idx].lock();
-        if (LOGGER.isLoggable(Level.FINE))
-            LOGGER.fine("Mapped lock key " + lockKey + " to index " + idx + ". Lock acquired");
+        if (LOGGER.isLoggable(Level.FINE)) LOGGER.fine("Acquiring lock key " + lockKey);
+
+        LockAndCounter lockAndCounter =
+                lockAndCounters.compute(
+                        lockKey,
+                        (key, existingLockAndCounter) -> {
+                            if (existingLockAndCounter == null) {
+                                existingLockAndCounter = new LockAndCounter();
+                            }
+                            existingLockAndCounter.counter.incrementAndGet();
+                            return existingLockAndCounter;
+                        });
+
+        lockAndCounter.lock.lock();
+
+        if (LOGGER.isLoggable(Level.FINE)) LOGGER.fine("Acquired lock key " + lockKey);
 
         return new Lock() {
 
             boolean released = false;
 
             @Override
-            public void release() throws GeoWebCacheException {
+            public void release() {
                 if (!released) {
                     released = true;
-                    locks[idx].unlock();
-                    if (LOGGER.isLoggable(Level.FINE))
-                        LOGGER.fine("Released lock key " + lockKey + " mapped to index " + idx);
+
+                    LockAndCounter lockAndCounter = lockAndCounters.get(lockKey);
+                    lockAndCounter.lock.unlock();
+
+                    // Attempt to remove lock if no other thread is waiting for it
+                    if (lockAndCounter.counter.decrementAndGet() == 0) {
+
+                        lockAndCounters.compute(
+                                lockKey,
+                                (key, existingLockAndCounter) -> {
+                                    if (existingLockAndCounter == null
+                                            || existingLockAndCounter.counter.get() == 0) {
+                                        return null;
+                                    }
+                                    return existingLockAndCounter;
+                                });
+                    }
+
+                    if (LOGGER.isLoggable(Level.FINE)) LOGGER.fine("Released lock key " + lockKey);
                 }
             }
         };
     }
 
-    private int getIndex(String lockKey) {
-        // Simply hashing the lock key generated a significant number of collisions,
-        // doing the SHA1 digest of it provides a much better distribution
-        int idx = Math.abs(DigestUtils.sha1Hex(lockKey).hashCode() % locks.length);
-        return idx;
+    private static class LockAndCounter {
+        private final java.util.concurrent.locks.Lock lock = new ReentrantLock();
+
+        /**
+         * Track how many threads are waiting on this lock so we know if it's safe to remove it
+         * during a release.
+         */
+        private final AtomicInteger counter = new AtomicInteger(0);
     }
 }
