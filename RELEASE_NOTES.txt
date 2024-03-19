@@ -1,3 +1,12 @@
+GeoWebCache 1.25.0 (2024-03-19)
+-------------------------------
+
+First stable release of the 1.25.x series
+
+Improvements:
++++++++++++++
+- Upgraded GeoTools dependencies to 31.0
+
 GeoWebCache 1.25-RC (2024-03-01)
 --------------------------------
 
