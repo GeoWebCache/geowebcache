@@ -54,7 +54,7 @@
     <gt.version>29-SNAPSHOT</gt.version>
     <jts.version>1.19.0</jts.version>
     <jaiext.version>1.1.24</jaiext.version>
-    <spring.version>5.3.25</spring.version>
+    <spring.version>5.3.32</spring.version>
     <spring.security.version>5.7.11</spring.security.version>
     <xstream.version>1.4.20</xstream.version>
     <commons-io.version>2.6</commons-io.version>
