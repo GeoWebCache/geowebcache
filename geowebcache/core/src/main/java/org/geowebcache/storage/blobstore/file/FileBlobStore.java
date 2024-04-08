@@ -14,7 +14,6 @@
  */
 package org.geowebcache.storage.blobstore.file;
 
-import static java.util.Objects.isNull;
 import static org.geowebcache.storage.blobstore.file.FilePathUtils.filteredGridSetId;
 import static org.geowebcache.storage.blobstore.file.FilePathUtils.filteredLayerName;
 import static org.geowebcache.util.FileUtils.listFilesNullSafe;
@@ -71,7 +70,12 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 /** See BlobStore interface description for details */
 public class FileBlobStore implements BlobStore {
 
-    interface Writer {
+    /**
+     * Interface for writing files. This is used to abstract the writing of files to allow different
+     * types of file writes, while keeping the same general machinery (write on temp file, rename to
+     * final file).
+     */
+    interface FileWriter {
         void write(File file) throws IOException;
     }
 
@@ -526,10 +530,9 @@ public class FileBlobStore implements BlobStore {
     private void putParametersMetadata(
             String layerName, String parametersId, Map<String, String> parameters)
             throws StorageException {
-        assert (isNull(parametersId) == isNull(parameters));
-        if (isNull(parametersId)) {
-            return;
-        }
+        // check if we even need to use any IO
+        if (parametersId == null || parameters == null || parameters.isEmpty()) return;
+
         File parametersFile = parametersFile(layerName, parametersId);
         if (parametersFile.exists()) return;
 
@@ -606,7 +609,8 @@ public class FileBlobStore implements BlobStore {
      *
      * @throws StorageException
      */
-    private void writeFile(File target, boolean existed, Writer writer) throws StorageException {
+    private void writeFile(File target, boolean existed, FileWriter writer)
+            throws StorageException {
         // first write to temp file
         tmp.mkdirs();
         File temp = new File(tmp, tmpGenerator.newName());
@@ -768,6 +772,18 @@ public class FileBlobStore implements BlobStore {
 
         // delete the parameter file
         parametersFile(layerName, parametersId).delete();
+
+        // clean up from the legacy metadata storage as well, if necessary
+        try {
+            layerMetadata.putEntry(layerName, "parameters." + parametersId, null);
+        } catch (IOException e) {
+            log.log(
+                    Level.WARNING,
+                    String.format(
+                            "Failed to clean up metadata for parameters %s in layer %s",
+                            parametersId, layerName),
+                    e);
+        }
 
         // delete the caches
         File[] parameterCaches =
