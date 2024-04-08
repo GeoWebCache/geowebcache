@@ -14,26 +14,26 @@
  */
 package org.geowebcache.locks;
 
-import org.geotools.util.logging.Logging;
-
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.geotools.util.logging.Logging;
 
 /**
  * An in memory lock provider.
- * <p>
- * This provider does not constrain the number of locks that can be held at any given time.
- * Because any one thread can hold multiple locks at a time, a more appropriate approach
- * to constraining resource usage would be to limit the number of concurrent threads instead.
- * <p>
- * One objective of this class is to <a href="https://github.com/GeoWebCache/geowebcache/issues/1226">support
- * nested locking scenarios</a>. This class used to use a striped lock algorithm which
- * would cause deadlocks for nested locking because of the non-predictable manner in
- * which any lock can be arbitrarily locked by another unrelated lock. An example use case of
- * nested locks, in pseudocode, would be:
+ *
+ * <p>This provider does not constrain the number of locks that can be held at any given time.
+ * Because any one thread can hold multiple locks at a time, a more appropriate approach to
+ * constraining resource usage would be to limit the number of concurrent threads instead.
+ *
+ * <p>One objective of this class is to <a
+ * href="https://github.com/GeoWebCache/geowebcache/issues/1226">support nested locking
+ * scenarios</a>. This class used to use a striped lock algorithm which would cause deadlocks for
+ * nested locking because of the non-predictable manner in which any lock can be arbitrarily locked
+ * by another unrelated lock. An example use case of nested locks, in pseudocode, would be:
+ *
  * <pre>
  *  lock(metatile);
  *  try {
@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  */
 public class MemoryLockProvider implements LockProvider {
 
-    private final static Logger LOGGER = Logging.getLogger(MemoryLockProvider.class.getName());
+    private static final Logger LOGGER = Logging.getLogger(MemoryLockProvider.class.getName());
 
     ConcurrentHashMap<String, LockAndCounter> lockAndCounters = new ConcurrentHashMap<>();
 
@@ -93,8 +93,10 @@ public class MemoryLockProvider implements LockProvider {
                     // Attempt to remove lock if no other thread is waiting for it
                     if (lockAndCounter.counter.decrementAndGet() == 0) {
 
-                        // Try to remove the lock, but we have to check the count AGAIN inside of "compute"
-                        // so that we know it hasn't been incremented since the if-statement above was evaluated
+                        // Try to remove the lock, but we have to check the count AGAIN inside of
+                        // "compute"
+                        // so that we know it hasn't been incremented since the if-statement above
+                        // was evaluated
                         lockAndCounters.compute(
                                 lockKey,
                                 (key, existingLockAndCounter) -> {
@@ -113,8 +115,8 @@ public class MemoryLockProvider implements LockProvider {
     }
 
     /**
-     * A ReentrantLock with a counter to track how many threads are waiting on this lock
-     * so we know if it's safe to remove it during a release.
+     * A ReentrantLock with a counter to track how many threads are waiting on this lock so we know
+     * if it's safe to remove it during a release.
      */
     private static class LockAndCounter {
         private final java.util.concurrent.locks.Lock lock = new ReentrantLock();
