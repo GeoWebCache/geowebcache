@@ -14,6 +14,8 @@
  */
 package org.geowebcache.storage.blobstore.file;
 
+import java.io.File;
+
 public class FilePathUtils {
 
     public static String gridsetZoomLevelDir(String gridSetId, long zoomLevel) {
@@ -115,5 +117,22 @@ public class FilePathUtils {
         appendFiltered(gridSetId, path);
         path.append('_');
         zeroPadder(z, 2, path);
+    }
+
+    /**
+     * Returns a path built from a root and a list of components. The components are appended to the
+     * root with a {@link File#separatorChar} in between. The root is trusted not to need escaping,
+     * all other bits are filtered.
+     */
+    public static String buildPath(String root, String... components) {
+        StringBuilder path = new StringBuilder(256);
+        path.append(root);
+
+        for (String component : components) {
+            path.append(File.separatorChar);
+            appendFiltered(component, path);
+        }
+
+        return path.toString();
     }
 }
