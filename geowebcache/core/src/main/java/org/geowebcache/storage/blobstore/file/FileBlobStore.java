@@ -14,15 +14,19 @@
  */
 package org.geowebcache.storage.blobstore.file;
 
+import static java.util.Objects.isNull;
 import static org.geowebcache.storage.blobstore.file.FilePathUtils.filteredGridSetId;
 import static org.geowebcache.storage.blobstore.file.FilePathUtils.filteredLayerName;
 import static org.geowebcache.util.FileUtils.listFilesNullSafe;
+import static org.geowebcache.util.TMSKeyBuilder.PARAMETERS_METADATA_OBJECT_PREFIX;
+import static org.geowebcache.util.TMSKeyBuilder.PARAMETERS_METADATA_OBJECT_SUFFIX;
 
 import com.google.common.base.Preconditions;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -34,6 +38,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -65,6 +70,10 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 /** See BlobStore interface description for details */
 public class FileBlobStore implements BlobStore {
+
+    interface Writer {
+        void write(File file) throws IOException;
+    }
 
     private static Logger log =
             Logging.getLogger(org.geowebcache.storage.blobstore.file.FileBlobStore.class.getName());
@@ -372,7 +381,7 @@ public class FileBlobStore implements BlobStore {
     /** Delete a particular tile */
     @Override
     public boolean delete(TileObject stObj) throws StorageException {
-        File fh = getFileHandleTile(stObj, null);
+        File fh = getFileHandleTile(stObj, false);
         boolean ret = false;
         // we call fh.length() here to check whether the file exists and its length in a single
         // operation cause lots of calls to exists() may raise the file system cache usage to the
@@ -466,7 +475,7 @@ public class FileBlobStore implements BlobStore {
      */
     @Override
     public boolean get(TileObject stObj) throws StorageException {
-        File fh = getFileHandleTile(stObj, null);
+        File fh = getFileHandleTile(stObj, false);
         if (!fh.exists()) {
             stObj.setStatus(Status.MISS);
             return false;
@@ -482,17 +491,11 @@ public class FileBlobStore implements BlobStore {
     /** Store a tile. */
     @Override
     public void put(TileObject stObj) throws StorageException {
-
-        // an update to ParameterMap file is required !!!
-        Runnable upm =
-                () -> {
-                    this.persistParameterMap(stObj);
-                };
-        final File fh = getFileHandleTile(stObj, upm);
+        final File fh = getFileHandleTile(stObj, true);
         final long oldSize = fh.length();
         final boolean existed = oldSize > 0;
 
-        writeFile(fh, stObj, existed);
+        writeTile(fh, stObj, existed);
 
         // mark the last modification as the tile creation time if set, otherwise
         // we'll leave it to the writing time
@@ -507,6 +510,8 @@ public class FileBlobStore implements BlobStore {
             }
         }
 
+        putParametersMetadata(stObj.getLayerName(), stObj.getParametersId(), stObj.getParameters());
+
         /*
          * this is important because listeners may be tracking tile existence
          */
@@ -518,8 +523,40 @@ public class FileBlobStore implements BlobStore {
         }
     }
 
-    private File getFileHandleTile(TileObject stObj, Runnable onTileFolderCreation)
+    private void putParametersMetadata(
+            String layerName, String parametersId, Map<String, String> parameters)
             throws StorageException {
+        assert (isNull(parametersId) == isNull(parameters));
+        if (isNull(parametersId)) {
+            return;
+        }
+        File parametersFile = parametersFile(layerName, parametersId);
+        if (parametersFile.exists()) return;
+
+        writeFile(
+                parametersFile,
+                false,
+                file -> {
+                    Properties properties = new Properties();
+                    parameters.forEach(properties::setProperty);
+                    try (OutputStream os = new FileOutputStream(file)) {
+                        properties.store(os, "Parameters values for identifier: " + parametersId);
+                    }
+                });
+    }
+
+    private File parametersFile(String layerName, String parametersId) {
+        String path =
+                FilePathUtils.buildPath(
+                        this.path,
+                        layerName,
+                        PARAMETERS_METADATA_OBJECT_PREFIX
+                                + parametersId
+                                + PARAMETERS_METADATA_OBJECT_SUFFIX);
+        return new File(path);
+    }
+
+    private File getFileHandleTile(TileObject stObj, boolean createParent) throws StorageException {
         final MimeType mimeType;
         try {
             mimeType = MimeType.createFromFormat(stObj.getBlobFormat());
@@ -535,12 +572,10 @@ public class FileBlobStore implements BlobStore {
             throw new StorageException("Failed to compute file path", e);
         }
 
-        // check if it's required to create tile folder
-        if (onTileFolderCreation != null) {
+        if (createParent) {
             log.fine("Creating parent tile folder and updating ParameterMap");
             File parent = tilePath.getParentFile();
             mkdirs(parent, stObj);
-            onTileFolderCreation.run();
         }
 
         return tilePath;
@@ -553,16 +588,32 @@ public class FileBlobStore implements BlobStore {
         return new FileResource(fh);
     }
 
-    private void writeFile(File target, TileObject stObj, boolean existed) throws StorageException {
+    private void writeTile(File target, TileObject stObj, boolean existed) throws StorageException {
+        writeFile(
+                target,
+                existed,
+                file -> {
+                    try (FileOutputStream fos = new FileOutputStream(file);
+                            FileChannel channel = fos.getChannel()) {
+                        stObj.getBlob().transferTo(channel);
+                    }
+                });
+    }
+
+    /**
+     * Writes into the target file by first creating a temporary file, filling it with the writer,
+     * and then renaming it to the target file.
+     *
+     * @throws StorageException
+     */
+    private void writeFile(File target, boolean existed, Writer writer) throws StorageException {
         // first write to temp file
         tmp.mkdirs();
         File temp = new File(tmp, tmpGenerator.newName());
 
         try {
-            // open the output stream and read the blob into the tile
-            try (FileOutputStream fos = new FileOutputStream(temp);
-                    FileChannel channel = fos.getChannel()) {
-                stObj.getBlob().transferTo(channel);
+            try {
+                writer.write(temp);
             } catch (IOException ioe) {
                 throw new StorageException(ioe.getMessage() + " for " + target.getAbsolutePath());
             }
@@ -578,9 +629,7 @@ public class FileBlobStore implements BlobStore {
                     temp = null;
                 }
             }
-
         } finally {
-
             if (temp != null) {
                 log.warning(
                         "Tile "
@@ -588,15 +637,6 @@ public class FileBlobStore implements BlobStore {
                                 + " was already written by another thread/process");
                 temp.delete();
             }
-        }
-    }
-
-    protected void persistParameterMap(TileObject stObj) {
-        if (Objects.nonNull(stObj.getParametersId())) {
-            putLayerMetadata(
-                    stObj.getLayerName(),
-                    "parameters." + stObj.getParametersId(),
-                    ParametersUtils.getKvp(stObj.getParameters()));
         }
     }
 
@@ -726,6 +766,10 @@ public class FileBlobStore implements BlobStore {
             return false;
         }
 
+        // delete the parameter file
+        parametersFile(layerName, parametersId).delete();
+
+        // delete the caches
         File[] parameterCaches =
                 listFilesNullSafe(
                         layerPath,
@@ -779,6 +823,9 @@ public class FileBlobStore implements BlobStore {
 
     @Override
     public Map<String, Optional<Map<String, String>>> getParametersMapping(String layerName) {
+        Set<String> parameterIds = getParameterIds(layerName);
+
+        // for backwards compatibility, check the parameters in the metadata file
         Map<String, String> p;
         try {
             p = layerMetadata.getLayerMetadata(layerName);
@@ -786,18 +833,41 @@ public class FileBlobStore implements BlobStore {
             log.fine("Optimistic read of metadata mappings failed");
             return null;
         }
-        return getParameterIds(layerName).stream()
+        Map<String, Optional<Map<String, String>>> result =
+                parameterIds.stream()
+                        .collect(
+                                Collectors.toMap(
+                                        (id) -> id,
+                                        (id) -> {
+                                            String kvp = p.get("parameters." + id);
+                                            if (Objects.isNull(kvp)) {
+                                                return Optional.empty();
+                                            }
+                                            kvp = urlDecUtf8(kvp);
+                                            return Optional.of(ParametersUtils.getMap(kvp));
+                                        }));
+
+        // go look for the current parameter files too though, and overwrite the legacy metadata
+        for (String parameterId : parameterIds) {
+            File file = parametersFile(layerName, parameterId);
+            if (file.exists()) {
+                try {
+                    Properties properties = new Properties();
+                    properties.load(Files.newInputStream(file.toPath()));
+                    result.put(parameterId, Optional.of(propertiesToMap(properties)));
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to read parameters file", e);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private static Map<String, String> propertiesToMap(Properties properties) {
+        return properties.entrySet().stream()
                 .collect(
-                        Collectors.toMap(
-                                (id) -> id,
-                                (id) -> {
-                                    String kvp = p.get("parameters." + id);
-                                    if (Objects.isNull(kvp)) {
-                                        return Optional.empty();
-                                    }
-                                    kvp = urlDecUtf8(kvp);
-                                    return Optional.of(ParametersUtils.getMap(kvp));
-                                }));
+                        Collectors.toMap(e -> e.getKey().toString(), e -> e.getValue().toString()));
     }
 
     static final int paramIdLength =
