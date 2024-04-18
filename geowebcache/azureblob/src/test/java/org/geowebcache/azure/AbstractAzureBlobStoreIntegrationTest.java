@@ -19,10 +19,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.AdditionalMatchers.or;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -36,6 +38,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.geotools.util.logging.Logging;
@@ -154,7 +157,7 @@ public abstract class AbstractAzureBlobStoreIntegrationTest {
                         eq(tile.getLayerName()),
                         eq(tile.getGridSetId()),
                         eq(tile.getBlobFormat()),
-                        anyString(),
+                        anyStringOrNull(),
                         eq(20L),
                         eq(30L),
                         eq(12),
@@ -171,7 +174,7 @@ public abstract class AbstractAzureBlobStoreIntegrationTest {
                         eq(tile.getLayerName()),
                         eq(tile.getGridSetId()),
                         eq(tile.getBlobFormat()),
-                        anyString(),
+                        anyStringOrNull(),
                         eq(20L),
                         eq(30L),
                         eq(12),
@@ -212,7 +215,7 @@ public abstract class AbstractAzureBlobStoreIntegrationTest {
                         eq(tile.getLayerName()),
                         eq(tile.getGridSetId()),
                         eq(tile.getBlobFormat()),
-                        anyString(),
+                        anyStringOrNull(),
                         eq(22L),
                         eq(30L),
                         eq(12),
@@ -397,7 +400,7 @@ public abstract class AbstractAzureBlobStoreIntegrationTest {
                         anyString(),
                         anyString(),
                         anyString(),
-                        anyString(),
+                        anyStringOrNull(),
                         anyLong(),
                         anyLong(),
                         anyInt(),
@@ -493,14 +496,18 @@ public abstract class AbstractAzureBlobStoreIntegrationTest {
 
         verify(listener, times(expectedCount))
                 .tileDeleted(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        anyString(),
+                        anyStringOrNull(),
+                        anyStringOrNull(),
+                        anyStringOrNull(),
+                        anyStringOrNull(),
                         anyLong(),
                         anyLong(),
                         anyInt(),
                         anyLong());
+    }
+
+    private static String anyStringOrNull() {
+        return or(isNull(), anyString());
     }
 
     /**
@@ -508,6 +515,7 @@ public abstract class AbstractAzureBlobStoreIntegrationTest {
      * for each tile)
      */
     @Test
+    @SuppressWarnings("unchecked")
     public void testTruncateOptimizationIfNoListeners() throws StorageException, MimeException {
 
         final int zoomStart = 0;
@@ -537,10 +545,12 @@ public abstract class AbstractAzureBlobStoreIntegrationTest {
                         mimeType,
                         parameters);
 
-        blobStore = Mockito.spy(blobStore);
+        @SuppressWarnings("PMD.CloseResource") // closed by the store
+        DeleteManager deleteManager = Mockito.spy(blobStore.deleteManager);
         assertTrue(blobStore.delete(tileRange));
 
-        verify(blobStore, times(0)).delete(Mockito.any(TileObject.class));
+        verify(deleteManager, times(0)).executeParallel(Mockito.any(List.class));
+
         assertFalse(blobStore.get(queryTile(0, 0, 0)));
         assertFalse(blobStore.get(queryTile(0, 0, 1)));
         assertFalse(blobStore.get(queryTile(0, 1, 1)));

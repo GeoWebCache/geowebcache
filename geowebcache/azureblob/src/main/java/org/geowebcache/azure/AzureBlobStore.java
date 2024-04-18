@@ -67,7 +67,7 @@ public class AzureBlobStore implements BlobStore {
     private final TMSKeyBuilder keyBuilder;
     private final BlobStoreListenerList listeners = new BlobStoreListenerList();
     private final AzureClient client;
-    private DeleteManager deleteManager;
+    DeleteManager deleteManager;
 
     private volatile boolean shutDown = false;
 
@@ -200,7 +200,7 @@ public class AzureBlobStore implements BlobStore {
     @Override
     public boolean delete(TileRange tileRange) throws StorageException {
         // see if there is anything to delete in that range by computing a prefix
-        final String coordsPrefix = keyBuilder.coordinatesPrefix(tileRange, true);
+        final String coordsPrefix = keyBuilder.coordinatesPrefix(tileRange, false);
         if (client.listBlobs(coordsPrefix, 1).isEmpty()) {
             return false;
         }
