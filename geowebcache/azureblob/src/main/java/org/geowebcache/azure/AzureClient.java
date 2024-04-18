@@ -94,14 +94,17 @@ class AzureClient implements Closeable {
             // no way to see if the containerURL already exists, try to create and see if
             // we get a 409 CONFLICT
             try {
-                int status = this.container.create(null, null, null).blockingGet().statusCode();
-                if (!HttpStatus.valueOf(status).is2xxSuccessful()
-                        && status != HttpStatus.CONFLICT.value()) {
-                    throw new StorageException(
-                            "Failed to create container "
-                                    + containerName
-                                    + ", REST API returned a "
-                                    + status);
+                int status = this.container.getProperties().blockingGet().statusCode();
+                if (status == HttpStatus.NOT_FOUND.value()) {
+                    status = this.container.create(null, null, null).blockingGet().statusCode();
+                    if (!HttpStatus.valueOf(status).is2xxSuccessful()
+                            && status != HttpStatus.CONFLICT.value()) {
+                        throw new StorageException(
+                                "Failed to create container "
+                                        + containerName
+                                        + ", REST API returned a "
+                                        + status);
+                    }
                 }
             } catch (RestException e) {
                 if (e.response().statusCode() != HttpStatus.CONFLICT.value()) {

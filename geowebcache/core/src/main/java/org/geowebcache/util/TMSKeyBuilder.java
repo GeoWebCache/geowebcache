@@ -39,6 +39,7 @@ public final class TMSKeyBuilder {
     public static final String LAYER_METADATA_OBJECT_NAME = "metadata.properties";
     public static final String PARAMETERS_METADATA_OBJECT_PREFIX = "parameters-";
     public static final String PARAMETERS_METADATA_OBJECT_SUFFIX = ".properties";
+    public static final String PENDING_DELETES = "_pending_deletes.properties";
 
     private String prefix;
 
@@ -220,7 +221,8 @@ public final class TMSKeyBuilder {
     }
 
     public String pendingDeletes() {
-        return String.format("%s/%s", prefix, "_pending_deletes.properties");
+        if (!Strings.isNullOrEmpty(prefix)) return String.format("%s/%s", prefix, PENDING_DELETES);
+        else return PENDING_DELETES;
     }
 
     private static String join(boolean closing, Object... elements) {
