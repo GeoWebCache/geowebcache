@@ -650,7 +650,7 @@ public class FormService {
     private void makeHeader(StringBuilder doc) {
         doc.append(
                 "<html>\n"
-                        + ServletUtils.gwcHtmlHeader("../../", "GWC Seed Form")
+                        + ServletUtils.gwcHtmlHeader("../../", "GWC Seed Form", "rest/web/seed.js")
                         + "<body>\n"
                         + ServletUtils.gwcHtmlLogoLink("../../"));
     }
@@ -824,7 +824,7 @@ public class FormService {
                 .append(escapeHtml4(layerName))
                 .append("\" method=\"post\">\n");
         doc.append("List ");
-        doc.append("<select name=\"list\" onchange=\"this.form.submit();\">\n");
+        doc.append("<select name=\"list\">\n");
         doc.append("<option value=\"layer\"")
                 .append(listAll ? "" : " selected")
                 .append(">this Layer tasks</option>\n");

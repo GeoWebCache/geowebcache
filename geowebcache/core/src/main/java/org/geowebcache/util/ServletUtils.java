@@ -354,12 +354,22 @@ public class ServletUtils {
     }
 
     public static String gwcHtmlHeader(String relBasePath, String pageTitle) {
+        return gwcHtmlHeader(relBasePath, pageTitle, null);
+    }
+
+    public static String gwcHtmlHeader(String relBasePath, String pageTitle, String jsFile) {
         StringBuilder builder = new StringBuilder();
         builder.append("<head>\n");
         builder.append("<title>").append(pageTitle).append("</title>\n");
         builder.append("<link rel=\"stylesheet\" href=\"")
                 .append(relBasePath)
                 .append("rest/web/gwc.css\" type=\"text/css\"/>\n");
+        if (jsFile != null) {
+            builder.append("<script src=\"")
+                    .append(relBasePath)
+                    .append(jsFile)
+                    .append("\"></script>\n");
+        }
         builder.append("</head>\n");
         return builder.toString();
     }
