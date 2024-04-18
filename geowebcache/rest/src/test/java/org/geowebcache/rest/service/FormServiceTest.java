@@ -18,12 +18,12 @@ import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -98,6 +98,24 @@ public class FormServiceTest {
         assertThat(body, containsString(escapedString));
         assertThat(body, not(containsString(unescapedRegex)));
         assertThat(body, containsString(escapedRegex));
+    }
+
+    @Test
+    public void testRemovedInlineJavaScript() throws Exception {
+        TileLayer tl = EasyMock.createMock("tl", TileLayer.class);
+        expect(breeder.findTileLayer("testLayer")).andReturn(tl);
+        expect(tl.getName()).andStubReturn("testLayer");
+        expect(breeder.getRunningAndPendingTasks()).andReturn(Collections.emptyIterator()).times(2);
+        expect(tl.getGridSubsets()).andReturn(Collections.emptySet()).times(4);
+        expect(tl.getMimeTypes()).andReturn(Collections.emptyList());
+        expect(tl.getParameterFilters()).andReturn(Collections.emptyList());
+        replay(tl, breeder);
+        ResponseEntity<?> response = service.handleGet(null, "testLayer");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        String body = (String) response.getBody();
+        assertThat(body, containsString("<script src=\"../../rest/web/seed.js\"></script>"));
+        assertThat(body, not(containsString(" onchange=")));
     }
 
     @Test
