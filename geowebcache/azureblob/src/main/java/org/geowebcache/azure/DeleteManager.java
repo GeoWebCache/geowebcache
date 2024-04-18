@@ -17,6 +17,7 @@ package org.geowebcache.azure;
 import static org.geowebcache.azure.AzureBlobStore.log;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.microsoft.azure.storage.blob.ContainerURL;
 import com.microsoft.azure.storage.blob.ListBlobsOptions;
@@ -26,9 +27,11 @@ import com.microsoft.azure.storage.blob.models.ContainerListBlobFlatSegmentRespo
 import com.microsoft.rest.v2.RestException;
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -169,6 +172,7 @@ class DeleteManager implements Closeable {
 
         try {
             Properties deletes = client.getProperties(pendingDeletesKey);
+            Set<String> deletesToClear = new HashSet<>();
             for (Map.Entry<Object, Object> e : deletes.entrySet()) {
                 final String prefix = e.getKey().toString();
                 final long timestamp = Long.parseLong(e.getValue().toString());
@@ -176,7 +180,13 @@ class DeleteManager implements Closeable {
                         String.format(
                                 "Restarting pending bulk delete on '%s/%s':%d",
                                 client.getContainerName(), prefix, timestamp));
-                asyncDelete(prefix, timestamp);
+                if (!asyncDelete(prefix, timestamp)) {
+                    deletesToClear.add(prefix);
+                }
+            }
+            if (!deletesToClear.isEmpty()) {
+                deletes.keySet().removeAll(deletesToClear);
+                client.putProperties(pendingDeletesKey, deletes);
             }
         } finally {
             try {
@@ -281,12 +291,10 @@ class DeleteManager implements Closeable {
                     checkInterrupted();
                     deleteItems(container, response.body().segment(), filter);
                     String marker = response.body().nextMarker();
-                    if (marker != null) {
-                        response =
-                                container.listBlobsFlatSegment(marker, options, null).blockingGet();
-                    } else {
-                        break;
-                    }
+                    // marker will be empty if there is no next page
+                    if (Strings.isNullOrEmpty(marker)) break;
+                    // fetch next page
+                    response = container.listBlobsFlatSegment(marker, options, null).blockingGet();
                 }
             } catch (InterruptedException | IllegalStateException e) {
                 log.info(
