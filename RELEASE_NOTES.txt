@@ -1,3 +1,18 @@
+GeoWebCache 1.24.3 (2024-04-19)
+-------------------------------
+
+Maintenance release of the 1.24.x series
+
+Improvements:
++++++++++++++
+- Update Spring to version 5.3.32
+- Bump org.postgresql:postgresql from 42.4.3 to 42.7.2
+
+Fixes:
+++++++
+- Avoid infinite number of calls to listBlobs when doing prefix removals (e..g, gridset or layer removals)
+
+
 GeoWebCache 1.24.2 (2024-01-23)
 -------------------------------
 
