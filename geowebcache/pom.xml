@@ -59,7 +59,7 @@
     <xstream.version>1.4.20</xstream.version>
     <commons-io.version>2.6</commons-io.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
-    <commons-collections.version>4.2</commons-collections.version>
+    <commons-collections.version>4.4</commons-collections.version>
     <commons-codec.version>1.10</commons-codec.version>
     <commons-text.version>1.4</commons-text.version>
     <commons-fileupload.version>1.5</commons-fileupload.version>
