@@ -14,7 +14,6 @@
  */
 package org.geowebcache.storage.blobstore.file;
 
-import static java.util.Objects.isNull;
 import static org.geowebcache.storage.blobstore.file.FilePathUtils.filteredGridSetId;
 import static org.geowebcache.storage.blobstore.file.FilePathUtils.filteredLayerName;
 import static org.geowebcache.util.FileUtils.listFilesNullSafe;
@@ -526,10 +525,8 @@ public class FileBlobStore implements BlobStore {
     private void putParametersMetadata(
             String layerName, String parametersId, Map<String, String> parameters)
             throws StorageException {
-        assert (isNull(parametersId) == isNull(parameters));
-        if (isNull(parametersId)) {
-            return;
-        }
+        // check if we even need to use any IO
+        if (parametersId == null || parameters == null || parameters.isEmpty()) return;
         File parametersFile = parametersFile(layerName, parametersId);
         if (parametersFile.exists()) return;
 
