@@ -69,7 +69,7 @@ public class MassTruncateController extends GWCSeedingController {
 
     @ExceptionHandler(RestException.class)
     public ResponseEntity<?> handleRestException(RestException ex) {
-        return new ResponseEntity<Object>(ex.toString(), ex.getStatus());
+        return new ResponseEntity<>(ex.toString(), ex.getStatus());
     }
 
     public void setStorageBroker(StorageBroker broker) {
@@ -113,7 +113,7 @@ public class MassTruncateController extends GWCSeedingController {
         }
 
         sb.append("</massTruncateRequests>");
-        return new ResponseEntity<Object>(sb.toString(), HttpStatus.OK);
+        return new ResponseEntity<>(sb.toString(), HttpStatus.OK);
     }
 
     /** Issue a mass truncate request. */

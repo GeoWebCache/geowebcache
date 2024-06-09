@@ -303,7 +303,7 @@ public class WMTSServiceTest {
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
         @SuppressWarnings("unchecked")
-        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
         kvp.put("request", new String[] {"GetCapabilities"});
@@ -596,7 +596,7 @@ public class WMTSServiceTest {
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
         extensions.forEach(service::addExtension);
         @SuppressWarnings("unchecked")
-        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
         kvp.put("request", new String[] {"GetCapabilities"});
@@ -691,7 +691,7 @@ public class WMTSServiceTest {
         service = new WMTSService(sb, tldx, null, mock(RuntimeStats.class));
 
         @SuppressWarnings("unchecked")
-        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
         kvp.put("request", new String[] {"GetCapabilities"});
@@ -771,7 +771,7 @@ public class WMTSServiceTest {
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
         @SuppressWarnings("unchecked")
-        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
         kvp.put("request", new String[] {"GetCapabilities"});
@@ -854,7 +854,7 @@ public class WMTSServiceTest {
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
         @SuppressWarnings("unchecked")
-        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
         kvp.put("request", new String[] {"GetCapabilities"});
@@ -938,7 +938,7 @@ public class WMTSServiceTest {
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
         @SuppressWarnings("unchecked")
-        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
         kvp.put("request", new String[] {"GetCapabilities"});
@@ -1022,7 +1022,7 @@ public class WMTSServiceTest {
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
         @SuppressWarnings("unchecked")
-        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
         kvp.put("request", new String[] {"GetCapabilities"});
@@ -1135,7 +1135,7 @@ public class WMTSServiceTest {
 
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
-        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
         kvp.put("request", new String[] {"GetCapabilities"});
@@ -1233,7 +1233,7 @@ public class WMTSServiceTest {
 
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
-        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
         kvp.put("request", new String[] {"GetTile"});
@@ -1303,7 +1303,7 @@ public class WMTSServiceTest {
         when(gwcd.getServletPrefix()).thenReturn(null);
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
         @SuppressWarnings("unchecked")
-        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
         kvp.put("request", new String[] {"CustomOperation"});
@@ -1525,7 +1525,7 @@ public class WMTSServiceTest {
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
         @SuppressWarnings("unchecked")
-        Map<String, String[]> kvp = new CaseInsensitiveMap();
+        Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
         kvp.put("request", new String[] {"GetCapabilities"});

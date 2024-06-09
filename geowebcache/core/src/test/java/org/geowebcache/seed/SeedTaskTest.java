@@ -93,7 +93,7 @@ public class SeedTaskTest {
         Capture<Resource> resourceCapturer = EasyMock.newCapture();
 
         IAnswer<Void> answer =
-                new IAnswer<Void>() {
+                new IAnswer<>() {
                     @Override
                     public Void answer() throws Throwable {
                         wmsRequestsCounter.incrementAndGet();

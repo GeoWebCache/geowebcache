@@ -78,7 +78,7 @@ public class TreeSetConverter extends CollectionConverter {
             reader.moveUp();
         }
         populateCollection(reader, context, result, set);
-        if (set.size() > 0) {
+        if (!set.isEmpty()) {
             result.addAll(set); // comparator will not be called if internally optimized
         }
         return result;

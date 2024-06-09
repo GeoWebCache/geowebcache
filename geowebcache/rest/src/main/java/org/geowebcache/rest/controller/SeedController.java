@@ -94,7 +94,7 @@ public class SeedController {
     public ResponseEntity doPost(HttpServletRequest request) {
         String response = seedService.handleKillAllThreads(request, null);
         if (response.equalsIgnoreCase("error")) {
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         } else {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.TEXT_PLAIN);
@@ -126,7 +126,7 @@ public class SeedController {
         } catch (UnsupportedEncodingException e) {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.TEXT_PLAIN);
-            return new ResponseEntity<Object>(
+            return new ResponseEntity<>(
                     "Unable to parse form result.", headers, HttpStatus.BAD_REQUEST);
         }
     }
@@ -165,7 +165,7 @@ public class SeedController {
         } catch (GeoWebCacheException e) {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.TEXT_PLAIN);
-            return new ResponseEntity<Object>("error", headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("error", headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

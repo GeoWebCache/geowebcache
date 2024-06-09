@@ -84,7 +84,7 @@ public class GridSetController extends GWCController {
             broker.put(gridSet);
         } else {
             broker.addGridSet(gridSet);
-            return new ResponseEntity<Object>("", HttpStatus.CREATED);
+            return new ResponseEntity<>("", HttpStatus.CREATED);
         }
         return null;
     }

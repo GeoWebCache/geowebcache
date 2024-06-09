@@ -122,7 +122,7 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
 
     @Override
     protected Matcher<TileLayer> infoEquals(TileLayer expected) {
-        return new CustomMatcher<TileLayer>(
+        return new CustomMatcher<>(
                 "ArcGISCacheLayer matching "
                         + expected.getName()
                         + " with "
@@ -140,7 +140,7 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest
 
     @Override
     protected Matcher<TileLayer> infoEquals(int expected) {
-        return new CustomMatcher<TileLayer>("ArcGISCacheLayer with value" + expected) {
+        return new CustomMatcher<>("ArcGISCacheLayer with value" + expected) {
 
             @Override
             public boolean matches(Object item) {

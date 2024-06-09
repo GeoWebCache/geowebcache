@@ -204,7 +204,7 @@ public class SwiftBlobStore implements BlobStore {
         }
 
         final Iterator<long[]> tileLocations =
-                new AbstractIterator<long[]>() {
+                new AbstractIterator<>() {
 
                     // TileRange iterator with 1x1 meta tiling factor
                     private final TileRangeIterator trIter =

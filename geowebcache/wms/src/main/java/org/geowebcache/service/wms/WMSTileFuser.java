@@ -122,14 +122,14 @@ public class WMSTileFuser {
         double bottom;
         double left;
         double right;
-    };
+    }
 
     static class PixelOffsets {
         int top;
         int bottom;
         int left;
         int right;
-    };
+    }
 
     /** These are values before scaling */
     PixelOffsets canvOfs = new PixelOffsets();

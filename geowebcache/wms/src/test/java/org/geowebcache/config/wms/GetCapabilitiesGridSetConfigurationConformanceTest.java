@@ -136,7 +136,7 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
 
     @Override
     protected Matcher<GridSet> infoEquals(GridSet expected) {
-        return new CustomMatcher<GridSet>(
+        return new CustomMatcher<>(
                 "GridSet matching " + expected.getName() + " with " + expected.getDescription()) {
 
             @Override
@@ -150,7 +150,7 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
 
     @Override
     protected Matcher<GridSet> infoEquals(int expected) {
-        return new CustomMatcher<GridSet>("GridSet with value " + expected) {
+        return new CustomMatcher<>("GridSet with value " + expected) {
 
             @Override
             public boolean matches(Object item) {

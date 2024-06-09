@@ -37,7 +37,7 @@ public class FileBlobStoreInfo extends BlobStoreInfo {
         DEFAULT,
         TMS,
         SLIPPY
-    };
+    }
 
     private static final long serialVersionUID = -6470560864068854508L;
 

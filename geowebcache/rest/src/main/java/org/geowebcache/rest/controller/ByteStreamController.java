@@ -113,7 +113,7 @@ public class ByteStreamController {
         try {
             mime = MimeType.createFromExtension(extension);
         } catch (MimeException e) {
-            return new ResponseEntity<Object>(
+            return new ResponseEntity<>(
                     "Unable to create MimeType for " + extension, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -124,7 +124,7 @@ public class ByteStreamController {
                 ServletOutputStream outputStream = response.getOutputStream(); ) {
             StreamUtils.copy(inputStream, outputStream);
         } catch (IOException e) {
-            return new ResponseEntity<Object>("Internal error", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Internal error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return new ResponseEntity<>(HttpStatus.OK);
