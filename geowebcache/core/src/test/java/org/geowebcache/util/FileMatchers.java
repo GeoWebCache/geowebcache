@@ -36,11 +36,11 @@ import org.hamcrest.Matchers;
 public class FileMatchers {
     private FileMatchers() {
         throw new IllegalStateException();
-    };
+    }
 
     /** Matcher for a file that exists */
     public static Matcher<File> exists() {
-        return new BaseMatcher<File>() {
+        return new BaseMatcher<>() {
 
             @Override
             public boolean matches(Object item) {
@@ -71,7 +71,7 @@ public class FileMatchers {
 
     /** Matcher for a regular (non-directory) file */
     public static Matcher<File> file() {
-        return new BaseMatcher<File>() {
+        return new BaseMatcher<>() {
 
             @Override
             public boolean matches(Object item) {
@@ -107,7 +107,7 @@ public class FileMatchers {
 
     /** Matcher for a directory */
     public static Matcher<File> directory() {
-        return new BaseMatcher<File>() {
+        return new BaseMatcher<>() {
 
             @Override
             public boolean matches(Object item) {
@@ -143,7 +143,7 @@ public class FileMatchers {
 
     /** Matcher for a directory's contents */
     public static Matcher<File> directoryContaining(Matcher<Iterable<File>> filesMatcher) {
-        return new BaseMatcher<File>() {
+        return new BaseMatcher<>() {
 
             @Override
             public boolean matches(Object item) {
@@ -187,7 +187,7 @@ public class FileMatchers {
 
     /** Matcher for last modified time */
     public static Matcher<File> lastModified(final Matcher<Long> timeMatcher) {
-        return new BaseMatcher<File>() {
+        return new BaseMatcher<>() {
 
             @Override
             public boolean matches(Object item) {
@@ -241,7 +241,7 @@ public class FileMatchers {
     }
 
     public static Matcher<Resource> resource(final Resource expected) {
-        return new BaseMatcher<Resource>() {
+        return new BaseMatcher<>() {
 
             @Override
             public boolean matches(Object item) {

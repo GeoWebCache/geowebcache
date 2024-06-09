@@ -534,6 +534,7 @@ public class WMSService extends Service {
         }
     }
 
+    @SuppressWarnings("PMD.UnnecessaryCast")
     protected Collection<String> getProxyRequestWhitelist() {
         return Optional.ofNullable(
                         GeoWebCacheExtensions.getProperty(GEOWEBCACHE_WMS_PROXY_REQUEST_WHITELIST))

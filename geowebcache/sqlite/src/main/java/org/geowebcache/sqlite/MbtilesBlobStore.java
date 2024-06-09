@@ -169,7 +169,9 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                         byte[] bytes;
                         if (gzipped) {
                             try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-                                    GZIPOutputStream gzOut = new GZIPOutputStream(byteStream); ) {
+                                    GZIPOutputStream gzOut = new GZIPOutputStream(byteStream)) {
+                                gzOut.write(Utils.resourceToByteArray(tile.getBlob()));
+                                gzOut.flush();
                                 bytes = byteStream.toByteArray();
                             }
                         } else {

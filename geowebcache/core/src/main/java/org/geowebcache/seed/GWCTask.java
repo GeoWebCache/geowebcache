@@ -29,7 +29,7 @@ public abstract class GWCTask {
         SEED,
         RESEED,
         TRUNCATE
-    };
+    }
 
     public static enum STATE {
         UNSET,
@@ -37,7 +37,7 @@ public abstract class GWCTask {
         RUNNING,
         DONE,
         DEAD
-    };
+    }
 
     /**
      * Value shared between all the threads in the group, is incremented each time a task starts

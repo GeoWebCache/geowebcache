@@ -22,7 +22,7 @@ public abstract class StorageObject {
         MISS,
         LOCK,
         EXPIRED_LOCK
-    };
+    }
 
     Status status = Status.UNSET;
 

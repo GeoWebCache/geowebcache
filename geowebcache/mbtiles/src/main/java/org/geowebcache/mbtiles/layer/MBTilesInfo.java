@@ -161,9 +161,7 @@ public class MBTilesInfo {
                 ObjectMapper mapper = new ObjectMapper();
                 List<VectorLayerMetadata> layers = null;
                 try {
-                    layers =
-                            mapper.readValue(
-                                    json, new TypeReference<List<VectorLayerMetadata>>() {});
+                    layers = mapper.readValue(json, new TypeReference<>() {});
                 } catch (JsonProcessingException e) {
                     throw new IllegalArgumentException(
                             "Exception occurred while parsing the layers metadata. " + e);

@@ -157,7 +157,7 @@ public class TestUtils {
     }
 
     public static <T> Matcher<Optional<T>> isPresent(Matcher<T> valueMatcher) {
-        return new BaseMatcher<Optional<T>>() {
+        return new BaseMatcher<>() {
 
             @Override
             public boolean matches(Object item) {
@@ -193,7 +193,7 @@ public class TestUtils {
     /** Match string matching a regular expression */
     public static Matcher<String> matchesRegex(String regex) {
         final Pattern p = Pattern.compile(regex);
-        return new CustomMatcher<String>("matching /" + regex + "/") {
+        return new CustomMatcher<>("matching /" + regex + "/") {
 
             @Override
             public boolean matches(Object arg0) {
@@ -210,7 +210,7 @@ public class TestUtils {
      */
     public static <T> T assertPresent(Optional<T> opt) throws AssertionError {
         return opt.orElseThrow(() -> new AssertionError("Optional was not present"));
-    };
+    }
 
     /**
      * Require that an Optional is present, and returns its value if it is. Use this where the test
@@ -223,5 +223,5 @@ public class TestUtils {
                 () ->
                         new IllegalStateException(
                                 "Optional was not present and is required for test"));
-    };
+    }
 }

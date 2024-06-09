@@ -73,7 +73,7 @@ public class DiskQuotaController {
             try {
                 return getJsonRepresentation(config);
             } catch (JSONException e) {
-                return new ResponseEntity<Object>(
+                return new ResponseEntity<>(
                         "Caught JSON Execption.", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         } else {
@@ -102,7 +102,7 @@ public class DiskQuotaController {
             }
 
         } catch (IOException | JSONException e) {
-            return new ResponseEntity<Object>(
+            return new ResponseEntity<>(
                     "Error writing input stream to string", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

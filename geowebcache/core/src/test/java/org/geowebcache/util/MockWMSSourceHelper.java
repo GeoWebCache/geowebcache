@@ -71,13 +71,8 @@ public class MockWMSSourceHelper extends WMSSourceHelper {
                     graphics.setColor(Color.LIGHT_GRAY);
                     graphics.fillRect(0, 0, width, height);
 
-                    // graphics.setColor(Color.BLACK);
-                    // graphics.setFont(font);
-                    int tileN = 0;
                     for (int y = 0; y < tilesY; y++) {
                         for (int x = 0; x < tilesX; x++) {
-                            long[] t = tiles[tileN];
-                            tileN++;
                             int gx = x * tileW;
                             int gy = y * tileH;
                             // gx += 15;

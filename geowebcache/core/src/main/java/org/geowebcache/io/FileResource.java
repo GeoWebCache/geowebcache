@@ -49,6 +49,7 @@ public class FileResource implements Resource {
     }
 
     @Override
+    @SuppressWarnings({"PMD.UnusedLocalVariable", "PMD.EmptyControlStatement"})
     public long transferTo(WritableByteChannel target) throws IOException {
         // FileLock lock = in.lock();
 
@@ -56,17 +57,17 @@ public class FileResource implements Resource {
                 FileChannel in = fis.getChannel(); ) {
             final long size = in.size();
             long written = 0;
-            while ((written += in.transferTo(written, size, target)) < size) {;
-            }
+            while ((written += in.transferTo(written, size, target)) < size) ;
             return size;
         }
     }
 
     @Override
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     public long transferFrom(ReadableByteChannel channel) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(file);
                 FileChannel out = fos.getChannel();
-                FileLock lock = out.lock(); ) {
+                FileLock lock = out.lock()) {
             final int buffsize = 4096;
             long position = 0;
             long read;

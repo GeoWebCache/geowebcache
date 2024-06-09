@@ -105,7 +105,7 @@ public class GeoRSSPoller {
     private void findEnabledPolls() {
         final Iterable<TileLayer> layers = seeder.getLayers();
         for (TileLayer layer : layers) {
-            if (layer.getUpdateSources().size() == 0) {
+            if (layer.getUpdateSources().isEmpty()) {
                 continue;
             }
             if (!layer.isEnabled()) {

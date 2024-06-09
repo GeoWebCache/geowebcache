@@ -43,7 +43,7 @@ public abstract class SetSingletonRule<T> extends ExternalResource {
      */
     public static <T> SetSingletonRule<T> create(
             Supplier<T> get, Consumer<T> set, @Nullable Supplier<T> newValue) {
-        return new SetSingletonRule<T>(newValue) {
+        return new SetSingletonRule<>(newValue) {
 
             @Override
             public void setValue(T value) {
@@ -83,7 +83,7 @@ public abstract class SetSingletonRule<T> extends ExternalResource {
         if (Objects.nonNull(newValue)) {
             setValue(newValue.get());
         }
-    };
+    }
 
     /** Getter for the singleton value */
     public abstract T getValue();

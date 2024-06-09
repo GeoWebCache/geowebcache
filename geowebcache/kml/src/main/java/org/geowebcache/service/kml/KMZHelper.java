@@ -68,15 +68,15 @@ public class KMZHelper {
             long[][] linkGridLocs)
             throws GeoWebCacheException {
 
-        for (int i = 0; i < linkGridLocs.length; i++) {
-            if (linkGridLocs[i][2] > 0) {
+        for (long[] linkGridLock : linkGridLocs) {
+            if (linkGridLock[2] > 0) {
 
                 ConveyorTile tile =
                         new ConveyorTile(
                                 sb,
                                 tileLayer.getName(),
                                 gridSetId,
-                                linkGridLocs[i],
+                                linkGridLock,
                                 mime,
                                 null,
                                 null,
@@ -89,11 +89,11 @@ public class KMZHelper {
                     secDisp.checkSecurity(tile);
                     tileLayer.applyRequestFilters(tile);
                 } catch (SecurityException ex) {
-                    linkGridLocs[i][2] = -1;
+                    linkGridLock[2] = -1;
                 } catch (GreenTileException e) {
                     // We will link to this one
                 } catch (RequestFilterException e) {
-                    linkGridLocs[i][2] = -1;
+                    linkGridLock[2] = -1;
                     continue;
                 }
 
@@ -103,14 +103,14 @@ public class KMZHelper {
                         tileLayer.getTile(tile);
                     } catch (IOException ioe) {
                         log.log(Level.SEVERE, ioe.getMessage());
-                        linkGridLocs[i][2] = -1;
+                        linkGridLock[2] = -1;
                     } catch (GeoWebCacheException gwce) {
-                        linkGridLocs[i][2] = -1;
+                        linkGridLock[2] = -1;
                     }
 
                     // If it's a 204 it means no content -> don't link to it
                     if (tile.getStatus() == 204) {
-                        linkGridLocs[i][2] = -1;
+                        linkGridLock[2] = -1;
                     } else if (tile.getStatus() != 200) {
                         throw new GeoWebCacheException(
                                 "Unexpected response code from server " + tile.getStatus());

@@ -46,7 +46,7 @@ public class XYZFilePathGenerator implements FilePathGenerator {
         TMS,
         /** Slippy map convention, where tile coordinates have their * origin at top left (NW) */
         XYZ
-    };
+    }
 
     @SuppressWarnings("unused")
     private static Logger log = Logging.getLogger(XYZFilePathGenerator.class.getName());
