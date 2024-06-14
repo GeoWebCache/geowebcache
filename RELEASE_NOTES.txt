@@ -1,3 +1,17 @@
+GeoWebCache 1.23.5 (2024-06-13)
+-------------------------------
+
+<Release Description>
+
+Improvements:
++++++++++++++
+- <New feature>
+
+Fixes:
+++++++
+- <Bug fix>
+
+
 GeoWebCache 1.23.4 (2024-02-19)
 -------------------------------
 
