@@ -1,16 +1,16 @@
 GeoWebCache 1.25.2 (2024-06-15)
 -------------------------------
 
-<Release Description>
+Stable release of the 1.25.x series.
 
 Improvements:
 +++++++++++++
-- <New feature>
-
-Fixes:
-++++++
-- <Bug fix>
-
+- Upgrading to Imageio-EXT 1.4.11
+- [GWC-1266] Upgrade jackson from 2.15.2 to 2.17.1
+- [GWC-1261] Upgrade commons-text from 1.4 to 1.12.0
+- [GWC-1259] Upgrade PostgreSQL driver from 42.7.2 to 42.7.3
+- [GWC-1263] Upgrade commons-codec from 1.10 to 1.17.0
+- Upgrade ImageIO-EXT to 1.4.12
 
 GeoWebCache 1.25.1 (2024-05-22)
 -------------------------------
