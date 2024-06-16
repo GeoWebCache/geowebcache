@@ -1,3 +1,19 @@
+GeoWebCache 1.24.4 (2024-06-16)
+-------------------------------
+
+Maintenance release of the 1.24.x series
+
+Improvements:
++++++++++++++
+- Align FileBlobStore with parameter handling practice of S3/Azure
+- [GWC-1248] Upgrade guava from 32.0.0 to 33.2.0
+- [GWC-1244] Upgrade commons-collections4 from 4.2 to 4.4
+- [GWC-1245] Upgrade httpclient from 4.5.13 to 4.5.14
+- [GWC-1261] Upgrade commons-text from 1.4 to 1.12.0
+- [GWC-1259] Upgrade PostgreSQL driver from 42.7.2 to 42.7.3
+- [GWC-1263] Upgrade commons-codec from 1.10 to 1.17.0
+
+
 GeoWebCache 1.24.3 (2024-04-19)
 -------------------------------
 
