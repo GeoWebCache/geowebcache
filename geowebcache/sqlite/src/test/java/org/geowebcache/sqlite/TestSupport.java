@@ -94,7 +94,7 @@ public abstract class TestSupport {
 
     protected void writeToFile(File file, String content) {
         Utils.createFileParents(file);
-        try (FileWriter writer = new FileWriter(file); ) {
+        try (FileWriter writer = new FileWriter(file)) {
             writer.write(content);
             writer.flush();
         } catch (Exception exception) {

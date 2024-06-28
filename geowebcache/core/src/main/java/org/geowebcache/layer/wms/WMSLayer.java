@@ -68,7 +68,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
     public enum HttpRequestMode {
         Get,
-        FormPost;
+        FormPost
     }
 
     private String[] wmsUrl;

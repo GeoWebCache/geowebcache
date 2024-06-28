@@ -283,7 +283,7 @@ public abstract class JDBCQuotaStoreTest {
     protected void cleanupDatabase(DataSource dataSource) throws SQLException {
         // cleanup
         try (Connection cx = dataSource.getConnection();
-                Statement st = cx.createStatement(); ) {
+                Statement st = cx.createStatement()) {
             try {
                 st.execute("DROP TABLE TILEPAGE CASCADE");
             } catch (Exception e) {

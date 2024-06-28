@@ -54,7 +54,7 @@ public class FileResource implements Resource {
         // FileLock lock = in.lock();
 
         try (FileInputStream fis = new FileInputStream(file);
-                FileChannel in = fis.getChannel(); ) {
+                FileChannel in = fis.getChannel()) {
             final long size = in.size();
             long written = 0;
             while ((written += in.transferTo(written, size, target)) < size) ;

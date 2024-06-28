@@ -47,7 +47,7 @@ public class MbtilesPBFTest extends TestSupport {
         URL template =
                 org.geotools.mbtiles.MBTilesFileVectorTileTest.class.getResource("planet.mbtiles");
         try (InputStream in = template.openStream();
-                OutputStream out = new FileOutputStream(file); ) {
+                OutputStream out = new FileOutputStream(file)) {
             IOUtils.copy(in, out);
         }
         layer = "planet";
