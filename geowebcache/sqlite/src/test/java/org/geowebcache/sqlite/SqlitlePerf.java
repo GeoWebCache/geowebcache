@@ -84,7 +84,7 @@ final class SqlitlePerf {
         ExecutorService executor = Executors.newFixedThreadPool(WORKERS);
         long startTime = System.currentTimeMillis();
         try (Connection connection =
-                DriverManager.getConnection("jdbc:sqlite:" + seedFile.getPath()); ) {
+                DriverManager.getConnection("jdbc:sqlite:" + seedFile.getPath())) {
             for (int i = 0; i < tiles.length; i++) {
                 long[] tile = tiles[i];
                 executor.submit((Runnable) () -> getTile(connection, tile));
@@ -383,7 +383,7 @@ final class SqlitlePerf {
             statement.setLong(1, xyz[2]);
             statement.setLong(2, xyz[0]);
             statement.setLong(3, xyz[1]);
-            try (ResultSet resultSet = statement.executeQuery(); ) {
+            try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     // the tile exists
                     byte[] data = resultSet.getBytes(1);

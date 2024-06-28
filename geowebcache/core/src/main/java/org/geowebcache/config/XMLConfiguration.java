@@ -799,7 +799,7 @@ public class XMLConfiguration
     static String getCurrentSchemaVersion() {
 
         Document dom;
-        try (InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd"); ) {
+        try (InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd")) {
             dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(is);
         } catch (Exception e) {
             throw new RuntimeException(e);

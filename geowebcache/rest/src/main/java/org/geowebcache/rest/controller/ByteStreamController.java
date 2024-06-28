@@ -121,7 +121,7 @@ public class ByteStreamController {
 
         response.setContentType(mime.getFormat());
         try (InputStream inputStream = resource.openStream();
-                ServletOutputStream outputStream = response.getOutputStream(); ) {
+                ServletOutputStream outputStream = response.getOutputStream()) {
             StreamUtils.copy(inputStream, outputStream);
         } catch (IOException e) {
             return new ResponseEntity<>("Internal error", HttpStatus.INTERNAL_SERVER_ERROR);

@@ -247,7 +247,7 @@ public class FileMatchers {
             public boolean matches(Object item) {
                 if (item instanceof Resource) {
                     try (InputStream itemStream = ((Resource) item).getInputStream();
-                            InputStream expectedStream = expected.getInputStream(); ) {
+                            InputStream expectedStream = expected.getInputStream()) {
                         return IOUtils.contentEquals(itemStream, expectedStream);
                     } catch (IOException e) {
                         return false;

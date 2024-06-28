@@ -257,7 +257,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                                                 ByteArrayInputStream byteIn =
                                                         new ByteArrayInputStream(gtTile.getData());
                                                 GZIPInputStream gzIn =
-                                                        new GZIPInputStream(byteIn); ) {
+                                                        new GZIPInputStream(byteIn)) {
                                             IOUtils.copy(gzIn, byteOut);
                                             bytes = byteOut.toByteArray();
                                         }

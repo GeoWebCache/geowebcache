@@ -379,7 +379,7 @@ public class MetaTile implements TileResponseReceiver {
             param = formatModifier.adjustImageWriteParam(param);
         }
         try (OutputStream outputStream = target.getOutputStream();
-                ImageOutputStream imgOut = new MemoryCacheImageOutputStream(outputStream); ) {
+                ImageOutputStream imgOut = new MemoryCacheImageOutputStream(outputStream)) {
             writer.setOutput(imgOut);
             IIOImage image = new IIOImage(tile, null, null);
             writer.write(null, image, param);

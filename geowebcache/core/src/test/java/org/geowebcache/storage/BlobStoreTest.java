@@ -172,7 +172,7 @@ public class BlobStoreTest {
                         layerName, tos[0].xyz, srs.toString(), mime.getFormat(), parameters);
         fbs.get(firstTO);
         try (InputStream is = firstTO.getBlob().getInputStream();
-                InputStream is2 = bytes.getInputStream(); ) {
+                InputStream is2 = bytes.getInputStream()) {
             Assert.assertTrue(IOUtils.contentEquals(is, is2));
         }
         TileObject lastTO =
