@@ -111,8 +111,8 @@ public class ServletUtils {
     public static Map<String, String> selectedStringsFromMap(
             Map<String, ?> map, String encoding, String... keys) {
 
-        map = new CaseInsensitiveMap(map);
-        Map<String, String> selected = new CaseInsensitiveMap();
+        map = new CaseInsensitiveMap<>(map);
+        Map<String, String> selected = new CaseInsensitiveMap<>();
         for (String key : keys) {
             Object value = map.get(key);
             if (value != null) {

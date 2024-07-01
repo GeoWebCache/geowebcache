@@ -120,6 +120,7 @@ public class TestHelpers {
     }
 
     /** Matcher for an {@link HttpServletResponse} that checks its status. */
+    @SuppressWarnings("PMD.UseDiamondOperator")
     public static Matcher<HttpServletResponse> hasStatus(HttpStatus expected) {
         return new BaseMatcher<HttpServletResponse>() {
 

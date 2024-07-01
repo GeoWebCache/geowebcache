@@ -246,7 +246,7 @@ public class OperationsRestTest extends TestSupport {
                 ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
             Files.walkFileTree(
                     directoryToZip,
-                    new SimpleFileVisitor<Path>() {
+                    new SimpleFileVisitor<>() {
 
                         @Override
                         public FileVisitResult visitFile(

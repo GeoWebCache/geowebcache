@@ -98,7 +98,7 @@ public class FilterUpdateController extends GWCController {
         // prepare response content type
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
-        return new ResponseEntity<Object>(
+        return new ResponseEntity<>(
                 "Filter update completed, no problems encountered.\n", headers, HttpStatus.OK);
     }
 

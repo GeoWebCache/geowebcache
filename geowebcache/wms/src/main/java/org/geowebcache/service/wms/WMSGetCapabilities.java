@@ -98,7 +98,7 @@ public class WMSGetCapabilities {
         response.setContentLength(data.length);
         response.setHeader("content-disposition", "inline;filename=wms-getcapabilities.xml");
 
-        try (OutputStream os = response.getOutputStream(); ) {
+        try (OutputStream os = response.getOutputStream()) {
             os.write(data);
             os.flush();
         } catch (IOException ioe) {

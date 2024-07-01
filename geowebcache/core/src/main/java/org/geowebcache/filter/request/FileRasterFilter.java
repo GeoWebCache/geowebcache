@@ -100,7 +100,7 @@ public class FileRasterFilter extends RasterFilter {
             throws IOException {
         // Persist
         File fh = new File(createFilePath(gridSetId, zoomLevel));
-        try (FileOutputStream fos = new FileOutputStream(fh); ) {
+        try (FileOutputStream fos = new FileOutputStream(fh)) {
             fos.write(data);
         }
     }

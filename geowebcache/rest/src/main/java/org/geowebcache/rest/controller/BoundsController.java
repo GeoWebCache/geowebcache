@@ -42,7 +42,7 @@ public class BoundsController extends GWCController {
     public ResponseEntity<?> handleRestException(RestException ex) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
-        return new ResponseEntity<Object>(ex.toString(), headers, ex.getStatus());
+        return new ResponseEntity<>(ex.toString(), headers, ex.getStatus());
     }
 
     @RequestMapping(value = "/bounds/{layer}/{srs}/{type}", method = RequestMethod.GET)
@@ -86,7 +86,7 @@ public class BoundsController extends GWCController {
             }
             str.append("}");
 
-            return new ResponseEntity<Object>(str.toString(), HttpStatus.OK);
+            return new ResponseEntity<>(str.toString(), HttpStatus.OK);
         } else {
             throw new RestException(
                     "Unknown or missing format extension : " + type, HttpStatus.BAD_REQUEST);

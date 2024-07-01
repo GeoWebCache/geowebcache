@@ -595,7 +595,7 @@ public class BDBQuotaStoreTest {
     }
 
     static Matcher<Float> closeTo(float f, float epsilon) {
-        return new BaseMatcher<Float>() {
+        return new BaseMatcher<>() {
             Matcher<Double> doubleMatcher = Matchers.closeTo(f, epsilon);
 
             @Override

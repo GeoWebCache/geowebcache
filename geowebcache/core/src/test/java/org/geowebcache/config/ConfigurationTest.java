@@ -233,7 +233,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         assertThat(retrieved, isPresent());
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "PMD.UnnecessaryCast"})
     @Test
     public void testCantModifyReturnedCollection() throws Exception {
         I info = getGoodInfo("test", 1);

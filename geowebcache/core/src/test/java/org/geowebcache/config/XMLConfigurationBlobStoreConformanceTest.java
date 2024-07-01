@@ -137,7 +137,7 @@ public class XMLConfigurationBlobStoreConformanceTest extends BlobStoreConfigura
 
     @Override
     protected Matcher<BlobStoreInfo> infoEquals(BlobStoreInfo expected) {
-        return new CustomMatcher<BlobStoreInfo>("BlobStoreInfo Matcher") {
+        return new CustomMatcher<>("BlobStoreInfo Matcher") {
             @Override
             public boolean matches(Object item) {
                 return expected.equals(item);
@@ -147,7 +147,7 @@ public class XMLConfigurationBlobStoreConformanceTest extends BlobStoreConfigura
 
     @Override
     protected Matcher<BlobStoreInfo> infoEquals(int expected) {
-        return new CustomMatcher<BlobStoreInfo>("BlobStoreInfo with value " + expected) {
+        return new CustomMatcher<>("BlobStoreInfo with value " + expected) {
 
             @Override
             public boolean matches(Object item) {

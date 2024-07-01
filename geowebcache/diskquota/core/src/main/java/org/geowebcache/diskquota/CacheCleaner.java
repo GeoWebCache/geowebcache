@@ -248,7 +248,6 @@ public class CacheCleaner implements DisposableBean {
         } catch (InterruptedException e) {
             log.fine("Truncate task interrupted");
             Thread.currentThread().interrupt();
-            return;
         } catch (GeoWebCacheException e) {
             throw new RuntimeException(e);
         }

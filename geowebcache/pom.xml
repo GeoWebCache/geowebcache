@@ -88,7 +88,7 @@
     <errorProneFlags></errorProneFlags>
     <errorProne.version>2.24.1</errorProne.version>
     <javac.version>9+181-r4173-1</javac.version>
-    <pmd.version>6.55.0</pmd.version>
+    <pmd.version>7.2.0</pmd.version>
     <checkstyle.skip>false</checkstyle.skip>
     <qa>false</qa>
     <lint>deprecation,unchecked</lint>
@@ -797,7 +797,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-pmd-plugin</artifactId>
-            <version>3.20.0</version>
+            <version>3.22.0</version>
             <executions>
               <execution>
                 <goals>
@@ -835,7 +835,6 @@
               </rulesets>
               <failurePriority>3</failurePriority>
               <minimumPriority>3</minimumPriority>
-              <verbose>true</verbose>
               <printFailingErrors>true</printFailingErrors>
               <includeTests>true</includeTests>
               <excludeRoots>

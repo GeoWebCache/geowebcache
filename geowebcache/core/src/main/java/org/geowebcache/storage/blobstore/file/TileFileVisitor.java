@@ -23,11 +23,11 @@ import java.io.File;
 public interface TileFileVisitor {
 
     /** Invoked before visitng a directory */
-    default void preVisitDirectory(File dir) {};
+    default void preVisitDirectory(File dir) {}
 
     /** Invoked on a specific tile file */
     public void visitFile(File tile, long x, long y, int z);
 
     /** Invoked on a directory post file visit */
-    default void postVisitDirectory(File dir) {};
+    default void postVisitDirectory(File dir) {}
 }

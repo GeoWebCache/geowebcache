@@ -150,23 +150,21 @@ public class SQLDialect {
         try {
             DataSource ds = ((JdbcAccessor) template.getJdbcOperations()).getDataSource();
             if (ds == null) return false;
-            return (Boolean)
-                    JdbcUtils.extractDatabaseMetaData(
-                            ds,
-                            dbmd -> {
-                                try (ResultSet rs =
-                                        dbmd.getTables(
-                                                null, schema, tableName.toLowerCase(), null)) {
-                                    boolean exists = rs.next();
-                                    rs.close();
-                                    if (exists) {
-                                        return true;
-                                    }
-                                }
-                                try (ResultSet rs = dbmd.getTables(null, schema, tableName, null)) {
-                                    return rs.next();
-                                }
-                            });
+            return JdbcUtils.extractDatabaseMetaData(
+                    ds,
+                    dbmd -> {
+                        try (ResultSet rs =
+                                dbmd.getTables(null, schema, tableName.toLowerCase(), null)) {
+                            boolean exists = rs.next();
+                            rs.close();
+                            if (exists) {
+                                return true;
+                            }
+                        }
+                        try (ResultSet rs = dbmd.getTables(null, schema, tableName, null)) {
+                            return rs.next();
+                        }
+                    });
         } catch (MetaDataAccessException e) {
             return false;
         }

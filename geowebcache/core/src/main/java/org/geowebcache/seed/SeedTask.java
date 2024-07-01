@@ -285,11 +285,9 @@ class SeedTask extends GWCTask {
         // estimated time of completion in seconds, use a moving average over the last
         this.timeSpent = (int) (System.currentTimeMillis() - start_time) / 1000;
 
-        int threadCount = sharedThreadCount.get();
-        long timeTotal =
-                Math.round(
-                        (double) timeSpent
-                                * (((double) tilesTotal / threadCount) / (double) tilesCount));
+        // using double to force the next calcuation to double type
+        double threadCount = sharedThreadCount.get();
+        long timeTotal = Math.round(timeSpent * ((tilesTotal / threadCount) / tilesCount));
 
         this.timeRemaining = (int) (timeTotal - timeSpent);
     }

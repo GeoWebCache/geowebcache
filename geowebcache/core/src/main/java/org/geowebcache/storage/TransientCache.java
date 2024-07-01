@@ -52,7 +52,7 @@ public class TransientCache {
     private static FilePathGenerator keyGenerator = new DefaultFilePathGenerator("");
 
     private Map<String, CachedResource> cache =
-            new LinkedHashMap<String, CachedResource>() {
+            new LinkedHashMap<>() {
 
                 /** serialVersionUID */
                 private static final long serialVersionUID = -4106644240603796847L;

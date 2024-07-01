@@ -68,7 +68,7 @@ public class ConfigLoaderTest {
         // copy configuration file to cache directory
         try (InputStream in = getClass().getResourceAsStream("/geowebcache-diskquota.xml");
                 FileOutputStream out =
-                        new FileOutputStream(new File(cacheDir, "geowebcache-diskquota.xml")); ) {
+                        new FileOutputStream(new File(cacheDir, "geowebcache-diskquota.xml"))) {
             int c;
             while ((c = in.read()) != -1) {
                 out.write(c);

@@ -207,7 +207,7 @@ public class AzureBlobStore implements BlobStore {
 
         // open an iterator oer tile locations, to avoid memory accumulation
         final Iterator<long[]> tileLocations =
-                new AbstractIterator<long[]>() {
+                new AbstractIterator<>() {
 
                     // TileRange iterator with 1x1 meta tiling factor
                     private TileRangeIterator trIter =
@@ -405,7 +405,7 @@ public class AzureBlobStore implements BlobStore {
     @Override
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
         log.fine("No need to rename layers, AzureBlobStore uses layer id as key root");
-        if (client.listBlobs(oldLayerName, 1).size() > 0) {
+        if (!client.listBlobs(oldLayerName, 1).isEmpty()) {
             listeners.sendLayerRenamed(oldLayerName, newLayerName);
         }
         return true;
@@ -443,7 +443,7 @@ public class AzureBlobStore implements BlobStore {
     @Override
     public boolean layerExists(String layerName) {
         final String coordsPrefix = keyBuilder.forLayer(layerName);
-        return client.listBlobs(coordsPrefix, 1).size() > 0;
+        return !client.listBlobs(coordsPrefix, 1).isEmpty();
     }
 
     @Override

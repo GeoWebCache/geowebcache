@@ -59,7 +59,7 @@ public class ImageMime extends MimeType {
                 public boolean isCompatible(String otherMimeType) {
                     return super.isCompatible(otherMimeType)
                             || otherMimeType.startsWith("image/png");
-                };
+                }
             };
 
     public static final ImageMime jpeg =
@@ -336,7 +336,7 @@ public class ImageMime extends MimeType {
                     return pngDelegate.getMimeType();
                 }
             }
-        };
+        }
 
         @Override
         public boolean isCompatible(String otherMimeType) {

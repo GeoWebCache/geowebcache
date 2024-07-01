@@ -139,7 +139,7 @@ public class ParametersUtilsTest {
     static <K, V> Matcher<Map<K, V>> hasEntries(Matcher<Entry<K, V>>... entryMatchers) {
         final Matcher<? super Set<Entry<K, V>>> entrySetMatcher =
                 Matchers.containsInAnyOrder(entryMatchers);
-        return new BaseMatcher<Map<K, V>>() {
+        return new BaseMatcher<>() {
 
             @Override
             public boolean matches(Object item) {

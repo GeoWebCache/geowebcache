@@ -199,7 +199,7 @@ class DeleteManager implements Closeable {
 
     public synchronized boolean asyncDelete(String prefix, long timestamp) {
         // do we have anything to delete?
-        if (client.listBlobs(prefix, 1).size() == 0) {
+        if (client.listBlobs(prefix, 1).isEmpty()) {
             return false;
         }
 

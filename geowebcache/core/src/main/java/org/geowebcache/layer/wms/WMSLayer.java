@@ -64,11 +64,11 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     public enum RequestType {
         MAP,
         FEATUREINFO
-    };
+    }
 
     public enum HttpRequestMode {
         Get,
-        FormPost;
+        FormPost
     }
 
     private String[] wmsUrl;

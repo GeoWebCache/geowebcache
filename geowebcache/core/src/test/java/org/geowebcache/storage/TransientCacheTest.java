@@ -55,7 +55,7 @@ public class TransientCacheTest {
         Resource result = transCache.get("foo");
         assertThat(result, notNullValue());
         assertThat(r.getLastModified(), equalTo(r.getLastModified()));
-        try (InputStream is = result.getInputStream(); ) {
+        try (InputStream is = result.getInputStream()) {
             assertThat(is.read(), equalTo(1));
             assertThat(is.read(), equalTo(2));
             assertThat(is.read(), equalTo(3));

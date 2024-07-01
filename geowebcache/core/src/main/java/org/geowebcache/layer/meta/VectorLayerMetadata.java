@@ -27,7 +27,7 @@ public class VectorLayerMetadata {
         point,
         line,
         polygon
-    };
+    }
 
     String id;
     String description;

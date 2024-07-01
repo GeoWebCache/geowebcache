@@ -86,7 +86,7 @@ public class BlobStoreController extends GWCController {
             blobStores.modifyBlobStore(blobStore);
         } else {
             blobStores.addBlobStore(blobStore);
-            return new ResponseEntity<Object>("", HttpStatus.CREATED);
+            return new ResponseEntity<>("", HttpStatus.CREATED);
         }
         return null;
     }

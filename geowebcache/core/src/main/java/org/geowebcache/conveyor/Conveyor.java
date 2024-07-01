@@ -28,14 +28,14 @@ public abstract class Conveyor {
     public static enum RequestHandler {
         LAYER,
         SERVICE
-    };
+    }
 
     public static enum CacheResult {
         HIT,
         MISS,
         WMS,
         OTHER
-    };
+    }
 
     private String layerId = null;
 

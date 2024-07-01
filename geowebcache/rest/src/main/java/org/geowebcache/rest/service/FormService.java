@@ -143,7 +143,7 @@ public class FormService {
             doc.append("<p><a href=\"./" + tl.getName() + "\">Go back</a></p>\n");
         }
 
-        return new ResponseEntity<Object>(doc.toString(), getHeaders(), HttpStatus.OK);
+        return new ResponseEntity<>(doc.toString(), getHeaders(), HttpStatus.OK);
     }
 
     public ResponseEntity<?> handleFormPost(String layer, Map<String, String> params)
@@ -267,7 +267,7 @@ public class FormService {
             Thread.currentThread().interrupt();
         }
 
-        return new ResponseEntity<Object>(this.makeResponsePage(tl), getHeaders(), HttpStatus.OK);
+        return new ResponseEntity<>(this.makeResponsePage(tl), getHeaders(), HttpStatus.OK);
     }
 
     private long getOptionalLongParam(Map<String, String> form, String key, long defaultValue) {

@@ -41,7 +41,7 @@ public class ServerController {
     public ResponseEntity<?> handleRestException(RestException ex) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
-        return new ResponseEntity<Object>(ex.toString(), headers, ex.getStatus());
+        return new ResponseEntity<>(ex.toString(), headers, ex.getStatus());
     }
 
     @RequestMapping(method = RequestMethod.GET)

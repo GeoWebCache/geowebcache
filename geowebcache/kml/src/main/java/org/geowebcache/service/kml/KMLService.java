@@ -283,7 +283,7 @@ public class KMLService extends Service {
             endOffset -= parsed[3].length() + 1;
         }
 
-        return new String(requestUrl.substring(0, endOffset - 1));
+        return requestUrl.substring(0, endOffset - 1);
     }
 
     /** Creates a superoverlay, ie. a short description and network links to the first overlays. */

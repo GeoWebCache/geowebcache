@@ -82,7 +82,7 @@ public class TileLayerController extends GWCController {
         try {
             layerDispatcher.modify(tl);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<Object>(
+            return new ResponseEntity<>(
                     "Layer "
                             + tl.getName()
                             + " is not known by the configuration."
@@ -115,7 +115,7 @@ public class TileLayerController extends GWCController {
         } else {
             layerDispatcher.modify(tl);
         }
-        return new ResponseEntity<Object>("layer saved", HttpStatus.OK);
+        return new ResponseEntity<>("layer saved", HttpStatus.OK);
     }
 
     /*
@@ -157,7 +157,7 @@ public class TileLayerController extends GWCController {
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     storageBrokerDeleteException);
         }
-        return new ResponseEntity<Object>(layerName + " deleted", HttpStatus.OK);
+        return new ResponseEntity<>(layerName + " deleted", HttpStatus.OK);
     }
 
     @SuppressWarnings("PMD.EmptyControlStatement")

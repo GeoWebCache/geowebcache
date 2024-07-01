@@ -57,7 +57,7 @@ public class ReloadController implements ApplicationContextAware {
 
     @ExceptionHandler(RestException.class)
     public ResponseEntity<?> handleRestException(RestException ex) {
-        return new ResponseEntity<Object>(ex.toString(), ex.getStatus());
+        return new ResponseEntity<>(ex.toString(), ex.getStatus());
     }
 
     @RequestMapping(value = "/reload", method = RequestMethod.POST)
@@ -124,7 +124,7 @@ public class ReloadController implements ApplicationContextAware {
         doc.append("<p><a href=\"../demo\">Go back</a></p>\n");
         doc.append("</body></html>");
 
-        return new ResponseEntity<Object>(doc.toString(), HttpStatus.OK);
+        return new ResponseEntity<>(doc.toString(), HttpStatus.OK);
     }
 
     public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {

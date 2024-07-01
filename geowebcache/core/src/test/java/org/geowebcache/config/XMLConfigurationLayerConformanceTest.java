@@ -144,7 +144,7 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
 
     @Override
     protected Matcher<TileLayer> infoEquals(TileLayer expected) {
-        return new CustomMatcher<TileLayer>(
+        return new CustomMatcher<>(
                 "Layer matching "
                         + expected.getId()
                         + " with "
@@ -163,7 +163,7 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
 
     @Override
     protected Matcher<TileLayer> infoEquals(int expected) {
-        return new CustomMatcher<TileLayer>("Layer with value" + expected) {
+        return new CustomMatcher<>("Layer with value" + expected) {
 
             @Override
             public boolean matches(Object item) {

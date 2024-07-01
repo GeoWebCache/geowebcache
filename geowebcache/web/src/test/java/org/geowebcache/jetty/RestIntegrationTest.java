@@ -670,7 +670,7 @@ public class RestIntegrationTest {
      * Check that the given request gives a 401 Forbidden when not authenticated, and otherwise has
      * a response matching the given matcher
      */
-    @SuppressWarnings("PMD.CloseResource")
+    @SuppressWarnings({"PMD.CloseResource", "PMD.UnusedLocalVariable"})
     protected void testSecured(HttpUriRequest request, Matcher<Integer> authenticatedStatus)
             throws Exception {
         {
@@ -1249,7 +1249,7 @@ public class RestIntegrationTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.EmptyControlStatement")
+    @SuppressWarnings({"PMD.EmptyControlStatement", "PMD.UnusedLocalVariable"})
     public void testNewFileBlobstoreDontDeleteExistingContent() throws Exception {
         // The directory already has stuff in it
         File bsDir = temp.newFolder();

@@ -168,7 +168,7 @@ public class TileLayerDispatcher
             Stream s =
                     StreamSupport.stream(result.spliterator(), false)
                             .filter(x -> !tileLayerDispatcherFilter.exclude(x));
-            result = (Iterable<TileLayer>) s::iterator;
+            result = s::iterator;
         }
         return result;
     }
