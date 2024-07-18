@@ -1,22 +1,19 @@
 package org.geowebcache.grid;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import java.util.Collections;
 import org.geowebcache.config.DefaultGridsets;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class GridSetTest {
-
-    public @Rule ExpectedException exception = ExpectedException.none();
 
     GridSetBroker gridSetBroker =
             new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
@@ -174,14 +171,12 @@ public class GridSetTest {
     @Test
     public void testClosestIndexInvalidBounds1() throws Exception {
         BoundingBox box = new BoundingBox(0, -180, 180.0, 0);
-        exception.expect(GridAlignmentMismatchException.class);
-        gridSetTL.closestIndex(box);
+        assertThrows(GridAlignmentMismatchException.class, () -> gridSetTL.closestIndex(box));
     }
 
     @Test
     public void testClosestIndexInvalidBounds2() throws Exception {
         BoundingBox box = new BoundingBox(0, 0, 180.0, 180);
-        exception.expect(GridAlignmentMismatchException.class);
-        gridSetTL.closestIndex(box);
+        assertThrows(GridAlignmentMismatchException.class, () -> gridSetTL.closestIndex(box));
     }
 }

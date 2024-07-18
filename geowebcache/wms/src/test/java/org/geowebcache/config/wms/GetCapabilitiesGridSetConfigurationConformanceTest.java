@@ -18,8 +18,8 @@ import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.expect;
 import static org.geowebcache.util.TestUtils.assertPresent;
 import static org.geowebcache.util.TestUtils.requirePresent;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.base.Objects;
 import java.util.Collections;

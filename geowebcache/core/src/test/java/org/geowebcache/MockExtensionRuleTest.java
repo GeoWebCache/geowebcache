@@ -14,23 +14,21 @@
  */
 package org.geowebcache;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import java.util.Collection;
 import org.hamcrest.Matchers;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 public class MockExtensionRuleTest {
-
-    @Rule public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testRestoresPreviousState() throws Throwable {
@@ -81,19 +79,24 @@ public class MockExtensionRuleTest {
     public void testPropagatesException() throws Throwable {
         MockExtensionRule rule = new MockExtensionRule();
 
-        exception.expectMessage("TEST EXCEPTION");
-        rule.apply(
-                        new Statement() {
+        RuntimeException exception =
+                assertThrows(
+                        RuntimeException.class,
+                        () ->
+                                rule.apply(
+                                                new Statement() {
 
-                            @Override
-                            public void evaluate() throws Throwable {
-                                String bean = "THISISTHEBEAN";
-                                rule.addBean("foo", bean, String.class);
-                                throw new RuntimeException("TEST EXCEPTION");
-                            }
-                        },
-                        Description.createSuiteDescription("MOCK"))
-                .evaluate();
+                                                    @Override
+                                                    public void evaluate() throws Throwable {
+                                                        String bean = "THISISTHEBEAN";
+                                                        rule.addBean("foo", bean, String.class);
+                                                        throw new RuntimeException(
+                                                                "TEST EXCEPTION");
+                                                    }
+                                                },
+                                                Description.createSuiteDescription("MOCK"))
+                                        .evaluate());
+        assertThat(exception.getMessage(), containsString("TEST EXCEPTION"));
     }
 
     @Test

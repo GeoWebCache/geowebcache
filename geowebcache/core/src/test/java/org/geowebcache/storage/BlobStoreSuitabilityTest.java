@@ -14,17 +14,17 @@
  */
 package org.geowebcache.storage;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.either;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeThat;
 
 import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 /**
@@ -45,7 +45,6 @@ public abstract class BlobStoreSuitabilityTest {
 
     public abstract BlobStore create(Object dir) throws Exception;
 
-    @Rule public ExpectedException exception = ExpectedException.none();
     static final Class<? extends Exception> EXCEPTION_CLASS = StorageException.class;
 
     public BlobStoreSuitabilityTest() {
@@ -65,10 +64,7 @@ public abstract class BlobStoreSuitabilityTest {
     public void emptyFail(Object persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY);
         assumeThat(persistenceLocation, not(empty()));
-
-        exception.expect(EXCEPTION_CLASS);
-        @SuppressWarnings("unused")
-        BlobStore store = create(persistenceLocation);
+        assertThrows(EXCEPTION_CLASS, () -> create(persistenceLocation));
     }
 
     @Theory
@@ -84,10 +80,7 @@ public abstract class BlobStoreSuitabilityTest {
     public void existingFail(Object persistenceLocation) throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EXISTING);
         assumeThat(persistenceLocation, not(either(empty()).or(existing())));
-
-        exception.expect(EXCEPTION_CLASS);
-        @SuppressWarnings("unused")
-        BlobStore store = create(persistenceLocation);
+        assertThrows(EXCEPTION_CLASS, () -> create(persistenceLocation));
     }
 
     @Theory

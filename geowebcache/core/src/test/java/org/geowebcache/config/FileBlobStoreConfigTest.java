@@ -14,7 +14,10 @@
  */
 package org.geowebcache.config;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.base.Preconditions;
@@ -26,7 +29,6 @@ import org.geowebcache.storage.StorageException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 public class FileBlobStoreConfigTest {
@@ -34,8 +36,6 @@ public class FileBlobStoreConfigTest {
     private FileBlobStoreInfo config;
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
-
-    @Rule public ExpectedException ex = ExpectedException.none();
 
     private TileLayerDispatcher layers;
 
@@ -50,27 +50,33 @@ public class FileBlobStoreConfigTest {
 
     @Test
     public void testCreateInstanceNoId() throws StorageException {
-        ex.expect(IllegalStateException.class);
-        ex.expectMessage("id not set");
-        config.createInstance(layers, lockProvider);
+        IllegalStateException exception =
+                assertThrows(
+                        IllegalStateException.class,
+                        () -> config.createInstance(layers, lockProvider));
+        assertThat(exception.getMessage(), containsString("id not set"));
     }
 
     @Test
     public void testCreateInstanceNotEnabled() throws StorageException {
         config.setName("myblobstore");
         config.setEnabled(false);
-        ex.expect(IllegalStateException.class);
-        ex.expectMessage("store is not enabled");
-        config.createInstance(layers, lockProvider);
+        IllegalStateException exception =
+                assertThrows(
+                        IllegalStateException.class,
+                        () -> config.createInstance(layers, lockProvider));
+        assertThat(exception.getMessage(), containsString("store is not enabled"));
     }
 
     @Test
     public void testCreateInstanceNoBaseDirectory() throws StorageException {
         config.setName("myblobstore");
         config.setEnabled(true);
-        ex.expect(IllegalStateException.class);
-        ex.expectMessage("baseDirectory not provided");
-        config.createInstance(layers, lockProvider);
+        IllegalStateException exception =
+                assertThrows(
+                        IllegalStateException.class,
+                        () -> config.createInstance(layers, lockProvider));
+        assertThat(exception.getMessage(), containsString("baseDirectory not provided"));
     }
 
     @Test
@@ -79,9 +85,11 @@ public class FileBlobStoreConfigTest {
         config.setEnabled(true);
         config.setFileSystemBlockSize(-2048);
         config.setBaseDirectory(tmp.getRoot().getAbsolutePath());
-        ex.expect(IllegalStateException.class);
-        ex.expectMessage("must be a positive integer");
-        config.createInstance(layers, lockProvider);
+        IllegalStateException exception =
+                assertThrows(
+                        IllegalStateException.class,
+                        () -> config.createInstance(layers, lockProvider));
+        assertThat(exception.getMessage(), containsString("must be a positive integer"));
     }
 
     @Test

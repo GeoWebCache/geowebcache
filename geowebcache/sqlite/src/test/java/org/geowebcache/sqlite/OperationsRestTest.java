@@ -15,9 +15,9 @@
 package org.geowebcache.sqlite;
 
 import static org.geowebcache.sqlite.Utils.Tuple.tuple;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.File;

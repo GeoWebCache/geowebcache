@@ -14,9 +14,8 @@
  */
 package org.geowebcache.conveyor;
 
-import org.geowebcache.grid.GridSubset;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Test;
 
 public class ConveyorTileTest {
@@ -26,7 +25,6 @@ public class ConveyorTileTest {
         // All these nulls may need to be replace with mocks eventually.
         ConveyorTile tile = new ConveyorTile(null, null, null, null);
         tile.setGridSetId(null); // Should be this already but just to make sure.
-        GridSubset result = tile.getGridSubset();
-        Assert.assertThat(result, Matchers.nullValue());
+        assertNull(tile.getGridSubset());
     }
 }

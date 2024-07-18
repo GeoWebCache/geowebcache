@@ -18,11 +18,11 @@ import static org.geowebcache.util.TestUtils.assertPresent;
 import static org.geowebcache.util.TestUtils.isPresent;
 import static org.geowebcache.util.TestUtils.notPresent;
 import static org.geowebcache.util.TestUtils.requirePresent;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,15 +37,11 @@ import org.geowebcache.util.TestUtils;
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public abstract class ConfigurationTest<I extends Info, C extends BaseConfiguration> {
 
     protected C config;
-
-    @Rule public ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUpTestUnit() throws Exception {
@@ -82,11 +78,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         I doubleGridSet = getGoodInfo("test", 2);
         assertThat("Invalid test", goodGridSet, not(infoEquals(doubleGridSet)));
         addInfo(config, goodGridSet);
-        exception.expect(
-                instanceOf(
-                        IllegalArgumentException
-                                .class)); // May want to change to something more specific.
-        addInfo(config, doubleGridSet);
+        assertThrows(IllegalArgumentException.class, () -> addInfo(config, doubleGridSet));
     }
 
     @Test
@@ -107,9 +99,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     @Test
     public void testAddBadInfoException() throws Exception {
         I badGridSet = getBadInfo("test", 1);
-        exception.expect(
-                IllegalArgumentException.class); // May want to change to something more specific.
-        addInfo(config, badGridSet);
+        assertThrows(IllegalArgumentException.class, () -> addInfo(config, badGridSet));
     }
 
     @Test
@@ -154,8 +144,8 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
 
     @Test
     public void testRemoveNotExists() throws Exception {
-        exception.expect(NoSuchElementException.class);
-        removeInfo(config, "GridSetThatDoesntExist");
+        assertThrows(
+                NoSuchElementException.class, () -> removeInfo(config, "GridSetThatDoesntExist"));
     }
 
     @Test
@@ -172,10 +162,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     public void testModifyBadGridSetException() throws Exception {
         testAdd();
         I badGridSet = getBadInfo("test", 2);
-
-        exception.expect(IllegalArgumentException.class); // Could be more specific
-
-        modifyInfo(config, badGridSet);
+        assertThrows(IllegalArgumentException.class, () -> modifyInfo(config, badGridSet));
     }
 
     @Test
@@ -211,8 +198,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     @Test
     public void testModifyNotExistsExcpetion() throws Exception {
         I goodGridSet = getGoodInfo("test", 2);
-        exception.expect(NoSuchElementException.class);
-        modifyInfo(config, goodGridSet);
+        assertThrows(NoSuchElementException.class, () -> modifyInfo(config, goodGridSet));
     }
 
     @Test
@@ -302,21 +288,17 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
 
         // Force a failure
         failNextWrite();
-        exception.expect(ConfigurationPersistenceException.class);
 
-        try {
-            addInfo(config, goodGridSet);
-        } finally {
-            // Should be unchanged
-            Optional<I> retrieved = getInfo(config, "test");
-            assertThat(retrieved, notPresent());
+        assertThrows(ConfigurationPersistenceException.class, () -> addInfo(config, goodGridSet));
+        // Should be unchanged
+        Optional<I> retrieved = getInfo(config, "test");
+        assertThat(retrieved, notPresent());
 
-            // Persistence should also be unchanged
-            C config2 = getSecondConfig();
-            Optional<I> retrieved2 = getInfo(config2, "test");
-            assertThat(retrieved2, notPresent());
-            assertNameSetMatchesCollection(config2);
-        }
+        // Persistence should also be unchanged
+        C config2 = getSecondConfig();
+        Optional<I> retrieved2 = getInfo(config2, "test");
+        assertThat(retrieved2, notPresent());
+        assertNameSetMatchesCollection(config2);
     }
 
     @Test

@@ -14,13 +14,15 @@
  */
 package org.geowebcache.storage;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -45,7 +47,6 @@ import org.geowebcache.storage.CompositeBlobStore.LiveStore;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
@@ -73,8 +74,6 @@ public class CompositeBlobStoreTest {
     }
 
     @Rule public TemporaryFolder tmpFolder = new TemporaryFolder();
-
-    @Rule public ExpectedException ex = ExpectedException.none();
 
     @Rule public SuitabilityCheckRule suitability = SuitabilityCheckRule.system();
 
@@ -157,9 +156,8 @@ public class CompositeBlobStoreTest {
         configs.add(
                 config("store2", isDefault, true, tmpFolder.newFolder().getAbsolutePath(), 2048));
 
-        ex.expect(ConfigurationException.class);
-        ex.expectMessage("Duplicate default blob store");
-        store = create();
+        Exception ex = assertThrows(ConfigurationException.class, () -> store = create());
+        assertThat(ex.getMessage(), containsString("Duplicate default blob store"));
     }
 
     @Test
@@ -167,9 +165,8 @@ public class CompositeBlobStoreTest {
         String id = null;
         configs.add(config(id, true, true, tmpFolder.newFolder().getAbsolutePath(), 1024));
 
-        ex.expect(ConfigurationException.class);
-        ex.expectMessage("No id provided for blob store");
-        store = create();
+        Exception ex = assertThrows(ConfigurationException.class, () -> store = create());
+        assertThat(ex.getMessage(), containsString("No id provided for blob store"));
     }
 
     @Test
@@ -178,9 +175,8 @@ public class CompositeBlobStoreTest {
         configs.add(config(id, true, true, tmpFolder.newFolder().getAbsolutePath(), 1024));
         configs.add(config(id, true, true, tmpFolder.newFolder().getAbsolutePath(), 1024));
 
-        ex.expect(ConfigurationException.class);
-        ex.expectMessage("Duplicate blob store id");
-        store = create();
+        Exception ex = assertThrows(ConfigurationException.class, () -> store = create());
+        assertThat(ex.getMessage(), containsString("Duplicate blob store id"));
     }
 
     @Test
@@ -195,9 +191,8 @@ public class CompositeBlobStoreTest {
                         tmpFolder.newFolder().getAbsolutePath(),
                         1024));
 
-        ex.expect(ConfigurationException.class);
-        ex.expectMessage("The default blob store can't be disabled");
-        store = create();
+        Exception ex = assertThrows(ConfigurationException.class, () -> store = create());
+        assertThat(ex.getMessage(), containsString("The default blob store can't be disabled"));
     }
 
     @Test
@@ -216,9 +211,8 @@ public class CompositeBlobStoreTest {
         String id = CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID;
         configs.add(config(id, true, true, tmpFolder.newFolder().getAbsolutePath(), 1024));
 
-        ex.expect(ConfigurationException.class);
-        ex.expectMessage(id + " is a reserved identifier");
-        store = create();
+        Exception ex = assertThrows(ConfigurationException.class, () -> store = create());
+        assertThat(ex.getMessage(), containsString(id + " is a reserved identifier"));
     }
 
     @Test
@@ -252,9 +246,9 @@ public class CompositeBlobStoreTest {
         store = create();
 
         when(defaultLayer.getBlobStoreId()).thenReturn("nonExistentStore");
-        ex.expect(StorageException.class);
-        ex.expectMessage("No BlobStore with id 'nonExistentStore' found");
-        store.get(queryTile(0, 0, 0));
+        Exception ex = assertThrows(StorageException.class, () -> store.get(queryTile(0, 0, 0)));
+        assertThat(
+                ex.getMessage(), containsString("No BlobStore with id 'nonExistentStore' found"));
     }
 
     @Test
@@ -280,9 +274,8 @@ public class CompositeBlobStoreTest {
         when(defaultLayer.getBlobStoreId()).thenReturn(null);
         TileObject tile = queryTile("someLayer", DEFAULT_GRIDSET, DEFAULT_FORMAT, 0, 0, 0);
 
-        ex.expect(StorageException.class);
-        ex.expectMessage("layer not found");
-        store.get(tile);
+        Exception ex = assertThrows(StorageException.class, () -> store.get(tile));
+        assertThat(ex.getMessage(), containsString("layer not found"));
     }
 
     @Test
@@ -296,9 +289,9 @@ public class CompositeBlobStoreTest {
         when(defaultLayer.getBlobStoreId()).thenReturn("store1");
         TileObject tile = queryTile(0, 0, 0);
 
-        ex.expect(StorageException.class);
-        ex.expectMessage("Attempted to use a blob store that's disabled");
-        store.get(tile);
+        Exception ex = assertThrows(StorageException.class, () -> store.get(tile));
+        assertThat(
+                ex.getMessage(), containsString("Attempted to use a blob store that's disabled"));
     }
 
     @Test

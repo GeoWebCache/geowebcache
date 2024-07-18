@@ -14,10 +14,11 @@
  */
 package org.geowebcache.s3;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.thoughtworks.xstream.XStream;
@@ -25,7 +26,6 @@ import com.thoughtworks.xstream.XStreamException;
 import org.geowebcache.util.PropertyRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class S3BlobStoreConfigSerializeTest {
 
@@ -93,15 +93,15 @@ public class S3BlobStoreConfigSerializeTest {
                 config, hasProperty("accessControlList", is(CannedAccessControlList.PublicRead)));
     }
 
-    @Rule public ExpectedException exception = ExpectedException.none();
-
     @Test
     public void testInvalidAccess() throws Exception {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
-        exception.expect(XStreamException.class);
-        xs.fromXML(
-                "<S3BlobStore><id>test</id><enabled>false</enabled><access>NOT_A_REAL_ACCESS_TYPE</access><useHTTPS>true</useHTTPS></S3BlobStore>");
+        assertThrows(
+                XStreamException.class,
+                () ->
+                        xs.fromXML(
+                                "<S3BlobStore><id>test</id><enabled>false</enabled><access>NOT_A_REAL_ACCESS_TYPE</access><useHTTPS>true</useHTTPS></S3BlobStore>"));
     }
 
     @Rule public PropertyRule envParametrization = PropertyRule.system("ALLOW_ENV_PARAMETRIZATION");
