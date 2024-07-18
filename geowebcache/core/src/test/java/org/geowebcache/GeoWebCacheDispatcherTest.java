@@ -15,7 +15,7 @@
 package org.geowebcache;
 
 import static org.geowebcache.TestHelpers.hasStatus;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Collections;
 import javax.servlet.http.HttpServletResponse;

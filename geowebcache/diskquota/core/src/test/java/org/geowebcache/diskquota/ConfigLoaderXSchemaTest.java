@@ -14,43 +14,31 @@
  */
 package org.geowebcache.diskquota;
 
+import static org.junit.Assert.assertThrows;
+
 import com.thoughtworks.xstream.XStream;
 import org.geowebcache.io.GeoWebCacheXStream;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class ConfigLoaderXSchemaTest {
-
-    @Rule public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testNotAllowNonGWCClass() throws Exception {
         // Check that classes from other packages on the class path can't be serialized
-
-        XStream xs = new GeoWebCacheXStream();
-
-        xs = ConfigLoader.getConfiguredXStream(xs);
-
-        exception.expect(com.thoughtworks.xstream.security.ForbiddenClassException.class);
-
-        @SuppressWarnings("unused")
-        Object o = xs.fromXML("<" + org.easymock.Capture.class.getCanonicalName() + " />");
+        XStream xs = ConfigLoader.getConfiguredXStream(new GeoWebCacheXStream());
+        assertThrows(
+                com.thoughtworks.xstream.security.ForbiddenClassException.class,
+                () -> xs.fromXML("<" + org.easymock.Capture.class.getCanonicalName() + " />"));
     }
 
     @Ignore // Need to tighten the XStream permissions to get this to pass
     @Test
     public void testNotAllowNonXMLGWCClass() throws Exception {
         // Check that a class in GWC that shouldn't be serialized to XML can't be
-
-        XStream xs = new GeoWebCacheXStream();
-
-        xs = ConfigLoader.getConfiguredXStream(xs);
-
-        exception.expect(com.thoughtworks.xstream.security.ForbiddenClassException.class);
-
-        @SuppressWarnings("unused")
-        Object o = xs.fromXML("<" + ConfigLoaderXSchemaTest.class.getCanonicalName() + " />");
+        XStream xs = ConfigLoader.getConfiguredXStream(new GeoWebCacheXStream());
+        assertThrows(
+                com.thoughtworks.xstream.security.ForbiddenClassException.class,
+                () -> xs.fromXML("<" + ConfigLoaderXSchemaTest.class.getCanonicalName() + " />"));
     }
 }

@@ -17,6 +17,7 @@ package org.geowebcache.service.wms;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -57,9 +58,7 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TransientCache;
 import org.geowebcache.storage.blobstore.file.FileBlobStore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -67,8 +66,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 public class WMSTileFuserTest {
-
-    @Rule public ExpectedException exception = ExpectedException.none();
 
     GridSetBroker gridSetBroker =
             new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
@@ -204,8 +201,7 @@ public class WMSTileFuserTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         RuntimeStats stats = mock(RuntimeStats.class);
 
-        exception.expect(SecurityException.class);
-        tileFuser.writeResponse(response, stats);
+        assertThrows(SecurityException.class, () -> tileFuser.writeResponse(response, stats));
     }
 
     @Test

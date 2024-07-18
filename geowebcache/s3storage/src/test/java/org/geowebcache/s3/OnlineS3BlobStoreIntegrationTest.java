@@ -12,8 +12,8 @@
  */
 package org.geowebcache.s3;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
 
 import org.junit.Assume;
 import org.junit.Rule;

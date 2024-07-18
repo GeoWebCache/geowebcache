@@ -14,7 +14,7 @@
  */
 package org.geowebcache.filter.security;
 
-import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertThrows;
 
 import org.easymock.EasyMock;
 import org.geowebcache.MockExtensionRule;
@@ -25,13 +25,10 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class SecurityDispatcherTest {
 
     @Rule public MockExtensionRule extensions = new MockExtensionRule();
-
-    @Rule public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testOneFilterPass() throws Exception {
@@ -94,12 +91,8 @@ public class SecurityDispatcherTest {
 
         EasyMock.replay(conv, layer, subset, srs, filter);
 
-        exception.expect(instanceOf(SecurityException.class));
-        try {
-            secDispatcher.checkSecurity(conv);
-        } finally {
-            EasyMock.verify(conv, layer, subset, srs, filter);
-        }
+        assertThrows(SecurityException.class, () -> secDispatcher.checkSecurity(conv));
+        EasyMock.verify(conv, layer, subset, srs, filter);
     }
 
     @Test
@@ -171,12 +164,8 @@ public class SecurityDispatcherTest {
 
         EasyMock.replay(conv, layer, subset, srs, filter1, filter2);
 
-        exception.expect(instanceOf(SecurityException.class));
-        try {
-            secDispatcher.checkSecurity(conv);
-        } finally {
-            EasyMock.verify(conv, layer, subset, srs, filter1, filter2);
-        }
+        assertThrows(SecurityException.class, () -> secDispatcher.checkSecurity(conv));
+        EasyMock.verify(conv, layer, subset, srs, filter1, filter2);
     }
 
     @Test

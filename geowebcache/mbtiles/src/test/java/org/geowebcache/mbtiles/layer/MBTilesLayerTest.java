@@ -14,9 +14,12 @@
  */
 package org.geowebcache.mbtiles.layer;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.io.ByteStreams;
@@ -53,7 +56,6 @@ import org.geowebcache.mime.ApplicationMime;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 public class MBTilesLayerTest {
@@ -69,8 +71,6 @@ public class MBTilesLayerTest {
     private static final String TEST_POINTS_FILENAME = "manypoints_test.mbtiles";
 
     public @Rule MockWepAppContextRule extensions = new MockWepAppContextRule();
-
-    @Rule public ExpectedException exception = ExpectedException.none();
 
     protected TileLayerConfiguration config;
 
@@ -244,10 +244,12 @@ public class MBTilesLayerTest {
                         null,
                         null,
                         null);
-        exception.expect(OutsideCoverageException.class);
-        exception.expectMessage(
-                "Coverage [minx,miny,maxx,maxy] is [38, 39, 39, 39, 6], index [x,y,z] is [38, 42, 6]");
-        testLayer.getTile(conveyorTile);
+        OutsideCoverageException exception =
+                assertThrows(OutsideCoverageException.class, () -> testLayer.getTile(conveyorTile));
+        assertThat(
+                exception.getMessage(),
+                containsString(
+                        "Coverage [minx,miny,maxx,maxy] is [38, 39, 39, 39, 6], index [x,y,z] is [38, 42, 6]"));
     }
 
     @Test

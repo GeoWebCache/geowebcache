@@ -1,6 +1,7 @@
 package org.geowebcache.diskquota;
 
 import static org.easymock.EasyMock.newCapture;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -8,7 +9,7 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import java.io.File;
 import java.math.BigInteger;
@@ -56,7 +57,6 @@ import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 public class BDBQuotaStoreTest {
@@ -75,7 +75,6 @@ public class BDBQuotaStoreTest {
 
     @Rule public TemporaryFolder targetDir = new TemporaryFolder();
 
-    @Rule public ExpectedException exception = ExpectedException.none();
     @Rule public MockWepAppContextRule context = new MockWepAppContextRule();
 
     Map<String, Set<String>> parameterIdsMap;
@@ -507,10 +506,8 @@ public class BDBQuotaStoreTest {
     @Test
     public void testGetTileSetById() throws Exception {
         assertThat(store.getTileSetById(testTileSet.getId()), equalTo(testTileSet));
-
-        exception.expect(IllegalArgumentException.class);
-
-        store.getTileSetById("NonExistentTileSetId");
+        assertThrows(
+                IllegalArgumentException.class, () -> store.getTileSetById("NonExistentTileSetId"));
     }
 
     @Test

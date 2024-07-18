@@ -14,8 +14,9 @@
  */
 package org.geowebcache.config;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import com.thoughtworks.xstream.XStream;
 import java.util.Collections;
@@ -26,13 +27,10 @@ import org.geowebcache.util.PropertyRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.StaticWebApplicationContext;
 
 public class XMLConfigurationXSchemaTest {
-
-    @Rule public ExpectedException exception = ExpectedException.none();
 
     @Rule
     public PropertyRule whitelistProperty = PropertyRule.system("GEOWEBCACHE_XSTREAM_WHITELIST");
@@ -42,15 +40,12 @@ public class XMLConfigurationXSchemaTest {
         // Check that classes from other packages on the class path can't be serialized
         ContextualConfigurationProvider.Context pc = ContextualConfigurationProvider.Context.REST;
         try (StaticWebApplicationContext wac = new StaticWebApplicationContext()) {
-
-            XStream xs = new GeoWebCacheXStream();
-
-            xs = XMLConfiguration.getConfiguredXStreamWithContext(xs, wac, pc);
-
-            exception.expect(com.thoughtworks.xstream.security.ForbiddenClassException.class);
-
-            @SuppressWarnings("unused")
-            Object o = xs.fromXML("<" + org.easymock.Capture.class.getCanonicalName() + " />");
+            XStream xs =
+                    XMLConfiguration.getConfiguredXStreamWithContext(
+                            new GeoWebCacheXStream(), wac, pc);
+            assertThrows(
+                    com.thoughtworks.xstream.security.ForbiddenClassException.class,
+                    () -> xs.fromXML("<" + org.easymock.Capture.class.getCanonicalName() + " />"));
         }
     }
 
@@ -60,16 +55,16 @@ public class XMLConfigurationXSchemaTest {
         // Check that a class in GWC that shouldn't be serialized to XML can't be
         ContextualConfigurationProvider.Context pc = ContextualConfigurationProvider.Context.REST;
         try (StaticWebApplicationContext wac = new StaticWebApplicationContext()) {
-
-            XStream xs = new GeoWebCacheXStream();
-
-            xs = XMLConfiguration.getConfiguredXStreamWithContext(xs, wac, pc);
-
-            exception.expect(com.thoughtworks.xstream.security.ForbiddenClassException.class);
-
-            @SuppressWarnings("unused")
-            Object o =
-                    xs.fromXML("<" + XMLConfigurationXSchemaTest.class.getCanonicalName() + " />");
+            XStream xs =
+                    XMLConfiguration.getConfiguredXStreamWithContext(
+                            new GeoWebCacheXStream(), wac, pc);
+            assertThrows(
+                    com.thoughtworks.xstream.security.ForbiddenClassException.class,
+                    () ->
+                            xs.fromXML(
+                                    "<"
+                                            + XMLConfigurationXSchemaTest.class.getCanonicalName()
+                                            + " />"));
         }
     }
 

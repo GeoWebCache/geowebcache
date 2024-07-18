@@ -15,8 +15,8 @@
 package org.geowebcache.arcgis.layer;
 
 import static org.geowebcache.util.TestUtils.isPresent;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasProperty;
-import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
