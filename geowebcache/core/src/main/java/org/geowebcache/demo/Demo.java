@@ -307,6 +307,10 @@ public class Demo {
                         + "#info iframe { width: 100%; height: 250px; border: none; }\n"
                         + ".ol-scale-value {top: 24px; right: 8px; position: absolute; }\n"
                         + ".ol-zoom-value {top: 40px; right: 8px; position: absolute; }\n"
+                        + ".tooltip {position: absolute; background-color: white; border: 1px solid black; padding: 5px; border-radius: 3px; white-space: nowrap; max-height: 200px; overflow-y: auto; display: none;}\n"
+                        + ".tooltip-header {display: flex; justify-content: space-between; align-items: center; padding: 5px; border-bottom: 1pxsolidblack; }\n"
+                        + ".tooltip-content {padding: 5px; max-height: 150px; overflow-y: auto;}\n"
+                        + ".close-button {cursor: pointer; background: none; border: none; font-size: 16px; font-weight: bold; }\n"
                         + "</style>\n");
 
         buf.append("<script src=\"").append(openLayersPath).append("ol.js\"></script>\n");
@@ -320,6 +324,14 @@ public class Demo {
                 .append("</div>\n");
 
         buf.append("<div id=\"map\"></div>\n" + "<div id=\"info\"></div>\n");
+        buf.append(
+                "<div id=\"tooltip\" class=\"tooltip\">\n"
+                        + "      <div class=\"tooltip-header\">\n"
+                        + "        <span>Attributes</span>\n"
+                        + "        <button id=\"close-button\" class=\"close-button\">&times;</button>\n"
+                        + "      </div>\n"
+                        + "      <div id=\"tooltip-content\" class=\"tooltip-content\"></div>\n"
+                        + "    </div>");
 
         // add parameters in hidden inputs
         makeHiddenInput(buf, "dpi", Double.toString(gridSubset.getDotsPerInch()));

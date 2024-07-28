@@ -208,58 +208,132 @@ window.onload = function() {
         map.updateSize();
     }
 
-    map.on('singleclick', function(evt) {
-        document.getElementById('info').innerHTML = '';
+    var tooltip = document.getElementById('tooltip');
+    var tooltipContent = document.getElementById('tooltip-content');
+    var closeButton = document.getElementById('close-button');
 
-        var source = layer.getSource();
-        var resolution = view.getResolution();
-        var tilegrid = source.getTileGrid();
-        var tileResolutions = tilegrid.getResolutions();
-        var zoomIdx, diff = Infinity;
-
-        for (var i = 0; i < tileResolutions.length; i++) {
-            var tileResolution = tileResolutions[i];
-            var diffP = Math.abs(resolution-tileResolution);
-            if (diffP < diff) {
-                diff = diffP;
-                zoomIdx = i;
+    if (getValue('isVector') != 'true') {
+        map.on('singleclick', function(evt) {
+            document.getElementById('info').innerHTML = '';
+    
+            var source = layer.getSource();
+            var resolution = view.getResolution();
+            var tilegrid = source.getTileGrid();
+            var tileResolutions = tilegrid.getResolutions();
+            var zoomIdx, diff = Infinity;
+    
+            for (var i = 0; i < tileResolutions.length; i++) {
+                var tileResolution = tileResolutions[i];
+                var diffP = Math.abs(resolution-tileResolution);
+                if (diffP < diff) {
+                    diff = diffP;
+                    zoomIdx = i;
+                }
+                if (tileResolution < resolution) {
+                    break;
+                }
             }
-            if (tileResolution < resolution) {
-                break;
+            var tileSize = tilegrid.getTileSize(zoomIdx);
+            var tileOrigin = tilegrid.getOrigin(zoomIdx);
+    
+            var fx = (evt.coordinate[0] - tileOrigin[0]) / (resolution * tileSize[0]);
+            var fy = (tileOrigin[1] - evt.coordinate[1]) / (resolution * tileSize[1]);
+            var tileCol = Math.floor(fx);
+            var tileRow = Math.floor(fy);
+            var tileI = Math.floor((fx - tileCol) * tileSize[0]);
+            var tileJ = Math.floor((fy - tileRow) * tileSize[1]);
+            var matrixIds = tilegrid.getMatrixIds()[zoomIdx];
+            var matrixSet = source.getMatrixSet();
+    
+            var url = baseUrl+'?'
+            for (var param in params) {
+                if (param.toUpperCase() == 'TILEMATRIX') {
+                    url = url + 'TILEMATRIX='+matrixIds+'&';
+                } else {
+                    url = url + param + '=' + params[param] + '&';
+                }
             }
+    
+            url = url
+                + 'SERVICE=WMTS&REQUEST=GetFeatureInfo'
+                + '&INFOFORMAT=' +  infoFormat
+                + '&TileCol=' +  tileCol
+                + '&TileRow=' +  tileRow
+                + '&I=' +  tileI
+                + '&J=' +  tileJ;
+            document.getElementById('info').innerHTML =
+                '<iframe seamless src="' + url.replace(/"/g, "&quot;") + '"></iframe>';
+       });
+    } else {
+        var isPinned = false;
+        
+        function updateTooltipContent(properties) {
+          tooltipContent.innerHTML = Object.keys(properties).map(function(key) {
+            return key + ': ' + properties[key];
+          }).join('<br>');
         }
-        var tileSize = tilegrid.getTileSize(zoomIdx);
-        var tileOrigin = tilegrid.getOrigin(zoomIdx);
+        
+        map.on('pointermove', function(evt) {
+          if (isPinned) {
+            return; // Do nothing if the tooltip is pinned
+          }
 
-        var fx = (evt.coordinate[0] - tileOrigin[0]) / (resolution * tileSize[0]);
-        var fy = (tileOrigin[1] - evt.coordinate[1]) / (resolution * tileSize[1]);
-        var tileCol = Math.floor(fx);
-        var tileRow = Math.floor(fy);
-        var tileI = Math.floor((fx - tileCol) * tileSize[0]);
-        var tileJ = Math.floor((fy - tileRow) * tileSize[1]);
-        var matrixIds = tilegrid.getMatrixIds()[zoomIdx];
-        var matrixSet = source.getMatrixSet();
+          var pixel = evt.pixel;
+          var feature = map.forEachFeatureAtPixel(pixel, function(feature) {
+            return feature;
+          });
 
-        var url = baseUrl+'?'
-        for (var param in params) {
-            if (param.toUpperCase() == 'TILEMATRIX') {
-                url = url + 'TILEMATRIX='+matrixIds+'&';
-            } else {
-                url = url + param + '=' + params[param] + '&';
+          if (feature) {
+            var coordinates = evt.coordinate;
+            var properties = feature.getProperties();
+
+            // Display the feature properties in the tooltip
+            updateTooltipContent(properties);
+
+            tooltip.style.left = (evt.originalEvent.clientX + 10) + 'px';
+            tooltip.style.top = (evt.originalEvent.clientY + 10) + 'px';
+            tooltip.style.display = 'block';
+          } else {
+            tooltip.style.display = 'none';
+          }
+        });
+
+        map.on('singleclick', function(evt) {
+          if (isPinned) {
+            // Unpin the tooltip if it's already pinned
+            isPinned = false;
+            tooltip.style.display = 'none';
+            tooltipContent.scrollTop = 0; // Reset scroll position to top
+          } else {
+            // Pin the tooltip
+            var pixel = evt.pixel;
+            var feature = map.forEachFeatureAtPixel(pixel, function(feature) {
+              return feature;
+            });
+
+            if (feature) {
+              var coordinates = evt.coordinate;
+              var properties = feature.getProperties();
+
+              // Display the feature properties in the tooltip
+              updateTooltipContent(properties);
+
+              tooltip.style.left = (evt.originalEvent.clientX + 10) + 'px';
+              tooltip.style.top = (evt.originalEvent.clientY + 10) + 'px';
+              tooltip.style.display = 'block';
+
+              isPinned = true;
             }
-        }
+          }
+        });
 
-        url = url
-            + 'SERVICE=WMTS&REQUEST=GetFeatureInfo'
-            + '&INFOFORMAT=' +  infoFormat
-            + '&TileCol=' +  tileCol
-            + '&TileRow=' +  tileRow
-            + '&I=' +  tileI
-            + '&J=' +  tileJ;
-        document.getElementById('info').innerHTML =
-            '<iframe seamless src="' + url.replace(/"/g, "&quot;") + '"></iframe>';
-    });
-
+        closeButton.addEventListener('click', function() {
+          tooltip.style.display = 'none';
+          isPinned = false;
+        });
+    }
+    
+    
     // set event handlers
     function paramHandler(event) {
         setParam(event.target.name, event.target.value);
