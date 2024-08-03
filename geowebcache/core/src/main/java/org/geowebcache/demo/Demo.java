@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.FloatParameterFilter;
@@ -342,6 +343,12 @@ public class Demo {
                 Arrays.stream(gridSubset.getGridNames())
                         .map(s -> String.format("\"%s\"", s))
                         .collect(Collectors.joining(", ", "[", "]")));
+        makeHiddenInput(
+                buf,
+                "gridNamesNumeric",
+                String.valueOf(
+                        Arrays.stream(gridSubset.getGridNames())
+                                .allMatch(n -> StringUtils.isNumeric(n))));
         makeHiddenInput(buf, "format", formatStr);
         makeHiddenInput(buf, "layerName", layerName);
         makeHiddenInput(buf, "SRS", gridSubset.getSRS().toString());

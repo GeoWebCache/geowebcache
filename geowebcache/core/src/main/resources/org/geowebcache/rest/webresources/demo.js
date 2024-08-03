@@ -55,6 +55,7 @@ window.onload = function() {
     }
 
     var gridsetName = getValue('gridsetName');
+    var gridNamesNumeric = getValue('gridNamesNumeric') === 'true' ? true : false ;
     var gridNames = JSON.parse(getValue('gridNames'));
     var baseUrl = '../service/wmts';
     var style = '';
@@ -75,7 +76,7 @@ window.onload = function() {
             'VERSION': '1.0.0',
             'LAYER': layerName,
             'STYLE': style,
-            'TILEMATRIX': gridsetName + ':{z}',
+            'TILEMATRIX': gridNamesNumeric ? '{z}' : gridsetName + ':{z}',
             'TILEMATRIXSET': gridsetName,
             'FORMAT': format,
             'TILECOL': '{x}',
