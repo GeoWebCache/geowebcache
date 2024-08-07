@@ -93,8 +93,13 @@ class AzureClient implements Closeable {
             this.container = serviceURL.createContainerURL(containerName);
             // no way to see if the containerURL already exists, try to create and see if
             // we get a 409 CONFLICT
+            int status;
             try {
-                int status = this.container.getProperties().blockingGet().statusCode();
+                status = this.container.getProperties().blockingGet().statusCode();
+            } catch (com.microsoft.azure.storage.blob.StorageException se) {
+                status = se.statusCode();
+            }
+            try {
                 if (status == HttpStatus.NOT_FOUND.value()) {
                     status = this.container.create(null, null, null).blockingGet().statusCode();
                     if (!HttpStatus.valueOf(status).is2xxSuccessful()
