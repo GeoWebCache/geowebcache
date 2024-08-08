@@ -14,122 +14,138 @@
  */
 package org.geowebcache.azure;
 
-import com.microsoft.azure.storage.blob.BlockBlobURL;
-import com.microsoft.azure.storage.blob.ContainerURL;
-import com.microsoft.azure.storage.blob.DownloadResponse;
-import com.microsoft.azure.storage.blob.ListBlobsOptions;
-import com.microsoft.azure.storage.blob.PipelineOptions;
-import com.microsoft.azure.storage.blob.ServiceURL;
-import com.microsoft.azure.storage.blob.SharedKeyCredentials;
-import com.microsoft.azure.storage.blob.StorageURL;
-import com.microsoft.azure.storage.blob.models.BlobFlatListSegment;
-import com.microsoft.azure.storage.blob.models.BlobHTTPHeaders;
-import com.microsoft.azure.storage.blob.models.BlobItem;
-import com.microsoft.azure.storage.blob.models.ContainerListBlobFlatSegmentResponse;
-import com.microsoft.rest.v2.RestException;
-import com.microsoft.rest.v2.http.HttpClient;
-import com.microsoft.rest.v2.http.HttpClientConfiguration;
-import com.microsoft.rest.v2.http.NettyClient;
-import com.microsoft.rest.v2.http.SharedChannelPoolOptions;
-import com.microsoft.rest.v2.util.FlowableUtil;
-import io.netty.bootstrap.Bootstrap;
-import io.reactivex.Flowable;
+import com.azure.core.credential.AzureNamedKeyCredential;
+import com.azure.core.http.HttpClient;
+import com.azure.core.http.ProxyOptions;
+import com.azure.core.http.ProxyOptions.Type;
+import com.azure.core.http.rest.PagedIterable;
+import com.azure.core.http.rest.Response;
+import com.azure.core.util.BinaryData;
+import com.azure.core.util.ClientOptions;
+import com.azure.core.util.Context;
+import com.azure.core.util.HttpClientOptions;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.azure.storage.blob.models.BlobDownloadContentResponse;
+import com.azure.storage.blob.models.BlobHttpHeaders;
+import com.azure.storage.blob.models.BlobItem;
+import com.azure.storage.blob.models.BlobRequestConditions;
+import com.azure.storage.blob.models.BlobStorageException;
+import com.azure.storage.blob.models.BlockBlobItem;
+import com.azure.storage.blob.models.DownloadRetryOptions;
+import com.azure.storage.blob.models.ListBlobsOptions;
+import com.azure.storage.blob.options.BlockBlobSimpleUploadOptions;
+import com.azure.storage.blob.specialized.BlockBlobClient;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
+import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Duration;
 import java.util.Properties;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.geowebcache.storage.StorageException;
-import org.geowebcache.util.URLs;
 import org.springframework.http.HttpStatus;
 
-public class AzureClient implements Closeable {
+public class AzureClient {
 
-    private final NettyClient.Factory factory;
     private AzureBlobStoreData configuration;
-    private final ContainerURL container;
+    private final BlobContainerClient container;
 
     public AzureClient(AzureBlobStoreData configuration) throws StorageException {
         this.configuration = configuration;
+
         try {
-            SharedKeyCredentials creds =
-                    new SharedKeyCredentials(
-                            configuration.getAccountName(), configuration.getAccountKey());
-
-            // setup the HTTPClient, keep the factory on the side to close it down on destroy
-            factory =
-                    new NettyClient.Factory(
-                            new Bootstrap(),
-                            0,
-                            new SharedChannelPoolOptions()
-                                    .withPoolSize(configuration.getMaxConnections()),
-                            null);
-            final HttpClient client;
-            Proxy proxy = configuration.getProxy();
-            // not clear how to use credentials for proxy,
-            // https://github.com/Azure/autorest-clientruntime-for-java/issues/624
-            if (proxy != null) {
-                HttpClientConfiguration clientConfiguration = new HttpClientConfiguration(proxy);
-                client = factory.create(clientConfiguration);
-            } else {
-                client = factory.create(null);
-            }
-
-            // build the container access
-            PipelineOptions options = new PipelineOptions().withClient(client);
-            ServiceURL serviceURL =
-                    new ServiceURL(
-                            URLs.of(getServiceURL(configuration)),
-                            StorageURL.createPipeline(creds, options));
+            BlobServiceClient serviceClient = createBlobServiceClient(configuration);
 
             String containerName = configuration.getContainer();
-            this.container = serviceURL.createContainerURL(containerName);
-            // no way to see if the containerURL already exists, try to create and see if
-            // we get a 409 CONFLICT
-            int status;
-            try {
-                status = this.container.getProperties().blockingGet().statusCode();
-            } catch (com.microsoft.azure.storage.blob.StorageException se) {
-                status = se.statusCode();
-            }
-            try {
-                if (status == HttpStatus.NOT_FOUND.value()) {
-                    status = this.container.create(null, null, null).blockingGet().statusCode();
-                    if (!HttpStatus.valueOf(status).is2xxSuccessful()
-                            && status != HttpStatus.CONFLICT.value()) {
-                        throw new StorageException(
-                                "Failed to create container "
-                                        + containerName
-                                        + ", REST API returned a "
-                                        + status);
-                    }
-                }
-            } catch (RestException e) {
-                if (e.response().statusCode() != HttpStatus.CONFLICT.value()) {
-                    throw new StorageException("Failed to create container", e);
-                }
-            }
-        } catch (Exception e) {
+            this.container = getOrCreateContainer(serviceClient, containerName);
+        } catch (StorageException e) {
+            throw e;
+        } catch (RuntimeException e) {
             throw new StorageException("Failed to setup Azure connection and container", e);
         }
     }
 
-    public String getServiceURL(AzureBlobStoreData configuration) {
+    BlobContainerClient getOrCreateContainer(BlobServiceClient serviceClient, String containerName)
+            throws StorageException {
+
+        BlobContainerClient container = serviceClient.getBlobContainerClient(containerName);
+        if (!container.exists()) {
+            // use createIfNotExists() instead of create() in case multiple instances are
+            // starting up at the same time
+            boolean created = container.createIfNotExists();
+            if (!created && !container.exists()) {
+                throw new StorageException("Failed to create container " + containerName);
+            }
+        }
+        return container;
+    }
+
+    BlobServiceClient createBlobServiceClient(AzureBlobStoreData configuration) {
+        String serviceURL = getServiceURL(configuration);
+        AzureNamedKeyCredential creds = getCredentials(configuration);
+        ClientOptions clientOpts = new ClientOptions();
+        HttpClient httpClient = createHttpClient(configuration);
+        BlobServiceClientBuilder builder =
+                new BlobServiceClientBuilder()
+                        .endpoint(serviceURL)
+                        .clientOptions(clientOpts)
+                        .httpClient(httpClient);
+        if (null != creds) {
+            builder = builder.credential(creds);
+        }
+        return builder.buildClient();
+    }
+
+    AzureNamedKeyCredential getCredentials(AzureBlobStoreData configuration) {
+        String accountName = configuration.getAccountName();
+        String accountKey = configuration.getAccountKey();
+        if (null != accountName && null != accountKey) {
+            return new AzureNamedKeyCredential(accountName, accountKey);
+        }
+        return null;
+    }
+
+    HttpClient createHttpClient(AzureBlobStoreData blobStoreConfig) {
+
+        @Nullable Integer maxConnections = blobStoreConfig.getMaxConnections();
+        @Nullable ProxyOptions proxyOptions = getProxyOptions(blobStoreConfig);
+
+        HttpClientOptions opts = new HttpClientOptions();
+        opts.setProxyOptions(proxyOptions);
+        opts.setMaximumConnectionPoolSize(maxConnections);
+        return HttpClient.createDefault(opts);
+    }
+
+    ProxyOptions getProxyOptions(AzureBlobStoreData blobStoreConfig) {
+        ProxyOptions proxyOptions = null;
+        Proxy proxy = blobStoreConfig.getProxy();
+        if (null != proxy) {
+            ProxyOptions.Type type = Type.HTTP;
+            InetSocketAddress address = (InetSocketAddress) proxy.address();
+            String proxyUsername = blobStoreConfig.getProxyUsername();
+            String proxyPassword = blobStoreConfig.getProxyPassword();
+
+            proxyOptions = new ProxyOptions(type, address);
+            proxyOptions.setCredentials(proxyUsername, proxyPassword);
+        }
+        return proxyOptions;
+    }
+
+    String getServiceURL(AzureBlobStoreData configuration) {
         String serviceURL = configuration.getServiceURL();
         if (serviceURL == null) {
             // default to account name based location
-            serviceURL =
-                    (configuration.isUseHTTPS() ? "https" : "http")
-                            + "://"
-                            + configuration.getAccountName()
-                            + ".blob.core.windows.net";
+            String proto = configuration.isUseHTTPS() ? "https" : "http";
+            String account = configuration.getAccountName();
+            serviceURL = String.format("%s://%s.blob.core.windows.net", proto, account);
         }
         return serviceURL;
     }
@@ -138,30 +154,41 @@ public class AzureClient implements Closeable {
      * Returns a blob for the given key (may not exist yet, and in need of being created)
      *
      * @param key The blob key
+     * @return
      */
-    public BlockBlobURL getBlockBlobURL(String key) {
-        return container.createBlockBlobURL(key);
+    public BlockBlobClient getBlockBlobClient(String key) {
+        BlobClient blobClient = container.getBlobClient(key);
+        return blobClient.getBlockBlobClient();
     }
 
-    @Nullable
-    public byte[] getBytes(String key) throws StorageException {
-        BlockBlobURL blob = getBlockBlobURL(key);
+    /**
+     * @return the blob's download response, or {@code null} if not found
+     * @throws BlobStorageException
+     */
+    public BlobDownloadContentResponse download(String key) {
+        BlobClient blobClient = container.getBlobClient(key);
+        DownloadRetryOptions options = new DownloadRetryOptions().setMaxRetryRequests(0);
+        BlobRequestConditions conditions = null;
+        Duration timeout = null;
+        Context context = Context.NONE;
         try {
-            DownloadResponse response = blob.download().blockingGet();
-            ByteBuffer buffer =
-                    FlowableUtil.collectBytesInBuffer(response.body(null)).blockingGet();
-            byte[] result = new byte[buffer.remaining()];
-            buffer.get(result);
-            return result;
-        } catch (RestException e) {
-            if (e.response().statusCode() == 404) {
+            return blobClient.downloadContentWithResponse(options, conditions, timeout, context);
+        } catch (BlobStorageException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND.value()) {
                 return null;
             }
-            throw new StorageException("Failed to retreive bytes for " + key, e);
+            throw e;
         }
     }
 
-    public Properties getProperties(String key) throws StorageException {
+    /** @throws BlobStorageException If an I/O error occurs. */
+    @Nullable
+    public byte[] getBytes(String key) {
+        BlobDownloadContentResponse download = download(key);
+        return download == null ? null : download.getValue().toBytes();
+    }
+
+    public Properties getProperties(String key) {
         Properties properties = new Properties();
         byte[] bytes = getBytes(key);
         if (bytes != null) {
@@ -170,7 +197,7 @@ public class AzureClient implements Closeable {
                         new InputStreamReader(
                                 new ByteArrayInputStream(bytes), StandardCharsets.UTF_8));
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new UncheckedIOException(e);
             }
         }
         return properties;
@@ -178,64 +205,95 @@ public class AzureClient implements Closeable {
 
     public void putProperties(String resourceKey, Properties properties) throws StorageException {
 
+        String contentType = "text/plain";
+        BinaryData data = toBinaryData(properties);
+
+        try {
+            upload(resourceKey, data, contentType);
+        } catch (StorageException e) {
+            throw new StorageException(
+                    "Failed to update e property file at " + resourceKey, e.getCause());
+        }
+    }
+
+    public void upload(String resourceKey, BinaryData data, String contentType)
+            throws StorageException {
+
+        BlockBlobSimpleUploadOptions upload = new BlockBlobSimpleUploadOptions(data);
+        upload.setHeaders(new BlobHttpHeaders().setContentType(contentType));
+        Duration timeout = null;
+        Context context = Context.NONE;
+
+        Response<BlockBlobItem> response;
+        try {
+            BlockBlobClient blob = getBlockBlobClient(resourceKey);
+            response = blob.uploadWithResponse(upload, timeout, context);
+        } catch (UncheckedIOException e) {
+            throw new StorageException("Failed to upload blob " + resourceKey, e.getCause());
+        }
+        int status = response.getStatusCode();
+        if (!HttpStatus.valueOf(status).is2xxSuccessful()) {
+            throw new StorageException(
+                    "Upload request failed with status " + status + " on resource " + resourceKey);
+        }
+    }
+
+    private BinaryData toBinaryData(Properties properties) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
             properties.store(out, "");
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
-
-        try {
-            BlockBlobURL blob = getBlockBlobURL(resourceKey);
-            byte[] bytes = out.toByteArray();
-            ByteBuffer buffer = ByteBuffer.wrap(bytes);
-            BlobHTTPHeaders headers = new BlobHTTPHeaders();
-            headers.withBlobContentType("text/plain");
-
-            int status =
-                    blob.upload(Flowable.just(buffer), bytes.length, headers, null, null, null)
-                            .blockingGet()
-                            .statusCode();
-            if (!HttpStatus.valueOf(status).is2xxSuccessful()) {
-                throw new StorageException(
-                        "Upload request failed with status "
-                                + status
-                                + " on resource "
-                                + resourceKey);
-            }
-        } catch (RestException e) {
-            throw new StorageException("Failed to update e property file at " + resourceKey, e);
-        }
+        return BinaryData.fromBytes(out.toByteArray());
     }
 
-    public List<BlobItem> listBlobs(String prefix, Integer maxResults) {
-        ContainerListBlobFlatSegmentResponse response =
-                container
-                        .listBlobsFlatSegment(
-                                null,
-                                new ListBlobsOptions()
-                                        .withPrefix(prefix)
-                                        .withMaxResults(maxResults))
-                        .blockingGet();
-
-        BlobFlatListSegment segment = response.body().segment();
-        List<BlobItem> items = new ArrayList<>();
-        if (segment != null) {
-            items.addAll(segment.blobItems());
-        }
-        return items;
+    public boolean blobExists(String key) {
+        return getBlockBlobClient(key).exists();
     }
 
-    @Override
-    public void close() {
-        factory.close();
+    public boolean prefixExists(String prefix) {
+        return listBlobs(prefix, 1).findFirst().isPresent();
+    }
+
+    /**
+     * @param prefix
+     * @return an internally paged Stream, with the default items-per-page setting of {@link
+     *     ListBlobsOptions#getMaxResultsPerPage() 5000}
+     */
+    public Stream<BlobItem> listBlobs(String prefix) {
+        return listBlobs(prefix, 5_000);
+    }
+
+    /**
+     * @param prefix
+     * @param maxResultsPerPage used to control how many items Azure will return per page. It's not
+     *     the max results to return entirely, so use it with caution.
+     * @return an internally paged (as per {@code maxResultsPerPage}) Stream.
+     */
+    public Stream<BlobItem> listBlobs(String prefix, int maxResultsPerPage) {
+        ListBlobsOptions opts = new ListBlobsOptions().setPrefix(prefix);
+
+        // if > 5000, Azure will return 5000 items per page
+        opts.setMaxResultsPerPage(maxResultsPerPage);
+
+        // An optional timeout value beyond which a {@link RuntimeException} will be
+        // raised. revisit: set a timeout?
+        Duration timeout = null;
+        PagedIterable<BlobItem> blobs = container.listBlobs(opts, timeout);
+        return blobs.stream();
     }
 
     public String getContainerName() {
         return configuration.getContainer();
     }
 
-    public ContainerURL getContainer() {
+    public BlobContainerClient getContainer() {
         return container;
+    }
+
+    public boolean deleteBlob(String key) {
+        BlockBlobClient metadata = getBlockBlobClient(key);
+        return metadata.deleteIfExists();
     }
 }

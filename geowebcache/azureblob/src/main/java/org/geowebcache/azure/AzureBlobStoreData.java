@@ -29,7 +29,7 @@ public class AzureBlobStoreData {
     private String accountName;
     private String accountKey;
     private Integer maxConnections;
-    private Boolean useHTTPS;
+    private boolean useHTTPS;
     private String proxyHost;
     private Integer proxyPort;
     private String proxyUsername;
@@ -113,11 +113,11 @@ public class AzureBlobStoreData {
         this.maxConnections = maxConnections;
     }
 
-    public Boolean isUseHTTPS() {
+    public boolean isUseHTTPS() {
         return useHTTPS;
     }
 
-    public void setUseHTTPS(Boolean useHTTPS) {
+    public void setUseHTTPS(boolean useHTTPS) {
         this.useHTTPS = useHTTPS;
     }
 
@@ -137,6 +137,7 @@ public class AzureBlobStoreData {
         this.proxyPort = proxyPort;
     }
 
+    /** unused */
     public String getProxyUsername() {
         return proxyUsername;
     }
@@ -145,6 +146,7 @@ public class AzureBlobStoreData {
         this.proxyUsername = proxyUsername;
     }
 
+    /** unused */
     public String getProxyPassword() {
         return proxyPassword;
     }

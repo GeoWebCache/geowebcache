@@ -52,7 +52,7 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
 
     private String maxConnections;
 
-    private Boolean useHTTPS = true;
+    private boolean useHTTPS = true;
 
     private String proxyHost;
 
@@ -139,7 +139,7 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
     }
 
     /** @param useHTTPS whether to use HTTPS (true) or HTTP (false) when talking to Azure */
-    public void setUseHTTPS(Boolean useHTTPS) {
+    public void setUseHTTPS(boolean useHTTPS) {
         this.useHTTPS = useHTTPS;
     }
 
@@ -260,7 +260,7 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
         result = prime * result + ((proxyPort == null) ? 0 : proxyPort.hashCode());
         result = prime * result + ((proxyUsername == null) ? 0 : proxyUsername.hashCode());
         result = prime * result + ((serviceURL == null) ? 0 : serviceURL.hashCode());
-        result = prime * result + ((useHTTPS == null) ? 0 : useHTTPS.hashCode());
+        result = prime * result + (useHTTPS ? 1 : 0);
         return result;
     }
 
@@ -300,9 +300,7 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
         if (serviceURL == null) {
             if (other.serviceURL != null) return false;
         } else if (!serviceURL.equals(other.serviceURL)) return false;
-        if (useHTTPS == null) {
-            if (other.useHTTPS != null) return false;
-        } else if (!useHTTPS.equals(other.useHTTPS)) return false;
+        if (useHTTPS != other.useHTTPS) return false;
         return true;
     }
 
