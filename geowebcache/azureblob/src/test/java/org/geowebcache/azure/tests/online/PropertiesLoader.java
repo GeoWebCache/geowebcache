@@ -12,7 +12,7 @@
  *
  * @author Andrea Aime, GeoSolutions, Copyright 2019
  */
-package org.geowebcache.azure;
+package org.geowebcache.azure.tests.online;
 
 import static com.google.common.base.Preconditions.checkArgument;
 

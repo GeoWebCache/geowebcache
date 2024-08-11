@@ -25,25 +25,25 @@ import java.util.Collections;
 import java.util.stream.Stream;
 import org.easymock.EasyMock;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.azure.tests.container.AzuriteAzureBlobStoreConformanceIT;
+import org.geowebcache.azure.tests.online.OnlineAzureBlobStoreConformanceIT;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.NoOpLockProvider;
 import org.geowebcache.storage.AbstractBlobStoreTest;
-import org.junit.Assume;
-import org.junit.Rule;
 
-public class AzureBlobStoreConformanceTest extends AbstractBlobStoreTest<AzureBlobStore> {
-    public PropertiesLoader testConfigLoader = new PropertiesLoader();
+/**
+ * @see OnlineAzureBlobStoreConformanceIT
+ * @see AzuriteAzureBlobStoreConformanceIT
+ */
+public abstract class AzureBlobStoreConformanceTest extends AbstractBlobStoreTest<AzureBlobStore> {
 
-    @Rule
-    public TemporaryAzureFolder tempFolder =
-            new TemporaryAzureFolder(testConfigLoader.getProperties());
+    protected abstract AzureBlobStoreData getConfiguration();
 
     @Override
     public void createTestUnit() throws Exception {
-        Assume.assumeTrue(tempFolder.isConfigured());
-        AzureBlobStoreData config = tempFolder.getConfig();
+        AzureBlobStoreData config = getConfiguration();
 
         TileLayerDispatcher layers = createMock(TileLayerDispatcher.class);
         LockProvider lockProvider = new NoOpLockProvider();

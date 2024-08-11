@@ -97,6 +97,7 @@
     <jclouds.version>2.3.0</jclouds.version>
     <mockito.version>5.12.0</mockito.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <skipITs>${skipTests}</skipITs>
   </properties>
 
   <dependencyManagement>
@@ -107,6 +108,14 @@
         <version>${project.version}</version>
         <classifier>tests</classifier>
         <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-bom</artifactId>
+        <version>1.20.1</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
 
       <dependency>
@@ -299,7 +308,12 @@
         <version>${hamcrest.version}</version>
         <scope>test</scope>
       </dependency>
-
+      <dependency>
+        <groupId>org.awaitility</groupId>
+        <artifactId>awaitility</artifactId>
+        <version>4.2.2</version>
+        <scope>test</scope>
+      </dependency>
       <dependency>
         <groupId>org.easymock</groupId>
         <artifactId>easymock</artifactId>
@@ -548,6 +562,29 @@
           <artifactId>cobertura-maven-plugin</artifactId>
           <version>2.0</version>
         </plugin>
+        <plugin>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>3.3.1</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+              </goals>
+            </execution>
+          </executions>
+          <inherited>true</inherited>
+          <configuration>
+            <systemPropertyVariables>
+              <java.util.logging.config.file>src/test/resources/logging.properties</java.util.logging.config.file>
+              <!-- prevent ForkedBooter focus steal on macOS -->
+              <java.awt.headless>true</java.awt.headless>
+            </systemPropertyVariables>
+            <argLine>${maven.test.jvmargs} -XX:+IgnoreUnrecognizedVMOptions --illegal-access=warn --add-exports=java.desktop/sun.awt.image=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED</argLine>
+            <!-- allow skipping unit tests but run integration tests with -DskipTests -DskipITs=false, otherwise skipTests will also disable the failsafe run -->
+            <skipTests>${skipITs}</skipTests>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -639,23 +676,6 @@
             <java.awt.headless>true</java.awt.headless>
           </systemPropertyVariables>
           <argLine>${maven.test.jvmargs} -XX:+IgnoreUnrecognizedVMOptions --illegal-access=warn --add-exports=java.desktop/sun.awt.image=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED</argLine>
-          <!-- prevent ForkedBooter focus steal on macOS -->
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.19.1</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <argLine>-Djava.awt.headless=true</argLine>
           <!-- prevent ForkedBooter focus steal on macOS -->
         </configuration>
       </plugin>

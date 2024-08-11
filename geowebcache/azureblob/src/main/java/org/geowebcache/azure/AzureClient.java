@@ -50,7 +50,7 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.URLs;
 import org.springframework.http.HttpStatus;
 
-class AzureClient implements Closeable {
+public class AzureClient implements Closeable {
 
     private final NettyClient.Factory factory;
     private AzureBlobStoreData configuration;
