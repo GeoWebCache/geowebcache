@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.geotools.util.logging.Logging;
+import org.geowebcache.azure.tests.container.AzuriteAzureBlobStoreIntegrationIT;
+import org.geowebcache.azure.tests.online.OnlineAzureBlobStoreIntegrationIT;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.grid.GridSetBroker;
@@ -69,18 +71,19 @@ import org.mockito.Mockito;
  * Integration tests for {@link AzureBlobStore}.
  *
  * <p>This is an abstract class for both online and offline integration tests.
+ *
+ * @see OnlineAzureBlobStoreIntegrationIT
+ * @see AzuriteAzureBlobStoreIntegrationIT
  */
-public abstract class AbstractAzureBlobStoreIntegrationTest {
+public abstract class AzureBlobStoreIntegrationTest {
 
-    private static Logger log = Logging.getLogger(PropertiesLoader.class.getName());
+    private static Logger log = Logging.getLogger(AzureBlobStoreIntegrationTest.class.getName());
 
     private static final String DEFAULT_FORMAT = "png";
 
     private static final String DEFAULT_GRIDSET = "EPSG:4326";
 
     private static final String DEFAULT_LAYER = "topp:world";
-
-    public PropertiesLoader testConfigLoader = new PropertiesLoader();
 
     private AzureBlobStore blobStore;
 

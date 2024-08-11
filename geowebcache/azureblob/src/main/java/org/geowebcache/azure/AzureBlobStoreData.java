@@ -22,7 +22,7 @@ import org.geowebcache.GeoWebCacheEnvironment;
  * Azure Blobstore type-resolved data from a {@link AzureBlobStoreInfo} using enviroment variables
  * if enabled.
  */
-class AzureBlobStoreData {
+public class AzureBlobStoreData {
 
     private String container;
     private String prefix;
@@ -36,7 +36,7 @@ class AzureBlobStoreData {
     private String proxyPassword;
     private String serviceURL;
 
-    AzureBlobStoreData() {}
+    public AzureBlobStoreData() {}
 
     public AzureBlobStoreData(
             final AzureBlobStoreInfo storeInfo, final GeoWebCacheEnvironment environment) {
