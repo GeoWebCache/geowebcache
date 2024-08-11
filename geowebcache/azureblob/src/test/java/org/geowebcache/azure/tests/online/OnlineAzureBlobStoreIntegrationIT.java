@@ -12,16 +12,20 @@
  *
  * @author Andrea Aime, GeoSolutions, Copyright 2019
  */
-package org.geowebcache.azure;
+package org.geowebcache.azure.tests.online;
 
 import static org.junit.Assert.assertTrue;
 
+import org.geowebcache.azure.AzureBlobStoreData;
+import org.geowebcache.azure.AzureBlobStoreIntegrationTest;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 
-public class OnlineAzureBlobStoreIntegrationTest extends AbstractAzureBlobStoreIntegrationTest {
+public class OnlineAzureBlobStoreIntegrationIT extends AzureBlobStoreIntegrationTest {
+
+    private PropertiesLoader testConfigLoader = new PropertiesLoader();
 
     @Rule
     public TemporaryAzureFolder tempFolder =

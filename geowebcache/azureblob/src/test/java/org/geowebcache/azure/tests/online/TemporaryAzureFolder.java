@@ -12,7 +12,7 @@
  *
  * @author Andrea Aime, GeoSolutions, Copyright 2019
  */
-package org.geowebcache.azure;
+package org.geowebcache.azure.tests.online;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.junit.Assert.assertTrue;
@@ -22,6 +22,8 @@ import com.microsoft.azure.storage.blob.models.BlobItem;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
+import org.geowebcache.azure.AzureBlobStoreData;
+import org.geowebcache.azure.AzureClient;
 import org.junit.rules.ExternalResource;
 import org.springframework.http.HttpStatus;
 

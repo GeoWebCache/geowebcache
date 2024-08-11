@@ -14,6 +14,8 @@
  */
 package org.geowebcache.storage;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.easymock.EasyMock.anyLong;
 import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.captureLong;
@@ -512,8 +514,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         EasyMock.replay(listener);
         assertThat(store.deleteByGridsetId("testLayer", "testGridSet1"), is(true));
         EasyMock.verify(listener);
-        assertThat(store.get(fromCache1_2), is(false));
-        assertThat(fromCache1_2, hasProperty("blobSize", is(0)));
+        assertNoTile(fromCache1_2);
     }
 
     @Test
@@ -575,8 +576,9 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
                                 new ByteArrayResource(
                                         "7,8,9,10 test".getBytes(StandardCharsets.UTF_8)))));
         store.deleteByGridsetId("testLayer", "testGridSet1");
-        assertThat(store.get(fromCache1_2), is(false));
-        assertThat(fromCache1_2, hasProperty("blobSize", is(0)));
+
+        assertNoTile(fromCache1_2);
+
         assertThat(store.get(fromCache2_3), is(true));
         assertThat(fromCache2_3, hasProperty("blobSize", is((int) size2)));
         assertThat(
@@ -707,8 +709,9 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         EasyMock.replay(listener);
         store.delete(remove);
         EasyMock.verify(listener);
-        assertThat(store.get(fromCache1_2), is(false));
-        assertThat(fromCache1_2, hasProperty("blobSize", is(0)));
+
+        assertNoTile(fromCache1_2);
+
         assertThat(store.get(fromCache2_3), is(true));
         assertThat(fromCache2_3, hasProperty("blobSize", is((int) size2)));
         assertThat(
@@ -925,8 +928,8 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         EasyMock.replay(listener);
         store.deleteByParametersId("testLayer", paramID1);
         EasyMock.verify(listener);
-        assertThat(store.get(fromCache1_2), is(false));
-        assertThat(fromCache1_2, hasProperty("blobSize", is(0)));
+
+        assertNoTile(fromCache1_2);
     }
 
     @Test
@@ -959,7 +962,9 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         store.put(toCache1);
         store.put(toCache2);
         store.deleteByParametersId("testLayer", paramID1);
-        assertThat(store.get(fromCache2_3), is(true));
+
+        await().atMost(5, SECONDS) // give stores with async deletes a chance to complete
+                .untilAsserted(() -> assertThat(store.get(fromCache2_3), is(true)));
         assertThat(fromCache2_3, hasProperty("blobSize", is((int) size2)));
         assertThat(
                 fromCache2_3,
@@ -1071,8 +1076,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         EasyMock.replay(listener);
         store.purgeOrphans(layer);
         EasyMock.verify(listener);
-        assertThat(store.get(fromCache1_2), is(false));
-        assertThat(fromCache1_2, hasProperty("blobSize", is(0)));
+        assertNoTile(fromCache1_2);
     }
 
     protected void cacheTile(
@@ -1129,7 +1133,15 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         TileObject to =
                 TileObject.createQueryTileObject(
                         layerName, new long[] {x, y, z}, gridSetId, format, parameters);
-        assertThat(store.get(to), describedAs("don't get a tile", is(false)));
+        assertNoTile(to);
+    }
+
+    private void assertNoTile(TileObject to) {
+        await().atMost(5, SECONDS) // give stores with async deletes a chance to complete
+                .untilAsserted(
+                        () ->
+                                assertThat(
+                                        store.get(to), describedAs("don't get a tile", is(false))));
         assertThat(to, hasProperty("blob", nullValue()));
         assertThat(to, hasProperty("blobSize", is(0)));
     }

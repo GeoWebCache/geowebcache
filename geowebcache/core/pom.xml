@@ -215,6 +215,11 @@
       <artifactId>xmlunit-legacy</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <scope>test</scope>
+    </dependency>
 
     <!-- Thijs Brentjens: for security fixes, OWASP library-->
     <dependency>
