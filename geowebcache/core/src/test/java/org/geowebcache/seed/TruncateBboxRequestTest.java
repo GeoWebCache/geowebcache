@@ -28,12 +28,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.easymock.EasyMock;
+import org.easymock.IArgumentMatcher;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.storage.StorageBroker;
-import org.hamcrest.integration.EasyMock2Adapter;
+import org.hamcrest.Matcher;
+import org.hamcrest.StringDescription;
 import org.junit.Test;
 
 public class TruncateBboxRequestTest {
@@ -47,7 +49,7 @@ public class TruncateBboxRequestTest {
             int maxZ,
             BoundingBox bounds,
             Map<String, String> parameters) {
-        EasyMock2Adapter.adapt(
+        Matcher<Object> matcher =
                 allOf(
                         hasProperty("layerName", equalTo(layerName)),
                         hasProperty("gridSetId", equalTo(gridSet)),
@@ -58,7 +60,20 @@ public class TruncateBboxRequestTest {
                         hasProperty("filterUpdate", any(Boolean.class)),
                         hasProperty("threadCount", any(Integer.class)),
                         hasProperty("bounds", equalTo(bounds)),
-                        hasProperty("type", any(GWCTask.TYPE.class))));
+                        hasProperty("type", any(GWCTask.TYPE.class)));
+        EasyMock.reportMatcher(
+                new IArgumentMatcher() {
+
+                    @Override
+                    public boolean matches(Object argument) {
+                        return matcher.matches(argument);
+                    }
+
+                    @Override
+                    public void appendTo(StringBuffer buffer) {
+                        matcher.describeTo(new StringDescription(buffer));
+                    }
+                });
         return null;
     }
 
