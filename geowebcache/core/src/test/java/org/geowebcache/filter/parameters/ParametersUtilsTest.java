@@ -16,8 +16,8 @@ package org.geowebcache.filter.parameters;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.isEmptyString;
 
 import java.util.Collections;
 import java.util.Map;
@@ -35,7 +35,7 @@ public class ParametersUtilsTest {
     @Test
     public void testEmptyToKVP() {
         String result = ParametersUtils.getKvp(Collections.emptyMap());
-        assertThat(result, isEmptyString());
+        assertThat(result, emptyString());
     }
 
     @Test
