@@ -505,7 +505,13 @@ public class GuavaCacheProvider implements CacheProvider {
                         .append(SEPARATOR)
                         .append(obj.getGridSetId())
                         .append(SEPARATOR)
-                        .append(Arrays.toString(obj.getXYZ()))
+                        .append('[')
+                        .append(obj.getX())
+                        .append(',')
+                        .append(obj.getY())
+                        .append(',')
+                        .append(obj.getZ())
+                        .append(']')
                         .append(SEPARATOR)
                         .append(obj.getBlobFormat());
 

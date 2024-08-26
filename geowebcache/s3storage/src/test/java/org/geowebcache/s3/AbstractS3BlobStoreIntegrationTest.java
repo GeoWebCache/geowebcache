@@ -188,22 +188,22 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
 
         blobStore.put(tile);
 
-        tile.getXYZ()[0] = 21;
+        tile.setX(21);
         blobStore.put(tile);
 
-        tile.getXYZ()[0] = 22;
+        tile.setX(22);
         blobStore.put(tile);
 
         tile = queryTile(20, 30, 12);
 
         assertTrue(blobStore.delete(tile));
 
-        tile.getXYZ()[0] = 21;
+        tile.setX(21);
         assertTrue(blobStore.delete(tile));
 
         BlobStoreListener listener = mock(BlobStoreListener.class);
         blobStore.addListener(listener);
-        tile.getXYZ()[0] = 22;
+        tile.setX(22);
         assertTrue(blobStore.delete(tile));
         assertFalse(blobStore.delete(tile));
 
@@ -228,10 +228,10 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
 
         blobStore.put(tile);
 
-        tile.getXYZ()[0] = 21;
+        tile.setX(21);
         blobStore.put(tile);
 
-        tile.getXYZ()[0] = 22;
+        tile.setX(22);
         blobStore.put(tile);
 
         BlobStoreListener listener = mock(BlobStoreListener.class);

@@ -89,7 +89,7 @@ public class WMTSGetFeatureInfo {
 
         Resource data = null;
         try {
-            BoundingBox bbox = convTile.getGridSubset().boundsFromIndex(convTile.getTileIndex());
+            BoundingBox bbox = convTile.getGridSubset().boundsFromIndex(convTile.getIndex());
             data =
                     layer.getFeatureInfo(
                             convTile,

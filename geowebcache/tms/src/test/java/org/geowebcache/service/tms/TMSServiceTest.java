@@ -34,6 +34,7 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.TileIndex;
 import org.geowebcache.util.URLMangler;
 import org.junit.Assert;
 import org.junit.Before;
@@ -464,10 +465,10 @@ public class TMSServiceTest {
         Assert.assertNotNull(conv);
         assertThat(conv, instanceOf(ConveyorTile.class));
         ConveyorTile tile = (ConveyorTile) conv;
-        final long[] tileIndex = tile.getTileIndex();
-        Assert.assertEquals(column, tileIndex[0]);
+        final TileIndex tileIndex = tile.getIndex();
+        Assert.assertEquals(column, tileIndex.getX());
         Assert.assertEquals(
-                row, flipY ? ((int) Math.pow(2, level) - tileIndex[1] - 1) : tileIndex[1]);
-        Assert.assertEquals(level, tileIndex[2]);
+                row, flipY ? ((int) Math.pow(2, level) - tileIndex.getY() - 1) : tileIndex.getY());
+        Assert.assertEquals(level, tileIndex.getZ());
     }
 }

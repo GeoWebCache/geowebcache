@@ -22,6 +22,7 @@ import java.util.TreeMap;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.storage.TileIndex;
 import org.geowebcache.util.ServletUtils;
 
 /** A GridSubSet is a GridSet + a coverage area */
@@ -77,6 +78,10 @@ public class GridSubset {
         return getGridSet().boundsFromIndex(tileIndex);
     }
 
+    public BoundingBox boundsFromIndex(TileIndex tileIndex) {
+        return getGridSet().boundsFromIndex(tileIndex);
+    }
+
     /**
      * Finds the spatial bounding box of a rectangular group of tiles.
      *
@@ -95,6 +100,10 @@ public class GridSubset {
         return gridSet.closestRectangle(rectangleBounds);
     }
 
+    public boolean covers(long[] index) {
+        return covers(TileIndex.valueOf(index));
+    }
+
     /**
      * Indicates whether this gridsubset coverage contains the given tile
      *
@@ -102,33 +111,33 @@ public class GridSubset {
      * @return {@code true} if {@code index} is inside this grid subset's coverage, {@code false}
      *     otherwise
      */
-    public boolean covers(long[] index) {
-        final int level = (int) index[2];
+    public boolean covers(TileIndex index) {
+        final int level = index.getZ();
         final long[] coverage = getCoverage(level);
         if (coverage == null) {
             return false;
         }
 
-        if (index[0] >= coverage[0]
-                && index[0] <= coverage[2]
-                && index[1] >= coverage[1]
-                && index[1] <= coverage[3]) {
+        if (index.getX() >= coverage[0]
+                && index.getX() <= coverage[2]
+                && index.getY() >= coverage[1]
+                && index.getY() <= coverage[3]) {
             return true;
         }
 
         return false;
     }
 
-    public void checkCoverage(long[] index) throws OutsideCoverageException {
+    public void checkCoverage(TileIndex index) throws OutsideCoverageException {
         if (covers(index)) {
             return;
         }
 
-        if (index[2] < getZoomStart() || index[2] > getZoomStop()) {
-            throw new OutsideCoverageException(index, getZoomStart(), getZoomStop());
+        if (index.getZ() < getZoomStart() || index.getZ() > getZoomStop()) {
+            throw new OutsideCoverageException(index.getZ(), getZoomStart(), getZoomStop());
         }
 
-        long[] coverage = getCoverage((int) index[2]);
+        long[] coverage = getCoverage(index.getZ());
         throw new OutsideCoverageException(index, coverage);
     }
 
@@ -255,7 +264,7 @@ public class GridSubset {
         return gridCoverage.getIntersection(reqRectangle);
     }
 
-    public long getGridIndex(String gridId) {
+    public int getGridIndex(String gridId) {
 
         final int zoomStart = getZoomStart();
         final int zoomStop = getZoomStop();
@@ -266,7 +275,7 @@ public class GridSubset {
             }
         }
 
-        return -1L;
+        return -1;
     }
 
     public String[] getGridNames() {

@@ -53,6 +53,7 @@ import org.geowebcache.locks.LockProvider.Lock;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
+import org.geowebcache.storage.TileIndex;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.URLs;
 
@@ -267,7 +268,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
         String tileGridSetId = tile.getGridSetId();
 
-        long[] gridLoc = tile.getTileIndex();
+        TileIndex gridLoc = tile.getIndex();
 
         GridSubset gridSubset = getGridSubset(tileGridSetId);
         // Final preflight check, throws exception if necessary
@@ -275,7 +276,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
         ConveyorTile returnTile;
 
-        tile.setMetaTileCacheOnly(!gridSubset.shouldCacheAtZoom(gridLoc[2]));
+        tile.setMetaTileCacheOnly(!gridSubset.shouldCacheAtZoom(gridLoc.getZ()));
         try {
             if (tryCacheFetch(tile)) {
                 returnTile = finalizeTile(tile);
@@ -298,7 +299,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     public void seedTile(ConveyorTile tile, boolean tryCache)
             throws GeoWebCacheException, IOException {
         GridSubset gridSubset = getGridSubset(tile.getGridSetId());
-        if (gridSubset.shouldCacheAtZoom(tile.getTileIndex()[2])) {
+        if (gridSubset.shouldCacheAtZoom(tile.getIndex().getZ())) {
             if (tile.getMimeType().supportsTiling()
                     && (metaWidthHeight[0] > 1 || metaWidthHeight[1] > 1)) {
                 getMetatilingReponse(tile, tryCache);
@@ -398,21 +399,23 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     private String buildLockKey(ConveyorTile tile, WMSMetaTile metaTile) {
         StringBuilder metaKey = new StringBuilder();
 
-        final long[] tileIndex;
+        final TileIndex tileIndex;
         if (metaTile != null) {
-            tileIndex = metaTile.getMetaGridPos();
+            tileIndex = TileIndex.valueOf(metaTile.getMetaGridPos());
             metaKey.append("meta_");
         } else {
-            tileIndex = tile.getTileIndex();
+            tileIndex = tile.getIndex();
             metaKey.append("tile_");
         }
-        long x = tileIndex[0];
-        long y = tileIndex[1];
-        long z = tileIndex[2];
 
         metaKey.append(tile.getLayerId());
         metaKey.append("_").append(tile.getGridSetId());
-        metaKey.append("_").append(x).append("_").append(y).append("_").append(z);
+        metaKey.append("_")
+                .append(tileIndex.getX())
+                .append("_")
+                .append(tileIndex.getY())
+                .append("_")
+                .append(tileIndex.getZ());
         if (tile.getParametersId() != null) {
             metaKey.append("_").append(tile.getParametersId());
         }
@@ -430,7 +433,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     private ConveyorTile getNonMetatilingReponse(ConveyorTile tile, boolean tryCache)
             throws GeoWebCacheException {
         // String debugHeadersStr = null;
-        long[] gridLoc = tile.getTileIndex();
+        TileIndex gridLoc = tile.getIndex();
 
         String lockKey = buildLockKey(tile, null);
         Lock lock = null;
@@ -454,7 +457,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
             tile = doNonMetatilingRequest(tile);
 
             if (tile.getStatus() > 299
-                    || this.getExpireCache((int) gridLoc[2]) != GWCVars.CACHE_DISABLE_CACHE) {
+                    || this.getExpireCache(gridLoc.getZ()) != GWCVars.CACHE_DISABLE_CACHE) {
                 tile.persist();
             }
 
@@ -473,7 +476,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     }
 
     public boolean tryCacheFetch(ConveyorTile tile) {
-        int expireCache = this.getExpireCache((int) tile.getTileIndex()[2]);
+        int expireCache = this.getExpireCache(tile.getIndex().getZ());
         if (expireCache != GWCVars.CACHE_DISABLE_CACHE) {
             try {
                 return tile.retrieve(expireCache * 1000L);
@@ -507,7 +510,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         }
 
         if (tile.servletResp != null) {
-            setExpirationHeader(tile.servletResp, (int) tile.getTileIndex()[2]);
+            setExpirationHeader(tile.servletResp, tile.getIndex().getZ());
         }
 
         return tile;

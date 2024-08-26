@@ -27,6 +27,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.TileIndex;
 import org.geowebcache.util.ServletUtils;
 
 /** Class to convert from Google Maps coordinates into the internal representation of a tile. */
@@ -95,7 +96,7 @@ public class GMapsConverter extends Service {
                         sb,
                         layerId,
                         gsb.getWorldEpsg3857().getName(),
-                        gridLoc,
+                        TileIndex.valueOf(gridLoc),
                         mimeType,
                         filteringParameters,
                         request,

@@ -16,6 +16,7 @@ package org.geowebcache.grid;
 
 import java.util.Arrays;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.storage.TileIndex;
 
 public class OutsideCoverageException extends GeoWebCacheException {
     /** */
@@ -32,11 +33,29 @@ public class OutsideCoverageException extends GeoWebCacheException {
                         + "]");
     }
 
+    public OutsideCoverageException(int zoomLevel, long firstLevel, long lastLevel) {
+        super(
+                "Zoom level was "
+                        + zoomLevel
+                        + ", but value has to be in ["
+                        + firstLevel
+                        + ","
+                        + lastLevel
+                        + "]");
+    }
+
     public OutsideCoverageException(long[] index, long[] coverage) {
         super(
                 "Coverage [minx,miny,maxx,maxy] is "
                         + Arrays.toString(coverage)
                         + ", index [x,y,z] is "
                         + Arrays.toString(index));
+    }
+
+    public OutsideCoverageException(TileIndex index, long[] coverage) {
+        super(
+                String.format(
+                        "Coverage [minx,miny,maxx,maxy] is %s, index [x,y,z] is %s",
+                        Arrays.toString(coverage), TileIndex.toString(index)));
     }
 }

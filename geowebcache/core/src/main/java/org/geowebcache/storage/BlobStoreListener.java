@@ -34,9 +34,9 @@ public interface BlobStoreListener {
      * @param blobFormat {@link MimeType#getFormat() format name} of the mime type for the stored
      *     tile
      * @param parametersId {@link TileObject#getParametersId() parameters id} for the stored tile
-     * @param x X ordinate of the {@link TileObject#getXYZ() grid location} for the stored tile
-     * @param y Y ordinate of the {@link TileObject#getXYZ() grid location} for the stored tile
-     * @param z Z ordinate of the {@link TileObject#getXYZ() grid location} for the stored tile
+     * @param x X ordinate of the {@link TileObject#getX()} grid location for the stored tile
+     * @param y Y ordinate of the {@link TileObject#getY()} grid location for the stored tile
+     * @param z Z ordinate of the {@link TileObject#getZ()} grid location for the stored tile
      * @param blobSize the actual storage size the blob uses in the blob store's backend storage;
      *     which may or may not equal to the encoded tile size, depending on the storage mechanism
      */
@@ -58,9 +58,9 @@ public interface BlobStoreListener {
      * @param blobFormat {@link MimeType#getFormat() format name} of the mime type for the stored
      *     tile
      * @param parametersId {@link TileObject#getParametersId() parameters id} for the stored tile
-     * @param x X ordinate of the {@link TileObject#getXYZ() grid location} for the stored tile
-     * @param y Y ordinate of the {@link TileObject#getXYZ() grid location} for the stored tile
-     * @param z Z ordinate of the {@link TileObject#getXYZ() grid location} for the stored tile
+     * @param x X ordinate of the {@link TileObject#getX()} grid location for the stored tile
+     * @param y Y ordinate of the {@link TileObject#getY()} grid location for the stored tile
+     * @param z Z ordinate of the {@link TileObject#getZ()} grid location for the stored tile
      * @param blobSize the actual blob size freed from the blob store's backend storage; which may
      *     or may not equal to the encoded tile size, depending on the storage mechanism
      */
@@ -82,9 +82,9 @@ public interface BlobStoreListener {
      * @param blobFormat {@link MimeType#getFormat() format name} of the mime type for the stored
      *     tile
      * @param parametersId {@link TileObject#getParametersId() parameters id} for the stored tile
-     * @param x X ordinate of the {@link TileObject#getXYZ() grid location} for the stored tile
-     * @param y Y ordinate of the {@link TileObject#getXYZ() grid location} for the stored tile
-     * @param z Z ordinate of the {@link TileObject#getXYZ() grid location} for the stored tile
+     * @param x X ordinate of the {@link TileObject#getX()} grid location for the stored tile
+     * @param y Y ordinate of the {@link TileObject#getY()} grid location for the stored tile
+     * @param z Z ordinate of the {@link TileObject#getZ()} grid location for the stored tile
      * @param blobSize the actual storage size the blob uses in the blob store's backend storage;
      *     which may or may not equal to the encoded tile size, depending on the storage mechanism
      * @param oldSize the size of the replaced blob

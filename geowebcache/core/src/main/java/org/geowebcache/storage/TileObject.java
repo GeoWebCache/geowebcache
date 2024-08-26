@@ -14,8 +14,8 @@
  */
 package org.geowebcache.storage;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Map;
 import org.geowebcache.grid.GridSet;
 import org.geowebcache.io.Resource;
@@ -31,17 +31,19 @@ public class TileObject extends StorageObject implements Serializable {
 
     public static final String TYPE = "tile";
 
-    Resource blob;
+    private Resource blob;
 
-    String parameters_id = null;
+    private String parameters_id = null;
 
-    long[] xyz;
+    private long x;
+    private long y;
+    private int z;
 
-    String layer_name;
+    private String layer_name;
 
-    Map<String, String> parameters;
+    private Map<String, String> parameters;
 
-    String gridSetId;
+    private String gridSetId;
 
     public static TileObject createQueryTileObject(
             String layerName,
@@ -49,10 +51,27 @@ public class TileObject extends StorageObject implements Serializable {
             String gridSetId,
             String format,
             Map<String, String> parameters) {
+
+        TileIndex index = xyz == null ? null : TileIndex.valueOf(xyz);
+
+        return createQueryTileObject(layerName, index, gridSetId, format, parameters);
+    }
+
+    public static TileObject createQueryTileObject(
+            String layerName,
+            TileIndex xyz,
+            String gridSetId,
+            String format,
+            Map<String, String> parameters) {
+
         TileObject obj = new TileObject();
 
         obj.layer_name = layerName;
-        obj.xyz = xyz;
+        if (xyz != null) {
+            obj.x = xyz.getX();
+            obj.y = xyz.getY();
+            obj.z = xyz.getZ();
+        }
         obj.gridSetId = gridSetId;
         obj.blob_format = format;
         obj.parameters = parameters;
@@ -67,13 +86,20 @@ public class TileObject extends StorageObject implements Serializable {
             String format,
             Map<String, String> parameters,
             Resource blob) {
-        TileObject obj = new TileObject();
 
-        obj.layer_name = layerName;
-        obj.xyz = xyz;
-        obj.gridSetId = gridSetId;
-        obj.blob_format = format;
-        obj.parameters = parameters;
+        TileIndex index = xyz == null ? null : TileIndex.valueOf(xyz);
+        return createCompleteTileObject(layerName, index, gridSetId, format, parameters, blob);
+    }
+
+    public static TileObject createCompleteTileObject(
+            String layerName,
+            TileIndex xyz,
+            String gridSetId,
+            String format,
+            Map<String, String> parameters,
+            Resource blob) {
+
+        TileObject obj = createQueryTileObject(layerName, xyz, gridSetId, format, parameters);
 
         if (blob == null) {
             obj.blob_size = -1;
@@ -118,13 +144,48 @@ public class TileObject extends StorageObject implements Serializable {
         this.parameters_id = parameters_id;
     }
 
-    public long[] getXYZ() {
-        return xyz;
+    public TileIndex getIndex() {
+        return TileIndex.valueOf(x, y, z);
     }
 
-    // public int getSrs() {
-    // return srs;
-    // }
+    public long getX() {
+        return x;
+    }
+
+    public long getY() {
+        return y;
+    }
+
+    public int getZ() {
+        return z;
+    }
+
+    @VisibleForTesting
+    public TileObject setX(long x) {
+        this.x = x;
+        return this;
+    }
+
+    @VisibleForTesting
+    public TileObject setY(long y) {
+        this.y = y;
+        return this;
+    }
+
+    @VisibleForTesting
+    public TileObject setZ(int z) {
+        this.z = z;
+        return this;
+    }
+
+    /**
+     * To be deprecated, use individual methods {@link #getX()}, {@link #getY()}, {@link #getZ()}
+     *
+     * @return a newly allocated array with the x,y,z values
+     */
+    public long[] getXYZ() {
+        return new long[] {x, y, z};
+    }
 
     public String getLayerName() {
         return layer_name;
@@ -141,6 +202,6 @@ public class TileObject extends StorageObject implements Serializable {
 
     @Override
     public String toString() {
-        return "[" + layer_name + "," + gridSetId + ",{" + Arrays.toString(xyz) + "}]";
+        return String.format("[%s,%s,{%d,%d,%d}]", layer_name, gridSetId, x, y, z);
     }
 }

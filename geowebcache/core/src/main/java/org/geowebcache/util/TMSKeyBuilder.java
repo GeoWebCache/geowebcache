@@ -86,7 +86,6 @@ public final class TMSKeyBuilder {
         checkNotNull(obj.getLayerName());
         checkNotNull(obj.getGridSetId());
         checkNotNull(obj.getBlobFormat());
-        checkNotNull(obj.getXYZ());
 
         String layer = layerId(obj.getLayerName());
         String gridset = obj.getGridSetId();
@@ -101,9 +100,7 @@ public final class TMSKeyBuilder {
                 obj.setParametersId(parametersId);
             }
         }
-        Long x = Long.valueOf(obj.getXYZ()[0]);
-        Long y = Long.valueOf(obj.getXYZ()[1]);
-        Long z = Long.valueOf(obj.getXYZ()[2]);
+
         String extension;
         try {
             String format = obj.getBlobFormat();
@@ -125,9 +122,9 @@ public final class TMSKeyBuilder {
                         gridset,
                         shortFormat,
                         parametersId,
-                        z,
-                        x,
-                        y + "." + extension);
+                        obj.getZ(),
+                        obj.getX(),
+                        obj.getY() + "." + extension);
         return key;
     }
 

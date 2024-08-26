@@ -37,6 +37,7 @@ import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.BlobStoreAggregator;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.TileIndex;
 import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -116,7 +117,7 @@ public class GeoWebCacheDispatcherTest {
                         sb,
                         "testLayer",
                         "testGrid",
-                        new long[] {1, 2, 3},
+                        TileIndex.valueOf(1, 2, 3),
                         ImageMime.png,
                         Collections.emptyMap(),
                         request,
@@ -132,7 +133,7 @@ public class GeoWebCacheDispatcherTest {
         EasyMock.expect(layer.getTile(conv)).andReturn(conv).once();
         EasyMock.expect(layer.getGridSubset("testGrid")).andStubReturn(subset);
         EasyMock.expect(layer.useETags()).andStubReturn(false);
-        EasyMock.expect(subset.boundsFromIndex(EasyMock.aryEq(new long[] {1, 2, 3})))
+        EasyMock.expect(subset.boundsFromIndex(EasyMock.eq(TileIndex.valueOf(1, 2, 3))))
                 .andStubReturn(new BoundingBox(10, 20, 30, 40));
         EasyMock.expect(subset.getName()).andStubReturn("testGrid");
         EasyMock.expect(subset.getSRS()).andStubReturn(srs);
@@ -194,7 +195,7 @@ public class GeoWebCacheDispatcherTest {
                         sb,
                         "testLayer",
                         "testGrid",
-                        new long[] {1, 2, 3},
+                        TileIndex.valueOf(1, 2, 3),
                         ImageMime.png,
                         Collections.emptyMap(),
                         request,

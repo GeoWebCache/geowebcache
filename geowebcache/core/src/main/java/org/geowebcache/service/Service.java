@@ -116,11 +116,11 @@ public abstract class Service {
 
         TileLayer layer = conv.getLayer();
         if (layer != null) {
-            layer.setExpirationHeader(conv.servletResp, (int) conv.getTileIndex()[2]);
+            layer.setExpirationHeader(conv.servletResp, conv.getIndex().getZ());
         }
 
         if (writeExpiration) {
-            conv.getLayer().setExpirationHeader(response, (int) conv.getTileIndex()[2]);
+            conv.getLayer().setExpirationHeader(response, conv.getIndex().getZ());
         }
 
         response.setContentType(mimeStr);

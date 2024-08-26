@@ -35,6 +35,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.TileIndex;
 
 /**
  * Just a helper class for KMZ experimentation stuff
@@ -76,7 +77,7 @@ public class KMZHelper {
                                 sb,
                                 tileLayer.getName(),
                                 gridSetId,
-                                linkGridLock,
+                                TileIndex.valueOf(linkGridLock),
                                 mime,
                                 null,
                                 null,

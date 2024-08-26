@@ -22,7 +22,6 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,6 +47,7 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.DefaultStorageFinder;
+import org.geowebcache.storage.TileIndex;
 import org.springframework.http.MediaType;
 
 /**
@@ -128,8 +128,8 @@ public final class ResponseUtils {
         String mimeType = tile.getMimeType().getMimeType(blob);
 
         servletResp.setHeader("geowebcache-cache-result", String.valueOf(cacheResult));
-        servletResp.setHeader("geowebcache-tile-index", Arrays.toString(tile.getTileIndex()));
-        long[] tileIndex = tile.getTileIndex();
+        TileIndex tileIndex = tile.getIndex();
+        servletResp.setHeader("geowebcache-tile-index", TileIndex.toString(tileIndex));
         TileLayer layer = tile.getLayer();
         GridSubset gridSubset = layer.getGridSubset(tile.getGridSetId());
         BoundingBox tileBounds = gridSubset.boundsFromIndex(tileIndex);
@@ -190,7 +190,7 @@ public final class ResponseUtils {
         tile.servletResp.setHeader("geowebcache-message", message);
         TileLayer layer = tile.getLayer();
         if (layer != null) {
-            layer.setExpirationHeader(tile.servletResp, (int) tile.getTileIndex()[2]);
+            layer.setExpirationHeader(tile.servletResp, tile.getIndex().getZ());
 
             if (layer.useETags()) {
                 String ifNoneMatch = tile.servletReq.getHeader("If-None-Match");

@@ -51,6 +51,7 @@ import org.geowebcache.layer.AbstractTileLayer;
 import org.geowebcache.layer.ExpirationRule;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.storage.TileIndex;
 import org.geowebcache.util.GWCVars;
 
 /**
@@ -268,18 +269,18 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
 
         if (storageFormat.equals(CacheStorageInfo.COMPACT_FORMAT_CODE)
                 || storageFormat.equals(CacheStorageInfo.COMPACT_FORMAT_CODE_V2)) {
-            final long[] tileIndex = tile.getTileIndex();
+            final TileIndex tileIndex = tile.getIndex();
             final String gridSetId = tile.getGridSetId();
             final GridSubset gridSubset = this.getGridSubset(gridSetId);
 
             GridSet gridSet = gridSubset.getGridSet();
-            final int zoom = (int) tileIndex[2];
+            final int zoom = tileIndex.getZ();
 
             Grid grid = gridSet.getGrid(zoom);
             long coverageMaxY = grid.getNumTilesHigh() - 1;
 
-            final int col = (int) tileIndex[0];
-            final int row = (int) (coverageMaxY - tileIndex[1]);
+            final int col = (int) tileIndex.getX();
+            final int row = (int) (coverageMaxY - tileIndex.getY());
 
             tileContent = compactCache.getBundleFileResource(zoom, row, col);
 
@@ -298,7 +299,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         } else {
             tile.setCacheResult(CacheResult.MISS);
             if (!setLayerBlankTile(tile)) {
-                throw new OutsideCoverageException(tile.getTileIndex(), 0, 0);
+                throw new OutsideCoverageException(tile.getIndex().getZ(), 0, 0);
             }
         }
 
@@ -370,12 +371,12 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
     private String getTilePath(final ConveyorTile tile) {
 
         final MimeType mimeType = tile.getMimeType();
-        final long[] tileIndex = tile.getTileIndex();
+        final TileIndex tileIndex = tile.getIndex();
         final String gridSetId = tile.getGridSetId();
         final GridSubset gridSubset = this.getGridSubset(gridSetId);
 
         GridSet gridSet = gridSubset.getGridSet();
-        final int z = (int) tileIndex[2];
+        final int z = tileIndex.getZ();
 
         Grid grid = gridSet.getGrid(z);
 
@@ -383,10 +384,10 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         // long coverageMinY = coverage[1];
         long coverageMaxY = grid.getNumTilesHigh() - 1;
 
-        final long x = tileIndex[0];
+        final long x = tileIndex.getX();
         // invert the order of the requested Y ordinate, since ArcGIS caches are top-left to
         // bottom-right, and GWC computes tiles in bottom-left to top-right order
-        final long y = (coverageMaxY - tileIndex[1]);
+        final long y = (coverageMaxY - tileIndex.getY());
 
         String level = (this.hexZoom) ? Integer.toHexString(z) : Integer.toString(z);
         level = zeroPadder(level, 2);

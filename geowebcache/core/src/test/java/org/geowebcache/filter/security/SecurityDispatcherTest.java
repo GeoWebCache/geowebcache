@@ -23,6 +23,7 @@ import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.storage.TileIndex;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -48,8 +49,8 @@ public class SecurityDispatcherTest {
 
         EasyMock.expect(conv.getLayer()).andStubReturn(layer);
         EasyMock.expect(conv.getGridSubset()).andStubReturn(subset);
-        EasyMock.expect(conv.getTileIndex()).andStubReturn(new long[] {1, 2, 3});
-        EasyMock.expect(subset.boundsFromIndex(EasyMock.aryEq(new long[] {1, 2, 3})))
+        EasyMock.expect(conv.getIndex()).andStubReturn(TileIndex.valueOf(1, 2, 3));
+        EasyMock.expect(subset.boundsFromIndex(EasyMock.eq(TileIndex.valueOf(1, 2, 3))))
                 .andStubReturn(bbox);
         EasyMock.expect(subset.getSRS()).andStubReturn(srs);
 
@@ -81,8 +82,8 @@ public class SecurityDispatcherTest {
 
         EasyMock.expect(conv.getLayer()).andStubReturn(layer);
         EasyMock.expect(conv.getGridSubset()).andStubReturn(subset);
-        EasyMock.expect(conv.getTileIndex()).andStubReturn(new long[] {1, 2, 3});
-        EasyMock.expect(subset.boundsFromIndex(EasyMock.aryEq(new long[] {1, 2, 3})))
+        EasyMock.expect(conv.getIndex()).andStubReturn(TileIndex.valueOf(1, 2, 3));
+        EasyMock.expect(subset.boundsFromIndex(EasyMock.eq(TileIndex.valueOf(1, 2, 3))))
                 .andStubReturn(bbox);
         EasyMock.expect(subset.getSRS()).andStubReturn(srs);
 
@@ -115,8 +116,8 @@ public class SecurityDispatcherTest {
 
         EasyMock.expect(conv.getLayer()).andStubReturn(layer);
         EasyMock.expect(conv.getGridSubset()).andStubReturn(subset);
-        EasyMock.expect(conv.getTileIndex()).andStubReturn(new long[] {1, 2, 3});
-        EasyMock.expect(subset.boundsFromIndex(EasyMock.aryEq(new long[] {1, 2, 3})))
+        EasyMock.expect(conv.getIndex()).andStubReturn(TileIndex.valueOf(1, 2, 3));
+        EasyMock.expect(subset.boundsFromIndex(EasyMock.eq(TileIndex.valueOf(1, 2, 3))))
                 .andStubReturn(bbox);
         EasyMock.expect(subset.getSRS()).andStubReturn(srs);
 
@@ -152,8 +153,8 @@ public class SecurityDispatcherTest {
 
         EasyMock.expect(conv.getLayer()).andStubReturn(layer);
         EasyMock.expect(conv.getGridSubset()).andStubReturn(subset);
-        EasyMock.expect(conv.getTileIndex()).andStubReturn(new long[] {1, 2, 3});
-        EasyMock.expect(subset.boundsFromIndex(EasyMock.aryEq(new long[] {1, 2, 3})))
+        EasyMock.expect(conv.getIndex()).andStubReturn(TileIndex.valueOf(1, 2, 3));
+        EasyMock.expect(subset.boundsFromIndex(EasyMock.eq(TileIndex.valueOf(1, 2, 3))))
                 .andStubReturn(bbox);
         EasyMock.expect(subset.getSRS()).andStubReturn(srs);
 
@@ -183,8 +184,8 @@ public class SecurityDispatcherTest {
 
         EasyMock.expect(conv.getLayer()).andStubReturn(layer);
         EasyMock.expect(conv.getGridSubset()).andStubReturn(subset);
-        EasyMock.expect(conv.getTileIndex()).andStubReturn(new long[] {1, 2, 3});
-        EasyMock.expect(subset.boundsFromIndex(EasyMock.aryEq(new long[] {1, 2, 3})))
+        EasyMock.expect(conv.getIndex()).andStubReturn(TileIndex.valueOf(1, 2, 3));
+        EasyMock.expect(subset.boundsFromIndex(EasyMock.eq(TileIndex.valueOf(1, 2, 3))))
                 .andStubReturn(bbox);
         EasyMock.expect(subset.getSRS()).andStubReturn(srs);
 

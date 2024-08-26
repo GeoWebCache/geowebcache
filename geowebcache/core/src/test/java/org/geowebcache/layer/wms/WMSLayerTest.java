@@ -93,6 +93,7 @@ import org.geowebcache.seed.GWCTask;
 import org.geowebcache.seed.SeedRequest;
 import org.geowebcache.seed.TileBreeder;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.TileIndex;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.TileRangeIterator;
@@ -149,7 +150,7 @@ public class WMSLayerTest extends TileLayerTest {
                         mockStorageBroker,
                         layerId,
                         gridSetId,
-                        gridLoc,
+                        TileIndex.valueOf(gridLoc),
                         mimeType,
                         null,
                         servletReq,
@@ -182,10 +183,9 @@ public class WMSLayerTest extends TileLayerTest {
                     assertNotNull(to.getBlob());
                     assertTrue(to.getBlob().getSize() > 0);
                     String format = ImageMime.jpegPng.getMimeType(to.getBlob());
-                    long[] xyz = to.getXYZ();
-                    assertEquals(10, xyz[2]);
+                    assertEquals(10, to.getZ());
                     // check the ones in the full black area are jpeg, the others png
-                    if (xyz[0] == 900 || xyz[1] == 602) {
+                    if (to.getX() == 900 || to.getY() == 602) {
                         assertEquals("image/jpeg", format);
                     } else {
                         assertEquals("image/png", format);
@@ -206,10 +206,10 @@ public class WMSLayerTest extends TileLayerTest {
                     assertNotNull(to.getBlob());
                     assertTrue(to.getBlob().getSize() > 0);
                     String format = ImageMime.jpegPng8.getMimeType(to.getBlob());
-                    long[] xyz = to.getXYZ();
-                    assertEquals(10, xyz[2]);
+
+                    assertEquals(10, to.getZ());
                     // check the ones in the full black area are jpeg, the others png
-                    if (xyz[0] == 900 || xyz[1] == 602) {
+                    if (to.getX() == 900 || to.getY() == 602) {
                         assertEquals("image/jpeg", format);
                     } else {
                         assertEquals("image/png", format);
@@ -235,14 +235,14 @@ public class WMSLayerTest extends TileLayerTest {
                     assertNotNull(to.getBlob());
                     assertTrue(to.getBlob().getSize() > 0);
                     String format = ImageMime.jpegPng8.getMimeType(to.getBlob());
-                    long[] xyz = to.getXYZ();
-                    assertEquals(10, xyz[2]);
+
+                    assertEquals(10, to.getZ());
 
                     try (InputStream is = to.getBlob().getInputStream()) {
                         BufferedImage image = ImageIO.read(is);
 
                         // check the ones in the full black area are jpeg, the others png
-                        if (xyz[0] == 900 || xyz[1] == 602) {
+                        if (to.getX() == 900 || to.getY() == 602) {
                             // it's a gray
                             assertEquals(1, image.getColorModel().getNumComponents());
                             assertEquals("image/jpeg", format);
@@ -288,7 +288,7 @@ public class WMSLayerTest extends TileLayerTest {
                         mockStorageBroker,
                         layerId,
                         gridSetId,
-                        gridLoc,
+                        TileIndex.valueOf(gridLoc),
                         mimeType,
                         null,
                         servletReq,
@@ -412,7 +412,7 @@ public class WMSLayerTest extends TileLayerTest {
                         mockStorageBroker,
                         layerId,
                         gridSetId,
-                        gridLoc,
+                        TileIndex.valueOf(gridLoc),
                         mimeType,
                         null,
                         servletReq,
@@ -579,7 +579,7 @@ public class WMSLayerTest extends TileLayerTest {
                             storageBroker,
                             layerName,
                             tr.getGridSetId(),
-                            gridLoc,
+                            TileIndex.valueOf(gridLoc),
                             tr.getMimeType(),
                             fullParameters,
                             null,
@@ -615,7 +615,7 @@ public class WMSLayerTest extends TileLayerTest {
                             storageBroker,
                             layerName,
                             tr.getGridSetId(),
-                            gridLoc,
+                            TileIndex.valueOf(gridLoc),
                             tr.getMimeType(),
                             fullParameters,
                             null,
