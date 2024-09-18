@@ -1,3 +1,17 @@
+GeoWebCache 1.26.0 (2024-09-18)
+-------------------------------
+
+Initial release for 1.26.x series.
+
+Improvements:
++++++++++++++
+- Update to GeoTools 32.0
+
+Fixes:
+++++++
+- TBC
+
+
 GeoWebCache 1.26-SNAPSHOT (2024-03-01)
 --------------------------------------
 
