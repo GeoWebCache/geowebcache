@@ -11,6 +11,26 @@
   <groupId>org.geowebcache</groupId>
   <artifactId>gwc-azure-blob</artifactId>
 
+  <properties>
+    <!-- Same sdk version as imageio-ext's cog-ragengereader-azure for GeoSever compatibility -->
+    <azure.version>12.27.1</azure.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <!--
+            Use the same netty version as imageio-ext's cog-ragengereader-s3 and cog-rangereader-azure
+            See https://github.com/geosolutions-it/imageio-ext/pull/312
+        -->
+        <groupId>io.netty</groupId>
+        <artifactId>netty-bom</artifactId>
+        <version>4.1.113.Final</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>org.geowebcache</groupId>
@@ -19,10 +39,9 @@
     </dependency>
 
     <dependency>
-      <groupId>com.microsoft.azure</groupId>
+      <groupId>com.azure</groupId>
       <artifactId>azure-storage-blob</artifactId>
-      <!-- at the time of writing 11.0.1 was available but pom on repoes was corrupted -->
-      <version>11.0.0</version>
+      <version>${azure.version}</version>
     </dependency>
 
     <dependency>

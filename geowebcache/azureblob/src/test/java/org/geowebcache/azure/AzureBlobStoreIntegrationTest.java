@@ -96,7 +96,7 @@ public abstract class AzureBlobStoreIntegrationTest {
         TileLayerDispatcher layers = mock(TileLayerDispatcher.class);
         LockProvider lockProvider = new NoOpLockProvider();
         TileLayer layer = mock(TileLayer.class);
-        when(layers.getTileLayer(eq(DEFAULT_LAYER))).thenReturn(layer);
+        when(layers.getTileLayer(DEFAULT_LAYER)).thenReturn(layer);
         when(layer.getName()).thenReturn(DEFAULT_LAYER);
         when(layer.getId()).thenReturn(DEFAULT_LAYER);
         blobStore = new AzureBlobStore(config, layers, lockProvider);

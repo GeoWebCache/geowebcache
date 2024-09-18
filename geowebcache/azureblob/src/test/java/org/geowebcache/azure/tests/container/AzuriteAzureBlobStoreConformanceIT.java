@@ -30,14 +30,8 @@ import org.junit.rules.TestName;
  */
 public class AzuriteAzureBlobStoreConformanceIT extends AzureBlobStoreConformanceTest {
 
-    /**
-     * Use "legacy" container to work with {@literal
-     * com.microsoft.azure:azure-storage-blob:jar:11.0.0}. Instantiate it as
-     * AzuriteContainer.legacy().debugLegacy() to print out request/response information for
-     * debugging purposes
-     */
     @ClassRule
-    public static AzuriteContainer azurite = AzuriteContainer.legacy().disabledWithoutDocker();
+    public static AzuriteContainer azurite = AzuriteContainer.latest().disabledWithoutDocker();
 
     /** Used to get a per-test case Azure container */
     @Rule public TestName testName = new TestName();

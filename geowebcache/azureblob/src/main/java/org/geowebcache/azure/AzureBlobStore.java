@@ -17,20 +17,18 @@ package org.geowebcache.azure;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.isNull;
 
+import com.azure.core.util.BinaryData;
+import com.azure.storage.blob.models.BlobDownloadContentResponse;
+import com.azure.storage.blob.models.BlobItem;
+import com.azure.storage.blob.models.BlobProperties;
+import com.azure.storage.blob.models.BlobStorageException;
+import com.azure.storage.blob.specialized.BlockBlobClient;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
-import com.microsoft.azure.storage.blob.BlockBlobURL;
-import com.microsoft.azure.storage.blob.DownloadResponse;
-import com.microsoft.azure.storage.blob.models.BlobGetPropertiesResponse;
-import com.microsoft.azure.storage.blob.models.BlobHTTPHeaders;
-import com.microsoft.azure.storage.blob.models.BlobItem;
-import com.microsoft.rest.v2.RestException;
-import com.microsoft.rest.v2.util.FlowableUtil;
-import io.reactivex.Flowable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.util.HashMap;
+import java.io.UncheckedIOException;
+import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +37,8 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import org.apache.commons.io.IOUtils;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.io.ByteArrayResource;
@@ -80,8 +78,9 @@ public class AzureBlobStore implements BlobStore {
         this.keyBuilder = new TMSKeyBuilder(prefix, layers);
 
         // check target is suitable for a cache
-        boolean emptyFolder = client.listBlobs(prefix, 1).isEmpty();
-        boolean existingMetadata = !client.listBlobs(keyBuilder.storeMetadata(), 1).isEmpty();
+        boolean emptyFolder = !client.prefixExists(prefix);
+        boolean existingMetadata = client.blobExists(keyBuilder.storeMetadata());
+
         CompositeBlobStore.checkSuitability(
                 configuration.getLocation(), existingMetadata, emptyFolder);
 
@@ -103,13 +102,7 @@ public class AzureBlobStore implements BlobStore {
         final String layerPrefix = keyBuilder.forLayer(layerName);
 
         // this might not be there, tolerant delete
-        try {
-            BlockBlobURL metadata = client.getBlockBlobURL(metadataKey);
-            int statusCode = metadata.delete().blockingGet().statusCode();
-            if (!HttpStatus.valueOf(statusCode).is2xxSuccessful()) {
-                return false;
-            }
-        } catch (RestException e) {
+        if (!client.deleteBlob(metadataKey)) {
             return false;
         }
 
@@ -133,7 +126,7 @@ public class AzureBlobStore implements BlobStore {
                                     try {
                                         return deleteManager.scheduleAsyncDelete(prefix);
                                     } catch (StorageException e) {
-                                        throw new RuntimeException(e);
+                                        throw new UncheckedIOException(e);
                                     }
                                 })
                         .reduce(Boolean::logicalOr) // Don't use Stream.anyMatch as it would short
@@ -164,44 +157,45 @@ public class AzureBlobStore implements BlobStore {
     @Override
     public boolean delete(TileObject obj) throws StorageException {
         final String key = keyBuilder.forTile(obj);
-        BlockBlobURL blob = client.getBlockBlobURL(key);
+        BlockBlobClient blob = client.getBlockBlobClient(key);
 
         // don't bother for the extra call if there are no listeners
         if (listeners.isEmpty()) {
             try {
-                int statusCode = blob.delete().blockingGet().statusCode();
-                return HttpStatus.valueOf(statusCode).is2xxSuccessful();
-            } catch (RestException e) {
-                return false;
+                return blob.deleteIfExists();
+            } catch (RuntimeException e) {
+                throw new StorageException("Failed to delete tile ", e);
+            }
+        }
+
+        // if there are listeners, gather extra information
+        long oldSize = 0;
+        try {
+            BlobProperties properties = blob.getProperties();
+            oldSize = properties.getBlobSize();
+        } catch (BlobStorageException e) {
+            if (HttpStatus.NOT_FOUND.value() != e.getStatusCode()) {
+                throw new StorageException("Failed to check if the container exists", e);
             }
         }
 
         try {
-            // if there are listeners, gather extra information
-            BlobGetPropertiesResponse properties = blob.getProperties().blockingGet();
-            Long oldSize = properties.headers().contentLength();
-            int statusCode = blob.delete().blockingGet().statusCode();
-            if (!HttpStatus.valueOf(statusCode).is2xxSuccessful()) {
-                return false;
+            boolean deleted = blob.deleteIfExists();
+            if (deleted && oldSize > 0L) {
+                obj.setBlobSize((int) oldSize);
+                listeners.sendTileDeleted(obj);
             }
-            if (oldSize != null) {
-                obj.setBlobSize(oldSize.intValue());
-            }
-        } catch (RestException e) {
-            if (e.response().statusCode() != 404) {
-                throw new StorageException("Failed to delete tile ", e);
-            }
-            return false;
+            return deleted;
+        } catch (RuntimeException e) {
+            throw new StorageException("Failed to delete tile ", e);
         }
-        listeners.sendTileDeleted(obj);
-        return true;
     }
 
     @Override
     public boolean delete(TileRange tileRange) throws StorageException {
         // see if there is anything to delete in that range by computing a prefix
         final String coordsPrefix = keyBuilder.coordinatesPrefix(tileRange, false);
-        if (client.listBlobs(coordsPrefix, 1).isEmpty()) {
+        if (!client.prefixExists(coordsPrefix)) {
             return false;
         }
 
@@ -273,24 +267,26 @@ public class AzureBlobStore implements BlobStore {
     @Override
     public boolean get(TileObject obj) throws StorageException {
         final String key = keyBuilder.forTile(obj);
-        final BlockBlobURL blob = client.getBlockBlobURL(key);
+        boolean found;
         try {
-            DownloadResponse response = blob.download().blockingGet();
-            ByteBuffer buffer =
-                    FlowableUtil.collectBytesInBuffer(response.body(null)).blockingGet();
-            byte[] bytes = new byte[buffer.remaining()];
-            buffer.get(bytes);
-
-            obj.setBlobSize(bytes.length);
-            obj.setBlob(new ByteArrayResource(bytes));
-            obj.setCreated(response.headers().lastModified().toEpochSecond() * 1000l);
-        } catch (RestException e) {
-            if (e.response().statusCode() == 404) {
-                return false;
+            BlobDownloadContentResponse response = client.download(key);
+            if (null == response) {
+                obj.setBlob(null);
+                obj.setBlobSize(0);
+                found = false;
+            } else {
+                BinaryData data = response.getValue();
+                OffsetDateTime lastModified = response.getDeserializedHeaders().getLastModified();
+                byte[] bytes = data.toBytes();
+                obj.setBlobSize(bytes.length);
+                obj.setBlob(new ByteArrayResource(bytes));
+                obj.setCreated(lastModified.toEpochSecond() * 1000l);
+                found = true;
             }
+        } catch (BlobStorageException e) {
             throw new StorageException("Error getting " + key, e);
         }
-        return true;
+        return found;
     }
 
     @Override
@@ -301,50 +297,40 @@ public class AzureBlobStore implements BlobStore {
 
         final String key = keyBuilder.forTile(obj);
 
-        BlockBlobURL blobURL = client.getBlockBlobURL(key);
+        BlockBlobClient blobURL = client.getBlockBlobClient(key);
 
         // if there are listeners, gather first the old size with a "head" request
-        Long oldSize = null;
+        long oldSize = 0L;
         boolean existed = false;
         if (!listeners.isEmpty()) {
             try {
-                BlobGetPropertiesResponse properties = blobURL.getProperties().blockingGet();
-                oldSize = properties.headers().contentLength();
+                BlobProperties properties = blobURL.getProperties();
+                oldSize = properties.getBlobSize();
                 existed = true;
-            } catch (RestException e) {
-                if (e.response().statusCode() != HttpStatus.NOT_FOUND.value()) {
+            } catch (BlobStorageException e) {
+                if (HttpStatus.NOT_FOUND.value() != e.getStatusCode()) {
                     throw new StorageException("Failed to check if the container exists", e);
                 }
             }
         }
 
         // then upload
+        String mimeType = getMimeType(obj);
         try (InputStream is = blob.getInputStream()) {
-            byte[] bytes = IOUtils.toByteArray(is);
-            ByteBuffer buffer = ByteBuffer.wrap(bytes);
-            String mimeType = MimeType.createFromFormat(obj.getBlobFormat()).getMimeType();
-            BlobHTTPHeaders headers = new BlobHTTPHeaders().withBlobContentType(mimeType);
-            int status =
-                    blobURL.upload(Flowable.just(buffer), bytes.length, headers, null, null, null)
-                            .blockingGet()
-                            .statusCode();
-            if (!HttpStatus.valueOf(status).is2xxSuccessful()) {
-                throw new StorageException(
-                        "Failed to upload tile to Azure on container "
-                                + client.getContainerName()
-                                + " and key "
-                                + key
-                                + " got HTTP  status "
-                                + status);
-            }
-        } catch (RestException | IOException | MimeException e) {
+            Long length = blob.getSize();
+            BinaryData data = BinaryData.fromStream(is, length);
+            client.upload(key, data, mimeType);
+        } catch (StorageException e) {
             throw new StorageException(
                     "Failed to upload tile to Azure on container "
                             + client.getContainerName()
                             + " and key "
                             + key,
                     e);
+        } catch (IOException e) {
+            throw new StorageException("Error obtaining date from TileObject " + obj);
         }
+
         // along with the metadata
         putParametersMetadata(obj.getLayerName(), obj.getParametersId(), obj.getParameters());
 
@@ -356,6 +342,16 @@ public class AzureBlobStore implements BlobStore {
                 listeners.sendTileStored(obj);
             }
         }
+    }
+
+    private String getMimeType(TileObject obj) {
+        String mimeType;
+        try {
+            mimeType = MimeType.createFromFormat(obj.getBlobFormat()).getMimeType();
+        } catch (MimeException e) {
+            throw new IllegalArgumentException(e);
+        }
+        return mimeType;
     }
 
     private void putParametersMetadata(
@@ -370,7 +366,7 @@ public class AzureBlobStore implements BlobStore {
         try {
             client.putProperties(resourceKey, properties);
         } catch (StorageException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -384,9 +380,6 @@ public class AzureBlobStore implements BlobStore {
     @Override
     public void destroy() {
         shutDown = true;
-        if (client != null) {
-            client.close();
-        }
         if (deleteManager != null) {
             deleteManager.close();
         }
@@ -404,8 +397,11 @@ public class AzureBlobStore implements BlobStore {
 
     @Override
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
+        // revisit: this seems to hold true only for GeoServerTileLayer, "standalone" TileLayers
+        // return getName() from getId(), as in AbstractTileLayer. Unfortunately the only option
+        // for non-GeoServerTileLayers would be copy and delete. Expensive.
         log.fine("No need to rename layers, AzureBlobStore uses layer id as key root");
-        if (!client.listBlobs(oldLayerName, 1).isEmpty()) {
+        if (client.prefixExists(oldLayerName)) {
             listeners.sendLayerRenamed(oldLayerName, newLayerName);
         }
         return true;
@@ -415,8 +411,7 @@ public class AzureBlobStore implements BlobStore {
     @Override
     public String getLayerMetadata(String layerName, String key) {
         Properties properties = getLayerMetadata(layerName);
-        String value = properties.getProperty(key);
-        return value;
+        return properties.getProperty(key);
     }
 
     @Override
@@ -427,45 +422,35 @@ public class AzureBlobStore implements BlobStore {
         try {
             client.putProperties(resourceKey, properties);
         } catch (StorageException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
     private Properties getLayerMetadata(String layerName) {
         String key = keyBuilder.layerMetadata(layerName);
-        try {
-            return client.getProperties(key);
-        } catch (StorageException e) {
-            throw new RuntimeException(e);
-        }
+        return client.getProperties(key);
     }
 
     @Override
     public boolean layerExists(String layerName) {
-        final String coordsPrefix = keyBuilder.forLayer(layerName);
-        return !client.listBlobs(coordsPrefix, 1).isEmpty();
+        final String layerPrefix = keyBuilder.forLayer(layerName);
+        return client.prefixExists(layerPrefix);
     }
 
     @Override
     public Map<String, Optional<Map<String, String>>> getParametersMapping(String layerName) {
-        // going big, with MAX_VALUE, since at the end everything must be held in memory anyways
-        List<BlobItem> items =
-                client.listBlobs(keyBuilder.parametersMetadataPrefix(layerName), Integer.MAX_VALUE);
-        Map<String, Optional<Map<String, String>>> result = new HashMap<>();
-        try {
-            for (BlobItem item : items) {
+        // going big, retrieve all items, since at the end everything must be held in memory anyways
+        String parametersMetadataPrefix = keyBuilder.parametersMetadataPrefix(layerName);
+        Stream<BlobItem> items = client.listBlobs(parametersMetadataPrefix);
 
-                Map<String, String> properties =
-                        client.getProperties(item.name()).entrySet().stream()
-                                .collect(
-                                        Collectors.toMap(
-                                                e -> (String) e.getKey(),
-                                                e -> (String) e.getValue()));
-                result.put(ParametersUtils.getId(properties), Optional.of(properties));
-            }
-            return result;
-        } catch (StorageException e) {
-            throw new RuntimeException("Failed to retrieve properties mappings", e);
-        }
+        return items.map(BlobItem::getName)
+                .map(this::loadProperties)
+                .collect(Collectors.toMap(ParametersUtils::getId, Optional::ofNullable));
+    }
+
+    private Map<String, String> loadProperties(String blobKey) {
+        Properties properties = client.getProperties(blobKey);
+        return properties.entrySet().stream()
+                .collect(Collectors.toMap(e -> (String) e.getKey(), e -> (String) e.getValue()));
     }
 }
