@@ -18,8 +18,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItemInArray;
 import static org.junit.Assert.assertTrue;
 
-import io.reactivex.Flowable;
-import java.nio.ByteBuffer;
+import com.azure.core.http.rest.Response;
+import com.azure.core.util.BinaryData;
+import com.azure.core.util.Context;
+import com.azure.storage.blob.models.BlockBlobItem;
+import com.azure.storage.blob.options.BlockBlobSimpleUploadOptions;
 import org.easymock.EasyMock;
 import org.geowebcache.azure.tests.container.AzuriteAzureBlobStoreSuitabilityIT;
 import org.geowebcache.azure.tests.online.OnlineAzureBlobStoreSuitabilityIT;
@@ -63,13 +66,13 @@ public abstract class AzureBlobStoreSuitabilityTest extends BlobStoreSuitability
 
     protected abstract AzureClient getClient();
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     protected Matcher<Object> existing() {
         return (Matcher) hasItemInArray(equalTo("metadata.properties"));
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     protected Matcher<Object> empty() {
         return (Matcher) Matchers.emptyArray();
@@ -80,14 +83,13 @@ public abstract class AzureBlobStoreSuitabilityTest extends BlobStoreSuitability
         AzureBlobStoreData info = getConfiguration();
         for (String path : (String[]) dir) {
             String fullPath = info.getPrefix() + "/" + path;
-            ByteBuffer byteBuffer = ByteBuffer.wrap("testAbc".getBytes());
-            int statusCode =
+            BinaryData data = BinaryData.fromString("testAbc");
+            Response<BlockBlobItem> response =
                     getClient()
-                            .getBlockBlobURL(fullPath)
-                            .upload(Flowable.just(byteBuffer), byteBuffer.limit())
-                            .blockingGet()
-                            .statusCode();
-            assertTrue(HttpStatus.valueOf(statusCode).is2xxSuccessful());
+                            .getBlockBlobClient(fullPath)
+                            .uploadWithResponse(
+                                    new BlockBlobSimpleUploadOptions(data), null, Context.NONE);
+            assertTrue(HttpStatus.valueOf(response.getStatusCode()).is2xxSuccessful());
         }
         return new AzureBlobStore(info, tld, locks);
     }

@@ -21,7 +21,6 @@ import org.geowebcache.azure.AzureBlobStoreIntegrationTest;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
-import org.springframework.http.HttpStatus;
 
 public class OnlineAzureBlobStoreIntegrationIT extends AzureBlobStoreIntegrationTest {
 
@@ -41,14 +40,8 @@ public class OnlineAzureBlobStoreIntegrationIT extends AzureBlobStoreIntegration
     public void testCreatesStoreMetadataOnStart() {
         String prefix = tempFolder.getConfig().getPrefix();
         // if the file does not exist a StorageException will be thrown
-        int status =
-                tempFolder
-                        .getClient()
-                        .getBlockBlobURL(prefix + "/metadata.properties")
-                        .getProperties()
-                        .blockingGet()
-                        .statusCode();
-        assertTrue(
-                "Expected success but got " + status, HttpStatus.valueOf(status).is2xxSuccessful());
+        String key = prefix + "/metadata.properties";
+        boolean exists = tempFolder.getClient().getBlockBlobClient(key).exists();
+        assertTrue("blob " + key + " does not exist", exists);
     }
 }

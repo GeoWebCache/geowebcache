@@ -17,15 +17,14 @@ package org.geowebcache.azure.tests.online;
 import static com.google.common.base.Preconditions.checkState;
 import static org.junit.Assert.assertTrue;
 
-import com.microsoft.azure.storage.blob.BlockBlobURL;
-import com.microsoft.azure.storage.blob.models.BlobItem;
-import java.util.List;
+import com.azure.storage.blob.models.BlobItem;
+import com.azure.storage.blob.specialized.BlockBlobClient;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.geowebcache.azure.AzureBlobStoreData;
 import org.geowebcache.azure.AzureClient;
 import org.junit.rules.ExternalResource;
-import org.springframework.http.HttpStatus;
 
 /**
  * The TemporaryAzureFolder provides a path prefix for Azure storage and deletes all resources under
@@ -71,7 +70,6 @@ public class TemporaryAzureFolder extends ExternalResource {
             delete();
         } finally {
             temporaryPrefix = null;
-            client.close();
         }
     }
 
@@ -117,13 +115,14 @@ public class TemporaryAzureFolder extends ExternalResource {
             return;
         }
 
-        List<BlobItem> blobs = client.listBlobs(temporaryPrefix, Integer.MAX_VALUE);
-        for (BlobItem blob : blobs) {
-            BlockBlobURL blockBlobURL = client.getBlockBlobURL(blob.name());
-            int status = blockBlobURL.delete().blockingGet().statusCode();
-            assertTrue(
-                    "Expected success but got " + status + " while deleting " + blob.name(),
-                    HttpStatus.valueOf(status).is2xxSuccessful());
+        try (Stream<BlobItem> blobs = client.listBlobs(temporaryPrefix)) {
+            blobs.forEach(
+                    blob -> {
+                        BlockBlobClient blockBlobURL = client.getBlockBlobClient(blob.getName());
+                        assertTrue(
+                                "Expected success while deleting " + blob.getName(),
+                                blockBlobURL.deleteIfExists());
+                    });
         }
     }
 
