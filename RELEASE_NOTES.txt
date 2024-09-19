@@ -1,3 +1,17 @@
+GeoWebCache 1.27-SNAPSHOT (2025-03-18)
+--------------------------------------
+
+<Release Description>
+
+Improvements:
++++++++++++++
+- <New feature>
+
+Fixes:
+++++++
+- <Bug fix>
+
+
 GeoWebCache 1.26-SNAPSHOT (2024-03-01)
 --------------------------------------
 
