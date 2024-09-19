@@ -20,6 +20,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.geowebcache.config.Info;
+import org.geowebcache.storage.TileIndex;
 
 /** A grid set configuration */
 public class GridSet implements Info {
@@ -110,15 +111,19 @@ public class GridSet implements Info {
     }
 
     public BoundingBox boundsFromIndex(long[] tileIndex) {
-        final int tileZ = (int) tileIndex[2];
+        return boundsFromIndex(TileIndex.valueOf(tileIndex));
+    }
+
+    public BoundingBox boundsFromIndex(TileIndex tileIndex) {
+        final int tileZ = tileIndex.getZ();
         Grid grid = getGrid(tileZ);
 
-        final long tileX = tileIndex[0];
+        final long tileX = tileIndex.getX();
         final long tileY;
         if (yBaseToggle) {
-            tileY = tileIndex[1] - grid.getNumTilesHigh();
+            tileY = tileIndex.getY() - grid.getNumTilesHigh();
         } else {
-            tileY = tileIndex[1];
+            tileY = tileIndex.getY();
         }
 
         double width = grid.getResolution() * getTileWidth();

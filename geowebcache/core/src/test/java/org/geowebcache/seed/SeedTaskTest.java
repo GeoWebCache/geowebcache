@@ -338,7 +338,7 @@ public class SeedTaskTest {
             }
         }
         for (TileObject obj : storedTiles) {
-            tileKeys.add(new Tuple<>(obj.getXYZ()[0], obj.getXYZ()[1], obj.getXYZ()[2]));
+            tileKeys.add(new Tuple<>(obj.getX(), obj.getY(), (long) obj.getZ()));
         }
 
         Assert.assertEquals(expectedTiles, tileKeys);

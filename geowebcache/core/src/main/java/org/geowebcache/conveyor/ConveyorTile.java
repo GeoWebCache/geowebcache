@@ -28,6 +28,7 @@ import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.storage.StorageException;
+import org.geowebcache.storage.TileIndex;
 import org.geowebcache.storage.TileObject;
 
 /** Represents a request for a tile and carries the information needed to complete it. */
@@ -72,7 +73,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
             StorageBroker sb,
             String layerId,
             String gridSetId,
-            long[] tileIndex,
+            TileIndex tileIndex,
             MimeType mimeType,
             Map<String, String[]> fullParameters,
             Map<String, String> filteringParameters,
@@ -95,7 +96,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
             StorageBroker sb,
             String layerId,
             String gridSetId,
-            long[] tileIndex,
+            TileIndex tileIndex,
             MimeType mimeType,
             Map<String, String> filteringParameters,
             HttpServletRequest servletReq,
@@ -104,18 +105,11 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         super(layerId, sb, servletReq, servletResp);
         this.gridSetId = gridSetId;
 
-        long[] idx = new long[3];
-
-        if (tileIndex != null) {
-            idx[0] = tileIndex[0];
-            idx[1] = tileIndex[1];
-            idx[2] = tileIndex[2];
-        }
-
         super.mimeType = mimeType;
 
         this.filteringParameters = filteringParameters;
 
+        TileIndex idx = tileIndex == null ? null : TileIndex.copyOf(tileIndex);
         stObj =
                 TileObject.createQueryTileObject(
                         layerId, idx, gridSetId, mimeType.getFormat(), filteringParameters);
@@ -178,6 +172,10 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
 
     public long[] getTileIndex() {
         return stObj.getXYZ();
+    }
+
+    public TileIndex getIndex() {
+        return stObj.getIndex();
     }
 
     public synchronized GridSubset getGridSubset() {
@@ -248,7 +246,6 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     public String toString() {
         StringBuilder str = new StringBuilder();
         str.append("ConveyorTile[");
-        long[] idx = stObj.getXYZ();
 
         if (getLayerId() != null) {
             str.append(getLayerId()).append(" ");
@@ -258,9 +255,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
             str.append(gridSetId).append(" ");
         }
 
-        if (idx != null && idx.length == 3) {
-            str.append("{" + idx[0] + "," + idx[1] + "," + idx[2] + "} ");
-        }
+        str.append("{" + stObj.getX() + "," + stObj.getY() + "," + stObj.getZ() + "} ");
 
         if (this.mimeType != null) {
             str.append(this.mimeType.getFormat());

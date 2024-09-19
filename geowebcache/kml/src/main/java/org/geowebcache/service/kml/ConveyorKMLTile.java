@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.TileIndex;
 
 public class ConveyorKMLTile extends ConveyorTile {
     public ConveyorKMLTile(
@@ -32,7 +33,15 @@ public class ConveyorKMLTile extends ConveyorTile {
             HttpServletRequest servletReq,
             HttpServletResponse servletResp) {
 
-        super(sb, layerId, gridSetId, tileIndex, mimeType, fullParameters, servletReq, servletResp);
+        super(
+                sb,
+                layerId,
+                gridSetId,
+                TileIndex.valueOf(tileIndex),
+                mimeType,
+                fullParameters,
+                servletReq,
+                servletResp);
     }
 
     String urlPrefix = null;

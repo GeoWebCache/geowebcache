@@ -67,7 +67,7 @@ public abstract class WMSSourceHelper {
         wmsParams.put("WIDTH", String.valueOf(gridSubset.getTileWidth()));
         // strBuilder.append("&TILED=").append(requestTiled);
 
-        BoundingBox bbox = gridSubset.boundsFromIndex(tile.getTileIndex());
+        BoundingBox bbox = gridSubset.boundsFromIndex(tile.getIndex());
 
         wmsParams.put("BBOX", bbox.toString());
 

@@ -30,6 +30,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.TileIndex;
 import org.geowebcache.util.ServletUtils;
 
 /** Class to convert from Virtual Earth quad keys to the internal representation of a tile. */
@@ -87,7 +88,7 @@ public class VEConverter extends Service {
                         sb,
                         layerId,
                         gsb.getWorldEpsg3857().getName(),
-                        gridLoc,
+                        TileIndex.valueOf(gridLoc),
                         mimeType,
                         null,
                         request,

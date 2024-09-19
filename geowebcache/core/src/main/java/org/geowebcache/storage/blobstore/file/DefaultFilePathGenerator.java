@@ -54,10 +54,9 @@ public class DefaultFilePathGenerator implements FilePathGenerator {
      */
     @Override
     public File tilePath(TileObject tile, MimeType mimeType) {
-        final long[] tileIndex = tile.getXYZ();
-        long x = tileIndex[0];
-        long y = tileIndex[1];
-        long z = tileIndex[2];
+        long x = tile.getX();
+        long y = tile.getY();
+        int z = tile.getZ();
 
         StringBuilder path = new StringBuilder(256);
 

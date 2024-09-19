@@ -50,6 +50,7 @@ import org.geowebcache.layer.meta.TileJSON;
 import org.geowebcache.mime.ApplicationMime;
 import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.storage.TileIndex;
 import org.geowebcache.util.GWCVars;
 
 /**
@@ -223,16 +224,16 @@ public class MBTilesLayer extends AbstractTileLayer implements TileJSONProvider 
     @Override
     public ConveyorTile getTile(final ConveyorTile tile) throws IOException, GeoWebCacheException {
 
-        long[] tileIndex = tile.getTileIndex();
+        TileIndex tileIndex = tile.getIndex();
 
         // check request is within coverage
         String tileGridSetId = tile.getGridSetId();
         GridSubset gridSubset = getGridSubset(tileGridSetId);
         gridSubset.checkCoverage(tileIndex);
 
-        int zl = (int) tileIndex[2];
-        int row = (int) tileIndex[1];
-        int column = (int) tileIndex[0];
+        int zl = tileIndex.getZ();
+        int row = (int) tileIndex.getY();
+        int column = (int) tileIndex.getX();
         MBTilesTile loadedTile = mbTilesFile.loadTile(zl, column, row);
         byte[] content = loadedTile.getData();
         if (content != null) {

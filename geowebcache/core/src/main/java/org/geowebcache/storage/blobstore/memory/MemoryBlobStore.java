@@ -507,7 +507,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         TileObject cached =
                 TileObject.createCompleteTileObject(
                         obj.getLayerName(),
-                        obj.getXYZ(),
+                        obj.getIndex(),
                         obj.getGridSetId(),
                         obj.getBlobFormat(),
                         obj.getParameters(),

@@ -41,6 +41,7 @@ import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.TileIndex;
 import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
@@ -104,11 +105,13 @@ public class TMSService extends Service {
         Optional<Map<String, String>> possibleSplit = splitParams(request);
         if (possibleSplit.isPresent()) {
             Map<String, String> split = possibleSplit.get();
-            long[] gridLoc = new long[3];
+            long x;
+            long y;
+            int z;
             try {
-                gridLoc[0] = Integer.parseInt(split.get("x"));
-                gridLoc[1] = Integer.parseInt(split.get("y"));
-                gridLoc[2] = Integer.parseInt(split.get("z"));
+                x = Long.parseLong(split.get("x"));
+                y = Long.parseLong(split.get("y"));
+                z = Integer.parseInt(split.get("z"));
             } catch (NumberFormatException nfe) {
                 throw new ServiceException(
                         "Unable to parse number " + nfe.getMessage() + " from " + pathInfo);
@@ -130,6 +133,7 @@ public class TMSService extends Service {
                 throw new ServiceException(
                         "Unable to determine requested format based on extension " + fileExtension);
             }
+            TileIndex gridLoc = TileIndex.valueOf(x, y, z);
             try {
                 TileLayer tileLayer = tld.getTileLayer(layerId);
                 GridSubset gridSubset = tileLayer.getGridSubset(gridSetId);
@@ -138,8 +142,9 @@ public class TMSService extends Service {
                 }
 
                 if (hasFlipY(request)) {
-                    final long tilesHigh = gridSubset.getNumTilesHigh((int) gridLoc[2]);
-                    gridLoc[1] = tilesHigh - gridLoc[1] - 1;
+                    final long tilesHigh = gridSubset.getNumTilesHigh(z);
+                    y = tilesHigh - y - 1;
+                    gridLoc = TileIndex.valueOf(x, y, z);
                 }
 
                 gridSubset.checkCoverage(gridLoc);
