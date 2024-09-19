@@ -1,21 +1,7 @@
-GeoWebCache 1.27-SNAPSHOT (2025-03-18)
---------------------------------------
+GeoWebCache 1.27.0(2025-03-18)
+------------------------------
 
-<Release Description>
-
-Improvements:
-+++++++++++++
-- <New feature>
-
-Fixes:
-++++++
-- <Bug fix>
-
-
-GeoWebCache 1.26-SNAPSHOT (2024-03-01)
---------------------------------------
-
-<Release Description>
+Stable release
 
 Improvements:
 +++++++++++++
@@ -24,6 +10,80 @@ Improvements:
 Fixes:
 ++++++
 - <Bug fix>
+
+GeoWebCache 1.26.0 (2024-09-18)
+-------------------------------
+
+Stable release
+
+Improvements:
++++++++++++++
+- Show vector tiles attributes on hover
+
+Fixes:
+++++++
+- Fix Azure blobstore error instantiating AzureClient
+- Support numeric grid names in vector tiles preview
+
+Updates:
+++++++++
+- Upgrading to Imageio-EXT 1.4.13
+- Upgrading JAI-EXT 1.1.27
+- Upgrading GeoTools 32.0
+- Upgrade Azure Blobstore fromi legacy azure-sdk (11.0) to latest (12.27.0)
+- Update to JTS 1.20.0 release
+- Upgrade Spring version from 5.3.34 to 5.3.39
+- [GWC-1288] Upgrade guava from 33.2.0 to 33.2.1
+- Update Jackson 2 libs from 2.17.1 to 2.17.2
+- Updating to EasyMock 5.3
+
+Internals:
+++++++++++
+- Upgrade easymock from 5.3.0 to 5.4.0
+- Upgrade mockito from 5.6.0 to 5.12.0
+- Upgrade git-commit-id-plugin to 4.9.0 and set useNativeGit to not fail on git worktrees
+- [GWC-1290] Upgrade commons-codec from 1.17.0 to 1.17.1
+- [GWC-1293] Upgrade junit from 4.12 to 4.13.2
+- Upgrade hamcrest from 1.3 to 3.0
+- Updating PMD to 7.2.0
+
+GeoWebCache 1.25.2 (2024-06-15)
+-------------------------------
+
+Stable release of the 1.25.x series.
+
+Improvements:
++++++++++++++
+- Upgrading to Imageio-EXT 1.4.11
+- [GWC-1266] Upgrade jackson from 2.15.2 to 2.17.1
+- [GWC-1261] Upgrade commons-text from 1.4 to 1.12.0
+- [GWC-1259] Upgrade PostgreSQL driver from 42.7.2 to 42.7.3
+- [GWC-1263] Upgrade commons-codec from 1.10 to 1.17.0
+- Upgrade ImageIO-EXT to 1.4.12
+
+GeoWebCache 1.25.1 (2024-05-22)
+-------------------------------
+
+Stable release of the 1.25.x series.
+
+Improvements:
++++++++++++++
+- Align FileBlobStore with parameter handling practice of S3/Azure
+- Bump guava from 32.0.0 to 33.2.0
+- Bump httpclient from 4.5.13 to 4.5.14
+- Bump commons-collections4 from 4.2 to 4.4
+- Bump commons-io from 2.12.0 to 2.16.1
+- Upgraded GeoTools dependencies to 31.1
+- Updating imageio-ext to 1.4.10
+
+GeoWebCache 1.25.0 (2024-03-19)
+-------------------------------
+
+First stable release of the 1.25.x series
+
+Improvements:
++++++++++++++
+- Upgraded GeoTools dependencies to 31.0
 
 
 GeoWebCache 1.25-RC (2024-03-01)
@@ -47,6 +107,46 @@ Internals:
 - Upgrade spotbugs-maven-plugin:4.7.3.4 -> 4.8.2.0
 - Fix PMD errors in core when run with Java 21
 - Allow building with QA on Java 17 and 21
+
+GeoWebCache 1.24.5 (2024-08-21)
+-------------------------------
+
+Maintenance release of the 1.24.x series
+
+Fixes:
+++++++
+- Fix Azure blobstore error instantiating AzureClient
+
+
+GeoWebCache 1.24.4 (2024-06-16)
+-------------------------------
+
+Maintenance release of the 1.24.x series
+
+Improvements:
++++++++++++++
+- Align FileBlobStore with parameter handling practice of S3/Azure
+- [GWC-1248] Upgrade guava from 32.0.0 to 33.2.0
+- [GWC-1244] Upgrade commons-collections4 from 4.2 to 4.4
+- [GWC-1245] Upgrade httpclient from 4.5.13 to 4.5.14
+- [GWC-1261] Upgrade commons-text from 1.4 to 1.12.0
+- [GWC-1259] Upgrade PostgreSQL driver from 42.7.2 to 42.7.3
+- [GWC-1263] Upgrade commons-codec from 1.10 to 1.17.0
+
+
+GeoWebCache 1.24.3 (2024-04-19)
+-------------------------------
+
+Maintenance release of the 1.24.x series
+
+Improvements:
++++++++++++++
+- Update Spring to version 5.3.32
+- Bump org.postgresql:postgresql from 42.4.3 to 42.7.2
+
+Fixes:
+++++++
+- Avoid infinite number of calls to listBlobs when doing prefix removals (e..g, gridset or layer removals)
 
 GeoWebCache 1.24.2 (2024-01-23)
 -------------------------------
