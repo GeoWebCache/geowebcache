@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.geowebcache</groupId>
   <artifactId>geowebcache</artifactId>
-  <version>1.26.0</version>
+  <version>1.26-SNAPSHOT</version>
   <packaging>pom</packaging>
   <!-- GWC VERSION -->
   <name>geowebcache</name>
@@ -51,7 +51,7 @@
   </distributionManagement>
 
   <properties>
-    <gt.version>32.0</gt.version>
+    <gt.version>32-SNAPSHOT-SNAPSHOT</gt.version>
     <jts.version>1.20.0</jts.version>
     <jaiext.version>1.1.27</jaiext.version>
     <spring.version>5.3.39</spring.version>
@@ -712,7 +712,7 @@
             <descriptor>release/war.xml</descriptor>
             <descriptor>release/doc.xml</descriptor>
           </descriptors>
-          <finalName>geowebcache-1.26.0</finalName>
+          <finalName>geowebcache-1.26-SNAPSHOT</finalName>
           <outputDirectory>${project.build.directory}/release</outputDirectory>
         </configuration>
       </plugin>
