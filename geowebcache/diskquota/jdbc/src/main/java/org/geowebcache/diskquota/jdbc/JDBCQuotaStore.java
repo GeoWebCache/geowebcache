@@ -126,6 +126,7 @@ public class JDBCQuotaStore implements QuotaStore {
         DataSourceTransactionManager dsTransactionManager =
                 new DataSourceTransactionManager(dataSource);
         this.tt = new TransactionTemplate(dsTransactionManager);
+        this.tt.setIsolationLevel(TransactionTemplate.ISOLATION_SERIALIZABLE);
         this.jt = new SimpleJdbcTemplate(dsTransactionManager.getDataSource());
     }
 
