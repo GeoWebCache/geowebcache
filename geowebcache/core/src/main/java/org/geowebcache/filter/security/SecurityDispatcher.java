@@ -50,7 +50,7 @@ public class SecurityDispatcher implements ApplicationContextAware {
         final BoundingBox bounds;
         final SRS srs;
         if (Objects.nonNull(gridSubset)) {
-            bounds = gridSubset.boundsFromIndex(tile.getTileIndex());
+            bounds = gridSubset.boundsFromIndex(tile.getIndex());
             srs = gridSubset.getSRS();
         } else {
             bounds = null;

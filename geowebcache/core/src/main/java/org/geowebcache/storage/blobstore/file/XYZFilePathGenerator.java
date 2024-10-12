@@ -73,10 +73,9 @@ public class XYZFilePathGenerator implements FilePathGenerator {
      */
     @Override
     public File tilePath(TileObject tile, MimeType mimeType) throws GeoWebCacheException {
-        final long[] tileIndex = tile.getXYZ();
-        long x = tileIndex[0];
-        int z = (int) tileIndex[2];
-        long y = getY(tile.getLayerName(), tile.getGridSetId(), x, tileIndex[1], z);
+        long x = tile.getX();
+        int z = tile.getZ();
+        long y = getY(tile.getLayerName(), tile.getGridSetId(), tile.getY(), z);
 
         StringBuilder path = new StringBuilder(256);
         String fileExtension = mimeType.getFileExtension();
@@ -114,7 +113,7 @@ public class XYZFilePathGenerator implements FilePathGenerator {
      * slippy). One method is all it needs only because the TMS vs Slippy conventions have
      * symmetrical map, e.g., the same extact operation goes both directions
      */
-    protected long getY(String layerName, String gridSetId, long x, long y, int z)
+    protected long getY(String layerName, String gridSetId, long y, int z)
             throws GeoWebCacheException {
         if (convention == Convention.TMS) {
             return y;

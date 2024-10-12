@@ -169,7 +169,7 @@ public class BlobStoreTest {
         // starting x and x + tos.length should have data, the remaining should not
         TileObject firstTO =
                 TileObject.createQueryTileObject(
-                        layerName, tos[0].xyz, srs.toString(), mime.getFormat(), parameters);
+                        layerName, tos[0].getIndex(), srs.toString(), mime.getFormat(), parameters);
         fbs.get(firstTO);
         try (InputStream is = firstTO.getBlob().getInputStream();
                 InputStream is2 = bytes.getInputStream()) {
@@ -178,7 +178,7 @@ public class BlobStoreTest {
         TileObject lastTO =
                 TileObject.createQueryTileObject(
                         layerName,
-                        tos[tos.length - 1].xyz,
+                        tos[tos.length - 1].getIndex(),
                         srs.toString(),
                         mime.getFormat(),
                         parameters);
@@ -191,7 +191,7 @@ public class BlobStoreTest {
         TileObject midTO =
                 TileObject.createQueryTileObject(
                         layerName,
-                        tos[(tos.length - 1) / 2].xyz,
+                        tos[(tos.length - 1) / 2].getIndex(),
                         srs.toString(),
                         mime.getFormat(),
                         parameters);

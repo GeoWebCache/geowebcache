@@ -16,7 +16,6 @@ package org.geowebcache.layer;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -50,6 +49,7 @@ import org.geowebcache.layer.updatesource.UpdateSourceDefinition;
 import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageException;
+import org.geowebcache.storage.TileIndex;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.util.GWCVars;
 import org.geowebcache.util.ServletUtils;
@@ -493,17 +493,17 @@ public abstract class TileLayer implements Info {
             throws GeoWebCacheException {
 
         final long[][] gridPositions = metaTile.getTilesGridPositions();
-        final long[] gridLoc = tileProto.getTileIndex();
+        final TileIndex gridLoc = tileProto.getIndex();
         final GridSubset gridSubset = getGridSubset(tileProto.getGridSetId());
 
-        final int zoomLevel = (int) gridLoc[2];
+        final int zoomLevel = gridLoc.getZ();
         final boolean store = this.getExpireCache(zoomLevel) != GWCVars.CACHE_DISABLE_CACHE;
 
         Resource resource;
         boolean encode;
         for (int i = 0; i < gridPositions.length; i++) {
-            final long[] gridPos = gridPositions[i];
-            if (Arrays.equals(gridLoc, gridPos)) {
+            final TileIndex gridPos = TileIndex.valueOf(gridPositions[i]);
+            if (gridLoc.isSameTileIndex(gridPos)) {
                 // Is this the one we need to save? then don't use the buffer or it'll be overridden
                 // by the next tile
                 resource = getImageBuffer(WMS_BUFFER2);
@@ -528,12 +528,10 @@ public abstract class TileLayer implements Info {
                                 "metaTile.writeTileToStream returned false, no tiles saved");
                     }
                     if (store) {
-                        long[] idx = {gridPos[0], gridPos[1], gridPos[2]};
-
                         TileObject tile =
                                 TileObject.createCompleteTileObject(
                                         this.getName(),
-                                        idx,
+                                        gridPos,
                                         tileProto.getGridSetId(),
                                         tileProto.getMimeType().getFormat(),
                                         tileProto.getParameters(),

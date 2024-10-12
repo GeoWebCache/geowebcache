@@ -161,8 +161,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                 connection -> {
                     // instantiating geotools needed objects
                     MBTilesFile mbtiles = GeoToolsMbtilesUtils.getMBTilesFile(connection, file);
-                    MBTilesTile gtTile =
-                            new MBTilesTile(tile.getXYZ()[2], tile.getXYZ()[0], tile.getXYZ()[1]);
+                    MBTilesTile gtTile = new MBTilesTile(tile.getZ(), tile.getX(), tile.getY());
                     try {
                         final boolean gzipped = tileIsGzipped(tile);
 
@@ -183,10 +182,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                         byte[] olData = null;
                         if (!listeners.isEmpty()) {
                             olData =
-                                    mbtiles.loadTile(
-                                                    tile.getXYZ()[2],
-                                                    tile.getXYZ()[0],
-                                                    tile.getXYZ()[1])
+                                    mbtiles.loadTile(tile.getZ(), tile.getX(), tile.getY())
                                             .getData();
                         }
                         // saving the tile
@@ -195,9 +191,9 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                             // we need to store this tile create time
                             putTileCreateTime(
                                     connection,
-                                    tile.getXYZ()[2],
-                                    tile.getXYZ()[0],
-                                    tile.getXYZ()[1],
+                                    tile.getZ(),
+                                    tile.getX(),
+                                    tile.getY(),
                                     System.currentTimeMillis());
                         }
                         if (LOGGER.isLoggable(Level.FINE)) {
@@ -244,10 +240,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
 
                                 // loading the tile using geotools reader
                                 MBTilesTile gtTile =
-                                        mbtiles.loadTile(
-                                                tile.getXYZ()[2],
-                                                tile.getXYZ()[0],
-                                                tile.getXYZ()[1]);
+                                        mbtiles.loadTile(tile.getZ(), tile.getX(), tile.getY());
 
                                 byte[] bytes = gtTile.getData();
                                 if (gtTile.getData() != null) {
@@ -335,11 +328,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                     try {
                         // getting tile old data and checking if the tile exists
                         byte[] olData =
-                                mbtiles.loadTile(
-                                                tile.getXYZ()[2],
-                                                tile.getXYZ()[0],
-                                                tile.getXYZ()[1])
-                                        .getData();
+                                mbtiles.loadTile(tile.getZ(), tile.getX(), tile.getY()).getData();
                         if (olData != null) {
                             // tile exists so let's remove the tile
                             tile.setBlobSize(olData.length);
@@ -349,10 +338,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                             if (useCreateTime) {
                                 // we care about the create time so let's remove it
                                 deleteTileCreateTime(
-                                        connection,
-                                        tile.getXYZ()[2],
-                                        tile.getXYZ()[0],
-                                        tile.getXYZ()[1]);
+                                        connection, tile.getZ(), tile.getX(), tile.getY());
                             }
                             if (LOGGER.isLoggable(Level.FINE)) {
                                 LOGGER.fine(

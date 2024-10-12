@@ -84,6 +84,7 @@ import org.geowebcache.mime.XMLMime;
 import org.geowebcache.service.OWSException;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.TileIndex;
 import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.URLs;
 import org.junit.Before;
@@ -1370,7 +1371,9 @@ public class WMTSServiceTest {
 
         when(subset.getName()).thenReturn("testGridset");
         when(subset.getGridSet()).thenReturn(set);
-        when(subset.boundsFromIndex(any())).thenReturn(new BoundingBox(0, 0, 180, 90));
+        when(subset.boundsFromIndex(any(TileIndex.class)))
+                .thenReturn(new BoundingBox(0, 0, 180, 90));
+        when(subset.boundsFromIndex(any(long[].class))).thenReturn(new BoundingBox(0, 0, 180, 90));
 
         when(set.getTileHeight()).thenReturn(256);
         when(set.getTileWidth()).thenReturn(256);
@@ -1408,7 +1411,7 @@ public class WMTSServiceTest {
                         + XMLMime.gml.getMimeType());
 
         when(subset.getNumTilesHigh(2)).thenReturn(7L);
-        when(subset.getGridIndex("testGridset:2")).thenReturn(2L);
+        when(subset.getGridIndex("testGridset:2")).thenReturn(2);
         when(subset.getCoverage(2)).thenReturn(new long[] {1, 1, 8, 8});
 
         Conveyor conv = service.getConveyor(req, resp);
@@ -1489,7 +1492,7 @@ public class WMTSServiceTest {
                         + XMLMime.gml.getMimeType());
 
         when(subset.getNumTilesHigh(2)).thenReturn(7L);
-        when(subset.getGridIndex("testGridset:2")).thenReturn(2L);
+        when(subset.getGridIndex("testGridset:2")).thenReturn(2);
         when(subset.getCoverage(2)).thenReturn(new long[] {1, 1, 8, 8});
 
         Conveyor conv = service.getConveyor(req, resp);

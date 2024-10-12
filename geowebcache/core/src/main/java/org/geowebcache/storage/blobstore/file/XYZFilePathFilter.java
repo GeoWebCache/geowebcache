@@ -148,7 +148,7 @@ public class XYZFilePathFilter implements FilenameFilter {
             long x = Long.parseLong(parent.getName());
             int z = Integer.parseInt(parent.getParentFile().getName());
             // adjust y based on the tms vs slippy convention
-            y = generator.getY(tr.getLayerName(), tr.getGridSetId(), x, y, z);
+            y = generator.getY(tr.getLayerName(), tr.getGridSetId(), y, z);
 
             return tr.contains(x, y, z);
         } catch (Exception e) {

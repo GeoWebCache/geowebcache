@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -54,6 +53,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.mime.XMLMime;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.TileIndex;
 import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.PropertyRule;
 import org.hamcrest.Matchers;
@@ -147,13 +147,12 @@ public class WMSServiceTest {
 
         assertEquals(expectedGridset, tileRequest.getGridSetId());
         assertEquals("image/png", tileRequest.getMimeType().getMimeType());
-        assertArrayEquals(
-                "Expected "
-                        + Arrays.toString(tileIndex)
-                        + " got "
-                        + Arrays.toString(tileRequest.getTileIndex()),
-                tileIndex,
-                tileRequest.getTileIndex());
+
+        TileIndex expected = TileIndex.valueOf(tileIndex);
+        TileIndex actual = tileRequest.getIndex();
+        assertTrue(
+                "Expected " + TileIndex.toString(expected) + " got " + TileIndex.toString(actual),
+                expected.isSameTileIndex(actual));
     }
 
     private TileLayer mockTileLayer(String layerName, List<String> gridSetNames) throws Exception {
