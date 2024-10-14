@@ -85,7 +85,7 @@
     <pom.fmt.skip>${spotless.apply.skip}</pom.fmt.skip>
     <jackson.version>2.18.2</jackson.version>
     <jackson.databind.version>${jackson.version}</jackson.databind.version>
-    <jetty.version>9.4.33.v20201020</jetty.version>
+    <jetty.version>9.4.55.v20240627</jetty.version>
     <errorProneFlags></errorProneFlags>
     <errorProne.version>2.24.1</errorProne.version>
     <javac.version>9+181-r4173-1</javac.version>
