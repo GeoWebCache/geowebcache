@@ -33,15 +33,10 @@ class GeoRSSReaderFactory {
 
     private static final Logger log = Logging.getLogger(GeoRSSReaderFactory.class.getName());
 
-    public GeoRSSReader createReader(final URL url, final String username, final String password)
-            throws IOException {
+    public GeoRSSReader createReader(final URL url, final String username, final String password) throws IOException {
 
         if (log.isLoggable(Level.FINE)) {
-            log.fine(
-                    "Creating GeoRSS reader for URL "
-                            + url.toExternalForm()
-                            + " with user "
-                            + username);
+            log.fine("Creating GeoRSS reader for URL " + url.toExternalForm() + " with user " + username);
         }
 
         HttpClientBuilder builder = new HttpClientBuilder();
@@ -67,8 +62,7 @@ class GeoRSSReaderFactory {
 
         @SuppressWarnings("PMD.CloseResource") // The stream will be kept open to get new events
         Reader reader =
-                new BufferedReader(
-                        new InputStreamReader(response.getEntity().getContent(), contentEncoding));
+                new BufferedReader(new InputStreamReader(response.getEntity().getContent(), contentEncoding));
         if (log.isLoggable(Level.FINE)) {
             log.fine("GeoRSS reader created, returning.");
         }

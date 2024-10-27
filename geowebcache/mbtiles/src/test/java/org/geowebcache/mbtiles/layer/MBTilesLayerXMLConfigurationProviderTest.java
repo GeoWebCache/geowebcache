@@ -27,15 +27,12 @@ public class MBTilesLayerXMLConfigurationProviderTest {
     public void testGetConfiguredXStream() {
 
         final Map<String, Class> aliases = new HashMap<>();
-        XStream xs =
-                new MBTilesLayerXMLConfigurationProvider()
-                        .getConfiguredXStream(
-                                new GeoWebCacheXStream() {
-                                    @Override
-                                    public void alias(String alias, Class c) {
-                                        aliases.put(alias, c);
-                                    }
-                                });
+        XStream xs = new MBTilesLayerXMLConfigurationProvider().getConfiguredXStream(new GeoWebCacheXStream() {
+            @Override
+            public void alias(String alias, Class c) {
+                aliases.put(alias, c);
+            }
+        });
 
         Assert.assertNotNull(xs);
         Assert.assertEquals(MBTilesLayer.class, aliases.get("mbtilesLayer"));

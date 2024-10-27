@@ -61,8 +61,7 @@ public interface BlobStoreConfiguration extends BaseConfiguration {
      * @throws IllegalArgumentException If this configuration can't, for some reason, modify the
      *     blob store identified by the supplied name (for example, the configuration is read-only).
      */
-    void modifyBlobStore(BlobStoreInfo info)
-            throws NoSuchElementException, IllegalArgumentException;
+    void modifyBlobStore(BlobStoreInfo info) throws NoSuchElementException, IllegalArgumentException;
 
     /**
      * Retrieve a set of {@link BlobStoreInfo} names in this configuration.
@@ -108,8 +107,7 @@ public interface BlobStoreConfiguration extends BaseConfiguration {
      * @throws IllegalArgumentException If this configuration can't, for some reason, rename the
      *     blob store identified by the supplied name (for example, newName is null or invalid).
      */
-    void renameBlobStore(String oldName, String newName)
-            throws NoSuchElementException, IllegalArgumentException;
+    void renameBlobStore(String oldName, String newName) throws NoSuchElementException, IllegalArgumentException;
 
     /**
      * Indicates if this configurations contains a {@link BlobStoreInfo) identified by a given name.

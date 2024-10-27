@@ -86,8 +86,7 @@ public class CacheInfoPersister {
 
         EnvelopeN envN = (EnvelopeN) getConfiguredXStream().fromXML(layerBoundsFile);
 
-        BoundingBox bbox =
-                new BoundingBox(envN.getXmin(), envN.getYmin(), envN.getXmax(), envN.getYmax());
+        BoundingBox bbox = new BoundingBox(envN.getXmin(), envN.getYmin(), envN.getXmax(), envN.getYmax());
 
         return bbox;
     }

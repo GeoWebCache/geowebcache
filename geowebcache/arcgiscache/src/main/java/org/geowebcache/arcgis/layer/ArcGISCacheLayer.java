@@ -158,20 +158,16 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
             this.enabled = true;
         }
         if (this.tilingScheme == null) {
-            throw new IllegalStateException(
-                    "tilingScheme has not been set. It should point to the ArcGIS "
-                            + "cache tiling scheme file for this layer (conf.xml)");
+            throw new IllegalStateException("tilingScheme has not been set. It should point to the ArcGIS "
+                    + "cache tiling scheme file for this layer (conf.xml)");
         }
         if (tileCachePath != null) {
-            if (!tileCachePath.exists()
-                    || !tileCachePath.isDirectory()
-                    || !tileCachePath.canRead()) {
-                throw new IllegalStateException(
-                        "tileCachePath property for layer '"
-                                + getName()
-                                + "' is set to '"
-                                + tileCachePath
-                                + "' but the directory either does not exist or is not readable");
+            if (!tileCachePath.exists() || !tileCachePath.isDirectory() || !tileCachePath.canRead()) {
+                throw new IllegalStateException("tileCachePath property for layer '"
+                        + getName()
+                        + "' is set to '"
+                        + tileCachePath
+                        + "' but the directory either does not exist or is not readable");
             }
         }
         if (this.hexZoom == null) {
@@ -182,8 +178,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
             cacheInfo = tilingSchemeLoader.load(new FileReader(tilingScheme));
             File layerBoundsFile = new File(tilingScheme.getParentFile(), "conf.cdi");
             if (!layerBoundsFile.exists()) {
-                throw new RuntimeException(
-                        "Layer bounds file not found: " + layerBoundsFile.getAbsolutePath());
+                throw new RuntimeException("Layer bounds file not found: " + layerBoundsFile.getAbsolutePath());
             }
             log.info("Parsing layer bounds for " + getName());
             this.layerBounds = tilingSchemeLoader.parseLayerBounds(new FileReader(layerBoundsFile));
@@ -204,14 +199,12 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
                 }
             }
         } catch (FileNotFoundException e) {
-            throw new IllegalStateException(
-                    "Tiling scheme file not found: " + tilingScheme.getAbsolutePath());
+            throw new IllegalStateException("Tiling scheme file not found: " + tilingScheme.getAbsolutePath());
         }
-        log.info(
-                "Configuring layer "
-                        + getName()
-                        + " out of the ArcGIS tiling scheme "
-                        + tilingScheme.getAbsolutePath());
+        log.info("Configuring layer "
+                + getName()
+                + " out of the ArcGIS tiling scheme "
+                + tilingScheme.getAbsolutePath());
 
         super.subSets = createGridSubsets(gridSetBroker);
         super.formats = loadMimeTypes();
@@ -251,8 +244,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         Integer zoomStart = lodInfos.get(0).getLevelID();
         Integer zoomStop = lodInfos.get(lodInfos.size() - 1).getLevelID();
 
-        GridSubset subSet =
-                GridSubsetFactory.createGridSubSet(gridSet, this.layerBounds, zoomStart, zoomStop);
+        GridSubset subSet = GridSubsetFactory.createGridSubSet(gridSet, this.layerBounds, zoomStart, zoomStop);
 
         HashMap<String, GridSubset> subsets = new HashMap<>();
         subsets.put(gridSet.getName(), subSet);
@@ -465,8 +457,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
      * @see org.geowebcache.layer.TileLayer#seedTile(org.geowebcache.conveyor.ConveyorTile, boolean)
      */
     @Override
-    public void seedTile(ConveyorTile tile, boolean tryCache)
-            throws GeoWebCacheException, IOException {
+    public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException, IOException {
         throw new UnsupportedOperationException();
     }
 

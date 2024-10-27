@@ -104,10 +104,9 @@ class CacheCleanerTask implements Runnable {
 
             if (monitor.isCacheInfoBuilderRunning(layerName)) {
                 if (LOG.isLoggable(Level.INFO)) {
-                    LOG.info(
-                            "Cache information is still being gathered for layer '"
-                                    + layerName
-                                    + "'. Skipping quota enforcement task for this layer.");
+                    LOG.info("Cache information is still being gathered for layer '"
+                            + layerName
+                            + "'. Skipping quota enforcement task for this layer.");
                 }
                 continue;
             }
@@ -115,10 +114,9 @@ class CacheCleanerTask implements Runnable {
             Future<?> runningCleanup = perLayerRunningCleanUps.get(layerName);
             if (runningCleanup != null && !runningCleanup.isDone()) {
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine(
-                            "Cache clean up task still running for layer '"
-                                    + layerName
-                                    + "'. Ignoring it for this run.");
+                    LOG.fine("Cache clean up task still running for layer '"
+                            + layerName
+                            + "'. Ignoring it for this run.");
                 }
                 continue;
             }
@@ -131,24 +129,22 @@ class CacheCleanerTask implements Runnable {
             Quota excedent = usedQuota.difference(quota);
             if (excedent.getBytes().compareTo(BigInteger.ZERO) > 0) {
                 if (LOG.isLoggable(Level.INFO)) {
-                    LOG.info(
-                            "Layer '"
-                                    + layerName
-                                    + "' exceeds its quota of "
-                                    + quota.toNiceString()
-                                    + " by "
-                                    + excedent.toNiceString()
-                                    + ". Currently used: "
-                                    + usedQuota.toNiceString()
-                                    + ". Clean up task will be performed using expiration policy "
-                                    + policy);
+                    LOG.info("Layer '"
+                            + layerName
+                            + "' exceeds its quota of "
+                            + quota.toNiceString()
+                            + " by "
+                            + excedent.toNiceString()
+                            + ". Currently used: "
+                            + usedQuota.toNiceString()
+                            + ". Clean up task will be performed using expiration policy "
+                            + policy);
                 }
 
                 Set<String> layerNames = Collections.singleton(layerName);
                 QuotaResolver quotaResolver = monitor.newLayerQuotaResolver(layerName);
 
-                LayerQuotaEnforcementTask task =
-                        new LayerQuotaEnforcementTask(layerNames, quotaResolver, monitor);
+                LayerQuotaEnforcementTask task = new LayerQuotaEnforcementTask(layerNames, quotaResolver, monitor);
                 Future<Object> future = this.cleanUpExecutorService.submit(task);
                 perLayerRunningCleanUps.put(layerName, future);
             }
@@ -161,16 +157,14 @@ class CacheCleanerTask implements Runnable {
             }
             final Quota globalQuota = quotaConfig.getGlobalQuota();
             if (globalQuota == null) {
-                LOG.info(
-                        "There's not a global disk quota configured. The following layers "
-                                + "will not be checked for excess of disk usage: "
-                                + globallyManagedLayerNames);
+                LOG.info("There's not a global disk quota configured. The following layers "
+                        + "will not be checked for excess of disk usage: "
+                        + globallyManagedLayerNames);
                 return;
             }
 
             if (globalCleanUpTask != null && !globalCleanUpTask.isDone()) {
-                LOG.fine(
-                        "Global cache quota enforcement task still running, avoiding issueing a new one...");
+                LOG.fine("Global cache quota enforcement task still running, avoiding issueing a new one...");
                 return;
             }
 
@@ -182,17 +176,15 @@ class CacheCleanerTask implements Runnable {
                 LOG.fine("Submitting global cache quota enforcement task");
                 QuotaResolver quotaResolver = monitor.newGlobalQuotaResolver();
                 LayerQuotaEnforcementTask task =
-                        new LayerQuotaEnforcementTask(
-                                globallyManagedLayerNames, quotaResolver, monitor);
+                        new LayerQuotaEnforcementTask(globallyManagedLayerNames, quotaResolver, monitor);
                 this.globalCleanUpTask = this.cleanUpExecutorService.submit(task);
             } else {
                 if (LOG.isLoggable(Level.FINER)) {
-                    LOG.finer(
-                            "Won't launch global quota enforcement task, "
-                                    + globalUsedQuota.toNiceString()
-                                    + " used out of "
-                                    + globalQuota.toNiceString()
-                                    + " configured for the whole cache size.");
+                    LOG.finer("Won't launch global quota enforcement task, "
+                            + globalUsedQuota.toNiceString()
+                            + " used out of "
+                            + globalQuota.toNiceString()
+                            + " configured for the whole cache size.");
                 }
             }
         }
@@ -208,9 +200,7 @@ class CacheCleanerTask implements Runnable {
         private final DiskQuotaMonitor monitor;
 
         public LayerQuotaEnforcementTask(
-                final Set<String> layerNames,
-                final QuotaResolver quotaResolver,
-                final DiskQuotaMonitor monitor) {
+                final Set<String> layerNames, final QuotaResolver quotaResolver, final DiskQuotaMonitor monitor) {
             this.layerNames = layerNames;
             this.quotaResolver = quotaResolver;
             this.monitor = monitor;

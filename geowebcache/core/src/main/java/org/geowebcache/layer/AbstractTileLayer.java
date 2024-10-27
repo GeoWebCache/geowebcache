@@ -49,7 +49,8 @@ public abstract class AbstractTileLayer extends TileLayer {
 
     private static final int[] DEFAULT_METATILING_FACTORS = {1, 1};
 
-    @Nullable protected String blobStoreId;
+    @Nullable
+    protected String blobStoreId;
 
     protected Boolean enabled;
 

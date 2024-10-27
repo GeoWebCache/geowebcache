@@ -49,7 +49,8 @@ public class MemoryCacheController {
     public static Logger log = Logging.getLogger(MemoryCacheController.class.getName());
 
     /** Store associated to the StorageBroker to use */
-    @Autowired StorageBroker broker;
+    @Autowired
+    StorageBroker broker;
 
     private WebApplicationContext context;
 
@@ -107,11 +108,9 @@ public class MemoryCacheController {
                 entity = getXmlRepresentation(statistics);
             }
         } else {
-            entity =
-                    new ResponseEntity<>(
-                            "No statistics available for the current BlobStore: "
-                                    + (store != null ? store.getClass() : null),
-                            HttpStatus.NOT_FOUND);
+            entity = new ResponseEntity<>(
+                    "No statistics available for the current BlobStore: " + (store != null ? store.getClass() : null),
+                    HttpStatus.NOT_FOUND);
         }
         return entity;
     }
@@ -122,11 +121,8 @@ public class MemoryCacheController {
      * @return a {@link ResponseEntity} object
      */
     private ResponseEntity<?> getJsonRepresentation(CacheStatistics stats) throws JSONException {
-        XStream xs =
-                XMLConfiguration.getConfiguredXStreamWithContext(
-                        new GeoWebCacheXStream(new JsonHierarchicalStreamDriver()),
-                        context,
-                        Context.REST);
+        XStream xs = XMLConfiguration.getConfiguredXStreamWithContext(
+                new GeoWebCacheXStream(new JsonHierarchicalStreamDriver()), context, Context.REST);
         JSONObject obj = new JSONObject(xs.toXML(stats));
         return new ResponseEntity<>(obj.toString(), HttpStatus.OK);
     }

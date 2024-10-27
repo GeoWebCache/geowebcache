@@ -42,13 +42,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "${gwc.context.suffix:}/rest")
 public class FilterUpdateController extends GWCController {
 
-    @Autowired TileLayerDispatcher tld;
+    @Autowired
+    TileLayerDispatcher tld;
 
     @RequestMapping(value = "/filter/{filterName}/update/{updateType}", method = RequestMethod.POST)
     public ResponseEntity<?> doPost(
-            HttpServletRequest request,
-            @PathVariable String filterName,
-            @PathVariable String updateType) {
+            HttpServletRequest request, @PathVariable String filterName, @PathVariable String updateType) {
 
         Iterator<TileLayer> lIter = tld.getLayerList().iterator();
 
@@ -72,8 +71,7 @@ public class FilterUpdateController extends GWCController {
 
         // Check that we have found a filter and that it's the correct type
         if (filter == null) {
-            throw new RestException(
-                    "No filter by the name " + filterName + " was found.", HttpStatus.BAD_REQUEST);
+            throw new RestException("No filter by the name " + filterName + " was found.", HttpStatus.BAD_REQUEST);
         }
         try {
             if (updateType.equalsIgnoreCase("xml")) {
@@ -89,8 +87,7 @@ public class FilterUpdateController extends GWCController {
 
                 fu.runUpdate(filter, tl);
             } else {
-                throw new RestException(
-                        "Unknow update type " + updateType + "\n", HttpStatus.BAD_REQUEST);
+                throw new RestException("Unknow update type " + updateType + "\n", HttpStatus.BAD_REQUEST);
             }
         } catch (IOException e) {
             throw new RestException("Internal Error", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -98,8 +95,7 @@ public class FilterUpdateController extends GWCController {
         // prepare response content type
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
-        return new ResponseEntity<>(
-                "Filter update completed, no problems encountered.\n", headers, HttpStatus.OK);
+        return new ResponseEntity<>("Filter update completed, no problems encountered.\n", headers, HttpStatus.OK);
     }
 
     public void setTileLayerDispatcher(TileLayerDispatcher tileLayerDispatcher) {

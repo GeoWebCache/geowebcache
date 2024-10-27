@@ -46,25 +46,28 @@ public class S3BlobStoreConfigStoreLoadTest {
 
     private XMLConfiguration config;
 
-    private static final Logger log =
-            Logging.getLogger(S3BlobStoreConfigStoreLoadTest.class.getName());
+    private static final Logger log = Logging.getLogger(S3BlobStoreConfigStoreLoadTest.class.getName());
 
     public PropertiesLoader testConfigLoader = new PropertiesLoader();
 
     @Rule
     public TemporaryS3Folder tempFolder = new TemporaryS3Folder(testConfigLoader.getProperties());
 
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
 
-    @Mock ApplicationContextProvider context;
+    @Mock
+    ApplicationContextProvider context;
 
-    @Mock TileLayerDispatcher dispatch;
+    @Mock
+    TileLayerDispatcher dispatch;
 
     private File configDir;
 
     private File configFile;
 
-    @Mock private WebApplicationContext webCtx;
+    @Mock
+    private WebApplicationContext webCtx;
 
     private Map<String, XMLConfigurationProvider> providers;
 
@@ -100,14 +103,9 @@ public class S3BlobStoreConfigStoreLoadTest {
         store.setAwsSecretKey("${secretKey}");
 
         S3BlobStoreInfo storedData = store.clone(genv, true);
-        assertEquals(
-                testConfigLoader.getProperties().getProperty("bucket"), storedData.getBucket());
-        assertEquals(
-                testConfigLoader.getProperties().getProperty("accessKey"),
-                storedData.getAwsAccessKey());
-        assertEquals(
-                testConfigLoader.getProperties().getProperty("secretKey"),
-                storedData.getAwsSecretKey());
+        assertEquals(testConfigLoader.getProperties().getProperty("bucket"), storedData.getBucket());
+        assertEquals(testConfigLoader.getProperties().getProperty("accessKey"), storedData.getAwsAccessKey());
+        assertEquals(testConfigLoader.getProperties().getProperty("secretKey"), storedData.getAwsSecretKey());
     }
 
     private void saveConfig(S3BlobStoreInfo store1, S3BlobStoreInfo store2) throws IOException {
@@ -123,10 +121,8 @@ public class S3BlobStoreConfigStoreLoadTest {
 
     private void loadSavedConfig() {
         try {
-            XMLConfiguration configLoad =
-                    new XMLConfiguration(context, configDir.getAbsolutePath(), null);
-            GridSetBroker gridSetBroker =
-                    new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
+            XMLConfiguration configLoad = new XMLConfiguration(context, configDir.getAbsolutePath(), null);
+            GridSetBroker gridSetBroker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
             configLoad.setGridSetBroker(gridSetBroker);
             configLoad.afterPropertiesSet();
             createFromSavedConfig(configLoad);
@@ -144,11 +140,9 @@ public class S3BlobStoreConfigStoreLoadTest {
         }
     }
 
-    private void validateSavedConfig()
-            throws SAXException, IOException, ConfigurationException, FileNotFoundException {
+    private void validateSavedConfig() throws SAXException, IOException, ConfigurationException, FileNotFoundException {
         try {
-            XMLConfiguration.validate(
-                    XMLConfiguration.loadDocument(new FileInputStream(configFile)));
+            XMLConfiguration.validate(XMLConfiguration.loadDocument(new FileInputStream(configFile)));
         } catch (SAXParseException e) {
             log.log(Level.SEVERE, e.getMessage());
             fail("Error validating from " + configFile + " " + e.getMessage());
@@ -172,20 +166,16 @@ public class S3BlobStoreConfigStoreLoadTest {
         configDir = temp.getRoot();
         configFile = temp.newFile("geowebcache.xml");
 
-        URL source =
-                XMLConfiguration.class.getResource(
-                        XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
+        URL source = XMLConfiguration.class.getResource(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
         FileUtils.copyURLToFile(source, configFile);
 
         providers = new HashMap<>();
         Mockito.when(context.getApplicationContext()).thenReturn(webCtx, webCtx, webCtx, webCtx);
-        Mockito.when(webCtx.getBeansOfType(XMLConfigurationProvider.class))
-                .thenReturn(providers, providers);
+        Mockito.when(webCtx.getBeansOfType(XMLConfigurationProvider.class)).thenReturn(providers, providers);
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         Mockito.when(webCtx.getBean("S3BlobStore")).thenReturn(provider, provider);
         providers.put("S3BlobStore", provider);
-        GridSetBroker gridSetBroker =
-                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
+        GridSetBroker gridSetBroker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
         config = new XMLConfiguration(context, configDir.getAbsolutePath());
         config.setGridSetBroker(gridSetBroker);
         config.afterPropertiesSet();

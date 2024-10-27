@@ -25,8 +25,7 @@ public class MetastoreRemoverTest {
         FileUtils.deleteDirectory(root);
         FileUtils.copyDirectory(origin, root);
         // force all files to a specific date for testing sake
-        Iterator<File> it =
-                FileUtils.iterateFiles(root, new String[] {"png8", "png", "jpeg"}, true);
+        Iterator<File> it = FileUtils.iterateFiles(root, new String[] {"png8", "png", "jpeg"}, true);
         while (it.hasNext()) {
             File file = it.next();
             file.setLastModified(FIXED_DATE);
@@ -46,21 +45,18 @@ public class MetastoreRemoverTest {
     protected void testMigration(boolean migrateCreationDates) throws Exception {
         System.setProperty("MIGRATE_CREATION_DATES", String.valueOf(migrateCreationDates));
         // the remover does the migration on instantiation
-        new MetastoreRemover(
-                new DefaultStorageFinder(new ApplicationContextProvider()) {
-                    @Override
-                    public synchronized String getDefaultPath() throws ConfigurationException {
-                        return root.toString();
-                    }
-                });
+        new MetastoreRemover(new DefaultStorageFinder(new ApplicationContextProvider()) {
+            @Override
+            public synchronized String getDefaultPath() throws ConfigurationException {
+                return root.toString();
+            }
+        });
 
         // the first param has been removed and replaced, the file last modified date has been
         // replaced
         File original1 = new File(root, "topp_states/EPSG_4326_03_1/0_1/02_05.png8");
         File transformed1 =
-                new File(
-                        root,
-                        "topp_states/EPSG_4326_03_7510004a12f49fdd49a2ba366e9c4594be7e4358/0_1/02_05.png8");
+                new File(root, "topp_states/EPSG_4326_03_7510004a12f49fdd49a2ba366e9c4594be7e4358/0_1/02_05.png8");
         Assert.assertFalse(original1.exists());
         Assert.assertTrue(transformed1.exists());
         if (migrateCreationDates) {
@@ -72,9 +68,7 @@ public class MetastoreRemoverTest {
         // same goes for the second param
         File original2 = new File(root, "topp_states/EPSG_4326_03_2/0_1/02_05.png8");
         File transformed2 =
-                new File(
-                        root,
-                        "topp_states/EPSG_4326_03_f0023dc7bc347fee7a3a04dc797f2223f74e3448/0_1/02_05.png8");
+                new File(root, "topp_states/EPSG_4326_03_f0023dc7bc347fee7a3a04dc797f2223f74e3448/0_1/02_05.png8");
         Assert.assertFalse(original2.exists());
         Assert.assertTrue(transformed2.exists());
         if (migrateCreationDates) {

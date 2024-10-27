@@ -34,8 +34,7 @@ public interface BlobStoreConfigurationListener {
             throws UnsuitableStorageException, GeoWebCacheException, IOException;
 
     /** @param removedBlobStore The old configuration for the blobstore that was removed */
-    void handleRemoveBlobStore(BlobStoreInfo removedBlobStore)
-            throws GeoWebCacheException, IOException;
+    void handleRemoveBlobStore(BlobStoreInfo removedBlobStore) throws GeoWebCacheException, IOException;
 
     /**
      * @param modifiedBlobStore The new configuration for the blobstore

@@ -61,19 +61,18 @@ public class StorageBrokerTest {
         long perSec = totalTiles * 1000 / diff;
         long bw = (20 * 1024 * 8 * perSec) / 1000000;
 
-        LOG.info(
-                "Total time: "
-                        + diff
-                        + "ms for "
-                        + totalTiles
-                        + " tiles ("
-                        + perSec
-                        + " tiles/second, "
-                        + bw
-                        + " mbps with 20kbyte tiles) "
-                        + " fetched by "
-                        + THREAD_COUNT
-                        + " threads in parallel");
+        LOG.info("Total time: "
+                + diff
+                + "ms for "
+                + totalTiles
+                + " tiles ("
+                + perSec
+                + " tiles/second, "
+                + bw
+                + " mbps with 20kbyte tiles) "
+                + " fetched by "
+                + THREAD_COUNT
+                + " threads in parallel");
     }
 
     private StorageBroker resetAndPrepStorageBroker() throws Exception {
@@ -97,8 +96,7 @@ public class StorageBrokerTest {
             long tmp2 = i % tmp;
             long[] xyz = {tmp2, tmp2, (long) Math.log10(i)};
             TileObject completeObj =
-                    TileObject.createCompleteTileObject(
-                            "test", xyz, "hefty-gridSet:id1", "image/jpeg", null, blob);
+                    TileObject.createCompleteTileObject("test", xyz, "hefty-gridSet:id1", "image/jpeg", null, blob);
             sb.put(completeObj);
         }
         long stopInsert = System.currentTimeMillis();
@@ -111,8 +109,7 @@ public class StorageBrokerTest {
     public static String findTempDir() throws Exception {
         String tmpDir = System.getProperty("java.io.tmpdir");
         if (tmpDir == null || !(new File(tmpDir)).canWrite()) {
-            throw new Exception(
-                    "Temporary directory " + tmpDir + " does not exist or is not writable.");
+            throw new Exception("Temporary directory " + tmpDir + " does not exist or is not writable.");
         }
         return tmpDir;
     }
@@ -124,22 +121,13 @@ public class StorageBrokerTest {
             long tmp2 = i % tmp;
             long[] xyz = {tmp2, tmp2, (long) Math.log10(i)};
             TileObject queryObj2 =
-                    TileObject.createQueryTileObject(
-                            "test", xyz, "hefty-gridSet:id1", "image/jpeg", null);
+                    TileObject.createQueryTileObject("test", xyz, "hefty-gridSet:id1", "image/jpeg", null);
             sb.get(queryObj2);
         }
 
         long stop = System.currentTimeMillis();
 
-        LOG.info(
-                name
-                        + " - run "
-                        + run
-                        + ", "
-                        + TILE_GET_COUNT
-                        + " gets took "
-                        + Long.toString(stop - start)
-                        + "ms");
+        LOG.info(name + " - run " + run + ", " + TILE_GET_COUNT + " gets took " + Long.toString(stop - start) + "ms");
     }
 
     public class StorageBrokerTesterThread extends Thread {

@@ -55,8 +55,7 @@ public class XYZFilePathGenerator implements FilePathGenerator {
     protected final String cacheRoot;
     private final Convention convention;
 
-    public XYZFilePathGenerator(
-            String cacheRoot, TileLayerDispatcher layers, Convention convention) {
+    public XYZFilePathGenerator(String cacheRoot, TileLayerDispatcher layers, Convention convention) {
         this.cacheRoot = cacheRoot;
         this.layers = layers;
         this.convention = convention;
@@ -114,8 +113,7 @@ public class XYZFilePathGenerator implements FilePathGenerator {
      * slippy). One method is all it needs only because the TMS vs Slippy conventions have
      * symmetrical map, e.g., the same extact operation goes both directions
      */
-    protected long getY(String layerName, String gridSetId, long x, long y, int z)
-            throws GeoWebCacheException {
+    protected long getY(String layerName, String gridSetId, long x, long y, int z) throws GeoWebCacheException {
         if (convention == Convention.TMS) {
             return y;
         } else {
@@ -128,8 +126,7 @@ public class XYZFilePathGenerator implements FilePathGenerator {
     }
 
     @Override
-    public void visitRange(File layerDirectory, TileRange range, TileFileVisitor visitor)
-            throws StorageException {
+    public void visitRange(File layerDirectory, TileRange range, TileFileVisitor visitor) throws StorageException {
         final FilenameFilter tileFinder = new XYZFilePathFilter(range, this);
         // list directories with gridset and param identifiers
         for (File gridsetParamDir : listFilesNullSafe(layerDirectory, tileFinder)) {

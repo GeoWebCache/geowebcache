@@ -77,8 +77,7 @@ class StaxGeoRSSReader implements GeoRSSReader {
 
     private final GML31ParsingUtils gmlParser;
 
-    public StaxGeoRSSReader(final Reader feed)
-            throws XMLStreamException, FactoryConfigurationError {
+    public StaxGeoRSSReader(final Reader feed) throws XMLStreamException, FactoryConfigurationError {
         XMLInputFactory factory = XMLInputFactory.newInstance();
         reader = factory.createXMLStreamReader(feed);
 
@@ -87,8 +86,7 @@ class StaxGeoRSSReader implements GeoRSSReader {
         QName name = reader.getName();
 
         if (!(ATOM.NSURI.equals(name.getNamespaceURI()) || "feed".equals(name.getLocalPart()))) {
-            throw new IllegalArgumentException(
-                    "Document is not a GeoRSS feed. Root element: " + name);
+            throw new IllegalArgumentException("Document is not a GeoRSS feed. Root element: " + name);
         }
         findFirstEntry();
         gmlParser = new GML31ParsingUtils();
@@ -160,8 +158,7 @@ class StaxGeoRSSReader implements GeoRSSReader {
         return entry;
     }
 
-    private void parseEntryMember(
-            final XMLStreamReader reader, final QName memberName, final Entry entry)
+    private void parseEntryMember(final XMLStreamReader reader, final QName memberName, final Entry entry)
             throws XMLStreamException {
 
         reader.require(START_ELEMENT, memberName.getNamespaceURI(), memberName.getLocalPart());

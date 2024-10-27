@@ -122,15 +122,14 @@ public class FloatParameterFilter extends ParameterFilter {
             return Float.toString(best);
         }
 
-        throw new ParameterException(
-                "Closest match for "
-                        + super.getKey()
-                        + "="
-                        + str
-                        + " is "
-                        + best
-                        + ", but this exceeds the threshold of "
-                        + threshold);
+        throw new ParameterException("Closest match for "
+                + super.getKey()
+                + "="
+                + str
+                + " is "
+                + best
+                + ", but this exceeds the threshold of "
+                + threshold);
     }
 
     @Override
@@ -180,12 +179,6 @@ public class FloatParameterFilter extends ParameterFilter {
 
     @Override
     public String toString() {
-        return "FloatParameterFilter [values="
-                + values
-                + ", threshold="
-                + threshold
-                + ", "
-                + super.toString()
-                + "]";
+        return "FloatParameterFilter [values=" + values + ", threshold=" + threshold + ", " + super.toString() + "]";
     }
 }

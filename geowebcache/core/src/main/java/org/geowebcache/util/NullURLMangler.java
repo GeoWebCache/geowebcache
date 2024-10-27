@@ -27,11 +27,7 @@ public class NullURLMangler implements URLMangler {
         if (context == null || context.isEmpty()) {
             return StringUtils.strip(baseURL, "/") + "/" + StringUtils.strip(path, "/");
         } else {
-            return StringUtils.strip(baseURL, "/")
-                    + "/"
-                    + context
-                    + "/"
-                    + StringUtils.strip(path, "/");
+            return StringUtils.strip(baseURL, "/") + "/" + context + "/" + StringUtils.strip(path, "/");
         }
     }
 }

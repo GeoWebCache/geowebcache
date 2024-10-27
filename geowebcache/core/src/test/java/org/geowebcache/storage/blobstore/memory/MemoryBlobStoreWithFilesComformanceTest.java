@@ -20,8 +20,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
-public class MemoryBlobStoreWithFilesComformanceTest
-        extends AbstractBlobStoreTest<MemoryBlobStore> {
+public class MemoryBlobStoreWithFilesComformanceTest extends AbstractBlobStoreTest<MemoryBlobStore> {
 
     @Override
     public void createTestUnit() throws Exception {
@@ -34,5 +33,6 @@ public class MemoryBlobStoreWithFilesComformanceTest
         this.events = false;
     }
 
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
 }

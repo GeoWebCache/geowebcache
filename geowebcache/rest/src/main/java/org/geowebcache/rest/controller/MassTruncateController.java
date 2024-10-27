@@ -58,9 +58,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class MassTruncateController extends GWCSeedingController {
     private static Logger log = Logging.getLogger(MassTruncateController.class.getName());
 
-    @Autowired private StorageBroker broker;
+    @Autowired
+    private StorageBroker broker;
 
-    @Autowired private TileBreeder breeder;
+    @Autowired
+    private TileBreeder breeder;
 
     @Autowired
     public MassTruncateController(ApplicationContextProvider appCtx) {
@@ -137,8 +139,7 @@ public class MassTruncateController extends GWCSeedingController {
             obj = xs.fromXML(URLDecoder.decode(reqData, Charset.defaultCharset().name()));
         } else {
             throw new RestException(
-                    "Format extension unknown or not specified: " + contentType,
-                    HttpStatus.BAD_REQUEST);
+                    "Format extension unknown or not specified: " + contentType, HttpStatus.BAD_REQUEST);
         }
 
         MassTruncateRequest mtr = (MassTruncateRequest) obj;

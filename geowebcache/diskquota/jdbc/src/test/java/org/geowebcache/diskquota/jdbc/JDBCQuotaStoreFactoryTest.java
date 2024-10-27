@@ -55,8 +55,7 @@ public class JDBCQuotaStoreFactoryTest {
                 new JDBCQuotaStoreFactory().getDataSource(httpConfiguration);
                 fail("Lookup should have failed with an exception");
             } catch (ConfigurationException exception) {
-                assertEquals(
-                        "Failed to get a datasource from: " + httpName, exception.getMessage());
+                assertEquals("Failed to get a datasource from: " + httpName, exception.getMessage());
             }
         } finally {
             GeoTools.clearInitialContext();

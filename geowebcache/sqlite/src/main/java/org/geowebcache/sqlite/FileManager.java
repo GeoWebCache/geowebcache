@@ -111,14 +111,12 @@ final class FileManager {
     // parameters used in the path template
     private final Set<Tuple<String, Integer>> replaceParameters;
 
-    FileManager(
-            File rootDirectory, String pathTemplate, long rowRangeCount, long columnRangeCount) {
+    FileManager(File rootDirectory, String pathTemplate, long rowRangeCount, long columnRangeCount) {
         if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info(
-                    String.format(
-                            "Initiating file manager: [rootDirectory='%s', pathTemplate='%s', "
-                                    + "rowRangeCount='%d', columnRangeCount='%d'].",
-                            rootDirectory, pathTemplate, rowRangeCount, columnRangeCount));
+            LOGGER.info(String.format(
+                    "Initiating file manager: [rootDirectory='%s', pathTemplate='%s', "
+                            + "rowRangeCount='%d', columnRangeCount='%d'].",
+                    rootDirectory, pathTemplate, rowRangeCount, columnRangeCount));
         }
         this.rootPath = rootDirectory;
         this.rowRangeCount = rowRangeCount;
@@ -170,12 +168,10 @@ final class FileManager {
             pathBuilderCopy[replaceZoom.second] = String.valueOf(getLongValue(xyz, 2));
         }
         if (replaceRow.first) {
-            pathBuilderCopy[replaceRow.second] =
-                    String.valueOf(computeColumnRange(getLongValue(xyz, 0)));
+            pathBuilderCopy[replaceRow.second] = String.valueOf(computeColumnRange(getLongValue(xyz, 0)));
         }
         if (replaceColumn.first) {
-            pathBuilderCopy[replaceColumn.second] =
-                    String.valueOf(computeRowRange(getLongValue(xyz, 1)));
+            pathBuilderCopy[replaceColumn.second] = String.valueOf(computeRowRange(getLongValue(xyz, 1)));
         }
         if (replaceLayerName.first) {
             pathBuilderCopy[replaceLayerName.second] = normalizeAttributeValue("layer", layerName);
@@ -327,8 +323,7 @@ final class FileManager {
 
     private static long getLongValue(long[] xyz, int index) {
         Utils.check(xyz != null, "Path template attribute 'xyz' is NULL.");
-        Utils.check(
-                xyz.length == 3, "Path template attribute 'xyz' doesn't have the correct length.");
+        Utils.check(xyz.length == 3, "Path template attribute 'xyz' doesn't have the correct length.");
         return xyz[index];
     }
 
@@ -351,13 +346,11 @@ final class FileManager {
      */
     private static List<File> walkFileTreeWithRegex(File path, int level, String[] pathParts) {
         // filter the current directory files that match the current path part
-        File[] files =
-                path.listFiles(
-                        (directory, name) -> {
-                            String pathPart = pathParts[level];
-                            // if need the current path will be interpreted as a regex (.*?)
-                            return pathPart.equals(name) || name.matches(pathPart);
-                        });
+        File[] files = path.listFiles((directory, name) -> {
+            String pathPart = pathParts[level];
+            // if need the current path will be interpreted as a regex (.*?)
+            return pathPart.equals(name) || name.matches(pathPart);
+        });
         if (Objects.isNull(files)) {
             return Collections.emptyList();
         }
@@ -387,14 +380,12 @@ final class FileManager {
         return pathBuilderCopy;
     }
 
-    private static Tuple<Boolean, Integer> findAndRemove(
-            Set<Tuple<String, Integer>> attributes, String attribute) {
+    private static Tuple<Boolean, Integer> findAndRemove(Set<Tuple<String, Integer>> attributes, String attribute) {
         Tuple<String, Integer> found = null;
         for (Tuple<String, Integer> candidateAttribute : attributes) {
             if (candidateAttribute.first.equals(attribute)) {
                 if (found != null) {
-                    throw Utils.exception(
-                            "Term '%s' appears multiple times in the path template.", attribute);
+                    throw Utils.exception("Term '%s' appears multiple times in the path template.", attribute);
                 }
                 found = candidateAttribute;
             }

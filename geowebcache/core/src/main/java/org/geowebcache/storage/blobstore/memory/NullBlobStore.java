@@ -146,8 +146,7 @@ public class NullBlobStore implements BlobStore {
     }
 
     @Override
-    public boolean deleteByParametersId(String layerName, String parametersId)
-            throws StorageException {
+    public boolean deleteByParametersId(String layerName, String parametersId) throws StorageException {
         return true;
     }
 

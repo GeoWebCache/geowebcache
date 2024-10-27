@@ -44,31 +44,22 @@ public class ClassMetadataBuilder {
         Field pkField = getField(field);
 
         primaryKey =
-                new PrimaryKeyMetadata(
-                        pkField.getName(),
-                        pkField.getType().getName(),
-                        entityClass.getName(),
-                        sequence);
+                new PrimaryKeyMetadata(pkField.getName(), pkField.getType().getName(), entityClass.getName(), sequence);
     }
 
     public void secondaryKey(
-            String field,
-            String keyName,
-            Relationship relationship,
-            Class relatedEntity,
-            DeleteAction deleteAction) {
+            String field, String keyName, Relationship relationship, Class relatedEntity, DeleteAction deleteAction) {
 
         Field skField = getField(field);
-        secondaryKeys.add(
-                new SecondaryKeyMetadata(
-                        skField.getName(),
-                        entityClass.getName(),
-                        entityClass.getName(),
-                        skField.getType().getName(),
-                        keyName,
-                        relationship,
-                        relatedEntity != null ? relatedEntity.getName() : null,
-                        deleteAction));
+        secondaryKeys.add(new SecondaryKeyMetadata(
+                skField.getName(),
+                entityClass.getName(),
+                entityClass.getName(),
+                skField.getType().getName(),
+                keyName,
+                relationship,
+                relatedEntity != null ? relatedEntity.getName() : null,
+                deleteAction));
     }
 
     private Field getField(String lookup) {
@@ -87,8 +78,7 @@ public class ClassMetadataBuilder {
         // check it's a valid type
         if (type.isEnum() || type.isInterface() || type.isPrimitive()) {
             throw new IllegalArgumentException(
-                    "Enumerations, interfaces or primitive types cannot be entities: "
-                            + type.getName());
+                    "Enumerations, interfaces or primitive types cannot be entities: " + type.getName());
         }
 
         // setup the fields
@@ -101,8 +91,7 @@ public class ClassMetadataBuilder {
             }
 
             // grab the field
-            fields.add(
-                    new FieldMetadata(field.getName(), field.getType().getName(), type.getName()));
+            fields.add(new FieldMetadata(field.getName(), field.getType().getName(), type.getName()));
         }
 
         // create the class metadata
@@ -114,8 +103,7 @@ public class ClassMetadataBuilder {
             secondaryKeys.clear();
         }
         ClassMetadata classMetadata =
-                new ClassMetadata(
-                        type.getName(), 0, null, true, primaryKey, secondaryKeyMap, null, fields);
+                new ClassMetadata(type.getName(), 0, null, true, primaryKey, secondaryKeyMap, null, fields);
         primaryKey = null;
         entityClass = null;
         return classMetadata;

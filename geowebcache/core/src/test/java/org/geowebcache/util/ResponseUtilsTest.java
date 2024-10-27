@@ -42,12 +42,24 @@ import org.springframework.mock.web.MockHttpServletResponse;
 @RunWith(MockitoJUnitRunner.class)
 public class ResponseUtilsTest {
 
-    @Mock SecurityDispatcher sd;
-    @Mock ConveyorTile tile;
-    @Mock TileLayer tileLayer;
-    @Mock TileLayerDispatcher tld;
-    @Mock DefaultStorageFinder storage;
-    @Mock RuntimeStats stats;
+    @Mock
+    SecurityDispatcher sd;
+
+    @Mock
+    ConveyorTile tile;
+
+    @Mock
+    TileLayer tileLayer;
+
+    @Mock
+    TileLayerDispatcher tld;
+
+    @Mock
+    DefaultStorageFinder storage;
+
+    @Mock
+    RuntimeStats stats;
+
     private MockHttpServletResponse response;
 
     @Before
@@ -58,53 +70,40 @@ public class ResponseUtilsTest {
     }
 
     @Test
-    public void writeEmptyTileNoContent()
-            throws GeoWebCacheException, RequestFilterException, IOException {
-        when(tileLayer.getTile(tile))
-                .thenThrow(new EmptyTileException(ApplicationMime.mapboxVector));
+    public void writeEmptyTileNoContent() throws GeoWebCacheException, RequestFilterException, IOException {
+        when(tileLayer.getTile(tile)).thenThrow(new EmptyTileException(ApplicationMime.mapboxVector));
 
         ResponseUtils.writeTile(sd, tile, "layer", tld, storage, stats);
         // empty response, thus 204 no content
         assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
         assertEquals(ApplicationMime.mapboxVector.getMimeType(), response.getContentType());
-        assertEquals(
-                "No tile data available for this location",
-                response.getHeader("geowebcache-message"));
+        assertEquals("No tile data available for this location", response.getHeader("geowebcache-message"));
     }
 
     @Test
-    public void writeEmptyTileJSON()
-            throws GeoWebCacheException, RequestFilterException, IOException {
+    public void writeEmptyTileJSON() throws GeoWebCacheException, RequestFilterException, IOException {
         String emptyJSON = "{}";
         when(tileLayer.getTile(tile))
-                .thenThrow(
-                        new EmptyTileException(
-                                ApplicationMime.json,
-                                new ByteArrayResource(emptyJSON.getBytes(StandardCharsets.UTF_8))));
+                .thenThrow(new EmptyTileException(
+                        ApplicationMime.json, new ByteArrayResource(emptyJSON.getBytes(StandardCharsets.UTF_8))));
 
         ResponseUtils.writeTile(sd, tile, "layer", tld, storage, stats);
         // within coverage and with a non empty body, 200 OK is warranted
         assertEquals(HttpServletResponse.SC_OK, response.getStatus());
         assertEquals(ApplicationMime.json.getMimeType(), response.getContentType());
         assertEquals(emptyJSON, response.getContentAsString());
-        assertEquals(
-                "No tile data available for this location",
-                response.getHeader("geowebcache-message"));
+        assertEquals("No tile data available for this location", response.getHeader("geowebcache-message"));
     }
 
     @Test
-    public void writeOutOfBoundsTile()
-            throws GeoWebCacheException, RequestFilterException, IOException {
-        when(tileLayer.getTile(tile))
-                .thenThrow(new OutsideCoverageException(new long[] {0, 0, 10}, 0, 5));
+    public void writeOutOfBoundsTile() throws GeoWebCacheException, RequestFilterException, IOException {
+        when(tileLayer.getTile(tile)).thenThrow(new OutsideCoverageException(new long[] {0, 0, 10}, 0, 5));
 
         ResponseUtils.writeTile(sd, tile, "layer", tld, storage, stats);
         // just checks the empty tile did not modify the current behavior, although I'm not liking
         // the 200 OK....
         assertEquals(HttpServletResponse.SC_OK, response.getStatus());
         assertEquals("image/png", response.getContentType());
-        assertEquals(
-                "Zoom level was 10, but value has to be in [0,5]",
-                response.getHeader("geowebcache-message"));
+        assertEquals("Zoom level was 10, but value has to be in [0,5]", response.getHeader("geowebcache-message"));
     }
 }

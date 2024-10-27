@@ -85,10 +85,6 @@ public abstract class CaseNormalizingParameterFilter extends ParameterFilter {
 
     @Override
     public String toString() {
-        return "CaseNormalizingParameterFilter [normalize="
-                + normalize
-                + ", "
-                + super.toString()
-                + "]";
+        return "CaseNormalizingParameterFilter [normalize=" + normalize + ", " + super.toString() + "]";
     }
 }

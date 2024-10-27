@@ -60,10 +60,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     private boolean isMetaTileCacheOnly;
 
     public ConveyorTile(
-            StorageBroker sb,
-            String layerId,
-            HttpServletRequest servletReq,
-            HttpServletResponse servletResp) {
+            StorageBroker sb, String layerId, HttpServletRequest servletReq, HttpServletResponse servletResp) {
         super(layerId, sb, servletReq, servletResp);
     }
 
@@ -78,15 +75,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
             Map<String, String> filteringParameters,
             HttpServletRequest servletReq,
             HttpServletResponse servletResp) {
-        this(
-                sb,
-                layerId,
-                gridSetId,
-                tileIndex,
-                mimeType,
-                filteringParameters,
-                servletReq,
-                servletResp);
+        this(sb, layerId, gridSetId, tileIndex, mimeType, filteringParameters, servletReq, servletResp);
         this.fullParameters = fullParameters;
     }
 
@@ -116,9 +105,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
 
         this.filteringParameters = filteringParameters;
 
-        stObj =
-                TileObject.createQueryTileObject(
-                        layerId, idx, gridSetId, mimeType.getFormat(), filteringParameters);
+        stObj = TileObject.createQueryTileObject(layerId, idx, gridSetId, mimeType.getFormat(), filteringParameters);
     }
 
     public Map<String, String> getFilteringParameters() {

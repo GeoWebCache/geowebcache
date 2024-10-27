@@ -38,7 +38,8 @@ import org.springframework.web.context.WebApplicationContext;
 })
 public class GridSetControllerTest {
 
-    @Autowired private WebApplicationContext wac;
+    @Autowired
+    private WebApplicationContext wac;
 
     private MockMvc mockMvc;
 
@@ -50,9 +51,7 @@ public class GridSetControllerTest {
     /** Checks correct media type for RestException response handling. GET method. */
     @Test
     public void testGridsetsGetContentType() throws Exception {
-        mockMvc.perform(
-                        get("/rest/gridsets/{gridset}", "xxxp4z85")
-                                .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/rest/gridsets/{gridset}", "xxxp4z85").accept(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(status().is4xxClientError());
     }

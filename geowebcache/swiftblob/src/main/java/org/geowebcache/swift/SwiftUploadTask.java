@@ -35,8 +35,7 @@ class SwiftUploadTask implements Runnable {
     private final ObjectApi objectApi;
     private final BlobStoreListenerList listeners;
 
-    SwiftUploadTask(
-            String key, SwiftTile tile, BlobStoreListenerList listeners, ObjectApi objectApi) {
+    SwiftUploadTask(String key, SwiftTile tile, BlobStoreListenerList listeners, ObjectApi objectApi) {
         this.key = key;
         this.tile = tile;
         this.objectApi = objectApi;
@@ -52,12 +51,11 @@ class SwiftUploadTask implements Runnable {
         SwiftObject object = objectApi.getWithoutBody(key);
 
         if (log.isLoggable(Level.FINE)) {
-            log.fine(
-                    String.format(
-                            logStr,
-                            time.format(DateTimeFormatter.ISO_DATE_TIME),
-                            "HEAD",
-                            (System.nanoTime() - getWithoutBody) / 1000000));
+            log.fine(String.format(
+                    logStr,
+                    time.format(DateTimeFormatter.ISO_DATE_TIME),
+                    "HEAD",
+                    (System.nanoTime() - getWithoutBody) / 1000000));
         }
         if (object == null) {
             return;
@@ -88,13 +86,12 @@ class SwiftUploadTask implements Runnable {
             objectApi.put(key, payload);
 
             if (log.isLoggable(Level.FINE)) {
-                log.fine(
-                        String.format(
-                                localLogStr,
-                                time.format(DateTimeFormatter.ISO_DATE_TIME),
-                                "PUT",
-                                (System.nanoTime() - upload) / 1000000,
-                                payload.getContentMetadata().getContentLength()));
+                log.fine(String.format(
+                        localLogStr,
+                        time.format(DateTimeFormatter.ISO_DATE_TIME),
+                        "PUT",
+                        (System.nanoTime() - upload) / 1000000,
+                        payload.getContentMetadata().getContentLength()));
             }
             tile.notifyListeners(listeners);
         } catch (HttpResponseException e) {

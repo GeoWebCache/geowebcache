@@ -50,7 +50,8 @@ public class MockWMSSourceHelper extends WMSSourceHelper {
             WMSMetaTile metaTile = (WMSMetaTile) tileRespRecv;
             tiles = metaTile.getTilesGridPositions();
             format = metaTile.getResponseFormat().getInternalName().toUpperCase();
-            GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
+            GridSubset gridSubset =
+                    layer.getGridSubset(layer.getGridSubsets().iterator().next());
             tileW = gridSubset.getTileWidth();
             tileH = gridSubset.getTileHeight();
         }
@@ -65,8 +66,7 @@ public class MockWMSSourceHelper extends WMSSourceHelper {
         if (result == null) {
             synchronized (images) {
                 if ((result = images.get(wh)) == null) {
-                    BufferedImage img =
-                            new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+                    BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
                     Graphics2D graphics = img.createGraphics();
                     graphics.setColor(Color.LIGHT_GRAY);
                     graphics.fillRect(0, 0, width, height);

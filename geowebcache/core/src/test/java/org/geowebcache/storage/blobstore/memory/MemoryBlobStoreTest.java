@@ -96,15 +96,13 @@ public class MemoryBlobStoreTest {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("a", "x");
         parameters.put("b", "ø");
-        TileObject to =
-                TileObject.createCompleteTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
+        TileObject to = TileObject.createCompleteTileObject(
+                "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
 
         mbs.put(to);
         // Try to get the same TileObject
         TileObject to2 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         mbs.get(to2);
 
         // Checks on the format
@@ -147,16 +145,14 @@ public class MemoryBlobStoreTest {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("a", "x");
         parameters.put("b", "ø");
-        TileObject to =
-                TileObject.createCompleteTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
+        TileObject to = TileObject.createCompleteTileObject(
+                "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
 
         mbs.put(to);
 
         // Try to get the same TileObject
         TileObject to2 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         mbs.get(to2);
 
         // Checks on the format
@@ -197,16 +193,14 @@ public class MemoryBlobStoreTest {
         // Put a TileObject
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
         long[] xyz = {5L, 6L, 7L};
-        TileObject to =
-                TileObject.createCompleteTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
+        TileObject to = TileObject.createCompleteTileObject(
+                "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
 
         mbs.put(to);
 
         // Try to get the same TileObject
         TileObject to2 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         mbs.get(to2);
 
         // Checks if the resources are equals
@@ -217,14 +211,12 @@ public class MemoryBlobStoreTest {
 
         // Delete TileObject
         TileObject to3 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         mbs.delete(to3);
 
         // Checks if the resource is not present
         TileObject to4 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         assertFalse(mbs.get(to4));
 
         // Ensure that cache does not contain the TileObject
@@ -248,25 +240,22 @@ public class MemoryBlobStoreTest {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("a", "x");
         parameters.put("b", "ø");
-        TileObject to =
-                TileObject.createCompleteTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
+        TileObject to = TileObject.createCompleteTileObject(
+                "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
 
         mbs.put(to);
         mbs.clear();
 
         // Try to get the same TileObject twice with a cache cleanup in the middle
         TileObject to2 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         mbs.get(to2);
         mbs.clear();
         // wait a second to ensure we are not getting the same tile because the machine is just that
         // fast
         Thread.sleep(1000);
         TileObject to3 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         mbs.get(to3);
 
         // check the last modified is the same
@@ -288,8 +277,7 @@ public class MemoryBlobStoreTest {
             Files.createDirectories(fh.toPath());
         }
 
-        return new FileBlobStore(
-                StorageBrokerTest.findTempDir() + File.separator + TEST_BLOB_DIR_NAME);
+        return new FileBlobStore(StorageBrokerTest.findTempDir() + File.separator + TEST_BLOB_DIR_NAME);
     }
 
     /**

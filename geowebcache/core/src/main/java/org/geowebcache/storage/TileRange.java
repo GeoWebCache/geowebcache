@@ -164,8 +164,7 @@ public class TileRange {
         }
         long[] zlevelBounds = rangeBounds.get(Integer.valueOf(zoomLevel));
         if (zlevelBounds == null) {
-            throw new IllegalStateException(
-                    "Found no range bounds for z level " + zoomLevel + ": " + rangeBounds);
+            throw new IllegalStateException("Found no range bounds for z level " + zoomLevel + ": " + rangeBounds);
         }
         return zlevelBounds;
     }

@@ -33,22 +33,20 @@ import org.junit.Test;
 public class DefaultingConfigurationTest {
 
     DefaultingConfiguration config = getConfig();
-    TileLayer tl =
-            new WMSLayer(
-                    "test",
-                    new String[] {"http://example.com/"},
-                    null,
-                    Integer.toString(1),
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    false,
-                    null);
+    TileLayer tl = new WMSLayer(
+            "test",
+            new String[] {"http://example.com/"},
+            null,
+            Integer.toString(1),
+            null,
+            null,
+            null,
+            null,
+            null,
+            false,
+            null);
     GeoWebCacheConfiguration gwcConfig = new GeoWebCacheConfiguration();
-    GridSetBroker gridSetBroker =
-            new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
+    GridSetBroker gridSetBroker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
 
     @Test
     public void testUnsetConfigs() {
@@ -122,15 +120,10 @@ public class DefaultingConfigurationTest {
                     final WMSHttpHelper sourceHelper;
 
                     if (wl.getHttpUsername() != null) {
-                        sourceHelper =
-                                new WMSHttpHelper(
-                                        wl.getHttpUsername(), wl.getHttpPassword(), proxyUrl);
+                        sourceHelper = new WMSHttpHelper(wl.getHttpUsername(), wl.getHttpPassword(), proxyUrl);
                     } else if (getGwcConfig().getHttpUsername() != null) {
-                        sourceHelper =
-                                new WMSHttpHelper(
-                                        getGwcConfig().getHttpUsername(),
-                                        getGwcConfig().getHttpPassword(),
-                                        proxyUrl);
+                        sourceHelper = new WMSHttpHelper(
+                                getGwcConfig().getHttpUsername(), getGwcConfig().getHttpPassword(), proxyUrl);
                     } else {
                         sourceHelper = new WMSHttpHelper(null, null, proxyUrl);
                     }

@@ -58,8 +58,7 @@ public abstract class WMSSourceHelper {
 
         GridSubset gridSubset = layer.getGridSubset(tile.getGridSetId());
 
-        Map<String, String> wmsParams =
-                layer.getWMSRequestTemplate(tile.getMimeType(), WMSLayer.RequestType.MAP);
+        Map<String, String> wmsParams = layer.getWMSRequestTemplate(tile.getMimeType(), WMSLayer.RequestType.MAP);
 
         wmsParams.put("FORMAT", tile.getMimeType().getFormat());
         wmsParams.put("SRS", layer.backendSRSOverride(gridSubset.getSRS()));
@@ -88,8 +87,7 @@ public abstract class WMSSourceHelper {
         makeRequest(tile, layer, wmsParams, mimeType, target);
     }
 
-    public Resource makeFeatureInfoRequest(
-            ConveyorTile tile, BoundingBox bbox, int height, int width, int x, int y)
+    public Resource makeFeatureInfoRequest(ConveyorTile tile, BoundingBox bbox, int height, int width, int x, int y)
             throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
 
@@ -117,11 +115,8 @@ public abstract class WMSSourceHelper {
 
         String featureCount;
         {
-            Map<String, String> values =
-                    ServletUtils.selectedStringsFromMap(
-                            tile.servletReq.getParameterMap(),
-                            tile.servletReq.getCharacterEncoding(),
-                            "feature_count");
+            Map<String, String> values = ServletUtils.selectedStringsFromMap(
+                    tile.servletReq.getParameterMap(), tile.servletReq.getCharacterEncoding(), "feature_count");
             featureCount = values.get("feature_count");
         }
         if (featureCount != null) {

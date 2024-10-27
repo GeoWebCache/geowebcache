@@ -38,9 +38,7 @@ import org.springframework.context.ApplicationContextAware;
 
 /** Exposes {@link GridSet}s from all {@link GridSetConfiguration}s */
 public class GridSetBroker
-        implements ConfigurationAggregator<GridSetConfiguration>,
-                ApplicationContextAware,
-                InitializingBean {
+        implements ConfigurationAggregator<GridSetConfiguration>, ApplicationContextAware, InitializingBean {
     private static Logger log = Logging.getLogger(GridSetBroker.class.getName());
 
     private List<GridSetConfiguration> configurations;
@@ -53,12 +51,11 @@ public class GridSetBroker
 
     public GridSetBroker(List<GridSetConfiguration> configurations) {
         this.configurations = configurations;
-        defaults =
-                configurations.stream()
-                        .filter(DefaultGridsets.class::isInstance)
-                        .findFirst()
-                        .map(DefaultGridsets.class::cast)
-                        .get();
+        defaults = configurations.stream()
+                .filter(DefaultGridsets.class::isInstance)
+                .findFirst()
+                .map(DefaultGridsets.class::cast)
+                .get();
     }
 
     @Override
@@ -101,12 +98,11 @@ public class GridSetBroker
         return getConfigurations().stream()
                 .map(GridSetConfiguration::getGridSets)
                 .flatMap(Collection::stream)
-                .collect(
-                        Collectors.toMap(
-                                GridSet::getName,
-                                g -> g,
-                                (g1, g2) -> g1, // Prefer the first one
-                                HashMap::new))
+                .collect(Collectors.toMap(
+                        GridSet::getName,
+                        g -> g,
+                        (g1, g2) -> g1, // Prefer the first one
+                        HashMap::new))
                 .values();
     }
 
@@ -120,11 +116,8 @@ public class GridSetBroker
         getConfigurations().stream()
                 .filter(c -> c.canSave(gridSet))
                 .findFirst()
-                .orElseThrow(
-                        () ->
-                                new UnsupportedOperationException(
-                                        "No Configuration is able to save gridset "
-                                                + gridSet.getName()))
+                .orElseThrow(() -> new UnsupportedOperationException(
+                        "No Configuration is able to save gridset " + gridSet.getName()))
                 .addGridSet(gridSet);
     }
 
@@ -136,21 +129,19 @@ public class GridSetBroker
      */
     public synchronized GridSet remove(final String gridSetName) {
         return getGridSet(gridSetName)
-                .map(
-                        g -> {
-                            removeGridSet(gridSetName);
-                            return g;
-                        })
+                .map(g -> {
+                    removeGridSet(gridSetName);
+                    return g;
+                })
                 .orElse(null);
     }
 
     public synchronized void removeGridSet(final String gridSetName) {
         getConfigurations().stream()
                 .filter(c -> c.getGridSet(gridSetName).isPresent())
-                .forEach(
-                        c -> {
-                            c.removeGridSet(gridSetName);
-                        });
+                .forEach(c -> {
+                    c.removeGridSet(gridSetName);
+                });
     }
 
     public DefaultGridsets getDefaults() {
@@ -162,12 +153,10 @@ public class GridSetBroker
                                 getConfigurations(DefaultGridsets.class).iterator();
                         defaults = it.next();
                         if (it.hasNext()) {
-                            log.warning(
-                                    "GridSetBroker has more than one DefaultGridSets configuration");
+                            log.warning("GridSetBroker has more than one DefaultGridSets configuration");
                         }
                     } catch (NoSuchElementException ex) {
-                        throw new IllegalStateException(
-                                "GridSetBroker has no DefaultGridsets configuration", ex);
+                        throw new IllegalStateException("GridSetBroker has no DefaultGridsets configuration", ex);
                     }
                 }
             }
@@ -211,8 +200,7 @@ public class GridSetBroker
 
     @Override
     @SuppressWarnings("unchecked")
-    public <GSC extends GridSetConfiguration> List<? extends GSC> getConfigurations(
-            Class<GSC> type) {
+    public <GSC extends GridSetConfiguration> List<? extends GSC> getConfigurations(Class<GSC> type) {
         return (List<? extends GSC>)
                 getConfigurations().stream().filter(type::isInstance).collect(Collectors.toList());
     }
@@ -220,21 +208,17 @@ public class GridSetBroker
     private Collection<GridSetConfiguration> getConfigurations() {
         // We set DefaultGridsets in the constructor, need to account for it.
         if (this.configurations == null
-                || (this.configurations.size() == 1
-                        && this.configurations.get(0) instanceof DefaultGridsets)) {
+                || (this.configurations.size() == 1 && this.configurations.get(0) instanceof DefaultGridsets)) {
             synchronized (this) {
                 if (this.configurations == null
                         || (this.configurations.size() == 1
                                 && this.configurations.get(0).equals(defaults))) {
                     if (Objects.nonNull(applicationContext)) {
                         configurations =
-                                GeoWebCacheExtensions.configurations(
-                                        GridSetConfiguration.class, applicationContext);
+                                GeoWebCacheExtensions.configurations(GridSetConfiguration.class, applicationContext);
                     } else {
-                        log.fine(
-                                "GridSetBroker.initialize() called without having set application context");
-                        configurations =
-                                GeoWebCacheExtensions.configurations(GridSetConfiguration.class);
+                        log.fine("GridSetBroker.initialize() called without having set application context");
+                        configurations = GeoWebCacheExtensions.configurations(GridSetConfiguration.class);
                     }
                     if (defaults != null && !configurations.contains(defaults)) {
                         configurations.add(defaults);

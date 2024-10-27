@@ -73,8 +73,7 @@ public class JDBCConfiguration implements Serializable {
         return conf;
     }
 
-    private static void validateConfiguration(JDBCConfiguration conf)
-            throws ConfigurationException {
+    private static void validateConfiguration(JDBCConfiguration conf) throws ConfigurationException {
         if (conf.getDialect() == null) {
             throw new ConfigurationException(
                     "A dialect must be provided, possible values are H2, HSQL, Oracle, PostgresSQL");
@@ -85,8 +84,7 @@ public class JDBCConfiguration implements Serializable {
                 && cp == null
                 && !"H2".equals(conf.getDialect())
                 && !"HSQL".equals(conf.getDialect())) {
-            throw new ConfigurationException(
-                    "No data source provided, either configure JNDISource or connectionPool");
+            throw new ConfigurationException("No data source provided, either configure JNDISource or connectionPool");
         }
 
         if (cp != null) {
@@ -108,8 +106,7 @@ public class JDBCConfiguration implements Serializable {
         try (FileOutputStream fos = new FileOutputStream(file)) {
             store(config, fos);
         } catch (IOException e) {
-            throw new ConfigurationException(
-                    "Failed to store the configuration into " + file.getAbsolutePath(), e);
+            throw new ConfigurationException("Failed to store the configuration into " + file.getAbsolutePath(), e);
         }
     }
 
@@ -365,30 +362,23 @@ public class JDBCConfiguration implements Serializable {
 
         JDBCConfiguration conf = SerializationUtils.clone(this);
 
-        final GeoWebCacheEnvironment gwcEnvironment =
-                GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
+        final GeoWebCacheEnvironment gwcEnvironment = GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
 
-        if (allowEnvParametrization
-                && gwcEnvironment != null
-                && GeoWebCacheEnvironment.ALLOW_ENV_PARAMETRIZATION) {
+        if (allowEnvParametrization && gwcEnvironment != null && GeoWebCacheEnvironment.ALLOW_ENV_PARAMETRIZATION) {
             conf.setDialect((String) gwcEnvironment.resolveValue(getDialect()));
             conf.setJNDISource((String) gwcEnvironment.resolveValue(getJNDISource()));
             ConnectionPoolConfiguration connectionPoolConfig = getConnectionPool();
             if (connectionPoolConfig != null) {
-                ConnectionPoolConfiguration expConnectionPoolConfig =
-                        SerializationUtils.clone(connectionPoolConfig);
+                ConnectionPoolConfiguration expConnectionPoolConfig = SerializationUtils.clone(connectionPoolConfig);
                 expConnectionPoolConfig.setDriver(
                         (String) gwcEnvironment.resolveValue(connectionPoolConfig.getDriver()));
-                expConnectionPoolConfig.setUrl(
-                        (String) gwcEnvironment.resolveValue(connectionPoolConfig.getUrl()));
+                expConnectionPoolConfig.setUrl((String) gwcEnvironment.resolveValue(connectionPoolConfig.getUrl()));
                 expConnectionPoolConfig.setUsername(
                         (String) gwcEnvironment.resolveValue(connectionPoolConfig.getUsername()));
                 expConnectionPoolConfig.setPassword(
                         (String) gwcEnvironment.resolveValue(connectionPoolConfig.getPassword()));
                 expConnectionPoolConfig.setValidationQuery(
-                        (String)
-                                gwcEnvironment.resolveValue(
-                                        connectionPoolConfig.getValidationQuery()));
+                        (String) gwcEnvironment.resolveValue(connectionPoolConfig.getValidationQuery()));
 
                 conf.setConnectionPool(expConnectionPoolConfig);
             }

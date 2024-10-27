@@ -54,23 +54,19 @@ public class ListenerCollection<Listener> {
      * others added as suppressed exceptions. If an Error is thrown, it will be propagated
      * immediately.
      */
-    public synchronized void safeForEach(HandlerMethod<Listener> method)
-            throws GeoWebCacheException, IOException {
-        LinkedList<Exception> exceptions =
-                listeners.stream()
-                        .map(
-                                l -> {
-                                    try {
-                                        method.callOn(l);
-                                        return Optional.<Exception>empty();
-                                    } catch (Exception ex) {
-                                        return Optional.of(ex);
-                                    }
-                                })
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .collect(
-                                Collectors.collectingAndThen(Collectors.toList(), LinkedList::new));
+    public synchronized void safeForEach(HandlerMethod<Listener> method) throws GeoWebCacheException, IOException {
+        LinkedList<Exception> exceptions = listeners.stream()
+                .map(l -> {
+                    try {
+                        method.callOn(l);
+                        return Optional.<Exception>empty();
+                    } catch (Exception ex) {
+                        return Optional.of(ex);
+                    }
+                })
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.collectingAndThen(Collectors.toList(), LinkedList::new));
         if (!exceptions.isEmpty()) {
             Iterator<Exception> it = exceptions.descendingIterator();
             Exception ex = it.next();

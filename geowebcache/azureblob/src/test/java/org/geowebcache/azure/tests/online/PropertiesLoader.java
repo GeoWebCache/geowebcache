@@ -44,8 +44,7 @@ public class PropertiesLoader {
     public PropertiesLoader() {
         String home = System.getProperty("user.home");
         File configFile = new File(home, ".gwc_azure_tests.properties");
-        log.info(
-                "Loading Azure tests config. File must have keys 'container', 'accountName', and 'accountKey'");
+        log.info("Loading Azure tests config. File must have keys 'container', 'accountName', and 'accountKey'");
         if (configFile.exists()) {
             try (InputStream in = new FileInputStream(configFile)) {
                 properties.load(in);
@@ -59,15 +58,11 @@ public class PropertiesLoader {
                         null != properties.getProperty("accountKey"),
                         "accountKey not provided in config file " + configFile.getAbsolutePath());
             } catch (IOException e) {
-                log.log(
-                        Level.SEVERE,
-                        "Error loading Azure tests config: " + configFile.getAbsolutePath(),
-                        e);
+                log.log(Level.SEVERE, "Error loading Azure tests config: " + configFile.getAbsolutePath(), e);
             }
         } else {
-            log.warning(
-                    "Azure storage config file not found. Azure Azure tests will be ignored. "
-                            + configFile.getAbsolutePath());
+            log.warning("Azure storage config file not found. Azure Azure tests will be ignored. "
+                    + configFile.getAbsolutePath());
         }
     }
 

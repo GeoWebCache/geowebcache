@@ -156,8 +156,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
                 log.fine("Scheduling GridSet: " + gridSetId + " removal for Layer: " + layerName);
             }
             // Remove selected gridsets
-            executorService.submit(
-                    new BlobStoreTask(store, BlobStoreAction.DELETE_GRIDSET, layerName, gridSetId));
+            executorService.submit(new BlobStoreTask(store, BlobStoreAction.DELETE_GRIDSET, layerName, gridSetId));
             return true;
         } finally {
             componentsStateLock.unlock();
@@ -189,31 +188,29 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         componentsStateLock.lock();
         try {
             if (log.isLoggable(Level.FINE)) {
-                log.fine(
-                        "Removing TileObjects for Layer: "
-                                + obj.getLayerName()
-                                + ", min/max levels: "
-                                + "["
-                                + obj.getZoomStart()
-                                + ", "
-                                + obj.getZoomStop()
-                                + "], Gridset: "
-                                + obj.getGridSetId());
+                log.fine("Removing TileObjects for Layer: "
+                        + obj.getLayerName()
+                        + ", min/max levels: "
+                        + "["
+                        + obj.getZoomStart()
+                        + ", "
+                        + obj.getZoomStop()
+                        + "], Gridset: "
+                        + obj.getGridSetId());
             }
             // Remove layer for the cacheProvider
             cacheProvider.removeLayer(obj.getLayerName());
             // Remove selected TileObject
             if (log.isLoggable(Level.FINE)) {
-                log.fine(
-                        "Scheduling removal of TileObjects for Layer: "
-                                + obj.getLayerName()
-                                + ", min/max levels: "
-                                + "["
-                                + obj.getZoomStart()
-                                + ", "
-                                + obj.getZoomStop()
-                                + "], Gridset: "
-                                + obj.getGridSetId());
+                log.fine("Scheduling removal of TileObjects for Layer: "
+                        + obj.getLayerName()
+                        + ", min/max levels: "
+                        + "["
+                        + obj.getZoomStart()
+                        + ", "
+                        + obj.getZoomStop()
+                        + "], Gridset: "
+                        + obj.getGridSetId());
             }
             // Remove selected TileRange
             executorService.submit(new BlobStoreTask(store, BlobStoreAction.DELETE_RANGE, obj));
@@ -234,10 +231,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
             boolean found = false;
             if (cached == null) {
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine(
-                            "TileObject:"
-                                    + obj
-                                    + " not found. Try to get it from the wrapped blobstore");
+                    log.fine("TileObject:" + obj + " not found. Try to get it from the wrapped blobstore");
                 }
                 // Try if it can be found in the system. Wait other scheduled tasks
                 found = executeBlobStoreTask(BlobStoreAction.GET, store, obj);
@@ -375,8 +369,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
                 log.fine("Executing Layer rename task");
             }
             // Variable containing the execution result
-            boolean executed =
-                    executeBlobStoreTask(BlobStoreAction.RENAME, store, oldLayerName, newLayerName);
+            boolean executed = executeBlobStoreTask(BlobStoreAction.RENAME, store, oldLayerName, newLayerName);
             return executed;
         } finally {
             componentsStateLock.unlock();
@@ -504,14 +497,13 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
 
         finalBlob.setLastModified(blob.getLastModified());
         // Creation of a new Resource
-        TileObject cached =
-                TileObject.createCompleteTileObject(
-                        obj.getLayerName(),
-                        obj.getXYZ(),
-                        obj.getGridSetId(),
-                        obj.getBlobFormat(),
-                        obj.getParameters(),
-                        finalBlob);
+        TileObject cached = TileObject.createCompleteTileObject(
+                obj.getLayerName(),
+                obj.getXYZ(),
+                obj.getGridSetId(),
+                obj.getBlobFormat(),
+                obj.getParameters(),
+                finalBlob);
         return cached;
     }
 
@@ -544,8 +536,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
                 if (cacheBeanName != null && !cacheBeanName.isEmpty()) {
                     for (String beanDef : beans) {
                         if (cacheBeanName.equalsIgnoreCase(beanDef)) {
-                            CacheProvider bean =
-                                    applicationContext.getBean(beanDef, CacheProvider.class);
+                            CacheProvider bean = applicationContext.getBean(beanDef, CacheProvider.class);
                             if (bean.isAvailable()) {
                                 setCacheProvider(bean);
                                 configured = true;
@@ -565,8 +556,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
                 // If two are present and at least one of them is not guava, then it is used
                 if (!configured && beanSize == 2) {
                     for (String beanDef : beans) {
-                        CacheProvider bean =
-                                applicationContext.getBean(beanDef, CacheProvider.class);
+                        CacheProvider bean = applicationContext.getBean(beanDef, CacheProvider.class);
                         if (!(bean instanceof GuavaCacheProvider) && bean.isAvailable()) {
                             setCacheProvider(bean);
                             configured = true;
@@ -576,8 +566,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
                     // Try again and search if at least a GuavaCacheProvider is present
                     if (!configured) {
                         for (String beanDef : beans) {
-                            CacheProvider bean =
-                                    applicationContext.getBean(beanDef, CacheProvider.class);
+                            CacheProvider bean = applicationContext.getBean(beanDef, CacheProvider.class);
                             if (bean.isAvailable()) {
                                 setCacheProvider(bean);
                                 configured = true;
@@ -664,8 +653,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
     public enum BlobStoreAction {
         PUT {
             @Override
-            public boolean executeOperation(BlobStore store, Object... objs)
-                    throws StorageException {
+            public boolean executeOperation(BlobStore store, Object... objs) throws StorageException {
                 if (objs == null || objs.length < 1 || !(objs[0] instanceof TileObject)) {
                     return false;
                 }
@@ -675,8 +663,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         },
         GET {
             @Override
-            public boolean executeOperation(BlobStore store, Object... objs)
-                    throws StorageException {
+            public boolean executeOperation(BlobStore store, Object... objs) throws StorageException {
                 if (objs == null || objs.length < 1 || !(objs[0] instanceof TileObject)) {
                     return false;
                 }
@@ -685,8 +672,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         },
         DELETE_SINGLE {
             @Override
-            public boolean executeOperation(BlobStore store, Object... objs)
-                    throws StorageException {
+            public boolean executeOperation(BlobStore store, Object... objs) throws StorageException {
                 if (objs == null || objs.length < 1 || !(objs[0] instanceof TileObject)) {
                     return false;
                 }
@@ -695,8 +681,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         },
         DELETE_RANGE {
             @Override
-            public boolean executeOperation(BlobStore store, Object... objs)
-                    throws StorageException {
+            public boolean executeOperation(BlobStore store, Object... objs) throws StorageException {
                 if (objs == null || objs.length < 1 || !(objs[0] instanceof TileRange)) {
                     return false;
                 }
@@ -705,12 +690,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         },
         DELETE_GRIDSET {
             @Override
-            public boolean executeOperation(BlobStore store, Object... objs)
-                    throws StorageException {
-                if (objs == null
-                        || objs.length < 2
-                        || !(objs[0] instanceof String)
-                        || !(objs[1] instanceof String)) {
+            public boolean executeOperation(BlobStore store, Object... objs) throws StorageException {
+                if (objs == null || objs.length < 2 || !(objs[0] instanceof String) || !(objs[1] instanceof String)) {
                     return false;
                 }
                 return store.deleteByGridsetId((String) objs[0], (String) objs[1]);
@@ -718,12 +699,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         },
         DELETE_PARAMS_ID {
             @Override
-            public boolean executeOperation(BlobStore store, Object... objs)
-                    throws StorageException {
-                if (objs == null
-                        || objs.length < 2
-                        || !(objs[0] instanceof String)
-                        || !(objs[1] instanceof String)) {
+            public boolean executeOperation(BlobStore store, Object... objs) throws StorageException {
+                if (objs == null || objs.length < 2 || !(objs[0] instanceof String) || !(objs[1] instanceof String)) {
                     return false;
                 }
                 return store.deleteByParametersId((String) objs[0], (String) objs[1]);
@@ -731,8 +708,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         },
         DELETE_LAYER {
             @Override
-            public boolean executeOperation(BlobStore store, Object... objs)
-                    throws StorageException {
+            public boolean executeOperation(BlobStore store, Object... objs) throws StorageException {
                 if (objs == null || objs.length < 1 || !(objs[0] instanceof String)) {
                     return false;
                 }
@@ -741,28 +717,22 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         },
         CLEAR {
             @Override
-            public boolean executeOperation(BlobStore store, Object... objs)
-                    throws StorageException {
+            public boolean executeOperation(BlobStore store, Object... objs) throws StorageException {
                 store.clear();
                 return true;
             }
         },
         DESTROY {
             @Override
-            public boolean executeOperation(BlobStore store, Object... objs)
-                    throws StorageException {
+            public boolean executeOperation(BlobStore store, Object... objs) throws StorageException {
                 store.destroy();
                 return true;
             }
         },
         RENAME {
             @Override
-            public boolean executeOperation(BlobStore store, Object... objs)
-                    throws StorageException {
-                if (objs == null
-                        || objs.length < 2
-                        || !(objs[0] instanceof String)
-                        || !(objs[1] instanceof String)) {
+            public boolean executeOperation(BlobStore store, Object... objs) throws StorageException {
+                if (objs == null || objs.length < 2 || !(objs[0] instanceof String) || !(objs[1] instanceof String)) {
                     return false;
                 }
                 return store.rename((String) objs[0], (String) objs[1]);
@@ -774,13 +744,11 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
          *
          * @return operation result
          */
-        public abstract boolean executeOperation(BlobStore store, Object... objs)
-                throws StorageException;
+        public abstract boolean executeOperation(BlobStore store, Object... objs) throws StorageException;
     }
 
     @Override
-    public boolean deleteByParametersId(String layerName, String parametersId)
-            throws StorageException {
+    public boolean deleteByParametersId(String layerName, String parametersId) throws StorageException {
         componentsStateLock.lock();
         try {
             if (log.isLoggable(Level.FINE)) {
@@ -789,16 +757,10 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
             // Remove the layer from the cacheProvider
             cacheProvider.removeLayer(layerName);
             if (log.isLoggable(Level.FINE)) {
-                log.fine(
-                        "Scheduling Parameters: "
-                                + parametersId
-                                + " removal for Layer: "
-                                + layerName);
+                log.fine("Scheduling Parameters: " + parametersId + " removal for Layer: " + layerName);
             }
             // Remove selected parameters
-            executorService.submit(
-                    new BlobStoreTask(
-                            store, BlobStoreAction.DELETE_PARAMS_ID, layerName, parametersId));
+            executorService.submit(new BlobStoreTask(store, BlobStoreAction.DELETE_PARAMS_ID, layerName, parametersId));
             return true;
         } finally {
             componentsStateLock.unlock();

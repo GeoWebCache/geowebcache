@@ -34,8 +34,7 @@ public interface MassTruncateRequest {
      * @param breeder The tile breeder storing information about the affected layers
      * @return {@literal true} if successful, {@literal false} otherwise
      */
-    public boolean doTruncate(StorageBroker sb, TileBreeder breeder)
-            throws StorageException, GeoWebCacheException;
+    public boolean doTruncate(StorageBroker sb, TileBreeder breeder) throws StorageException, GeoWebCacheException;
 
     public default ResponseEntity<String> getResponse(String contentType) {
         return new ResponseEntity<>(HttpStatus.OK);

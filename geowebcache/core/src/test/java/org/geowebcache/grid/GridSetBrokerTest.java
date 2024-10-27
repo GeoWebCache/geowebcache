@@ -53,39 +53,29 @@ public class GridSetBrokerTest extends GWCConfigIntegrationTest {
     @Test
     public void testGetDefaultGridsetOld() throws IOException {
         GridSet existingGridSet = gridSetBroker.get(GWCConfigIntegrationTestData.GRIDSET_EPSG4326);
-        assertThat(
-                existingGridSet,
-                hasProperty("name", equalTo(GWCConfigIntegrationTestData.GRIDSET_EPSG4326)));
+        assertThat(existingGridSet, hasProperty("name", equalTo(GWCConfigIntegrationTestData.GRIDSET_EPSG4326)));
     }
 
     @Test
     public void testGetDefaultGridSet() throws IOException {
-        Optional<GridSet> existingGridSet =
-                gridSetBroker.getGridSet(GWCConfigIntegrationTestData.GRIDSET_EPSG4326);
+        Optional<GridSet> existingGridSet = gridSetBroker.getGridSet(GWCConfigIntegrationTestData.GRIDSET_EPSG4326);
         assertThat(
                 existingGridSet,
-                isPresent(
-                        hasProperty(
-                                "name", equalTo(GWCConfigIntegrationTestData.GRIDSET_EPSG4326))));
+                isPresent(hasProperty("name", equalTo(GWCConfigIntegrationTestData.GRIDSET_EPSG4326))));
     }
 
     @Test
     public void testGetGridsetOld() throws IOException {
         GridSet existingGridSet = gridSetBroker.get(GWCConfigIntegrationTestData.GRIDSET_EPSG2163);
-        assertThat(
-                existingGridSet,
-                hasProperty("name", equalTo(GWCConfigIntegrationTestData.GRIDSET_EPSG2163)));
+        assertThat(existingGridSet, hasProperty("name", equalTo(GWCConfigIntegrationTestData.GRIDSET_EPSG2163)));
     }
 
     @Test
     public void testGetGridSet() throws IOException {
-        Optional<GridSet> existingGridSet =
-                gridSetBroker.getGridSet(GWCConfigIntegrationTestData.GRIDSET_EPSG2163);
+        Optional<GridSet> existingGridSet = gridSetBroker.getGridSet(GWCConfigIntegrationTestData.GRIDSET_EPSG2163);
         assertThat(
                 existingGridSet,
-                isPresent(
-                        hasProperty(
-                                "name", equalTo(GWCConfigIntegrationTestData.GRIDSET_EPSG2163))));
+                isPresent(hasProperty("name", equalTo(GWCConfigIntegrationTestData.GRIDSET_EPSG2163))));
     }
 
     @Test
@@ -104,20 +94,19 @@ public class GridSetBrokerTest extends GWCConfigIntegrationTest {
     @Test
     public void testAddGridset() throws GeoWebCacheException, IOException {
         String gridsetName = "EPSG:3005";
-        GridSet epsg3005 =
-                GridSetFactory.createGridSet(
-                        gridsetName,
-                        SRS.getSRS(gridsetName),
-                        new BoundingBox(35043.6538, 440006.8768, 1885895.3117, 1735643.8497),
-                        false,
-                        null,
-                        new double[] {25000000, 1250000, 500000, 250000},
-                        null,
-                        GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
-                        null,
-                        256,
-                        256,
-                        false);
+        GridSet epsg3005 = GridSetFactory.createGridSet(
+                gridsetName,
+                SRS.getSRS(gridsetName),
+                new BoundingBox(35043.6538, 440006.8768, 1885895.3117, 1735643.8497),
+                false,
+                null,
+                new double[] {25000000, 1250000, 500000, 250000},
+                null,
+                GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                null,
+                256,
+                256,
+                false);
 
         gridSetBroker.addGridSet(epsg3005);
 

@@ -39,8 +39,7 @@ public class DefaultGridsetsConfigurationGridsetConformanceTest extends GridSetC
 
     @Override
     protected Matcher<GridSet> infoEquals(GridSet expected) {
-        return new CustomMatcher<>(
-                "GridSet matching " + expected.getName() + " with " + expected.getDescription()) {
+        return new CustomMatcher<>("GridSet matching " + expected.getName() + " with " + expected.getDescription()) {
 
             @Override
             public boolean matches(Object item) {
@@ -79,8 +78,7 @@ public class DefaultGridsetsConfigurationGridsetConformanceTest extends GridSetC
     }
 
     @Override
-    protected void renameInfo(GridSetConfiguration config, String name1, String name2)
-            throws Exception {
+    protected void renameInfo(GridSetConfiguration config, String name1, String name2) throws Exception {
         Assume.assumeFalse(true);
     }
 

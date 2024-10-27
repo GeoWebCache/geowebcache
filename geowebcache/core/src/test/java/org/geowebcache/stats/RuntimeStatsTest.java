@@ -33,8 +33,7 @@ public class RuntimeStatsTest {
         EasyMock.expect(clock.millis()).andStubAnswer(() -> time);
         EasyMock.replay(clock);
         time = 0;
-        RuntimeStats stats =
-                new RuntimeStats(1, Arrays.asList(60), Arrays.asList("Minutes"), clock);
+        RuntimeStats stats = new RuntimeStats(1, Arrays.asList(60), Arrays.asList("Minutes"), clock);
         time += 500;
         stats.getHTMLStats();
         // Shouldn't get a divide by zero

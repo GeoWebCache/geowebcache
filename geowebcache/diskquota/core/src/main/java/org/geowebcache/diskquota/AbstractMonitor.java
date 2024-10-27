@@ -57,14 +57,13 @@ public abstract class AbstractMonitor {
                     awaitTermination(seconds, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     interrupted = true;
-                    String message =
-                            "Usage statistics thread helper for DiskQuota failed to shutdown within "
-                                    + (attempts * seconds)
-                                    + " seconds. Attempt "
-                                    + attempts
-                                    + " of "
-                                    + maxAttempts
-                                    + "...";
+                    String message = "Usage statistics thread helper for DiskQuota failed to shutdown within "
+                            + (attempts * seconds)
+                            + " seconds. Attempt "
+                            + attempts
+                            + " of "
+                            + maxAttempts
+                            + "...";
                     log.warning(message);
                     if (attempts == maxAttempts) {
                         throw new RuntimeException(message, e);

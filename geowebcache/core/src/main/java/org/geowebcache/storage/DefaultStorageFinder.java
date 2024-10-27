@@ -129,13 +129,12 @@ public class DefaultStorageFinder {
             String tmpDir = System.getProperty("java.io.tmpdir");
             if (tmpDir != null) {
                 File temp = new File(tmpDir, "geowebcache");
-                logMsg =
-                        "Reverting to java.io.tmpdir '"
-                                + temp.getAbsolutePath()
-                                + "' for storage. "
-                                + "Please set "
-                                + GWC_CACHE_DIR
-                                + ".";
+                logMsg = "Reverting to java.io.tmpdir '"
+                        + temp.getAbsolutePath()
+                        + "' for storage. "
+                        + "Please set "
+                        + GWC_CACHE_DIR
+                        + ".";
                 if (!temp.exists() && !temp.mkdirs()) {
                     throw new RuntimeException("Can't create " + temp.getAbsolutePath());
                 }

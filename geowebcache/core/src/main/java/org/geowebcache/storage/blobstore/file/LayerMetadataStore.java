@@ -50,17 +50,14 @@ public class LayerMetadataStore {
 
     private static Logger log = Logging.getLogger(LayerMetadataStore.class.getName());
 
-    public static final String PROPERTY_METADATA_MAX_RW_ATTEMPTS =
-            "gwc.layermetadatastore.maxRWAttempts";
+    public static final String PROPERTY_METADATA_MAX_RW_ATTEMPTS = "gwc.layermetadatastore.maxRWAttempts";
 
-    public static final String PROPERTY_WAIT_AFTER_RENAME =
-            "gwc.layermetadatastore.waitAfterRename";
+    public static final String PROPERTY_WAIT_AFTER_RENAME = "gwc.layermetadatastore.waitAfterRename";
 
     static final int METADATA_MAX_RW_ATTEMPTS =
             Integer.parseInt(System.getProperty(PROPERTY_METADATA_MAX_RW_ATTEMPTS, "50"));
 
-    static final int WAIT_AFTER_RENAME =
-            Integer.parseInt(System.getProperty(PROPERTY_WAIT_AFTER_RENAME, "50"));
+    static final int WAIT_AFTER_RENAME = Integer.parseInt(System.getProperty(PROPERTY_WAIT_AFTER_RENAME, "50"));
 
     static final String METADATA_GZIP_EXTENSION = ".gz";
 
@@ -72,10 +69,9 @@ public class LayerMetadataStore {
     private static final int lockShardSize = 32;
 
     /** handling of local-process concurrent access to layer metadata files */
-    private ReadWriteLock[] locks =
-            IntStream.range(0, lockShardSize)
-                    .mapToObj(i -> new ReentrantReadWriteLock())
-                    .toArray(ReadWriteLock[]::new);
+    private ReadWriteLock[] locks = IntStream.range(0, lockShardSize)
+            .mapToObj(i -> new ReentrantReadWriteLock())
+            .toArray(ReadWriteLock[]::new);
 
     public LayerMetadataStore(String rootPath, File tmpPath) {
         this.path = rootPath;
@@ -100,8 +96,7 @@ public class LayerMetadataStore {
      * @see org.geowebcache.storage.BlobStore#putLayerMetadata(java.lang.String, java.lang.String,
      *     java.lang.String)
      */
-    public void putEntry(final String layerName, final String key, final String value)
-            throws IOException {
+    public void putEntry(final String layerName, final String key, final String value) throws IOException {
         final File metadataFile = resolveMetadataFile(layerName);
         Properties metadata = loadLayerMetadata(metadataFile);
 
@@ -135,10 +130,9 @@ public class LayerMetadataStore {
     }
 
     private int resolveLockBucket(File file) {
-        long consistentFileNameHash =
-                Hashing.farmHashFingerprint64()
-                        .hashString(file.getAbsolutePath(), StandardCharsets.UTF_8)
-                        .asLong();
+        long consistentFileNameHash = Hashing.farmHashFingerprint64()
+                .hashString(file.getAbsolutePath(), StandardCharsets.UTF_8)
+                .asLong();
         int bucket = Hashing.consistentHash(consistentFileNameHash, locks.length);
         return bucket;
     }
@@ -155,8 +149,8 @@ public class LayerMetadataStore {
      * @throws IOException
      */
     @SuppressFBWarnings(value = "DLS_DEAD_LOCAL_STORE")
-    private void writeMetadataOptimisticLock(
-            final String key, final String value, final File metadataFile) throws IOException {
+    private void writeMetadataOptimisticLock(final String key, final String value, final File metadataFile)
+            throws IOException {
         final ReadWriteLock rwLock = getLock(metadataFile);
         final int maxAttempts = LayerMetadataStore.METADATA_MAX_RW_ATTEMPTS;
         Properties metadata = loadLayerMetadata(metadataFile);
@@ -178,39 +172,30 @@ public class LayerMetadataStore {
                         // compare content between renamed file and memory content
                         Properties metadataAfterRename = loadLayerMetadata(metadataFile);
                         if (!metadata.equals(metadataAfterRename)) {
-                            log.fine(
-                                    "Renamed file content differs from expected saved content.\nCurrent:"
-                                            + metadataAfterRename.toString()
-                                            + "\nExpected: "
-                                            + metadata.toString());
+                            log.fine("Renamed file content differs from expected saved content.\nCurrent:"
+                                    + metadataAfterRename.toString()
+                                    + "\nExpected: "
+                                    + metadata.toString());
                             attempt++;
                         } else {
-                            log.fine(
-                                    "Temporary file renamed successfully (metadata: "
-                                            + metadata.toString()
-                                            + ")");
+                            log.fine("Temporary file renamed successfully (metadata: " + metadata.toString() + ")");
                             return;
                         }
                     } else {
-                        log.info(
-                                "Reattempting to write metadata file, because an error while renaming metadata file "
-                                        + metadataFile.getPath());
+                        log.info("Reattempting to write metadata file, because an error while renaming metadata file "
+                                + metadataFile.getPath());
                         attempt++;
                     }
                     tempFile.delete();
                 } else {
-                    log.fine(
-                            "Reattempting to write metadata file since timestamp changed (metadata: "
-                                    + metadata.toString()
-                                    + ")");
+                    log.fine("Reattempting to write metadata file since timestamp changed (metadata: "
+                            + metadata.toString()
+                            + ")");
                 }
                 // another process beat us, reload
                 // next line triggers a false-positive DLS_DEAD_LOCAL_STORE
                 if (metadata.isEmpty()) {
-                    log.fine(
-                            "Reattempting to write metadata file with empty metadata: "
-                                    + metadata.toString()
-                                    + ")");
+                    log.fine("Reattempting to write metadata file with empty metadata: " + metadata.toString() + ")");
                 }
                 metadata = loadLayerMetadata(metadataFile);
                 lastModified = metadataFile.lastModified();
@@ -229,8 +214,7 @@ public class LayerMetadataStore {
     private File writeTempMetadataFile(Properties metadata) {
         tmp.mkdirs();
         try {
-            final File metadataFile =
-                    File.createTempFile("tmp", LayerMetadataStore.METADATA_GZIP_EXTENSION, tmp);
+            final File metadataFile = File.createTempFile("tmp", LayerMetadataStore.METADATA_GZIP_EXTENSION, tmp);
             return this.writeMetadataFile(metadata, metadataFile);
         } catch (IOException e) {
             log.log(Level.SEVERE, "Cannot create temporary file");
@@ -264,22 +248,19 @@ public class LayerMetadataStore {
         File parentDir = metadataFile.getParentFile();
         if (!parentDir.exists() && !parentDir.mkdirs()) {
             if (!parentDir.exists())
-                throw new IllegalStateException(
-                        "Unable to create parent directory " + parentDir.getAbsolutePath());
+                throw new IllegalStateException("Unable to create parent directory " + parentDir.getAbsolutePath());
         }
     }
 
     private Writer compressingWriter(File file) throws FileNotFoundException, IOException {
-        return new OutputStreamWriter(
-                new GZIPOutputStream(new FileOutputStream(file)), StandardCharsets.UTF_8);
+        return new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(file)), StandardCharsets.UTF_8);
     }
 
     private Properties getUncompressedLayerMetadata(final File metadataFile) throws IOException {
         return loadLayerMetadata(metadataFile, this::open);
     }
 
-    private Properties loadLayerMetadata(File metadataFile, Function<File, InputStream> isProvider)
-            throws IOException {
+    private Properties loadLayerMetadata(File metadataFile, Function<File, InputStream> isProvider) throws IOException {
         // out-of-process concurrency control
         final int maxAttempts = LayerMetadataStore.METADATA_MAX_RW_ATTEMPTS;
         long lastModified = metadataFile.lastModified();
@@ -297,10 +278,9 @@ public class LayerMetadataStore {
                         return props;
                     }
                     // Try again since some other GWC updated the file
-                    log.fine(
-                            "Reattempting to read metadata file since timestamp changed (metadata: "
-                                    + props.toString()
-                                    + ")");
+                    log.fine("Reattempting to read metadata file since timestamp changed (metadata: "
+                            + props.toString()
+                            + ")");
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }

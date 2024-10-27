@@ -51,8 +51,7 @@ public class GeometryRasterMaskBuilder {
 
     private static final double ENVELOPE_BUFFER_RATIO = 1;
 
-    private static final Logger LOGGER =
-            Logging.getLogger(GeometryRasterMaskBuilder.class.getName());
+    private static final Logger LOGGER = Logging.getLogger(GeometryRasterMaskBuilder.class.getName());
 
     private static final AffineTransform IDENTITY = new AffineTransform();
 
@@ -101,22 +100,17 @@ public class GeometryRasterMaskBuilder {
                 final long tilesY = (levelBounds[3] + 1) - levelBounds[1];
                 final long numTiles = tilesX * tilesY;
 
-                if (tilesX >= Integer.MAX_VALUE
-                        || tilesY >= Integer.MAX_VALUE
-                        || numTiles >= Integer.MAX_VALUE) {
+                if (tilesX >= Integer.MAX_VALUE || tilesY >= Integer.MAX_VALUE || numTiles >= Integer.MAX_VALUE) {
                     // this is so because the image's sample model can't cope up with more than
                     // Integer.MAX_VALUE pixels
-                    throw new IllegalStateException(
-                            "Masking level "
-                                    + level
-                                    + " would produce a backing image of too many tiles!"
-                                    + " Consider setting a lower maxMaskLevel ");
+                    throw new IllegalStateException("Masking level "
+                            + level
+                            + " would produce a backing image of too many tiles!"
+                            + " Consider setting a lower maxMaskLevel ");
                 }
 
                 // BufferedImage with 1-bit per pixel sample model
-                BufferedImage mask =
-                        new BufferedImage(
-                                (int) tilesX, (int) tilesY, BufferedImage.TYPE_BYTE_BINARY);
+                BufferedImage mask = new BufferedImage((int) tilesX, (int) tilesY, BufferedImage.TYPE_BYTE_BINARY);
                 byLevelMasks[level] = mask;
             }
         }
@@ -186,8 +180,7 @@ public class GeometryRasterMaskBuilder {
              * Disable antialiasing explicitly, otherwise the rendering will pick the platform's
              * default potentially producing missing pixels
              */
-            graphics.setRenderingHint(
-                    RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
             graphics.setColor(Color.WHITE);
             graphics.fill(shape);
         }
@@ -214,8 +207,7 @@ public class GeometryRasterMaskBuilder {
         return geomInGridCrs;
     }
 
-    private MathTransform getWorldToGridTransform(
-            final BoundingBox coverageBounds, final long[] coverage) {
+    private MathTransform getWorldToGridTransform(final BoundingBox coverageBounds, final long[] coverage) {
 
         // //
         //
@@ -331,17 +323,15 @@ public class GeometryRasterMaskBuilder {
             Envelope coveredLevelEnvelope;
             coveredLevelEnvelope = JTS.transform(aggregatedGeomBounds, worldToGrid);
             Geometry bufferedEnvelopeInGridCrs;
-            bufferedEnvelopeInGridCrs =
-                    JTS.toGeometry(coveredLevelEnvelope).buffer(ENVELOPE_BUFFER_RATIO);
+            bufferedEnvelopeInGridCrs = JTS.toGeometry(coveredLevelEnvelope).buffer(ENVELOPE_BUFFER_RATIO);
             coveredLevelEnvelope = bufferedEnvelopeInGridCrs.getEnvelopeInternal();
             MathTransform gridToWorld = worldToGrid.inverse();
             Envelope bufferedEnvelope = JTS.transform(coveredLevelEnvelope, gridToWorld);
-            expandedBounds =
-                    new BoundingBox(
-                            bufferedEnvelope.getMinX(),
-                            bufferedEnvelope.getMinY(),
-                            bufferedEnvelope.getMaxX(),
-                            bufferedEnvelope.getMaxY());
+            expandedBounds = new BoundingBox(
+                    bufferedEnvelope.getMinX(),
+                    bufferedEnvelope.getMinY(),
+                    bufferedEnvelope.getMaxX(),
+                    bufferedEnvelope.getMaxY());
         } catch (TransformException e) {
             throw new RuntimeException(e);
         }

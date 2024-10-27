@@ -55,12 +55,10 @@ public abstract class TileLayerTest {
         Map<String, String> result = layer.getModifiableParameters(rawParams, "UTF-8");
 
         assertThat(result, hasEntry(equalToIgnoringCase("FILTER1"), equalTo("bar")));
-        assertThat(
-                result, hasEntry(equalToIgnoringCase("FILTER2"), equalTo(""))); // Default is empty
+        assertThat(result, hasEntry(equalToIgnoringCase("FILTER2"), equalTo(""))); // Default is empty
         assertThat(result, hasEntry(equalToIgnoringCase("FILTER3"), equalTo("quux")));
         assertThat(result, not(hasEntry(equalToIgnoringCase("FILTER4"), notNullValue())));
     }
 
-    protected abstract TileLayer getLayerWithFilters(Collection<ParameterFilter> filters)
-            throws Exception;
+    protected abstract TileLayer getLayerWithFilters(Collection<ParameterFilter> filters) throws Exception;
 }

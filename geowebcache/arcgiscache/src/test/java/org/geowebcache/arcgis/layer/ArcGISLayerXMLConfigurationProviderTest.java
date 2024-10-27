@@ -13,15 +13,12 @@ public class ArcGISLayerXMLConfigurationProviderTest {
     public void testGetConfiguredXStream() {
 
         final Map<String, Class> aliases = new HashMap<>();
-        XStream xs =
-                new ArcGISLayerXMLConfigurationProvider()
-                        .getConfiguredXStream(
-                                new GeoWebCacheXStream() {
-                                    @Override
-                                    public void alias(String alias, Class c) {
-                                        aliases.put(alias, c);
-                                    }
-                                });
+        XStream xs = new ArcGISLayerXMLConfigurationProvider().getConfiguredXStream(new GeoWebCacheXStream() {
+            @Override
+            public void alias(String alias, Class c) {
+                aliases.put(alias, c);
+            }
+        });
 
         Assert.assertNotNull(xs);
         Assert.assertEquals(ArcGISCacheLayer.class, aliases.get("arcgisLayer"));

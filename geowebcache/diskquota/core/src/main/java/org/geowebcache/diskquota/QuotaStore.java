@@ -42,20 +42,17 @@ public interface QuotaStore {
      *
      * @return A Quota object (never null)
      */
-    public abstract Quota getUsedQuotaByTileSetId(final String tileSetId)
-            throws InterruptedException;
+    public abstract Quota getUsedQuotaByTileSetId(final String tileSetId) throws InterruptedException;
 
     public abstract void deleteLayer(final String layerName);
 
-    public abstract void renameLayer(String oldLayerName, String newLayerName)
-            throws InterruptedException;
+    public abstract void renameLayer(String oldLayerName, String newLayerName) throws InterruptedException;
 
     /**
      * @return the used quota for the given layer, may need to create a new one before returning if
      *     no quota usage information for that layer already exists
      */
-    public abstract Quota getUsedQuotaByLayerName(final String layerName)
-            throws InterruptedException;
+    public abstract Quota getUsedQuotaByLayerName(final String layerName) throws InterruptedException;
 
     public abstract long[][] getTilesForPage(TilePage page) throws InterruptedException;
 
@@ -72,9 +69,7 @@ public interface QuotaStore {
      * argument pages
      */
     public abstract void addToQuotaAndTileCounts(
-            final TileSet tileSet,
-            final Quota quotaDiff,
-            final Collection<PageStatsPayload> tileCountDiffs)
+            final TileSet tileSet, final Quota quotaDiff, final Collection<PageStatsPayload> tileCountDiffs)
             throws InterruptedException;
 
     /**
@@ -84,16 +79,13 @@ public interface QuotaStore {
      * PageStats#addHitsAndAccessTime(long, int, int)}; these values are influenced by the {@code
      * PageStats}' {@link PageStats#getFillFactor() fillFactor}.
      */
-    public abstract Future<List<PageStats>> addHitsAndSetAccesTime(
-            final Collection<PageStatsPayload> statsUpdates);
+    public abstract Future<List<PageStats>> addHitsAndSetAccesTime(final Collection<PageStatsPayload> statsUpdates);
 
     /** */
-    public abstract TilePage getLeastFrequentlyUsedPage(final Set<String> layerNames)
-            throws InterruptedException;
+    public abstract TilePage getLeastFrequentlyUsedPage(final Set<String> layerNames) throws InterruptedException;
 
     /** */
-    public abstract TilePage getLeastRecentlyUsedPage(final Set<String> layerNames)
-            throws InterruptedException;
+    public abstract TilePage getLeastRecentlyUsedPage(final Set<String> layerNames) throws InterruptedException;
 
     public abstract PageStats setTruncated(final TilePage tilePage) throws InterruptedException;
 

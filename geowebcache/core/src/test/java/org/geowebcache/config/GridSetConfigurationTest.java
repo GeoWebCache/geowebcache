@@ -30,8 +30,7 @@ import org.junit.Test;
  * Abstract unit test for GridSet Configurations. Checks that behavior is consistent across
  * implementations.
  */
-public abstract class GridSetConfigurationTest
-        extends ConfigurationTest<GridSet, GridSetConfiguration> {
+public abstract class GridSetConfigurationTest extends ConfigurationTest<GridSet, GridSetConfiguration> {
 
     @Test
     public void testCanSaveGoodInfo() throws Exception {
@@ -69,8 +68,7 @@ public abstract class GridSetConfigurationTest
     }
 
     @Override
-    protected void renameInfo(GridSetConfiguration config, String name1, String name2)
-            throws Exception {
+    protected void renameInfo(GridSetConfiguration config, String name1, String name2) throws Exception {
         config.renameGridSet(name1, name2);
     }
 
@@ -81,18 +79,17 @@ public abstract class GridSetConfigurationTest
 
     @Override
     protected GridSet getGoodInfo(String id, int rand) {
-        GridSet gridset =
-                GridSetFactory.createGridSet(
-                        id,
-                        SRS.getSRS(4326),
-                        new BoundingBox(0, 0, 1, 1),
-                        true,
-                        3,
-                        1.0,
-                        GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
-                        256,
-                        256,
-                        false);
+        GridSet gridset = GridSetFactory.createGridSet(
+                id,
+                SRS.getSRS(4326),
+                new BoundingBox(0, 0, 1, 1),
+                true,
+                3,
+                1.0,
+                GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                256,
+                256,
+                false);
         gridset.setDescription(Integer.toString(rand));
         return gridset;
     }

@@ -77,31 +77,29 @@ public class GridSetFactory {
 
         for (int i = 1; resolutions != null && i < resolutions.length; i++) {
             if (resolutions[i] >= resolutions[i - 1]) {
-                throw new IllegalArgumentException(
-                        "Each resolution should be lower than it's prior one. Res["
-                                + i
-                                + "] == "
-                                + resolutions[i]
-                                + ", Res["
-                                + (i - 1)
-                                + "] == "
-                                + resolutions[i - 1]
-                                + ".");
+                throw new IllegalArgumentException("Each resolution should be lower than it's prior one. Res["
+                        + i
+                        + "] == "
+                        + resolutions[i]
+                        + ", Res["
+                        + (i - 1)
+                        + "] == "
+                        + resolutions[i - 1]
+                        + ".");
             }
         }
 
         for (int i = 1; scaleDenoms != null && i < scaleDenoms.length; i++) {
             if (scaleDenoms[i] >= scaleDenoms[i - 1]) {
-                throw new IllegalArgumentException(
-                        "Each scale denominator should be lower than it's prior one. Scale["
-                                + i
-                                + "] == "
-                                + scaleDenoms[i]
-                                + ", Scale["
-                                + (i - 1)
-                                + "] == "
-                                + scaleDenoms[i - 1]
-                                + ".");
+                throw new IllegalArgumentException("Each scale denominator should be lower than it's prior one. Scale["
+                        + i
+                        + "] == "
+                        + scaleDenoms[i]
+                        + ", Scale["
+                        + (i - 1)
+                        + "] == "
+                        + scaleDenoms[i - 1]
+                        + ".");
             }
         }
 
@@ -123,17 +121,15 @@ public class GridSetFactory {
                 gridSet.setMetersPerUnit(EPSG3857_TO_METERS);
             } else {
                 if (resolutions == null) {
-                    log.config(
-                            "GridSet "
-                                    + name
-                                    + " was defined without metersPerUnit, assuming 1m/unit."
-                                    + " All scales will be off if this is incorrect.");
+                    log.config("GridSet "
+                            + name
+                            + " was defined without metersPerUnit, assuming 1m/unit."
+                            + " All scales will be off if this is incorrect.");
                 } else {
-                    log.config(
-                            "GridSet "
-                                    + name
-                                    + " was defined without metersPerUnit. "
-                                    + "Assuming 1m per SRS unit for WMTS scale output.");
+                    log.config("GridSet "
+                            + name
+                            + " was defined without metersPerUnit. "
+                            + "Assuming 1m per SRS unit for WMTS scale output.");
 
                     gridSet.setScaleWarning(true);
                 }
@@ -157,17 +153,14 @@ public class GridSetFactory {
                 curGrid.setResolution(pixelSize * (scaleDenoms[i] / gridSet.getMetersPerUnit()));
             } else {
                 curGrid.setResolution(resolutions[i]);
-                curGrid.setScaleDenominator(
-                        (resolutions[i] * gridSet.getMetersPerUnit()) / DEFAULT_PIXEL_SIZE_METER);
+                curGrid.setScaleDenominator((resolutions[i] * gridSet.getMetersPerUnit()) / DEFAULT_PIXEL_SIZE_METER);
             }
 
             final double mapUnitWidth = tileWidth * curGrid.getResolution();
             final double mapUnitHeight = tileHeight * curGrid.getResolution();
 
-            final long tilesWide =
-                    (long) Math.ceil((extent.getWidth() - mapUnitWidth * 0.01) / mapUnitWidth);
-            final long tilesHigh =
-                    (long) Math.ceil((extent.getHeight() - mapUnitHeight * 0.01) / mapUnitHeight);
+            final long tilesWide = (long) Math.ceil((extent.getWidth() - mapUnitWidth * 0.01) / mapUnitWidth);
+            final long tilesHigh = (long) Math.ceil((extent.getHeight() - mapUnitHeight * 0.01) / mapUnitHeight);
 
             curGrid.setNumTilesWide(tilesWide);
             curGrid.setNumTilesHigh(tilesHigh);

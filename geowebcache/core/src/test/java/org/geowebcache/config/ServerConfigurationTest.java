@@ -41,7 +41,9 @@ public class ServerConfigurationTest {
 
     ServerConfiguration config;
 
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
+
     private File configDir;
     private File configFile;
     private GridSetBroker gridSetBroker;
@@ -115,14 +117,12 @@ public class ServerConfigurationTest {
             FileUtils.copyURLToFile(source, configFile);
         }
         // initialize the config with an XMLFileResourceProvider that uses the temp config file
-        gridSetBroker =
-                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
-        ConfigurationResourceProvider configProvider =
-                new XMLFileResourceProvider(
-                        XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
-                        (WebApplicationContext) null,
-                        configDir.getAbsolutePath(),
-                        null);
+        gridSetBroker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
+        ConfigurationResourceProvider configProvider = new XMLFileResourceProvider(
+                XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
+                (WebApplicationContext) null,
+                configDir.getAbsolutePath(),
+                null);
         config = new XMLConfiguration(null, configProvider);
         ((XMLConfiguration) config).setGridSetBroker(gridSetBroker);
         config.afterPropertiesSet();

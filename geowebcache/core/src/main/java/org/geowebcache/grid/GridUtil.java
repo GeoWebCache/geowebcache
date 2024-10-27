@@ -37,8 +37,7 @@ public class GridUtil {
                 final int tileWidth = crsMatch.getTileWidth();
                 final int tileHeight = crsMatch.getTileHeight();
                 if ((expectedTileWidth != null && expectedTileWidth.intValue() != tileWidth)
-                        || (expectedTileHeight != null
-                                && expectedTileHeight.intValue() != tileHeight)) {
+                        || (expectedTileHeight != null && expectedTileHeight.intValue() != tileHeight)) {
                     // don't even consider it
                     continue;
                 }

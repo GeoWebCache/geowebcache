@@ -184,9 +184,8 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         }
 
         if (null == this.sourceHelper) {
-            log.config(
-                    this.name
-                            + " is configured without a source, which is a bug unless you're running tests that don't care.");
+            log.config(this.name
+                    + " is configured without a source, which is a bug unless you're running tests that don't care.");
         }
 
         curWmsURL = 0;
@@ -234,8 +233,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     }
 
     @Override
-    public Resource getFeatureInfo(
-            ConveyorTile convTile, BoundingBox bbox, int height, int width, int x, int y)
+    public Resource getFeatureInfo(ConveyorTile convTile, BoundingBox bbox, int height, int width, int x, int y)
             throws GeoWebCacheException {
         return sourceHelper.makeFeatureInfoRequest(convTile, bbox, height, width, x, y);
     }
@@ -252,8 +250,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
      * @return The resulting tile request
      */
     @Override
-    public ConveyorTile getTile(ConveyorTile tile)
-            throws GeoWebCacheException, IOException, OutsideCoverageException {
+    public ConveyorTile getTile(ConveyorTile tile) throws GeoWebCacheException, IOException, OutsideCoverageException {
         MimeType mime = tile.getMimeType();
 
         if (mime == null) {
@@ -261,8 +258,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         }
 
         if (!formats.contains(mime)) {
-            throw new GeoWebCacheException(
-                    mime.getFormat() + " is not a supported format for " + name);
+            throw new GeoWebCacheException(mime.getFormat() + " is not a supported format for " + name);
         }
 
         String tileGridSetId = tile.getGridSetId();
@@ -295,12 +291,10 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
     /** Used for seeding */
     @Override
-    public void seedTile(ConveyorTile tile, boolean tryCache)
-            throws GeoWebCacheException, IOException {
+    public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException, IOException {
         GridSubset gridSubset = getGridSubset(tile.getGridSetId());
         if (gridSubset.shouldCacheAtZoom(tile.getTileIndex()[2])) {
-            if (tile.getMimeType().supportsTiling()
-                    && (metaWidthHeight[0] > 1 || metaWidthHeight[1] > 1)) {
+            if (tile.getMimeType().supportsTiling() && (metaWidthHeight[0] > 1 || metaWidthHeight[1] > 1)) {
                 getMetatilingReponse(tile, tryCache);
             } else {
                 getNonMetatilingReponse(tile, tryCache);
@@ -314,8 +308,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
      * @param tile the Tile with all the information
      * @param tryCache whether to try the cache, or seed
      */
-    private ConveyorTile getMetatilingReponse(ConveyorTile tile, boolean tryCache)
-            throws GeoWebCacheException {
+    private ConveyorTile getMetatilingReponse(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException {
 
         // int idx = this.getSRSIndex(tile.getSRS());
         long[] gridLoc = tile.getTileIndex();
@@ -329,16 +322,15 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         if (filteringParameters.isEmpty()) {
             filteringParameters = getDefaultParameterFilters();
         }
-        WMSMetaTile metaTile =
-                new WMSMetaTile(
-                        this,
-                        gridSubset,
-                        mimeType,
-                        this.getFormatModifier(tile.getMimeType()),
-                        gridLoc,
-                        metaWidthHeight[0],
-                        metaWidthHeight[1],
-                        filteringParameters);
+        WMSMetaTile metaTile = new WMSMetaTile(
+                this,
+                gridSubset,
+                mimeType,
+                this.getFormatModifier(tile.getMimeType()),
+                gridLoc,
+                metaWidthHeight[0],
+                metaWidthHeight[1],
+                filteringParameters);
 
         // Leave a hint to save expiration, if necessary
         if (saveExpirationHeaders) {
@@ -372,8 +364,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
             sourceHelper.makeRequest(metaTile, buffer);
 
             if (metaTile.getError()) {
-                throw new GeoWebCacheException(
-                        "Empty metatile, error message: " + metaTile.getErrorMessage());
+                throw new GeoWebCacheException("Empty metatile, error message: " + metaTile.getErrorMessage());
             }
 
             if (saveExpirationHeaders) {
@@ -427,8 +418,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
      * @param tile the Tile with all the information
      * @param tryCache whether to try the cache, or seed
      */
-    private ConveyorTile getNonMetatilingReponse(ConveyorTile tile, boolean tryCache)
-            throws GeoWebCacheException {
+    private ConveyorTile getNonMetatilingReponse(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException {
         // String debugHeadersStr = null;
         long[] gridLoc = tile.getTileIndex();
 
@@ -453,8 +443,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
             tile = doNonMetatilingRequest(tile);
 
-            if (tile.getStatus() > 299
-                    || this.getExpireCache((int) gridLoc[2]) != GWCVars.CACHE_DISABLE_CACHE) {
+            if (tile.getStatus() > 299 || this.getExpireCache((int) gridLoc[2]) != GWCVars.CACHE_DISABLE_CACHE) {
                 tile.persist();
             }
 
@@ -653,8 +642,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         return wmsUrl[curWmsURL];
     }
 
-    public long[][] getZoomedInGridLoc(String gridSetId, long[] gridLoc)
-            throws GeoWebCacheException {
+    public long[][] getZoomedInGridLoc(String gridSetId, long[] gridLoc) throws GeoWebCacheException {
         return null;
     }
 
@@ -811,13 +799,11 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
             WMSSourceHelper helper = getSourceHelper();
             if (!(helper instanceof WMSHttpHelper)) {
-                throw new GeoWebCacheException(
-                        "Can only proxy if WMS Layer is backed by an HTTP backend");
+                throw new GeoWebCacheException("Can only proxy if WMS Layer is backed by an HTTP backend");
             }
 
             httpResponse =
-                    ((WMSHttpHelper) helper)
-                            .executeRequest(url, null, getBackendTimeout(), getHttpRequestMode());
+                    ((WMSHttpHelper) helper).executeRequest(url, null, getBackendTimeout(), getHttpRequestMode());
             HttpEntity entity = httpResponse.getEntity();
             try (InputStream is = entity.getContent()) {
                 HttpServletResponse response = tile.servletResp;
@@ -859,8 +845,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         String layerName = wmsLayers == null ? getName() : wmsLayers;
         return legends == null
                 ? super.getLayerLegendsInfo()
-                : legends.getLegendsInfo(
-                        layerName, wmsUrl != null && wmsUrl.length > 0 ? wmsUrl[0] : null);
+                : legends.getLegendsInfo(layerName, wmsUrl != null && wmsUrl.length > 0 ? wmsUrl[0] : null);
     }
 
     /**

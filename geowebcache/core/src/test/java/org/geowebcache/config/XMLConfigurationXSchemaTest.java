@@ -40,9 +40,7 @@ public class XMLConfigurationXSchemaTest {
         // Check that classes from other packages on the class path can't be serialized
         ContextualConfigurationProvider.Context pc = ContextualConfigurationProvider.Context.REST;
         try (StaticWebApplicationContext wac = new StaticWebApplicationContext()) {
-            XStream xs =
-                    XMLConfiguration.getConfiguredXStreamWithContext(
-                            new GeoWebCacheXStream(), wac, pc);
+            XStream xs = XMLConfiguration.getConfiguredXStreamWithContext(new GeoWebCacheXStream(), wac, pc);
             assertThrows(
                     com.thoughtworks.xstream.security.ForbiddenClassException.class,
                     () -> xs.fromXML("<" + org.easymock.Capture.class.getCanonicalName() + " />"));
@@ -55,16 +53,10 @@ public class XMLConfigurationXSchemaTest {
         // Check that a class in GWC that shouldn't be serialized to XML can't be
         ContextualConfigurationProvider.Context pc = ContextualConfigurationProvider.Context.REST;
         try (StaticWebApplicationContext wac = new StaticWebApplicationContext()) {
-            XStream xs =
-                    XMLConfiguration.getConfiguredXStreamWithContext(
-                            new GeoWebCacheXStream(), wac, pc);
+            XStream xs = XMLConfiguration.getConfiguredXStreamWithContext(new GeoWebCacheXStream(), wac, pc);
             assertThrows(
                     com.thoughtworks.xstream.security.ForbiddenClassException.class,
-                    () ->
-                            xs.fromXML(
-                                    "<"
-                                            + XMLConfigurationXSchemaTest.class.getCanonicalName()
-                                            + " />"));
+                    () -> xs.fromXML("<" + XMLConfigurationXSchemaTest.class.getCanonicalName() + " />"));
         }
     }
 
@@ -76,19 +68,16 @@ public class XMLConfigurationXSchemaTest {
 
         ContextualConfigurationProvider.Context pc = ContextualConfigurationProvider.Context.REST;
         WebApplicationContext wac = EasyMock.createMock("wac", WebApplicationContext.class);
-        XMLConfigurationProvider provider =
-                EasyMock.createMock("provider", XMLConfigurationProvider.class);
+        XMLConfigurationProvider provider = EasyMock.createMock("provider", XMLConfigurationProvider.class);
         EasyMock.expect(wac.getBeansOfType(XMLConfigurationProvider.class))
                 .andReturn(Collections.singletonMap("provider", provider));
         EasyMock.expect(wac.getBean("provider")).andReturn(provider);
         final Capture<XStream> xsCap = EasyMock.newCapture();
-        EasyMock.expect(provider.getConfiguredXStream(EasyMock.capture(xsCap)))
-                .andStubAnswer(
-                        () -> {
-                            XStream xs1 = xsCap.getValue();
-                            xs1.allowTypes(new Class[] {Capture.class});
-                            return xs1;
-                        });
+        EasyMock.expect(provider.getConfiguredXStream(EasyMock.capture(xsCap))).andStubAnswer(() -> {
+            XStream xs1 = xsCap.getValue();
+            xs1.allowTypes(new Class[] {Capture.class});
+            return xs1;
+        });
 
         EasyMock.replay(wac, provider);
 

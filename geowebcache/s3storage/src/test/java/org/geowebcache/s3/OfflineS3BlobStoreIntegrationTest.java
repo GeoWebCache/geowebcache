@@ -60,8 +60,7 @@ public class OfflineS3BlobStoreIntegrationTest extends AbstractS3BlobStoreIntegr
     @Override
     @Ignore // randomly fails
     @Test
-    public void testTruncateShortCutsIfNoTilesInGridsetPrefix()
-            throws StorageException, MimeException {
+    public void testTruncateShortCutsIfNoTilesInGridsetPrefix() throws StorageException, MimeException {
         super.testTruncateShortCutsIfNoTilesInGridsetPrefix();
     }
 }

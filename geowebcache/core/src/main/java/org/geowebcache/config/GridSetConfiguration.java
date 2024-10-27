@@ -47,8 +47,7 @@ public interface GridSetConfiguration extends BaseConfiguration {
      *     type of gridset given, or if any required piece of information is missing or invalid in
      *     the gridset (for example, a missing or duplicated name or id, etc).
      */
-    void addGridSet(final GridSet gridSet)
-            throws UnsupportedOperationException, IllegalArgumentException;
+    void addGridSet(final GridSet gridSet) throws UnsupportedOperationException, IllegalArgumentException;
 
     /**
      * Removes an existing gridset from the configuration
@@ -56,8 +55,7 @@ public interface GridSetConfiguration extends BaseConfiguration {
      * @throws NoSuchElementException If there is no existing gridset by that name.
      * @throws UnsupportedOperationException if removing this gridset is not supported
      */
-    void removeGridSet(String gridSetName)
-            throws NoSuchElementException, UnsupportedOperationException;
+    void removeGridSet(String gridSetName) throws NoSuchElementException, UnsupportedOperationException;
 
     /**
      * Changes a gridset

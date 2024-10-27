@@ -31,8 +31,7 @@ public class TestXMLConfigurationSource {
     protected boolean failNextRead;
     protected boolean failNextWrite;
 
-    public XMLConfiguration create(MockWepAppContextRule extensions, File configDir)
-            throws Exception {
+    public XMLConfiguration create(MockWepAppContextRule extensions, File configDir) throws Exception {
         GridSetBroker gridSetBroker = new GridSetBroker();
         gridSetBroker.setApplicationContext(extensions.getMockContext());
         DefaultGridsets defaultGridsets = new DefaultGridsets(true, true);
@@ -68,8 +67,7 @@ public class TestXMLConfigurationSource {
                         return super.out();
                     }
                 };
-        XMLConfiguration config =
-                new XMLConfiguration(extensions.getContextProvider(), configProvider);
+        XMLConfiguration config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
         extensions.addBean("XMLConfiguration", config, XMLConfiguration.class.getInterfaces());
         config.setGridSetBroker(gridSetBroker);
         config.afterPropertiesSet();

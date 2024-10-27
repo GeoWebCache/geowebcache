@@ -152,8 +152,7 @@ public class XMLBuilder {
      *
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
-    public XMLBuilder simpleElement(String name, @Nullable String text, boolean indent)
-            throws IOException {
+    public XMLBuilder simpleElement(String name, @Nullable String text, boolean indent) throws IOException {
         return startElement(name, indent).text(text).endElement();
     }
 
@@ -232,8 +231,7 @@ public class XMLBuilder {
     }
 
     /** Add a BoundingBox element */
-    public <T> XMLBuilder boundingBox(@Nullable String srs, T minx, T miny, T maxx, T maxy)
-            throws IOException {
+    public <T> XMLBuilder boundingBox(@Nullable String srs, T minx, T miny, T maxx, T maxy) throws IOException {
         indentElement("BoundingBox");
         if (srs != null) attribute("SRS", srs);
         bboxAttributes(minx, miny, maxx, maxy);

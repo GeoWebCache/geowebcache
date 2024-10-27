@@ -51,8 +51,7 @@ public class NIOLockProvider implements LockProvider {
         this(storageFinder.getDefaultPath());
     }
 
-    public NIOLockProvider(
-            DefaultStorageFinder storageFinder, int waitBeforeRetry, int maxLockAttempts)
+    public NIOLockProvider(DefaultStorageFinder storageFinder, int waitBeforeRetry, int maxLockAttempts)
             throws ConfigurationException {
         this.root = storageFinder.getDefaultPath();
         this.waitBeforeRetry = waitBeforeRetry;
@@ -103,21 +102,16 @@ public class NIOLockProvider implements LockProvider {
                 // verify we managed to get the FS lock
                 if (count >= maxLockAttempts) {
                     throw new GeoWebCacheException(
-                            "Failed to get a lock on key "
-                                    + lockKey
-                                    + " after "
-                                    + count
-                                    + " attempts");
+                            "Failed to get a lock on key " + lockKey + " after " + count + " attempts");
                 }
 
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine(
-                            "Lock "
-                                    + lockKey
-                                    + " acquired by thread "
-                                    + Thread.currentThread().getName()
-                                    + " on file "
-                                    + file);
+                    LOGGER.fine("Lock "
+                            + lockKey
+                            + " acquired by thread "
+                            + Thread.currentThread().getName()
+                            + " on file "
+                            + file);
                 }
 
                 // store the results in a final variable for the inner class to use
@@ -164,18 +158,16 @@ public class NIOLockProvider implements LockProvider {
                                 lockFile.delete();
 
                                 if (LOGGER.isLoggable(Level.FINE)) {
-                                    LOGGER.fine(
-                                            "Lock "
-                                                    + lockKey
-                                                    + " on file "
-                                                    + lockFile
-                                                    + " released by thread "
-                                                    + Thread.currentThread().getName());
+                                    LOGGER.fine("Lock "
+                                            + lockKey
+                                            + " on file "
+                                            + lockFile
+                                            + " released by thread "
+                                            + Thread.currentThread().getName());
                                 }
                             } catch (IOException e) {
                                 throw new GeoWebCacheException(
-                                        "Failure while trying to release lock for key " + lockKey,
-                                        e);
+                                        "Failure while trying to release lock for key " + lockKey, e);
                             }
                         } finally {
                             memoryLock.release();
@@ -194,8 +186,7 @@ public class NIOLockProvider implements LockProvider {
                 }
             }
         } catch (IOException e) {
-            throw new GeoWebCacheException(
-                    "Failure while trying to get lock for key " + lockKey, e);
+            throw new GeoWebCacheException("Failure while trying to get lock for key " + lockKey, e);
         }
     }
 

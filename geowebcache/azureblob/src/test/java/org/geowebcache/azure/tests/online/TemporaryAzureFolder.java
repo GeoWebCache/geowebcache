@@ -116,13 +116,10 @@ public class TemporaryAzureFolder extends ExternalResource {
         }
 
         try (Stream<BlobItem> blobs = client.listBlobs(temporaryPrefix)) {
-            blobs.forEach(
-                    blob -> {
-                        BlockBlobClient blockBlobURL = client.getBlockBlobClient(blob.getName());
-                        assertTrue(
-                                "Expected success while deleting " + blob.getName(),
-                                blockBlobURL.deleteIfExists());
-                    });
+            blobs.forEach(blob -> {
+                BlockBlobClient blockBlobURL = client.getBlockBlobClient(blob.getName());
+                assertTrue("Expected success while deleting " + blob.getName(), blockBlobURL.deleteIfExists());
+            });
         }
     }
 

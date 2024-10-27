@@ -61,8 +61,7 @@ public class MBTilesLayer extends AbstractTileLayer implements TileJSONProvider 
 
     private static final String UNZIP_CONTENT_KEY = "gwc.mbtiles.pbf.unzip.debug";
 
-    private static final boolean UNZIP_CONTENT =
-            Boolean.valueOf(System.getProperty(UNZIP_CONTENT_KEY, "true"));
+    private static final boolean UNZIP_CONTENT = Boolean.valueOf(System.getProperty(UNZIP_CONTENT_KEY, "true"));
 
     private static final int TILE_SIZE_256 = 256;
 
@@ -146,12 +145,11 @@ public class MBTilesLayer extends AbstractTileLayer implements TileJSONProvider 
         String specifiedName = getName();
         if (tilesPath != null) {
             if (!tilesPath.exists() || !tilesPath.canRead()) {
-                throw new IllegalStateException(
-                        "tilesPath property for this layer "
-                                + (specifiedName != null ? specifiedName : "")
-                                + " is set to '"
-                                + tilesPath
-                                + "' but the file either does not exist or is not readable");
+                throw new IllegalStateException("tilesPath property for this layer "
+                        + (specifiedName != null ? specifiedName : "")
+                        + " is set to '"
+                        + tilesPath
+                        + "' but the file either does not exist or is not readable");
             }
         }
         try {
@@ -211,8 +209,7 @@ public class MBTilesLayer extends AbstractTileLayer implements TileJSONProvider 
         Integer minZoom = tilesInfo.getMinZoom();
         Integer maxZoom = tilesInfo.getMaxZoom();
 
-        GridSubset subSet =
-                GridSubsetFactory.createGridSubSet(gridSet, this.layerBounds, minZoom, maxZoom);
+        GridSubset subSet = GridSubsetFactory.createGridSubSet(gridSet, this.layerBounds, minZoom, maxZoom);
 
         HashMap<String, GridSubset> subsets = new HashMap<>();
         subsets.put(gridSet.getName(), subSet);
@@ -297,9 +294,8 @@ public class MBTilesLayer extends AbstractTileLayer implements TileJSONProvider 
                 if (backendExpire == -1) {
                     this.expireCacheList.set(0, new ExpirationRule(0, 7200));
                     if (log.isLoggable(Level.FINE)) {
-                        log.fine(
-                                "Layer profile wants MaxAge from backend,"
-                                        + " but backend does not provide this. Setting to 7200 seconds.");
+                        log.fine("Layer profile wants MaxAge from backend,"
+                                + " but backend does not provide this. Setting to 7200 seconds.");
                     }
                 } else {
                     this.expireCacheList.set(backendExpire, new ExpirationRule(0, 7200));
@@ -345,8 +341,7 @@ public class MBTilesLayer extends AbstractTileLayer implements TileJSONProvider 
      * @see org.geowebcache.layer.TileLayer#seedTile(org.geowebcache.conveyor.ConveyorTile, boolean)
      */
     @Override
-    public void seedTile(ConveyorTile tile, boolean tryCache)
-            throws GeoWebCacheException, IOException {
+    public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException, IOException {
         throw new UnsupportedOperationException();
     }
 

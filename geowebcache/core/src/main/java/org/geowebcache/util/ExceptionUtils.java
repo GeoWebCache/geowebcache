@@ -26,7 +26,6 @@ public class ExceptionUtils {
      * suppresses is.
      */
     public static <T extends Throwable> boolean isOrSuppresses(T e, Class<? extends T> klazz) {
-        return Streams.concat(Stream.of(e), Arrays.stream(e.getSuppressed()))
-                .anyMatch(klazz::isInstance);
+        return Streams.concat(Stream.of(e), Arrays.stream(e.getSuppressed())).anyMatch(klazz::isInstance);
     }
 }

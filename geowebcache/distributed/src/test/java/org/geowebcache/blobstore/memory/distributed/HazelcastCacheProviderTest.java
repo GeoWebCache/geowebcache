@@ -118,16 +118,14 @@ public class HazelcastCacheProviderTest {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("a", "x");
         parameters.put("b", "ø");
-        TileObject to =
-                TileObject.createCompleteTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
+        TileObject to = TileObject.createCompleteTileObject(
+                "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
 
         mem1.put(to);
 
         // Try to get the same TileObject
         TileObject to2 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         assertTrue(mem2.get(to2));
 
         // Checks on the format
@@ -175,16 +173,14 @@ public class HazelcastCacheProviderTest {
         // Put a TileObject
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
         long[] xyz = {5L, 6L, 7L};
-        TileObject to =
-                TileObject.createCompleteTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
+        TileObject to = TileObject.createCompleteTileObject(
+                "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
 
         mem1.put(to);
 
         // Try to get the same TileObject
         TileObject to2 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         assertTrue(mem2.get(to2));
 
         // Checks if the resources are equals
@@ -195,14 +191,12 @@ public class HazelcastCacheProviderTest {
 
         // Delete TileObject
         TileObject to3 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         mem1.delete(to3);
 
         // Checks if the resource is not present
         TileObject to4 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         assertFalse(mem1.get(to4));
         assertFalse(mem2.get(to4));
 

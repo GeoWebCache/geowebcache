@@ -66,8 +66,7 @@ public abstract class Conveyor {
 
     protected CacheResult cacheResult;
 
-    protected Conveyor(
-            String layerId, StorageBroker sb, HttpServletRequest srq, HttpServletResponse srp) {
+    protected Conveyor(String layerId, StorageBroker sb, HttpServletRequest srq, HttpServletResponse srp) {
         this.layerId = layerId;
         storageBroker = sb;
         servletReq = srq;

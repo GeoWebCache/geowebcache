@@ -56,15 +56,11 @@ class SeedTask extends GWCTask {
 
     private AtomicLong sharedFailureCounter;
 
-    @VisibleForTesting Sleeper sleeper = Thread::sleep;
+    @VisibleForTesting
+    Sleeper sleeper = Thread::sleep;
 
     /** Constructs a SeedTask */
-    public SeedTask(
-            StorageBroker sb,
-            TileRangeIterator trIter,
-            TileLayer tl,
-            boolean reseed,
-            boolean doFilterUpdate) {
+    public SeedTask(StorageBroker sb, TileRangeIterator trIter, TileLayer tl, boolean reseed, boolean doFilterUpdate) {
         this.storageBroker = sb;
         this.trIter = trIter;
         this.tl = tl;
@@ -122,16 +118,8 @@ class SeedTask extends GWCTask {
             checkInterrupted();
             Map<String, String> fullParameters = tr.getParameters();
 
-            ConveyorTile tile =
-                    new ConveyorTile(
-                            storageBroker,
-                            layerName,
-                            tr.getGridSetId(),
-                            gridLoc,
-                            tr.getMimeType(),
-                            fullParameters,
-                            null,
-                            null);
+            ConveyorTile tile = new ConveyorTile(
+                    storageBroker, layerName, tr.getGridSetId(), gridLoc, tr.getMimeType(), fullParameters, null, null);
 
             for (int fetchAttempt = 0;
                     fetchAttempt <= tileFailureRetryCount || tileFailureRetryCount < 0;
@@ -152,27 +140,24 @@ class SeedTask extends GWCTask {
 
                     long sharedFailureCount = sharedFailureCounter.incrementAndGet();
                     if (sharedFailureCount >= totalFailuresBeforeAborting) {
-                        log.info(
-                                "Aborting seed thread "
-                                        + getThreadName()
-                                        + ". Error count reached configured maximum of "
-                                        + totalFailuresBeforeAborting);
+                        log.info("Aborting seed thread "
+                                + getThreadName()
+                                + ". Error count reached configured maximum of "
+                                + totalFailuresBeforeAborting);
                         super.state = GWCTask.STATE.DEAD;
                         return;
                     }
-                    String logMsg =
-                            "Seed failed at "
-                                    + tile.toString()
-                                    + " after "
-                                    + (fetchAttempt + 1)
-                                    + " of "
-                                    + (tileFailureRetryCount + 1)
-                                    + " attempts.";
+                    String logMsg = "Seed failed at "
+                            + tile.toString()
+                            + " after "
+                            + (fetchAttempt + 1)
+                            + " of "
+                            + (tileFailureRetryCount + 1)
+                            + " attempts.";
                     if (fetchAttempt < tileFailureRetryCount) {
                         log.fine(logMsg);
                         if (tileFailureRetryWaitTime > 0) {
-                            log.finer(
-                                    "Waiting " + tileFailureRetryWaitTime + " before trying again");
+                            log.finer("Waiting " + tileFailureRetryWaitTime + " before trying again");
                             waitToRetry();
                         }
                     } else {
@@ -194,8 +179,7 @@ class SeedTask extends GWCTask {
             // note: computing the # of tiles processed by this thread instead of by the whole group
             // also reduces thread contention as the trIter methods are synchronized and profiler
             // shows 16 threads block on synchronization about 40% the time
-            final long tilesCompletedByThisThread =
-                    seedCalls * metaTilingFactorX * metaTilingFactorY;
+            final long tilesCompletedByThisThread = seedCalls * metaTilingFactorX * metaTilingFactorY;
 
             updateStatusInfo(tl, tilesCompletedByThisThread, START_TIME);
 
@@ -205,22 +189,16 @@ class SeedTask extends GWCTask {
         }
 
         if (this.terminate) {
-            log.info(
-                    "Job on "
-                            + getThreadName()
-                            + " was terminated after "
-                            + this.tilesDone
-                            + " tiles");
+            log.info("Job on " + getThreadName() + " was terminated after " + this.tilesDone + " tiles");
         } else {
-            log.info(
-                    getThreadName()
-                            + " completed (re)seeding layer "
-                            + layerName
-                            + " after "
-                            + this.tilesDone
-                            + " tiles and "
-                            + this.timeSpent
-                            + " seconds.");
+            log.info(getThreadName()
+                    + " completed (re)seeding layer "
+                    + layerName
+                    + " after "
+                    + this.tilesDone
+                    + " tiles and "
+                    + this.timeSpent
+                    + " seconds.");
         }
 
         checkInterrupted();
@@ -232,8 +210,7 @@ class SeedTask extends GWCTask {
     }
 
     private void reprioritize() {
-        Thread.currentThread()
-                .setPriority((java.lang.Thread.NORM_PRIORITY + java.lang.Thread.MIN_PRIORITY) / 2);
+        Thread.currentThread().setPriority((java.lang.Thread.NORM_PRIORITY + java.lang.Thread.MIN_PRIORITY) / 2);
     }
 
     private void waitToRetry() throws InterruptedException {
@@ -303,8 +280,7 @@ class SeedTask extends GWCTask {
                 if (reqFilter.update(tl, gridSetId)) {
                     log.info("Updated request filter " + reqFilter.getName());
                 } else {
-                    log.fine(
-                            "Request filter " + reqFilter.getName() + " returned false on update.");
+                    log.fine("Request filter " + reqFilter.getName() + " returned false on update.");
                 }
             }
         }

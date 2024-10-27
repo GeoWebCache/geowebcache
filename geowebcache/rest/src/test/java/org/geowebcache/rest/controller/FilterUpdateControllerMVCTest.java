@@ -38,7 +38,8 @@ import org.springframework.web.context.WebApplicationContext;
 })
 public class FilterUpdateControllerMVCTest {
 
-    @Autowired private WebApplicationContext wac;
+    @Autowired
+    private WebApplicationContext wac;
 
     private MockMvc mockMvc;
 
@@ -50,9 +51,8 @@ public class FilterUpdateControllerMVCTest {
     /** Checks correct media type for RestException response handling. POST method. */
     @Test
     public void testFilterGetContentType() throws Exception {
-        mockMvc.perform(
-                        post("/rest/filter/{filterName}/update/{updateType}", "xxxp4z85", "noidea")
-                                .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(post("/rest/filter/{filterName}/update/{updateType}", "xxxp4z85", "noidea")
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(status().is4xxClientError());
     }

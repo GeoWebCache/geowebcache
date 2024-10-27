@@ -44,53 +44,28 @@ public class DiskQuotaEntityModel extends AnnotationModel {
             builder.entity(Quota.class);
             builder.primaryKey("id", "quota_id");
             builder.secondaryKey(
-                    "tileSetId",
-                    "tileset_id",
-                    Relationship.ONE_TO_ONE,
-                    TileSet.class,
-                    DeleteAction.CASCADE);
+                    "tileSetId", "tileset_id", Relationship.ONE_TO_ONE, TileSet.class, DeleteAction.CASCADE);
             registerClassMetadata(builder.build());
 
             builder.entity(PageStats.class);
             builder.primaryKey("id", "page_stats_seq");
             builder.secondaryKey(
-                    "pageId",
-                    "page_stats_by_page_id",
-                    Relationship.ONE_TO_ONE,
-                    TilePage.class,
-                    DeleteAction.CASCADE);
-            builder.secondaryKey(
-                    "frequencyOfUse", "LFU", Relationship.MANY_TO_ONE, null, DeleteAction.ABORT);
-            builder.secondaryKey(
-                    "lastAccessTimeMinutes",
-                    "LRU",
-                    Relationship.MANY_TO_ONE,
-                    null,
-                    DeleteAction.ABORT);
-            builder.secondaryKey(
-                    "fillFactor",
-                    "fill_factory",
-                    Relationship.MANY_TO_ONE,
-                    null,
-                    DeleteAction.ABORT);
+                    "pageId", "page_stats_by_page_id", Relationship.ONE_TO_ONE, TilePage.class, DeleteAction.CASCADE);
+            builder.secondaryKey("frequencyOfUse", "LFU", Relationship.MANY_TO_ONE, null, DeleteAction.ABORT);
+            builder.secondaryKey("lastAccessTimeMinutes", "LRU", Relationship.MANY_TO_ONE, null, DeleteAction.ABORT);
+            builder.secondaryKey("fillFactor", "fill_factory", Relationship.MANY_TO_ONE, null, DeleteAction.ABORT);
             registerClassMetadata(builder.build());
 
             builder.entity(TilePage.class);
             builder.primaryKey("id", "page_id");
             builder.secondaryKey(
-                    "tileSetId",
-                    "tileset_id_fk",
-                    Relationship.MANY_TO_ONE,
-                    TileSet.class,
-                    DeleteAction.CASCADE);
-            builder.secondaryKey(
-                    "key", "page_key", Relationship.ONE_TO_ONE, null, DeleteAction.ABORT);
+                    "tileSetId", "tileset_id_fk", Relationship.MANY_TO_ONE, TileSet.class, DeleteAction.CASCADE);
+            builder.secondaryKey("key", "page_key", Relationship.ONE_TO_ONE, null, DeleteAction.ABORT);
             registerClassMetadata(builder.build());
 
             builder.entity(TileSet.class);
             builder.primaryKey("key", null);
-            builder.secondaryKey(
-                    "layerName", "layer", Relationship.MANY_TO_ONE, null, DeleteAction.ABORT);
+            builder.secondaryKey("layerName", "layer", Relationship.MANY_TO_ONE, null, DeleteAction.ABORT);
             registerClassMetadata(builder.build());
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Unexpected setup exception occurred: " + e.getMessage(), e);
@@ -101,11 +76,8 @@ public class DiskQuotaEntityModel extends AnnotationModel {
         classes.put(classMetadata.getClassName(), classMetadata);
 
         // go on with the entity
-        EntityMetadata entityMetadata =
-                new EntityMetadata(
-                        classMetadata.getClassName(),
-                        classMetadata.getPrimaryKey(),
-                        classMetadata.getSecondaryKeys());
+        EntityMetadata entityMetadata = new EntityMetadata(
+                classMetadata.getClassName(), classMetadata.getPrimaryKey(), classMetadata.getSecondaryKeys());
         entities.put(classMetadata.getClassName(), entityMetadata);
     }
 

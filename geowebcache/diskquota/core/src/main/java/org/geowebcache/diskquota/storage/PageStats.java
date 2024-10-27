@@ -65,8 +65,7 @@ public class PageStats implements Serializable {
         this(page.getId());
     }
 
-    public void addHitsAndAccessTime(
-            final long addedHits, int lastAccessTimeMinutes, final int creationTimeMinutes) {
+    public void addHitsAndAccessTime(final long addedHits, int lastAccessTimeMinutes, final int creationTimeMinutes) {
 
         if (lastAccessTimeMinutes < creationTimeMinutes) {
             lastAccessTimeMinutes = creationTimeMinutes;
@@ -81,11 +80,10 @@ public class PageStats implements Serializable {
         this.numHits = this.numHits.add(BigInteger.valueOf(addedHits));
         BigDecimal age = new BigDecimal(1 + lastAccessTimeMinutes - creationTimeMinutes);
 
-        this.frequencyOfUse =
-                new BigDecimal(this.numHits)
-                        .divide(age, 7, RoundingMode.CEILING)
-                        .multiply(new BigDecimal(fillFactor))
-                        .floatValue();
+        this.frequencyOfUse = new BigDecimal(this.numHits)
+                .divide(age, 7, RoundingMode.CEILING)
+                .multiply(new BigDecimal(fillFactor))
+                .floatValue();
 
         this.lastAccessTimeMinutes = lastAccessTimeMinutes;
     }
@@ -100,8 +98,7 @@ public class PageStats implements Serializable {
         // trading some computational overhead by storage savings here...
         BigDecimal currFillFactor = new BigDecimal(fillFactor);
         BigDecimal addedTiles = new BigDecimal(numTiles);
-        BigDecimal addedFillFactor =
-                addedTiles.divide(new BigDecimal(maxTiles), 7, RoundingMode.CEILING);
+        BigDecimal addedFillFactor = addedTiles.divide(new BigDecimal(maxTiles), 7, RoundingMode.CEILING);
         currFillFactor = currFillFactor.add(addedFillFactor);
         this.fillFactor = currFillFactor.floatValue();
         if (fillFactor > 1f) {

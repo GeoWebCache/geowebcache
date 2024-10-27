@@ -61,11 +61,10 @@ public class QueuedUsageStatsProducer implements TileLayerListener {
             if (cancelled(layerName)) {
                 return;
             }
-            log.info(
-                    "Quota usage stats gathering for "
-                            + layerName
-                            + " abruptly interrupted on thread "
-                            + Thread.currentThread().getName());
+            log.info("Quota usage stats gathering for "
+                    + layerName
+                    + " abruptly interrupted on thread "
+                    + Thread.currentThread().getName());
             Thread.currentThread().interrupt();
         }
     }
@@ -76,10 +75,9 @@ public class QueuedUsageStatsProducer implements TileLayerListener {
 
     private boolean cancelled(String layerName) {
         if (cancelled) {
-            log.fine(
-                    "Quota usage stats listener cancelled. Avoiding adding update for layer "
-                            + layerName
-                            + " to tile page store");
+            log.fine("Quota usage stats listener cancelled. Avoiding adding update for layer "
+                    + layerName
+                    + " to tile page store");
         }
         return cancelled;
     }

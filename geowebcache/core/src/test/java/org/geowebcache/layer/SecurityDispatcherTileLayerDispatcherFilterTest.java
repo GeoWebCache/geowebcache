@@ -58,9 +58,7 @@ public class SecurityDispatcherTileLayerDispatcherFilterTest {
                 new SecurityDispatcherTileLayerDispatcherFilter(securityDispatcher);
         TileLayer tileLayer = Mockito.mock(TileLayer.class);
         // throws -> filter.exclude() will be true
-        Mockito.doThrow(new GeoWebCacheException(""))
-                .when(securityDispatcher)
-                .checkSecurity(tileLayer, null, null);
+        Mockito.doThrow(new GeoWebCacheException("")).when(securityDispatcher).checkSecurity(tileLayer, null, null);
 
         boolean result = filter.exclude(tileLayer);
 

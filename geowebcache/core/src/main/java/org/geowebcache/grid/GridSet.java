@@ -125,12 +125,11 @@ public class GridSet implements Info {
         double height = grid.getResolution() * getTileHeight();
 
         final double[] tileOrigin = tileOrigin();
-        BoundingBox tileBounds =
-                new BoundingBox(
-                        tileOrigin[0] + width * tileX,
-                        tileOrigin[1] + height * (tileY),
-                        tileOrigin[0] + width * (tileX + 1),
-                        tileOrigin[1] + height * (tileY + 1));
+        BoundingBox tileBounds = new BoundingBox(
+                tileOrigin[0] + width * tileX,
+                tileOrigin[1] + height * (tileY),
+                tileOrigin[0] + width * (tileX + 1),
+                tileOrigin[1] + height * (tileY + 1));
         return tileBounds;
     }
 
@@ -192,8 +191,7 @@ public class GridSet implements Info {
         return closestIndex(bestLevel, tileBounds);
     }
 
-    protected long[] closestIndex(int level, BoundingBox tileBounds)
-            throws GridAlignmentMismatchException {
+    protected long[] closestIndex(int level, BoundingBox tileBounds) throws GridAlignmentMismatchException {
         Grid grid = getGrid(level);
 
         double width = grid.getResolution() * getTileWidth();
@@ -234,8 +232,7 @@ public class GridSet implements Info {
             double countX = rectWidth / (grid.getResolution() * getTileWidth());
             double countY = rectHeight / (grid.getResolution() * getTileHeight());
 
-            double error =
-                    Math.abs(countX - Math.round(countX)) + Math.abs(countY - Math.round(countY));
+            double error = Math.abs(countX - Math.round(countX)) + Math.abs(countY - Math.round(countY));
 
             if (error < bestError) {
                 bestError = error;
@@ -286,16 +283,15 @@ public class GridSet implements Info {
 
         if (this == other) return true;
 
-        boolean equals =
-                Objects.equals(getSrs(), other.getSrs())
-                        && Objects.equals(getName(), other.getName())
-                        && Objects.equals(getDescription(), other.getDescription())
-                        && Objects.equals(getTileWidth(), other.getTileWidth())
-                        && Objects.equals(getTileHeight(), other.getTileHeight())
-                        && Objects.equals(isTopLeftAligned(), other.isTopLeftAligned())
-                        && Objects.equals(isyCoordinateFirst(), other.isyCoordinateFirst())
-                        && Objects.equals(getOriginalExtent(), other.getOriginalExtent())
-                        && Arrays.equals(gridLevels, other.gridLevels);
+        boolean equals = Objects.equals(getSrs(), other.getSrs())
+                && Objects.equals(getName(), other.getName())
+                && Objects.equals(getDescription(), other.getDescription())
+                && Objects.equals(getTileWidth(), other.getTileWidth())
+                && Objects.equals(getTileHeight(), other.getTileHeight())
+                && Objects.equals(isTopLeftAligned(), other.isTopLeftAligned())
+                && Objects.equals(isyCoordinateFirst(), other.isyCoordinateFirst())
+                && Objects.equals(getOriginalExtent(), other.getOriginalExtent())
+                && Arrays.equals(gridLevels, other.gridLevels);
 
         return equals;
     }

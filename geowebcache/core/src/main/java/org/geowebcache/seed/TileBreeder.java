@@ -173,10 +173,9 @@ public class TileBreeder implements ApplicationContextAware {
     @SuppressWarnings("serial")
     private void checkPositive(long value, String variable) {
         if (value < 0) {
-            throw new BeanInitializationException(
-                    "Invalid configuration value for environment variable "
-                            + variable
-                            + ". It should be a positive integer.") {};
+            throw new BeanInitializationException("Invalid configuration value for environment variable "
+                    + variable
+                    + ". It should be a positive integer.") {};
         }
     }
 
@@ -187,13 +186,12 @@ public class TileBreeder implements ApplicationContextAware {
         try {
             return Long.valueOf(paramVal);
         } catch (NumberFormatException e) {
-            log.warning(
-                    "Invalid environment parameter for "
-                            + varName
-                            + ": '"
-                            + paramVal
-                            + "'. Using default value: "
-                            + defaultVal);
+            log.warning("Invalid environment parameter for "
+                    + varName
+                    + ": '"
+                    + paramVal
+                    + "'. Using default value: "
+                    + defaultVal);
         }
         return defaultVal;
     }
@@ -207,8 +205,7 @@ public class TileBreeder implements ApplicationContextAware {
 
         TileRange tr = createTileRange(sr, tl);
 
-        GWCTask[] tasks =
-                createTasks(tr, tl, sr.getType(), sr.getThreadCount(), sr.getFilterUpdate());
+        GWCTask[] tasks = createTasks(tr, tl, sr.getType(), sr.getThreadCount(), sr.getFilterUpdate());
 
         dispatchTasks(tasks);
     }
@@ -223,8 +220,7 @@ public class TileBreeder implements ApplicationContextAware {
      * @param filterUpdate // TODO: What does this do?
      * @return Array of tasks. Will have length threadCount or 1.
      */
-    public GWCTask[] createTasks(
-            TileRange tr, GWCTask.TYPE type, int threadCount, boolean filterUpdate)
+    public GWCTask[] createTasks(TileRange tr, GWCTask.TYPE type, int threadCount, boolean filterUpdate)
             throws GeoWebCacheException {
 
         String layerName = tr.getLayerName();
@@ -232,8 +228,7 @@ public class TileBreeder implements ApplicationContextAware {
         return createTasks(tr, tileLayer, type, threadCount, filterUpdate);
     }
 
-    public GWCTask[] createTasks(
-            TileRange tr, TileLayer tl, GWCTask.TYPE type, int threadCount, boolean filterUpdate)
+    public GWCTask[] createTasks(TileRange tr, TileLayer tl, GWCTask.TYPE type, int threadCount, boolean filterUpdate)
             throws GeoWebCacheException {
         return createTasks(
                 tr,
@@ -289,10 +284,7 @@ public class TileBreeder implements ApplicationContextAware {
             } else {
                 SeedTask task = (SeedTask) createSeedTask(type, trIter, tl, filterUpdate);
                 task.setFailurePolicy(
-                        tileFailureRetryCount,
-                        tileFailureRetryWaitTime,
-                        totalFailuresBeforeAborting,
-                        failureCounter);
+                        tileFailureRetryCount, tileFailureRetryWaitTime, totalFailuresBeforeAborting, failureCounter);
                 tasks[i] = task;
             }
             tasks[i].setThreadInfo(sharedThreadCount, i);
@@ -323,8 +315,7 @@ public class TileBreeder implements ApplicationContextAware {
     }
 
     /** Find the tile range for a Seed Request. */
-    public static TileRange createTileRange(SeedRequest req, TileLayer tl)
-            throws GeoWebCacheException {
+    public static TileRange createTileRange(SeedRequest req, TileLayer tl) throws GeoWebCacheException {
         int zoomStart = req.getZoomStart().intValue();
         int zoomStop = req.getZoomStop().intValue();
 
@@ -349,10 +340,9 @@ public class TileBreeder implements ApplicationContextAware {
                 if (crsMatches.size() == 1) {
                     gridSetId = crsMatches.get(0).getName();
                 } else {
-                    throw new IllegalArgumentException(
-                            "More than one GridSubet matches the requested SRS "
-                                    + srs
-                                    + ". gridSetId must be specified");
+                    throw new IllegalArgumentException("More than one GridSubet matches the requested SRS "
+                            + srs
+                            + ". gridSetId must be specified");
                 }
             }
         }
@@ -381,8 +371,7 @@ public class TileBreeder implements ApplicationContextAware {
 
         String layerName = tl.getName();
         Map<String, String> parameters = req.getParameters();
-        return new TileRange(
-                layerName, gridSetId, zoomStart, zoomStop, coveredGridLevels, mimeType, parameters);
+        return new TileRange(layerName, gridSetId, zoomStart, zoomStop, coveredGridLevels, mimeType, parameters);
     }
 
     /**
@@ -392,8 +381,7 @@ public class TileBreeder implements ApplicationContextAware {
      * @param trIter a collection of tile ranges
      * @param tl the layer
      */
-    private GWCTask createSeedTask(
-            TYPE type, TileRangeIterator trIter, TileLayer tl, boolean doFilterUpdate)
+    private GWCTask createSeedTask(TYPE type, TileRangeIterator trIter, TileLayer tl, boolean doFilterUpdate)
             throws IllegalArgumentException {
 
         switch (type) {
@@ -406,8 +394,7 @@ public class TileBreeder implements ApplicationContextAware {
         }
     }
 
-    private GWCTask createTruncateTask(
-            TileRangeIterator trIter, TileLayer tl, boolean doFilterUpdate) {
+    private GWCTask createTruncateTask(TileRangeIterator trIter, TileLayer tl, boolean doFilterUpdate) {
 
         return new TruncateTask(storageBroker, trIter.getTileRange(), tl, doFilterUpdate);
     }
@@ -484,7 +471,8 @@ public class TileBreeder implements ApplicationContextAware {
         try {
             dispatchesWithoutDrain = 0;
             threadPool.purge();
-            for (Iterator<Entry<Long, SubmittedTask>> it = this.currentPool.entrySet().iterator();
+            for (Iterator<Entry<Long, SubmittedTask>> it =
+                            this.currentPool.entrySet().iterator();
                     it.hasNext(); ) {
                 if (it.next().getValue().future.isDone()) {
                     it.remove();

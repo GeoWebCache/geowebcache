@@ -92,23 +92,20 @@ public class SeedTaskTest {
         Capture<WMSMetaTile> wmsRequestsCapturer = EasyMock.newCapture();
         Capture<Resource> resourceCapturer = EasyMock.newCapture();
 
-        IAnswer<Void> answer =
-                new IAnswer<>() {
-                    @Override
-                    public Void answer() throws Throwable {
-                        wmsRequestsCounter.incrementAndGet();
-                        try {
-                            resourceCapturer
-                                    .getValue()
-                                    .transferFrom(
-                                            Channels.newChannel(
-                                                    new ByteArrayInputStream(fakeWMSResponse)));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                        return null;
-                    }
-                };
+        IAnswer<Void> answer = new IAnswer<>() {
+            @Override
+            public Void answer() throws Throwable {
+                wmsRequestsCounter.incrementAndGet();
+                try {
+                    resourceCapturer
+                            .getValue()
+                            .transferFrom(Channels.newChannel(new ByteArrayInputStream(fakeWMSResponse)));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                return null;
+            }
+        };
         mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
         expectLastCall().andAnswer(answer).anyTimes();
         mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
@@ -172,39 +169,36 @@ public class SeedTaskTest {
         // WMSSourceHelper that on makeRequest() returns always the saqme fake image
         // WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper();///
         // EasyMock.createMock(WMSSourceHelper.class);
-        WMSSourceHelper mockSourceHelper =
-                new MockWMSSourceHelper() {
-                    private int numCalls;
+        WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper() {
+            private int numCalls;
 
-                    @Override
-                    protected void makeRequest(
-                            TileResponseReceiver tileRespRecv,
-                            WMSLayer layer,
-                            Map<String, String> wmsParams,
-                            MimeType expectedMimeType,
-                            Resource target)
-                            throws GeoWebCacheException {
-                        numCalls++;
-                        switch (numCalls) {
-                            case 1:
-                                throw new GeoWebCacheException("test exception");
-                            case 2:
-                                throw new RuntimeException("test unexpected exception");
-                            case 3:
-                                throw new GeoWebCacheException("second test exception");
-                            case 4:
-                                throw new RuntimeException("second test unexpected exception");
-                            default:
-                                try {
-                                    target.transferFrom(
-                                            Channels.newChannel(
-                                                    new ByteArrayInputStream(fakeWMSResponse)));
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
+            @Override
+            protected void makeRequest(
+                    TileResponseReceiver tileRespRecv,
+                    WMSLayer layer,
+                    Map<String, String> wmsParams,
+                    MimeType expectedMimeType,
+                    Resource target)
+                    throws GeoWebCacheException {
+                numCalls++;
+                switch (numCalls) {
+                    case 1:
+                        throw new GeoWebCacheException("test exception");
+                    case 2:
+                        throw new RuntimeException("test unexpected exception");
+                    case 3:
+                        throw new GeoWebCacheException("second test exception");
+                    case 4:
+                        throw new RuntimeException("second test unexpected exception");
+                    default:
+                        try {
+                            target.transferFrom(Channels.newChannel(new ByteArrayInputStream(fakeWMSResponse)));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
-                    }
-                };
+                }
+            }
+        };
 
         tl.setSourceHelper(mockSourceHelper);
 
@@ -240,10 +234,7 @@ public class SeedTaskTest {
 
         AtomicLong sharedFailureCounter = new AtomicLong();
         seedTask.setFailurePolicy(
-                tileFailureRetryCount,
-                tileFailureRetryWaitTime,
-                totalFailuresBeforeAborting,
-                sharedFailureCounter);
+                tileFailureRetryCount, tileFailureRetryWaitTime, totalFailuresBeforeAborting, sharedFailureCounter);
         /*
          * HACK: avoid SeedTask.getCurrentThreadArrayIndex failure.
          */
@@ -322,8 +313,7 @@ public class SeedTaskTest {
         long starty = coveredGridLevels[1];
         long startx = coveredGridLevels[0];
 
-        final long expectedSavedTileCount =
-                (coveredGridLevels[2] - startx + 1) * (coveredGridLevels[3] - starty + 1);
+        final long expectedSavedTileCount = (coveredGridLevels[2] - startx + 1) * (coveredGridLevels[3] - starty + 1);
 
         List<TileObject> storedTiles = storedObjects.getValues();
         final int seededTileCount = storedTiles.size();

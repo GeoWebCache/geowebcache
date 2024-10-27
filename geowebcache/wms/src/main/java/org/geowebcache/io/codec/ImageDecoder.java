@@ -29,8 +29,7 @@ public interface ImageDecoder {
     public List<String> getSupportedMimeTypes();
 
     /** Decodes the selected input object. */
-    public BufferedImage decode(
-            Object input, boolean aggressiveInputStreamOptimization, Map<String, Object> map)
+    public BufferedImage decode(Object input, boolean aggressiveInputStreamOptimization, Map<String, Object> map)
             throws Exception;
 
     /** Indicates if Aggressive inputStream is supported */

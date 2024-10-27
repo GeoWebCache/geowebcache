@@ -72,15 +72,7 @@ public class KMZHelper {
             if (linkGridLock[2] > 0) {
 
                 ConveyorTile tile =
-                        new ConveyorTile(
-                                sb,
-                                tileLayer.getName(),
-                                gridSetId,
-                                linkGridLock,
-                                mime,
-                                null,
-                                null,
-                                null);
+                        new ConveyorTile(sb, tileLayer.getName(), gridSetId, linkGridLock, mime, null, null, null);
 
                 tile.setTileLayer(tileLayer);
 
@@ -112,8 +104,7 @@ public class KMZHelper {
                     if (tile.getStatus() == 204) {
                         linkGridLock[2] = -1;
                     } else if (tile.getStatus() != 200) {
-                        throw new GeoWebCacheException(
-                                "Unexpected response code from server " + tile.getStatus());
+                        throw new GeoWebCacheException("Unexpected response code from server " + tile.getStatus());
                     }
                 }
             }
@@ -123,8 +114,7 @@ public class KMZHelper {
     }
 
     /** */
-    protected static byte[] createZippedKML(
-            String namePfx, String formatExtension, byte[] overlayXml, Resource dataXml)
+    protected static byte[] createZippedKML(String namePfx, String formatExtension, byte[] overlayXml, Resource dataXml)
             throws ServiceException {
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();

@@ -96,14 +96,8 @@ public class SwiftBlobStore implements BlobStore {
         this.config = config;
 
         taskQueue = new LinkedBlockingQueue<>(1000);
-        executor =
-                new ThreadPoolExecutor(
-                        2,
-                        32,
-                        10L,
-                        TimeUnit.SECONDS,
-                        taskQueue,
-                        new ThreadPoolExecutor.CallerRunsPolicy());
+        executor = new ThreadPoolExecutor(
+                2, 32, 10L, TimeUnit.SECONDS, taskQueue, new ThreadPoolExecutor.CallerRunsPolicy());
 
         initApis();
     }
@@ -114,8 +108,7 @@ public class SwiftBlobStore implements BlobStore {
             objectApi = swiftApi.getObjectApi(config.getRegion(), config.getContainer());
             bulkApi = swiftApi.getBulkApi(config.getRegion());
             blobStoreContext = config.getBlobStore();
-            blobStore =
-                    (RegionScopedSwiftBlobStore) blobStoreContext.getBlobStore(config.getRegion());
+            blobStore = (RegionScopedSwiftBlobStore) blobStoreContext.getBlobStore(config.getRegion());
         }
     }
 
@@ -203,28 +196,25 @@ public class SwiftBlobStore implements BlobStore {
             return false;
         }
 
-        final Iterator<long[]> tileLocations =
-                new AbstractIterator<>() {
+        final Iterator<long[]> tileLocations = new AbstractIterator<>() {
 
-                    // TileRange iterator with 1x1 meta tiling factor
-                    private final TileRangeIterator trIter =
-                            new TileRangeIterator(tileRange, new int[] {1, 1});
+            // TileRange iterator with 1x1 meta tiling factor
+            private final TileRangeIterator trIter = new TileRangeIterator(tileRange, new int[] {1, 1});
 
-                    @Override
-                    protected long[] computeNext() {
-                        long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
-                        return gridLoc == null ? endOfData() : gridLoc;
-                    }
-                };
+            @Override
+            protected long[] computeNext() {
+                long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
+                return gridLoc == null ? endOfData() : gridLoc;
+            }
+        };
 
         if (listeners.isEmpty()) {
 
             // if there are no listeners, don't bother requesting every tile
             // metadata to notify the listeners
-            Iterator<List<long[]>> partition =
-                    Iterators.partition(
-                            tileLocations, // Iterator
-                            1000); // this breaks a list into a lump of 1000s of items per sublist
+            Iterator<List<long[]>> partition = Iterators.partition(
+                    tileLocations, // Iterator
+                    1000); // this breaks a list into a lump of 1000s of items per sublist
 
             final TileToKey tileToKey = new TileToKey(coordsPrefix, tileRange.getMimeType());
 
@@ -244,9 +234,7 @@ public class SwiftBlobStore implements BlobStore {
             while (tileLocations.hasNext()) {
                 xyz = tileLocations.next();
 
-                TileObject tile =
-                        TileObject.createQueryTileObject(
-                                layerName, xyz, gridSetId, format, parameters);
+                TileObject tile = TileObject.createQueryTileObject(layerName, xyz, gridSetId, format, parameters);
                 tile.setParametersId(tileRange.getParametersId());
 
                 // Delete each tile object in the range given
@@ -263,8 +251,7 @@ public class SwiftBlobStore implements BlobStore {
 
         final String layerPrefix = keyBuilder.forLayer(layerName);
 
-        boolean deletionSuccessful =
-                this.deleteByPath(layerPrefix, () -> listeners.sendLayerDeleted(layerName));
+        boolean deletionSuccessful = this.deleteByPath(layerPrefix, () -> listeners.sendLayerDeleted(layerName));
 
         return deletionSuccessful;
     }
@@ -277,8 +264,7 @@ public class SwiftBlobStore implements BlobStore {
         final String gridsetPrefix = keyBuilder.forGridset(layerName, gridSetId);
 
         boolean deletedSuccessfully =
-                this.deleteByPath(
-                        gridsetPrefix, () -> listeners.sendGridSubsetDeleted(layerName, gridSetId));
+                this.deleteByPath(gridsetPrefix, () -> listeners.sendGridSubsetDeleted(layerName, gridSetId));
 
         // return if the layer has been successfully deleted
         return deletedSuccessfully;
@@ -363,19 +349,18 @@ public class SwiftBlobStore implements BlobStore {
         checkNotNull(layerName, "layerName");
         checkNotNull(parametersId, "parametersId");
 
-        boolean deletionSuccessful =
-                keyBuilder
-                        // Gets some parameters - probably some iterable
-                        .forParameters(layerName, parametersId)
-                        // Creates a stream from this data
-                        .stream()
-                        // Maps the stream to whether the object has been successfully deleted.
-                        .map(path -> this.deleteByPath(path))
-                        // Checks if all the entries were true - meaning everything was deleted
-                        // successfully.
-                        .reduce(Boolean::logicalAnd)
-                        // If reduce is not successful then return false.
-                        .orElse(false);
+        boolean deletionSuccessful = keyBuilder
+                // Gets some parameters - probably some iterable
+                .forParameters(layerName, parametersId)
+                // Creates a stream from this data
+                .stream()
+                // Maps the stream to whether the object has been successfully deleted.
+                .map(path -> this.deleteByPath(path))
+                // Checks if all the entries were true - meaning everything was deleted
+                // successfully.
+                .reduce(Boolean::logicalAnd)
+                // If reduce is not successful then return false.
+                .orElse(false);
 
         // If deletion was successful then tell the listeners.
         if (deletionSuccessful) {

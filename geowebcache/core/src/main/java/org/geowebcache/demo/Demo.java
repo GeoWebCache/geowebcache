@@ -74,8 +74,7 @@ public class Demo {
 
             String rawGridSet = request.getParameter("gridSet");
             String gridSetStr = null;
-            if (rawGridSet != null)
-                gridSetStr = ServletUtils.URLDecode(rawGridSet, request.getCharacterEncoding());
+            if (rawGridSet != null) gridSetStr = ServletUtils.URLDecode(rawGridSet, request.getCharacterEncoding());
 
             if (gridSetStr == null) {
                 gridSetStr = request.getParameter("srs");
@@ -101,8 +100,7 @@ public class Demo {
             if (request.getRequestURI().endsWith("/")) {
                 try {
                     String reqUri = request.getRequestURI();
-                    response.sendRedirect(
-                            response.encodeRedirectURL(reqUri.substring(0, reqUri.length() - 1)));
+                    response.sendRedirect(response.encodeRedirectURL(reqUri.substring(0, reqUri.length() - 1)));
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Error sending redirect response", e);
                 }
@@ -121,8 +119,7 @@ public class Demo {
         }
     }
 
-    private static String generateHTML(
-            TileLayerDispatcher tileLayerDispatcher, GridSetBroker gridSetBroker)
+    private static String generateHTML(TileLayerDispatcher tileLayerDispatcher, GridSetBroker gridSetBroker)
             throws GeoWebCacheException {
         String reloadPath = "rest/reload";
         String truncatePath = "rest/masstruncate";
@@ -133,47 +130,43 @@ public class Demo {
         buf.append(ServletUtils.gwcHtmlHeader("", "GWC Demos"));
         buf.append("<body>\n");
         buf.append(ServletUtils.gwcHtmlLogoLink(""));
-        buf.append(
-                "<table cellspacing=\"10\" border=\"0\">\n"
-                        + "<tr><td><strong>Layer name:</strong></td>\n"
-                        + "<td><strong>Enabled:</strong></td>\n"
-                        + "<td><strong>Grids Sets:</strong></td>\n");
+        buf.append("<table cellspacing=\"10\" border=\"0\">\n"
+                + "<tr><td><strong>Layer name:</strong></td>\n"
+                + "<td><strong>Enabled:</strong></td>\n"
+                + "<td><strong>Grids Sets:</strong></td>\n");
         buf.append("</tr>\n");
 
         tableRows(buf, tileLayerDispatcher, gridSetBroker);
 
         buf.append("</table>\n");
         buf.append("<br />");
-        buf.append(
-                        "<strong>These are just quick demos. GeoWebCache also supports:</strong><br />\n"
-                                + "<ul><li>WMTS, TMS, Virtual Earth and Google Maps</li>\n"
-                                + "<li>Proxying GetFeatureInfo, GetLegend and other WMS requests</li>\n"
-                                + "<li>Advanced request and parameter filters</li>\n"
-                                + "<li>Output format adjustments, such as compression level</li>\n"
-                                + "<li>Adjustable expiration headers and automatic cache expiration</li>\n"
-                                + "<li>RESTful interface for seeding and configuration (beta)</li>\n"
-                                + "</ul>\n"
-                                + "<br />\n"
-                                + "<strong>Reload TileLayerConfiguration:</strong><br />\n"
-                                + "<p>You can reload the configuration by pressing the following button. "
-                                + "The username / password is configured in WEB-INF/user.properties, or the admin "
-                                + " user in GeoServer if you are using the plugin.</p>\n"
-                                + "<form form id=\"kill\" action=\"")
+        buf.append("<strong>These are just quick demos. GeoWebCache also supports:</strong><br />\n"
+                        + "<ul><li>WMTS, TMS, Virtual Earth and Google Maps</li>\n"
+                        + "<li>Proxying GetFeatureInfo, GetLegend and other WMS requests</li>\n"
+                        + "<li>Advanced request and parameter filters</li>\n"
+                        + "<li>Output format adjustments, such as compression level</li>\n"
+                        + "<li>Adjustable expiration headers and automatic cache expiration</li>\n"
+                        + "<li>RESTful interface for seeding and configuration (beta)</li>\n"
+                        + "</ul>\n"
+                        + "<br />\n"
+                        + "<strong>Reload TileLayerConfiguration:</strong><br />\n"
+                        + "<p>You can reload the configuration by pressing the following button. "
+                        + "The username / password is configured in WEB-INF/user.properties, or the admin "
+                        + " user in GeoServer if you are using the plugin.</p>\n"
+                        + "<form form id=\"kill\" action=\"")
                 .append(reloadPath)
-                .append(
-                        "\" method=\"post\">"
-                                + "<input type=\"hidden\" name=\"reload_configuration\"  value=\"1\" />"
-                                + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;\"type=\"submit\" value=\"Reload TileLayerConfiguration\"></span>"
-                                + "</form>"
-                                + "<br /><strong>Truncate All Layers:</strong><br />\n"
-                                + "<p>Truncate all layers"
-                                + "<form form id=\"truncate\" action=\"")
+                .append("\" method=\"post\">"
+                        + "<input type=\"hidden\" name=\"reload_configuration\"  value=\"1\" />"
+                        + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;\"type=\"submit\" value=\"Reload TileLayerConfiguration\"></span>"
+                        + "</form>"
+                        + "<br /><strong>Truncate All Layers:</strong><br />\n"
+                        + "<p>Truncate all layers"
+                        + "<form form id=\"truncate\" action=\"")
                 .append(truncatePath)
-                .append(
-                        "\" method=\"post\"><input type=\"hidden\" name=\"<truncateAll>\" value=\"</truncateAll>\"/>"
-                                + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;background-color:LightCoral;\"type=\"submit\" value=\"Clear GWC\"></span>"
-                                + "</form><br />"
-                                + "</body></html>");
+                .append("\" method=\"post\"><input type=\"hidden\" name=\"<truncateAll>\" value=\"</truncateAll>\"/>"
+                        + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;background-color:LightCoral;\"type=\"submit\" value=\"Clear GWC\"></span>"
+                        + "</form><br />"
+                        + "</body></html>");
 
         return buf.toString();
     }
@@ -192,9 +185,7 @@ public class Demo {
             buf.append("<tr><td style=\"min-width: 100px;\"><strong>")
                     .append(escapedLayerName)
                     .append("</strong><br />\n");
-            buf.append("<a href=\"rest/seed/")
-                    .append(escapedLayerName)
-                    .append("\">Seed this layer</a>\n");
+            buf.append("<a href=\"rest/seed/").append(escapedLayerName).append("\">Seed this layer</a>\n");
             buf.append("</td><td>").append(layer.isEnabled()).append("</td>");
             buf.append("<td><table width=\"100%\">");
 
@@ -208,16 +199,10 @@ public class Demo {
                 buf.append("<tr><td style=\"width: 170px;\">").append(gridSetName);
 
                 buf.append("</td><td>OpenLayers: [");
-                buf.append(
-                        layer.getMimeTypes().stream()
-                                .filter(type -> type.supportsTiling() || type.isVector())
-                                .map(
-                                        type ->
-                                                generateDemoUrl(
-                                                        escapedLayerName,
-                                                        escapeHtml4(gridSubset.getName()),
-                                                        type))
-                                .collect(Collectors.joining(", ")));
+                buf.append(layer.getMimeTypes().stream()
+                        .filter(type -> type.supportsTiling() || type.isVector())
+                        .map(type -> generateDemoUrl(escapedLayerName, escapeHtml4(gridSubset.getName()), type))
+                        .collect(Collectors.joining(", ")));
 
                 buf.append("]</td><td>\n");
 
@@ -236,29 +221,19 @@ public class Demo {
         buf.append(" &nbsp; KML: [");
         String prefix = "";
 
-        buf.append(
-                layer.getMimeTypes().stream()
-                        .filter(
-                                type ->
-                                        type instanceof ImageMime
-                                                || type == XMLMime.kml
-                                                || type == XMLMime.kmz)
-                        .map(
-                                type -> {
-                                    if (type == XMLMime.kmz) {
-                                        return String.format(
-                                                "<a href=\"%sservice/kml/%s.kml.kmz\">kmz</a>",
-                                                prefix, escapeHtml4(layer.getName()));
-                                    } else {
-                                        return String.format(
-                                                "<a href=\"%sservice/kml/%s.%s.kml\">%s</a>",
-                                                prefix,
-                                                escapeHtml4(layer.getName()),
-                                                type.getFileExtension(),
-                                                type.getFileExtension());
-                                    }
-                                })
-                        .collect(Collectors.joining(", ")));
+        buf.append(layer.getMimeTypes().stream()
+                .filter(type -> type instanceof ImageMime || type == XMLMime.kml || type == XMLMime.kmz)
+                .map(type -> {
+                    if (type == XMLMime.kmz) {
+                        return String.format(
+                                "<a href=\"%sservice/kml/%s.kml.kmz\">kmz</a>", prefix, escapeHtml4(layer.getName()));
+                    } else {
+                        return String.format(
+                                "<a href=\"%sservice/kml/%s.%s.kml\">%s</a>",
+                                prefix, escapeHtml4(layer.getName()), type.getFileExtension(), type.getFileExtension());
+                    }
+                })
+                .collect(Collectors.joining(", ")));
 
         buf.append("]");
     }
@@ -300,24 +275,21 @@ public class Demo {
         buf.append(" ").append(escapeHtml4(gridSubset.getName()));
         buf.append(" ").append(escapeHtml4(formatStr));
         buf.append("</title>\n");
-        buf.append(
-                "<style type=\"text/css\">\n"
-                        + "body { font-family: sans-serif; font-weight: bold; font-size: .8em; }\n"
-                        + "body { border: 0px; margin: 0px; padding: 0px; }\n"
-                        + "#map { width: 85%; height: 85%; border: 0px; padding: 0px; }\n"
-                        + "#info iframe { width: 100%; height: 250px; border: none; }\n"
-                        + ".ol-scale-value {top: 24px; right: 8px; position: absolute; }\n"
-                        + ".ol-zoom-value {top: 40px; right: 8px; position: absolute; }\n"
-                        + ".tooltip {position: absolute; background-color: white; border: 1px solid black; padding: 5px; border-radius: 3px; white-space: nowrap; max-height: 200px; overflow-y: auto; display: none;}\n"
-                        + ".tooltip-header {display: flex; justify-content: space-between; align-items: center; padding: 5px; border-bottom: 1pxsolidblack; }\n"
-                        + ".tooltip-content {padding: 5px; max-height: 150px; overflow-y: auto;}\n"
-                        + ".close-button {cursor: pointer; background: none; border: none; font-size: 16px; font-weight: bold; }\n"
-                        + "</style>\n");
+        buf.append("<style type=\"text/css\">\n"
+                + "body { font-family: sans-serif; font-weight: bold; font-size: .8em; }\n"
+                + "body { border: 0px; margin: 0px; padding: 0px; }\n"
+                + "#map { width: 85%; height: 85%; border: 0px; padding: 0px; }\n"
+                + "#info iframe { width: 100%; height: 250px; border: none; }\n"
+                + ".ol-scale-value {top: 24px; right: 8px; position: absolute; }\n"
+                + ".ol-zoom-value {top: 40px; right: 8px; position: absolute; }\n"
+                + ".tooltip {position: absolute; background-color: white; border: 1px solid black; padding: 5px; border-radius: 3px; white-space: nowrap; max-height: 200px; overflow-y: auto; display: none;}\n"
+                + ".tooltip-header {display: flex; justify-content: space-between; align-items: center; padding: 5px; border-bottom: 1pxsolidblack; }\n"
+                + ".tooltip-content {padding: 5px; max-height: 150px; overflow-y: auto;}\n"
+                + ".close-button {cursor: pointer; background: none; border: none; font-size: 16px; font-weight: bold; }\n"
+                + "</style>\n");
 
         buf.append("<script src=\"").append(openLayersPath).append("ol.js\"></script>\n");
-        buf.append("<link rel='stylesheet' href='")
-                .append(openLayersPath)
-                .append("ol.css' type='text/css'>\n");
+        buf.append("<link rel='stylesheet' href='").append(openLayersPath).append("ol.css' type='text/css'>\n");
         buf.append("<script src=\"../rest/web/demo.js\"></script>\n");
         buf.append("</head>\n" + "<body>\n");
         buf.append("<div id=\"params\">")
@@ -325,14 +297,13 @@ public class Demo {
                 .append("</div>\n");
 
         buf.append("<div id=\"map\"></div>\n" + "<div id=\"info\"></div>\n");
-        buf.append(
-                "<div id=\"tooltip\" class=\"tooltip\">\n"
-                        + "      <div class=\"tooltip-header\">\n"
-                        + "        <span>Attributes</span>\n"
-                        + "        <button id=\"close-button\" class=\"close-button\">&times;</button>\n"
-                        + "      </div>\n"
-                        + "      <div id=\"tooltip-content\" class=\"tooltip-content\"></div>\n"
-                        + "    </div>");
+        buf.append("<div id=\"tooltip\" class=\"tooltip\">\n"
+                + "      <div class=\"tooltip-header\">\n"
+                + "        <span>Attributes</span>\n"
+                + "        <button id=\"close-button\" class=\"close-button\">&times;</button>\n"
+                + "      </div>\n"
+                + "      <div id=\"tooltip-content\" class=\"tooltip-content\"></div>\n"
+                + "    </div>");
 
         // add parameters in hidden inputs
         makeHiddenInput(buf, "dpi", Double.toString(gridSubset.getDotsPerInch()));
@@ -346,9 +317,7 @@ public class Demo {
         makeHiddenInput(
                 buf,
                 "gridNamesNumeric",
-                String.valueOf(
-                        Arrays.stream(gridSubset.getGridNames())
-                                .allMatch(n -> StringUtils.isNumeric(n))));
+                String.valueOf(Arrays.stream(gridSubset.getGridNames()).allMatch(n -> StringUtils.isNumeric(n))));
         makeHiddenInput(buf, "format", formatStr);
         makeHiddenInput(buf, "layerName", layerName);
         makeHiddenInput(buf, "SRS", gridSubset.getSRS().toString());
@@ -360,8 +329,7 @@ public class Demo {
         } else if (doubleEquals(mpu, 0.3048)) {
             unit = "ft";
             // Use the average of equatorial and polar radius, and a large margin of error
-        } else if (doubleEquals(
-                mpu, Math.PI * (6378137 + 6356752) / 360, Math.PI * (6378137 - 6356752) / 360)) {
+        } else if (doubleEquals(mpu, Math.PI * (6378137 + 6356752) / 360, Math.PI * (6378137 - 6356752) / 360)) {
             unit = "degrees";
         }
         makeHiddenInput(buf, "unit", unit);
@@ -465,8 +433,7 @@ public class Demo {
         return doc.toString();
     }
 
-    private static Map<String, String> makeParametersMap(
-            String defaultValue, List<String> legalValues) {
+    private static Map<String, String> makeParametersMap(String defaultValue, List<String> legalValues) {
         Map<String, String> map = new TreeMap<>();
         for (String s : legalValues) {
             map.put(s, s);
@@ -483,8 +450,7 @@ public class Demo {
                 .append("\" />\n");
     }
 
-    private static void makePullDown(
-            StringBuilder doc, String id, Map<String, String> keysValues, String defaultKey) {
+    private static void makePullDown(StringBuilder doc, String id, Map<String, String> keysValues, String defaultKey) {
         doc.append("<select name=\"" + escapeHtml4(id) + "\">\n");
 
         Iterator<Entry<String, String>> iter = keysValues.entrySet().iterator();
@@ -494,19 +460,17 @@ public class Demo {
             final String key = entry.getKey();
             // equal, including both null
             if ((key == null && defaultKey == null) || (key != null && key.equals(defaultKey))) {
-                doc.append(
-                        "<option value=\""
-                                + escapeHtml4(entry.getValue())
-                                + "\" selected=\"selected\">"
-                                + escapeHtml4(entry.getKey())
-                                + "</option>\n");
+                doc.append("<option value=\""
+                        + escapeHtml4(entry.getValue())
+                        + "\" selected=\"selected\">"
+                        + escapeHtml4(entry.getKey())
+                        + "</option>\n");
             } else {
-                doc.append(
-                        "<option value=\""
-                                + escapeHtml4(entry.getValue())
-                                + "\">"
-                                + escapeHtml4(entry.getKey())
-                                + "</option>\n");
+                doc.append("<option value=\""
+                        + escapeHtml4(entry.getValue())
+                        + "\">"
+                        + escapeHtml4(entry.getKey())
+                        + "</option>\n");
             }
         }
 
@@ -514,8 +478,7 @@ public class Demo {
     }
 
     private static void makeTextInput(StringBuilder doc, String id, int size) {
-        doc.append(
-                "<input name=\"" + escapeHtml4(id) + "\" type=\"text\" size=\"" + size + "\" />\n");
+        doc.append("<input name=\"" + escapeHtml4(id) + "\" type=\"text\" size=\"" + size + "\" />\n");
     }
 
     private static boolean doubleEquals(double d1, double d2) {

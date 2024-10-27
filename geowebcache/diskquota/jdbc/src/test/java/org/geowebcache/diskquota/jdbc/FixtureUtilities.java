@@ -89,11 +89,7 @@ public class FixtureUtilities {
     public static void printSkipNotice(String fixtureId, File fixtureFile) {
         try {
             log.info(
-                    "Skipping "
-                            + fixtureId
-                            + " tests. Fixture file "
-                            + fixtureFile.getCanonicalPath()
-                            + " not found.");
+                    "Skipping " + fixtureId + " tests. Fixture file " + fixtureFile.getCanonicalPath() + " not found.");
         } catch (Exception e) {
             log.log(Level.FINE, e.getMessage(), e);
         }

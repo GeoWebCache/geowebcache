@@ -51,8 +51,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
      * @param queuedUpdates queue that this monitor will fill with updates at each tile event. There
      *     should be a separate thread that takes care of them.
      */
-    public QueuedQuotaUpdatesProducer(
-            final BlockingQueue<QuotaUpdate> queuedUpdates, QuotaStore quotaStore) {
+    public QueuedQuotaUpdatesProducer(final BlockingQueue<QuotaUpdate> queuedUpdates, QuotaStore quotaStore) {
         Assert.notNull(queuedUpdates, "queuedUpdates can't be null");
 
         this.queuedUpdates = queuedUpdates;
@@ -101,13 +100,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
 
         long actualSizeFreed = -1 * blobSize;
 
-        quotaUpdate(
-                layerName,
-                gridSetId,
-                blobFormat,
-                parametersId,
-                actualSizeFreed,
-                new long[] {x, y, z});
+        quotaUpdate(layerName, gridSetId, blobFormat, parametersId, actualSizeFreed, new long[] {x, y, z});
     }
 
     /** @see org.geowebcache.storage.BlobStoreListener#tileUpdated */
@@ -157,10 +150,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
         try {
             quotaStore.renameLayer(oldLayerName, newLayerName);
         } catch (InterruptedException e) {
-            log.log(
-                    Level.SEVERE,
-                    "Can't rename " + oldLayerName + " to " + newLayerName + " in quota store",
-                    e);
+            log.log(Level.SEVERE, "Can't rename " + oldLayerName + " to " + newLayerName + " in quota store", e);
             Thread.currentThread().interrupt();
         }
     }
@@ -174,51 +164,41 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
      * @param tileIndex tile index
      */
     private void quotaUpdate(
-            String layerName,
-            String gridSetId,
-            String blobFormat,
-            String parametersId,
-            long amount,
-            long[] tileIndex) {
+            String layerName, String gridSetId, String blobFormat, String parametersId, long amount, long[] tileIndex) {
 
         if (cancelled(layerName)) {
             return;
         }
-        QuotaUpdate payload =
-                new QuotaUpdate(layerName, gridSetId, blobFormat, parametersId, amount, tileIndex);
+        QuotaUpdate payload = new QuotaUpdate(layerName, gridSetId, blobFormat, parametersId, amount, tileIndex);
         try {
             if (updateOfferTimeoutSeconds <= 0) {
                 this.queuedUpdates.put(payload);
             } else {
-                if (!this.queuedUpdates.offer(
-                        payload, updateOfferTimeoutSeconds, TimeUnit.SECONDS)) {
-                    throw new RuntimeException(
-                            "Failed to offer the quota diff to the updates queue "
-                                    + "within the configured timeout of "
-                                    + updateOfferTimeoutSeconds
-                                    + " seconds");
+                if (!this.queuedUpdates.offer(payload, updateOfferTimeoutSeconds, TimeUnit.SECONDS)) {
+                    throw new RuntimeException("Failed to offer the quota diff to the updates queue "
+                            + "within the configured timeout of "
+                            + updateOfferTimeoutSeconds
+                            + " seconds");
                 }
             }
         } catch (InterruptedException e) {
             if (cancelled(layerName)) {
                 return;
             }
-            log.info(
-                    "Quota updates on "
-                            + layerName
-                            + " abruptly interrupted on thread "
-                            + Thread.currentThread().getName()
-                            + ".");
+            log.info("Quota updates on "
+                    + layerName
+                    + " abruptly interrupted on thread "
+                    + Thread.currentThread().getName()
+                    + ".");
             Thread.currentThread().interrupt();
         }
     }
 
     private boolean cancelled(String layerName) {
         if (cancelled) {
-            log.fine(
-                    "Quota updates listener cancelled. Avoiding adding update for layer "
-                            + layerName
-                            + " to quota information queue");
+            log.fine("Quota updates listener cancelled. Avoiding adding update for layer "
+                    + layerName
+                    + " to quota information queue");
         }
         return cancelled;
     }

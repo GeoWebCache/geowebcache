@@ -153,16 +153,14 @@ public abstract class TileLayer implements Info {
     public abstract ConveyorTile getNoncachedTile(ConveyorTile tile) throws GeoWebCacheException;
 
     /** */
-    public abstract void seedTile(ConveyorTile tile, boolean tryCache)
-            throws GeoWebCacheException, IOException;
+    public abstract void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException, IOException;
 
     /**
      * This is a more direct way of requesting a tile without invoking metatiling, and should not be
      * used in general. The method was exposed to let the KML service traverse the tree ahead of the
      * client, to avoid linking to empty tiles.
      */
-    public abstract ConveyorTile doNonMetatilingRequest(ConveyorTile tile)
-            throws GeoWebCacheException;
+    public abstract ConveyorTile doNonMetatilingRequest(ConveyorTile tile) throws GeoWebCacheException;
 
     public abstract List<FormatModifier> getFormatModifiers();
 
@@ -279,16 +277,13 @@ public abstract class TileLayer implements Info {
         }
 
         // REVISIT: why not simply return false if this is a query method?!
-        throw new GeoWebCacheException(
-                "Format " + strFormat + " is not supported by " + this.getName());
+        throw new GeoWebCacheException("Format " + strFormat + " is not supported by " + this.getName());
     }
 
     /** GetFeatureInfo template, throws exception, subclasses must override if supported. */
-    public Resource getFeatureInfo(
-            ConveyorTile convTile, BoundingBox bbox, int height, int width, int x, int y)
+    public Resource getFeatureInfo(ConveyorTile convTile, BoundingBox bbox, int height, int width, int x, int y)
             throws GeoWebCacheException {
-        throw new GeoWebCacheException(
-                "GetFeatureInfo is not supported by this layer (" + getName() + ")");
+        throw new GeoWebCacheException("GetFeatureInfo is not supported by this layer (" + getName() + ")");
     }
 
     /** @return the resolutions (units/pixel) for the layer */
@@ -328,8 +323,7 @@ public abstract class TileLayer implements Info {
      * Converts the given bounding box into the closest location on the grid supported by the
      * reference system.
      */
-    public long[] indexFromBounds(String gridSetId, BoundingBox tileBounds)
-            throws GridMismatchException {
+    public long[] indexFromBounds(String gridSetId, BoundingBox tileBounds) throws GridMismatchException {
         return getGridSubset(gridSetId).closestIndex(tileBounds);
     }
 
@@ -418,8 +412,7 @@ public abstract class TileLayer implements Info {
         final String[] keys =
                 parameterFilters.stream().map(ParameterFilter::getKey).toArray(i -> new String[i]);
 
-        final Map<String, String> requestValues =
-                ServletUtils.selectedStringsFromMap(map, encoding, keys);
+        final Map<String, String> requestValues = ServletUtils.selectedStringsFromMap(map, encoding, keys);
 
         final Map<String, String> defaultValues = getDefaultParameterFilters();
 
@@ -429,9 +422,7 @@ public abstract class TileLayer implements Info {
             value = decodeDimensionValue(value);
 
             String defaultValue = defaultValues.get(key);
-            if (value == null
-                    || value.length() == 0
-                    || (defaultValue != null && defaultValue.equals(value))) {
+            if (value == null || value.length() == 0 || (defaultValue != null && defaultValue.equals(value))) {
                 fullParameters.put(key, defaultValue);
             } else {
                 String appliedValue = parameterFilter.apply(value);
@@ -489,8 +480,7 @@ public abstract class TileLayer implements Info {
     }
 
     /** Loops over the gridPositions, generates cache keys and saves to cache */
-    protected void saveTiles(MetaTile metaTile, ConveyorTile tileProto, long requestTime)
-            throws GeoWebCacheException {
+    protected void saveTiles(MetaTile metaTile, ConveyorTile tileProto, long requestTime) throws GeoWebCacheException {
 
         final long[][] gridPositions = metaTile.getTilesGridPositions();
         final long[] gridLoc = tileProto.getTileIndex();
@@ -523,21 +513,18 @@ public abstract class TileLayer implements Info {
                 try {
                     boolean completed = metaTile.writeTileToStream(i, resource);
                     if (!completed) {
-                        log.log(
-                                Level.SEVERE,
-                                "metaTile.writeTileToStream returned false, no tiles saved");
+                        log.log(Level.SEVERE, "metaTile.writeTileToStream returned false, no tiles saved");
                     }
                     if (store) {
                         long[] idx = {gridPos[0], gridPos[1], gridPos[2]};
 
-                        TileObject tile =
-                                TileObject.createCompleteTileObject(
-                                        this.getName(),
-                                        idx,
-                                        tileProto.getGridSetId(),
-                                        tileProto.getMimeType().getFormat(),
-                                        tileProto.getParameters(),
-                                        resource);
+                        TileObject tile = TileObject.createCompleteTileObject(
+                                this.getName(),
+                                idx,
+                                tileProto.getGridSetId(),
+                                tileProto.getMimeType().getFormat(),
+                                tileProto.getParameters(),
+                                resource);
                         tile.setCreated(requestTime);
 
                         try {
@@ -552,10 +539,7 @@ public abstract class TileLayer implements Info {
                         }
                     }
                 } catch (IOException ioe) {
-                    log.log(
-                            Level.SEVERE,
-                            "Unable to write image tile to " + "ByteArrayOutputStream",
-                            ioe);
+                    log.log(Level.SEVERE, "Unable to write image tile to " + "ByteArrayOutputStream", ioe);
                 }
             }
         }

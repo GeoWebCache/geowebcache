@@ -57,9 +57,7 @@ public class TileRangeIteratorTest {
     public void setUp() throws Exception {
         mimeType = MimeType.createFromFormat("image/png");
         parameters = null;
-        gridSet =
-                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, false)))
-                        .getWorldEpsg3857();
+        gridSet = new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, false))).getWorldEpsg3857();
         BoundingBox extent = new BoundingBox(0, 0, 100, 100);
         boolean alignTopLeft = false;
         int levels = 12;
@@ -69,18 +67,17 @@ public class TileRangeIteratorTest {
         int tileHeight = 100;
         boolean yCoordinateFirst = false;
 
-        gridSet =
-                GridSetFactory.createGridSet(
-                        "TestGridSet",
-                        SRS.getSRS(100000),
-                        extent,
-                        alignTopLeft,
-                        levels,
-                        metersPerUnit,
-                        pixelSize,
-                        tileWidth,
-                        tileHeight,
-                        yCoordinateFirst);
+        gridSet = GridSetFactory.createGridSet(
+                "TestGridSet",
+                SRS.getSRS(100000),
+                extent,
+                alignTopLeft,
+                levels,
+                metersPerUnit,
+                pixelSize,
+                tileWidth,
+                tileHeight,
+                yCoordinateFirst);
         gridSubSet = GridSubsetFactory.createGridSubSet(gridSet);
         gridCoverages = gridSubSet.getCoverages();
     }
@@ -93,13 +90,9 @@ public class TileRangeIteratorTest {
         int[] metaTilingFactors = {1, 1};
 
         for (int zLevel = zoomStart; zLevel <= zoomStop; zLevel++) {
-            long tilesProcessed =
-                    traverseTileRangeIter(1, gridCoverages, zLevel, zLevel, metaTilingFactors);
+            long tilesProcessed = traverseTileRangeIter(1, gridCoverages, zLevel, zLevel, metaTilingFactors);
             long expected = countMetaTiles(gridCoverages, zLevel, zLevel, metaTilingFactors);
-            Assert.assertEquals(
-                    "Expected tile count mismatch at zoom level " + zLevel,
-                    expected,
-                    tilesProcessed);
+            Assert.assertEquals("Expected tile count mismatch at zoom level " + zLevel, expected, tilesProcessed);
         }
     }
 
@@ -114,22 +107,12 @@ public class TileRangeIteratorTest {
         StopWatch sw = new StopWatch();
         sw.start();
         // for (int zLevel = zoomStart; zLevel <= zoomStop; zLevel++) {
-        long tilesProcessed =
-                traverseTileRangeIter(
-                        nThreads, gridCoverages, zoomStart, zoomStop, metaTilingFactors);
+        long tilesProcessed = traverseTileRangeIter(nThreads, gridCoverages, zoomStart, zoomStop, metaTilingFactors);
         long expected = countMetaTiles(gridCoverages, zoomStart, zoomStop, metaTilingFactors);
-        Assert.assertEquals(
-                "Expected tile count mismatch at zoom level " + zoomStart,
-                expected,
-                tilesProcessed);
+        Assert.assertEquals("Expected tile count mismatch at zoom level " + zoomStart, expected, tilesProcessed);
         // }
         sw.stop();
-        LOG.info(
-                nThreads
-                        + " threads finished in "
-                        + sw.getTotalTimeMillis()
-                        + " to count "
-                        + expected);
+        LOG.info(nThreads + " threads finished in " + sw.getTotalTimeMillis() + " to count " + expected);
     }
 
     /** */
@@ -140,13 +123,9 @@ public class TileRangeIteratorTest {
         int[] metaTilingFactors = {3, 3};
 
         for (int zLevel = zoomStart; zLevel <= zoomStop; zLevel++) {
-            long tilesProcessed =
-                    traverseTileRangeIter(1, gridCoverages, zLevel, zLevel, metaTilingFactors);
+            long tilesProcessed = traverseTileRangeIter(1, gridCoverages, zLevel, zLevel, metaTilingFactors);
             long expected = countMetaTiles(gridCoverages, zLevel, zLevel, metaTilingFactors);
-            Assert.assertEquals(
-                    "Expected tile count mismatch at zoom level " + zLevel,
-                    expected,
-                    tilesProcessed);
+            Assert.assertEquals("Expected tile count mismatch at zoom level " + zLevel, expected, tilesProcessed);
         }
     }
 
@@ -158,9 +137,7 @@ public class TileRangeIteratorTest {
         int[] metaTilingFactors = {1, 1};
 
         int nThreads = 32;
-        long tilesProcessed =
-                traverseTileRangeIter(
-                        nThreads, gridCoverages, zoomStart, zoomStop, metaTilingFactors);
+        long tilesProcessed = traverseTileRangeIter(nThreads, gridCoverages, zoomStart, zoomStop, metaTilingFactors);
         long expected = countMetaTiles(gridCoverages, zoomStart, zoomStop, metaTilingFactors);
         Assert.assertEquals(expected, tilesProcessed);
     }
@@ -173,9 +150,7 @@ public class TileRangeIteratorTest {
         int[] metaTilingFactors = {3, 3};
 
         int nThreads = 32;
-        long tilesProcessed =
-                traverseTileRangeIter(
-                        nThreads, gridCoverages, zoomStart, zoomStop, metaTilingFactors);
+        long tilesProcessed = traverseTileRangeIter(nThreads, gridCoverages, zoomStart, zoomStop, metaTilingFactors);
         long expected = countMetaTiles(gridCoverages, zoomStart, zoomStop, metaTilingFactors);
         Assert.assertEquals(expected, tilesProcessed);
     }
@@ -198,9 +173,7 @@ public class TileRangeIteratorTest {
         final int[] metaTilingFactors = {1, 1};
 
         final int nThreads = 1;
-        long tilesProcessed =
-                traverseTileRangeIter(
-                        nThreads, gridCoverages, zoomStart, zoomStop, metaTilingFactors);
+        long tilesProcessed = traverseTileRangeIter(nThreads, gridCoverages, zoomStart, zoomStop, metaTilingFactors);
         final long expected = 2;
         Assert.assertEquals(expected, tilesProcessed);
         verify(rasterMask);
@@ -220,25 +193,23 @@ public class TileRangeIteratorTest {
 
         final TileRange tileRange;
         if (rasterMask == null) {
-            tileRange =
-                    new TileRange(
-                            "layer",
-                            "gridset",
-                            zoomStart,
-                            zoomStop,
-                            coveredGridLevels,
-                            mimeType,
-                            ServletUtils.queryStringToMap(parameters));
+            tileRange = new TileRange(
+                    "layer",
+                    "gridset",
+                    zoomStart,
+                    zoomStop,
+                    coveredGridLevels,
+                    mimeType,
+                    ServletUtils.queryStringToMap(parameters));
         } else {
-            tileRange =
-                    new DiscontinuousTileRange(
-                            "layer",
-                            "gridset",
-                            zoomStart,
-                            zoomStop,
-                            rasterMask,
-                            mimeType,
-                            ServletUtils.queryStringToMap(parameters));
+            tileRange = new DiscontinuousTileRange(
+                    "layer",
+                    "gridset",
+                    zoomStart,
+                    zoomStop,
+                    rasterMask,
+                    mimeType,
+                    ServletUtils.queryStringToMap(parameters));
         }
 
         final TileRangeIterator tri = new TileRangeIterator(tileRange, metaTilingFactors);
@@ -260,8 +231,7 @@ public class TileRangeIteratorTest {
         return totalProcessed;
     }
 
-    private long sumValues(List<Future<Long>> values)
-            throws InterruptedException, ExecutionException {
+    private long sumValues(List<Future<Long>> values) throws InterruptedException, ExecutionException {
         long total = 0;
         for (Future<Long> value : values) {
             long countedByTask = value.get().longValue();
@@ -292,8 +262,7 @@ public class TileRangeIteratorTest {
         }
     }
 
-    private long countMetaTiles(
-            long[][] coveredGridLevels, int startZoom, int stopZoom, int[] metaTilingFactors) {
+    private long countMetaTiles(long[][] coveredGridLevels, int startZoom, int stopZoom, int[] metaTilingFactors) {
         long count = 0;
 
         final int metaX = metaTilingFactors[0];

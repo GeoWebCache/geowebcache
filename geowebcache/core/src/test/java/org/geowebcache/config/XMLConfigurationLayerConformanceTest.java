@@ -47,19 +47,18 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
 
     @Override
     protected TileLayer getGoodInfo(String id, int rand) {
-        WMSLayer layer =
-                new WMSLayer(
-                        id,
-                        new String[] {"http://example.com/"},
-                        null,
-                        Integer.toString(rand),
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        false,
-                        null);
+        WMSLayer layer = new WMSLayer(
+                id,
+                new String[] {"http://example.com/"},
+                null,
+                Integer.toString(rand),
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+                null);
         return layer;
     }
 
@@ -96,22 +95,22 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
             }
 
             @Override
-            public void seedTile(ConveyorTile tile, boolean tryCache)
-                    throws GeoWebCacheException, IOException {
+            public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException, IOException {
                 // TODO Auto-generated method stub
 
             }
 
             @Override
-            public ConveyorTile doNonMetatilingRequest(ConveyorTile tile)
-                    throws GeoWebCacheException {
+            public ConveyorTile doNonMetatilingRequest(ConveyorTile tile) throws GeoWebCacheException {
                 // TODO Auto-generated method stub
                 return null;
             }
         };
     }
 
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
+
     protected File configDir;
     protected File configFile;
 
@@ -145,18 +144,13 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
     @Override
     protected Matcher<TileLayer> infoEquals(TileLayer expected) {
         return new CustomMatcher<>(
-                "Layer matching "
-                        + expected.getId()
-                        + " with "
-                        + ((WMSLayer) expected).getWmsLayers()) {
+                "Layer matching " + expected.getId() + " with " + ((WMSLayer) expected).getWmsLayers()) {
 
             @Override
             public boolean matches(Object item) {
                 return item instanceof WMSLayer
                         && ((WMSLayer) item).getId().equals(expected.getId())
-                        && ((WMSLayer) item)
-                                .getWmsLayers()
-                                .equals(((WMSLayer) expected).getWmsLayers());
+                        && ((WMSLayer) item).getWmsLayers().equals(((WMSLayer) expected).getWmsLayers());
             }
         };
     }
@@ -189,8 +183,7 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
     }
 
     @Override
-    protected void renameInfo(TileLayerConfiguration config, String name1, String name2)
-            throws Exception {
+    protected void renameInfo(TileLayerConfiguration config, String name1, String name2) throws Exception {
         Assume.assumeFalse(true);
     }
 
@@ -232,9 +225,6 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
         Optional<TileLayer> retrieved = getInfo(config, getExistingInfo());
         assertThat(
                 retrieved,
-                isPresent(
-                        hasProperty(
-                                "gridSubsets",
-                                Matchers.containsInAnyOrder("EPSG:4326", "EPSG:2163"))));
+                isPresent(hasProperty("gridSubsets", Matchers.containsInAnyOrder("EPSG:4326", "EPSG:2163"))));
     }
 }

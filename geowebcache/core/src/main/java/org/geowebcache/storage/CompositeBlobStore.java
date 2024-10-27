@@ -59,14 +59,14 @@ import org.geowebcache.storage.blobstore.file.FileBlobStore;
  */
 public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationListener {
 
-    static final String GEOWEBCACHE_BLOBSTORE_SUITABILITY_CHECK =
-            "GEOWEBCACHE_BLOBSTORE_SUITABILITY_CHECK";
+    static final String GEOWEBCACHE_BLOBSTORE_SUITABILITY_CHECK = "GEOWEBCACHE_BLOBSTORE_SUITABILITY_CHECK";
 
     private static Logger log = Logging.getLogger(CompositeBlobStore.class.getName());
 
     public static final String DEFAULT_STORE_DEFAULT_ID = "_DEFAULT_STORE_";
 
-    @VisibleForTesting Map<String, LiveStore> blobStores = new ConcurrentHashMap<>();
+    @VisibleForTesting
+    Map<String, LiveStore> blobStores = new ConcurrentHashMap<>();
 
     private TileLayerDispatcher layers;
 
@@ -103,14 +103,10 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
     }
 
     @VisibleForTesting
-    static final ThreadLocal<StoreSuitabilityCheck> storeSuitability =
-            ThreadLocal.withInitial(
-                    () ->
-                            Optional.ofNullable(
-                                            GeoWebCacheExtensions.getProperty(
-                                                    GEOWEBCACHE_BLOBSTORE_SUITABILITY_CHECK))
-                                    .map(StoreSuitabilityCheck::valueOf)
-                                    .orElse(StoreSuitabilityCheck.EXISTING));
+    static final ThreadLocal<StoreSuitabilityCheck> storeSuitability = ThreadLocal.withInitial(
+            () -> Optional.ofNullable(GeoWebCacheExtensions.getProperty(GEOWEBCACHE_BLOBSTORE_SUITABILITY_CHECK))
+                    .map(StoreSuitabilityCheck::valueOf)
+                    .orElse(StoreSuitabilityCheck.EXISTING));
 
     /** Specifies how new blob stores should check the existing content of their persistence. */
     public static StoreSuitabilityCheck getStoreSuitabilityCheck() {
@@ -214,49 +210,45 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
     /** Adds the listener to all enabled blob stores */
     @Override
     public void addListener(BlobStoreListener listener) {
-        readAction(
-                () -> {
-                    this.listeners.addListener(
-                            listener); // save it for later in case setBlobStores is
-                    // called
-                    for (LiveStore bs : blobStores.values()) {
-                        if (bs.config.isEnabled()) {
-                            bs.liveInstance.addListener(listener);
-                        }
-                    }
-                });
+        readAction(() -> {
+            this.listeners.addListener(listener); // save it for later in case setBlobStores is
+            // called
+            for (LiveStore bs : blobStores.values()) {
+                if (bs.config.isEnabled()) {
+                    bs.liveInstance.addListener(listener);
+                }
+            }
+        });
     }
 
     /** Removes the listener from all the enabled blob stores */
     @Override
     public boolean removeListener(BlobStoreListener listener) {
-        return readFunction(
-                () -> {
-                    this.listeners.removeListener(listener);
-                    return blobStores.values().stream()
-                            .filter(bs -> bs.config.isEnabled())
-                            .map(bs -> bs.liveInstance.removeListener(listener))
-                            .collect(Collectors.reducing((x, y) -> x || y)) // Don't use anyMatch or
-                            // findFirst as we don't want it
-                            // to shortcut
-                            .orElse(false);
-                });
+        return readFunction(() -> {
+            this.listeners.removeListener(listener);
+            return blobStores.values().stream()
+                    .filter(bs -> bs.config.isEnabled())
+                    .map(bs -> bs.liveInstance.removeListener(listener))
+                    .collect(Collectors.reducing((x, y) -> x || y)) // Don't use anyMatch or
+                    // findFirst as we don't want it
+                    // to shortcut
+                    .orElse(false);
+        });
     }
 
     @Override
     public boolean rename(String oldLayerName, String newLayerName) throws StorageException {
-        return readFunctionUnsafe(
-                () -> {
-                    for (LiveStore bs : blobStores.values()) {
-                        BlobStoreInfo config = bs.config;
-                        if (config.isEnabled()) {
-                            if (bs.liveInstance.rename(oldLayerName, newLayerName)) {
-                                return true;
-                            }
-                        }
+        return readFunctionUnsafe(() -> {
+            for (LiveStore bs : blobStores.values()) {
+                BlobStoreInfo config = bs.config;
+                if (config.isEnabled()) {
+                    if (bs.liveInstance.rename(oldLayerName, newLayerName)) {
+                        return true;
                     }
-                    return false;
-                });
+                }
+            }
+            return false;
+        });
     }
 
     @Override
@@ -266,21 +258,15 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
 
     @Override
     public void putLayerMetadata(String layerName, String key, String value) {
-        readAction(
-                () -> {
-                    store(layerName).putLayerMetadata(layerName, key, value);
-                });
+        readAction(() -> {
+            store(layerName).putLayerMetadata(layerName, key, value);
+        });
     }
 
     @Override
     public boolean layerExists(String layerName) {
-        return readFunction(
-                () ->
-                        blobStores.values().stream()
-                                .anyMatch(
-                                        bs ->
-                                                bs.config.isEnabled()
-                                                        && bs.liveInstance.layerExists(layerName)));
+        return readFunction(() -> blobStores.values().stream()
+                .anyMatch(bs -> bs.config.isEnabled() && bs.liveInstance.layerExists(layerName)));
     }
 
     private BlobStore store(String layerId) throws StorageException {
@@ -292,8 +278,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
             throw new StorageException(e.getMessage(), e);
         }
         if (!store.config.isEnabled()) {
-            throw new StorageException(
-                    "Attempted to use a blob store that's disabled: " + store.config.getName());
+            throw new StorageException("Attempted to use a blob store that's disabled: " + store.config.getName());
         }
 
         return store.liveInstance;
@@ -380,8 +365,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
                 config.setBaseDirectory(defaultStorageFinder.getDefaultPath());
                 BlobStore store = new FileBlobStore(config.getBaseDirectory());
 
-                stores.put(
-                        CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID, new LiveStore(config, store));
+                stores.put(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID, new LiveStore(config, store));
             }
         } catch (ConfigurationException | StorageException e) {
             destroy(stores);
@@ -410,20 +394,17 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
 
         final String id = config.getName();
         final boolean enabled = config.isEnabled();
-        LiveStore defaultStore =
-                stores.getOrDefault(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID, null);
+        LiveStore defaultStore = stores.getOrDefault(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID, null);
 
         if (Strings.isNullOrEmpty(id)) {
             throw new ConfigurationException("No id provided for blob store " + config);
         }
         if (stores.containsKey(id)) {
-            throw new ConfigurationException(
-                    "Duplicate blob store id: " + id + ". Check your configuration.");
+            throw new ConfigurationException("Duplicate blob store id: " + id + ". Check your configuration.");
         }
         if (CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID.equals(id)) {
-            throw new ConfigurationException(
-                    CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID
-                            + " is a reserved identifier, please don't use it in the configuration");
+            throw new ConfigurationException(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID
+                    + " is a reserved identifier, please don't use it in the configuration");
         }
 
         BlobStore store = null;
@@ -437,27 +418,21 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
         if (config.isDefault()) {
             if (defaultStore == null || defaultStore.config.getName().equals(config.getName())) {
                 if (!enabled) {
-                    throw new ConfigurationException(
-                            "The default blob store can't be disabled: " + config.getName());
+                    throw new ConfigurationException("The default blob store can't be disabled: " + config.getName());
                 }
 
                 stores.put(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID, liveStore);
             } else {
                 throw new ConfigurationException(
-                        "Duplicate default blob store: "
-                                + defaultStore.config.getName()
-                                + " and "
-                                + config.getName());
+                        "Duplicate default blob store: " + defaultStore.config.getName() + " and " + config.getName());
             }
         }
         return liveStore;
     }
 
     @Override
-    public boolean deleteByParametersId(String layerName, String parametersId)
-            throws StorageException {
-        return readFunctionUnsafe(
-                () -> store(layerName).deleteByParametersId(layerName, parametersId));
+    public boolean deleteByParametersId(String layerName, String parametersId) throws StorageException {
+        return readFunctionUnsafe(() -> store(layerName).deleteByParametersId(layerName, parametersId));
     }
 
     @Override
@@ -498,21 +473,17 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
     }
 
     protected void readActionUnsafe(StorageAction function) throws StorageException {
-        readFunctionUnsafe(
-                (StorageAccessor<Void>)
-                        () -> {
-                            function.run();
-                            return null;
-                        });
+        readFunctionUnsafe((StorageAccessor<Void>) () -> {
+            function.run();
+            return null;
+        });
     }
 
     protected void readAction(StorageAction function) {
-        readFunction(
-                (StorageAccessor<Void>)
-                        () -> {
-                            function.run();
-                            return null;
-                        });
+        readFunction((StorageAccessor<Void>) () -> {
+            function.run();
+            return null;
+        });
     }
 
     @Override
@@ -521,8 +492,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
     }
 
     @Override
-    public void handleAddBlobStore(BlobStoreInfo newBlobStore)
-            throws ConfigurationException, StorageException {
+    public void handleAddBlobStore(BlobStoreInfo newBlobStore) throws ConfigurationException, StorageException {
         if (newBlobStore.isDefault()) {
             loadBlobStoreOverwritingDefault(blobStores, newBlobStore);
         } else {
@@ -531,26 +501,26 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
     }
 
     @Override
-    public void handleRemoveBlobStore(BlobStoreInfo removedBlobStore)
-            throws ConfigurationException, StorageException {
+    public void handleRemoveBlobStore(BlobStoreInfo removedBlobStore) throws ConfigurationException, StorageException {
         if (removedBlobStore
                 .getName()
                 .equals(blobStores.get(DEFAULT_STORE_DEFAULT_ID).config.getName())) {
-            throw new ConfigurationException(
-                    "The default blob store can't be removed: " + removedBlobStore.getName());
+            throw new ConfigurationException("The default blob store can't be removed: " + removedBlobStore.getName());
         }
         blobStores.remove(removedBlobStore.getName());
     }
 
     @Override
-    public void handleModifyBlobStore(BlobStoreInfo modifiedBlobStore)
-            throws ConfigurationException, StorageException {
+    public void handleModifyBlobStore(BlobStoreInfo modifiedBlobStore) throws ConfigurationException, StorageException {
         LiveStore removedStore = blobStores.remove(modifiedBlobStore.getName());
         try {
             if (modifiedBlobStore.isDefault()
                     && !modifiedBlobStore
                             .getName()
-                            .equals(blobStores.get(DEFAULT_STORE_DEFAULT_ID).config.getName())) {
+                            .equals(blobStores
+                                    .get(DEFAULT_STORE_DEFAULT_ID)
+                                    .config
+                                    .getName())) {
                 loadBlobStoreOverwritingDefault(blobStores, modifiedBlobStore);
             } else {
                 loadBlobStore(blobStores, modifiedBlobStore);
@@ -608,8 +578,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
      * @param stores The blobStores map to update
      * @param config The new default blob store
      */
-    private void loadBlobStoreOverwritingDefault(
-            Map<String, LiveStore> stores, BlobStoreInfo config)
+    private void loadBlobStoreOverwritingDefault(Map<String, LiveStore> stores, BlobStoreInfo config)
             throws StorageException, ConfigurationException {
         LiveStore oldDefaultStore = stores.get(DEFAULT_STORE_DEFAULT_ID);
         try {
@@ -646,9 +615,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
             case EMPTY:
                 if (!empty) {
                     throw new UnsuitableStorageException(
-                            "Attempted to create Blob Store in "
-                                    + location
-                                    + " but it was not empty");
+                            "Attempted to create Blob Store in " + location + " but it was not empty");
                 }
             case NONE:
         }

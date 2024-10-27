@@ -104,8 +104,7 @@ public class DefaultFilePathGenerator implements FilePathGenerator {
     }
 
     @Override
-    public void visitRange(File layerDirectory, TileRange range, TileFileVisitor visitor)
-            throws StorageException {
+    public void visitRange(File layerDirectory, TileRange range, TileFileVisitor visitor) throws StorageException {
         final FilenameFilter tileFinder = new DefaultFilePathFilter(range);
         File[] srsZoomDirs = listFilesNullSafe(layerDirectory, tileFinder);
 

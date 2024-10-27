@@ -81,8 +81,7 @@ public class TileLayerDispatcher
         this.tileLayerDispatcherFilter = tileLayerDispatcherFilter;
     }
 
-    public TileLayerDispatcher(
-            GridSetBroker gridSetBroker, TileLayerDispatcherFilter tileLayerDispatcherFilter) {
+    public TileLayerDispatcher(GridSetBroker gridSetBroker, TileLayerDispatcherFilter tileLayerDispatcherFilter) {
         this.gridSetBroker = gridSetBroker;
         this.tileLayerDispatcherFilter = tileLayerDispatcherFilter;
     }
@@ -111,13 +110,12 @@ public class TileLayerDispatcher
                 return layer.get();
             }
         }
-        throw new GeoWebCacheException(
-                "Thread "
-                        + Thread.currentThread().getName()
-                        + " Unknown layer "
-                        + layerName
-                        + ". Check the logfiles,"
-                        + " it may not have loaded properly.");
+        throw new GeoWebCacheException("Thread "
+                + Thread.currentThread().getName()
+                + " Unknown layer "
+                + layerName
+                + ". Check the logfiles,"
+                + " it may not have loaded properly.");
     }
 
     public int getLayerCount() {
@@ -165,9 +163,8 @@ public class TileLayerDispatcher
     public Iterable<TileLayer> getLayerListFiltered() {
         Iterable<TileLayer> result = getLayerList();
         if (tileLayerDispatcherFilter != null) {
-            Stream s =
-                    StreamSupport.stream(result.spliterator(), false)
-                            .filter(x -> !tileLayerDispatcherFilter.exclude(x));
+            Stream s = StreamSupport.stream(result.spliterator(), false)
+                    .filter(x -> !tileLayerDispatcherFilter.exclude(x));
             result = s::iterator;
         }
         return result;
@@ -249,20 +246,17 @@ public class TileLayerDispatcher
         return getConfiguration(tl.getName());
     }
 
-    public TileLayerConfiguration getConfiguration(final String tileLayerName)
-            throws IllegalArgumentException {
+    public TileLayerConfiguration getConfiguration(final String tileLayerName) throws IllegalArgumentException {
         Assert.notNull(tileLayerName, "tileLayerName is null");
         for (TileLayerConfiguration c : configs) {
             if (c.containsLayer(tileLayerName)) {
                 return c;
             }
         }
-        throw new IllegalArgumentException(
-                "No configuration found containing layer " + tileLayerName);
+        throw new IllegalArgumentException("No configuration found containing layer " + tileLayerName);
     }
 
-    public synchronized void addGridSet(final GridSet gridSet)
-            throws IllegalArgumentException, IOException {
+    public synchronized void addGridSet(final GridSet gridSet) throws IllegalArgumentException, IOException {
         if (null != gridSetBroker.get(gridSet.getName())) {
             throw new IllegalArgumentException("GridSet " + gridSet.getName() + " already exists");
         }
@@ -276,8 +270,7 @@ public class TileLayerDispatcher
     public synchronized void removeGridSet(String gridsetToRemove) {
         if (StreamSupport.stream(getLayerList().spliterator(), true)
                 .anyMatch(g -> Objects.nonNull(g.getGridSubset(gridsetToRemove)))) {
-            throw new IllegalStateException(
-                    "Can not remove gridset " + gridsetToRemove + " as it is used by layers");
+            throw new IllegalStateException("Can not remove gridset " + gridsetToRemove + " as it is used by layers");
         }
         gridSetBroker.removeGridSet(gridsetToRemove);
     }
@@ -292,10 +285,8 @@ public class TileLayerDispatcher
                 }
             }
         } catch (NoSuchElementException e) {
-            IllegalStateException wrappedException =
-                    new IllegalStateException(
-                            "Layer was found referencing gridset but was missing during recursive delete",
-                            e);
+            IllegalStateException wrappedException = new IllegalStateException(
+                    "Layer was found referencing gridset but was missing during recursive delete", e);
             try {
                 deletedLayers.forEach(this::addLayer);
             } catch (RuntimeException exceptionOnRestore) {
@@ -322,26 +313,19 @@ public class TileLayerDispatcher
         if (clazz == TileLayerConfiguration.class) {
             return (List<? extends T>) Collections.unmodifiableList(configs);
         } else {
-            return configs.stream()
-                    .filter(clazz::isInstance)
-                    .map(clazz::cast)
-                    .collect(Collectors.toList());
+            return configs.stream().filter(clazz::isInstance).map(clazz::cast).collect(Collectors.toList());
         }
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        this.configs =
-                GeoWebCacheExtensions.configurations(
-                        TileLayerConfiguration.class, applicationContext);
+        this.configs = GeoWebCacheExtensions.configurations(TileLayerConfiguration.class, applicationContext);
 
-        Map<String, BaseConfiguration> config =
-                applicationContext.getBeansOfType(BaseConfiguration.class);
+        Map<String, BaseConfiguration> config = applicationContext.getBeansOfType(BaseConfiguration.class);
         if (config != null && !config.isEmpty()) {
             for (Entry<String, BaseConfiguration> e : config.entrySet()) {
                 if (ServerConfiguration.class.isAssignableFrom(e.getValue().getClass())) {
-                    setServiceInformation(
-                            ((ServerConfiguration) e.getValue()).getServiceInformation());
+                    setServiceInformation(((ServerConfiguration) e.getValue()).getServiceInformation());
                 }
             }
         }

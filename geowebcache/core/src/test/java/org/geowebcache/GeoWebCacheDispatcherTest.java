@@ -45,7 +45,8 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 public class GeoWebCacheDispatcherTest {
 
-    @Rule public MockExtensionRule extensions = new MockExtensionRule();
+    @Rule
+    public MockExtensionRule extensions = new MockExtensionRule();
 
     @Test
     public void testHomePage() throws Exception {
@@ -69,8 +70,7 @@ public class GeoWebCacheDispatcherTest {
         stubs.replay();
 
         // Bean init
-        GeoWebCacheDispatcher dispatcher =
-                new GeoWebCacheDispatcher(tld, gsb, sb, bsa, config, rts);
+        GeoWebCacheDispatcher dispatcher = new GeoWebCacheDispatcher(tld, gsb, sb, bsa, config, rts);
         dispatcher.setApplicationContext(extensions.getMockContext());
         dispatcher.setDefaultStorageFinder(dfs);
         dispatcher.setSecurityDispatcher(secDisp);
@@ -111,23 +111,19 @@ public class GeoWebCacheDispatcherTest {
 
         request.setContextPath("/geowebcache");
 
-        ConveyorTile conv =
-                new ConveyorTile(
-                        sb,
-                        "testLayer",
-                        "testGrid",
-                        new long[] {1, 2, 3},
-                        ImageMime.png,
-                        Collections.emptyMap(),
-                        request,
-                        response);
+        ConveyorTile conv = new ConveyorTile(
+                sb,
+                "testLayer",
+                "testGrid",
+                new long[] {1, 2, 3},
+                ImageMime.png,
+                Collections.emptyMap(),
+                request,
+                response);
 
         layer.applyRequestFilters(conv);
         EasyMock.expectLastCall().anyTimes();
-        EasyMock.expect(
-                        testService.getConveyor(
-                                EasyMock.eq(request),
-                                EasyMock.anyObject(HttpServletResponse.class)))
+        EasyMock.expect(testService.getConveyor(EasyMock.eq(request), EasyMock.anyObject(HttpServletResponse.class)))
                 .andReturn(conv);
         EasyMock.expect(layer.getTile(conv)).andReturn(conv).once();
         EasyMock.expect(layer.getGridSubset("testGrid")).andStubReturn(subset);
@@ -145,8 +141,7 @@ public class GeoWebCacheDispatcherTest {
 
         // Bean init
         extensions.addBean("testService", testService, Service.class);
-        GeoWebCacheDispatcher dispatcher =
-                new GeoWebCacheDispatcher(tld, gsb, sb, bsa, config, rts);
+        GeoWebCacheDispatcher dispatcher = new GeoWebCacheDispatcher(tld, gsb, sb, bsa, config, rts);
         dispatcher.setApplicationContext(extensions.getMockContext());
         dispatcher.setDefaultStorageFinder(dfs);
         dispatcher.setSecurityDispatcher(secDisp);
@@ -189,23 +184,19 @@ public class GeoWebCacheDispatcherTest {
 
         request.setContextPath("/geowebcache");
 
-        ConveyorTile conv =
-                new ConveyorTile(
-                        sb,
-                        "testLayer",
-                        "testGrid",
-                        new long[] {1, 2, 3},
-                        ImageMime.png,
-                        Collections.emptyMap(),
-                        request,
-                        response);
+        ConveyorTile conv = new ConveyorTile(
+                sb,
+                "testLayer",
+                "testGrid",
+                new long[] {1, 2, 3},
+                ImageMime.png,
+                Collections.emptyMap(),
+                request,
+                response);
 
         layer.applyRequestFilters(conv);
         EasyMock.expectLastCall().anyTimes();
-        EasyMock.expect(
-                        testService.getConveyor(
-                                EasyMock.eq(request),
-                                EasyMock.anyObject(HttpServletResponse.class)))
+        EasyMock.expect(testService.getConveyor(EasyMock.eq(request), EasyMock.anyObject(HttpServletResponse.class)))
                 .andReturn(conv);
         // EasyMock.expect(layer.getTile(conv)).andReturn(conv).once(); // Intentionally don't
         // expect this
@@ -223,8 +214,7 @@ public class GeoWebCacheDispatcherTest {
 
         // Bean init
         extensions.addBean("testService", testService, Service.class);
-        GeoWebCacheDispatcher dispatcher =
-                new GeoWebCacheDispatcher(tld, gsb, sb, bsa, config, rts);
+        GeoWebCacheDispatcher dispatcher = new GeoWebCacheDispatcher(tld, gsb, sb, bsa, config, rts);
         dispatcher.setApplicationContext(extensions.getMockContext());
         dispatcher.setDefaultStorageFinder(dfs);
         dispatcher.setSecurityDispatcher(secDisp);

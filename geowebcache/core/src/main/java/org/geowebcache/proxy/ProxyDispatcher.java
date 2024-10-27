@@ -32,8 +32,8 @@ public class ProxyDispatcher extends AbstractController {
     private static long lastRequest = System.currentTimeMillis();
 
     @Override
-    protected ModelAndView handleRequestInternal(
-            HttpServletRequest request, HttpServletResponse response) throws Exception {
+    protected ModelAndView handleRequestInternal(HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
 
         String methStr = request.getMethod();
         if (!methStr.equalsIgnoreCase("POST")) {

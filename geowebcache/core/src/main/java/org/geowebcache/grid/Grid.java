@@ -42,8 +42,7 @@ public class Grid implements Serializable, Cloneable {
 
         if (numTilesHigh != other.numTilesHigh) return false;
 
-        if (Math.abs(other.resolution - resolution) / Math.abs(other.resolution + resolution)
-                > 0.005) return false;
+        if (Math.abs(other.resolution - resolution) / Math.abs(other.resolution + resolution) > 0.005) return false;
 
         return true;
     }

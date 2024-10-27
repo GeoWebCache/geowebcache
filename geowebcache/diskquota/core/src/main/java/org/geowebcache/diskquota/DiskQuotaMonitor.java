@@ -53,8 +53,7 @@ import org.springframework.util.Assert;
  *
  * @author Gabriel Roldan
  */
-public class DiskQuotaMonitor
-        implements DisposableBean, ApplicationListener<ContextRefreshedEvent> {
+public class DiskQuotaMonitor implements DisposableBean, ApplicationListener<ContextRefreshedEvent> {
 
     private static final Logger log = Logging.getLogger(DiskQuotaMonitor.class.getName());
 
@@ -116,10 +115,9 @@ public class DiskQuotaMonitor
 
         boolean disabled = Boolean.parseBoolean(storageFinder.findEnvVar(GWC_DISKQUOTA_DISABLED));
         if (disabled) {
-            log.warning(
-                    " -- Found environment variable "
-                            + GWC_DISKQUOTA_DISABLED
-                            + " set to true. DiskQuotaMonitor is disabled.");
+            log.warning(" -- Found environment variable "
+                    + GWC_DISKQUOTA_DISABLED
+                    + " set to true. DiskQuotaMonitor is disabled.");
         }
         this.diskQuotaEnabled = !disabled;
 
@@ -223,8 +221,7 @@ public class DiskQuotaMonitor
         }
     }
 
-    private void startUpInternal()
-            throws InterruptedException, ConfigurationException, IOException {
+    private void startUpInternal() throws InterruptedException, ConfigurationException, IOException {
         try {
             this.quotaConfig = configLoader.loadConfig();
         } catch (Exception e) {
@@ -369,16 +366,11 @@ public class DiskQuotaMonitor
 
             Quota usedQuota = quotaStore.getUsedQuotaByLayerName(layerName);
             if (usedQuota.getBytes().compareTo(BigInteger.ZERO) > 0) {
-                log.fine(
-                        "Using saved quota information for layer "
-                                + layerName
-                                + ": "
-                                + usedQuota.toNiceString());
+                log.fine("Using saved quota information for layer " + layerName + ": " + usedQuota.toNiceString());
             } else {
-                log.fine(
-                        layerName
-                                + " has no saved used quota information,"
-                                + "traversing layer cache to compute its disk usage.");
+                log.fine(layerName
+                        + " has no saved used quota information,"
+                        + "traversing layer cache to compute its disk usage.");
                 TileLayer tileLayer;
                 try {
                     tileLayer = tileLayerDispatcher.getTileLayer(layerName);
@@ -396,12 +388,10 @@ public class DiskQuotaMonitor
 
         final int numCleaningThreads = quotaConfig.getMaxConcurrentCleanUps();
         log.config("Setting up disk quota periodic enforcement task");
-        CustomizableThreadFactory tf =
-                new CustomizableThreadFactory("GWC DiskQuota clean up thread-");
+        CustomizableThreadFactory tf = new CustomizableThreadFactory("GWC DiskQuota clean up thread-");
         tf.setThreadPriority(1 + (Thread.MAX_PRIORITY - Thread.MIN_PRIORITY) / 5);
 
-        ScheduledExecutorService executorService =
-                Executors.newScheduledThreadPool(numCleaningThreads, tf);
+        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(numCleaningThreads, tf);
 
         return executorService;
     }
@@ -439,23 +429,19 @@ public class DiskQuotaMonitor
                 if (policyName != null) {
                     final Quota quota = layerQuota.getQuota();
                     explicitConfigs++;
-                    log.finer(
-                            "Attaching layer "
-                                    + layerName
-                                    + " to quota "
-                                    + quota
-                                    + " with expiration policy "
-                                    + policyName);
+                    log.finer("Attaching layer "
+                            + layerName
+                            + " to quota "
+                            + quota
+                            + " with expiration policy "
+                            + policyName);
                 }
             }
         }
         log.config(explicitConfigs + " layers configured with their own quotas. ");
         if (globalExpirationPolicy != null) {
             int globallyConfigured = tileLayerDispatcher.getLayerCount() - explicitConfigs;
-            log.config(
-                    globallyConfigured
-                            + " layers attached to global quota "
-                            + globalQuota.toNiceString());
+            log.config(globallyConfigured + " layers attached to global quota " + globalQuota.toNiceString());
         }
     }
 
@@ -497,8 +483,7 @@ public class DiskQuotaMonitor
      *
      * @see CacheCleaner#expireByLayerNames(Set, QuotaResolver, QuotaStore)
      */
-    public void expireByLayerNames(Set<String> layerNames, QuotaResolver quotaResolver)
-            throws InterruptedException {
+    public void expireByLayerNames(Set<String> layerNames, QuotaResolver quotaResolver) throws InterruptedException {
         cacheCleaner.expireByLayerNames(layerNames, quotaResolver, quotaStore);
     }
 }

@@ -32,8 +32,7 @@ public class OnlineAzureBlobStoreSuitabilityIT extends AzureBlobStoreSuitability
     public PropertiesLoader testConfigLoader = new PropertiesLoader();
 
     @Rule
-    public TemporaryAzureFolder tempFolder =
-            new TemporaryAzureFolder(testConfigLoader.getProperties());
+    public TemporaryAzureFolder tempFolder = new TemporaryAzureFolder(testConfigLoader.getProperties());
 
     @Override
     protected AzureBlobStoreData getConfiguration() {

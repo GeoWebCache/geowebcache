@@ -73,14 +73,11 @@ public class WMSGetCapabilities {
             URLMangler urlMangler) {
         this.tld = tld;
 
-        urlStr =
-                urlMangler.buildURL(baseUrl, contextPath, WMSService.SERVICE_PATH)
-                        + "?SERVICE=WMS&";
+        urlStr = urlMangler.buildURL(baseUrl, contextPath, WMSService.SERVICE_PATH) + "?SERVICE=WMS&";
 
         String[] tiledKey = {"TILED"};
-        Map<String, String> tiledValue =
-                ServletUtils.selectedStringsFromMap(
-                        servReq.getParameterMap(), servReq.getCharacterEncoding(), tiledKey);
+        Map<String, String> tiledValue = ServletUtils.selectedStringsFromMap(
+                servReq.getParameterMap(), servReq.getCharacterEncoding(), tiledKey);
 
         if (tiledValue != null && !tiledValue.isEmpty()) {
             includeVendorSpecific = Boolean.parseBoolean(tiledValue.get("TILED"));
@@ -256,8 +253,7 @@ public class WMSGetCapabilities {
         return xml;
     }
 
-    XMLBuilder capability(XMLBuilder xml, String name, Collection<String> formats, String url)
-            throws IOException {
+    XMLBuilder capability(XMLBuilder xml, String name, Collection<String> formats, String url) throws IOException {
         xml.indentElement(name);
 
         for (String format : formats) {
@@ -271,11 +267,7 @@ public class WMSGetCapabilities {
     }
 
     private void capabilityRequestGetCapabilities(XMLBuilder xml) throws IOException {
-        capability(
-                xml,
-                "GetCapabilities",
-                Collections.singleton("application/vnd.ogc.wms_xml"),
-                urlStr);
+        capability(xml, "GetCapabilities", Collections.singleton("application/vnd.ogc.wms_xml"), urlStr);
     }
 
     private void capabilityRequestGetMap(XMLBuilder xml) throws IOException {
@@ -331,16 +323,11 @@ public class WMSGetCapabilities {
     }
 
     private void capabilityRequestDescribeLayer(XMLBuilder xml) throws IOException {
-        capability(
-                xml, "DescribeLayer", Collections.singleton("application/vnd.ogc.wms_xml"), urlStr);
+        capability(xml, "DescribeLayer", Collections.singleton("application/vnd.ogc.wms_xml"), urlStr);
     }
 
     private void capabilityRequestGetLegendGraphic(XMLBuilder xml) throws IOException {
-        capability(
-                xml,
-                "GetLegendGraphic",
-                Arrays.asList("image/png", "image/jpeg", "image/gif"),
-                urlStr);
+        capability(xml, "GetLegendGraphic", Arrays.asList("image/png", "image/jpeg", "image/gif"), urlStr);
     }
 
     private void capabilityException(XMLBuilder xml) throws IOException {
@@ -376,8 +363,7 @@ public class WMSGetCapabilities {
                 for (String format : formats) {
                     for (String style : styles) {
                         try {
-                            capabilityVendorSpecificTileset(
-                                    xml, layer, grid, format, style, legendsInfo.get(style));
+                            capabilityVendorSpecificTileset(xml, layer, grid, format, style, legendsInfo.get(style));
                         } catch (GeoWebCacheException e) {
                             log.log(Level.SEVERE, e.getMessage());
                         }
@@ -413,12 +399,7 @@ public class WMSGetCapabilities {
     }
 
     private void capabilityVendorSpecificTileset(
-            XMLBuilder xml,
-            TileLayer layer,
-            GridSubset grid,
-            String formatStr,
-            String styleName,
-            LegendInfo legendInfo)
+            XMLBuilder xml, TileLayer layer, GridSubset grid, String formatStr, String styleName, LegendInfo legendInfo)
             throws GeoWebCacheException, IOException {
 
         String srsStr = grid.getSRS().toString();
@@ -460,24 +441,16 @@ public class WMSGetCapabilities {
      * XML encodes the provided legend information. If the provided information legend is NULL
      * nothing is done.
      */
-    private void encodeStyleLegendGraphic(XMLBuilder xml, LegendInfo legendInfo)
-            throws IOException {
+    private void encodeStyleLegendGraphic(XMLBuilder xml, LegendInfo legendInfo) throws IOException {
         if (legendInfo == null) {
             // nothing to do
             return;
         }
         // validate legend info (this attributes are mandatory for WMS 1.1.0, 1.1.1 and 1.3.0)
-        checkNotNull(
-                legendInfo.getWidth(), "Legend with is mandatory in WMS (1.1.0, 1.1.1 and 1.3.0).");
-        checkNotNull(
-                legendInfo.getHeight(),
-                "Legend height is mandatory in WMS (1.1.0, 1.1.1 and 1.3.0).");
-        checkNotNull(
-                legendInfo.getFormat(),
-                "Legend format is mandatory in WMS (1.1.0, 1.1.1 and 1.3.0).");
-        checkNotNull(
-                legendInfo.getLegendUrl(),
-                "Legend URL is mandatory in WMS (1.1.0, 1.1.1 and 1.3.0).");
+        checkNotNull(legendInfo.getWidth(), "Legend with is mandatory in WMS (1.1.0, 1.1.1 and 1.3.0).");
+        checkNotNull(legendInfo.getHeight(), "Legend height is mandatory in WMS (1.1.0, 1.1.1 and 1.3.0).");
+        checkNotNull(legendInfo.getFormat(), "Legend format is mandatory in WMS (1.1.0, 1.1.1 and 1.3.0).");
+        checkNotNull(legendInfo.getLegendUrl(), "Legend URL is mandatory in WMS (1.1.0, 1.1.1 and 1.3.0).");
         xml.indentElement("LegendURL");
         // add with and height attributes
         xml.attribute("width", String.valueOf(legendInfo.getWidth()));
@@ -496,10 +469,7 @@ public class WMSGetCapabilities {
     private void capabilityLayerOuter(XMLBuilder xml) throws IOException {
         xml.indentElement("Layer");
         xml.simpleElement("Title", "GeoWebCache WMS", true);
-        xml.simpleElement(
-                "Abstract",
-                "Note that not all GeoWebCache instances provide a full WMS service.",
-                true);
+        xml.simpleElement("Abstract", "Note that not all GeoWebCache instances provide a full WMS service.", true);
         xml.latLonBoundingBox(-180.0, -90.0, 180.0, 90.0);
 
         Iterable<TileLayer> layerIter = tld.getLayerListFiltered();
@@ -517,8 +487,7 @@ public class WMSGetCapabilities {
         xml.endElement();
     }
 
-    private void capabilityLayerInner(XMLBuilder xml, TileLayer layer)
-            throws GeoWebCacheException, IOException {
+    private void capabilityLayerInner(XMLBuilder xml, TileLayer layer) throws GeoWebCacheException, IOException {
         xml.indentElement("Layer");
 
         if (layer.isQueryable()) {
@@ -540,8 +509,7 @@ public class WMSGetCapabilities {
                 xml.indentElement("MetadataURL");
                 xml.attribute("type", metadataURL.getType());
                 xml.simpleElement("Format", metadataURL.getFormat(), true);
-                onlineResource(
-                        xml, metadataURL.getUrl().toString()); // TODO should this be URLEncoded?
+                onlineResource(xml, metadataURL.getUrl().toString()); // TODO should this be URLEncoded?
                 xml.endElement();
             }
         }

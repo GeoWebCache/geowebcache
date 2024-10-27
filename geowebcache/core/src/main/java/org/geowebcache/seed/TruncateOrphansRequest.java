@@ -31,8 +31,7 @@ public class TruncateOrphansRequest implements MassTruncateRequest {
     String layerName;
 
     @Override
-    public boolean doTruncate(StorageBroker sb, TileBreeder breeder)
-            throws GeoWebCacheException, StorageException {
+    public boolean doTruncate(StorageBroker sb, TileBreeder breeder) throws GeoWebCacheException, StorageException {
         final TileLayer layer = breeder.findTileLayer(layerName);
         return sb.purgeOrphans(layer);
     }

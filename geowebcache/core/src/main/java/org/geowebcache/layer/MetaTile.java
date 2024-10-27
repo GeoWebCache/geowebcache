@@ -140,9 +140,7 @@ public class MetaTile implements TileResponseReceiver {
         this.metaY = metaY;
         this.gutterConfig = responseFormat.isVector() || gutter == null ? 0 : gutter.intValue();
 
-        metaGridCov =
-                calculateMetaTileGridBounds(
-                        gridSubset.getCoverage((int) tileGridPosition[2]), tileGridPosition);
+        metaGridCov = calculateMetaTileGridBounds(gridSubset.getCoverage((int) tileGridPosition[2]), tileGridPosition);
         tilesGridPositions = calculateTilesGridPositions();
         calculateEdgeGutter();
         int tileHeight = gridSubset.getTileHeight();
@@ -259,21 +257,15 @@ public class MetaTile implements TileResponseReceiver {
         try {
             // ImageIO.read closes the stream, and the stream throws exception on second close call
             @SuppressWarnings("PMD.CloseResource")
-            ImageInputStream imgStream =
-                    new ResourceImageInputStream(((ByteArrayResource) buffer).getInputStream());
+            ImageInputStream imgStream = new ResourceImageInputStream(((ByteArrayResource) buffer).getInputStream());
             RenderedImage metaTiledImage = ImageIO.read(imgStream); // read closes the stream for us
             setImage(metaTiledImage);
         } catch (IOException ioe) {
             throw new GeoWebCacheException(
-                    "WMSMetaTile.setImageBytes() "
-                            + "failed on ImageIO.read(byte["
-                            + buffer.getSize()
-                            + "])",
-                    ioe);
+                    "WMSMetaTile.setImageBytes() " + "failed on ImageIO.read(byte[" + buffer.getSize() + "])", ioe);
         }
         if (metaTileImage == null) {
-            throw new GeoWebCacheException(
-                    "ImageIO.read(InputStream) returned null. Unable to read image.");
+            throw new GeoWebCacheException("ImageIO.read(InputStream) returned null. Unable to read image.");
         }
     }
 
@@ -313,26 +305,23 @@ public class MetaTile implements TileResponseReceiver {
      * @param tileHeight height of the tile
      * @return a rendered image of the specified meta tile region
      */
-    public RenderedImage createTile(
-            final int minX, final int minY, final int tileWidth, final int tileHeight) {
+    public RenderedImage createTile(final int minX, final int minY, final int tileWidth, final int tileHeight) {
 
         // optimize if we get a bufferedimage
         if (metaTileImage instanceof BufferedImage) {
-            BufferedImage subimage =
-                    ((BufferedImage) metaTileImage).getSubimage(minX, minY, tileWidth, tileHeight);
+            BufferedImage subimage = ((BufferedImage) metaTileImage).getSubimage(minX, minY, tileWidth, tileHeight);
             return new BufferedImageAdapter(subimage);
         }
 
         // do a crop, and then turn it into a buffered image so that we can release
         // the image chain
-        PlanarImage cropped =
-                CropDescriptor.create(
-                        metaTileImage,
-                        Float.valueOf(minX),
-                        Float.valueOf(minY),
-                        Float.valueOf(tileWidth),
-                        Float.valueOf(tileHeight),
-                        NO_CACHE);
+        PlanarImage cropped = CropDescriptor.create(
+                metaTileImage,
+                Float.valueOf(minX),
+                Float.valueOf(minY),
+                Float.valueOf(tileWidth),
+                Float.valueOf(tileHeight),
+                NO_CACHE);
         if (nativeAccelAvailable()) {
             log.finer("created cropped tile");
             return cropped;
@@ -364,8 +353,7 @@ public class MetaTile implements TileResponseReceiver {
         }
 
         Rectangle tileRegion = tiles[tileIdx];
-        RenderedImage tile =
-                createTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height);
+        RenderedImage tile = createTile(tileRegion.x, tileRegion.y, tileRegion.width, tileRegion.height);
         disposeLater(tile);
 
         // TODO should we recycle the writers ?
@@ -398,12 +386,7 @@ public class MetaTile implements TileResponseReceiver {
     }
 
     public String debugString() {
-        return " metaX: "
-                + metaX
-                + " metaY: "
-                + metaY
-                + " metaGridCov: "
-                + Arrays.toString(metaGridCov);
+        return " metaX: " + metaX + " metaY: " + metaY + " metaGridCov: " + Arrays.toString(metaGridCov);
     }
 
     /**

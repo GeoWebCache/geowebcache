@@ -62,8 +62,7 @@ public class HttpClientRule extends ExternalResource {
             try {
                 client.close();
             } catch (IOException e) {
-                throw new AssertionError(
-                        "Unexpected exception while closing HTTP Client " + name, e);
+                throw new AssertionError("Unexpected exception while closing HTTP Client " + name, e);
             }
         }
     }

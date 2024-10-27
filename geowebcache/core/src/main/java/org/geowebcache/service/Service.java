@@ -49,25 +49,19 @@ public abstract class Service {
     // TODO these should be renamed / removed
     public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response)
             throws GeoWebCacheException, OWSException {
-        throw new ServiceException(
-                "Service for "
-                        + pathName
-                        + " needs to override "
-                        + "getConveyor(HttpSerlvetRequest,HttpServletResponse)");
+        throw new ServiceException("Service for "
+                + pathName
+                + " needs to override "
+                + "getConveyor(HttpSerlvetRequest,HttpServletResponse)");
     }
 
     public void handleRequest(Conveyor conv) throws GeoWebCacheException, OWSException {
         throw new RuntimeException(
-                "Service for "
-                        + pathName
-                        + " needs to override "
-                        + "handleRequest(TileLayerDispatcher, Tile)");
+                "Service for " + pathName + " needs to override " + "handleRequest(TileLayerDispatcher, Tile)");
     }
 
     protected String getLayersParameter(HttpServletRequest request) throws ServiceException {
-        String layers =
-                ServletUtils.stringFromMap(
-                        request.getParameterMap(), request.getCharacterEncoding(), "layers");
+        String layers = ServletUtils.stringFromMap(request.getParameterMap(), request.getCharacterEncoding(), "layers");
         if (layers == null) {
             throw new ServiceException("Unable to parse layers parameter from request.");
         }
@@ -96,10 +90,7 @@ public abstract class Service {
     }
 
     protected static void writeTileResponse(
-            ConveyorTile conv,
-            boolean writeExpiration,
-            RuntimeStats stats,
-            String mimeTypeOverride) {
+            ConveyorTile conv, boolean writeExpiration, RuntimeStats stats, String mimeTypeOverride) {
         HttpServletResponse response = conv.servletResp;
         Resource data = conv.getBlob();
 

@@ -78,10 +78,7 @@ public class ImageEncoderImpl implements ImageEncoder {
                 "image/png;%20mode=24bit") {
             @Override
             public ImageWriteParam prepareParameters(
-                    ImageWriter writer,
-                    String compression,
-                    boolean compressUsed,
-                    float compressionRate) {
+                    ImageWriter writer, String compression, boolean compressUsed, float compressionRate) {
                 ImageWriteParam params = null;
 
                 if (writer instanceof CLibImageWriter) {
@@ -118,10 +115,7 @@ public class ImageEncoderImpl implements ImageEncoder {
         JPEG("image/jpeg") {
             @Override
             protected ImageWriteParam prepareParameters(
-                    ImageWriter writer,
-                    String compression,
-                    boolean compressUsed,
-                    float compressionRate) {
+                    ImageWriter writer, String compression, boolean compressUsed, float compressionRate) {
                 ImageWriteParam params = writer.getDefaultWriteParam();
                 params.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                 if (compressUsed) {
@@ -168,9 +162,7 @@ public class ImageEncoderImpl implements ImageEncoder {
             String compression = inputParams.get("COMPRESSION");
             // Boolean indicating if compression is present
             boolean compressUsed =
-                    compression != null
-                            && !compression.isEmpty()
-                            && !compression.equalsIgnoreCase("null");
+                    compression != null && !compression.isEmpty() && !compression.equalsIgnoreCase("null");
             // Selection of the compression rate
             String compressionRateValue = inputParams.get("COMPRESSION_RATE");
             // Initial value for the compression rate
@@ -184,17 +176,13 @@ public class ImageEncoderImpl implements ImageEncoder {
                 }
             }
             // Creation of the ImageWriteParams
-            ImageWriteParam params =
-                    prepareParameters(writer, compression, compressUsed, compressionRate);
+            ImageWriteParam params = prepareParameters(writer, compression, compressUsed, compressionRate);
 
             return params;
         }
 
         protected ImageWriteParam prepareParameters(
-                ImageWriter writer,
-                String compression,
-                boolean compressUsed,
-                float compressionRate) {
+                ImageWriter writer, String compression, boolean compressUsed, float compressionRate) {
             // Parameters creation
             ImageWriteParam params = writer.getDefaultWriteParam();
             params.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
@@ -363,8 +351,7 @@ public class ImageEncoderImpl implements ImageEncoder {
             try {
 
                 Class<?> clazz = Class.forName(spi);
-                ImageWriterSpi writer =
-                        (ImageWriterSpi) theRegistry.getServiceProviderByClass(clazz);
+                ImageWriterSpi writer = (ImageWriterSpi) theRegistry.getServiceProviderByClass(clazz);
                 if (writer != null) {
                     this.spi = writer;
                     break;

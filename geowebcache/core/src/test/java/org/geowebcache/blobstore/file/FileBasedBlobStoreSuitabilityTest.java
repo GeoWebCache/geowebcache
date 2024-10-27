@@ -34,7 +34,8 @@ import org.junit.rules.TemporaryFolder;
 /** Tests persistence suitability checks for BlobStores that use the file system for persistence. */
 public abstract class FileBasedBlobStoreSuitabilityTest extends BlobStoreSuitabilityTest {
 
-    @ClassRule public static TemporaryFolder temp = new TemporaryFolder();
+    @ClassRule
+    public static TemporaryFolder temp = new TemporaryFolder();
 
     @Override
     public abstract BlobStore create(Object dir) throws Exception;

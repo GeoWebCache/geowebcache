@@ -142,18 +142,13 @@ public class HazelcastLoader implements InitializingBean {
                 LOGGER.fine("Checking configuration");
             }
             // Check if the cache map is present
-            if (config.getMapConfigs()
-                    .containsKey(HazelcastCacheProvider.HAZELCAST_MAP_DEFINITION)) {
-                MapConfig mapConfig =
-                        config.getMapConfig(HazelcastCacheProvider.HAZELCAST_MAP_DEFINITION);
+            if (config.getMapConfigs().containsKey(HazelcastCacheProvider.HAZELCAST_MAP_DEFINITION)) {
+                MapConfig mapConfig = config.getMapConfig(HazelcastCacheProvider.HAZELCAST_MAP_DEFINITION);
                 // Check size policy
                 boolean sizeDefined = mapConfig.getEvictionConfig().getSize() > 0;
                 boolean policyExists =
-                        mapConfig.getEvictionConfig().getEvictionPolicy()
-                                != MapConfig.DEFAULT_EVICTION_POLICY;
-                boolean sizeFromHeap =
-                        mapConfig.getEvictionConfig().getMaxSizePolicy()
-                                == MaxSizePolicy.USED_HEAP_SIZE;
+                        mapConfig.getEvictionConfig().getEvictionPolicy() != MapConfig.DEFAULT_EVICTION_POLICY;
+                boolean sizeFromHeap = mapConfig.getEvictionConfig().getMaxSizePolicy() == MaxSizePolicy.USED_HEAP_SIZE;
 
                 // Check Near Cache size
                 boolean nearCacheAccepted = true;

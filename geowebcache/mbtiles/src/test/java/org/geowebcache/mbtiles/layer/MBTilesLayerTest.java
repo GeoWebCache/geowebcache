@@ -62,11 +62,8 @@ public class MBTilesLayerTest {
 
     private static final double DELTA = 1E-6;
 
-    private static final Set<String> TEST_FIELDS =
-            new HashSet<>(
-                    Arrays.asList(
-                            "_zoom", "_row", "_col", "ID", "Costant", "Zeroval", "IntVal",
-                            "Double1", "Double2", "Double3"));
+    private static final Set<String> TEST_FIELDS = new HashSet<>(Arrays.asList(
+            "_zoom", "_row", "_col", "ID", "Costant", "Zeroval", "IntVal", "Double1", "Double2", "Double3"));
 
     private static final String TEST_POINTS_FILENAME = "manypoints_test.mbtiles";
 
@@ -79,7 +76,9 @@ public class MBTilesLayerTest {
         config = getConfig();
     }
 
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
+
     protected File configDir;
     protected File configFile;
 
@@ -95,32 +94,20 @@ public class MBTilesLayerTest {
 
             File lakesFile = temp.newFile("world_lakes.mbtiles");
             URL source = MBTilesLayerTest.class.getResource("world_lakes.mbtiles");
-            Files.copy(
-                    Paths.get(source.toURI()),
-                    lakesFile.toPath(),
-                    StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(Paths.get(source.toURI()), lakesFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
             File pointsFile = temp.newFile(TEST_POINTS_FILENAME);
             source = MBTilesLayerTest.class.getResource(TEST_POINTS_FILENAME);
-            Files.copy(
-                    Paths.get(source.toURI()),
-                    pointsFile.toPath(),
-                    StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(Paths.get(source.toURI()), pointsFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
             source = MBTilesLayerTest.class.getResource("geowebcache.xml");
             try (Stream<String> lines = Files.lines(Paths.get(source.toURI()))) {
-                List<String> replaced =
-                        lines.map(
-                                        line -> {
-                                            return line.replace(
-                                                            "world_lakes.mbtiles",
-                                                            lakesFile.getAbsolutePath())
-                                                    .replace(
-                                                            TEST_POINTS_FILENAME,
-                                                            pointsFile.getAbsolutePath())
-                                                    .replace("\\", "\\\\");
-                                        })
-                                .collect(Collectors.toList());
+                List<String> replaced = lines.map(line -> {
+                            return line.replace("world_lakes.mbtiles", lakesFile.getAbsolutePath())
+                                    .replace(TEST_POINTS_FILENAME, pointsFile.getAbsolutePath())
+                                    .replace("\\", "\\\\");
+                        })
+                        .collect(Collectors.toList());
                 Files.write(configFile.toPath(), replaced);
             }
         }
@@ -163,16 +150,15 @@ public class MBTilesLayerTest {
         assertEquals(0, subset.getZoomStart());
         assertEquals(ApplicationMime.mapboxVector, mbTilesLayer.getMimeTypes().get(0));
 
-        ConveyorTile conveyorTile =
-                new ConveyorTile(
-                        null,
-                        testLayer.getId(),
-                        subset.getName(),
-                        new long[] {4L, 4L, 3L},
-                        ApplicationMime.mapboxVector,
-                        null,
-                        null,
-                        null);
+        ConveyorTile conveyorTile = new ConveyorTile(
+                null,
+                testLayer.getId(),
+                subset.getName(),
+                new long[] {4L, 4L, 3L},
+                ApplicationMime.mapboxVector,
+                null,
+                null,
+                null);
 
         conveyorTile = testLayer.getTile(conveyorTile);
         VectorTileDecoder decoder = new VectorTileDecoder();
@@ -207,10 +193,7 @@ public class MBTilesLayerTest {
         assertEquals("testName", tileJson.getName());
         assertEquals(0, tileJson.getMinZoom().intValue());
         assertEquals(6, tileJson.getMaxZoom().intValue());
-        assertArrayEquals(
-                new double[] {38.221435, 38.856820, 41.495361, 40.763901},
-                tileJson.getBounds(),
-                DELTA);
+        assertArrayEquals(new double[] {38.221435, 38.856820, 41.495361, 40.763901}, tileJson.getBounds(), DELTA);
         assertArrayEquals(new double[] {41.495361, 38.856820, 6}, tileJson.getCenter(), DELTA);
 
         List<VectorLayerMetadata> layers = tileJson.getLayers();
@@ -234,38 +217,35 @@ public class MBTilesLayerTest {
     @Test
     public void testOutsideRange() throws GeoWebCacheException, IOException {
         MBTilesLayer testLayer = (MBTilesLayer) config.getLayer("testName").get();
-        ConveyorTile conveyorTile =
-                new ConveyorTile(
-                        null,
-                        testLayer.getId(),
-                        "EPSG:900913",
-                        new long[] {38L, 42L, 6L},
-                        ApplicationMime.mapboxVector,
-                        null,
-                        null,
-                        null);
+        ConveyorTile conveyorTile = new ConveyorTile(
+                null,
+                testLayer.getId(),
+                "EPSG:900913",
+                new long[] {38L, 42L, 6L},
+                ApplicationMime.mapboxVector,
+                null,
+                null,
+                null);
         OutsideCoverageException exception =
                 assertThrows(OutsideCoverageException.class, () -> testLayer.getTile(conveyorTile));
         assertThat(
                 exception.getMessage(),
-                containsString(
-                        "Coverage [minx,miny,maxx,maxy] is [38, 39, 39, 39, 6], index [x,y,z] is [38, 42, 6]"));
+                containsString("Coverage [minx,miny,maxx,maxy] is [38, 39, 39, 39, 6], index [x,y,z] is [38, 42, 6]"));
     }
 
     @Test
     public void testEmptyTile() throws GeoWebCacheException, IOException {
         try {
             MBTilesLayer testLayer = (MBTilesLayer) config.getLayer("testName").get();
-            ConveyorTile conveyorTile =
-                    new ConveyorTile(
-                            null,
-                            testLayer.getId(),
-                            "EPSG:900913",
-                            new long[] {38L, 39L, 6L},
-                            ApplicationMime.mapboxVector,
-                            null,
-                            null,
-                            null);
+            ConveyorTile conveyorTile = new ConveyorTile(
+                    null,
+                    testLayer.getId(),
+                    "EPSG:900913",
+                    new long[] {38L, 39L, 6L},
+                    ApplicationMime.mapboxVector,
+                    null,
+                    null,
+                    null);
             testLayer.getTile(conveyorTile);
         } catch (EmptyTileException e) {
             assertEquals(ApplicationMime.mapboxVector, e.getMime());

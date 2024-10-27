@@ -37,7 +37,8 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
 
     private static final long serialVersionUID = 4376471696761297546L;
 
-    @Deprecated static final int DEFAULT_DISK_BLOCK_SIZE = 4096;
+    @Deprecated
+    static final int DEFAULT_DISK_BLOCK_SIZE = 4096;
 
     static final int DEFAULT_CLEANUP_FREQUENCY = 10;
 
@@ -191,8 +192,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
 
     public void setMaxConcurrentCleanUps(int nThreads) {
         if (nThreads <= 0) {
-            throw new IllegalArgumentException(
-                    "maxConcurrentCleanUps shall be a positive integer: " + nThreads);
+            throw new IllegalArgumentException("maxConcurrentCleanUps shall be a positive integer: " + nThreads);
         }
         this.maxConcurrentCleanUps = nThreads;
     }

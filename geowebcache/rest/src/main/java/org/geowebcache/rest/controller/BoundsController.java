@@ -36,7 +36,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "${gwc.context.suffix:}/rest")
 public class BoundsController extends GWCController {
-    @Autowired TileLayerDispatcher tld;
+    @Autowired
+    TileLayerDispatcher tld;
 
     @ExceptionHandler(RestException.class)
     public ResponseEntity<?> handleRestException(RestException ex) {
@@ -88,8 +89,7 @@ public class BoundsController extends GWCController {
 
             return new ResponseEntity<>(str.toString(), HttpStatus.OK);
         } else {
-            throw new RestException(
-                    "Unknown or missing format extension : " + type, HttpStatus.BAD_REQUEST);
+            throw new RestException("Unknown or missing format extension : " + type, HttpStatus.BAD_REQUEST);
         }
     }
 

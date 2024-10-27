@@ -20,6 +20,5 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.rest.exception.RestException;
 
 public abstract class XmlFilterUpdate {
-    public abstract void runUpdate(RequestFilter filter, TileLayer tl)
-            throws IOException, RestException;
+    public abstract void runUpdate(RequestFilter filter, TileLayer tl) throws IOException, RestException;
 }

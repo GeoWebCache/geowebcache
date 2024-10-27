@@ -28,12 +28,11 @@ abstract class SqliteBlobStore implements BlobStore {
     protected SqliteBlobStore(SqliteInfo configuration, SqliteConnectionManager connectionManager) {
         this.configuration = configuration;
 
-        this.fileManager =
-                new FileManager(
-                        configuration.getRootDirectoryFile(),
-                        configuration.getTemplatePath(),
-                        configuration.getRowRangeCount(),
-                        configuration.getColumnRangeCount());
+        this.fileManager = new FileManager(
+                configuration.getRootDirectoryFile(),
+                configuration.getTemplatePath(),
+                configuration.getRowRangeCount(),
+                configuration.getColumnRangeCount());
         this.connectionManager = connectionManager;
     }
 

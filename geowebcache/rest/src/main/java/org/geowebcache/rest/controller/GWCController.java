@@ -49,8 +49,7 @@ public class GWCController {
         try {
             layer = layerDispatcher.getTileLayer(layerName);
         } catch (GeoWebCacheException gwce) {
-            throw new RestException(
-                    "Encountered error: " + gwce.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new RestException("Encountered error: " + gwce.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return layer;

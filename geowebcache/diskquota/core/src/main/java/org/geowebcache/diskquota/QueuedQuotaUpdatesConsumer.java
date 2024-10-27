@@ -173,15 +173,13 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long> {
     public Long call() {
         while (true) {
             if (Thread.interrupted()) {
-                log.fine(
-                        "Job "
-                                + getClass().getSimpleName()
-                                + " finished due to interrupted thread.");
+                log.fine("Job " + getClass().getSimpleName() + " finished due to interrupted thread.");
                 break;
             }
 
             if (terminate) {
-                log.fine("Exiting on explicit termination request: " + getClass().getSimpleName());
+                log.fine(
+                        "Exiting on explicit termination request: " + getClass().getSimpleName());
                 break;
             }
 
@@ -268,24 +266,19 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long> {
      * @return {@code true} if it's ok to prune the timedUpdate from the {@link
      *     #aggregatedDelayedUpdates local cache}
      */
-    private boolean checkAggregatedTimeout(TimedQuotaUpdate timedUpadte)
-            throws InterruptedException {
+    private boolean checkAggregatedTimeout(TimedQuotaUpdate timedUpadte) throws InterruptedException {
         final long creationTime = timedUpadte.creationTime;
         long timeSinceLastCommit = System.currentTimeMillis() - creationTime;
         boolean timeout = timeSinceLastCommit >= DEFAULT_SYNC_TIMEOUT;
         final int numAggregations = timedUpadte.numAggregations;
         boolean tooManyPendingCommits = numAggregations >= MAX_AGGREGATES_BEFORE_COMMIT;
-        boolean canWaitABitLonger =
-                timeSinceLastCommit < 2000 && timedUpadte.tilePages.size() < 1000;
+        boolean canWaitABitLonger = timeSinceLastCommit < 2000 && timedUpadte.tilePages.size() < 1000;
         if (!canWaitABitLonger && (timeout || tooManyPendingCommits)) {
             if (log.isLoggable(Level.FINE)) {
-                log.fine(
-                        "Committing "
-                                + timedUpadte
-                                + " to quota store due to "
-                                + (tooManyPendingCommits
-                                        ? "too many pending commits"
-                                        : "max wait time reached"));
+                log.fine("Committing "
+                        + timedUpadte
+                        + " to quota store due to "
+                        + (tooManyPendingCommits ? "too many pending commits" : "max wait time reached"));
             }
             commit(timedUpadte);
             return true;
@@ -298,8 +291,7 @@ public class QueuedQuotaUpdatesConsumer implements Callable<Long> {
         final TileSet tileSet = aggregatedUpadte.getTileSet();
         final Quota quotaDiff = aggregatedUpadte.getAccummulatedQuotaDifference();
 
-        Collection<PageStatsPayload> tileCountDiffs =
-                new ArrayList<>(aggregatedUpadte.getAccummulatedTilePageCounts());
+        Collection<PageStatsPayload> tileCountDiffs = new ArrayList<>(aggregatedUpadte.getAccummulatedTilePageCounts());
 
         if (quotaDiff.getBytes().compareTo(BigInteger.ZERO) == 0 && tileCountDiffs.isEmpty()) {
             return;

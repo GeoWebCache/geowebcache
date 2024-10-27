@@ -50,8 +50,6 @@ public class FileUtilsTest {
         Assert.assertEquals(5, FilePathUtils.findZoomLevel("nyc", "nyc_05_01"));
         Assert.assertEquals(9, FilePathUtils.findZoomLevel("EPSG_4326", "EPSG_4326_09"));
         Assert.assertEquals(9, FilePathUtils.findZoomLevel("EPSG_4326", "EPSG_4326_09_21"));
-        Assert.assertEquals(
-                7,
-                FilePathUtils.findZoomLevel("My_Weird_Gridset_Name", "My_Weird_Gridset_Name_0007"));
+        Assert.assertEquals(7, FilePathUtils.findZoomLevel("My_Weird_Gridset_Name", "My_Weird_Gridset_Name_0007"));
     }
 }

@@ -50,8 +50,7 @@ public interface BlobStore {
      *
      * @return {@literal true} if successful, {@literal false} otherwise
      */
-    public boolean deleteByGridsetId(final String layerName, final String gridSetId)
-            throws StorageException;
+    public boolean deleteByGridsetId(final String layerName, final String gridSetId) throws StorageException;
 
     /**
      * Delete the cache for the named layer and parameters.
@@ -59,8 +58,8 @@ public interface BlobStore {
      * @param parameters Complete filtered parameters to generate the ID
      * @return {@literal true} if successful, {@literal false} otherwise
      */
-    public default boolean deleteByParameters(
-            final String layerName, final Map<String, String> parameters) throws StorageException {
+    public default boolean deleteByParameters(final String layerName, final Map<String, String> parameters)
+            throws StorageException {
         return deleteByParametersId(layerName, ParametersUtils.getId(parameters));
     }
 
@@ -69,8 +68,7 @@ public interface BlobStore {
      *
      * @return {@literal true} if successful, {@literal false} otherwise
      */
-    public boolean deleteByParametersId(final String layerName, String parametersId)
-            throws StorageException;
+    public boolean deleteByParametersId(final String layerName, String parametersId) throws StorageException;
 
     /**
      * Delete the cached blob associated with the specified TileObject. The passed in object itself
@@ -120,8 +118,7 @@ public interface BlobStore {
     public boolean removeListener(BlobStoreListener listener);
 
     /** Get the cached parameter maps for a layer */
-    public default Set<Map<String, String>> getParameters(String layerName)
-            throws StorageException {
+    public default Set<Map<String, String>> getParameters(String layerName) throws StorageException {
         return getParametersMapping(layerName).values().stream()
                 .filter(Optional::isPresent)
                 .map(Optional::get)
@@ -184,44 +181,40 @@ public interface BlobStore {
             final List<ParameterFilter> parameterFilters = layer.getParameterFilters();
 
             // Given known parameter mapping, figures out if the parameters need to be purged
-            final Function<Map<String, String>, Boolean> parametersNeedPurge =
-                    parameters -> {
-                        return parameters.size() != parameterFilters.size()
-                                || // Should have the same number of parameters as the layer has
-                                // filters
-                                parameterFilters.stream()
-                                        .allMatch(
-                                                pfilter -> { // Do all the parameter filters on the
-                                                    // layer consider their parameter legal
-                                                    final String key = pfilter.getKey();
-                                                    final String value = parameters.get(key);
-                                                    if (Objects.isNull(value)) {
-                                                        return true; // No parameter for this filter
-                                                        // so purge
-                                                    }
-                                                    return !pfilter.isFilteredValue(
-                                                            value); // purge if it's not a filtered
-                                                    // value
-                                                });
-                    };
+            final Function<Map<String, String>, Boolean> parametersNeedPurge = parameters -> {
+                return parameters.size() != parameterFilters.size()
+                        || // Should have the same number of parameters as the layer has
+                        // filters
+                        parameterFilters.stream()
+                                .allMatch(
+                                        pfilter -> { // Do all the parameter filters on the
+                                            // layer consider their parameter legal
+                                            final String key = pfilter.getKey();
+                                            final String value = parameters.get(key);
+                                            if (Objects.isNull(value)) {
+                                                return true; // No parameter for this filter
+                                                // so purge
+                                            }
+                                            return !pfilter.isFilteredValue(value); // purge if it's not a filtered
+                                            // value
+                                        });
+            };
 
             return getParametersMapping(layer.getName()).entrySet().stream()
-                    .filter(
-                            parameterMapping -> {
-                                return parameterMapping
-                                        .getValue()
-                                        .map(parametersNeedPurge)
-                                        .orElse(true); // Don't have the original values so purge
-                            })
+                    .filter(parameterMapping -> {
+                        return parameterMapping
+                                .getValue()
+                                .map(parametersNeedPurge)
+                                .orElse(true); // Don't have the original values so purge
+                    })
                     .map(Map.Entry::getKey) // The parameter id
-                    .map(
-                            id -> {
-                                try {
-                                    return this.deleteByParametersId(layer.getName(), id);
-                                } catch (StorageException e) {
-                                    throw new UncheckedIOException(e);
-                                }
-                            })
+                    .map(id -> {
+                        try {
+                            return this.deleteByParametersId(layer.getName(), id);
+                        } catch (StorageException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    })
                     .reduce((x, y) -> x || y) // OR results without short circuiting
                     .orElse(false);
         } catch (UncheckedIOException ex) {

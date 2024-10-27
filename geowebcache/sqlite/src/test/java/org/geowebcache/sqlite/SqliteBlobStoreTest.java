@@ -40,22 +40,10 @@ public final class SqliteBlobStoreTest extends TestSupport {
         MbtilesBlobStore storeB = new MbtilesBlobStore(configurationB);
         addStoresToClean(storeA, storeB);
         // create the tiles that will be stored
-        TileObject putTileA =
-                TileObject.createCompleteTileObject(
-                        "africa",
-                        new long[] {10, 50, 5},
-                        "EPSG:4326",
-                        "image/png",
-                        null,
-                        stringToResource("IMAGE-10-50-5-A"));
-        TileObject putTileB =
-                TileObject.createCompleteTileObject(
-                        "africa",
-                        new long[] {10, 50, 5},
-                        "EPSG:4326",
-                        "image/png",
-                        null,
-                        stringToResource("IMAGE-10-50-5-B"));
+        TileObject putTileA = TileObject.createCompleteTileObject(
+                "africa", new long[] {10, 50, 5}, "EPSG:4326", "image/png", null, stringToResource("IMAGE-10-50-5-A"));
+        TileObject putTileB = TileObject.createCompleteTileObject(
+                "africa", new long[] {10, 50, 5}, "EPSG:4326", "image/png", null, stringToResource("IMAGE-10-50-5-B"));
         // storing the tile
         storeA.put(putTileA);
         storeB.put(putTileB);
@@ -63,8 +51,7 @@ public final class SqliteBlobStoreTest extends TestSupport {
         storeA.clear();
         storeB.clear();
         // check that database files exists
-        String relativePath =
-                Utils.buildPath("EPSG_4326", "africa", "image_png", "5", "tiles-0-0.sqlite");
+        String relativePath = Utils.buildPath("EPSG_4326", "africa", "image_png", "5", "tiles-0-0.sqlite");
         File fileA = new File(rootDirectoryA, relativePath);
         File fileB = new File(rootDirectoryB, relativePath);
         assertThat(fileA.exists(), is(true));
@@ -73,8 +60,7 @@ public final class SqliteBlobStoreTest extends TestSupport {
         storeA.replace(fileB, relativePath);
         // let's query store A to see if we get store B tile
         TileObject getTile =
-                TileObject.createQueryTileObject(
-                        "africa", new long[] {10, 50, 5}, "EPSG:4326", "image/png", null);
+                TileObject.createQueryTileObject("africa", new long[] {10, 50, 5}, "EPSG:4326", "image/png", null);
         assertThat(storeA.get(getTile), is(true));
         assertThat(getTile.getBlob(), notNullValue());
         assertThat(resourceToString(getTile.getBlob()), is("IMAGE-10-50-5-B"));
@@ -97,30 +83,17 @@ public final class SqliteBlobStoreTest extends TestSupport {
         MbtilesBlobStore storeB = new MbtilesBlobStore(configurationB);
         addStoresToClean(storeA, storeB);
         // create the tiles that will be stored
-        TileObject putTileA =
-                TileObject.createCompleteTileObject(
-                        "africa",
-                        new long[] {10, 50, 5},
-                        "EPSG:4326",
-                        "image/png",
-                        null,
-                        stringToResource("IMAGE-10-50-5-A"));
-        TileObject putTileB =
-                TileObject.createCompleteTileObject(
-                        "africa",
-                        new long[] {10, 50, 5},
-                        "EPSG:4326",
-                        "image/png",
-                        null,
-                        stringToResource("IMAGE-10-50-5-B"));
-        TileObject putTileC =
-                TileObject.createCompleteTileObject(
-                        "africa",
-                        new long[] {10, 5050, 15},
-                        "EPSG:4326",
-                        "image/png",
-                        null,
-                        stringToResource("IMAGE-15-5050-5-B"));
+        TileObject putTileA = TileObject.createCompleteTileObject(
+                "africa", new long[] {10, 50, 5}, "EPSG:4326", "image/png", null, stringToResource("IMAGE-10-50-5-A"));
+        TileObject putTileB = TileObject.createCompleteTileObject(
+                "africa", new long[] {10, 50, 5}, "EPSG:4326", "image/png", null, stringToResource("IMAGE-10-50-5-B"));
+        TileObject putTileC = TileObject.createCompleteTileObject(
+                "africa",
+                new long[] {10, 5050, 15},
+                "EPSG:4326",
+                "image/png",
+                null,
+                stringToResource("IMAGE-15-5050-5-B"));
         // storing the tile
         storeA.put(putTileA);
         storeB.put(putTileB);
@@ -129,10 +102,8 @@ public final class SqliteBlobStoreTest extends TestSupport {
         storeA.clear();
         storeB.clear();
         // check that database files exists
-        String relativePathA =
-                Utils.buildPath("EPSG_4326", "africa", "image_png", "5", "tiles-0-0.sqlite");
-        String relativePathB =
-                Utils.buildPath("EPSG_4326", "africa", "image_png", "15", "tiles-0-5000.sqlite");
+        String relativePathA = Utils.buildPath("EPSG_4326", "africa", "image_png", "5", "tiles-0-0.sqlite");
+        String relativePathB = Utils.buildPath("EPSG_4326", "africa", "image_png", "15", "tiles-0-5000.sqlite");
         File fileA = new File(rootDirectoryA, relativePathA);
         File fileB = new File(rootDirectoryB, relativePathA);
         File fileC = new File(rootDirectoryB, relativePathB);
@@ -143,15 +114,12 @@ public final class SqliteBlobStoreTest extends TestSupport {
         storeA.replace(rootDirectoryB);
         // let's query store A to see if we get store B tiles
         TileObject getTile =
-                TileObject.createQueryTileObject(
-                        "africa", new long[] {10, 50, 5}, "EPSG:4326", "image/png", null);
+                TileObject.createQueryTileObject("africa", new long[] {10, 50, 5}, "EPSG:4326", "image/png", null);
         assertThat(storeA.get(getTile), is(true));
         assertThat(getTile.getBlob(), notNullValue());
         assertThat(resourceToString(getTile.getBlob()), is("IMAGE-10-50-5-B"));
         // let's query the second tile
-        getTile =
-                TileObject.createQueryTileObject(
-                        "africa", new long[] {10, 5050, 15}, "EPSG:4326", "image/png", null);
+        getTile = TileObject.createQueryTileObject("africa", new long[] {10, 5050, 15}, "EPSG:4326", "image/png", null);
         assertThat(storeA.get(getTile), is(true));
         assertThat(getTile.getBlob(), notNullValue());
         assertThat(resourceToString(getTile.getBlob()), is("IMAGE-15-5050-5-B"));

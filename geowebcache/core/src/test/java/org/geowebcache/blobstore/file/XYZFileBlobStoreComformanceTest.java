@@ -44,8 +44,12 @@ import org.junit.runners.Parameterized;
 @RunWith(Parameterized.class)
 public class XYZFileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlobStore> {
 
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
-    @Parameterized.Parameter public Convention convention;
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
+
+    @Parameterized.Parameter
+    public Convention convention;
+
     private TileLayerDispatcher layers;
 
     @Parameterized.Parameters
@@ -59,25 +63,20 @@ public class XYZFileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileB
         GridSet wgs84Grid = new DefaultGridsets(false, false).worldEpsg4326();
         GridSubset gridSubset = GridSubsetFactory.createGridSubSet(wgs84Grid);
         Stream.of("testLayer", "testLayer1", "testLayer2")
-                .map(
-                        name -> {
-                            TileLayer layer = createMock(name, TileLayer.class);
-                            expect(layer.getName()).andStubReturn(name);
-                            expect(layer.getId()).andStubReturn(name);
-                            expect(layer.getGridSubsets())
-                                    .andStubReturn(Collections.singleton("testGridSet1"));
-                            expect(layer.getGridSubset(EasyMock.anyString()))
-                                    .andStubReturn(gridSubset);
-                            expect(layer.getMimeTypes())
-                                    .andStubReturn(
-                                            Arrays.asList(org.geowebcache.mime.ImageMime.png));
-                            try {
-                                expect(layers.getTileLayer(eq(name))).andStubReturn(layer);
-                            } catch (GeoWebCacheException e) {
-                                fail();
-                            }
-                            return layer;
-                        })
+                .map(name -> {
+                    TileLayer layer = createMock(name, TileLayer.class);
+                    expect(layer.getName()).andStubReturn(name);
+                    expect(layer.getId()).andStubReturn(name);
+                    expect(layer.getGridSubsets()).andStubReturn(Collections.singleton("testGridSet1"));
+                    expect(layer.getGridSubset(EasyMock.anyString())).andStubReturn(gridSubset);
+                    expect(layer.getMimeTypes()).andStubReturn(Arrays.asList(org.geowebcache.mime.ImageMime.png));
+                    try {
+                        expect(layers.getTileLayer(eq(name))).andStubReturn(layer);
+                    } catch (GeoWebCacheException e) {
+                        fail();
+                    }
+                    return layer;
+                })
                 .forEach(EasyMock::replay);
         replay(layers);
 

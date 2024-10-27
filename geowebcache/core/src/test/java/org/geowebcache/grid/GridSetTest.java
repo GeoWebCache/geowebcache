@@ -15,63 +15,22 @@ import org.junit.Test;
 
 public class GridSetTest {
 
-    GridSetBroker gridSetBroker =
-            new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
+    GridSetBroker gridSetBroker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
     // Top left
-    GridSet gridSetTL =
-            GridSetFactory.createGridSet(
-                    "test",
-                    SRS.getEPSG4326(),
-                    BoundingBox.WORLD4326,
-                    true,
-                    10,
-                    null,
-                    0.00028,
-                    256,
-                    256,
-                    false);
+    GridSet gridSetTL = GridSetFactory.createGridSet(
+            "test", SRS.getEPSG4326(), BoundingBox.WORLD4326, true, 10, null, 0.00028, 256, 256, false);
 
     // Bottom left
-    GridSet gridSetBL =
-            GridSetFactory.createGridSet(
-                    "test",
-                    SRS.getEPSG4326(),
-                    BoundingBox.WORLD4326,
-                    false,
-                    10,
-                    null,
-                    0.00028,
-                    256,
-                    256,
-                    false);
+    GridSet gridSetBL = GridSetFactory.createGridSet(
+            "test", SRS.getEPSG4326(), BoundingBox.WORLD4326, false, 10, null, 0.00028, 256, 256, false);
     // Top left
-    GridSet gridSetTLswap =
-            GridSetFactory.createGridSet(
-                    "test",
-                    SRS.getEPSG4326(),
-                    BoundingBox.WORLD4326,
-                    true,
-                    10,
-                    null,
-                    0.00028,
-                    256,
-                    256,
-                    true);
+    GridSet gridSetTLswap = GridSetFactory.createGridSet(
+            "test", SRS.getEPSG4326(), BoundingBox.WORLD4326, true, 10, null, 0.00028, 256, 256, true);
 
     // Bottom left
-    GridSet gridSetBLswap =
-            GridSetFactory.createGridSet(
-                    "test",
-                    SRS.getEPSG4326(),
-                    BoundingBox.WORLD4326,
-                    false,
-                    10,
-                    null,
-                    0.00028,
-                    256,
-                    256,
-                    true);
+    GridSet gridSetBLswap = GridSetFactory.createGridSet(
+            "test", SRS.getEPSG4326(), BoundingBox.WORLD4326, false, 10, null, 0.00028, 256, 256, true);
 
     Matcher<BoundingBox> closeTo(BoundingBox expected, double error) {
         return allOf(

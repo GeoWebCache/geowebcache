@@ -56,8 +56,7 @@ public class UsageStatsMonitor extends AbstractMonitor {
      */
     private QueuedUsageStatsConsumer usageStatsConsumer;
 
-    public UsageStatsMonitor(
-            final QuotaStore quotaStore, final TileLayerDispatcher tileLayerDispatcher) {
+    public UsageStatsMonitor(final QuotaStore quotaStore, final TileLayerDispatcher tileLayerDispatcher) {
 
         Assert.notNull(quotaStore, "quotaStore is null");
         Assert.notNull(tileLayerDispatcher, "tileLayerDispatcher is null");
@@ -73,8 +72,7 @@ public class UsageStatsMonitor extends AbstractMonitor {
 
         sharedQueue = new LinkedBlockingQueue<>(1000);
 
-        usageStatsConsumer =
-                new QueuedUsageStatsConsumer(quotaStore, sharedQueue, tilePageCalculator);
+        usageStatsConsumer = new QueuedUsageStatsConsumer(quotaStore, sharedQueue, tilePageCalculator);
         getExecutorService().submit(usageStatsConsumer);
 
         usageStatsProducer = new QueuedUsageStatsProducer(sharedQueue);

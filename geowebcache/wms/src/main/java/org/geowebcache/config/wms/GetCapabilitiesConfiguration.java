@@ -76,14 +76,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 public class GetCapabilitiesConfiguration implements TileLayerConfiguration, GridSetConfiguration {
 
     private static Logger log =
-            Logging.getLogger(
-                    org.geowebcache.config.wms.GetCapabilitiesConfiguration.class.getName());
+            Logging.getLogger(org.geowebcache.config.wms.GetCapabilitiesConfiguration.class.getName());
 
     // regex patterns used to parse legends urls parameters
-    private static final Pattern LEGEND_WIDTH_PATTERN =
-            Pattern.compile(".*width=(\\d+).*", Pattern.CASE_INSENSITIVE);
-    private static final Pattern LEGEND_HEIGHT_PATTERN =
-            Pattern.compile(".*height=(\\d+).*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern LEGEND_WIDTH_PATTERN = Pattern.compile(".*width=(\\d+).*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern LEGEND_HEIGHT_PATTERN = Pattern.compile(".*height=(\\d+).*", Pattern.CASE_INSENSITIVE);
     private static final Pattern LEGEND_FORMAT_PATTERN =
             Pattern.compile(".*format=([^&]+).*", Pattern.CASE_INSENSITIVE);
 
@@ -110,11 +107,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
     private Map<String, GridSet> generatedGridSets = new HashMap<>();
 
     public GetCapabilitiesConfiguration(
-            GridSetBroker gridSetBroker,
-            String url,
-            String mimeTypes,
-            String metaTiling,
-            String allowCacheBypass) {
+            GridSetBroker gridSetBroker, String url, String mimeTypes, String metaTiling, String allowCacheBypass) {
         this.gridSetBroker = gridSetBroker;
         this.url = url;
         this.mimeTypes = mimeTypes;
@@ -185,11 +178,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
             wms = getWMS();
         } catch (ServiceException | IOException e) {
             throw new ConfigurationException(
-                    "Could not retrieve (or parse) GetCapaibilities "
-                            + this.url
-                            + " :"
-                            + e.getMessage(),
-                    e);
+                    "Could not retrieve (or parse) GetCapaibilities " + this.url + " :" + e.getMessage(), e);
         }
         String wmsUrl = getWMSUrl(wms);
         log.info("Using GetCapabilities " + wmsUrl + " to generate URLs for WMS requests");
@@ -213,7 +202,8 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
      */
     private String getWMSUrl(WebMapServer wms) {
         // // http://sigma.openplans.org:8080/geoserver/wms?SERVICE=WMS&
-        String wmsUrl = wms.getCapabilities().getRequest().getGetCapabilities().getGet().toString();
+        String wmsUrl =
+                wms.getCapabilities().getRequest().getGetCapabilities().getGet().toString();
         int queryStart = wmsUrl.lastIndexOf("?");
         if (queryStart > 0) {
 
@@ -225,8 +215,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
         return wmsUrl;
     }
 
-    private List<TileLayer> getLayers(WebMapServer wms, String wmsUrl, String urlVersion)
-            throws GeoWebCacheException {
+    private List<TileLayer> getLayers(WebMapServer wms, String wmsUrl, String urlVersion) throws GeoWebCacheException {
         List<TileLayer> layers = new LinkedList<>();
 
         WMSCapabilities capabilities = wms.getCapabilities();
@@ -286,18 +275,13 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
 
                 BoundingBox bounds4326 = new BoundingBox(minX, minY, maxX, maxY);
 
-                log.info(
-                        "Found layer: "
-                                + layer.getName()
-                                + " with LatLon bbox "
-                                + bounds4326.toString());
+                log.info("Found layer: " + layer.getName() + " with LatLon bbox " + bounds4326.toString());
 
-                BoundingBox bounds3785 =
-                        new BoundingBox(
-                                longToSphericalMercatorX(minX),
-                                latToSphericalMercatorY(minY),
-                                longToSphericalMercatorX(maxX),
-                                latToSphericalMercatorY(maxY));
+                BoundingBox bounds3785 = new BoundingBox(
+                        longToSphericalMercatorX(minX),
+                        latToSphericalMercatorY(minY),
+                        longToSphericalMercatorX(maxX),
+                        latToSphericalMercatorY(maxY));
 
                 String[] wmsUrls = {wmsUrl};
 
@@ -320,20 +304,17 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
 
                 WMSLayer wmsLayer = null;
                 try {
-                    wmsLayer =
-                            getLayer(
-                                    name,
-                                    wmsUrls,
-                                    bounds4326,
-                                    bounds3785,
-                                    stylesStr,
-                                    queryable,
-                                    layer.getBoundingBoxes(),
-                                    paramFilters);
+                    wmsLayer = getLayer(
+                            name,
+                            wmsUrls,
+                            bounds4326,
+                            bounds3785,
+                            stylesStr,
+                            queryable,
+                            layer.getBoundingBoxes(),
+                            paramFilters);
                 } catch (GeoWebCacheException gwc) {
-                    log.log(
-                            Level.SEVERE,
-                            "Error creating " + layer.getName() + ": " + gwc.getMessage());
+                    log.log(Level.SEVERE, "Error creating " + layer.getName() + ": " + gwc.getMessage());
                 }
 
                 if (wmsLayer != null) {
@@ -354,16 +335,12 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
                     }
                     wmsLayer.setSourceHelper(sourceHelper);
 
-                    List<org.geotools.ows.wms.xml.MetadataURL> metadataURLs =
-                            layer.getMetadataURL();
+                    List<org.geotools.ows.wms.xml.MetadataURL> metadataURLs = layer.getMetadataURL();
                     if (metadataURLs != null && !metadataURLs.isEmpty()) {
                         List<MetadataURL> convertedMetadataURLs = new ArrayList<>();
                         for (org.geotools.ows.wms.xml.MetadataURL metadataURL : metadataURLs) {
-                            convertedMetadataURLs.add(
-                                    new MetadataURL(
-                                            metadataURL.getType(),
-                                            metadataURL.getFormat(),
-                                            metadataURL.getUrl()));
+                            convertedMetadataURLs.add(new MetadataURL(
+                                    metadataURL.getType(), metadataURL.getFormat(), metadataURL.getUrl()));
                         }
                         wmsLayer.setMetadataURLs(convertedMetadataURLs);
                     }
@@ -437,12 +414,10 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
         Map<String, GridSubset> grids = new HashMap<>(2);
         grids.put(
                 gridSetBroker.getWorldEpsg4326().getName(),
-                GridSubsetFactory.createGridSubSet(
-                        gridSetBroker.getWorldEpsg4326(), bounds4326, 0, 30));
+                GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bounds4326, 0, 30));
         grids.put(
                 gridSetBroker.getWorldEpsg3857().getName(),
-                GridSubsetFactory.createGridSubSet(
-                        gridSetBroker.getWorldEpsg3857(), bounds3785, 0, 30));
+                GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg3857(), bounds3785, 0, 30));
 
         if (additionalBounds != null && !additionalBounds.isEmpty()) {
             Iterator<CRSEnvelope> iter = additionalBounds.values().iterator();
@@ -455,28 +430,23 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
 
                 if (srs == null) {
                     log.log(Level.SEVERE, env.toString() + " has no EPSG code");
-                } else if (srs.getNumber() == 4326
-                        || srs.getNumber() == 900913
-                        || srs.getNumber() == 3857) {
+                } else if (srs.getNumber() == 4326 || srs.getNumber() == 900913 || srs.getNumber() == 3857) {
                     log.fine("Skipping " + srs.toString() + " for " + name);
                 } else {
                     String gridSetName = name + ":" + srs.toString();
-                    BoundingBox extent =
-                            new BoundingBox(
-                                    env.getMinX(), env.getMinY(), env.getMaxX(), env.getMaxY());
+                    BoundingBox extent = new BoundingBox(env.getMinX(), env.getMinY(), env.getMaxX(), env.getMaxY());
 
-                    GridSet gridSet =
-                            GridSetFactory.createGridSet(
-                                    gridSetName,
-                                    srs,
-                                    extent,
-                                    false,
-                                    25,
-                                    null,
-                                    GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
-                                    256,
-                                    256,
-                                    false);
+                    GridSet gridSet = GridSetFactory.createGridSet(
+                            gridSetName,
+                            srs,
+                            extent,
+                            false,
+                            25,
+                            null,
+                            GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                            256,
+                            256,
+                            false);
                     grids.put(gridSetName, GridSubsetFactory.createGridSubSet(gridSet));
                 }
             }
@@ -500,9 +470,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
 
         String[] metaStrings = this.metaTiling.split("x");
 
-        int[] metaWidthHeight = {
-            Integer.parseInt(metaStrings[0]), Integer.parseInt(metaStrings[1])
-        };
+        int[] metaWidthHeight = {Integer.parseInt(metaStrings[0]), Integer.parseInt(metaStrings[1])};
 
         return new WMSLayer(
                 name,
@@ -575,11 +543,10 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
             }
             layers.put(layer.getName(), layer);
 
-            Map<String, GridSet> generatedForLayer =
-                    Sets.difference(layer.getGridSubsets(), brokerNames).stream()
-                            .map(layer::getGridSubset)
-                            .map(GridSubset::getGridSet)
-                            .collect(Collectors.toMap(GridSet::getName, UnaryOperator.identity()));
+            Map<String, GridSet> generatedForLayer = Sets.difference(layer.getGridSubsets(), brokerNames).stream()
+                    .map(layer::getGridSubset)
+                    .map(GridSubset::getGridSet)
+                    .collect(Collectors.toMap(GridSet::getName, UnaryOperator.identity()));
             generatedGridSets.putAll(generatedForLayer);
         }
     }
@@ -632,8 +599,7 @@ public class GetCapabilitiesConfiguration implements TileLayerConfiguration, Gri
 
     /** @see TileLayerConfiguration#renameLayer(String, String) */
     @Override
-    public void renameLayer(String oldName, String newName)
-            throws NoSuchElementException, IllegalArgumentException {
+    public void renameLayer(String oldName, String newName) throws NoSuchElementException, IllegalArgumentException {
         throw new UnsupportedOperationException(
                 "renameLayer is not supported by " + getClass().getSimpleName());
     }

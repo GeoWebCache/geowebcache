@@ -70,10 +70,7 @@ public class XMLGridSubset implements Serializable, Cloneable {
     /** Builds an XMLGridSubset out of a {@link GridSubset} */
     public XMLGridSubset(GridSubset sset) {
         setGridSetName(sset.getName());
-        setExtent(
-                sset.getOriginalExtent() == null
-                        ? null
-                        : new BoundingBox(sset.getOriginalExtent()));
+        setExtent(sset.getOriginalExtent() == null ? null : new BoundingBox(sset.getOriginalExtent()));
         setZoomStart(sset.getZoomStart());
         setZoomStop(sset.getZoomStop());
         setMinCachedLevel(sset.getMinCachedZoom());
@@ -94,12 +91,7 @@ public class XMLGridSubset implements Serializable, Cloneable {
             return null;
         }
         return GridSubsetFactory.createGridSubSet(
-                gridSet,
-                getExtent(),
-                getZoomStart(),
-                getZoomStop(),
-                minCachedLevel,
-                maxCachedLevel);
+                gridSet, getExtent(), getZoomStart(), getZoomStop(), minCachedLevel, maxCachedLevel);
     }
 
     public String getGridSetName() {

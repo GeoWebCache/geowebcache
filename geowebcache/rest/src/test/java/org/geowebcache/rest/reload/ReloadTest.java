@@ -36,10 +36,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({
-    "file*:/webapp/WEB-INF/web.xml",
-    "file*:/webapp/WEB-INF/geowebcache-servlet.xml"
-})
+@ContextConfiguration({"file*:/webapp/WEB-INF/web.xml", "file*:/webapp/WEB-INF/geowebcache-servlet.xml"})
 public class ReloadTest {
     private MockMvc mockMvc;
     ReloadController reload;
@@ -57,20 +54,18 @@ public class ReloadTest {
         int tileWidth = 256;
         int tileHeight = 256;
         boolean yCoordinateFirst = false;
-        GridSet gridSet =
-                GridSetFactory.createGridSet(
-                        "EPSG:3395",
-                        SRS.getSRS("EPSG:3395"),
-                        extent,
-                        alignTopLeft,
-                        levels,
-                        metersPerUnit,
-                        pixelSize,
-                        tileWidth,
-                        tileHeight,
-                        yCoordinateFirst);
-        GridSetBroker gridSetBroker =
-                new GridSetBroker(MockGridSetConfiguration.withDefaults(gridSet));
+        GridSet gridSet = GridSetFactory.createGridSet(
+                "EPSG:3395",
+                SRS.getSRS("EPSG:3395"),
+                extent,
+                alignTopLeft,
+                levels,
+                metersPerUnit,
+                pixelSize,
+                tileWidth,
+                tileHeight,
+                yCoordinateFirst);
+        GridSetBroker gridSetBroker = new GridSetBroker(MockGridSetConfiguration.withDefaults(gridSet));
 
         tld = new TileLayerDispatcher(gridSetBroker, null);
         reload = new ReloadController();
@@ -83,11 +78,10 @@ public class ReloadTest {
     public void testReloadConfiguration() throws Exception {
         String content = "reload_configuration=1";
         this.mockMvc
-                .perform(
-                        post("/rest/reload")
-                                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                                .content(content)
-                                .contextPath(""))
+                .perform(post("/rest/reload")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                        .content(content)
+                        .contextPath(""))
                 .andExpect(status().is2xxSuccessful());
     }
 }

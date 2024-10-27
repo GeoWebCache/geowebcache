@@ -51,8 +51,7 @@ public class WMSMetaTile extends MetaTile {
     }
 
     protected Map<String, String> getWMSParams() throws GeoWebCacheException {
-        Map<String, String> params =
-                wmsLayer.getWMSRequestTemplate(this.getResponseFormat(), WMSLayer.RequestType.MAP);
+        Map<String, String> params = wmsLayer.getWMSRequestTemplate(this.getResponseFormat(), WMSLayer.RequestType.MAP);
 
         // Fill in the blanks
         String format;

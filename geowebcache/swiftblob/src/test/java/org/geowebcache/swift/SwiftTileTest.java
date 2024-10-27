@@ -63,15 +63,8 @@ public class SwiftTileTest {
 
     public void createValidSwiftTile() throws IOException {
         // Create tile object for use in swift blob store methods
-        TileObject sampleTileObject =
-                spy(
-                        TileObject.createCompleteTileObject(
-                                VALID_TEST_LAYER_NAME,
-                                xyz,
-                                "EPSG:4326",
-                                "image/jpeg",
-                                parameters,
-                                testBytes));
+        TileObject sampleTileObject = spy(TileObject.createCompleteTileObject(
+                VALID_TEST_LAYER_NAME, xyz, "EPSG:4326", "image/jpeg", parameters, testBytes));
         when(sampleTileObject.getParametersId()).thenReturn("1234");
 
         swiftTile = spy(new SwiftTile(sampleTileObject));
@@ -85,29 +78,16 @@ public class SwiftTileTest {
 
         when(invalidResource.getInputStream()).thenThrow(IOException.class);
 
-        TileObject sampleTileObject =
-                TileObject.createCompleteTileObject(
-                        VALID_TEST_LAYER_NAME,
-                        xyz,
-                        "EPSG:4326",
-                        "image/jpeg",
-                        parameters,
-                        invalidResource);
+        TileObject sampleTileObject = TileObject.createCompleteTileObject(
+                VALID_TEST_LAYER_NAME, xyz, "EPSG:4326", "image/jpeg", parameters, invalidResource);
 
         swiftTile = new SwiftTile(sampleTileObject);
     }
 
     @Test
     public void testPutWhenFormatNull() throws IOException {
-        TileObject sampleTileObject =
-                spy(
-                        TileObject.createCompleteTileObject(
-                                VALID_TEST_LAYER_NAME,
-                                xyz,
-                                "EPSG:4326",
-                                null,
-                                parameters,
-                                testBytes));
+        TileObject sampleTileObject = spy(TileObject.createCompleteTileObject(
+                VALID_TEST_LAYER_NAME, xyz, "EPSG:4326", null, parameters, testBytes));
 
         try {
             swiftTile = new SwiftTile(sampleTileObject);
@@ -121,15 +101,8 @@ public class SwiftTileTest {
 
     @Test
     public void testPutWhenBlobIsNull() throws IOException {
-        TileObject sampleTileObject =
-                spy(
-                        TileObject.createCompleteTileObject(
-                                VALID_TEST_LAYER_NAME,
-                                xyz,
-                                "EPSG:4326",
-                                null,
-                                parameters,
-                                testBytes));
+        TileObject sampleTileObject = spy(TileObject.createCompleteTileObject(
+                VALID_TEST_LAYER_NAME, xyz, "EPSG:4326", null, parameters, testBytes));
         when(sampleTileObject.getBlob()).thenReturn(null);
 
         // Test when blob is null
@@ -190,14 +163,7 @@ public class SwiftTileTest {
                         anyLong());
         verify(testListeners, times(sendTileStoredTimes))
                 .sendTileStored(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        any(),
-                        anyLong(),
-                        anyLong(),
-                        anyInt(),
-                        anyLong());
+                        anyString(), anyString(), anyString(), any(), anyLong(), anyLong(), anyInt(), anyLong());
     }
 
     @Test

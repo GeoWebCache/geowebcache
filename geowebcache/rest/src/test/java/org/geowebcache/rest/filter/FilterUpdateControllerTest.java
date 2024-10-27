@@ -42,21 +42,19 @@ public class FilterUpdateControllerTest {
         int tileWidth = 256;
         int tileHeight = 256;
         boolean yCoordinateFirst = false;
-        GridSet gridSet =
-                GridSetFactory.createGridSet(
-                        "EPSG:3395",
-                        SRS.getSRS("EPSG:3395"),
-                        extent,
-                        alignTopLeft,
-                        levels,
-                        metersPerUnit,
-                        pixelSize,
-                        tileWidth,
-                        tileHeight,
-                        yCoordinateFirst);
+        GridSet gridSet = GridSetFactory.createGridSet(
+                "EPSG:3395",
+                SRS.getSRS("EPSG:3395"),
+                extent,
+                alignTopLeft,
+                levels,
+                metersPerUnit,
+                pixelSize,
+                tileWidth,
+                tileHeight,
+                yCoordinateFirst);
 
-        GridSetBroker gridSetBroker =
-                new GridSetBroker(MockGridSetConfiguration.withDefaults(gridSet));
+        GridSetBroker gridSetBroker = new GridSetBroker(MockGridSetConfiguration.withDefaults(gridSet));
 
         XMLConfiguration xmlConfig = loadXMLConfig();
         xmlConfig.setGridSetBroker(gridSetBroker);
@@ -74,14 +72,10 @@ public class FilterUpdateControllerTest {
 
         XMLConfiguration xmlConfig = null;
         try {
-            xmlConfig =
-                    new XMLConfiguration(
-                            null,
-                            new MockConfigurationResourceProvider(
-                                    () ->
-                                            XMLConfiguration.class.getResourceAsStream(
-                                                    XMLConfigurationBackwardsCompatibilityTest
-                                                            .GWC_125_CONFIG_FILE)));
+            xmlConfig = new XMLConfiguration(
+                    null,
+                    new MockConfigurationResourceProvider(() -> XMLConfiguration.class.getResourceAsStream(
+                            XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE)));
         } catch (Exception e) {
             // Do nothing
         }
@@ -92,19 +86,17 @@ public class FilterUpdateControllerTest {
     @Test
     public void testPost() throws Exception {
 
-        String filterXml =
-                "<wmsRasterFilterUpdate>\n"
-                        + "    <gridSetId>EPSG:4326</gridSetId>\n"
-                        + "    <zoomStart>0</zoomStart>\n"
-                        + "    <zoomStop>6</zoomStop>\n"
-                        + "</wmsRasterFilterUpdate>";
+        String filterXml = "<wmsRasterFilterUpdate>\n"
+                + "    <gridSetId>EPSG:4326</gridSetId>\n"
+                + "    <zoomStart>0</zoomStart>\n"
+                + "    <zoomStop>6</zoomStop>\n"
+                + "</wmsRasterFilterUpdate>";
 
         this.mockMvc
-                .perform(
-                        post("/rest/filter/testWMSRasterFilter/update/xml")
-                                .contentType(MediaType.APPLICATION_ATOM_XML)
-                                .contextPath("")
-                                .content(filterXml))
+                .perform(post("/rest/filter/testWMSRasterFilter/update/xml")
+                        .contentType(MediaType.APPLICATION_ATOM_XML)
+                        .contextPath("")
+                        .content(filterXml))
                 .andExpect(status().is2xxSuccessful());
     }
 }

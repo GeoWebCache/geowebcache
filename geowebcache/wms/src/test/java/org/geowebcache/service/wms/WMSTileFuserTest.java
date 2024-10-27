@@ -67,12 +67,10 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 public class WMSTileFuserTest {
 
-    GridSetBroker gridSetBroker =
-            new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
+    GridSetBroker gridSetBroker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
     SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
 
-    HttpServletRequest fuserRequest(
-            TileLayer layer, GridSubset gridSubset, BoundingBox bounds, int width, int height) {
+    HttpServletRequest fuserRequest(TileLayer layer, GridSubset gridSubset, BoundingBox bounds, int width, int height) {
         MockHttpServletRequest req = new MockHttpServletRequest();
         Map<String, String> params = new HashMap<>();
         params.put("layers", layer.getId());
@@ -96,12 +94,12 @@ public class WMSTileFuserTest {
         // One in between
         int width = (int) bounds.getWidth() * 10;
         int height = (int) bounds.getHeight() * 10;
-        GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
+        GridSubset gridSubset =
+                layer.getGridSubset(layer.getGridSubsets().iterator().next());
         TileLayerDispatcher tld = mock(TileLayerDispatcher.class);
         StorageBroker sb = mock(StorageBroker.class);
         Mockito.when(tld.getTileLayer("test:layer")).thenReturn(layer);
-        WMSTileFuser tileFuser =
-                new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
+        WMSTileFuser tileFuser = new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
         tileFuser.setSecurityDispatcher(secDisp);
         tileFuser.determineSourceResolution();
         assertEquals(0.087890625, tileFuser.srcResolution, 0.087890625 * 0.001);
@@ -109,8 +107,7 @@ public class WMSTileFuserTest {
         // Zoomed too far out
         height = (int) bounds.getWidth() / 10;
         width = (int) bounds.getWidth() / 10;
-        tileFuser =
-                new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
+        tileFuser = new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
         tileFuser.setSecurityDispatcher(secDisp);
         tileFuser.determineSourceResolution();
         assertEquals(0, tileFuser.srcIdx);
@@ -118,8 +115,7 @@ public class WMSTileFuserTest {
         // Zoomed too far in
         height = (int) bounds.getWidth() * 10000;
         width = (int) bounds.getWidth() * 10000;
-        tileFuser =
-                new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
+        tileFuser = new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
         tileFuser.setSecurityDispatcher(secDisp);
         tileFuser.determineSourceResolution();
         assertEquals(10, tileFuser.srcIdx);
@@ -137,34 +133,30 @@ public class WMSTileFuserTest {
         // One in between
         int width = (int) bounds.getWidth() * 10;
         int height = (int) bounds.getHeight() * 10;
-        GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
+        GridSubset gridSubset =
+                layer.getGridSubset(layer.getGridSubsets().iterator().next());
         TileLayerDispatcher tld = mock(TileLayerDispatcher.class);
         Mockito.when(tld.getTileLayer("test:layer")).thenReturn(layer);
         StorageBroker sb = mock(StorageBroker.class);
-        WMSTileFuser tileFuser =
-                new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
+        WMSTileFuser tileFuser = new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
         AtomicInteger count = new AtomicInteger();
-        Mockito.when(sb.get(ArgumentMatchers.any(TileObject.class)))
-                .thenAnswer(
-                        invoc -> {
-                            TileObject stObj = (TileObject) invoc.getArguments()[0];
-                            final File imageTile =
-                                    new File(getClass().getResource("/image.png").toURI());
-                            stObj.setBlob(new FileResource(imageTile));
-                            stObj.setCreated((new Date()).getTime());
-                            stObj.setBlobSize(1000);
-                            if (count.incrementAndGet() == 1) {
-                                // first time, canvas should be null
-                                assertNull(tileFuser.bufferedImageWrapper.canvas);
-                                return true;
-                            } else {
-                                assertNotNull(tileFuser.bufferedImageWrapper.canvas);
-                                return true;
-                            }
-                        });
+        Mockito.when(sb.get(ArgumentMatchers.any(TileObject.class))).thenAnswer(invoc -> {
+            TileObject stObj = (TileObject) invoc.getArguments()[0];
+            final File imageTile = new File(getClass().getResource("/image.png").toURI());
+            stObj.setBlob(new FileResource(imageTile));
+            stObj.setCreated((new Date()).getTime());
+            stObj.setBlobSize(1000);
+            if (count.incrementAndGet() == 1) {
+                // first time, canvas should be null
+                assertNull(tileFuser.bufferedImageWrapper.canvas);
+                return true;
+            } else {
+                assertNotNull(tileFuser.bufferedImageWrapper.canvas);
+                return true;
+            }
+        });
 
-        try (ClassPathXmlApplicationContext context =
-                new ClassPathXmlApplicationContext("appContextTest.xml")) {
+        try (ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("appContextTest.xml")) {
             tileFuser.setApplicationContext(context);
 
             tileFuser.setSecurityDispatcher(secDisp);
@@ -191,12 +183,12 @@ public class WMSTileFuserTest {
         // One in between
         int width = (int) bounds.getWidth() * 10;
         int height = (int) bounds.getHeight() * 10;
-        GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
+        GridSubset gridSubset =
+                layer.getGridSubset(layer.getGridSubsets().iterator().next());
         TileLayerDispatcher tld = mock(TileLayerDispatcher.class);
         StorageBroker sb = mock(StorageBroker.class);
         Mockito.when(tld.getTileLayer("test:layer")).thenReturn(layer);
-        WMSTileFuser tileFuser =
-                new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
+        WMSTileFuser tileFuser = new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
         tileFuser.setSecurityDispatcher(secDisp);
         MockHttpServletResponse response = new MockHttpServletResponse();
         RuntimeStats stats = mock(RuntimeStats.class);
@@ -215,26 +207,22 @@ public class WMSTileFuserTest {
         // One in between
         int width = (int) bounds.getWidth() * 10;
         int height = (int) bounds.getHeight() * 10;
-        GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
+        GridSubset gridSubset =
+                layer.getGridSubset(layer.getGridSubsets().iterator().next());
         TileLayerDispatcher tld = mock(TileLayerDispatcher.class);
         Mockito.when(tld.getTileLayer("test:layer")).thenReturn(layer);
         StorageBroker sb = mock(StorageBroker.class);
 
-        Mockito.when(sb.get(ArgumentMatchers.any(TileObject.class)))
-                .thenAnswer(
-                        invoc -> {
-                            TileObject stObj = (TileObject) invoc.getArguments()[0];
-                            final File imageTile =
-                                    new File(getClass().getResource("/image.png").toURI());
-                            stObj.setBlob(new FileResource(imageTile));
-                            stObj.setCreated((new Date()).getTime());
-                            stObj.setBlobSize(1000);
-                            return true;
-                        });
-        WMSTileFuser tileFuser =
-                new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
-        try (ClassPathXmlApplicationContext context =
-                new ClassPathXmlApplicationContext("appContextTest.xml")) {
+        Mockito.when(sb.get(ArgumentMatchers.any(TileObject.class))).thenAnswer(invoc -> {
+            TileObject stObj = (TileObject) invoc.getArguments()[0];
+            final File imageTile = new File(getClass().getResource("/image.png").toURI());
+            stObj.setBlob(new FileResource(imageTile));
+            stObj.setCreated((new Date()).getTime());
+            stObj.setBlobSize(1000);
+            return true;
+        });
+        WMSTileFuser tileFuser = new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
+        try (ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("appContextTest.xml")) {
             tileFuser.setApplicationContext(context);
 
             tileFuser.setSecurityDispatcher(secDisp);
@@ -243,8 +231,7 @@ public class WMSTileFuserTest {
 
             tileFuser.writeResponse(response, stats);
 
-            Mockito.verify(secDisp, times(4))
-                    .checkSecurity(ArgumentMatchers.any(ConveyorTile.class));
+            Mockito.verify(secDisp, times(4)).checkSecurity(ArgumentMatchers.any(ConveyorTile.class));
         }
     }
 
@@ -258,12 +245,12 @@ public class WMSTileFuserTest {
         // One in between
         int width = (int) bounds.getWidth() * 10;
         int height = (int) bounds.getHeight() * 10;
-        GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
+        GridSubset gridSubset =
+                layer.getGridSubset(layer.getGridSubsets().iterator().next());
         TileLayerDispatcher tld = mock(TileLayerDispatcher.class);
         Mockito.when(tld.getTileLayer("test:layer")).thenReturn(layer);
         StorageBroker sb = mock(StorageBroker.class);
-        WMSTileFuser tileFuser =
-                new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
+        WMSTileFuser tileFuser = new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
 
         tileFuser.setSecurityDispatcher(secDisp);
         tileFuser.determineSourceResolution();
@@ -292,12 +279,12 @@ public class WMSTileFuserTest {
         // One in between
         int width = (int) bounds.getWidth() * 25;
         int height = (int) bounds.getHeight() * 25;
-        GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
+        GridSubset gridSubset =
+                layer.getGridSubset(layer.getGridSubsets().iterator().next());
         TileLayerDispatcher tld = mock(TileLayerDispatcher.class);
         Mockito.when(tld.getTileLayer("test:layer")).thenReturn(layer);
         StorageBroker sb = mock(StorageBroker.class);
-        WMSTileFuser tileFuser =
-                new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
+        WMSTileFuser tileFuser = new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
 
         tileFuser.setSecurityDispatcher(secDisp);
         tileFuser.determineSourceResolution();
@@ -318,15 +305,13 @@ public class WMSTileFuserTest {
         temp.delete();
         temp.mkdirs();
         try {
-            TileLayerDispatcher dispatcher =
-                    new TileLayerDispatcher(gridSetBroker, null) {
+            TileLayerDispatcher dispatcher = new TileLayerDispatcher(gridSetBroker, null) {
 
-                        @Override
-                        public TileLayer getTileLayer(String layerName)
-                                throws GeoWebCacheException {
-                            return layer;
-                        }
-                    };
+                @Override
+                public TileLayer getTileLayer(String layerName) throws GeoWebCacheException {
+                    return layer;
+                }
+            };
 
             MockHttpServletRequest request = new MockHttpServletRequest();
             request.addParameter("layers", new String[] {"test:layer"});
@@ -337,36 +322,32 @@ public class WMSTileFuserTest {
             request.addParameter("bbox", bounds.toString());
             final File imageTile = new File(getClass().getResource("/image.png").toURI());
 
-            StorageBroker broker =
-                    new DefaultStorageBroker(
-                            new FileBlobStore(temp.getAbsolutePath()) {
+            StorageBroker broker = new DefaultStorageBroker(
+                    new FileBlobStore(temp.getAbsolutePath()) {
 
-                                @Override
-                                public boolean get(TileObject stObj) throws StorageException {
-                                    stObj.setBlob(new FileResource(imageTile));
-                                    stObj.setCreated((new Date()).getTime());
-                                    stObj.setBlobSize(1000);
-                                    return true;
-                                }
-                            },
-                            new TransientCache(100, 1024, 2000));
+                        @Override
+                        public boolean get(TileObject stObj) throws StorageException {
+                            stObj.setBlob(new FileResource(imageTile));
+                            stObj.setCreated((new Date()).getTime());
+                            stObj.setBlobSize(1000);
+                            return true;
+                        }
+                    },
+                    new TransientCache(100, 1024, 2000));
 
             WMSTileFuser tileFuser = new WMSTileFuser(dispatcher, broker, request);
             tileFuser.setSecurityDispatcher(secDisp);
 
             // Selection of the ApplicationContext associated
-            try (ClassPathXmlApplicationContext context =
-                    new ClassPathXmlApplicationContext("appContextTest.xml")) {
+            try (ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("appContextTest.xml")) {
                 tileFuser.setApplicationContext(context);
                 MockHttpServletResponse response = new MockHttpServletResponse();
 
-                tileFuser.writeResponse(
-                        response, new RuntimeStats(1, Arrays.asList(1), Arrays.asList("desc")));
+                tileFuser.writeResponse(response, new RuntimeStats(1, Arrays.asList(1), Arrays.asList("desc")));
 
                 // check the result is a valid PNG
                 assertEquals("image/png", response.getContentType());
-                BufferedImage image =
-                        ImageIO.read(new ByteArrayInputStream(response.getContentAsByteArray()));
+                BufferedImage image = ImageIO.read(new ByteArrayInputStream(response.getContentAsByteArray()));
                 // and it's the expected size
                 assertEquals(width, image.getWidth());
                 assertEquals(height, image.getHeight());
@@ -383,29 +364,24 @@ public class WMSTileFuserTest {
 
         Map<String, GridSubset> grids = new HashMap<>();
 
-        GridSubset grid =
-                GridSubsetFactory.createGridSubSet(
-                        gridSetBroker.getWorldEpsg4326(),
-                        new BoundingBox(-30.0, 15.0, 45.0, 30),
-                        0,
-                        10);
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
+                gridSetBroker.getWorldEpsg4326(), new BoundingBox(-30.0, 15.0, 45.0, 30), 0, 10);
 
         grids.put(grid.getName(), grid);
         int[] metaWidthHeight = {3, 3};
 
-        WMSLayer layer =
-                new WMSLayer(
-                        "test:layer",
-                        urls,
-                        "aStyle",
-                        "test:layer",
-                        formatList,
-                        grids,
-                        null,
-                        metaWidthHeight,
-                        "vendorparam=true",
-                        false,
-                        null);
+        WMSLayer layer = new WMSLayer(
+                "test:layer",
+                urls,
+                "aStyle",
+                "test:layer",
+                formatList,
+                grids,
+                null,
+                metaWidthHeight,
+                "vendorparam=true",
+                false,
+                null);
 
         layer.setLockProvider(mock(LockProvider.class));
         layer.setSourceHelper(mock(WMSSourceHelper.class));

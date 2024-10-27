@@ -67,8 +67,7 @@ public interface WMTSExtension extends GeoWebCacheExtensionPriority {
      * conveyor for a certain request. This method should return NULL if the extension is not
      * interested in the current request.
      */
-    default Conveyor getConveyor(
-            HttpServletRequest request, HttpServletResponse response, StorageBroker storageBroker)
+    default Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response, StorageBroker storageBroker)
             throws GeoWebCacheException, OWSException {
         return null;
     }

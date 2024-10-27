@@ -39,28 +39,25 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({
-    "file*:/webapp/WEB-INF/web.xml",
-    "file*:/webapp/WEB-INF/geowebcache-servlet.xml"
-})
+@ContextConfiguration({"file*:/webapp/WEB-INF/web.xml", "file*:/webapp/WEB-INF/geowebcache-servlet.xml"})
 public class MemoryCacheControllerTest {
     private MockMvc mockMvc;
 
     MemoryCacheController mcc;
 
     @Before
-    @SuppressWarnings(
-            "deprecation") // setUseSuffixPatternMatch is deprecated because Spring wants to
+    @SuppressWarnings("deprecation") // setUseSuffixPatternMatch is deprecated because Spring wants to
     // discourage extensions in paths
     public void setup() throws GeoWebCacheException {
-        GridSetBroker gridSetBroker =
-                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
+        GridSetBroker gridSetBroker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
         XMLConfiguration xmlConfig = loadXMLConfig();
         xmlConfig.setGridSetBroker(gridSetBroker);
         xmlConfig.afterPropertiesSet();
 
         mcc = new MemoryCacheController(null);
-        this.mockMvc = MockMvcBuilders.standaloneSetup(mcc).setUseSuffixPatternMatch(true).build();
+        this.mockMvc = MockMvcBuilders.standaloneSetup(mcc)
+                .setUseSuffixPatternMatch(true)
+                .build();
     }
 
     @Test
@@ -101,14 +98,10 @@ public class MemoryCacheControllerTest {
 
         XMLConfiguration xmlConfig = null;
         try {
-            xmlConfig =
-                    new XMLConfiguration(
-                            null,
-                            new MockConfigurationResourceProvider(
-                                    () ->
-                                            XMLConfiguration.class.getResourceAsStream(
-                                                    XMLConfigurationBackwardsCompatibilityTest
-                                                            .GWC_125_CONFIG_FILE)));
+            xmlConfig = new XMLConfiguration(
+                    null,
+                    new MockConfigurationResourceProvider(() -> XMLConfiguration.class.getResourceAsStream(
+                            XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE)));
         } catch (Exception e) {
             // Do nothing
         }

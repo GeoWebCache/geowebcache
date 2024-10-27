@@ -62,8 +62,7 @@ public class MbtilesInfo extends SqliteInfo {
     }
 
     @Override
-    public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider)
-            throws StorageException {
+    public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider) throws StorageException {
         return new MbtilesBlobStore(this, super.getConnectionManager());
     }
 
@@ -78,11 +77,7 @@ public class MbtilesInfo extends SqliteInfo {
         int result = super.hashCode();
         result = prime * result + executorConcurrency;
         result = prime * result + ((gzipVector == null) ? 0 : gzipVector.hashCode());
-        result =
-                prime * result
-                        + ((mbtilesMetadataDirectory == null)
-                                ? 0
-                                : mbtilesMetadataDirectory.hashCode());
+        result = prime * result + ((mbtilesMetadataDirectory == null) ? 0 : mbtilesMetadataDirectory.hashCode());
         return result;
     }
 

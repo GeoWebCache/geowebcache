@@ -149,9 +149,7 @@ public abstract class RasterFilter extends RequestFilter {
             idx[2] = zoomStop;
         }
 
-        if (matrices == null
-                || matrices.get(gridSetId) == null
-                || matrices.get(gridSetId)[(int) idx[2]] == null) {
+        if (matrices == null || matrices.get(gridSetId) == null || matrices.get(gridSetId)[(int) idx[2]] == null) {
             try {
                 setMatrix(convTile.getLayer(), gridSetId, (int) idx[2], false);
             } catch (Exception e) {
@@ -166,11 +164,7 @@ public abstract class RasterFilter extends RequestFilter {
                                 + " : "
                                 + e.getMessage());
                 throw new RequestFilterException(
-                        this,
-                        500,
-                        "Failed while trying to load filter for "
-                                + idx[2]
-                                + ", please check the logs");
+                        this, 500, "Failed while trying to load filter for " + idx[2] + ", please check the logs");
             }
         }
 
@@ -281,17 +275,7 @@ public abstract class RasterFilter extends RequestFilter {
                     }
                 }
             } catch (ArrayIndexOutOfBoundsException aioob) {
-                log.log(
-                        Level.SEVERE,
-                        "x:"
-                                + x
-                                + "  y:"
-                                + y
-                                + " ("
-                                + mat.getWidth()
-                                + " "
-                                + mat.getHeight()
-                                + ")");
+                log.log(Level.SEVERE, "x:" + x + "  y:" + y + " (" + mat.getWidth() + " " + mat.getHeight() + ")");
             }
         }
 
@@ -350,17 +334,7 @@ public abstract class RasterFilter extends RequestFilter {
                     y = startY;
                 }
             } catch (ArrayIndexOutOfBoundsException aioob) {
-                log.log(
-                        Level.SEVERE,
-                        "x:"
-                                + x
-                                + "  y:"
-                                + y
-                                + " ("
-                                + mat.getWidth()
-                                + " "
-                                + mat.getHeight()
-                                + ")");
+                log.log(Level.SEVERE, "x:" + x + "  y:" + y + " (" + mat.getWidth() + " " + mat.getHeight() + ")");
             }
         }
 

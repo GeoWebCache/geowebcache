@@ -20,7 +20,8 @@ import org.junit.rules.TemporaryFolder;
 
 public class MbtilesBlobStoreConformanceTest extends AbstractBlobStoreTest<MbtilesBlobStore> {
 
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
 
     @Override
     public void createTestUnit() throws Exception {
@@ -32,13 +33,7 @@ public class MbtilesBlobStoreConformanceTest extends AbstractBlobStoreTest<Mbtil
         configuration.setPoolSize(1000);
         configuration.setRootDirectory(temp.getRoot().getPath());
         configuration.setTemplatePath(
-                Utils.buildPath(
-                        "{grid}",
-                        "{layer}",
-                        "{params}",
-                        "{format}",
-                        "{z}",
-                        "tiles-{x}-{y}.sqlite"));
+                Utils.buildPath("{grid}", "{layer}", "{params}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
         configuration.setRowRangeCount(500);
         configuration.setColumnRangeCount(500);
         return configuration;

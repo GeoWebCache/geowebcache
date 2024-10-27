@@ -31,8 +31,7 @@ final class Utils {
     private static Logger LOGGER = Logging.getLogger(Utils.class.getName());
 
     // if we get the windows path separator we need to escape it for regex use
-    static final String REGEX_FILE_SEPARATOR =
-            File.separator.equals("\\") ? "\\\\" : File.separator;
+    static final String REGEX_FILE_SEPARATOR = File.separator.equals("\\") ? "\\\\" : File.separator;
 
     private Utils() {}
 

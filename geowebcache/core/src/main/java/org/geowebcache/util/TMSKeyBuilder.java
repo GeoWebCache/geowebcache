@@ -77,9 +77,7 @@ public final class TMSKeyBuilder {
         } catch (GeoWebCacheException e) {
             throw new RuntimeException(e);
         }
-        return layer.getMimeTypes().stream()
-                .map(MimeType::getFileExtension)
-                .collect(Collectors.toSet());
+        return layer.getMimeTypes().stream().map(MimeType::getFileExtension).collect(Collectors.toSet());
     }
 
     public String forTile(TileObject obj) {
@@ -117,17 +115,7 @@ public final class TMSKeyBuilder {
         // Key format, comprised of
         // {@code <prefix>/<layer name>/<gridset id>/<format id>/<parameters
         // hash>/<z>/<x>/<y>.<extension>}
-        String key =
-                join(
-                        false,
-                        prefix,
-                        layer,
-                        gridset,
-                        shortFormat,
-                        parametersId,
-                        z,
-                        x,
-                        y + "." + extension);
+        String key = join(false, prefix, layer, gridset, shortFormat, parametersId, z, x, y + "." + extension);
         return key;
     }
 
@@ -181,9 +169,7 @@ public final class TMSKeyBuilder {
                 false,
                 prefix,
                 layerId,
-                PARAMETERS_METADATA_OBJECT_PREFIX
-                        + parametersId
-                        + PARAMETERS_METADATA_OBJECT_SUFFIX);
+                PARAMETERS_METADATA_OBJECT_PREFIX + parametersId + PARAMETERS_METADATA_OBJECT_SUFFIX);
     }
 
     public String parametersMetadataPrefix(final String layerName) {

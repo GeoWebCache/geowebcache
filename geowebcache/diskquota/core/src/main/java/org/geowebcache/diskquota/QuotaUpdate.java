@@ -29,12 +29,7 @@ public class QuotaUpdate {
      *     value decreases it
      */
     public QuotaUpdate(
-            String layerName,
-            String gridsetId,
-            String blobFormat,
-            String parametersId,
-            long size,
-            long[] tileIndex) {
+            String layerName, String gridsetId, String blobFormat, String parametersId, long size, long[] tileIndex) {
         this(new TileSet(layerName, gridsetId, blobFormat, parametersId), size, tileIndex);
     }
 

@@ -59,11 +59,7 @@ public class TileSet implements Comparable<TileSet> {
     }
 
     public static void computeId(
-            String layerName,
-            String gridsetId,
-            String blobFormat,
-            String parametersId,
-            StringBuilder idTarget) {
+            String layerName, String gridsetId, String blobFormat, String parametersId, StringBuilder idTarget) {
         idTarget.append(layerName).append('#').append(gridsetId).append('#').append(blobFormat);
         if (parametersId != null) {
             idTarget.append('#').append(parametersId);
@@ -78,8 +74,7 @@ public class TileSet implements Comparable<TileSet> {
         String[] splitted = key.split("#");
         if (splitted.length < 3 || splitted.length > 4) {
             throw new IllegalArgumentException(
-                    "Invalid key for standard tile set, "
-                            + "it should have the layer#gridset#format[#paramId]");
+                    "Invalid key for standard tile set, " + "it should have the layer#gridset#format[#paramId]");
         }
 
         this.layerName = splitted[0];

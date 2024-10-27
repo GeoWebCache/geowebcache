@@ -144,8 +144,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
 
     @Test
     public void testRemoveNotExists() throws Exception {
-        assertThrows(
-                NoSuchElementException.class, () -> removeInfo(config, "GridSetThatDoesntExist"));
+        assertThrows(NoSuchElementException.class, () -> removeInfo(config, "GridSetThatDoesntExist"));
     }
 
     @Test
@@ -245,11 +244,9 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     @Test
     public void testModifyCallRequiredToChangeInfoFromGetInfos() throws Exception {
         testAdd();
-        I goodGridSet =
-                requirePresent(
-                        getInfos(config).stream()
-                                .filter(i -> i.getName().equals("test"))
-                                .findAny());
+        I goodGridSet = requirePresent(getInfos(config).stream()
+                .filter(i -> i.getName().equals("test"))
+                .findAny());
         doModifyInfo(goodGridSet, 2);
 
         Optional<I> retrieved = getInfo(config, "test");
@@ -270,9 +267,8 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     @Test
     public void testModifyCallRequiredToChangeExistingInfoFromGetInfos() throws Exception {
         String name = getExistingInfo();
-        I goodGridSet =
-                requirePresent(
-                        getInfos(config).stream().filter(i -> i.getName().equals(name)).findAny());
+        I goodGridSet = requirePresent(
+                getInfos(config).stream().filter(i -> i.getName().equals(name)).findAny());
         doModifyInfo(goodGridSet, 2);
 
         Optional<I> retrieved = getInfo(config, name);
@@ -329,8 +325,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         // get a thread pool
         @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService pool =
-                Executors.newFixedThreadPool(
-                        16, (Runnable r) -> new Thread(r, "Info Concurrency Test for ADD"));
+                Executors.newFixedThreadPool(16, (Runnable r) -> new Thread(r, "Info Concurrency Test for ADD"));
         // create a bunch of concurrent adds
         ArrayList<Future<I>> futures = new ArrayList<>(100);
         for (int i = 0; i < 100; ++i) {
@@ -338,12 +333,10 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
             int id = 100 + i;
             I info = getGoodInfo(Integer.toString(id), id);
             // schedule the add
-            Future<I> future =
-                    pool.submit(
-                            () -> {
-                                addInfo(config, info);
-                                return info;
-                            });
+            Future<I> future = pool.submit(() -> {
+                addInfo(config, info);
+                return info;
+            });
             futures.add(future);
         }
         // get the results
@@ -374,19 +367,16 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         // get a thread pool
         @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService pool =
-                Executors.newFixedThreadPool(
-                        16, (Runnable r) -> new Thread(r, "Info Concurrency Test for DELETE"));
+                Executors.newFixedThreadPool(16, (Runnable r) -> new Thread(r, "Info Concurrency Test for DELETE"));
         // create a bunch of concurrent deletes
         ArrayList<Future<String>> futures = new ArrayList<>(100);
         for (int i = 0; i < 100; ++i) {
             // schedule the delete
             final String name = Integer.toString(i);
-            Future<String> future =
-                    pool.submit(
-                            () -> {
-                                removeInfo(config, name);
-                                return name;
-                            });
+            Future<String> future = pool.submit(() -> {
+                removeInfo(config, name);
+                return name;
+            });
             futures.add(future);
         }
         // get the results
@@ -417,8 +407,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         // get a thread pool
         @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService pool =
-                Executors.newFixedThreadPool(
-                        16, (Runnable r) -> new Thread(r, "Info Concurrency Test for MODIFY"));
+                Executors.newFixedThreadPool(16, (Runnable r) -> new Thread(r, "Info Concurrency Test for MODIFY"));
         // create a bunch of concurrent modifies
         ArrayList<Future<I>> futures = new ArrayList<>(100);
         for (int i = 0; i < 100; ++i) {
@@ -427,12 +416,10 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
             int modifiedId = 200 + i;
             I modifiedInfo = getGoodInfo(Integer.toString(originalId), modifiedId);
             // schedule the add
-            Future<I> future =
-                    pool.submit(
-                            () -> {
-                                modifyInfo(config, modifiedInfo);
-                                return modifiedInfo;
-                            });
+            Future<I> future = pool.submit(() -> {
+                modifyInfo(config, modifiedInfo);
+                return modifiedInfo;
+            });
             futures.add(future);
         }
         // get the results

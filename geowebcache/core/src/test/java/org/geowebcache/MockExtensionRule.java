@@ -82,11 +82,10 @@ public class MockExtensionRule extends ExternalResource {
     }
 
     protected ApplicationContext makeContext() throws IllegalArgumentException {
-        return (ApplicationContext)
-                Proxy.newProxyInstance(
-                        MockExtensionRule.class.getClassLoader(),
-                        new Class[] {ApplicationContext.class},
-                        new ContextInvocationHandler());
+        return (ApplicationContext) Proxy.newProxyInstance(
+                MockExtensionRule.class.getClassLoader(),
+                new Class[] {ApplicationContext.class},
+                new ContextInvocationHandler());
     }
 
     /** Register a mock extension bean */
@@ -133,7 +132,8 @@ public class MockExtensionRule extends ExternalResource {
                             .orElseThrow(() -> new NoSuchBeanDefinitionException((String) args[0]));
                 } else if (method.getParameterTypes()[0].equals(Class.class)) {
                     for (Entry<String, Object> pair : beans.entrySet()) {
-                        if (((Class<?>) args[0]).isAssignableFrom(pair.getValue().getClass())) {
+                        if (((Class<?>) args[0])
+                                .isAssignableFrom(pair.getValue().getClass())) {
                             return pair.getValue();
                         }
                         throw new NoSuchBeanDefinitionException((Class<?>) args[0]);

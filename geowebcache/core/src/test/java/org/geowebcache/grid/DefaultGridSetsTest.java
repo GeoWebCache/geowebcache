@@ -44,8 +44,7 @@ public class DefaultGridSetsTest {
         // get the default mercator gridset and make sure it matches the EPSG:3857 gridset
         GridSet defaultMercatorGridSet = broker.getWorldEpsg3857();
         assertNotNull("GridSetBroker missing default mercator GridSet", defaultMercatorGridSet);
-        assertEquals(
-                "Unexpected default mercator GridSet", epsg3857GridSet, defaultMercatorGridSet);
+        assertEquals("Unexpected default mercator GridSet", epsg3857GridSet, defaultMercatorGridSet);
     }
 
     @Test
@@ -64,12 +63,8 @@ public class DefaultGridSetsTest {
         // get the default unprojected gridset and make sure it matches the GlobalCRS84Geometric
         // gridset
         GridSet defaultUnprojectedGridSet = broker.getWorldEpsg4326();
-        assertNotNull(
-                "GridSetBroker missing default unprojected GridSet", defaultUnprojectedGridSet);
-        assertEquals(
-                "Unexpected default unprojected GridSet",
-                globalCrs84GridSet,
-                defaultUnprojectedGridSet);
+        assertNotNull("GridSetBroker missing default unprojected GridSet", defaultUnprojectedGridSet);
+        assertEquals("Unexpected default unprojected GridSet", globalCrs84GridSet, defaultUnprojectedGridSet);
         // make sure GoogleMapsCompatible is available and is the mercator default
         GridSet googleMapsCompatible = broker.get("GoogleMapsCompatible");
         assertNotNull("GridSetBroker missing GoogleMapsCompatible GridSet", googleMapsCompatible);
@@ -83,10 +78,7 @@ public class DefaultGridSetsTest {
         // gridset
         GridSet defaultMercatorGridSet = broker.getWorldEpsg3857();
         assertNotNull("GridSetBroker missing default mercator GridSet", defaultMercatorGridSet);
-        assertEquals(
-                "Unexpected default mercator GridSet",
-                googleMapsCompatible,
-                defaultMercatorGridSet);
+        assertEquals("Unexpected default mercator GridSet", googleMapsCompatible, defaultMercatorGridSet);
     }
 
     @Test
@@ -108,9 +100,7 @@ public class DefaultGridSetsTest {
         // reference pixel size and scale denominators
         for (int level = 0; level < base.getNumLevels(); level++) {
             assertEquals(
-                    base.getGrid(level).getScaleDenominator(),
-                    x2.getGrid(level).getScaleDenominator() * 2,
-                    1e-6);
+                    base.getGrid(level).getScaleDenominator(), x2.getGrid(level).getScaleDenominator() * 2, 1e-6);
         }
     }
 
@@ -133,9 +123,7 @@ public class DefaultGridSetsTest {
         // reference pixel size and scale denominators
         for (int level = 0; level < base.getNumLevels(); level++) {
             assertEquals(
-                    base.getGrid(level).getScaleDenominator(),
-                    x2.getGrid(level).getScaleDenominator() * 2,
-                    1e-6);
+                    base.getGrid(level).getScaleDenominator(), x2.getGrid(level).getScaleDenominator() * 2, 1e-6);
         }
     }
 }

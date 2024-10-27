@@ -66,12 +66,8 @@ public class GuavaCacheProvider implements CacheProvider {
     private static final String GUAVA_NAME = "Guava Cache";
 
     /** Array containing the supported Policies */
-    public static final List<EvictionPolicy> POLICIES =
-            Collections.unmodifiableList(
-                    Arrays.asList(
-                            EvictionPolicy.NULL,
-                            EvictionPolicy.EXPIRE_AFTER_ACCESS,
-                            EvictionPolicy.EXPIRE_AFTER_WRITE));
+    public static final List<EvictionPolicy> POLICIES = Collections.unmodifiableList(
+            Arrays.asList(EvictionPolicy.NULL, EvictionPolicy.EXPIRE_AFTER_ACCESS, EvictionPolicy.EXPIRE_AFTER_WRITE));
 
     /**
      * This class handles the {@link CacheStats} object returned by the guava cache.
@@ -83,8 +79,7 @@ public class GuavaCacheProvider implements CacheProvider {
         /** serialVersionUID */
         private static final long serialVersionUID = 1L;
 
-        public GuavaCacheStatistics(
-                CacheStats stats, double currentSpace, long actualSize, long totalSize) {
+        public GuavaCacheStatistics(CacheStats stats, double currentSpace, long actualSize, long totalSize) {
             this.setEvictionCount(stats.evictionCount());
             this.setHitCount(stats.hitCount());
             this.setMissCount(stats.missCount());
@@ -149,39 +144,33 @@ public class GuavaCacheProvider implements CacheProvider {
         // Create the CacheBuilder
         CacheBuilder<Object, Object> builder = CacheBuilder.newBuilder();
         // Add weigher
-        Weigher<String, TileObject> weigher =
-                (key, value) -> {
-                    currentSize.addAndGet(value.getBlobSize());
-                    return value.getBlobSize();
-                };
+        Weigher<String, TileObject> weigher = (key, value) -> {
+            currentSize.addAndGet(value.getBlobSize());
+            return value.getBlobSize();
+        };
         // Create the builder
-        CacheBuilder<String, TileObject> newBuilder =
-                builder.maximumWeight(maxMemory)
-                        .recordStats()
-                        .weigher(weigher)
-                        .concurrencyLevel(concurrency)
-                        .removalListener(
-                                notification -> {
-                                    // TODO This operation is not atomic
-                                    TileObject obj = notification.getValue();
-                                    // Update the current size
-                                    currentSize.addAndGet(-obj.getBlobSize());
-                                    final String tileKey = generateTileKey(obj);
-                                    final String layerName = obj.getLayerName();
-                                    multimap.removeTile(layerName, tileKey);
-                                    if (LOGGER.isLoggable(Level.FINE)) {
-                                        LOGGER.fine(
-                                                "Removed tile "
-                                                        + tileKey
-                                                        + " for layer "
-                                                        + layerName
-                                                        + " due to reason:"
-                                                        + notification.getCause().toString());
-                                        LOGGER.fine(
-                                                "Removed tile was evicted? "
-                                                        + notification.wasEvicted());
-                                    }
-                                });
+        CacheBuilder<String, TileObject> newBuilder = builder.maximumWeight(maxMemory)
+                .recordStats()
+                .weigher(weigher)
+                .concurrencyLevel(concurrency)
+                .removalListener(notification -> {
+                    // TODO This operation is not atomic
+                    TileObject obj = notification.getValue();
+                    // Update the current size
+                    currentSize.addAndGet(-obj.getBlobSize());
+                    final String tileKey = generateTileKey(obj);
+                    final String layerName = obj.getLayerName();
+                    multimap.removeTile(layerName, tileKey);
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Removed tile "
+                                + tileKey
+                                + " for layer "
+                                + layerName
+                                + " due to reason:"
+                                + notification.getCause().toString());
+                        LOGGER.fine("Removed tile was evicted? " + notification.wasEvicted());
+                    }
+                });
         // Handle eviction policy
         boolean configuredPolicy = false;
         if (policy != null && evictionTime > 0) {
@@ -211,22 +200,21 @@ public class GuavaCacheProvider implements CacheProvider {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Configuring Scheduled Task for cache eviction");
             }
-            Runnable command =
-                    () -> {
-                        if (configured.get()) {
-                            // Increment the number of current operations
-                            // This behavior is used in order to wait
-                            // the end of all the operations after setting
-                            // the configured parameter to false
-                            actualOperations.incrementAndGet();
-                            try {
-                                cache.cleanUp();
-                            } finally {
-                                // Decrement the number of current operations.
-                                actualOperations.decrementAndGet();
-                            }
-                        }
-                    };
+            Runnable command = () -> {
+                if (configured.get()) {
+                    // Increment the number of current operations
+                    // This behavior is used in order to wait
+                    // the end of all the operations after setting
+                    // the configured parameter to false
+                    actualOperations.incrementAndGet();
+                    try {
+                        cache.cleanUp();
+                    } finally {
+                        // Decrement the number of current operations.
+                        actualOperations.decrementAndGet();
+                    }
+                }
+            };
             // Initialization of the internal Scheduler task for scheduling cache cleanup
             scheduledPool = Executors.newScheduledThreadPool(CORE_POOL_SIZE);
             scheduledPool.scheduleAtFixedRate(command, 10, evictionTime + 1, TimeUnit.SECONDS);
@@ -467,13 +455,7 @@ public class GuavaCacheProvider implements CacheProvider {
             try {
                 // Get cache statistics
                 long actualSize = currentSize.get();
-                long currentSpace =
-                        (long)
-                                (100L
-                                        - (1L)
-                                                * (100
-                                                        * ((1.0d) * (maxMemory - actualSize))
-                                                        / maxMemory));
+                long currentSpace = (long) (100L - (1L) * (100 * ((1.0d) * (maxMemory - actualSize)) / maxMemory));
                 if (currentSpace < 0) {
                     currentSpace = 0;
                 }
@@ -500,14 +482,13 @@ public class GuavaCacheProvider implements CacheProvider {
     public static String generateTileKey(TileObject obj) {
         Map<String, String> parameters = obj.getParameters();
 
-        StringBuilder builder =
-                new StringBuilder(obj.getLayerName())
-                        .append(SEPARATOR)
-                        .append(obj.getGridSetId())
-                        .append(SEPARATOR)
-                        .append(Arrays.toString(obj.getXYZ()))
-                        .append(SEPARATOR)
-                        .append(obj.getBlobFormat());
+        StringBuilder builder = new StringBuilder(obj.getLayerName())
+                .append(SEPARATOR)
+                .append(obj.getGridSetId())
+                .append(SEPARATOR)
+                .append(Arrays.toString(obj.getXYZ()))
+                .append(SEPARATOR)
+                .append(obj.getBlobFormat());
 
         // If parameters are present they must be handled
         if (parameters != null && !parameters.isEmpty()) {

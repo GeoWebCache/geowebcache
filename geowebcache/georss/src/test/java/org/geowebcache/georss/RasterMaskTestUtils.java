@@ -32,21 +32,20 @@ public class RasterMaskTestUtils {
 
     public static boolean debugToDisk;
 
-    public static GeometryRasterMaskBuilder buildSampleFilterMatrix(
-            final TileLayer layer, final String gridsetId) throws Exception {
+    public static GeometryRasterMaskBuilder buildSampleFilterMatrix(final TileLayer layer, final String gridsetId)
+            throws Exception {
         return buildSampleFilterMatrix(layer, gridsetId, 10);
     }
 
     public static GeometryRasterMaskBuilder buildSampleFilterMatrix(
-            final TileLayer layer, final String gridsetId, final int maxMaskLevel)
-            throws Exception {
+            final TileLayer layer, final String gridsetId, final int maxMaskLevel) throws Exception {
 
         final Geometry[] entries = createSampleEntries();
 
-        final GridSubset gridSubset = layer.getGridSubset(layer.getGridSubsets().iterator().next());
+        final GridSubset gridSubset =
+                layer.getGridSubset(layer.getGridSubsets().iterator().next());
         final int[] metaTilingFactors = layer.getMetaTilingFactors();
-        GeometryRasterMaskBuilder matrix =
-                new GeometryRasterMaskBuilder(gridSubset, metaTilingFactors, maxMaskLevel);
+        GeometryRasterMaskBuilder matrix = new GeometryRasterMaskBuilder(gridSubset, metaTilingFactors, maxMaskLevel);
 
         try {
             for (Geometry geom : entries) {
@@ -61,8 +60,7 @@ public class RasterMaskTestUtils {
         return matrix;
     }
 
-    public static void logImages(final File target, final GeometryRasterMaskBuilder matrix)
-            throws IOException {
+    public static void logImages(final File target, final GeometryRasterMaskBuilder matrix) throws IOException {
         if (debugToDisk) {
             BufferedImage[] byLevelMasks = matrix.getByLevelMasks();
 

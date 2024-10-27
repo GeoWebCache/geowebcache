@@ -52,10 +52,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({
-    "file*:/webapp/WEB-INF/web.xml",
-    "file*:/webapp/WEB-INF/geowebcache-servlet.xml"
-})
+@ContextConfiguration({"file*:/webapp/WEB-INF/web.xml", "file*:/webapp/WEB-INF/geowebcache-servlet.xml"})
 public class MassTruncateControllerTest {
     private MockMvc mockMvc;
 
@@ -63,8 +60,7 @@ public class MassTruncateControllerTest {
 
     @Before
     public void setup() throws GeoWebCacheException {
-        GridSetBroker gridSetBroker =
-                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
+        GridSetBroker gridSetBroker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
         XMLConfiguration xmlConfig = loadXMLConfig();
         xmlConfig.setGridSetBroker(gridSetBroker);
         xmlConfig.afterPropertiesSet();
@@ -80,8 +76,7 @@ public class MassTruncateControllerTest {
         String layerName = "test";
         TileLayer tl1 = createMock(TileLayer.class);
         expect(tl1.getGridSubsets()).andReturn(layer1GridSet).anyTimes();
-        String requestBody =
-                "<truncateLayer><layerName>" + layerName + "</layerName></truncateLayer>";
+        String requestBody = "<truncateLayer><layerName>" + layerName + "</layerName></truncateLayer>";
 
         TileBreeder tb = createMock(TileBreeder.class);
         expect(tb.findTileLayer(layerName)).andReturn(tl1);
@@ -97,11 +92,10 @@ public class MassTruncateControllerTest {
         mtc.setTileBreeder(tb);
 
         this.mockMvc
-                .perform(
-                        post("/rest/masstruncate")
-                                .contentType(MediaType.TEXT_XML)
-                                .content(requestBody)
-                                .contextPath(""))
+                .perform(post("/rest/masstruncate")
+                        .contentType(MediaType.TEXT_XML)
+                        .content(requestBody)
+                        .contextPath(""))
                 .andExpect(status().is2xxSuccessful());
         verify(sb);
     }
@@ -115,8 +109,7 @@ public class MassTruncateControllerTest {
         expect(tileLayer.getGridSubsets()).andReturn(layer1GridSet);
         expect(tileLayer.getGridSubsets()).andReturn(new HashSet<>());
         replay(tileLayer);
-        String requestBody =
-                "<truncateLayer><layerName>" + layerName + "</layerName></truncateLayer>";
+        String requestBody = "<truncateLayer><layerName>" + layerName + "</layerName></truncateLayer>";
 
         StorageBroker sb = createMock(StorageBroker.class);
         for (String grid : layer1GridSet)
@@ -132,19 +125,17 @@ public class MassTruncateControllerTest {
 
         // first run, it will get an ok
         this.mockMvc
-                .perform(
-                        post("/rest/masstruncate")
-                                .contentType(MediaType.TEXT_XML)
-                                .content(requestBody)
-                                .contextPath(""))
+                .perform(post("/rest/masstruncate")
+                        .contentType(MediaType.TEXT_XML)
+                        .content(requestBody)
+                        .contextPath(""))
                 .andExpect(status().is2xxSuccessful());
         // second run, will get a falso and will check the breeded for layer existence
         this.mockMvc
-                .perform(
-                        post("/rest/masstruncate")
-                                .contentType(MediaType.TEXT_XML)
-                                .content(requestBody)
-                                .contextPath(""))
+                .perform(post("/rest/masstruncate")
+                        .contentType(MediaType.TEXT_XML)
+                        .content(requestBody)
+                        .contextPath(""))
                 .andExpect(status().is2xxSuccessful());
         verify(sb);
     }
@@ -152,8 +143,7 @@ public class MassTruncateControllerTest {
     @Test
     public void testTruncateNonExistingLayer() throws Exception {
         String layerName = "test";
-        String requestBody =
-                "<truncateLayer><layerName>" + layerName + "</layerName></truncateLayer>";
+        String requestBody = "<truncateLayer><layerName>" + layerName + "</layerName></truncateLayer>";
 
         StorageBroker sb = createMock(StorageBroker.class);
         replay(sb);
@@ -167,11 +157,10 @@ public class MassTruncateControllerTest {
 
         // first run, it will get a bad request
         this.mockMvc
-                .perform(
-                        post("/rest/masstruncate")
-                                .contentType(MediaType.TEXT_XML)
-                                .content(requestBody)
-                                .contextPath(""))
+                .perform(post("/rest/masstruncate")
+                        .contentType(MediaType.TEXT_XML)
+                        .content(requestBody)
+                        .contextPath(""))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("Could not find layer test")));
         verify(sb);
@@ -179,13 +168,11 @@ public class MassTruncateControllerTest {
 
     @Test
     public void testGetMassTruncate() throws Exception {
-        MvcResult result =
-                this.mockMvc
-                        .perform(
-                                get("/rest/masstruncate")
-                                        .contentType(MediaType.APPLICATION_ATOM_XML)
-                                        .contextPath(""))
-                        .andReturn();
+        MvcResult result = this.mockMvc
+                .perform(get("/rest/masstruncate")
+                        .contentType(MediaType.APPLICATION_ATOM_XML)
+                        .contextPath(""))
+                .andReturn();
 
         assertEquals(200, result.getResponse().getStatus());
     }
@@ -234,11 +221,10 @@ public class MassTruncateControllerTest {
         mtc.setTileBreeder(tb);
 
         this.mockMvc
-                .perform(
-                        post("/rest/masstruncate")
-                                .contentType(MediaType.TEXT_XML)
-                                .content(requestBody)
-                                .contextPath(""))
+                .perform(post("/rest/masstruncate")
+                        .contentType(MediaType.TEXT_XML)
+                        .content(requestBody)
+                        .contextPath(""))
                 .andExpect(status().is2xxSuccessful());
         verify(sb);
     }
@@ -284,31 +270,24 @@ public class MassTruncateControllerTest {
         mtc.setTileBreeder(tb);
         String requestBody = "<truncateAll>=</truncateAll>";
 
-        MvcResult result =
-                this.mockMvc
-                        .perform(
-                                post("/rest/masstruncate")
-                                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                                        .content(requestBody)
-                                        .contextPath(""))
-                        .andExpect(status().is2xxSuccessful())
-                        .andReturn();
-        assertTrue(
-                result.getResponse().getContentAsString().contains("Truncated Layers:test1,test2"));
+        MvcResult result = this.mockMvc
+                .perform(post("/rest/masstruncate")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .content(requestBody)
+                        .contextPath(""))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains("Truncated Layers:test1,test2"));
     }
 
     private XMLConfiguration loadXMLConfig() {
 
         XMLConfiguration xmlConfig = null;
         try {
-            xmlConfig =
-                    new XMLConfiguration(
-                            null,
-                            new MockConfigurationResourceProvider(
-                                    () ->
-                                            XMLConfiguration.class.getResourceAsStream(
-                                                    XMLConfigurationBackwardsCompatibilityTest
-                                                            .GWC_125_CONFIG_FILE)));
+            xmlConfig = new XMLConfiguration(
+                    null,
+                    new MockConfigurationResourceProvider(() -> XMLConfiguration.class.getResourceAsStream(
+                            XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE)));
         } catch (Exception e) {
             // Do nothing
         }

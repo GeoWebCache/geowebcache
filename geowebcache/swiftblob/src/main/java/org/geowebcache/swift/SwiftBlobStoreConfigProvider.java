@@ -34,38 +34,34 @@ public class SwiftBlobStoreConfigProvider implements XMLConfigurationProvider {
 
     private static GeoWebCacheEnvironment gwcEnvironment = null;
 
-    private static final SingleValueConverter EnvironmentNullableBooleanConverter =
-            new BooleanConverter() {
+    private static final SingleValueConverter EnvironmentNullableBooleanConverter = new BooleanConverter() {
 
-                @Override
-                public Object fromString(String str) {
-                    str = resolveFromEnv(str);
-                    if (Strings.isNullOrEmpty(str)) {
-                        return null;
-                    }
-                    return super.fromString(str);
-                }
-            };
+        @Override
+        public Object fromString(String str) {
+            str = resolveFromEnv(str);
+            if (Strings.isNullOrEmpty(str)) {
+                return null;
+            }
+            return super.fromString(str);
+        }
+    };
 
-    private static final SingleValueConverter EnvironmentStringConverter =
-            new StringConverter() {
-                @Override
-                public Object fromString(String str) {
-                    str = resolveFromEnv(str);
-                    if (Strings.isNullOrEmpty(str)) {
-                        return null;
-                    }
-                    return str;
-                }
-            };
+    private static final SingleValueConverter EnvironmentStringConverter = new StringConverter() {
+        @Override
+        public Object fromString(String str) {
+            str = resolveFromEnv(str);
+            if (Strings.isNullOrEmpty(str)) {
+                return null;
+            }
+            return str;
+        }
+    };
 
     private static String resolveFromEnv(String str) {
         if (gwcEnvironment == null) {
             gwcEnvironment = GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
         }
-        if (gwcEnvironment != null
-                && str != null
-                && GeoWebCacheEnvironment.ALLOW_ENV_PARAMETRIZATION) {
+        if (gwcEnvironment != null && str != null && GeoWebCacheEnvironment.ALLOW_ENV_PARAMETRIZATION) {
             Object result = gwcEnvironment.resolveValue(str);
             if (result == null) {
                 return null;
@@ -78,19 +74,15 @@ public class SwiftBlobStoreConfigProvider implements XMLConfigurationProvider {
     @Override
     public XStream getConfiguredXStream(XStream xs) {
         xs.alias("SwiftBlobStore", SwiftBlobStoreInfo.class);
-        xs.registerLocalConverter(
-                SwiftBlobStoreInfo.class, "container", EnvironmentStringConverter);
+        xs.registerLocalConverter(SwiftBlobStoreInfo.class, "container", EnvironmentStringConverter);
         xs.registerLocalConverter(SwiftBlobStoreInfo.class, "provider", EnvironmentStringConverter);
         xs.registerLocalConverter(SwiftBlobStoreInfo.class, "region", EnvironmentStringConverter);
-        xs.registerLocalConverter(
-                SwiftBlobStoreInfo.class, "keystoneVersion", EnvironmentStringConverter);
-        xs.registerLocalConverter(
-                SwiftBlobStoreInfo.class, "keystoneScope", EnvironmentStringConverter);
+        xs.registerLocalConverter(SwiftBlobStoreInfo.class, "keystoneVersion", EnvironmentStringConverter);
+        xs.registerLocalConverter(SwiftBlobStoreInfo.class, "keystoneScope", EnvironmentStringConverter);
         xs.registerLocalConverter(SwiftBlobStoreInfo.class, "identity", EnvironmentStringConverter);
         xs.registerLocalConverter(SwiftBlobStoreInfo.class, "password", EnvironmentStringConverter);
         xs.registerLocalConverter(SwiftBlobStoreInfo.class, "prefix", EnvironmentStringConverter);
-        xs.registerLocalConverter(
-                BlobStoreInfo.class, "enabled", EnvironmentNullableBooleanConverter);
+        xs.registerLocalConverter(BlobStoreInfo.class, "enabled", EnvironmentNullableBooleanConverter);
         xs.aliasField("id", SwiftBlobStoreInfo.class, "name");
         return xs;
     }

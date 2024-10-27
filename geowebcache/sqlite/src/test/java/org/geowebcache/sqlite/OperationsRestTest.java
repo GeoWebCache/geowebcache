@@ -61,7 +61,8 @@ import org.springframework.web.context.WebApplicationContext;
 @ActiveProfiles("test")
 public class OperationsRestTest extends TestSupport {
 
-    @Autowired private WebApplicationContext webApplicationContext;
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
     @Rule
     public SuitabilityCheckRule suitability =
@@ -79,27 +80,24 @@ public class OperationsRestTest extends TestSupport {
         // creates some database files for the tests
         Tuple<File, Tuple<String, String>> testFiles = createTestFiles();
         File rootDirectory = testFiles.first;
-        try (FileInputStream fileA =
-                        new FileInputStream(new File(rootDirectory, testFiles.second.first));
-                FileInputStream fileB =
-                        new FileInputStream(new File(rootDirectory, testFiles.second.second))) {
+        try (FileInputStream fileA = new FileInputStream(new File(rootDirectory, testFiles.second.first));
+                FileInputStream fileB = new FileInputStream(new File(rootDirectory, testFiles.second.second))) {
             // perform the rest request
             MockMultipartFile fileUploadA = new MockMultipartFile("file", fileA);
             MockMultipartFile fileUploadB = new MockMultipartFile("file", fileB);
-            MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+            MockMvc mockMvc =
+                    MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
             // first request
-            mockMvc.perform(
-                            MockMvcRequestBuilders.multipart("/sqlite/replace")
-                                    .file(fileUploadA)
-                                    .param("layer", "europe")
-                                    .param("destination", testFiles.second.first))
+            mockMvc.perform(MockMvcRequestBuilders.multipart("/sqlite/replace")
+                            .file(fileUploadA)
+                            .param("layer", "europe")
+                            .param("destination", testFiles.second.first))
                     .andExpect(status().is(200));
             // second request
-            mockMvc.perform(
-                            MockMvcRequestBuilders.multipart("/sqlite/replace")
-                                    .file(fileUploadB)
-                                    .param("layer", "europe")
-                                    .param("destination", testFiles.second.second))
+            mockMvc.perform(MockMvcRequestBuilders.multipart("/sqlite/replace")
+                            .file(fileUploadB)
+                            .param("layer", "europe")
+                            .param("destination", testFiles.second.second))
                     .andExpect(status().is(200));
             // check that files were replaced
             checkThatStoreContainsReplacedTiles(testFiles.second.first, testFiles.second.second);
@@ -119,12 +117,12 @@ public class OperationsRestTest extends TestSupport {
         try (FileInputStream zipFileInputStream = new FileInputStream(zipFile)) {
             // perform the rest request
             MockMultipartFile zipUpload = new MockMultipartFile("file", zipFileInputStream);
-            MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+            MockMvc mockMvc =
+                    MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
             // execute request
-            mockMvc.perform(
-                            MockMvcRequestBuilders.multipart("/sqlite/replace")
-                                    .file(zipUpload)
-                                    .param("layer", "europe"))
+            mockMvc.perform(MockMvcRequestBuilders.multipart("/sqlite/replace")
+                            .file(zipUpload)
+                            .param("layer", "europe"))
                     .andExpect(status().is(200));
             // check that files were replaced
             checkThatStoreContainsReplacedTiles(testFiles.second.first, testFiles.second.second);
@@ -137,12 +135,12 @@ public class OperationsRestTest extends TestSupport {
         Tuple<File, Tuple<String, String>> testFiles = createTestFiles();
         File rootDirectory = testFiles.first;
         // perform the rest request
-        MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        MockMvc mockMvc =
+                MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         // execute request
-        mockMvc.perform(
-                        MockMvcRequestBuilders.multipart("/sqlite/replace")
-                                .param("layer", "europe")
-                                .param("source", rootDirectory.getPath()))
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/sqlite/replace")
+                        .param("layer", "europe")
+                        .param("source", rootDirectory.getPath()))
                 .andExpect(status().is(200));
         // check that files were replaced
         checkThatStoreContainsReplacedTiles(testFiles.second.first, testFiles.second.second);
@@ -161,40 +159,35 @@ public class OperationsRestTest extends TestSupport {
         addFilesToDelete(rootDirectoryB);
         MbtilesInfo configurationA = new MbtilesInfo();
         configurationA.setRootDirectory(rootDirectoryA.getPath());
-        configurationA.setTemplatePath(
-                Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
+        configurationA.setTemplatePath(Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
         MbtilesInfo configurationB = new MbtilesInfo();
         configurationB.setRootDirectory(rootDirectoryB.getPath());
-        configurationB.setTemplatePath(
-                Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
+        configurationB.setTemplatePath(Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
         MbtilesBlobStore storeA = new MbtilesBlobStore(configurationA);
         MbtilesBlobStore storeB = new MbtilesBlobStore(configurationB);
         addStoresToClean(storeA, storeB);
         // create the tiles that will be stored
-        TileObject putTileA =
-                TileObject.createCompleteTileObject(
-                        "africa",
-                        new long[] {10, 50, 5},
-                        "EPSG:4326",
-                        "image/png",
-                        null,
-                        TestSupport.stringToResource("IMAGE-10-50-5-A"));
-        TileObject putTileB =
-                TileObject.createCompleteTileObject(
-                        "africa",
-                        new long[] {10, 50, 5},
-                        "EPSG:4326",
-                        "image/png",
-                        null,
-                        TestSupport.stringToResource("IMAGE-10-50-5-B"));
-        TileObject putTileC =
-                TileObject.createCompleteTileObject(
-                        "africa",
-                        new long[] {10, 5050, 15},
-                        "EPSG:4326",
-                        "image/png",
-                        null,
-                        TestSupport.stringToResource("IMAGE-15-5050-5-B"));
+        TileObject putTileA = TileObject.createCompleteTileObject(
+                "africa",
+                new long[] {10, 50, 5},
+                "EPSG:4326",
+                "image/png",
+                null,
+                TestSupport.stringToResource("IMAGE-10-50-5-A"));
+        TileObject putTileB = TileObject.createCompleteTileObject(
+                "africa",
+                new long[] {10, 50, 5},
+                "EPSG:4326",
+                "image/png",
+                null,
+                TestSupport.stringToResource("IMAGE-10-50-5-B"));
+        TileObject putTileC = TileObject.createCompleteTileObject(
+                "africa",
+                new long[] {10, 5050, 15},
+                "EPSG:4326",
+                "image/png",
+                null,
+                TestSupport.stringToResource("IMAGE-15-5050-5-B"));
         // storing the tile
         storeA.put(putTileA);
         storeB.put(putTileB);
@@ -203,21 +196,17 @@ public class OperationsRestTest extends TestSupport {
         storeA.clear();
         storeB.clear();
         // return relative paths
-        String relativePathA =
-                Utils.buildPath("EPSG_4326", "africa", "image_png", "5", "tiles-0-0.sqlite");
-        String relativePathB =
-                Utils.buildPath("EPSG_4326", "africa", "image_png", "15", "tiles-0-5000.sqlite");
+        String relativePathA = Utils.buildPath("EPSG_4326", "africa", "image_png", "5", "tiles-0-0.sqlite");
+        String relativePathB = Utils.buildPath("EPSG_4326", "africa", "image_png", "15", "tiles-0-5000.sqlite");
         return tuple(rootDirectoryB, tuple(relativePathA, relativePathB));
     }
 
-    private void checkThatStoreContainsReplacedTiles(String relativePathA, String relativePathB)
-            throws Exception {
+    private void checkThatStoreContainsReplacedTiles(String relativePathA, String relativePathB) throws Exception {
         // instantiating the store
         File rootDirectory = OperationsRestWebConfig.ROOT_DIRECTORY;
         MbtilesInfo configuration = new MbtilesInfo();
         configuration.setRootDirectory(rootDirectory.getPath());
-        configuration.setTemplatePath(
-                Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
+        configuration.setTemplatePath(Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
         addStoresToClean(store);
         // checking that all the files are present
@@ -227,15 +216,12 @@ public class OperationsRestTest extends TestSupport {
         assertThat(fileB.exists(), is(true));
         // let's query the store to see if we get the replaced tiles
         TileObject getTile =
-                TileObject.createQueryTileObject(
-                        "africa", new long[] {10, 50, 5}, "EPSG:4326", "image/png", null);
+                TileObject.createQueryTileObject("africa", new long[] {10, 50, 5}, "EPSG:4326", "image/png", null);
         assertThat(store.get(getTile), is(true));
         assertThat(getTile.getBlob(), notNullValue());
         assertThat(TestSupport.resourceToString(getTile.getBlob()), is("IMAGE-10-50-5-B"));
         // let's query the second tile
-        getTile =
-                TileObject.createQueryTileObject(
-                        "africa", new long[] {10, 5050, 15}, "EPSG:4326", "image/png", null);
+        getTile = TileObject.createQueryTileObject("africa", new long[] {10, 5050, 15}, "EPSG:4326", "image/png", null);
         assertThat(store.get(getTile), is(true));
         assertThat(getTile.getBlob(), notNullValue());
         assertThat(TestSupport.resourceToString(getTile.getBlob()), is("IMAGE-15-5050-5-B"));
@@ -244,34 +230,29 @@ public class OperationsRestTest extends TestSupport {
     private void zipDirectory(Path directoryToZip, File outputZipFile) throws IOException {
         try (FileOutputStream fileOutputStream = new FileOutputStream(outputZipFile);
                 ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
-            Files.walkFileTree(
-                    directoryToZip,
-                    new SimpleFileVisitor<>() {
+            Files.walkFileTree(directoryToZip, new SimpleFileVisitor<>() {
 
-                        @Override
-                        public FileVisitResult visitFile(
-                                Path file, BasicFileAttributes fileAttributes) throws IOException {
-                            zipOutputStream.putNextEntry(
-                                    new ZipEntry(directoryToZip.relativize(file).toString()));
-                            Files.copy(file, zipOutputStream);
-                            zipOutputStream.closeEntry();
-                            return FileVisitResult.CONTINUE;
-                        }
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes fileAttributes) throws IOException {
+                    zipOutputStream.putNextEntry(
+                            new ZipEntry(directoryToZip.relativize(file).toString()));
+                    Files.copy(file, zipOutputStream);
+                    zipOutputStream.closeEntry();
+                    return FileVisitResult.CONTINUE;
+                }
 
-                        @Override
-                        public FileVisitResult preVisitDirectory(
-                                Path directory, BasicFileAttributes attrs) throws IOException {
-                            if (directory.equals(directoryToZip)) {
-                                return FileVisitResult.CONTINUE;
-                            }
-                            // the zip structure is not tied the OS file separator
-                            zipOutputStream.putNextEntry(
-                                    new ZipEntry(
-                                            directoryToZip.relativize(directory).toString() + "/"));
-                            zipOutputStream.closeEntry();
-                            return FileVisitResult.CONTINUE;
-                        }
-                    });
+                @Override
+                public FileVisitResult preVisitDirectory(Path directory, BasicFileAttributes attrs) throws IOException {
+                    if (directory.equals(directoryToZip)) {
+                        return FileVisitResult.CONTINUE;
+                    }
+                    // the zip structure is not tied the OS file separator
+                    zipOutputStream.putNextEntry(
+                            new ZipEntry(directoryToZip.relativize(directory).toString() + "/"));
+                    zipOutputStream.closeEntry();
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         }
     }
 

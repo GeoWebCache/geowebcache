@@ -39,9 +39,7 @@ public class UnsuitableStorageException extends StorageException {
             case EMPTY:
                 if (!empty) {
                     throw new UnsuitableStorageException(
-                            "Attempted to create Blob Store in "
-                                    + location
-                                    + " but it was not empty");
+                            "Attempted to create Blob Store in " + location + " but it was not empty");
                 }
             case NONE:
         }

@@ -90,8 +90,7 @@ public class S3BlobStore implements BlobStore {
 
     private CannedAccessControlList acl;
 
-    public S3BlobStore(
-            S3BlobStoreInfo config, TileLayerDispatcher layers, LockProvider lockProvider)
+    public S3BlobStore(S3BlobStoreInfo config, TileLayerDispatcher layers, LockProvider lockProvider)
             throws StorageException {
         checkNotNull(config);
         checkNotNull(layers);
@@ -118,10 +117,8 @@ public class S3BlobStore implements BlobStore {
      * Validates the client connection by running some {@link S3ClientChecker}, returns the valiated
      * client on success, otherwise throws an exception
      */
-    protected AmazonS3Client validateClient(AmazonS3Client client, String bucketName)
-            throws StorageException {
-        List<S3ClientChecker> connectionCheckers =
-                Arrays.asList(this::checkBucketPolicy, this::checkAccessControlList);
+    protected AmazonS3Client validateClient(AmazonS3Client client, String bucketName) throws StorageException {
+        List<S3ClientChecker> connectionCheckers = Arrays.asList(this::checkBucketPolicy, this::checkAccessControlList);
         List<Exception> exceptions = new ArrayList<>();
         for (S3ClientChecker checker : connectionCheckers) {
             try {
@@ -132,11 +129,9 @@ public class S3BlobStore implements BlobStore {
             }
         }
         if (exceptions.size() == connectionCheckers.size()) {
-            String messages =
-                    exceptions.stream().map(e -> e.getMessage()).collect(Collectors.joining("\n"));
+            String messages = exceptions.stream().map(e -> e.getMessage()).collect(Collectors.joining("\n"));
             throw new StorageException(
-                    "Could not validate the connection to S3, exceptions gathered during checks:\n "
-                            + messages);
+                    "Could not validate the connection to S3, exceptions gathered during checks:\n " + messages);
         }
 
         return client;
@@ -172,8 +167,7 @@ public class S3BlobStore implements BlobStore {
             BucketPolicy bucketPol = client.getBucketPolicy(bucketName);
             log.fine("Bucket " + bucketName + " policy: " + bucketPol.getPolicyText());
         } catch (AmazonServiceException se) {
-            throw new StorageException(
-                    "Server error getting bucket policy: " + se.getMessage(), se);
+            throw new StorageException("Server error getting bucket policy: " + se.getMessage(), se);
         }
     }
 
@@ -316,19 +310,17 @@ public class S3BlobStore implements BlobStore {
             return false;
         }
 
-        final Iterator<long[]> tileLocations =
-                new AbstractIterator<>() {
+        final Iterator<long[]> tileLocations = new AbstractIterator<>() {
 
-                    // TileRange iterator with 1x1 meta tiling factor
-                    private TileRangeIterator trIter =
-                            new TileRangeIterator(tileRange, new int[] {1, 1});
+            // TileRange iterator with 1x1 meta tiling factor
+            private TileRangeIterator trIter = new TileRangeIterator(tileRange, new int[] {1, 1});
 
-                    @Override
-                    protected long[] computeNext() {
-                        long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
-                        return gridLoc == null ? endOfData() : gridLoc;
-                    }
-                };
+            @Override
+            protected long[] computeNext() {
+                long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
+                return gridLoc == null ? endOfData() : gridLoc;
+            }
+        };
 
         if (listeners.isEmpty()) {
             // if there are no listeners, don't bother requesting every tile
@@ -355,9 +347,7 @@ public class S3BlobStore implements BlobStore {
 
             while (tileLocations.hasNext()) {
                 xyz = tileLocations.next();
-                TileObject tile =
-                        TileObject.createQueryTileObject(
-                                layerName, xyz, gridSetId, format, parameters);
+                TileObject tile = TileObject.createQueryTileObject(layerName, xyz, gridSetId, format, parameters);
                 tile.setParametersId(tileRange.getParametersId());
                 delete(tile);
             }
@@ -388,8 +378,7 @@ public class S3BlobStore implements BlobStore {
     }
 
     @Override
-    public boolean deleteByGridsetId(final String layerName, final String gridSetId)
-            throws StorageException {
+    public boolean deleteByGridsetId(final String layerName, final String gridSetId) throws StorageException {
 
         checkNotNull(layerName, "layerName");
         checkNotNull(gridSetId, "gridSetId");
@@ -468,8 +457,7 @@ public class S3BlobStore implements BlobStore {
         return s3Ops.getProperties(key);
     }
 
-    private void putParametersMetadata(
-            String layerName, String parametersId, Map<String, String> parameters) {
+    private void putParametersMetadata(String layerName, String parametersId, Map<String, String> parameters) {
         assert (isNull(parametersId) == isNull(parameters));
         if (isNull(parametersId)) {
             return;
@@ -492,24 +480,21 @@ public class S3BlobStore implements BlobStore {
     }
 
     @Override
-    public boolean deleteByParametersId(String layerName, String parametersId)
-            throws StorageException {
+    public boolean deleteByParametersId(String layerName, String parametersId) throws StorageException {
         checkNotNull(layerName, "layerName");
         checkNotNull(parametersId, "parametersId");
 
-        boolean prefixExists =
-                keyBuilder.forParameters(layerName, parametersId).stream()
-                        .map(
-                                prefix -> {
-                                    try {
-                                        return s3Ops.scheduleAsyncDelete(prefix);
-                                    } catch (RuntimeException | GeoWebCacheException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                })
-                        .reduce(Boolean::logicalOr) // Don't use Stream.anyMatch as it would short
-                        // circuit
-                        .orElse(false);
+        boolean prefixExists = keyBuilder.forParameters(layerName, parametersId).stream()
+                .map(prefix -> {
+                    try {
+                        return s3Ops.scheduleAsyncDelete(prefix);
+                    } catch (RuntimeException | GeoWebCacheException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .reduce(Boolean::logicalOr) // Don't use Stream.anyMatch as it would short
+                // circuit
+                .orElse(false);
         if (prefixExists) {
             listeners.sendParametersDeleted(layerName, parametersId);
         }

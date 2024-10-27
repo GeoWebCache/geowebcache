@@ -32,8 +32,7 @@ public final class LayerQuota implements Serializable {
         this(layer, expirationPolicyName, null);
     }
 
-    public LayerQuota(
-            final String layer, final ExpirationPolicy expirationPolicyName, Quota quota) {
+    public LayerQuota(final String layer, final ExpirationPolicy expirationPolicyName, Quota quota) {
         this.layer = layer;
         this.expirationPolicyName = expirationPolicyName;
         this.quota = quota;

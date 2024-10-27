@@ -46,16 +46,11 @@ public class ApplicationContextProvider implements ApplicationContextAware {
             throw new RuntimeException(msg);
         }
 
-        String tmpVar =
-                Optional.ofNullable(ctx.getServletContext())
-                        .map(sc -> sc.getInitParameter(varName))
-                        .orElse(null);
+        String tmpVar = Optional.ofNullable(ctx.getServletContext())
+                .map(sc -> sc.getInitParameter(varName))
+                .orElse(null);
         if (tmpVar != null && tmpVar.length() > 7) {
-            log.info(
-                    "Using servlet init context parameter to configure "
-                            + varName
-                            + " to "
-                            + tmpVar);
+            log.info("Using servlet init context parameter to configure " + varName + " to " + tmpVar);
             return tmpVar;
         }
 

@@ -130,8 +130,7 @@ public class JettyRule extends org.junit.rules.ExternalResource {
         try {
             HttpConfiguration httpConfiguration = new HttpConfiguration();
 
-            ServerConnector http =
-                    new ServerConnector(jettyServer, new HttpConnectionFactory(httpConfiguration));
+            ServerConnector http = new ServerConnector(jettyServer, new HttpConnectionFactory(httpConfiguration));
             http.setPort(port);
             http.setAcceptQueueSize(100);
             http.setIdleTimeout(1000 * 60 * 60);

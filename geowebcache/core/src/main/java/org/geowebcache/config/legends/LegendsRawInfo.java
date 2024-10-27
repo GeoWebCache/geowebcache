@@ -69,8 +69,7 @@ public class LegendsRawInfo {
         for (LegendRawInfo legendRawInfo : legendsRawInfo) {
             legendsInfo.put(
                     legendRawInfo.getStyle(),
-                    legendRawInfo.getLegendInfo(
-                            layerName, layerUrl, defaultWidth, defaultHeight, defaultFormat));
+                    legendRawInfo.getLegendInfo(layerName, layerUrl, defaultWidth, defaultHeight, defaultFormat));
         }
         return legendsInfo;
     }

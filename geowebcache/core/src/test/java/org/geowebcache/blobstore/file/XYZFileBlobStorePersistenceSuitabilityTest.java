@@ -30,8 +30,6 @@ public class XYZFileBlobStorePersistenceSuitabilityTest extends FileBasedBlobSto
     public BlobStore create(Object dir) throws Exception {
         String root = ((File) dir).getAbsolutePath();
         return new FileBlobStore(
-                root,
-                new XYZFilePathGenerator(
-                        root, createMock(TileLayerDispatcher.class), Convention.TMS));
+                root, new XYZFilePathGenerator(root, createMock(TileLayerDispatcher.class), Convention.TMS));
     }
 }

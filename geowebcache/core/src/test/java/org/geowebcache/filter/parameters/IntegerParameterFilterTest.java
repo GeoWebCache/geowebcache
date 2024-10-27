@@ -55,9 +55,7 @@ public class IntegerParameterFilterTest {
         assertThat(filter.getLegalValues(), containsInAnyOrder("42", "2", "0", "-1", "-200"));
 
         for (String test : Arrays.asList("42", "2", "0", "-1", "-200")) {
-            assertThat(
-                    filter.applies(test),
-                    Matchers.describedAs("Filter should apply to %0", is(true), test));
+            assertThat(filter.applies(test), Matchers.describedAs("Filter should apply to %0", is(true), test));
             assertThat(filter.apply(test), equalTo(test));
         }
         for (String test : Arrays.asList("43", "41", "3", "1", "-2", "-199", "-201", "-42")) {
@@ -78,46 +76,32 @@ public class IntegerParameterFilterTest {
         filter.setThreshold(15);
 
         for (String test : Arrays.asList("42", "2", "0", "-1", "-200")) {
-            assertThat(
-                    filter.applies(test),
-                    Matchers.describedAs("Filter should apply to %0", is(true), test));
+            assertThat(filter.applies(test), Matchers.describedAs("Filter should apply to %0", is(true), test));
             assertThat(filter.apply(test), equalTo(test));
         }
 
         for (String test : Arrays.asList("42", "56", "28")) {
-            assertThat(
-                    filter.applies(test),
-                    Matchers.describedAs("Filter should apply to %0", is(true), test));
+            assertThat(filter.applies(test), Matchers.describedAs("Filter should apply to %0", is(true), test));
             assertThat(filter.apply(test), equalTo("42"));
         }
         for (String test : Arrays.asList("2", "16", "1")) {
-            assertThat(
-                    filter.applies(test),
-                    Matchers.describedAs("Filter should apply to %0", is(true), test));
+            assertThat(filter.applies(test), Matchers.describedAs("Filter should apply to %0", is(true), test));
             assertThat(filter.apply(test), equalTo("2"));
         }
         for (String test : Arrays.asList("0")) {
-            assertThat(
-                    filter.applies(test),
-                    Matchers.describedAs("Filter should apply to %0", is(true), test));
+            assertThat(filter.applies(test), Matchers.describedAs("Filter should apply to %0", is(true), test));
             assertThat(filter.apply(test), equalTo("0"));
         }
         for (String test : Arrays.asList("-1", "-15")) {
-            assertThat(
-                    filter.applies(test),
-                    Matchers.describedAs("Filter should apply to %0", is(true), test));
+            assertThat(filter.applies(test), Matchers.describedAs("Filter should apply to %0", is(true), test));
             assertThat(filter.apply(test), equalTo("-1"));
         }
         for (String test : Arrays.asList("-200", "-186", "-214")) {
-            assertThat(
-                    filter.applies(test),
-                    Matchers.describedAs("Filter should apply to %0", is(true), test));
+            assertThat(filter.applies(test), Matchers.describedAs("Filter should apply to %0", is(true), test));
             assertThat(filter.apply(test), equalTo("-200"));
         }
         for (String test : Arrays.asList("57", "27", "-42", "-100")) {
-            assertThat(
-                    filter.applies(test),
-                    Matchers.describedAs("Filter should not apply to %0", is(false), test));
+            assertThat(filter.applies(test), Matchers.describedAs("Filter should not apply to %0", is(false), test));
             try {
                 filter.apply(test);
                 fail();
@@ -149,20 +133,18 @@ public class IntegerParameterFilterTest {
 
     @Test
     public void testFromXML() throws Exception {
-        Object o =
-                xs.fromXML(
-                        "<integerParameterFilter>\n"
-                                + "  <key>TEST</key>\n"
-                                + "  <defaultValue>Default</defaultValue>\n"
-                                + "  <values>\n"
-                                + "    <int>42</int>\n"
-                                + "    <int>2</int>\n"
-                                + "    <int>0</int>\n"
-                                + "    <int>-1</int>\n"
-                                + "    <int>-200</int>\n"
-                                + "  </values>\n"
-                                + "  <threshold>15</threshold>\n"
-                                + "</integerParameterFilter>");
+        Object o = xs.fromXML("<integerParameterFilter>\n"
+                + "  <key>TEST</key>\n"
+                + "  <defaultValue>Default</defaultValue>\n"
+                + "  <values>\n"
+                + "    <int>42</int>\n"
+                + "    <int>2</int>\n"
+                + "    <int>0</int>\n"
+                + "    <int>-1</int>\n"
+                + "    <int>-200</int>\n"
+                + "  </values>\n"
+                + "  <threshold>15</threshold>\n"
+                + "</integerParameterFilter>");
 
         assertThat(o, instanceOf(IntegerParameterFilter.class));
         assertThat(o, hasProperty("key", equalTo("TEST")));

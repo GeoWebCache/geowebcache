@@ -123,33 +123,22 @@ public class FileBlobStoreInfo extends BlobStoreInfo {
 
     /** @see BlobStoreInfo#createInstance(TileLayerDispatcher, LockProvider) */
     @Override
-    public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider)
-            throws StorageException {
+    public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider) throws StorageException {
         checkState(getName() != null, "id not set");
-        checkState(
-                isEnabled(),
-                "Can't call FileBlobStoreConfig.createInstance() is blob store is not enabled");
+        checkState(isEnabled(), "Can't call FileBlobStoreConfig.createInstance() is blob store is not enabled");
         checkState(baseDirectory != null, "baseDirectory not provided");
-        checkState(
-                fileSystemBlockSize >= 0,
-                "fileSystemBlockSize must be a positive integer: %s",
-                fileSystemBlockSize);
+        checkState(fileSystemBlockSize >= 0, "fileSystemBlockSize must be a positive integer: %s", fileSystemBlockSize);
         FileBlobStore fileBlobStore;
         if (pathGeneratorType == null || pathGeneratorType == PathGeneratorType.DEFAULT) {
-            fileBlobStore =
-                    new FileBlobStore(baseDirectory, new DefaultFilePathGenerator(baseDirectory));
+            fileBlobStore = new FileBlobStore(baseDirectory, new DefaultFilePathGenerator(baseDirectory));
         } else if (pathGeneratorType == PathGeneratorType.TMS) {
-            fileBlobStore =
-                    new FileBlobStore(
-                            baseDirectory,
-                            new XYZFilePathGenerator(
-                                    baseDirectory, layers, XYZFilePathGenerator.Convention.TMS));
+            fileBlobStore = new FileBlobStore(
+                    baseDirectory,
+                    new XYZFilePathGenerator(baseDirectory, layers, XYZFilePathGenerator.Convention.TMS));
         } else {
-            fileBlobStore =
-                    new FileBlobStore(
-                            baseDirectory,
-                            new XYZFilePathGenerator(
-                                    baseDirectory, layers, XYZFilePathGenerator.Convention.XYZ));
+            fileBlobStore = new FileBlobStore(
+                    baseDirectory,
+                    new XYZFilePathGenerator(baseDirectory, layers, XYZFilePathGenerator.Convention.XYZ));
         }
         if (fileSystemBlockSize > 0) {
             fileBlobStore.setBlockSize(fileSystemBlockSize);

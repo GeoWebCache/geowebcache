@@ -49,13 +49,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "${gwc.context.suffix:}/rest")
 public class SeedController {
 
-    @Autowired TileBreeder seeder;
+    @Autowired
+    TileBreeder seeder;
 
-    @Autowired SeedService seedService;
+    @Autowired
+    SeedService seedService;
 
-    @Autowired FormService formService;
+    @Autowired
+    FormService formService;
 
-    @Autowired protected DefaultingConfiguration xmlConfig;
+    @Autowired
+    protected DefaultingConfiguration xmlConfig;
 
     /** GET method for querying running GWC tasks */
     @RequestMapping(
@@ -126,16 +130,13 @@ public class SeedController {
         } catch (UnsupportedEncodingException e) {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.TEXT_PLAIN);
-            return new ResponseEntity<>(
-                    "Unable to parse form result.", headers, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Unable to parse form result.", headers, HttpStatus.BAD_REQUEST);
         }
     }
 
     @RequestMapping(value = "/seed/{layer}.json", method = RequestMethod.POST)
     public ResponseEntity<?> seedOrTruncateWithJsonPayload(
-            HttpServletRequest request,
-            InputStream inputStream,
-            @PathVariable(name = "layer") String layerName) {
+            HttpServletRequest request, InputStream inputStream, @PathVariable(name = "layer") String layerName) {
 
         String body = readBody(inputStream);
         String extension = "json";
@@ -144,9 +145,7 @@ public class SeedController {
 
     @RequestMapping(value = "/seed/{layer}.xml", method = RequestMethod.POST)
     public ResponseEntity<?> seedOrTruncateWithXmlPayload(
-            HttpServletRequest request,
-            InputStream inputStream,
-            @PathVariable(name = "layer") String layerName) {
+            HttpServletRequest request, InputStream inputStream, @PathVariable(name = "layer") String layerName) {
 
         String body = readBody(inputStream);
         String extension = "xml";
@@ -154,9 +153,7 @@ public class SeedController {
     }
 
     private String readBody(InputStream inputStream) {
-        return new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
+        return new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.joining("\n"));
     }
 
     private ResponseEntity<?> handleFormPostInternal(String layer, Map<String, String> params) {

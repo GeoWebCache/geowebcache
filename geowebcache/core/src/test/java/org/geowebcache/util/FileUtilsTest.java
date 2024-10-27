@@ -40,7 +40,8 @@ public class FileUtilsTest {
     //                    },
     //                    Level.DEBUG);
 
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
 
     @Test
     public void testFileRenaming() throws Exception {

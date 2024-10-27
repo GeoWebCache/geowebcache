@@ -40,8 +40,6 @@ public class OnlineS3BlobStoreIntegrationTest extends AbstractS3BlobStoreIntegra
     public void testCreatesStoreMetadataOnStart() {
         String prefix = tempFolder.getConfig().getPrefix();
         String bucket = tempFolder.getConfig().getBucket();
-        assertThat(
-                tempFolder.getClient().getObjectMetadata(bucket, prefix + "/metadata.properties"),
-                notNullValue());
+        assertThat(tempFolder.getClient().getObjectMetadata(bucket, prefix + "/metadata.properties"), notNullValue());
     }
 }

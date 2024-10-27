@@ -18,25 +18,17 @@ public class TextMime extends MimeType {
 
     public static final TextMime txt = new TextMime("text/plain", "txt", "txt", "text/plain", true);
 
-    public static final TextMime txtHtml =
-            new TextMime("text/html", "txt.html", "html", "text/html", true);
+    public static final TextMime txtHtml = new TextMime("text/html", "txt.html", "html", "text/html", true);
 
-    public static final TextMime txtMapml =
-            new TextMime("text/mapml", "mapml", "mapml", "text/mapml", true);
+    public static final TextMime txtMapml = new TextMime("text/mapml", "mapml", "mapml", "text/mapml", true);
 
     public static final TextMime txtXml = new TextMime("text/xml", "xml", "xml", "text/xml", true);
 
     public static final TextMime txtCss = new TextMime("text/css", "css", "css", "text/css", true);
 
-    public static final TextMime txtJs =
-            new TextMime("text/javascript", "js", "javascript", "text/javascript", true);
+    public static final TextMime txtJs = new TextMime("text/javascript", "js", "javascript", "text/javascript", true);
 
-    private TextMime(
-            String mimeType,
-            String fileExtension,
-            String internalName,
-            String format,
-            boolean noop) {
+    private TextMime(String mimeType, String fileExtension, String internalName, String format, boolean noop) {
         super(mimeType, fileExtension, internalName, format, false);
     }
 

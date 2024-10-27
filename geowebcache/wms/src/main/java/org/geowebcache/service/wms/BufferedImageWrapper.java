@@ -30,8 +30,7 @@ class BufferedImageWrapper {
     private Color bgColor;
     private RenderingHints hints;
 
-    public BufferedImageWrapper(
-            int[] canvasSize, int canvasType, Color bgColor, RenderingHints hints) {
+    public BufferedImageWrapper(int[] canvasSize, int canvasType, Color bgColor, RenderingHints hints) {
         this.canvasSize = canvasSize;
         this.canvasType = canvasType;
         this.bgColor = bgColor;

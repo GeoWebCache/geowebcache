@@ -36,10 +36,7 @@ public class ImageDecoderContainer implements ApplicationContextAware {
     public ImageDecoderContainer() {}
 
     public BufferedImage decode(
-            String mimeType,
-            Object input,
-            boolean aggressiveInputStreamOptimization,
-            Map<String, Object> map)
+            String mimeType, Object input, boolean aggressiveInputStreamOptimization, Map<String, Object> map)
             throws Exception {
         if (mapDecoders == null) {
             throw new IllegalArgumentException("ApplicationContext must be set before decoding");

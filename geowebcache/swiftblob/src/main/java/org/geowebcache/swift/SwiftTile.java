@@ -98,11 +98,9 @@ public class SwiftTile {
         boolean hasListeners = !listeners.isEmpty();
 
         if (hasListeners && existed) {
-            listeners.sendTileUpdated(
-                    layerName, gridSetId, blobFormat, parametersId, x, y, z, outputLength, oldSize);
+            listeners.sendTileUpdated(layerName, gridSetId, blobFormat, parametersId, x, y, z, outputLength, oldSize);
         } else if (hasListeners) {
-            listeners.sendTileStored(
-                    layerName, gridSetId, blobFormat, parametersId, x, y, z, outputLength);
+            listeners.sendTileStored(layerName, gridSetId, blobFormat, parametersId, x, y, z, outputLength);
         }
     }
 

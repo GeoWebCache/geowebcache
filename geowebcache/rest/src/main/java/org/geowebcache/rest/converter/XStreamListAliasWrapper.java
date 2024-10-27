@@ -78,8 +78,7 @@ public class XStreamListAliasWrapper {
              *     com.thoughtworks.xstream.converters.MarshallingContext)
              */
             @Override
-            public void marshal(
-                    Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+            public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
 
                 @SuppressWarnings("unchecked")
                 Collection<String> entries = (Collection<String>) source;
@@ -95,15 +94,14 @@ public class XStreamListAliasWrapper {
                     writer.startNode("atom:link");
                     writer.addAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
                     writer.addAttribute("rel", "alternate");
-                    UriComponents uriComponents =
-                            MvcUriComponentsBuilder.fromMethodName(
-                                            controllerClass, alias + "Get", name)
-                                    .buildAndExpand("");
+                    UriComponents uriComponents = MvcUriComponentsBuilder.fromMethodName(
+                                    controllerClass, alias + "Get", name)
+                            .buildAndExpand("");
                     // build URI with URI.normalize() to remove double slashes
-                    String normalizedLayerUri =
-                            URI.create(uriComponents.encode().toUriString().replace("$", ""))
-                                    .normalize()
-                                    .toASCIIString();
+                    String normalizedLayerUri = URI.create(
+                                    uriComponents.encode().toUriString().replace("$", ""))
+                            .normalize()
+                            .toASCIIString();
                     writer.addAttribute("href", normalizedLayerUri + ".xml");
                     writer.addAttribute("type", MediaType.TEXT_XML.toString());
 

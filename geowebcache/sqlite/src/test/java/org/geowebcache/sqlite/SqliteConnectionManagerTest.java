@@ -71,26 +71,19 @@ public final class SqliteConnectionManagerTest extends TestSupport {
 
     @Test
     public void testGetConnection() throws StorageException {
-        SqliteConnectionManager connectionManager =
-                new SqliteConnectionManager(Integer.MAX_VALUE, 1000);
+        SqliteConnectionManager connectionManager = new SqliteConnectionManager(Integer.MAX_VALUE, 1000);
         connectionManagersToClean.add(connectionManager);
-        connectionManager.doWork(
-                buildRootFile("tiles", "data_base.sqlite"),
-                true,
-                connection -> {
-                    insertInTestTable(connection, "name", "europe");
-                });
+        connectionManager.doWork(buildRootFile("tiles", "data_base.sqlite"), true, connection -> {
+            insertInTestTable(connection, "name", "europe");
+        });
         connectionManager.reapAllConnections();
         assertThat(connectionManager.getPool().size(), is(0));
-        connectionManager.doWork(
-                buildRootFile("tiles", "data_base.sqlite"),
-                true,
-                connection -> {
-                    String value = getFromTestTable(connection, "name");
-                    assertThat(value, notNullValue());
-                    assertThat(value, is("europe"));
-                    closeConnectionQuietly(connection);
-                });
+        connectionManager.doWork(buildRootFile("tiles", "data_base.sqlite"), true, connection -> {
+            String value = getFromTestTable(connection, "name");
+            assertThat(value, notNullValue());
+            assertThat(value, is("europe"));
+            closeConnectionQuietly(connection);
+        });
     }
 
     @Test
@@ -130,35 +123,28 @@ public final class SqliteConnectionManagerTest extends TestSupport {
     @Test
     @Ignore
     public void testReplaceOperation() throws Exception {
-        SqliteConnectionManager connectionManager =
-                new SqliteConnectionManager(Integer.MAX_VALUE, 1000);
+        SqliteConnectionManager connectionManager = new SqliteConnectionManager(Integer.MAX_VALUE, 1000);
         connectionManagersToClean.add(connectionManager);
         File file1 = buildRootFile("tiles", "data_base_1.sqlite");
         Utils.createFileParents(file1);
         File file2 = buildRootFile("tiles", "data_base_2.sqlite");
         Utils.createFileParents(file2);
-        connectionManager.doWork(
-                file1,
-                false,
-                connection -> {
-                    insertInTestTable(connection, "name", "europe");
-                    closeConnectionQuietly(connection);
-                });
+        connectionManager.doWork(file1, false, connection -> {
+            insertInTestTable(connection, "name", "europe");
+            closeConnectionQuietly(connection);
+        });
         file2.createNewFile();
         connectionManager.replace(file1, file2);
-        connectionManager.doWork(
-                file1,
-                false,
-                connection -> {
-                    createTestTable(connection);
-                    String value = getFromTestTable(connection, "name");
-                    assertThat(value, nullValue());
-                    closeConnectionQuietly(connection);
-                });
+        connectionManager.doWork(file1, false, connection -> {
+            createTestTable(connection);
+            String value = getFromTestTable(connection, "name");
+            assertThat(value, nullValue());
+            closeConnectionQuietly(connection);
+        });
     }
 
-    private void genericMultiThreadsTest(
-            int threadsNumber, int workersNumber, long poolSize, File... files) throws Exception {
+    private void genericMultiThreadsTest(int threadsNumber, int workersNumber, long poolSize, File... files)
+            throws Exception {
         SqliteConnectionManager connectionManager = new SqliteConnectionManager(poolSize, 10);
         connectionManagersToClean.add(connectionManager);
         @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
@@ -169,19 +155,15 @@ public final class SqliteConnectionManagerTest extends TestSupport {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(String.format("Submitted worker '%d'\\'%d'.", i, workersNumber));
             }
-            executor.submit(
-                    () -> {
-                        File file = files[random.nextInt(files.length)];
-                        String key = UUID.randomUUID().toString();
-                        return connectionManager.doWork(
-                                file,
-                                false,
-                                connection -> {
-                                    insertInTestTable(connection, key, "value-" + key);
-                                    closeConnectionQuietly(connection);
-                                    return tuple(file, key);
-                                });
-                    });
+            executor.submit(() -> {
+                File file = files[random.nextInt(files.length)];
+                String key = UUID.randomUUID().toString();
+                return connectionManager.doWork(file, false, connection -> {
+                    insertInTestTable(connection, key, "value-" + key);
+                    closeConnectionQuietly(connection);
+                    return tuple(file, key);
+                });
+            });
         }
         executor.shutdown();
         executor.awaitTermination(60, TimeUnit.SECONDS);
@@ -190,15 +172,12 @@ public final class SqliteConnectionManagerTest extends TestSupport {
         for (Future<Tuple<File, String>> result : results) {
             File file = result.get().first;
             String key = result.get().second;
-            connectionManager.doWork(
-                    file,
-                    true,
-                    connection -> {
-                        String value = getFromTestTable(connection, key);
-                        assertThat(value, notNullValue());
-                        assertThat(value, is("value-" + key));
-                        closeConnectionQuietly(connection);
-                    });
+            connectionManager.doWork(file, true, connection -> {
+                String value = getFromTestTable(connection, key);
+                assertThat(value, notNullValue());
+                assertThat(value, is("value-" + key));
+                closeConnectionQuietly(connection);
+            });
         }
     }
 
@@ -223,8 +202,7 @@ public final class SqliteConnectionManagerTest extends TestSupport {
     }
 
     private static String getFromTestTable(Connection connection, String key) {
-        return new ExecuteQuery(
-                connection, "SELECT value FROM test WHERE key = '%s' ORDER BY key;", key) {
+        return new ExecuteQuery(connection, "SELECT value FROM test WHERE key = '%s' ORDER BY key;", key) {
 
             String result;
 

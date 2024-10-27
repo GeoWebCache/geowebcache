@@ -123,8 +123,7 @@ public class TileRangeIterator {
     private int tilesForLocation(long x, long y, long[] levelBounds) {
         long boundsMaxX = levelBounds[2];
         long boundsMaxY = levelBounds[3];
-        return (int) Math.min(metaX, 1 + (boundsMaxX - x))
-                * (int) Math.min(metaY, 1 + (boundsMaxY - y));
+        return (int) Math.min(metaX, 1 + (boundsMaxX - x)) * (int) Math.min(metaY, 1 + (boundsMaxY - y));
     }
 
     private int tilesForLocation(long[] gridLoc, long[] levelBounds) {

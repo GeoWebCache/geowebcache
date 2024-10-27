@@ -42,8 +42,7 @@ public class Start {
         try {
             HttpConfiguration httpConfiguration = new HttpConfiguration();
 
-            ServerConnector http =
-                    new ServerConnector(jettyServer, new HttpConnectionFactory(httpConfiguration));
+            ServerConnector http = new ServerConnector(jettyServer, new HttpConnectionFactory(httpConfiguration));
             http.setPort(Integer.getInteger("jetty.port", 8080));
             http.setAcceptQueueSize(100);
             http.setIdleTimeout(1000 * 60 * 60);
@@ -66,27 +65,25 @@ public class Start {
              * while debugging in eclipse. Can't catch CTRL-C to emulate SIGINT as the eclipse
              * console is not propagating that event
              */
-            Thread stopThread =
-                    new Thread() {
-                        @Override
-                        public void run() {
-                            BufferedReader reader =
-                                    new BufferedReader(new InputStreamReader(System.in));
-                            String line;
-                            try {
-                                while (true) {
-                                    line = reader.readLine();
-                                    if ("stop".equals(line)) {
-                                        jettyServer.stop();
-                                        System.exit(0);
-                                    }
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                System.exit(1);
+            Thread stopThread = new Thread() {
+                @Override
+                public void run() {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+                    String line;
+                    try {
+                        while (true) {
+                            line = reader.readLine();
+                            if ("stop".equals(line)) {
+                                jettyServer.stop();
+                                System.exit(0);
                             }
                         }
-                    };
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.exit(1);
+                    }
+                }
+            };
             stopThread.setDaemon(true);
             stopThread.start();
         } catch (Exception e) {
@@ -96,10 +93,7 @@ public class Start {
                 try {
                     jettyServer.stop();
                 } catch (Exception e1) {
-                    log.log(
-                            Level.SEVERE,
-                            "Unable to stop the " + "Jetty server:" + e1.getMessage(),
-                            e1);
+                    log.log(Level.SEVERE, "Unable to stop the " + "Jetty server:" + e1.getMessage(), e1);
                 }
             }
         }

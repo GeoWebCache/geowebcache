@@ -132,13 +132,10 @@ public class TemporaryS3Folder extends ExternalResource {
         Iterable<S3ObjectSummary> objects = S3Objects.withPrefix(s3, bucket, temporaryPrefix);
         Iterable<List<S3ObjectSummary>> partition = Iterables.partition(objects, 1000);
         for (List<S3ObjectSummary> os : partition) {
-            List<KeyVersion> keys =
-                    Lists.transform(
-                            os,
-                            input -> {
-                                KeyVersion k = new KeyVersion(input.getKey());
-                                return k;
-                            });
+            List<KeyVersion> keys = Lists.transform(os, input -> {
+                KeyVersion k = new KeyVersion(input.getKey());
+                return k;
+            });
             DeleteObjectsRequest deleteRequest = new DeleteObjectsRequest(bucket);
             deleteRequest.setKeys(keys);
             s3.deleteObjects(deleteRequest);

@@ -53,8 +53,7 @@ public class GeoWebCacheEnvironmentTest {
         GeoWebCacheExtensions gse = new GeoWebCacheExtensions();
         gse.setApplicationContext(appContext);
 
-        List<GeoWebCacheEnvironment> extensions =
-                GeoWebCacheExtensions.extensions(GeoWebCacheEnvironment.class);
+        List<GeoWebCacheEnvironment> extensions = GeoWebCacheExtensions.extensions(GeoWebCacheEnvironment.class);
         Assert.assertNotNull(extensions);
         Assert.assertEquals(1, extensions.size());
         Assert.assertTrue(extensions.contains(genv));

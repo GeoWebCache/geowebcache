@@ -55,8 +55,7 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
     @Before
     public void setupBroker() {
         if (broker == null) {
-            broker =
-                    new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
+            broker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
         }
     }
 
@@ -96,15 +95,12 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
         expect(cap.getRequest()).andStubReturn(req);
         expect(req.getGetCapabilities()).andStubReturn(gcOpType);
         expect(gcOpType.getGet())
-                .andStubReturn(
-                        URLs.of(
-                                "http://test/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities"));
+                .andStubReturn(URLs.of("http://test/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities"));
         expect(cap.getVersion()).andStubReturn("1.1.1");
         EasyMock.replay(server, cap, req, gcOpType, globalConfig);
 
         GetCapabilitiesConfiguration config =
-                new GetCapabilitiesConfiguration(
-                        broker, "http://test/wms", "image/png", "3x3", "", null, "false") {
+                new GetCapabilitiesConfiguration(broker, "http://test/wms", "image/png", "3x3", "", null, "false") {
 
                     @Override
                     WebMapServer getWMS() {
@@ -125,8 +121,7 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
 
     @Test
     public void testLayerGridsets() throws Exception {
-        TileLayer layer =
-                requirePresent(((GetCapabilitiesConfiguration) config).getLayer("testExisting"));
+        TileLayer layer = requirePresent(((GetCapabilitiesConfiguration) config).getLayer("testExisting"));
         GridSet gridset = assertPresent(config.getGridSet("testExisting:EPSG:3978"));
 
         GridSubset gridSubset = layer.getGridSubset("testExisting:EPSG:3978");
@@ -136,8 +131,7 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
 
     @Override
     protected Matcher<GridSet> infoEquals(GridSet expected) {
-        return new CustomMatcher<>(
-                "GridSet matching " + expected.getName() + " with " + expected.getDescription()) {
+        return new CustomMatcher<>("GridSet matching " + expected.getName() + " with " + expected.getDescription()) {
 
             @Override
             public boolean matches(Object item) {
@@ -155,8 +149,7 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
             @Override
             public boolean matches(Object item) {
                 return item instanceof GridSet
-                        && Objects.equal(
-                                ((GridSet) item).getDescription(), Integer.toString(expected));
+                        && Objects.equal(((GridSet) item).getDescription(), Integer.toString(expected));
             }
         };
     }
@@ -172,8 +165,7 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
     }
 
     @Override
-    protected void renameInfo(GridSetConfiguration config, String name1, String name2)
-            throws Exception {
+    protected void renameInfo(GridSetConfiguration config, String name1, String name2) throws Exception {
         Assume.assumeFalse(true);
     }
 

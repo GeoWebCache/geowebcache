@@ -40,10 +40,8 @@ public class BDBQuotaStoreFactory implements QuotaStoreFactory {
             return null;
         }
 
-        DefaultStorageFinder cacheDirFinder =
-                (DefaultStorageFinder) ctx.getBean("gwcDefaultStorageFinder");
-        TilePageCalculator tilePageCalculator =
-                (TilePageCalculator) ctx.getBean("gwcTilePageCalculator");
+        DefaultStorageFinder cacheDirFinder = (DefaultStorageFinder) ctx.getBean("gwcDefaultStorageFinder");
+        TilePageCalculator tilePageCalculator = (TilePageCalculator) ctx.getBean("gwcTilePageCalculator");
         try {
             BDBQuotaStore bdbQuotaStore = new BDBQuotaStore(cacheDirFinder, tilePageCalculator);
             bdbQuotaStore.startUp();

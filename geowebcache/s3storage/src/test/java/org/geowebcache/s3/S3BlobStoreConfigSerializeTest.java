@@ -33,64 +33,49 @@ public class S3BlobStoreConfigSerializeTest {
     public void testNoAccess() throws Exception {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
-        S3BlobStoreInfo config =
-                (S3BlobStoreInfo)
-                        xs.fromXML(
-                                "<S3BlobStore><id>test</id><enabled>false</enabled><useHTTPS>true</useHTTPS></S3BlobStore>");
-        assertThat(
-                config, hasProperty("accessControlList", is(CannedAccessControlList.PublicRead)));
+        S3BlobStoreInfo config = (S3BlobStoreInfo)
+                xs.fromXML("<S3BlobStore><id>test</id><enabled>false</enabled><useHTTPS>true</useHTTPS></S3BlobStore>");
+        assertThat(config, hasProperty("accessControlList", is(CannedAccessControlList.PublicRead)));
     }
 
     @Test
     public void testPublicAccess() throws Exception {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
-        S3BlobStoreInfo config =
-                (S3BlobStoreInfo)
-                        xs.fromXML(
-                                "<S3BlobStore><id>test</id><enabled>false</enabled><access>PUBLIC</access><useHTTPS>true</useHTTPS></S3BlobStore>");
-        assertThat(
-                config, hasProperty("accessControlList", is(CannedAccessControlList.PublicRead)));
+        S3BlobStoreInfo config = (S3BlobStoreInfo)
+                xs.fromXML(
+                        "<S3BlobStore><id>test</id><enabled>false</enabled><access>PUBLIC</access><useHTTPS>true</useHTTPS></S3BlobStore>");
+        assertThat(config, hasProperty("accessControlList", is(CannedAccessControlList.PublicRead)));
     }
 
     @Test
     public void testPrivateAccess() throws Exception {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
-        S3BlobStoreInfo config =
-                (S3BlobStoreInfo)
-                        xs.fromXML(
-                                "<S3BlobStore><id>test</id><enabled>false</enabled><access>PRIVATE</access><useHTTPS>true</useHTTPS></S3BlobStore>");
-        assertThat(
-                config,
-                hasProperty(
-                        "accessControlList", is(CannedAccessControlList.BucketOwnerFullControl)));
+        S3BlobStoreInfo config = (S3BlobStoreInfo)
+                xs.fromXML(
+                        "<S3BlobStore><id>test</id><enabled>false</enabled><access>PRIVATE</access><useHTTPS>true</useHTTPS></S3BlobStore>");
+        assertThat(config, hasProperty("accessControlList", is(CannedAccessControlList.BucketOwnerFullControl)));
     }
 
     @Test
     public void testPrivateAccessLowerCase() throws Exception {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
-        S3BlobStoreInfo config =
-                (S3BlobStoreInfo)
-                        xs.fromXML(
-                                "<S3BlobStore><id>test</id><enabled>false</enabled><access>private</access><useHTTPS>true</useHTTPS></S3BlobStore>");
-        assertThat(
-                config,
-                hasProperty(
-                        "accessControlList", is(CannedAccessControlList.BucketOwnerFullControl)));
+        S3BlobStoreInfo config = (S3BlobStoreInfo)
+                xs.fromXML(
+                        "<S3BlobStore><id>test</id><enabled>false</enabled><access>private</access><useHTTPS>true</useHTTPS></S3BlobStore>");
+        assertThat(config, hasProperty("accessControlList", is(CannedAccessControlList.BucketOwnerFullControl)));
     }
 
     @Test
     public void testPublicAccessLowerCase() throws Exception {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
-        S3BlobStoreInfo config =
-                (S3BlobStoreInfo)
-                        xs.fromXML(
-                                "<S3BlobStore><id>test</id><enabled>false</enabled><access>public</access><useHTTPS>true</useHTTPS></S3BlobStore>");
-        assertThat(
-                config, hasProperty("accessControlList", is(CannedAccessControlList.PublicRead)));
+        S3BlobStoreInfo config = (S3BlobStoreInfo)
+                xs.fromXML(
+                        "<S3BlobStore><id>test</id><enabled>false</enabled><access>public</access><useHTTPS>true</useHTTPS></S3BlobStore>");
+        assertThat(config, hasProperty("accessControlList", is(CannedAccessControlList.PublicRead)));
     }
 
     @Test
@@ -99,15 +84,21 @@ public class S3BlobStoreConfigSerializeTest {
         XStream xs = provider.getConfiguredXStream(new XStream());
         assertThrows(
                 XStreamException.class,
-                () ->
-                        xs.fromXML(
-                                "<S3BlobStore><id>test</id><enabled>false</enabled><access>NOT_A_REAL_ACCESS_TYPE</access><useHTTPS>true</useHTTPS></S3BlobStore>"));
+                () -> xs.fromXML(
+                        "<S3BlobStore><id>test</id><enabled>false</enabled><access>NOT_A_REAL_ACCESS_TYPE</access><useHTTPS>true</useHTTPS></S3BlobStore>"));
     }
 
-    @Rule public PropertyRule envParametrization = PropertyRule.system("ALLOW_ENV_PARAMETRIZATION");
-    @Rule public PropertyRule awsSecretKey = PropertyRule.system("AWS_SECRET_KEY");
-    @Rule public PropertyRule awsAccessKey = PropertyRule.system("AWS_ACCESS_KEY");
-    @Rule public PropertyRule bucket = PropertyRule.system("BUCKET");
+    @Rule
+    public PropertyRule envParametrization = PropertyRule.system("ALLOW_ENV_PARAMETRIZATION");
+
+    @Rule
+    public PropertyRule awsSecretKey = PropertyRule.system("AWS_SECRET_KEY");
+
+    @Rule
+    public PropertyRule awsAccessKey = PropertyRule.system("AWS_ACCESS_KEY");
+
+    @Rule
+    public PropertyRule bucket = PropertyRule.system("BUCKET");
 
     /**
      * Test that the AWS keys are not converted from parameter form in xstream if
@@ -123,13 +114,11 @@ public class S3BlobStoreConfigSerializeTest {
         bucket.setValue("myBucket");
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
-        S3BlobStoreInfo config =
-                (S3BlobStoreInfo)
-                        xs.fromXML(
-                                "<S3BlobStore default=\"false\"><id>coviddatavizblob</id><enabled>true</enabled>"
-                                        + "<bucket>${BUCKET}</bucket><prefix>blobpre99</prefix><awsAccessKey>${AWS_ACCESS_KEY}</awsAccessKey>"
-                                        + "<awsSecretKey>${AWS_SECRET_KEY}</awsSecretKey><access>PUBLIC</access><maxConnections>50</maxConnections>"
-                                        + "<useHTTPS>true</useHTTPS><useGzip>false</useGzip></S3BlobStore>");
+        S3BlobStoreInfo config = (S3BlobStoreInfo)
+                xs.fromXML("<S3BlobStore default=\"false\"><id>coviddatavizblob</id><enabled>true</enabled>"
+                        + "<bucket>${BUCKET}</bucket><prefix>blobpre99</prefix><awsAccessKey>${AWS_ACCESS_KEY}</awsAccessKey>"
+                        + "<awsSecretKey>${AWS_SECRET_KEY}</awsSecretKey><access>PUBLIC</access><maxConnections>50</maxConnections>"
+                        + "<useHTTPS>true</useHTTPS><useGzip>false</useGzip></S3BlobStore>");
         assertThat(config, hasProperty("awsSecretKey", equalTo("${AWS_SECRET_KEY}")));
         assertThat(config, hasProperty("awsAccessKey", equalTo("${AWS_ACCESS_KEY}")));
         assertThat(config, hasProperty("bucket", equalTo("${BUCKET}")));

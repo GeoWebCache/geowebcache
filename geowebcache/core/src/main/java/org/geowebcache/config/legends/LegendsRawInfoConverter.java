@@ -24,8 +24,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 public class LegendsRawInfoConverter implements Converter {
 
     @Override
-    public void marshal(
-            Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+    public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
         LegendsRawInfo legendsRawInfo = (LegendsRawInfo) source;
         // encode default values
         writer.addAttribute("defaultWidth", String.valueOf(legendsRawInfo.getDefaultWidth()));

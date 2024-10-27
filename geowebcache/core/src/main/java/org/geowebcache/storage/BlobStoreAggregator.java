@@ -99,15 +99,12 @@ public class BlobStoreAggregator {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .findFirst()
-                .orElseThrow(
-                        () ->
-                                new GeoWebCacheException(
-                                        "Thread "
-                                                + Thread.currentThread().getName()
-                                                + " Unknown blob store "
-                                                + blobStoreName
-                                                + ". Check the logfiles,"
-                                                + " it may not have loaded properly."));
+                .orElseThrow(() -> new GeoWebCacheException("Thread "
+                        + Thread.currentThread().getName()
+                        + " Unknown blob store "
+                        + blobStoreName
+                        + ". Check the logfiles,"
+                        + " it may not have loaded properly."));
     }
 
     /**
@@ -118,8 +115,7 @@ public class BlobStoreAggregator {
      * generate a new one.
      */
     public void reInit() {
-        List<BlobStoreConfiguration> extensions =
-                GeoWebCacheExtensions.extensions(BlobStoreConfiguration.class);
+        List<BlobStoreConfiguration> extensions = GeoWebCacheExtensions.extensions(BlobStoreConfiguration.class);
         this.configs = new ArrayList<>(extensions);
         this.layers = GeoWebCacheExtensions.bean(TileLayerDispatcher.class);
         initialize();
@@ -161,7 +157,8 @@ public class BlobStoreAggregator {
      * @return a list view of this blob store aggregators's internal blob stores
      */
     public Iterable<BlobStoreInfo> getBlobStores() {
-        List<Iterable<BlobStoreInfo>> perConfigBlobStores = new ArrayList<>(getConfigs().size());
+        List<Iterable<BlobStoreInfo>> perConfigBlobStores =
+                new ArrayList<>(getConfigs().size());
 
         for (BlobStoreConfiguration config : getConfigs()) {
             perConfigBlobStores.add(config.getBlobStores());
@@ -180,18 +177,14 @@ public class BlobStoreAggregator {
 
     private int initialize(BlobStoreConfiguration config) {
         if (config == null) {
-            throw new IllegalStateException(
-                    "BlobStoreConfiguration got a null GWC configuration object");
+            throw new IllegalStateException("BlobStoreConfiguration got a null GWC configuration object");
         }
 
         String configIdent;
         try {
             configIdent = config.getIdentifier();
         } catch (Exception gwce) {
-            log.log(
-                    Level.SEVERE,
-                    "Error obtaining identify from BlobStoreConfiguration " + config,
-                    gwce);
+            log.log(Level.SEVERE, "Error obtaining identify from BlobStoreConfiguration " + config, gwce);
             return 0;
         }
 
@@ -203,10 +196,7 @@ public class BlobStoreAggregator {
         int blobStoreCount = config.getBlobStoreCount();
 
         if (blobStoreCount <= 0) {
-            log.config(
-                    "BlobStoreConfiguration "
-                            + config.getIdentifier()
-                            + " contained no blob store infos.");
+            log.config("BlobStoreConfiguration " + config.getIdentifier() + " contained no blob store infos.");
         }
 
         // Check whether there is any general service information
@@ -238,16 +228,14 @@ public class BlobStoreAggregator {
      *
      * @param blobStoreName the name of the blob store to remove
      */
-    public synchronized void removeBlobStore(final String blobStoreName)
-            throws IllegalArgumentException {
+    public synchronized void removeBlobStore(final String blobStoreName) throws IllegalArgumentException {
         for (BlobStoreConfiguration config : getConfigs()) {
             if (config.containsBlobStore(blobStoreName)) {
                 config.removeBlobStore(blobStoreName);
                 return;
             }
         }
-        throw new NoSuchElementException(
-                "No configuration found containing blob store " + blobStoreName);
+        throw new NoSuchElementException("No configuration found containing blob store " + blobStoreName);
     }
     /**
      * Adds a blob store and returns the {@link BlobStoreConfiguration} to which the blob stores was
@@ -293,8 +281,7 @@ public class BlobStoreAggregator {
      *
      * @param bs The blob store to modify
      */
-    public synchronized void modifyBlobStore(final BlobStoreInfo bs)
-            throws IllegalArgumentException {
+    public synchronized void modifyBlobStore(final BlobStoreInfo bs) throws IllegalArgumentException {
         BlobStoreConfiguration config = getConfiguration(bs);
         // TODO: this won't work with GetCapabilitiesConfiguration
         config.modifyBlobStore(bs);
@@ -307,8 +294,7 @@ public class BlobStoreAggregator {
      * @param bs BlobStoreInfo for this configuration
      * @return The BlobStoreConfiguration for BlobStoreInfo
      */
-    public BlobStoreConfiguration getConfiguration(BlobStoreInfo bs)
-            throws IllegalArgumentException {
+    public BlobStoreConfiguration getConfiguration(BlobStoreInfo bs) throws IllegalArgumentException {
         Assert.notNull(bs, "blobStore is null");
         return getConfiguration(bs.getName());
     }
@@ -317,16 +303,14 @@ public class BlobStoreAggregator {
      * Returns the BlobStoreConfiguration for the given Blob Store Name, if found in list of blob
      * store configurations.
      */
-    public BlobStoreConfiguration getConfiguration(final String blobStoreName)
-            throws IllegalArgumentException {
+    public BlobStoreConfiguration getConfiguration(final String blobStoreName) throws IllegalArgumentException {
         Assert.notNull(blobStoreName, "blobStoreName is null");
         for (BlobStoreConfiguration c : getConfigs()) {
             if (c.containsBlobStore(blobStoreName)) {
                 return c;
             }
         }
-        throw new IllegalArgumentException(
-                "No configuration found containing blob store " + blobStoreName);
+        throw new IllegalArgumentException("No configuration found containing blob store " + blobStoreName);
     }
 
     /**
