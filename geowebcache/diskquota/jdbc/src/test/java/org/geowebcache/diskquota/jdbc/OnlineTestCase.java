@@ -123,7 +123,8 @@ public abstract class OnlineTestCase {
         }
     }
 
-    @Rule public OnlineTestRule fixtureRule = new CompatibilityRule(getFixtureId());
+    @Rule
+    public OnlineTestRule fixtureRule = new CompatibilityRule(getFixtureId());
 
     protected Properties fixture;
 

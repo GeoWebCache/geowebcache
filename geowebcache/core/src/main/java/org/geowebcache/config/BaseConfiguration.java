@@ -19,8 +19,7 @@ import org.geowebcache.ReinitializingBean;
 import org.springframework.beans.factory.InitializingBean;
 
 /** Superinterface for GeoWebCache configuration beans, defining basic shared functionality */
-public interface BaseConfiguration
-        extends InitializingBean, ReinitializingBean, GeoWebCacheExtensionPriority {
+public interface BaseConfiguration extends InitializingBean, ReinitializingBean, GeoWebCacheExtensionPriority {
 
     /** Default priority for configuration beans. Lower values will have higher priority. */
     public static final int BASE_PRIORITY = 50;

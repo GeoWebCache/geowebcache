@@ -57,7 +57,8 @@ public class BundleFileResource implements Resource {
                 FileChannel in = fin.getChannel()) {
             final long size = tileSize;
             long written = 0;
-            while ((written += in.transferTo(tileOffset + written, size, target)) < size) ;
+            while ((written += in.transferTo(tileOffset + written, size, target)) < size)
+                ;
             return size;
         }
     }

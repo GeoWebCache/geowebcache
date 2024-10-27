@@ -35,7 +35,8 @@ public class FileBlobStoreConfigTest {
 
     private FileBlobStoreInfo config;
 
-    @Rule public TemporaryFolder tmp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
 
     private TileLayerDispatcher layers;
 
@@ -51,9 +52,7 @@ public class FileBlobStoreConfigTest {
     @Test
     public void testCreateInstanceNoId() throws StorageException {
         IllegalStateException exception =
-                assertThrows(
-                        IllegalStateException.class,
-                        () -> config.createInstance(layers, lockProvider));
+                assertThrows(IllegalStateException.class, () -> config.createInstance(layers, lockProvider));
         assertThat(exception.getMessage(), containsString("id not set"));
     }
 
@@ -62,9 +61,7 @@ public class FileBlobStoreConfigTest {
         config.setName("myblobstore");
         config.setEnabled(false);
         IllegalStateException exception =
-                assertThrows(
-                        IllegalStateException.class,
-                        () -> config.createInstance(layers, lockProvider));
+                assertThrows(IllegalStateException.class, () -> config.createInstance(layers, lockProvider));
         assertThat(exception.getMessage(), containsString("store is not enabled"));
     }
 
@@ -73,9 +70,7 @@ public class FileBlobStoreConfigTest {
         config.setName("myblobstore");
         config.setEnabled(true);
         IllegalStateException exception =
-                assertThrows(
-                        IllegalStateException.class,
-                        () -> config.createInstance(layers, lockProvider));
+                assertThrows(IllegalStateException.class, () -> config.createInstance(layers, lockProvider));
         assertThat(exception.getMessage(), containsString("baseDirectory not provided"));
     }
 
@@ -86,9 +81,7 @@ public class FileBlobStoreConfigTest {
         config.setFileSystemBlockSize(-2048);
         config.setBaseDirectory(tmp.getRoot().getAbsolutePath());
         IllegalStateException exception =
-                assertThrows(
-                        IllegalStateException.class,
-                        () -> config.createInstance(layers, lockProvider));
+                assertThrows(IllegalStateException.class, () -> config.createInstance(layers, lockProvider));
         assertThat(exception.getMessage(), containsString("must be a positive integer"));
     }
 

@@ -21,15 +21,13 @@ import org.geotools.util.logging.Logging;
 public class ErrorMime extends MimeType {
     private static Logger log = Logging.getLogger(ErrorMime.class.getName());
 
-    public static final ErrorMime vnd_ogc_se_inimage =
-            new ErrorMime("application/vnd.ogc.se_inimage");
+    public static final ErrorMime vnd_ogc_se_inimage = new ErrorMime("application/vnd.ogc.se_inimage");
 
     private ErrorMime(String mimeType) {
         super(mimeType, null, null, mimeType, false);
     }
 
-    public ErrorMime(String mimeType, String fileExtension, String internalName, String format)
-            throws MimeException {
+    public ErrorMime(String mimeType, String fileExtension, String internalName, String format) throws MimeException {
         super(mimeType, fileExtension, internalName, format, false);
 
         // Check for trouble
@@ -44,9 +42,7 @@ public class ErrorMime extends MimeType {
         } else {
             log.log(
                     Level.SEVERE,
-                    "Unsupported MIME type: "
-                            + mimeType
-                            + ", falling back to application/vnd.ogc.se_inimage.");
+                    "Unsupported MIME type: " + mimeType + ", falling back to application/vnd.ogc.se_inimage.");
             return vnd_ogc_se_inimage;
         }
     }

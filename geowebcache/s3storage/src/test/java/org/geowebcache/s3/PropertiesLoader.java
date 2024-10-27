@@ -43,8 +43,7 @@ public class PropertiesLoader {
     public PropertiesLoader() {
         String home = System.getProperty("user.home");
         File configFile = new File(home, ".gwc_s3_tests.properties");
-        log.info(
-                "Loading S3 tests config. File must have keys 'bucket', 'accessKey', and 'secretKey'");
+        log.info("Loading S3 tests config. File must have keys 'bucket', 'accessKey', and 'secretKey'");
         if (configFile.exists()) {
             try (InputStream in = new FileInputStream(configFile)) {
                 properties.load(in);
@@ -58,15 +57,11 @@ public class PropertiesLoader {
                         null != properties.getProperty("secretKey"),
                         "secretKey not provided in config file " + configFile.getAbsolutePath());
             } catch (IOException e) {
-                log.log(
-                        Level.SEVERE,
-                        "Error loading S3 tests config: " + configFile.getAbsolutePath(),
-                        e);
+                log.log(Level.SEVERE, "Error loading S3 tests config: " + configFile.getAbsolutePath(), e);
             }
         } else {
             log.warning(
-                    "S3 storage config file not found. GWC S3 tests will be ignored. "
-                            + configFile.getAbsolutePath());
+                    "S3 storage config file not found. GWC S3 tests will be ignored. " + configFile.getAbsolutePath());
         }
     }
 

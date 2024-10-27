@@ -53,15 +53,13 @@ public class ByteStreamController {
         if (bundle == null) {
             synchronized (this) {
                 if (bundle == null) {
-                    List<WebResourceBundle> result =
-                            GeoWebCacheExtensions.extensions(WebResourceBundle.class);
+                    List<WebResourceBundle> result = GeoWebCacheExtensions.extensions(WebResourceBundle.class);
                     if (result.isEmpty()) {
                         bundle = DEFAULT_BUNDLE;
                     } else {
                         if (result.size() > 1) {
-                            log.warning(
-                                    "Multiple web resource bundles present, using "
-                                            + result.get(0).getClass().getName());
+                            log.warning("Multiple web resource bundles present, using "
+                                    + result.get(0).getClass().getName());
                         }
                         bundle = result.get(0);
                     }
@@ -80,17 +78,15 @@ public class ByteStreamController {
     // "gwc/rest/web/openlayers3/ol.js" -> openlayers3/ol.js
     // "/rest/web/openlayers3/ol.js" -> openlayers3/ol.js
     String getFileName(HttpServletRequest request) throws IOException {
-        String path =
-                URLDecoder.decode(request.getRequestURI(), "UTF-8")
-                        .substring(request.getContextPath().length())
-                        .replace(File.separatorChar, '/');
+        String path = URLDecoder.decode(request.getRequestURI(), "UTF-8")
+                .substring(request.getContextPath().length())
+                .replace(File.separatorChar, '/');
         int index = path.indexOf("/rest/web/");
         return index < 0 ? null : path.substring(index + "/rest/web/".length());
     }
 
     @RequestMapping(value = "/web/**", method = RequestMethod.GET)
-    ResponseEntity<?> doGet(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    ResponseEntity<?> doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final String filename = getFileName(request);
         if (filename == null || filename.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -113,8 +109,7 @@ public class ByteStreamController {
         try {
             mime = MimeType.createFromExtension(extension);
         } catch (MimeException e) {
-            return new ResponseEntity<>(
-                    "Unable to create MimeType for " + extension, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Unable to create MimeType for " + extension, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         // TODO write ByteArrayOutputStream ResponseEntity

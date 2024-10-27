@@ -46,11 +46,7 @@ public class WMTSTileJSON {
     private static final Pattern PATTERN_DIGITS = Pattern.compile(ENDING_DIGITS_REGEX);
 
     public WMTSTileJSON(
-            ConveyorTile convTile,
-            String baseUrl,
-            String contextPath,
-            String style,
-            URLMangler urlMangler) {
+            ConveyorTile convTile, String baseUrl, String contextPath, String style, URLMangler urlMangler) {
         this.convTile = convTile;
         this.style = style;
         this.restBaseUrl = urlMangler.buildURL(baseUrl, contextPath, WMTSService.REST_PATH);
@@ -90,8 +86,7 @@ public class WMTSTileJSON {
         }
     }
 
-    private void addTileUrl(
-            TileLayer layer, String gridSubSet, MimeType mimeType, List<String> urls) {
+    private void addTileUrl(TileLayer layer, String gridSubSet, MimeType mimeType, List<String> urls) {
         GridSubset grid = layer.getGridSubset(gridSubSet);
         int zoomLevelStart = -1;
         int start = -1;
@@ -104,8 +99,7 @@ public class WMTSTileJSON {
                 start = matcherName.start(0);
             }
             if (zoomLevelStart != -1 && start != zoomLevelStart) {
-                throw new IllegalArgumentException(
-                        "Zoom levels are not sharing the same not-numeric prefix");
+                throw new IllegalArgumentException("Zoom levels are not sharing the same not-numeric prefix");
             }
             if (zoomLevelStart == -1) {
                 zoomLevelPrefix = gridName.substring(0, start);
@@ -113,19 +107,18 @@ public class WMTSTileJSON {
             zoomLevelStart = start;
         }
 
-        String tileUrl =
-                restBaseUrl
-                        + "/"
-                        + layer.getName()
-                        + "/"
-                        + (style != null ? (style + "/") : "")
-                        + gridSubSet
-                        + "/"
-                        + zoomLevelPrefix
-                        + "{z}"
-                        + "/{y}/{x}"
-                        + "?format="
-                        + mimeType;
+        String tileUrl = restBaseUrl
+                + "/"
+                + layer.getName()
+                + "/"
+                + (style != null ? (style + "/") : "")
+                + gridSubSet
+                + "/"
+                + zoomLevelPrefix
+                + "{z}"
+                + "/{y}/{x}"
+                + "?format="
+                + mimeType;
         urls.add(tileUrl);
     }
 }

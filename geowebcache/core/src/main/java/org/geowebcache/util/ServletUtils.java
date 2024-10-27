@@ -36,8 +36,7 @@ import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.geotools.util.logging.Logging;
 
 public class ServletUtils {
-    private static Logger log =
-            Logging.getLogger(org.geowebcache.util.ServletUtils.class.toString());
+    private static Logger log = Logging.getLogger(org.geowebcache.util.ServletUtils.class.toString());
 
     // Calendar objects are unfortunately expensive and not thread safe :(
     private static Calendar calendar = new GregorianCalendar();
@@ -81,8 +80,7 @@ public class ServletUtils {
     }
 
     /** Case insensitive lookup for a couple of strings, drops everything else */
-    public static String[][] selectedStringArraysFromMap(
-            Map<String, String[]> map, String encoding, String[] keys) {
+    public static String[][] selectedStringArraysFromMap(Map<String, String[]> map, String encoding, String[] keys) {
         String[][] retAr = new String[keys.length][];
 
         Iterator<Entry<String, String[]>> iter = map.entrySet().iterator();
@@ -108,16 +106,14 @@ public class ServletUtils {
      *     upper case
      */
     @SuppressWarnings("unchecked")
-    public static Map<String, String> selectedStringsFromMap(
-            Map<String, ?> map, String encoding, String... keys) {
+    public static Map<String, String> selectedStringsFromMap(Map<String, ?> map, String encoding, String... keys) {
 
         map = new CaseInsensitiveMap<>(map);
         Map<String, String> selected = new CaseInsensitiveMap<>();
         for (String key : keys) {
             Object value = map.get(key);
             if (value != null) {
-                String sValue =
-                        value instanceof String[] ? ((String[]) value)[0] : String.valueOf(value);
+                String sValue = value instanceof String[] ? ((String[]) value)[0] : String.valueOf(value);
                 selected.put(key.toUpperCase(), URLDecode(sValue, encoding));
             }
         }
@@ -156,13 +152,12 @@ public class ServletUtils {
      * @param tmpBufferSize how many bytes to read at a time, -1 = 1024
      * @return a compacted buffer with all the data
      */
-    public static byte[] readStream(InputStream is, int bufferHint, int tmpBufferSize)
-            throws IOException {
+    public static byte[] readStream(InputStream is, int bufferHint, int tmpBufferSize) throws IOException {
         return readStream(is, bufferHint, tmpBufferSize, true);
     }
 
-    public static byte[] readStream(
-            InputStream is, int bufferHint, int tmpBufferSize, boolean close) throws IOException {
+    public static byte[] readStream(InputStream is, int bufferHint, int tmpBufferSize, boolean close)
+            throws IOException {
         byte[] buffer = null;
         if (bufferHint > 0) {
             buffer = new byte[bufferHint];
@@ -220,8 +215,7 @@ public class ServletUtils {
         String ret;
         synchronized (calendar) {
             if (ServletUtils.format == null) {
-                ServletUtils.format =
-                        new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+                ServletUtils.format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
                 ServletUtils.format.setTimeZone(ServletUtils.timeZone);
             }
 
@@ -241,8 +235,7 @@ public class ServletUtils {
 
         synchronized (calendar) {
             if (ServletUtils.format == null) {
-                ServletUtils.format =
-                        new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+                ServletUtils.format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
                 ServletUtils.format.setTimeZone(ServletUtils.timeZone);
             }
 
@@ -365,10 +358,7 @@ public class ServletUtils {
                 .append(relBasePath)
                 .append("rest/web/gwc.css\" type=\"text/css\"/>\n");
         if (jsFile != null) {
-            builder.append("<script src=\"")
-                    .append(relBasePath)
-                    .append(jsFile)
-                    .append("\"></script>\n");
+            builder.append("<script src=\"").append(relBasePath).append(jsFile).append("\"></script>\n");
         }
         builder.append("</head>\n");
         return builder.toString();
@@ -378,9 +368,7 @@ public class ServletUtils {
         StringBuilder builder = new StringBuilder();
         builder.append("<div id=\"pageHeader\">");
         builder.append("<a id=\"logo\" href=\"").append(relBasePath).append("\">");
-        builder.append("<img src=\"")
-                .append(relBasePath)
-                .append("rest/web/geowebcache_logo.png\"/>");
+        builder.append("<img src=\"").append(relBasePath).append("rest/web/geowebcache_logo.png\"/>");
         builder.append("</a>");
         builder.append("</div>\n");
         return builder.toString();
@@ -443,8 +431,7 @@ public class ServletUtils {
     }
 
     /** Generate the context path of the request, less the specified trailing path */
-    public static String getServletContextPath(
-            HttpServletRequest req, String trailingPath, String servletPrefix) {
+    public static String getServletContextPath(HttpServletRequest req, String trailingPath, String servletPrefix) {
         String reqUrl = req.getRequestURL().toString();
         String servletBase = ServletUtils.getServletBaseURL(req, servletPrefix);
         int prefixIdx = servletBase.length();
@@ -457,8 +444,7 @@ public class ServletUtils {
     }
 
     /** Generate the context path of the request, try the specified trailing path */
-    public static String getServletContextPath(
-            HttpServletRequest req, String[] trailingPaths, String servletPrefix) {
+    public static String getServletContextPath(HttpServletRequest req, String[] trailingPaths, String servletPrefix) {
         String context = "";
         for (String trailingPath : trailingPaths) {
             context = getServletContextPath(req, trailingPath, servletPrefix);

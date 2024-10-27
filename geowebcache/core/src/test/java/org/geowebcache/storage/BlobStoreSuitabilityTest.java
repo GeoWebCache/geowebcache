@@ -37,7 +37,8 @@ import org.junit.runner.RunWith;
 @RunWith(Theories.class)
 public abstract class BlobStoreSuitabilityTest {
 
-    @Rule public SuitabilityCheckRule suitability = SuitabilityCheckRule.system();
+    @Rule
+    public SuitabilityCheckRule suitability = SuitabilityCheckRule.system();
 
     protected abstract Matcher<Object> existing();
 

@@ -47,8 +47,7 @@ class GeoRSSTileRangeBuilder {
      * @param maxMaskLevel index of the maximum zoom level for which to create a tile matrix for,
      *     meaning greater levels will be downsampled to save memory
      */
-    public GeoRSSTileRangeBuilder(
-            final TileLayer layer, final String gridSetId, final int maxMaskLevel) {
+    public GeoRSSTileRangeBuilder(final TileLayer layer, final String gridSetId, final int maxMaskLevel) {
         if (layer == null) {
             throw new NullPointerException("layer");
         }
@@ -65,13 +64,12 @@ class GeoRSSTileRangeBuilder {
 
         final GridSubset gridSubset = layer.getGridSubset(gridSetId);
         if (gridSubset == null) {
-            throw new IllegalArgumentException(
-                    "no grid subset " + gridSetId + " at " + layer.getName());
+            throw new IllegalArgumentException("no grid subset " + gridSetId + " at " + layer.getName());
         }
     }
 
-    public GeometryRasterMaskBuilder buildTileRangeMask(
-            final GeoRSSReader reader, String previousEntryUpdate) throws IOException {
+    public GeometryRasterMaskBuilder buildTileRangeMask(final GeoRSSReader reader, String previousEntryUpdate)
+            throws IOException {
 
         final GridSubset gridSubset = layer.getGridSubset(gridSetId);
         final int[] metaTilingFactors = layer.getMetaTilingFactors();
@@ -83,15 +81,12 @@ class GeoRSSTileRangeBuilder {
         try {
             while ((entry = reader.nextEntry()) != null) {
                 if (entry.getUpdated() != null && entry.getUpdated().equals(previousEntryUpdate)) {
-                    LOGGER.warning(
-                            "Skipping entry with id "
-                                    + entry.getId()
-                                    + " since it has the same date as our last feed update.");
+                    LOGGER.warning("Skipping entry with id "
+                            + entry.getId()
+                            + " since it has the same date as our last feed update.");
                 } else {
                     if (matrix == null) {
-                        matrix =
-                                new GeometryRasterMaskBuilder(
-                                        gridSubset, metaTilingFactors, maxMaskLevel);
+                        matrix = new GeometryRasterMaskBuilder(gridSubset, metaTilingFactors, maxMaskLevel);
                     }
 
                     // Record the most recent updated entry. Date comparison
@@ -99,8 +94,7 @@ class GeoRSSTileRangeBuilder {
                     // "2010-03-02T15:51:55Z" with the most significant part
                     // first.
                     if ((entry.getUpdated() != null)
-                            && ((lastEntryUpdate == null)
-                                    || (lastEntryUpdate.compareTo(entry.getUpdated()) < 0))) {
+                            && ((lastEntryUpdate == null) || (lastEntryUpdate.compareTo(entry.getUpdated()) < 0))) {
                         lastEntryUpdate = entry.getUpdated();
                     }
 

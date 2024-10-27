@@ -57,7 +57,8 @@ public class FileResource implements Resource {
                 FileChannel in = fis.getChannel()) {
             final long size = in.size();
             long written = 0;
-            while ((written += in.transferTo(written, size, target)) < size) ;
+            while ((written += in.transferTo(written, size, target)) < size)
+                ;
             return size;
         }
     }

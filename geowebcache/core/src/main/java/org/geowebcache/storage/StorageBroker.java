@@ -39,8 +39,7 @@ public interface StorageBroker {
     boolean deleteByParametersId(String layerName, String parametersId) throws StorageException;
 
     /** Completely deletes the cache for a layer/parameters combination */
-    boolean deleteByParameters(String layerName, Map<String, String> parameters)
-            throws StorageException;
+    boolean deleteByParameters(String layerName, Map<String, String> parameters) throws StorageException;
 
     boolean rename(String oldLayerName, String newLayerName) throws StorageException;
 

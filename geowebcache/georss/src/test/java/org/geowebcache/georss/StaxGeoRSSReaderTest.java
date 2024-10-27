@@ -104,8 +104,7 @@ public class StaxGeoRSSReaderTest {
      *     package>/test-data/<fileName>}
      * @return a reader over {@code test-data/fileName}
      */
-    private Reader reader(final String fileName)
-            throws FileNotFoundException, UnsupportedEncodingException {
+    private Reader reader(final String fileName) throws FileNotFoundException, UnsupportedEncodingException {
 
         InputStream stream = getClass().getResourceAsStream("test-data/" + fileName);
         if (stream == null) {

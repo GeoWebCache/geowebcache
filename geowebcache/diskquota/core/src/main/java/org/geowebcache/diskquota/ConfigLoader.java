@@ -94,8 +94,7 @@ public class ConfigLoader {
             final TileLayerDispatcher tld)
             throws ConfigurationException {
         this(
-                new XMLFileResourceProvider(
-                        CONFIGURATION_FILE_NAME, contextProvider, null, storageFinder),
+                new XMLFileResourceProvider(CONFIGURATION_FILE_NAME, contextProvider, null, storageFinder),
                 storageFinder,
                 tld);
     }
@@ -119,9 +118,7 @@ public class ConfigLoader {
     /** Saves the configuration to the root cache directory */
     public void saveConfig(DiskQuotaConfig config) throws IOException, ConfigurationException {
         if (!resourceProvider.hasOutput()) {
-            log.log(
-                    Level.SEVERE,
-                    "Unable to save DiskQuota to resource :" + resourceProvider.getLocation());
+            log.log(Level.SEVERE, "Unable to save DiskQuota to resource :" + resourceProvider.getLocation());
             return;
         }
 
@@ -131,9 +128,7 @@ public class ConfigLoader {
         try (OutputStream configOut = resourceProvider.out()) {
             xStream.toXML(config, new OutputStreamWriter(configOut, StandardCharsets.UTF_8));
         } catch (RuntimeException e) {
-            log.log(
-                    Level.SEVERE,
-                    "Error saving DiskQuota config to file :" + resourceProvider.getLocation());
+            log.log(Level.SEVERE, "Error saving DiskQuota config to file :" + resourceProvider.getLocation());
         }
     }
 
@@ -160,8 +155,7 @@ public class ConfigLoader {
                         e);
             }
         } else {
-            log.config(
-                    "DiskQuota configuration is not readable: " + resourceProvider.getLocation());
+            log.config("DiskQuota configuration is not readable: " + resourceProvider.getLocation());
         }
 
         if (quotaConfig == null) {
@@ -188,17 +182,15 @@ public class ConfigLoader {
         }
         int maxConcurrentCleanUps = quotaConfig.getMaxConcurrentCleanUps();
         if (maxConcurrentCleanUps <= 0) {
-            throw new ConfigurationException(
-                    "maxConcurrentCleanUps shall be specified as a positive integer");
+            throw new ConfigurationException("maxConcurrentCleanUps shall be specified as a positive integer");
         }
 
         if (null != quotaConfig.getLayerQuotas()) {
             for (LayerQuota lq : new ArrayList<>(quotaConfig.getLayerQuotas())) {
                 if (null == lq.getQuota()) {
-                    log.info(
-                            "Configured quota for layer "
-                                    + lq.getLayer()
-                                    + " is null. Discarding it to be attached to the global quota");
+                    log.info("Configured quota for layer "
+                            + lq.getLayer()
+                            + " is null. Discarding it to be attached to the global quota");
                     quotaConfig.remove(lq);
                     continue;
                 }
@@ -208,8 +200,7 @@ public class ConfigLoader {
         }
     }
 
-    private void validateLayerQuota(DiskQuotaConfig quotaConfig, LayerQuota lq)
-            throws ConfigurationException {
+    private void validateLayerQuota(DiskQuotaConfig quotaConfig, LayerQuota lq) throws ConfigurationException {
         String layer = lq.getLayer();
         try {
             tileLayerDispatcher.getTileLayer(layer);
@@ -228,11 +219,10 @@ public class ConfigLoader {
             // if expiration policy is not defined, then there should be no quota defined either,
             // as it means the layer is managed by the global expiration policy, if any
             if (lq.getQuota() != null) {
-                throw new ConfigurationException(
-                        "Layer "
-                                + lq.getLayer()
-                                + " has no expiration policy, but does have a quota defined. "
-                                + "Either both or neither should be present");
+                throw new ConfigurationException("Layer "
+                        + lq.getLayer()
+                        + " has no expiration policy, but does have a quota defined. "
+                        + "Either both or neither should be present");
             }
             return;
         }
@@ -264,8 +254,7 @@ public class ConfigLoader {
         log.fine("Quota validated: " + quota);
     }
 
-    private DiskQuotaConfig loadConfiguration(final InputStream configStream)
-            throws XStreamException {
+    private DiskQuotaConfig loadConfiguration(final InputStream configStream) throws XStreamException {
         XStream xstream = getConfiguredXStream(new GeoWebCacheXStream());
         try (Reader reader = new InputStreamReader(configStream, StandardCharsets.UTF_8)) {
             DiskQuotaConfig fromXML = loadConfiguration(reader, xstream);
@@ -278,8 +267,7 @@ public class ConfigLoader {
     public static DiskQuotaConfig loadConfiguration(final Reader reader, XStream xstream) {
         DiskQuotaConfig fromXML = (DiskQuotaConfig) xstream.fromXML(reader);
 
-        final GeoWebCacheEnvironment gwcEnvironment =
-                GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
+        final GeoWebCacheEnvironment gwcEnvironment = GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
 
         if (gwcEnvironment != null && GeoWebCacheEnvironment.ALLOW_ENV_PARAMETRIZATION) {
             fromXML.setQuotaStore((String) gwcEnvironment.resolveValue(fromXML.getQuotaStore()));
@@ -304,8 +292,7 @@ public class ConfigLoader {
     }
 
     /** Opens an output stream for a file relative to the cache storage folder */
-    public OutputStream getStorageOutputStream(String... fileNameRelPath)
-            throws IOException, ConfigurationException {
+    public OutputStream getStorageOutputStream(String... fileNameRelPath) throws IOException, ConfigurationException {
         File rootCacheDir = getFileStorageDir(fileNameRelPath);
         String fileName = fileNameRelPath[fileNameRelPath.length - 1];
         File configFile = new File(rootCacheDir, fileName);
@@ -318,8 +305,7 @@ public class ConfigLoader {
      * @param fileNameRelPath the file name relative to the cache storage folder to open
      * @throws IOException if {@code fileName} doesn't exist
      */
-    public InputStream getStorageInputStream(String... fileNameRelPath)
-            throws IOException, ConfigurationException {
+    public InputStream getStorageInputStream(String... fileNameRelPath) throws IOException, ConfigurationException {
         File rootCacheDir = getFileStorageDir(fileNameRelPath);
         String fileName = fileNameRelPath[fileNameRelPath.length - 1];
         File configFile = new File(rootCacheDir, fileName);
@@ -369,8 +355,7 @@ public class ConfigLoader {
             reader.moveDown();
             String nodeName = reader.getNodeName();
             Assert.isTrue(
-                    "value".equals(nodeName),
-                    "Expected element name to be 'value' but was " + nodeName + " instead");
+                    "value".equals(nodeName), "Expected element name to be 'value' but was " + nodeName + " instead");
 
             String nodevalue = reader.getValue();
             double value = Double.parseDouble(nodevalue);
@@ -379,8 +364,7 @@ public class ConfigLoader {
             reader.moveDown();
             nodeName = reader.getNodeName();
             Assert.isTrue(
-                    "units".equals(nodeName),
-                    "Expected to find a units element, but found " + nodeName + " instead");
+                    "units".equals(nodeName), "Expected to find a units element, but found " + nodeName + " instead");
 
             nodevalue = reader.getValue();
             StorageUnit unit = StorageUnit.valueOf(nodevalue);
@@ -396,8 +380,7 @@ public class ConfigLoader {
          *     com.thoughtworks.xstream.converters.MarshallingContext)
          */
         @Override
-        public void marshal(
-                Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
             Quota quota = (Quota) source;
             BigInteger bytes = quota.getBytes();
             StorageUnit unit = StorageUnit.bestFit(bytes);

@@ -112,8 +112,7 @@ public class QuotaUpdatesMonitor extends AbstractMonitor {
             final long y,
             final int z,
             final long blobSize) {
-        this.quotaDiffsProducer.tileStored(
-                layerName, gridSetId, blobFormat, parametersId, x, y, z, blobSize);
+        this.quotaDiffsProducer.tileStored(layerName, gridSetId, blobFormat, parametersId, x, y, z, blobSize);
     }
 
     @Override

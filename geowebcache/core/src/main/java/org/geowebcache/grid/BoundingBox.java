@@ -43,13 +43,11 @@ public class BoundingBox implements Serializable {
 
     public static final BoundingBox WORLD4326 = new BoundingBox(-180.0, -90.0, 180.0, 90.0);
 
-    public static final BoundingBox WORLD3857 =
-            new BoundingBox(-20037508.34, -20037508.34, 20037508.34, 20037508.34);
+    public static final BoundingBox WORLD3857 = new BoundingBox(-20037508.34, -20037508.34, 20037508.34, 20037508.34);
 
     // exactly as defined in the OGC TMS specification
     public static final BoundingBox WORLD3857_TMS =
-            new BoundingBox(
-                    -20037508.3427892, -20037508.3427892, 20037508.3427892, 20037508.3427892);
+            new BoundingBox(-20037508.3427892, -20037508.3427892, 20037508.3427892, 20037508.3427892);
 
     // minx, miny, maxx, maxy
     private double[] coords = new double[4];
@@ -166,14 +164,7 @@ public class BoundingBox implements Serializable {
      * @return a readable string
      */
     public String getReadableString() {
-        return "Min X: "
-                + coords[0]
-                + " Min Y: "
-                + coords[1]
-                + " Max X: "
-                + coords[2]
-                + " Max Y: "
-                + coords[3];
+        return "Min X: " + coords[0] + " Min Y: " + coords[1] + " Max X: " + coords[2] + " Max Y: " + coords[3];
     }
 
     /** Returns a comma separated value String suitable for URL output */

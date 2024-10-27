@@ -40,10 +40,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({
-    "file*:/webapp/WEB-INF/web.xml",
-    "file*:/webapp/WEB-INF/geowebcache-servlet.xml"
-})
+@ContextConfiguration({"file*:/webapp/WEB-INF/web.xml", "file*:/webapp/WEB-INF/geowebcache-servlet.xml"})
 public class BoundsControllerTest {
     private MockMvc mockMvc;
 
@@ -62,20 +59,18 @@ public class BoundsControllerTest {
         int tileWidth = 256;
         int tileHeight = 256;
         boolean yCoordinateFirst = false;
-        GridSet gridSet =
-                GridSetFactory.createGridSet(
-                        "EPSG:3395",
-                        SRS.getSRS("EPSG:3395"),
-                        extent,
-                        alignTopLeft,
-                        levels,
-                        metersPerUnit,
-                        pixelSize,
-                        tileWidth,
-                        tileHeight,
-                        yCoordinateFirst);
-        GridSetBroker gridSetBroker =
-                new GridSetBroker(MockGridSetConfiguration.withDefaults(gridSet));
+        GridSet gridSet = GridSetFactory.createGridSet(
+                "EPSG:3395",
+                SRS.getSRS("EPSG:3395"),
+                extent,
+                alignTopLeft,
+                levels,
+                metersPerUnit,
+                pixelSize,
+                tileWidth,
+                tileHeight,
+                yCoordinateFirst);
+        GridSetBroker gridSetBroker = new GridSetBroker(MockGridSetConfiguration.withDefaults(gridSet));
 
         XMLConfiguration xmlConfig = loadXMLConfig();
         xmlConfig.setGridSetBroker(gridSetBroker);
@@ -91,30 +86,22 @@ public class BoundsControllerTest {
 
     @Test
     public void testBoundsGetBadSrs() throws Exception {
-        this.mockMvc
-                .perform(get("/rest/bounds/topp:states/4326/java"))
-                .andExpect(status().is4xxClientError());
+        this.mockMvc.perform(get("/rest/bounds/topp:states/4326/java")).andExpect(status().is4xxClientError());
     }
 
     @Test
     public void testBoundsGetGoodSrs() throws Exception {
-        this.mockMvc
-                .perform(get("/rest/bounds/topp:states/EPSG:900913/java"))
-                .andExpect(status().is2xxSuccessful());
+        this.mockMvc.perform(get("/rest/bounds/topp:states/EPSG:900913/java")).andExpect(status().is2xxSuccessful());
     }
 
     private XMLConfiguration loadXMLConfig() {
 
         XMLConfiguration xmlConfig = null;
         try {
-            xmlConfig =
-                    new XMLConfiguration(
-                            null,
-                            new MockConfigurationResourceProvider(
-                                    () ->
-                                            XMLConfiguration.class.getResourceAsStream(
-                                                    XMLConfigurationBackwardsCompatibilityTest
-                                                            .GWC_125_CONFIG_FILE)));
+            xmlConfig = new XMLConfiguration(
+                    null,
+                    new MockConfigurationResourceProvider(() -> XMLConfiguration.class.getResourceAsStream(
+                            XMLConfigurationBackwardsCompatibilityTest.GWC_125_CONFIG_FILE)));
         } catch (Exception e) {
             // Do nothing
         }

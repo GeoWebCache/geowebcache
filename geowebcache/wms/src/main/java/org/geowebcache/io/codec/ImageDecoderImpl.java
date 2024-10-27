@@ -69,8 +69,7 @@ public class ImageDecoderImpl implements ImageDecoder {
         for (String spi : readerSpi) {
             try {
                 Class<?> clazz = Class.forName(spi);
-                ImageReaderSpi reader =
-                        (ImageReaderSpi) theRegistry.getServiceProviderByClass(clazz);
+                ImageReaderSpi reader = (ImageReaderSpi) theRegistry.getServiceProviderByClass(clazz);
                 if (reader != null) {
                     this.spi = reader;
                     break;
@@ -90,8 +89,7 @@ public class ImageDecoderImpl implements ImageDecoder {
      *     optimization must be used.
      */
     @Override
-    public BufferedImage decode(
-            Object source, boolean aggressiveInputStreamOptimization, Map<String, Object> map)
+    public BufferedImage decode(Object source, boolean aggressiveInputStreamOptimization, Map<String, Object> map)
             throws Exception {
 
         if (!isAggressiveInputStreamSupported() && aggressiveInputStreamOptimization) {

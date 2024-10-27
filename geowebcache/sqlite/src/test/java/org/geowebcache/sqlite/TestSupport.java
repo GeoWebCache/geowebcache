@@ -98,8 +98,7 @@ public abstract class TestSupport {
             writer.write(content);
             writer.flush();
         } catch (Exception exception) {
-            throw Utils.exception(
-                    exception, "Error creating or writing content to file '%s'.", file);
+            throw Utils.exception(exception, "Error creating or writing content to file '%s'.", file);
         }
     }
 
@@ -107,8 +106,7 @@ public abstract class TestSupport {
         MbtilesInfo configuration = new MbtilesInfo();
         configuration.setPoolSize(1000);
         configuration.setRootDirectory(getRootDirectory().getPath());
-        configuration.setTemplatePath(
-                Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
+        configuration.setTemplatePath(Utils.buildPath("{grid}", "{layer}", "{format}", "{z}", "tiles-{x}-{y}.sqlite"));
         configuration.setRowRangeCount(500);
         configuration.setColumnRangeCount(500);
         return configuration;

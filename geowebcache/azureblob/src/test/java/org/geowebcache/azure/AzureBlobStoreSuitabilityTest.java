@@ -84,11 +84,9 @@ public abstract class AzureBlobStoreSuitabilityTest extends BlobStoreSuitability
         for (String path : (String[]) dir) {
             String fullPath = info.getPrefix() + "/" + path;
             BinaryData data = BinaryData.fromString("testAbc");
-            Response<BlockBlobItem> response =
-                    getClient()
-                            .getBlockBlobClient(fullPath)
-                            .uploadWithResponse(
-                                    new BlockBlobSimpleUploadOptions(data), null, Context.NONE);
+            Response<BlockBlobItem> response = getClient()
+                    .getBlockBlobClient(fullPath)
+                    .uploadWithResponse(new BlockBlobSimpleUploadOptions(data), null, Context.NONE);
             assertTrue(HttpStatus.valueOf(response.getStatusCode()).is2xxSuccessful());
         }
         return new AzureBlobStore(info, tld, locks);

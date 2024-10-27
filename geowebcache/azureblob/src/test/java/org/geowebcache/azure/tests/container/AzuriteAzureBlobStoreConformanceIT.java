@@ -34,7 +34,8 @@ public class AzuriteAzureBlobStoreConformanceIT extends AzureBlobStoreConformanc
     public static AzuriteContainer azurite = AzuriteContainer.latest().disabledWithoutDocker();
 
     /** Used to get a per-test case Azure container */
-    @Rule public TestName testName = new TestName();
+    @Rule
+    public TestName testName = new TestName();
 
     @Override
     protected AzureBlobStoreData getConfiguration() {

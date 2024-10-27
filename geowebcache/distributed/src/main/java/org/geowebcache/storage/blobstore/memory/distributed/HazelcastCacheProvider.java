@@ -76,13 +76,12 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
         // cacheProvider parameters are defined
         if (configured) {
             map = loader.getInstance().getMap(HAZELCAST_MAP_DEFINITION);
-            totalSize =
-                    loader.getInstance()
-                                    .getConfig()
-                                    .getMapConfig(HAZELCAST_MAP_DEFINITION)
-                                    .getEvictionConfig()
-                                    .getSize()
-                            * MB_TO_BYTES;
+            totalSize = loader.getInstance()
+                            .getConfig()
+                            .getMapConfig(HAZELCAST_MAP_DEFINITION)
+                            .getEvictionConfig()
+                            .getSize()
+                    * MB_TO_BYTES;
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Configured Hazelcast Cache");
             }
@@ -291,8 +290,7 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
             long actualSize = localMapStats.getOwnedEntryMemoryCost();
             setActualSize(actualSize);
             // Calculation of the memory occupation
-            int currentMemoryOccupation =
-                    (int) (100L - (1L) * (100 * ((1.0d) * (totalSize - actualSize)) / totalSize));
+            int currentMemoryOccupation = (int) (100L - (1L) * (100 * ((1.0d) * (totalSize - actualSize)) / totalSize));
             if (currentMemoryOccupation < 0) {
                 currentMemoryOccupation = 0;
             }

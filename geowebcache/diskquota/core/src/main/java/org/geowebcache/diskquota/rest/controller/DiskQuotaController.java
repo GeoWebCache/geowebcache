@@ -59,7 +59,8 @@ public class DiskQuotaController {
 
     static final Logger LOG = Logging.getLogger(DiskQuotaController.class.getName());
 
-    @Autowired DiskQuotaMonitor monitor;
+    @Autowired
+    DiskQuotaMonitor monitor;
 
     public void setDiskQuotaMonitor(DiskQuotaMonitor monitor) {
         this.monitor = monitor;
@@ -73,8 +74,7 @@ public class DiskQuotaController {
             try {
                 return getJsonRepresentation(config);
             } catch (JSONException e) {
-                return new ResponseEntity<>(
-                        "Caught JSON Execption.", HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<>("Caught JSON Execption.", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         } else {
             return getXmlRepresentation(config);
@@ -102,8 +102,7 @@ public class DiskQuotaController {
             }
 
         } catch (IOException | JSONException e) {
-            return new ResponseEntity<>(
-                    "Error writing input stream to string", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Error writing input stream to string", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -114,8 +113,7 @@ public class DiskQuotaController {
      *     {@link DiskQuotaConfig#setDiskBlockSize}, {@link
      *     DiskQuotaConfig#setMaxConcurrentCleanUps} , {@link DiskQuotaConfig#setCacheCleanUpUnits}
      */
-    private void applyDiff(DiskQuotaConfig config, DiskQuotaConfig newConfig)
-            throws IllegalArgumentException {
+    private void applyDiff(DiskQuotaConfig config, DiskQuotaConfig newConfig) throws IllegalArgumentException {
         // apply diff
         if (newConfig != null) {
             if (null != newConfig.isEnabled()) {
@@ -175,11 +173,8 @@ public class DiskQuotaController {
      * @return a {@link ResponseEntity} object
      */
     private ResponseEntity<?> getJsonRepresentation(DiskQuotaConfig config) throws JSONException {
-        XStream xs =
-                XMLConfiguration.getConfiguredXStreamWithContext(
-                        new GeoWebCacheXStream(new JsonHierarchicalStreamDriver()),
-                        context,
-                        Context.REST);
+        XStream xs = XMLConfiguration.getConfiguredXStreamWithContext(
+                new GeoWebCacheXStream(new JsonHierarchicalStreamDriver()), context, Context.REST);
         JSONObject obj = new JSONObject(xs.toXML(config));
         return new ResponseEntity<>(obj.toString(), HttpStatus.OK);
     }

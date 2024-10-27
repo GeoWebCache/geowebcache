@@ -39,8 +39,7 @@ public class RasterMask implements TileRangeMask {
      *
      * @see #RasterMask(BufferedImage[], long[][], long[][], int)
      */
-    public RasterMask(
-            BufferedImage[] byLevelMasks, long[][] fullCoverage, final long[][] coveredBounds) {
+    public RasterMask(BufferedImage[] byLevelMasks, long[][] fullCoverage, final long[][] coveredBounds) {
         this(byLevelMasks, fullCoverage, coveredBounds, 0);
     }
 
@@ -63,10 +62,7 @@ public class RasterMask implements TileRangeMask {
      *     the pixel location)
      */
     public RasterMask(
-            BufferedImage[] byLevelMasks,
-            long[][] fullCoverage,
-            final long[][] coveredBounds,
-            final int noDataValue) {
+            BufferedImage[] byLevelMasks, long[][] fullCoverage, final long[][] coveredBounds, final int noDataValue) {
         this.byLevelMasks = byLevelMasks;
         this.fullCoverage = fullCoverage;
         this.coveredBounds = coveredBounds;
@@ -90,10 +86,7 @@ public class RasterMask implements TileRangeMask {
         int level = z;
 
         long[] coverage = getGridCoverages()[level];
-        if (tileX < coverage[0]
-                || tileX > coverage[2]
-                || tileY < coverage[1]
-                || tileY > coverage[3]) {
+        if (tileX < coverage[0] || tileX > coverage[2] || tileY < coverage[1] || tileY > coverage[3]) {
             return false;
         }
 
@@ -123,10 +116,7 @@ public class RasterMask implements TileRangeMask {
     private boolean isTileSet(long tileX, long tileY, int level) {
         long[] coverage = getGridCoverages()[level];
 
-        if (tileX < coverage[0]
-                || tileX > coverage[2]
-                || tileY < coverage[1]
-                || tileY > coverage[3]) {
+        if (tileX < coverage[0] || tileX > coverage[2] || tileY < coverage[1] || tileY > coverage[3]) {
             return false;
         }
 

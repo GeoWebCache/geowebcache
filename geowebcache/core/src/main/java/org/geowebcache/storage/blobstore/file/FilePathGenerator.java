@@ -31,6 +31,5 @@ public interface FilePathGenerator {
      * Visits a directory containing a layer, hitting all tiles matching the tile range, and
      * invoking the visitor on them.
      */
-    void visitRange(File layerDirectory, TileRange range, TileFileVisitor visitor)
-            throws StorageException;
+    void visitRange(File layerDirectory, TileRange range, TileFileVisitor visitor) throws StorageException;
 }

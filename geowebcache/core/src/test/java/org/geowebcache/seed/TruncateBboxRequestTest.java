@@ -49,31 +49,29 @@ public class TruncateBboxRequestTest {
             int maxZ,
             BoundingBox bounds,
             Map<String, String> parameters) {
-        Matcher<Object> matcher =
-                allOf(
-                        hasProperty("layerName", equalTo(layerName)),
-                        hasProperty("gridSetId", equalTo(gridSet)),
-                        hasProperty("mimeFormat", equalTo(format)),
-                        hasProperty("zoomStart", equalTo(minZ)),
-                        hasProperty("zoomStop", equalTo(maxZ)),
-                        hasProperty("parameters", equalTo(parameters)),
-                        hasProperty("filterUpdate", any(Boolean.class)),
-                        hasProperty("threadCount", any(Integer.class)),
-                        hasProperty("bounds", equalTo(bounds)),
-                        hasProperty("type", any(GWCTask.TYPE.class)));
-        EasyMock.reportMatcher(
-                new IArgumentMatcher() {
+        Matcher<Object> matcher = allOf(
+                hasProperty("layerName", equalTo(layerName)),
+                hasProperty("gridSetId", equalTo(gridSet)),
+                hasProperty("mimeFormat", equalTo(format)),
+                hasProperty("zoomStart", equalTo(minZ)),
+                hasProperty("zoomStop", equalTo(maxZ)),
+                hasProperty("parameters", equalTo(parameters)),
+                hasProperty("filterUpdate", any(Boolean.class)),
+                hasProperty("threadCount", any(Integer.class)),
+                hasProperty("bounds", equalTo(bounds)),
+                hasProperty("type", any(GWCTask.TYPE.class)));
+        EasyMock.reportMatcher(new IArgumentMatcher() {
 
-                    @Override
-                    public boolean matches(Object argument) {
-                        return matcher.matches(argument);
-                    }
+            @Override
+            public boolean matches(Object argument) {
+                return matcher.matches(argument);
+            }
 
-                    @Override
-                    public void appendTo(StringBuffer buffer) {
-                        matcher.describeTo(new StringDescription(buffer));
-                    }
-                });
+            @Override
+            public void appendTo(StringBuffer buffer) {
+                matcher.describeTo(new StringDescription(buffer));
+            }
+        });
         return null;
     }
 
@@ -102,20 +100,17 @@ public class TruncateBboxRequestTest {
         final int[] metaFactors = {1, 1};
 
         // Boring mocks
-        EasyMock.expect(broker.getCachedParameters(layerName))
-                .andStubReturn(Collections.unmodifiableSet(allParams));
+        EasyMock.expect(broker.getCachedParameters(layerName)).andStubReturn(Collections.unmodifiableSet(allParams));
         EasyMock.expect(breeder.findTileLayer(layerName)).andStubReturn(layer);
         EasyMock.expect(layer.getGridSubset(gridSetName)).andStubReturn(subSet);
-        EasyMock.expect(layer.getMimeTypes())
-                .andStubReturn(Arrays.asList(ImageMime.png, ImageMime.jpeg));
+        EasyMock.expect(layer.getMimeTypes()).andStubReturn(Arrays.asList(ImageMime.png, ImageMime.jpeg));
         EasyMock.expect(subSet.getMinCachedZoom()).andStubReturn(0);
         EasyMock.expect(subSet.getMaxCachedZoom()).andStubReturn(2);
         EasyMock.expect(subSet.getZoomStart()).andStubReturn(0);
         EasyMock.expect(subSet.getZoomStop()).andStubReturn(2);
         EasyMock.expect(subSet.getCoverageIntersections(bbox)).andStubReturn(coverages);
         EasyMock.expect(layer.getMetaTilingFactors()).andStubReturn(metaFactors);
-        EasyMock.expect(subSet.expandToMetaFactors(coverages, metaFactors))
-                .andStubReturn(coverages);
+        EasyMock.expect(subSet.expandToMetaFactors(coverages, metaFactors)).andStubReturn(coverages);
         EasyMock.expect(layer.getName()).andStubReturn(layerName);
 
         // Should issue seed requests for Cartesian product of formats and parameters
@@ -123,28 +118,14 @@ public class TruncateBboxRequestTest {
         breeder.seed(
                 eq(layerName),
                 seedRequest(
-                        layerName,
-                        gridSetName,
-                        "image/png",
-                        0,
-                        2,
-                        bbox,
-                        Collections.singletonMap("STYLES", "style1")));
+                        layerName, gridSetName, "image/png", 0, 2, bbox, Collections.singletonMap("STYLES", "style1")));
         EasyMock.expectLastCall().once();
         breeder.seed(
                 eq(layerName),
                 seedRequest(
-                        layerName,
-                        gridSetName,
-                        "image/png",
-                        0,
-                        2,
-                        bbox,
-                        Collections.singletonMap("STYLES", "style2")));
+                        layerName, gridSetName, "image/png", 0, 2, bbox, Collections.singletonMap("STYLES", "style2")));
         EasyMock.expectLastCall().once();
-        breeder.seed(
-                eq(layerName),
-                seedRequest(layerName, gridSetName, "image/png", 0, 2, bbox, null)); // Default
+        breeder.seed(eq(layerName), seedRequest(layerName, gridSetName, "image/png", 0, 2, bbox, null)); // Default
         EasyMock.expectLastCall().once();
         breeder.seed(
                 eq(layerName),
@@ -168,9 +149,7 @@ public class TruncateBboxRequestTest {
                         bbox,
                         Collections.singletonMap("STYLES", "style2")));
         EasyMock.expectLastCall().once();
-        breeder.seed(
-                eq(layerName),
-                seedRequest(layerName, gridSetName, "image/jpeg", 0, 2, bbox, null)); // Default
+        breeder.seed(eq(layerName), seedRequest(layerName, gridSetName, "image/jpeg", 0, 2, bbox, null)); // Default
         EasyMock.expectLastCall().once();
 
         EasyMock.replay(broker, breeder, layer, subSet);

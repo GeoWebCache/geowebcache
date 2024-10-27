@@ -220,18 +220,13 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
     }
 
     @Override
-    public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider)
-            throws StorageException {
+    public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider) throws StorageException {
         checkNotNull(layers);
         checkState(getName() != null);
-        checkState(
-                isEnabled(),
-                "Can't call AzureBlobStoreConfig.createInstance() is blob store is not enabled");
-        if (log.isLoggable(Level.FINE))
-            log.fine("Creating Azure Blob Store instance [name=" + getName() + "]");
+        checkState(isEnabled(), "Can't call AzureBlobStoreConfig.createInstance() is blob store is not enabled");
+        if (log.isLoggable(Level.FINE)) log.fine("Creating Azure Blob Store instance [name=" + getName() + "]");
         final AzureBlobStoreData storeData =
-                new AzureBlobStoreData(
-                        this, GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class));
+                new AzureBlobStoreData(this, GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class));
         return new AzureBlobStore(storeData, layers, lockProvider);
     }
 

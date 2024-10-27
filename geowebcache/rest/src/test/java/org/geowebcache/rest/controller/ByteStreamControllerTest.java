@@ -30,10 +30,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({
-    "file*:/webapp/WEB-INF/web.xml",
-    "file*:/webapp/WEB-INF/geowebcache-servlet.xml"
-})
+@ContextConfiguration({"file*:/webapp/WEB-INF/web.xml", "file*:/webapp/WEB-INF/geowebcache-servlet.xml"})
 public class ByteStreamControllerTest {
     private MockMvc mockMvc;
 
@@ -89,21 +86,18 @@ public class ByteStreamControllerTest {
 
     @Test
     public void testBackreference() throws Exception {
-        mockMvc.perform(get("/rest/web/../../shouldnt/access/test.png"))
-                .andExpect(status().is4xxClientError());
+        mockMvc.perform(get("/rest/web/../../shouldnt/access/test.png")).andExpect(status().is4xxClientError());
     }
 
     @Test
     public void testBackreference2() throws Exception {
-        mockMvc.perform(get("/rest/web/foo/../../../shouldnt/access/test.png"))
-                .andExpect(status().is4xxClientError());
+        mockMvc.perform(get("/rest/web/foo/../../../shouldnt/access/test.png")).andExpect(status().is4xxClientError());
     }
 
     @Test
     public void testBackreferenceWindows() throws Exception {
         assumeTrue(SystemUtils.IS_OS_WINDOWS);
-        mockMvc.perform(get("/rest/web/..\\..\\shouldnt/access/test.png"))
-                .andExpect(status().is4xxClientError());
+        mockMvc.perform(get("/rest/web/..\\..\\shouldnt/access/test.png")).andExpect(status().is4xxClientError());
     }
 
     @Test

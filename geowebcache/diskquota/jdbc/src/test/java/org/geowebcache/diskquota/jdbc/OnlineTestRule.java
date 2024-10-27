@@ -83,8 +83,7 @@ public class OnlineTestRule extends ExternalResource {
         try {
             available = isOnline();
         } catch (Throwable t) {
-            LOG.info(
-                    "Skipping " + fixtureId + " tests, resources not available: " + t.getMessage());
+            LOG.info("Skipping " + fixtureId + " tests, resources not available: " + t.getMessage());
             LOG.log(Level.WARNING, t.getMessage(), t);
             available = Boolean.FALSE;
         }
@@ -117,8 +116,7 @@ public class OnlineTestRule extends ExternalResource {
                         if (profile == null) {
                             Properties exampleFixture = createExampleFixture();
                             if (exampleFixture != null) {
-                                File exFixtureFile =
-                                        new File(fixtureFile.getAbsolutePath() + ".example");
+                                File exFixtureFile = new File(fixtureFile.getAbsolutePath() + ".example");
                                 if (!exFixtureFile.exists()) {
                                     createExampleFixture(exFixtureFile, exampleFixture);
                                 }
@@ -171,19 +169,15 @@ public class OnlineTestRule extends ExternalResource {
         checkAvailable();
         setUpInternal();
 
-        skipOnFailure =
-                Boolean.parseBoolean(
-                        fixture.getProperty(
-                                OnlineTestRule.SKIP_ON_FAILURE_KEY,
-                                OnlineTestRule.SKIP_ON_FAILURE_DEFAULT));
+        skipOnFailure = Boolean.parseBoolean(
+                fixture.getProperty(OnlineTestRule.SKIP_ON_FAILURE_KEY, OnlineTestRule.SKIP_ON_FAILURE_DEFAULT));
         // call the setUp template method
         try {
             connect();
         } catch (Exception e) {
             if (skipOnFailure) {
                 fixture = null;
-                throw new AssumptionViolatedException(
-                        "Failure during connection to fixture " + fixtureId, e);
+                throw new AssumptionViolatedException("Failure during connection to fixture " + fixtureId, e);
             } else {
                 // do not swallow the exception
                 throw e;
@@ -207,8 +201,7 @@ public class OnlineTestRule extends ExternalResource {
                     disconnect();
                 } catch (Exception e) {
                     if (!skipOnFailure) {
-                        throw new AssertionError(
-                                "Exception during disconnect of fixture " + fixtureId, e);
+                        throw new AssertionError("Exception during disconnect of fixture " + fixtureId, e);
                     }
                 }
             }

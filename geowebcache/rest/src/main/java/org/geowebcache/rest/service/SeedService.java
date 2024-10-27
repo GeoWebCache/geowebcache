@@ -64,7 +64,8 @@ public class SeedService {
 
     static final Logger LOG = Logging.getLogger(SeedService.class.getName());
 
-    @Autowired TileBreeder seeder;
+    @Autowired
+    TileBreeder seeder;
 
     private final WebApplicationContext context;
 
@@ -81,8 +82,7 @@ public class SeedService {
             JSONObject obj = new JSONObject(xs.toXML(list));
             return constructResponse(MediaType.APPLICATION_JSON, obj.toString(), HttpStatus.OK);
         } catch (JSONException jse) {
-            return constructResponse(
-                    MediaType.TEXT_PLAIN, "error", HttpStatus.INTERNAL_SERVER_ERROR);
+            return constructResponse(MediaType.TEXT_PLAIN, "error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -94,15 +94,13 @@ public class SeedService {
             try {
                 list = findTileLayer(layer);
             } catch (GeoWebCacheException e) {
-                return constructResponse(
-                        MediaType.TEXT_PLAIN, e.getMessage(), HttpStatus.BAD_REQUEST);
+                return constructResponse(MediaType.TEXT_PLAIN, e.getMessage(), HttpStatus.BAD_REQUEST);
             }
             JSONObject obj = new JSONObject(xs.toXML(list));
             return constructResponse(MediaType.APPLICATION_JSON, obj.toString(), HttpStatus.OK);
         } catch (JSONException jse) {
             LOG.log(Level.SEVERE, jse.getMessage(), jse);
-            return constructResponse(
-                    MediaType.TEXT_PLAIN, "error", HttpStatus.INTERNAL_SERVER_ERROR);
+            return constructResponse(MediaType.TEXT_PLAIN, "error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -117,8 +115,7 @@ public class SeedService {
         return constructResponse(MediaType.APPLICATION_XML, xs.toXML(list), HttpStatus.OK);
     }
 
-    private ResponseEntity<?> constructResponse(
-            MediaType mediaType, String message, HttpStatus status) {
+    private ResponseEntity<?> constructResponse(MediaType mediaType, String message, HttpStatus status) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(mediaType);
         return new ResponseEntity<>(message, headers, status);
@@ -166,9 +163,7 @@ public class SeedService {
                     tasks = seeder.getRunningAndPendingTasks();
                 } else {
                     throw new RestException(
-                            "Unknown kill_all code: '"
-                                    + killCode
-                                    + "'. One of all|running|pending is expected.",
+                            "Unknown kill_all code: '" + killCode + "'. One of all|running|pending is expected.",
                             HttpStatus.BAD_REQUEST);
                 }
                 List<GWCTask> terminatedTasks = new LinkedList<>();
@@ -208,8 +203,7 @@ public class SeedService {
     }
 
     /** Method to do the seeding and truncating. */
-    public ResponseEntity<?> doSeeding(
-            HttpServletRequest request, String layer, String extension, String body) {
+    public ResponseEntity<?> doSeeding(HttpServletRequest request, String layer, String extension, String body) {
         XStream xs = configXStream(new GeoWebCacheXStream(new DomDriver()));
 
         Object obj = null;
@@ -221,8 +215,7 @@ public class SeedService {
                 obj = xs.fromXML(convertJson(body));
             } else {
                 throw new RestException(
-                        "Format extension unknown or not specified: " + extension,
-                        HttpStatus.BAD_REQUEST);
+                        "Format extension unknown or not specified: " + extension, HttpStatus.BAD_REQUEST);
             }
             handleRequest(layer, obj);
             HttpHeaders headers = new HttpHeaders();

@@ -44,8 +44,7 @@ public class MbtilesPBFTest extends TestSupport {
     @Before
     public void copyData() throws Exception {
         file = buildRootFile("planet.mbtiles");
-        URL template =
-                org.geotools.mbtiles.MBTilesFileVectorTileTest.class.getResource("planet.mbtiles");
+        URL template = org.geotools.mbtiles.MBTilesFileVectorTileTest.class.getResource("planet.mbtiles");
         try (InputStream in = template.openStream();
                 OutputStream out = new FileOutputStream(file)) {
             IOUtils.copy(in, out);
@@ -58,16 +57,10 @@ public class MbtilesPBFTest extends TestSupport {
         MbtilesInfo configuration = getDefaultConfiguration();
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
         addStoresToClean(store);
-        TileObject tile =
-                TileObject.createQueryTileObject(
-                        layer,
-                        new long[] {0, 0, 0},
-                        "EPSG:900913",
-                        ApplicationMime.mapboxVector.getFormat(),
-                        null);
+        TileObject tile = TileObject.createQueryTileObject(
+                layer, new long[] {0, 0, 0}, "EPSG:900913", ApplicationMime.mapboxVector.getFormat(), null);
         assertThat(store.get(tile), is(true));
-        try (InputStream is =
-                MBTilesFileVectorTileTest.class.getResourceAsStream("tile_data.pbf.gz")) {
+        try (InputStream is = MBTilesFileVectorTileTest.class.getResourceAsStream("tile_data.pbf.gz")) {
             assertTrue(IOUtils.contentEquals(tile.getBlob().getInputStream(), is));
         }
     }
@@ -78,16 +71,10 @@ public class MbtilesPBFTest extends TestSupport {
         configuration.setGzipVector(true);
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
         addStoresToClean(store);
-        TileObject tile =
-                TileObject.createQueryTileObject(
-                        layer,
-                        new long[] {0, 0, 0},
-                        "EPSG:900913",
-                        ApplicationMime.mapboxVector.getFormat(),
-                        null);
+        TileObject tile = TileObject.createQueryTileObject(
+                layer, new long[] {0, 0, 0}, "EPSG:900913", ApplicationMime.mapboxVector.getFormat(), null);
         assertThat(store.get(tile), is(true));
-        try (InputStream is =
-                MBTilesFileVectorTileTest.class.getResourceAsStream("tile_data.pbf")) {
+        try (InputStream is = MBTilesFileVectorTileTest.class.getResourceAsStream("tile_data.pbf")) {
             assertTrue(IOUtils.contentEquals(tile.getBlob().getInputStream(), is));
         }
     }
@@ -98,16 +85,10 @@ public class MbtilesPBFTest extends TestSupport {
         configuration.setGzipVector(false);
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
         addStoresToClean(store);
-        TileObject tile =
-                TileObject.createQueryTileObject(
-                        layer,
-                        new long[] {0, 0, 0},
-                        "EPSG:900913",
-                        ApplicationMime.mapboxVector.getFormat(),
-                        null);
+        TileObject tile = TileObject.createQueryTileObject(
+                layer, new long[] {0, 0, 0}, "EPSG:900913", ApplicationMime.mapboxVector.getFormat(), null);
         assertThat(store.get(tile), is(true));
-        try (InputStream is =
-                MBTilesFileVectorTileTest.class.getResourceAsStream("tile_data.pbf.gz")) {
+        try (InputStream is = MBTilesFileVectorTileTest.class.getResourceAsStream("tile_data.pbf.gz")) {
             assertTrue(IOUtils.contentEquals(tile.getBlob().getInputStream(), is));
         }
     }

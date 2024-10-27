@@ -51,103 +51,76 @@ public class ImageMime extends MimeType {
         JAIExt.initJAIEXT(false, false);
     }
 
-    public static final ImageMime png =
-            new ImageMime("image/png", "png", "png", "image/png", true, true, true) {
+    public static final ImageMime png = new ImageMime("image/png", "png", "png", "image/png", true, true, true) {
 
-                /** Any response mime starting with image/png will do */
-                @Override
-                public boolean isCompatible(String otherMimeType) {
-                    return super.isCompatible(otherMimeType)
-                            || otherMimeType.startsWith("image/png");
+        /** Any response mime starting with image/png will do */
+        @Override
+        public boolean isCompatible(String otherMimeType) {
+            return super.isCompatible(otherMimeType) || otherMimeType.startsWith("image/png");
+        }
+    };
+
+    public static final ImageMime jpeg = new ImageMime("image/jpeg", "jpeg", "jpeg", "image/jpeg", true, false, false) {
+
+        /** Shave off the alpha band, JPEG cannot write it out */
+        @Override
+        public RenderedImage preprocess(RenderedImage ri) {
+            if (ri.getColorModel().hasAlpha()) {
+                final int numBands = ri.getSampleModel().getNumBands();
+                // handle both gray-alpha and RGBA (same code as in GeoTools ImageWorker)
+                final int[] bands = new int[numBands - 1];
+                for (int i = 0; i < bands.length; i++) {
+                    bands[i] = i;
                 }
-            };
+                // ParameterBlock creation
+                ParameterBlock pb = new ParameterBlock();
+                pb.setSource(ri, 0);
+                pb.set(bands, 0);
+                final RenderingHints hints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, new ImageLayout(ri));
+                ri = JAI.create("BandSelect", pb, hints);
+            }
+            return ri;
+        }
+    };
 
-    public static final ImageMime jpeg =
-            new ImageMime("image/jpeg", "jpeg", "jpeg", "image/jpeg", true, false, false) {
+    public static final ImageMime gif = new ImageMime("image/gif", "gif", "gif", "image/gif", true, false, true);
 
-                /** Shave off the alpha band, JPEG cannot write it out */
-                @Override
-                public RenderedImage preprocess(RenderedImage ri) {
-                    if (ri.getColorModel().hasAlpha()) {
-                        final int numBands = ri.getSampleModel().getNumBands();
-                        // handle both gray-alpha and RGBA (same code as in GeoTools ImageWorker)
-                        final int[] bands = new int[numBands - 1];
-                        for (int i = 0; i < bands.length; i++) {
-                            bands[i] = i;
-                        }
-                        // ParameterBlock creation
+    public static final ImageMime tiff = new ImageMime("image/tiff", "tiff", "tiff", "image/tiff", true, true, true);
+
+    public static final ImageMime png8 = new ImageMime("image/png", "png8", "png", "image/png8", true, false, true) {
+
+        /** Quantize if the source did not do so already */
+        @Override
+        public RenderedImage preprocess(RenderedImage canvas) {
+            if (!(canvas.getColorModel() instanceof IndexColorModel)) {
+                if (canvas.getColorModel() instanceof ComponentColorModel
+                        && canvas.getSampleModel().getDataType() == DataBuffer.TYPE_BYTE) {
+                    ColorIndexer indexer = new Quantizer(256).subsample().buildColorIndexer(canvas);
+                    if (indexer != null) {
                         ParameterBlock pb = new ParameterBlock();
-                        pb.setSource(ri, 0);
-                        pb.set(bands, 0);
-                        final RenderingHints hints =
-                                new RenderingHints(JAI.KEY_IMAGE_LAYOUT, new ImageLayout(ri));
-                        ri = JAI.create("BandSelect", pb, hints);
+                        pb.setSource(canvas, 0); // The source image.
+                        pb.set(indexer, 0);
+                        canvas = JAI.create(
+                                "ColorIndexer", pb, JAI.getDefaultInstance().getRenderingHints());
                     }
-                    return ri;
                 }
-            };
+            }
+            return canvas;
+        }
+    };
 
-    public static final ImageMime gif =
-            new ImageMime("image/gif", "gif", "gif", "image/gif", true, false, true);
-
-    public static final ImageMime tiff =
-            new ImageMime("image/tiff", "tiff", "tiff", "image/tiff", true, true, true);
-
-    public static final ImageMime png8 =
-            new ImageMime("image/png", "png8", "png", "image/png8", true, false, true) {
-
-                /** Quantize if the source did not do so already */
-                @Override
-                public RenderedImage preprocess(RenderedImage canvas) {
-                    if (!(canvas.getColorModel() instanceof IndexColorModel)) {
-                        if (canvas.getColorModel() instanceof ComponentColorModel
-                                && canvas.getSampleModel().getDataType() == DataBuffer.TYPE_BYTE) {
-                            ColorIndexer indexer =
-                                    new Quantizer(256).subsample().buildColorIndexer(canvas);
-                            if (indexer != null) {
-                                ParameterBlock pb = new ParameterBlock();
-                                pb.setSource(canvas, 0); // The source image.
-                                pb.set(indexer, 0);
-                                canvas =
-                                        JAI.create(
-                                                "ColorIndexer",
-                                                pb,
-                                                JAI.getDefaultInstance().getRenderingHints());
-                            }
-                        }
-                    }
-                    return canvas;
-                }
-            };
-
-    public static final ImageMime png24 =
-            new ImageMime("image/png", "png24", "png", "image/png24", true, true, true);
+    public static final ImageMime png24 = new ImageMime("image/png", "png24", "png", "image/png24", true, true, true);
 
     public static final ImageMime png_24 =
-            new ImageMime(
-                    "image/png; mode=24bit",
-                    "png_24",
-                    "png",
-                    "image/png;%20mode=24bit",
-                    true,
-                    true,
-                    true);
+            new ImageMime("image/png; mode=24bit", "png_24", "png", "image/png;%20mode=24bit", true, true, true);
 
-    public static final ImageMime dds =
-            new ImageMime("image/dds", "dds", "dds", "image/dds", false, false, false);
+    public static final ImageMime dds = new ImageMime("image/dds", "dds", "dds", "image/dds", false, false, false);
 
     public static final ImageMime jpegPng =
-            new JpegPngMime(
-                    "image/vnd.jpeg-png", "jpeg-png", "jpeg-png", "image/vnd.jpeg-png", jpeg, png);
+            new JpegPngMime("image/vnd.jpeg-png", "jpeg-png", "jpeg-png", "image/vnd.jpeg-png", jpeg, png);
 
     public static final ImageMime jpegPng8 =
-            new JpegPngMime(
-                    "image/vnd.jpeg-png8",
-                    "jpeg-png8",
-                    "jpeg-png8",
-                    "image/vnd.jpeg-png8",
-                    jpeg,
-                    png8);
+            new JpegPngMime("image/vnd.jpeg-png8", "jpeg-png8", "jpeg-png8", "image/vnd.jpeg-png8", jpeg, png8);
 
     private ImageMime(
             String mimeType,
@@ -204,8 +177,7 @@ public class ImageMime extends MimeType {
     protected static ImageMime checkForExtension(String fileExtension) throws MimeException {
         if (fileExtension.equalsIgnoreCase("png")) {
             return png;
-        } else if (fileExtension.equalsIgnoreCase("jpeg")
-                || fileExtension.equalsIgnoreCase("jpg")) {
+        } else if (fileExtension.equalsIgnoreCase("jpeg") || fileExtension.equalsIgnoreCase("jpg")) {
             return jpeg;
         } else if (fileExtension.equalsIgnoreCase("gif")) {
             return gif;
@@ -250,9 +222,7 @@ public class ImageMime extends MimeType {
                 || this.internalName.equals(ImageMime.png8.internalName)) {
 
             int bitDepth = image.getSampleModel().getSampleSize(0);
-            if (bitDepth > 1
-                    && bitDepth < 8
-                    && writer.getClass().getName().equals(NATIVE_PNG_WRITER_CLASS_NAME)) {
+            if (bitDepth > 1 && bitDepth < 8 && writer.getClass().getName().equals(NATIVE_PNG_WRITER_CLASS_NAME)) {
 
                 writer = it.next();
             }
@@ -292,15 +262,14 @@ public class ImageMime extends MimeType {
         boolean isBestFormatJpeg(RenderedImage renderedImage) {
             int numBands = renderedImage.getSampleModel().getNumBands();
             if (numBands == 4 || numBands == 2) {
-                RenderedOp extremaOp =
-                        ExtremaDescriptor.create(
-                                renderedImage,
-                                null,
-                                1,
-                                1,
-                                false,
-                                1,
-                                JAI.getDefaultInstance().getRenderingHints());
+                RenderedOp extremaOp = ExtremaDescriptor.create(
+                        renderedImage,
+                        null,
+                        1,
+                        1,
+                        false,
+                        1,
+                        JAI.getDefaultInstance().getRenderingHints());
                 double[][] extrema = (double[][]) extremaOp.getProperty("Extrema");
                 double[] mins = extrema[0];
 
@@ -340,8 +309,7 @@ public class ImageMime extends MimeType {
 
         @Override
         public boolean isCompatible(String otherMimeType) {
-            return jpegDelegate.isCompatible(otherMimeType)
-                    || pngDelegate.isCompatible(otherMimeType);
+            return jpegDelegate.isCompatible(otherMimeType) || pngDelegate.isCompatible(otherMimeType);
         }
 
         @Override

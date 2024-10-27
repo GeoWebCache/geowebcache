@@ -52,8 +52,7 @@ public class GetCapabilitiesLayerConfigurationConformanceTest extends LayerConfi
     @Before
     public void setupBroker() {
         if (broker == null) {
-            broker =
-                    new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
+            broker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
         }
     }
 
@@ -70,8 +69,7 @@ public class GetCapabilitiesLayerConfigurationConformanceTest extends LayerConfi
                 "style",
                 Integer.toString(rand),
                 Collections.emptyList(),
-                Collections.singletonMap(
-                        "EPSG:4326", GridSubsetFactory.createGridSubSet(broker.getWorldEpsg4326())),
+                Collections.singletonMap("EPSG:4326", GridSubsetFactory.createGridSubSet(broker.getWorldEpsg4326())),
                 Collections.emptyList(),
                 new int[] {3, 3},
                 "",
@@ -119,15 +117,12 @@ public class GetCapabilitiesLayerConfigurationConformanceTest extends LayerConfi
         expect(cap.getRequest()).andStubReturn(req);
         expect(req.getGetCapabilities()).andStubReturn(gcOpType);
         expect(gcOpType.getGet())
-                .andStubReturn(
-                        URLs.of(
-                                "http://test/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities"));
+                .andStubReturn(URLs.of("http://test/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities"));
         expect(cap.getVersion()).andStubReturn("1.1.1");
         EasyMock.replay(server, cap, req, gcOpType, globalConfig);
 
         GetCapabilitiesConfiguration config =
-                new GetCapabilitiesConfiguration(
-                        broker, "http://test/wms", "image/png", "3x3", "", null, "false") {
+                new GetCapabilitiesConfiguration(broker, "http://test/wms", "image/png", "3x3", "", null, "false") {
 
                     @Override
                     WebMapServer getWMS() {
@@ -169,8 +164,7 @@ public class GetCapabilitiesLayerConfigurationConformanceTest extends LayerConfi
     }
 
     @Override
-    protected void renameInfo(TileLayerConfiguration config, String name1, String name2)
-            throws Exception {
+    protected void renameInfo(TileLayerConfiguration config, String name1, String name2) throws Exception {
         Assume.assumeFalse(true);
     }
 

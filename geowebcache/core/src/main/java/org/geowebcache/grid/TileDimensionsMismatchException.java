@@ -17,15 +17,14 @@ package org.geowebcache.grid;
 public class TileDimensionsMismatchException extends GridMismatchException {
 
     public TileDimensionsMismatchException(int height, int width, int gsHeight, int gsWidth) {
-        super(
-                "The requested tile dimensions "
-                        + width
-                        + "x"
-                        + height
-                        + " do not match those of the grid set ("
-                        + gsWidth
-                        + "x"
-                        + gsHeight
-                        + ")");
+        super("The requested tile dimensions "
+                + width
+                + "x"
+                + height
+                + " do not match those of the grid set ("
+                + gsWidth
+                + "x"
+                + gsHeight
+                + ")");
     }
 }

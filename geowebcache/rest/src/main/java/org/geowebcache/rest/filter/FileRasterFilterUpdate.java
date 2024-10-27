@@ -32,8 +32,7 @@ public class FileRasterFilterUpdate extends XmlFilterUpdate {
     public void runUpdate(RequestFilter filter, TileLayer tl) throws IOException, RestException {
         if (!(filter instanceof WMSRasterFilter)) {
             throw new RestException(
-                    "The filter " + filter.getName() + " is not a WMSRasterFilter.",
-                    HttpStatus.BAD_REQUEST);
+                    "The filter " + filter.getName() + " is not a WMSRasterFilter.", HttpStatus.BAD_REQUEST);
         }
 
         WMSRasterFilter wmsFilter = (WMSRasterFilter) filter;
@@ -55,8 +54,7 @@ public class FileRasterFilterUpdate extends XmlFilterUpdate {
             }
         } catch (GeoWebCacheException e) {
             throw new RestException(
-                    "Error updating " + wmsFilter.getName() + ": " + e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+                    "Error updating " + wmsFilter.getName() + ": " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

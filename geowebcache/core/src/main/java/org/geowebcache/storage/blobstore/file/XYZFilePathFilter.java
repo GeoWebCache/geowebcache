@@ -40,8 +40,7 @@ public class XYZFilePathFilter implements FilenameFilter {
      *
      * @param trObj the range to find
      */
-    public XYZFilePathFilter(TileRange trObj, XYZFilePathGenerator generator)
-            throws StorageException {
+    public XYZFilePathFilter(TileRange trObj, XYZFilePathGenerator generator) throws StorageException {
         this.tr = trObj;
         this.generator = generator;
 

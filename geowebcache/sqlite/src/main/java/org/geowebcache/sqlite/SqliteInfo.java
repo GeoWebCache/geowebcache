@@ -34,8 +34,7 @@ public abstract class SqliteInfo extends BlobStoreInfo {
 
     private String rootDirectory;
 
-    private String templatePath =
-            Utils.buildPath("{layer}", "{grid}{format}{params}", "{z}_{x}_{y}.sqlite");
+    private String templatePath = Utils.buildPath("{layer}", "{grid}{format}{params}", "{z}_{x}_{y}.sqlite");
 
     private long poolSize = 1000;
 

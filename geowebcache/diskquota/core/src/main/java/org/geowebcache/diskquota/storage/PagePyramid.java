@@ -73,8 +73,7 @@ class PagePyramid {
             this.pagesY = pagesY;
             this.tilesPerPageX = tilesPerPageX;
             this.tilesPerPageY = tilesPerPageY;
-            this.tilesPerPage =
-                    BigInteger.valueOf(tilesPerPageX).multiply(BigInteger.valueOf(tilesPerPageY));
+            this.tilesPerPage = BigInteger.valueOf(tilesPerPageX).multiply(BigInteger.valueOf(tilesPerPageY));
             this.coverageMinX = coverageMinX;
             this.coverageMinY = coverageMinY;
             this.coverageMaxX = coverageMaxX;
@@ -128,18 +127,10 @@ class PagePyramid {
     public PageLevelInfo getPageInfo(final int zoomLevel) {
         Assert.isTrue(
                 zoomLevel >= zoomStart,
-                "Zoom level must be greater or equal than "
-                        + zoomStart
-                        + " but was "
-                        + zoomLevel
-                        + " instead");
+                "Zoom level must be greater or equal than " + zoomStart + " but was " + zoomLevel + " instead");
         Assert.isTrue(
                 zoomLevel <= zoomStop,
-                "Zoom level must be lower or equal than "
-                        + zoomStop
-                        + " but was "
-                        + zoomLevel
-                        + " instead");
+                "Zoom level must be lower or equal than " + zoomStop + " but was " + zoomLevel + " instead");
 
         final Integer key = Integer.valueOf(zoomLevel);
         PageLevelInfo levelInfo = pageInfo.get(key);
@@ -173,16 +164,15 @@ class PagePyramid {
         final int numPagesX = (int) Math.ceil((double) coverageTilesWide / tilesPerPageX);
         final int numPagesY = (int) Math.ceil((double) coverageTilesHigh / tilesPerPageY);
 
-        PageLevelInfo pli =
-                new PageLevelInfo(
-                        numPagesX,
-                        numPagesY,
-                        tilesPerPageX,
-                        tilesPerPageY,
-                        coverageMinX,
-                        coverageMinY,
-                        coverageMaxX,
-                        coverageMaxY);
+        PageLevelInfo pli = new PageLevelInfo(
+                numPagesX,
+                numPagesY,
+                tilesPerPageX,
+                tilesPerPageY,
+                coverageMinX,
+                coverageMinY,
+                coverageMaxX,
+                coverageMaxY);
 
         // if (log.isLoggable(Level.FINE)) {
         // log.fine("Coverage: " + Arrays.toString(coverage) + " (" + coverageTilesWide + "x"
@@ -214,8 +204,7 @@ class PagePyramid {
         final double log = (Math.log(numTilesInAxis) / Math.log(logBase));
 
         // log(1) == 0, so be careful
-        final int numTilesPerPage =
-                numTilesInAxis == 1 ? 1 : (int) Math.ceil((numTilesInAxis / log));
+        final int numTilesPerPage = numTilesInAxis == 1 ? 1 : (int) Math.ceil((numTilesInAxis / log));
         return numTilesPerPage;
     }
 

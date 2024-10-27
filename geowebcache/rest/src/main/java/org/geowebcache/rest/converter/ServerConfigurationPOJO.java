@@ -120,8 +120,7 @@ public class ServerConfigurationPOJO implements ServerConfiguration {
     @Override
     public LockProvider getLockProvider() {
         if (this.lockProvider != null) {
-            LockProvider lockProviderBean =
-                    (LockProvider) GeoWebCacheExtensions.bean(this.lockProvider);
+            LockProvider lockProviderBean = (LockProvider) GeoWebCacheExtensions.bean(this.lockProvider);
             if (lockProviderBean != null) {
                 return lockProviderBean;
             }
@@ -141,8 +140,7 @@ public class ServerConfigurationPOJO implements ServerConfiguration {
         this.lockProvider = null;
 
         if (lockProvider != null) {
-            String[] lockProviderNames =
-                    GeoWebCacheExtensions.getBeansNamesOrderedByPriority(LockProvider.class);
+            String[] lockProviderNames = GeoWebCacheExtensions.getBeansNamesOrderedByPriority(LockProvider.class);
 
             for (String beanName : lockProviderNames) {
                 if (lockProvider.equals(GeoWebCacheExtensions.bean(beanName))) {
@@ -209,19 +207,16 @@ public class ServerConfigurationPOJO implements ServerConfiguration {
 
     @Override
     public void reinitialize() throws GeoWebCacheException {
-        throw new UnsupportedOperationException(
-                "reinitialize() not supported for ServerConfigurationPOJO");
+        throw new UnsupportedOperationException("reinitialize() not supported for ServerConfigurationPOJO");
     }
 
     @Override
     public void deinitialize() throws Exception {
-        throw new UnsupportedOperationException(
-                "deinitialize() not supported for ServerConfigurationPOJO");
+        throw new UnsupportedOperationException("deinitialize() not supported for ServerConfigurationPOJO");
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        throw new UnsupportedOperationException(
-                "afterPropertiesSet() not supported for ServerConfigurationPOJO");
+        throw new UnsupportedOperationException("afterPropertiesSet() not supported for ServerConfigurationPOJO");
     }
 }

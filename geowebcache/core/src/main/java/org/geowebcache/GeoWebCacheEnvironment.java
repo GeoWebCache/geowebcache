@@ -63,15 +63,13 @@ public class GeoWebCacheEnvironment {
 
     private static final String nullValue = "null";
 
-    private final PropertyPlaceholderHelper helper =
-            new PropertyPlaceholderHelper(
-                    constants.asString("DEFAULT_PLACEHOLDER_PREFIX"),
-                    constants.asString("DEFAULT_PLACEHOLDER_SUFFIX"),
-                    constants.asString("DEFAULT_VALUE_SEPARATOR"),
-                    true);
+    private final PropertyPlaceholderHelper helper = new PropertyPlaceholderHelper(
+            constants.asString("DEFAULT_PLACEHOLDER_PREFIX"),
+            constants.asString("DEFAULT_PLACEHOLDER_SUFFIX"),
+            constants.asString("DEFAULT_VALUE_SEPARATOR"),
+            true);
 
-    private final PlaceholderResolver resolver =
-            placeholderName -> resolvePlaceholder(placeholderName);
+    private final PlaceholderResolver resolver = placeholderName -> resolvePlaceholder(placeholderName);
 
     private Properties props;
 
@@ -170,13 +168,11 @@ public class GeoWebCacheEnvironment {
                 Integer intValue = Integer.valueOf(resultValue);
                 return (Optional<T>) Optional.of(intValue);
             } catch (NumberFormatException ex) {
-                throw new IllegalArgumentException(
-                        "Illegal String parameter: Resolved value is not an integer.", ex);
+                throw new IllegalArgumentException("Illegal String parameter: Resolved value is not an integer.", ex);
             }
         } else if (type.isAssignableFrom(Boolean.class)) {
             if (!validateBoolean(resultValue))
-                throw new IllegalArgumentException(
-                        "Illegal String parameter: Resolved value is not a boolean.");
+                throw new IllegalArgumentException("Illegal String parameter: Resolved value is not a boolean.");
             Boolean boolValue = Boolean.valueOf(value);
             return (Optional<T>) Optional.of(boolValue);
         }

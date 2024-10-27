@@ -34,8 +34,7 @@ import org.springframework.util.Assert;
 class GridSetBuilder {
 
     /** Creates a {@link GridSet} out of a ArcGIS tiling scheme */
-    public GridSet buildGridset(
-            final String layerName, final CacheInfo info, final BoundingBox layerBounds) {
+    public GridSet buildGridset(final String layerName, final CacheInfo info, final BoundingBox layerBounds) {
 
         Assert.notNull(layerName, "Layer name must be non null");
         Assert.notNull(info, "Layer name must be non null");
@@ -106,20 +105,19 @@ class GridSetBuilder {
         }
 
         String gridsetName = srs.toString() + "_" + layerName;
-        GridSet layerGridset =
-                GridSetFactory.createGridSet(
-                        gridsetName,
-                        srs,
-                        gridSetExtent,
-                        alignTopLeft,
-                        resolutions,
-                        scaleDenominators,
-                        metersPerUnit,
-                        pixelSize,
-                        scaleNames,
-                        tileWidth,
-                        tileHeight,
-                        yCoordinateFirst);
+        GridSet layerGridset = GridSetFactory.createGridSet(
+                gridsetName,
+                srs,
+                gridSetExtent,
+                alignTopLeft,
+                resolutions,
+                scaleDenominators,
+                metersPerUnit,
+                pixelSize,
+                scaleNames,
+                tileWidth,
+                tileHeight,
+                yCoordinateFirst);
 
         return layerGridset;
     }

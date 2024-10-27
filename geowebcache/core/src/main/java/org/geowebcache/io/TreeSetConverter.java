@@ -54,8 +54,7 @@ public class TreeSetConverter extends CollectionConverter {
     }
 
     @Override
-    public void marshal(
-            Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+    public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
         SortedSet sortedSet = (SortedSet) source;
         TreeMapConverter.marshalComparator(mapper(), sortedSet.comparator(), writer, context);
         super.marshal(source, writer, context);

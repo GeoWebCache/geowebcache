@@ -33,11 +33,7 @@ public class MimeType {
     private static Logger log = Logging.getLogger(MimeType.class.getName());
 
     protected MimeType(
-            String mimeType,
-            String fileExtension,
-            String internalName,
-            String format,
-            boolean supportsTiling) {
+            String mimeType, String fileExtension, String internalName, String format, boolean supportsTiling) {
         this.mimeType = mimeType;
         this.fileExtension = fileExtension;
         this.internalName = internalName;
@@ -194,8 +190,7 @@ public class MimeType {
      */
     public boolean isCompatible(String otherMimeType) {
         return mimeType.equalsIgnoreCase(otherMimeType)
-                || (otherMimeType != null
-                        && otherMimeType.toLowerCase().startsWith(mimeType.toLowerCase()));
+                || (otherMimeType != null && otherMimeType.toLowerCase().startsWith(mimeType.toLowerCase()));
     }
 
     @Override

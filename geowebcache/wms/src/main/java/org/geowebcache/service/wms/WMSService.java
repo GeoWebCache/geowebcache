@@ -62,15 +62,13 @@ import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
 
 public class WMSService extends Service {
-    public static final String GEOWEBCACHE_WMS_PROXY_REQUEST_WHITELIST =
-            "GEOWEBCACHE_WMS_PROXY_REQUEST_WHITELIST";
+    public static final String GEOWEBCACHE_WMS_PROXY_REQUEST_WHITELIST = "GEOWEBCACHE_WMS_PROXY_REQUEST_WHITELIST";
 
     public static final String SERVICE_WMS = "wms";
 
     static final String SERVICE_PATH = "/" + GeoWebCacheDispatcher.TYPE_SERVICE + "/" + SERVICE_WMS;
 
-    private static Logger log =
-            Logging.getLogger(org.geowebcache.service.wms.WMSService.class.getName());
+    private static Logger log = Logging.getLogger(org.geowebcache.service.wms.WMSService.class.getName());
 
     // Recombine tiles to support regular WMS clients?
     private boolean fullWMS = false;
@@ -132,8 +130,7 @@ public class WMSService extends Service {
         final Map<String, String[]> requestParameterMap = request.getParameterMap();
 
         String[] keys = {"layers", "request", "tiled", "cached", "metatiled", "width", "height"};
-        Map<String, String> values =
-                ServletUtils.selectedStringsFromMap(requestParameterMap, encoding, keys);
+        Map<String, String> values = ServletUtils.selectedStringsFromMap(requestParameterMap, encoding, keys);
 
         // Look for layer
         String layers = values.get("layers");
@@ -159,22 +156,13 @@ public class WMSService extends Service {
             Map<String, String> filteringParameters = null;
             // If tileLayer is not null, then request parameters are extracted from it-
             if (tileLayer != null) {
-                filteringParameters =
-                        tileLayer.getModifiableParameters(requestParameterMap, encoding);
+                filteringParameters = tileLayer.getModifiableParameters(requestParameterMap, encoding);
             }
 
             // Creation of a Conveyor Tile with a fake Image/png format and the associated
             // parameters.
             ConveyorTile tile =
-                    new ConveyorTile(
-                            sb,
-                            layers,
-                            null,
-                            null,
-                            ImageMime.png,
-                            filteringParameters,
-                            request,
-                            response);
+                    new ConveyorTile(sb, layers, null, null, ImageMime.png, filteringParameters, request, response);
             tile.setHint(req.toLowerCase());
             tile.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
             return tile;
@@ -196,8 +184,7 @@ public class WMSService extends Service {
         final Map<String, String> paramValues =
                 ServletUtils.selectedStringsFromMap(requestParameterMap, encoding, paramKeys);
 
-        final Map<String, String> fullParameters =
-                tileLayer.getModifiableParameters(requestParameterMap, encoding);
+        final Map<String, String> fullParameters = tileLayer.getModifiableParameters(requestParameterMap, encoding);
 
         final MimeType mimeType;
         String format = paramValues.get("format");
@@ -223,13 +210,10 @@ public class WMSService extends Service {
                 bbox = new BoundingBox(requestBbox);
                 if (bbox == null || !bbox.isSane()) {
                     throw new ServiceException(
-                            "The bounding box parameter ("
-                                    + requestBbox
-                                    + ") is missing or not sane");
+                            "The bounding box parameter (" + requestBbox + ") is missing or not sane");
                 }
             } catch (NumberFormatException nfe) {
-                throw new ServiceException(
-                        "The bounding box parameter (" + requestBbox + ") is invalid");
+                throw new ServiceException("The bounding box parameter (" + requestBbox + ") is invalid");
             }
         }
 
@@ -238,16 +222,14 @@ public class WMSService extends Service {
 
         final List<GridSubset> crsMatchingSubsets = tileLayer.getGridSubsetsForSRS(srs);
         if (crsMatchingSubsets.isEmpty()) {
-            throw new ServiceException(
-                    "Unable to match requested SRS " + srs + " to those supported by layer");
+            throw new ServiceException("Unable to match requested SRS " + srs + " to those supported by layer");
         }
 
         long[] tileIndexTarget = new long[3];
         GridSubset gridSubset;
         {
             GridSubset bestMatch =
-                    findBestMatchingGrid(
-                            bbox, crsMatchingSubsets, tileWidth, tileHeight, tileIndexTarget);
+                    findBestMatchingGrid(bbox, crsMatchingSubsets, tileWidth, tileHeight, tileIndexTarget);
             if (bestMatch == null) {
                 // proceed as it used to be
                 gridSubset = crsMatchingSubsets.get(0);
@@ -283,20 +265,12 @@ public class WMSService extends Service {
             }
         }
 
-        long[] tileIndex =
-                tileIndexTarget == null ? gridSubset.closestIndex(bbox) : tileIndexTarget;
+        long[] tileIndex = tileIndexTarget == null ? gridSubset.closestIndex(bbox) : tileIndexTarget;
 
         gridSubset.checkTileDimensions(tileWidth, tileHeight);
 
         return new ConveyorTile(
-                sb,
-                layers,
-                gridSubset.getName(),
-                tileIndex,
-                mimeType,
-                fullParameters,
-                request,
-                response);
+                sb, layers, gridSubset.getName(), tileIndex, mimeType, fullParameters, request, response);
     }
 
     @Override
@@ -308,14 +282,12 @@ public class WMSService extends Service {
         if (controller != null) servletPrefix = controller.getServletPrefix();
 
         String servletBase = ServletUtils.getServletBaseURL(conv.servletReq, servletPrefix);
-        String context =
-                ServletUtils.getServletContextPath(conv.servletReq, SERVICE_PATH, servletPrefix);
+        String context = ServletUtils.getServletContextPath(conv.servletReq, SERVICE_PATH, servletPrefix);
 
         if (tile.getHint() != null) {
             if (tile.getHint().equalsIgnoreCase("getcapabilities")) {
                 WMSGetCapabilities wmsCap =
-                        new WMSGetCapabilities(
-                                tld, tile.servletReq, servletBase, context, urlMangler);
+                        new WMSGetCapabilities(tld, tile.servletReq, servletBase, context, urlMangler);
                 wmsCap.writeResponse(tile.servletResp);
             } else if (tile.getHint().equalsIgnoreCase("getmap")) {
                 getSecurityDispatcher().checkSecurity(tile);
@@ -343,15 +315,13 @@ public class WMSService extends Service {
                 if (tl instanceof ProxyLayer) {
                     ((ProxyLayer) tl).proxyRequest(tile);
                 } else {
-                    throw new GeoWebCacheException(
-                            tile.getLayerId() + " cannot cascade WMS requests.");
+                    throw new GeoWebCacheException(tile.getLayerId() + " cannot cascade WMS requests.");
                 }
             }
         } else {
-            throw new GeoWebCacheException(
-                    "The WMS Service would love to help, "
-                            + "but has no idea what you're trying to do?"
-                            + "Please include request URL if you file a bug report.");
+            throw new GeoWebCacheException("The WMS Service would love to help, "
+                    + "but has no idea what you're trying to do?"
+                    + "Please include request URL if you file a bug report.");
         }
     }
 
@@ -374,15 +344,13 @@ public class WMSService extends Service {
         }
 
         String[] keys = {"x", "y", "srs", "info_format", "bbox", "height", "width"};
-        Map<String, String> values =
-                ServletUtils.selectedStringsFromMap(
-                        tile.servletReq.getParameterMap(),
-                        tile.servletReq.getCharacterEncoding(),
-                        keys);
+        Map<String, String> values = ServletUtils.selectedStringsFromMap(
+                tile.servletReq.getParameterMap(), tile.servletReq.getCharacterEncoding(), keys);
 
         // TODO Arent we missing some format stuff here?
-        GridSubset gridSubset =
-                tl.getGridSubsetsForSRS(SRS.getSRS(values.get("srs"))).iterator().next();
+        GridSubset gridSubset = tl.getGridSubsetsForSRS(SRS.getSRS(values.get("srs")))
+                .iterator()
+                .next();
 
         BoundingBox bbox = null;
         try {
@@ -392,10 +360,7 @@ public class WMSService extends Service {
         }
 
         if (bbox == null || !bbox.isSane()) {
-            throw new ServiceException(
-                    "The bounding box parameter ("
-                            + values.get("srs")
-                            + ") is missing or not sane");
+            throw new ServiceException("The bounding box parameter (" + values.get("srs") + ") is missing or not sane");
         }
 
         // long[] tileIndex = gridSubset.closestIndex(bbox);
@@ -405,9 +370,7 @@ public class WMSService extends Service {
             mimeType = MimeType.createFromFormat(values.get("info_format"));
         } catch (MimeException me) {
             throw new GeoWebCacheException(
-                    "The info_format parameter ("
-                            + values.get("info_format")
-                            + ")is missing or not recognized.");
+                    "The info_format parameter (" + values.get("info_format") + ")is missing or not recognized.");
         }
 
         if (mimeType == null) {
@@ -420,21 +383,18 @@ public class WMSService extends Service {
         }
         if (!tl.getInfoMimeTypes().contains(mimeType)) {
             throw new GeoWebCacheException(
-                    "The info_format parameter ("
-                            + values.get("info_format")
-                            + ") is not supported.");
+                    "The info_format parameter (" + values.get("info_format") + ") is not supported.");
         }
 
-        ConveyorTile gfiConv =
-                new ConveyorTile(
-                        sb,
-                        tl.getName(),
-                        gridSubset.getName(),
-                        null,
-                        mimeType,
-                        tile.getFilteringParameters(),
-                        tile.servletReq,
-                        tile.servletResp);
+        ConveyorTile gfiConv = new ConveyorTile(
+                sb,
+                tl.getName(),
+                gridSubset.getName(),
+                null,
+                mimeType,
+                tile.getFilteringParameters(),
+                tile.servletReq,
+                tile.servletResp);
         gfiConv.setTileLayer(tl);
 
         int x, y;
@@ -442,8 +402,7 @@ public class WMSService extends Service {
             x = Integer.parseInt(values.get("x"));
             y = Integer.parseInt(values.get("y"));
         } catch (NumberFormatException nfe) {
-            throw new GeoWebCacheException(
-                    "The parameters for x and y must both be positive integers.");
+            throw new GeoWebCacheException("The parameters for x and y must both be positive integers.");
         }
 
         int height, width;
@@ -451,8 +410,7 @@ public class WMSService extends Service {
             height = Integer.parseInt(values.get("height"));
             width = Integer.parseInt(values.get("width"));
         } catch (NumberFormatException nfe) {
-            throw new GeoWebCacheException(
-                    "The parameters for height and width must both be positive integers.");
+            throw new GeoWebCacheException("The parameters for height and width must both be positive integers.");
         }
 
         Resource data = tl.getFeatureInfo(gfiConv, bbox, height, width, x, y);
@@ -536,24 +494,17 @@ public class WMSService extends Service {
 
     @SuppressWarnings("PMD.UnnecessaryCast")
     protected Collection<String> getProxyRequestWhitelist() {
-        return Optional.ofNullable(
-                        GeoWebCacheExtensions.getProperty(GEOWEBCACHE_WMS_PROXY_REQUEST_WHITELIST))
+        return Optional.ofNullable(GeoWebCacheExtensions.getProperty(GEOWEBCACHE_WMS_PROXY_REQUEST_WHITELIST))
                 .map(list -> list.split(";"))
                 .map(Arrays::stream)
-                .map(
-                        stream ->
-                                stream.map(String::toLowerCase)
-                                        .map(String::trim)
-                                        .collect(Collectors.toList()))
+                .map(stream -> stream.map(String::toLowerCase).map(String::trim).collect(Collectors.toList()))
                 .map(x -> (Collection<String>) x)
                 .orElse(getDefaultProxyRequestWhitelist());
     }
 
     protected void checkProxyRequest(String request) {
-        if (getProxyRequestWhitelist().stream()
-                .noneMatch(pattern -> pattern.equals("*") || pattern.equals(request))) {
-            throw new SecurityException(
-                    "WMS Request " + request + " is not on request proxy whitelist");
+        if (getProxyRequestWhitelist().stream().noneMatch(pattern -> pattern.equals("*") || pattern.equals(request))) {
+            throw new SecurityException("WMS Request " + request + " is not on request proxy whitelist");
         }
     }
 

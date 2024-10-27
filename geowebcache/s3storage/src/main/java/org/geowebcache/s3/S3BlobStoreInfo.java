@@ -330,21 +330,16 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
     }
 
     @Override
-    public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider)
-            throws StorageException {
+    public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider) throws StorageException {
 
         checkNotNull(layers);
         checkState(getName() != null);
-        checkState(
-                isEnabled(),
-                "Can't call S3BlobStoreConfig.createInstance() is blob store is not enabled");
-        final GeoWebCacheEnvironment gwcEnvironment =
-                GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
+        checkState(isEnabled(), "Can't call S3BlobStoreConfig.createInstance() is blob store is not enabled");
+        final GeoWebCacheEnvironment gwcEnvironment = GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
         return new S3BlobStore(this.clone(gwcEnvironment, true), layers, lockProvider);
     }
 
-    public S3BlobStoreInfo clone(
-            GeoWebCacheEnvironment gwcEnvironment, Boolean allowEnvParametrization) {
+    public S3BlobStoreInfo clone(GeoWebCacheEnvironment gwcEnvironment, Boolean allowEnvParametrization) {
         S3BlobStoreInfo blobStore = SerializationUtils.clone(this);
 
         if (allowEnvParametrization && gwcEnvironment != null) {
@@ -361,8 +356,7 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
             blobStore.setAwsAccessKey(nullSafeResolveString(getAwsAccessKey(), gwcEnvironment));
             blobStore.setAwsSecretKey(nullSafeResolveString(getAwsSecretKey(), gwcEnvironment));
             blobStore.setProxyDomain(nullSafeResolveString(getProxyDomain(), gwcEnvironment));
-            blobStore.setProxyWorkstation(
-                    nullSafeResolveString(getProxyWorkstation(), gwcEnvironment));
+            blobStore.setProxyWorkstation(nullSafeResolveString(getProxyWorkstation(), gwcEnvironment));
             blobStore.setProxyHost(nullSafeResolveString(getProxyHost(), gwcEnvironment));
             blobStore.setProxyUsername(nullSafeResolveString(getProxyUsername(), gwcEnvironment));
             blobStore.setProxyPassword(nullSafeResolveString(getProxyPassword(), gwcEnvironment));

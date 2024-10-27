@@ -63,16 +63,13 @@ public class MemoryLockProvider implements LockProvider {
         if (LOGGER.isLoggable(Level.FINE)) LOGGER.fine("Acquiring lock key " + lockKey);
 
         // Atomically create a new LockAndCounter, or increment the existing one
-        LockAndCounter lockAndCounter =
-                lockAndCounters.compute(
-                        lockKey,
-                        (key, internalLockAndCounter) -> {
-                            if (internalLockAndCounter == null) {
-                                internalLockAndCounter = new LockAndCounter();
-                            }
-                            internalLockAndCounter.counter.incrementAndGet();
-                            return internalLockAndCounter;
-                        });
+        LockAndCounter lockAndCounter = lockAndCounters.compute(lockKey, (key, internalLockAndCounter) -> {
+            if (internalLockAndCounter == null) {
+                internalLockAndCounter = new LockAndCounter();
+            }
+            internalLockAndCounter.counter.incrementAndGet();
+            return internalLockAndCounter;
+        });
 
         lockAndCounter.lock.lock();
 
@@ -97,15 +94,12 @@ public class MemoryLockProvider implements LockProvider {
                         // "compute"
                         // so that we know it hasn't been incremented since the if-statement above
                         // was evaluated
-                        lockAndCounters.compute(
-                                lockKey,
-                                (key, existingLockAndCounter) -> {
-                                    if (existingLockAndCounter == null
-                                            || existingLockAndCounter.counter.get() == 0) {
-                                        return null;
-                                    }
-                                    return existingLockAndCounter;
-                                });
+                        lockAndCounters.compute(lockKey, (key, existingLockAndCounter) -> {
+                            if (existingLockAndCounter == null || existingLockAndCounter.counter.get() == 0) {
+                                return null;
+                            }
+                            return existingLockAndCounter;
+                        });
                     }
 
                     if (LOGGER.isLoggable(Level.FINE)) LOGGER.fine("Released lock key " + lockKey);

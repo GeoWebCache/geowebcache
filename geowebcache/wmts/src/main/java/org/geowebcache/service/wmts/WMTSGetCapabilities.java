@@ -95,8 +95,7 @@ public class WMTSGetCapabilities {
         this.gsb = gsb;
 
         String forcedBaseUrl =
-                ServletUtils.stringFromMap(
-                        servReq.getParameterMap(), servReq.getCharacterEncoding(), "base_url");
+                ServletUtils.stringFromMap(servReq.getParameterMap(), servReq.getCharacterEncoding(), "base_url");
 
         if (forcedBaseUrl != null) {
             this.baseUrl = forcedBaseUrl;
@@ -146,8 +145,7 @@ public class WMTSGetCapabilities {
                 extension.registerNamespaces(xml);
             }
             StringBuilder schemasLocations = new StringBuilder("http://www.opengis.net/wmts/1.0 ");
-            schemasLocations.append(
-                    "http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd ");
+            schemasLocations.append("http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd ");
             // allow extensions to register their schemas locations
             for (WMTSExtension extension : extensions) {
                 for (String schemaLocation : extension.getSchemaLocations()) {
@@ -231,8 +229,7 @@ public class WMTSGetCapabilities {
         }
         if (serviceB.getServiceProvider() != null) {
             if (serviceA.getServiceProvider() != null) {
-                mergeProviderInformation(
-                        serviceA.getServiceProvider(), serviceB.getServiceProvider());
+                mergeProviderInformation(serviceA.getServiceProvider(), serviceB.getServiceProvider());
             } else {
                 serviceA.setServiceProvider(serviceB.getServiceProvider());
             }
@@ -249,8 +246,7 @@ public class WMTSGetCapabilities {
         }
         if (providerB.getServiceContact() != null) {
             if (providerA.getServiceContact() != null) {
-                mergeContactInformation(
-                        providerA.getServiceContact(), providerB.getServiceContact());
+                mergeContactInformation(providerA.getServiceContact(), providerB.getServiceContact());
             } else {
                 providerA.setServiceContact(providerB.getServiceContact());
             }
@@ -294,8 +290,7 @@ public class WMTSGetCapabilities {
         }
     }
 
-    private void serviceIdentification(XMLBuilder xml, ServiceInformation servInfo)
-            throws IOException {
+    private void serviceIdentification(XMLBuilder xml, ServiceInformation servInfo) throws IOException {
 
         xml.indentElement("ows:ServiceIdentification");
 
@@ -358,11 +353,7 @@ public class WMTSGetCapabilities {
                 xml.indentElement("ows:Address");
                 appendTag(xml, "ows:DeliveryPoint", servCont.getAddressStreet(), null);
                 appendTag(xml, "ows:City", servCont.getAddressCity(), null);
-                appendTag(
-                        xml,
-                        "ows:AdministrativeArea",
-                        servCont.getAddressAdministrativeArea(),
-                        null);
+                appendTag(xml, "ows:AdministrativeArea", servCont.getAddressAdministrativeArea(), null);
                 appendTag(xml, "ows:PostalCode", servCont.getAddressPostalCode(), null);
                 appendTag(xml, "ows:Country", servCont.getAddressCountry(), null);
                 appendTag(xml, "ows:ElectronicMailAddress", servCont.getAddressEmail(), null);
@@ -373,7 +364,9 @@ public class WMTSGetCapabilities {
             }
         } else {
             appendTag(xml, "ows:ProviderName", baseUrl, null);
-            xml.indentElement("ows:ProviderSite").attribute("xlink:href", baseUrl).endElement();
+            xml.indentElement("ows:ProviderSite")
+                    .attribute("xlink:href", baseUrl)
+                    .endElement();
             xml.indentElement("ows:ServiceContact");
             appendTag(xml, "ows:IndividualName", "GeoWebCache User", null);
             xml.endElement();
@@ -389,16 +382,13 @@ public class WMTSGetCapabilities {
         operation(xml, "GetFeatureInfo", baseUrl);
         // allow extension to inject their own metadata
         for (WMTSExtension extension : extensions) {
-            List<WMTSExtension.OperationMetadata> operationsMetaData =
-                    extension.getExtraOperationsMetadata();
+            List<WMTSExtension.OperationMetadata> operationsMetaData = extension.getExtraOperationsMetadata();
             if (operationsMetaData != null) {
                 for (WMTSExtension.OperationMetadata operationMetadata : operationsMetaData) {
                     operation(
                             xml,
                             operationMetadata.getName(),
-                            operationMetadata.getBaseUrl() == null
-                                    ? baseUrl
-                                    : operationMetadata.getBaseUrl());
+                            operationMetadata.getBaseUrl() == null ? baseUrl : operationMetadata.getBaseUrl());
                 }
             }
             extension.encodedOperationsMetadata(xml);
@@ -406,8 +396,7 @@ public class WMTSGetCapabilities {
         xml.endElement("ows:OperationsMetadata");
     }
 
-    private void operation(XMLBuilder xml, String operationName, String baseUrl)
-            throws IOException {
+    private void operation(XMLBuilder xml, String operationName, String baseUrl) throws IOException {
         xml.indentElement("ows:Operation").attribute("name", operationName);
         xml.indentElement("ows:DCP");
         xml.indentElement("ows:HTTP");
@@ -450,8 +439,7 @@ public class WMTSGetCapabilities {
         xml.endElement("Contents");
     }
 
-    private void layer(XMLBuilder xml, TileLayer layer, String baseurl, Set<GridSet> usedGridsets)
-            throws IOException {
+    private void layer(XMLBuilder xml, TileLayer layer, String baseurl, Set<GridSet> usedGridsets) throws IOException {
         xml.indentElement("Layer");
         LayerMetaInformation layerMeta = layer.getMetaInformation();
 
@@ -565,8 +553,7 @@ public class WMTSGetCapabilities {
         return legendsInfo;
     }
 
-    private void layerStyles(XMLBuilder xml, TileLayer layer, List<ParameterFilter> filters)
-            throws IOException {
+    private void layerStyles(XMLBuilder xml, TileLayer layer, List<ParameterFilter> filters) throws IOException {
         String defStyle = layer.getStyles();
         Map<String, LegendInfo> legendsInfo = getLegendsInfo(layer);
         if (filters == null) {
@@ -608,8 +595,7 @@ public class WMTSGetCapabilities {
                     if (value.equals(defVal)) {
                         xml.attribute("isDefault", "true");
                     }
-                    xml.simpleElement(
-                            "ows:Identifier", TileLayer.encodeDimensionValue(value), true);
+                    xml.simpleElement("ows:Identifier", TileLayer.encodeDimensionValue(value), true);
                     encodeStyleLegendGraphic(xml, legendsInfo.get(value));
                     xml.endElement();
                 }
@@ -630,8 +616,7 @@ public class WMTSGetCapabilities {
      * XML encodes the provided legend information. If the provided information legend is NULL
      * nothing is done.
      */
-    private void encodeStyleLegendGraphic(XMLBuilder xml, LegendInfo legendInfo)
-            throws IOException {
+    private void encodeStyleLegendGraphic(XMLBuilder xml, LegendInfo legendInfo) throws IOException {
         if (legendInfo == null) {
             // nothing to do
             return;
@@ -675,16 +660,14 @@ public class WMTSGetCapabilities {
         }
     }
 
-    private void layerDimensions(XMLBuilder xml, TileLayer layer, List<ParameterFilter> filters)
-            throws IOException {
+    private void layerDimensions(XMLBuilder xml, TileLayer layer, List<ParameterFilter> filters) throws IOException {
         List<ParameterFilter> layerDimensions = WMTSUtils.getLayerDimensions(filters);
         for (ParameterFilter dimension : layerDimensions) {
             dimensionDescription(xml, dimension, dimension.getLegalValues());
         }
     }
 
-    private void dimensionDescription(XMLBuilder xml, ParameterFilter filter, List<String> values)
-            throws IOException {
+    private void dimensionDescription(XMLBuilder xml, ParameterFilter filter, List<String> values) throws IOException {
         xml.indentElement("Dimension");
         xml.simpleElement("ows:Identifier", filter.getKey(), false);
         String defaultStr = TileLayer.encodeDimensionValue(filter.getDefaultValue());
@@ -698,8 +681,7 @@ public class WMTSGetCapabilities {
         xml.endElement("Dimension");
     }
 
-    private void layerGridSubSets(XMLBuilder xml, TileLayer layer, Set<GridSet> usedGridSets)
-            throws IOException {
+    private void layerGridSubSets(XMLBuilder xml, TileLayer layer, Set<GridSet> usedGridSets) throws IOException {
 
         for (String gridSetId : layer.getGridSubsets()) {
             GridSubset gridSubset = layer.getGridSubset(gridSetId);
@@ -731,21 +713,18 @@ public class WMTSGetCapabilities {
      * For each layer discovers the available image formats, feature info formats and dimensions and
      * produce the necessary <ResourceURL> elements.
      */
-    private void layerResourceUrls(
-            XMLBuilder xml, TileLayer layer, List<ParameterFilter> filters, String baseurl)
+    private void layerResourceUrls(XMLBuilder xml, TileLayer layer, List<ParameterFilter> filters, String baseurl)
             throws IOException {
         String baseTemplate = baseurl + "/" + layer.getName();
-        String commonTemplate =
-                baseTemplate + "/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}";
+        String commonTemplate = baseTemplate + "/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}";
         String commonDimensions = "";
         // Extracts layer dimension
         List<ParameterFilter> layerDimensions = WMTSUtils.getLayerDimensions(filters);
         if (!layerDimensions.isEmpty()) {
-            commonDimensions =
-                    "&"
-                            + layerDimensions.stream()
-                                    .map(d -> d.getKey() + "={" + d.getKey() + "}")
-                                    .collect(Collectors.joining("&"));
+            commonDimensions = "&"
+                    + layerDimensions.stream()
+                            .map(d -> d.getKey() + "={" + d.getKey() + "}")
+                            .collect(Collectors.joining("&"));
         }
         // Extracts image formats
         List<String> mimeFormats = WMTSUtils.getLayerFormats(layer);
@@ -765,12 +744,7 @@ public class WMTSGetCapabilities {
             String outputFormat = ApplicationMime.json.getFormat();
             if (provider.supportsTileJSON()) {
                 for (String tileJsonFormat : formatExtensions) {
-                    String template =
-                            baseTemplate
-                                    + "/{style}/tilejson/"
-                                    + tileJsonFormat
-                                    + "?format="
-                                    + outputFormat;
+                    String template = baseTemplate + "/{style}/tilejson/" + tileJsonFormat + "?format=" + outputFormat;
                     layerResourceUrlsGen(xml, outputFormat, "TileJSON", template);
                 }
             }
@@ -778,8 +752,7 @@ public class WMTSGetCapabilities {
     }
 
     /** Generate the <ResourceURL> element into XML. */
-    private void layerResourceUrlsGen(XMLBuilder xml, String format, String type, String template)
-            throws IOException {
+    private void layerResourceUrlsGen(XMLBuilder xml, String format, String type, String template) throws IOException {
         xml.indentElement("ResourceURL");
         xml.attribute("format", format);
         xml.attribute("resourceType", type);
@@ -809,12 +782,7 @@ public class WMTSGetCapabilities {
     }
 
     private void tileMatrix(
-            XMLBuilder xml,
-            Grid grid,
-            double[] tlCoordinates,
-            int tileWidth,
-            int tileHeight,
-            boolean scaleWarning)
+            XMLBuilder xml, Grid grid, double[] tlCoordinates, int tileWidth, int tileHeight, boolean scaleWarning)
             throws IOException {
         xml.indentElement("TileMatrix");
         if (scaleWarning) {
@@ -837,8 +805,7 @@ public class WMTSGetCapabilities {
         xml.endElement("TileMatrix");
     }
 
-    private void appendTag(XMLBuilder xml, String tagName, String value, String defaultValue)
-            throws IOException {
+    private void appendTag(XMLBuilder xml, String tagName, String value, String defaultValue) throws IOException {
         if (value == null) {
             if (defaultValue == null) return;
             else value = defaultValue;

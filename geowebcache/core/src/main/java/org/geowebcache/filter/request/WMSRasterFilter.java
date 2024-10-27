@@ -101,15 +101,14 @@ public class WMSRasterFilter extends RasterFilter {
         String urlStr = layer.getWMSurl()[0];
         Map<String, String> requestParams = wmsParams(layer, gridSet, z, widthHeight);
 
-        log.info(
-                "Updated WMS raster filter, zoom level "
-                        + z
-                        + " for "
-                        + getName()
-                        + " ("
-                        + layer.getName()
-                        + ") , "
-                        + urlStr);
+        log.info("Updated WMS raster filter, zoom level "
+                + z
+                + " for "
+                + getName()
+                + " ("
+                + layer.getName()
+                + ") , "
+                + urlStr);
 
         URL wmsUrl = URLs.of(urlStr);
 
@@ -120,9 +119,7 @@ public class WMSRasterFilter extends RasterFilter {
         HttpResponse httpResponse = null;
         BufferedImage img = null;
 
-        httpResponse =
-                srcHelper.executeRequest(
-                        wmsUrl, requestParams, backendTimeout, WMSLayer.HttpRequestMode.Get);
+        httpResponse = srcHelper.executeRequest(wmsUrl, requestParams, backendTimeout, WMSLayer.HttpRequestMode.Get);
 
         int statusCode = httpResponse.getStatusLine().getStatusCode();
         if (statusCode != 200) {
@@ -130,12 +127,11 @@ public class WMSRasterFilter extends RasterFilter {
         }
 
         if (!httpResponse.getFirstHeader("Content-Type").getValue().startsWith("image/")) {
-            throw new GeoWebCacheException(
-                    "Unexpected response content type "
-                            + httpResponse.getFirstHeader("Content-Type").getValue()
-                            + " , request was "
-                            + urlStr
-                            + "\n");
+            throw new GeoWebCacheException("Unexpected response content type "
+                    + httpResponse.getFirstHeader("Content-Type").getValue()
+                    + " , request was "
+                    + urlStr
+                    + "\n");
         }
 
         byte[] ret = ServletUtils.readStream(httpResponse.getEntity().getContent(), 16384, 2048);
@@ -145,16 +141,15 @@ public class WMSRasterFilter extends RasterFilter {
         img = ImageIO.read(is);
 
         if (img.getWidth() != widthHeight[0] || img.getHeight() != widthHeight[1]) {
-            String msg =
-                    "WMS raster filter has dimensions "
-                            + img.getWidth()
-                            + ","
-                            + img.getHeight()
-                            + ", expected "
-                            + widthHeight[0]
-                            + ","
-                            + widthHeight[1]
-                            + "\n";
+            String msg = "WMS raster filter has dimensions "
+                    + img.getWidth()
+                    + ","
+                    + img.getHeight()
+                    + ", expected "
+                    + widthHeight[0]
+                    + ","
+                    + widthHeight[1]
+                    + "\n";
             throw new GeoWebCacheException(msg);
         }
 
@@ -162,8 +157,7 @@ public class WMSRasterFilter extends RasterFilter {
     }
 
     /** Generates the URL used to create the lookup raster */
-    protected Map<String, String> wmsParams(
-            WMSLayer layer, GridSubset gridSubset, int z, int[] widthHeight)
+    protected Map<String, String> wmsParams(WMSLayer layer, GridSubset gridSubset, int z, int[] widthHeight)
             throws GeoWebCacheException {
         BoundingBox bbox = gridSubset.getCoverageBounds(z);
 
@@ -197,8 +191,7 @@ public class WMSRasterFilter extends RasterFilter {
     }
 
     @Override
-    public void update(byte[] filterData, TileLayer layer, String gridSetId, int z)
-            throws GeoWebCacheException {
+    public void update(byte[] filterData, TileLayer layer, String gridSetId, int z) throws GeoWebCacheException {
         throw new GeoWebCacheException(
                 "update(byte[] filterData, TileLayer layer, String gridSetId, int z) is not appropriate for WMSRasterFilters");
     }
@@ -216,8 +209,7 @@ public class WMSRasterFilter extends RasterFilter {
     }
 
     @Override
-    public void update(TileLayer layer, String gridSetId, int zStart, int zStop)
-            throws GeoWebCacheException {
+    public void update(TileLayer layer, String gridSetId, int zStart, int zStop) throws GeoWebCacheException {
         for (int z = zStart; z <= zStop; z++) {
             try {
                 this.setMatrix(layer, gridSetId, z, true);

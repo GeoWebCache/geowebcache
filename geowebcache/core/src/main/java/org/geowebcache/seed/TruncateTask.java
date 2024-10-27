@@ -79,9 +79,7 @@ class TruncateTask extends GWCTask {
                 if (reqFilter.update(tl, tr.getGridSetId())) {
                     log.log(Level.FINE, "Updated request filter " + reqFilter.getName());
                 } else {
-                    log.log(
-                            Level.FINE,
-                            "Request filter " + reqFilter.getName() + " returned false on update.");
+                    log.log(Level.FINE, "Request filter " + reqFilter.getName() + " returned false on update.");
                 }
             }
         }

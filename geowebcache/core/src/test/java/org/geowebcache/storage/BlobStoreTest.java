@@ -47,10 +47,9 @@ public class BlobStoreTest {
         if (fh.exists()) {
             FileUtils.deleteDirectory(fh);
             if (fh.exists()) {
-                Assert.fail(
-                        "Could not cleanup blob store directory\n"
-                                + "Unable to delete "
-                                + org.geowebcache.util.FileUtils.printFileTree(fh));
+                Assert.fail("Could not cleanup blob store directory\n"
+                        + "Unable to delete "
+                        + org.geowebcache.util.FileUtils.printFileTree(fh));
             }
         }
     }
@@ -64,15 +63,13 @@ public class BlobStoreTest {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("a", "x");
         parameters.put("b", "ø");
-        TileObject to =
-                TileObject.createCompleteTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
+        TileObject to = TileObject.createCompleteTileObject(
+                "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
 
         fbs.put(to);
 
         TileObject to2 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         fbs.get(to2);
 
         Assert.assertEquals(to.getBlobFormat(), to2.getBlobFormat());
@@ -93,15 +90,13 @@ public class BlobStoreTest {
 
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
         long[] xyz = {5L, 6L, 7L};
-        TileObject to =
-                TileObject.createCompleteTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
+        TileObject to = TileObject.createCompleteTileObject(
+                "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
 
         fbs.put(to);
 
         TileObject to2 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         fbs.get(to2);
 
         try (InputStream is = to2.getBlob().getInputStream();
@@ -109,13 +104,11 @@ public class BlobStoreTest {
             Assert.assertTrue(IOUtils.contentEquals(is, is2));
         }
         TileObject to3 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         fbs.delete(to3);
 
         TileObject to4 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         Assert.assertFalse(fbs.get(to4));
     }
 
@@ -141,9 +134,8 @@ public class BlobStoreTest {
 
         for (int i = 0; i < tos.length; i++) {
             long[] xyz = {x + i - 1, y, zoomLevel};
-            tos[i] =
-                    TileObject.createCompleteTileObject(
-                            layerName, xyz, srs.toString(), mime.getFormat(), parameters, bytes);
+            tos[i] = TileObject.createCompleteTileObject(
+                    layerName, xyz, srs.toString(), mime.getFormat(), parameters, bytes);
             fbs.put(tos[i]);
         }
 
@@ -154,47 +146,28 @@ public class BlobStoreTest {
         long[] range = {x, y, x + tos.length - 3, y, zoomLevel};
         rangeBounds[zoomLevel] = range;
 
-        TileRange trObj =
-                new TileRange(
-                        layerName,
-                        srs.toString(),
-                        zoomStart,
-                        zoomStop,
-                        rangeBounds,
-                        mime,
-                        parameters);
+        TileRange trObj = new TileRange(layerName, srs.toString(), zoomStart, zoomStop, rangeBounds, mime, parameters);
 
         fbs.delete(trObj);
 
         // starting x and x + tos.length should have data, the remaining should not
         TileObject firstTO =
-                TileObject.createQueryTileObject(
-                        layerName, tos[0].xyz, srs.toString(), mime.getFormat(), parameters);
+                TileObject.createQueryTileObject(layerName, tos[0].xyz, srs.toString(), mime.getFormat(), parameters);
         fbs.get(firstTO);
         try (InputStream is = firstTO.getBlob().getInputStream();
                 InputStream is2 = bytes.getInputStream()) {
             Assert.assertTrue(IOUtils.contentEquals(is, is2));
         }
-        TileObject lastTO =
-                TileObject.createQueryTileObject(
-                        layerName,
-                        tos[tos.length - 1].xyz,
-                        srs.toString(),
-                        mime.getFormat(),
-                        parameters);
+        TileObject lastTO = TileObject.createQueryTileObject(
+                layerName, tos[tos.length - 1].xyz, srs.toString(), mime.getFormat(), parameters);
         fbs.get(lastTO);
         try (InputStream is = lastTO.getBlob().getInputStream();
                 InputStream is2 = bytes.getInputStream()) {
             Assert.assertTrue(IOUtils.contentEquals(is, is2));
         }
 
-        TileObject midTO =
-                TileObject.createQueryTileObject(
-                        layerName,
-                        tos[(tos.length - 1) / 2].xyz,
-                        srs.toString(),
-                        mime.getFormat(),
-                        parameters);
+        TileObject midTO = TileObject.createQueryTileObject(
+                layerName, tos[(tos.length - 1) / 2].xyz, srs.toString(), mime.getFormat(), parameters);
         fbs.get(midTO);
         Resource res = midTO.getBlob();
 
@@ -222,9 +195,8 @@ public class BlobStoreTest {
 
         for (int i = 0; i < tos.length; i++) {
             long[] xyz = {x + i - 1, y, zoomLevel};
-            tos[i] =
-                    TileObject.createCompleteTileObject(
-                            layerName, xyz, srs.toString(), mime.getFormat(), parameters, bytes);
+            tos[i] = TileObject.createCompleteTileObject(
+                    layerName, xyz, srs.toString(), mime.getFormat(), parameters, bytes);
             fbs.put(tos[i]);
         }
 
@@ -254,16 +226,14 @@ public class BlobStoreTest {
         if (!fh.exists()) {
             Files.createDirectory(fh.toPath());
             if (!fh.exists()) {
-                throw new StorageException(
-                        "Unable to create "
-                                + fh.getAbsolutePath()
-                                + "\nUnable to create "
-                                + org.geowebcache.util.FileUtils.printFileTree(fh));
+                throw new StorageException("Unable to create "
+                        + fh.getAbsolutePath()
+                        + "\nUnable to create "
+                        + org.geowebcache.util.FileUtils.printFileTree(fh));
             }
         }
 
-        return new FileBlobStore(
-                StorageBrokerTest.findTempDir() + File.separator + TEST_BLOB_DIR_NAME);
+        return new FileBlobStore(StorageBrokerTest.findTempDir() + File.separator + TEST_BLOB_DIR_NAME);
     }
 
     @Test

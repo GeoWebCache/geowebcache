@@ -47,23 +47,19 @@ public class S3BlobStoreConformanceTest extends AbstractBlobStoreTest<S3BlobStor
         TileLayerDispatcher layers = createMock(TileLayerDispatcher.class);
         LockProvider lockProvider = new NoOpLockProvider();
         Stream.of("testLayer", "testLayer1", "testLayer2")
-                .map(
-                        name -> {
-                            TileLayer mock = createMock(name, TileLayer.class);
-                            expect(mock.getName()).andStubReturn(name);
-                            expect(mock.getId()).andStubReturn(name);
-                            expect(mock.getGridSubsets())
-                                    .andStubReturn(Collections.singleton("testGridSet"));
-                            expect(mock.getMimeTypes())
-                                    .andStubReturn(
-                                            Arrays.asList(org.geowebcache.mime.ImageMime.png));
-                            try {
-                                expect(layers.getTileLayer(eq(name))).andStubReturn(mock);
-                            } catch (GeoWebCacheException e) {
-                                fail();
-                            }
-                            return mock;
-                        })
+                .map(name -> {
+                    TileLayer mock = createMock(name, TileLayer.class);
+                    expect(mock.getName()).andStubReturn(name);
+                    expect(mock.getId()).andStubReturn(name);
+                    expect(mock.getGridSubsets()).andStubReturn(Collections.singleton("testGridSet"));
+                    expect(mock.getMimeTypes()).andStubReturn(Arrays.asList(org.geowebcache.mime.ImageMime.png));
+                    try {
+                        expect(layers.getTileLayer(eq(name))).andStubReturn(mock);
+                    } catch (GeoWebCacheException e) {
+                        fail();
+                    }
+                    return mock;
+                })
                 .forEach(EasyMock::replay);
         replay(layers);
         store = new S3BlobStore(config, layers, lockProvider);

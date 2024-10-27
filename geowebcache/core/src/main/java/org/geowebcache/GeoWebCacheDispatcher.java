@@ -174,15 +174,12 @@ public class GeoWebCacheDispatcher extends AbstractController {
         for (Service aService : plugins) {
             services.put(aService.getPathName(), aService);
         }
-        LOG.info(
-                "Done loading GWC Service extensions. Found : "
-                        + new ArrayList<>(services.keySet()));
+        LOG.info("Done loading GWC Service extensions. Found : " + new ArrayList<>(services.keySet()));
         return services;
     }
 
     private void loadBlankTile() {
-        String blankTilePath =
-                defaultStorageFinder.findEnvVar(DefaultStorageFinder.GWC_BLANK_TILE_PATH);
+        String blankTilePath = defaultStorageFinder.findEnvVar(DefaultStorageFinder.GWC_BLANK_TILE_PATH);
 
         if (blankTilePath != null) {
             File fh = new File(blankTilePath);
@@ -260,16 +257,15 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * <p>If a tile is requested the request will be handed off to handleServiceRequest.
      */
     @Override
-    protected ModelAndView handleRequestInternal(
-            HttpServletRequest request, HttpServletResponse originalResponse) throws Exception {
+    protected ModelAndView handleRequestInternal(HttpServletRequest request, HttpServletResponse originalResponse)
+            throws Exception {
 
-        HttpServletResponseWrapper response =
-                new HttpServletResponseWrapper(originalResponse) {
-                    @Override
-                    public ServletOutputStream getOutputStream() throws IOException {
-                        return new DispatcherOutputStream(super.getOutputStream());
-                    }
-                };
+        HttpServletResponseWrapper response = new HttpServletResponseWrapper(originalResponse) {
+            @Override
+            public ServletOutputStream getOutputStream() throws IOException {
+                return new DispatcherOutputStream(super.getOutputStream());
+            }
+        };
 
         // Break the request into components, {type, service name}
         String[] requestComps = null;
@@ -290,8 +286,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
                     || requestComps[0].equalsIgnoreCase(TYPE_DEMO + "s")) {
                 handleDemoRequest(requestComps[1], request, response);
             } else {
-                ResponseUtils.writeErrorPage(
-                        response, 404, "Unknown path: " + requestComps[0], runtimeStats);
+                ResponseUtils.writeErrorPage(response, 404, "Unknown path: " + requestComps[0], runtimeStats);
             }
         } catch (HttpErrorCodeException e) {
             ResponseUtils.writeFixedResponse(
@@ -390,8 +385,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     }
 
     /** This is the main method for handling service requests. See comments in the code. */
-    private void handleServiceRequest(
-            String serviceStr, HttpServletRequest request, HttpServletResponse response)
+    private void handleServiceRequest(String serviceStr, HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
         Conveyor conv = null;
@@ -407,11 +401,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         if (Objects.nonNull(layerName)) {
             layer = tileLayerDispatcher.getTileLayer(layerName);
             if (!layer.isEnabled()) {
-                throw new OWSException(
-                        400,
-                        "InvalidParameterValue",
-                        "LAYERS",
-                        "Layer '" + layerName + "' is disabled");
+                throw new OWSException(400, "InvalidParameterValue", "LAYERS", "Layer '" + layerName + "' is disabled");
             }
             if (conv instanceof ConveyorTile) {
                 ((ConveyorTile) conv).setTileLayer(layer);
@@ -426,17 +416,11 @@ public class GeoWebCacheDispatcher extends AbstractController {
             service.handleRequest(conv);
         } else {
             ResponseUtils.writeTile(
-                    getSecurityDispatcher(),
-                    conv,
-                    layerName,
-                    tileLayerDispatcher,
-                    defaultStorageFinder,
-                    runtimeStats);
+                    getSecurityDispatcher(), conv, layerName, tileLayerDispatcher, defaultStorageFinder, runtimeStats);
         }
     }
 
-    private void handleDemoRequest(
-            String action, HttpServletRequest request, HttpServletResponse response)
+    private void handleDemoRequest(String action, HttpServletRequest request, HttpServletResponse response)
             throws GeoWebCacheException {
         Demo.makeMap(tileLayerDispatcher, gridSetBroker, action, request, response);
     }
@@ -489,48 +473,35 @@ public class GeoWebCacheDispatcher extends AbstractController {
             commitId = "{NO BUILD INFO IN MANIFEST}";
         }
 
-        str.append(
-                "<html>\n"
-                        + ServletUtils.gwcHtmlHeader(baseUrl, "GWC Home")
-                        + "<body>\n"
-                        + ServletUtils.gwcHtmlLogoLink(baseUrl));
-        str.append(
-                "<h3>Welcome to GeoWebCache version "
-                        + version
-                        + ", build "
-                        + commitId
-                        + "</h3>\n");
-        str.append(
-                "<p><a href=\"http://geowebcache.org\">GeoWebCache</a> is an advanced tile cache for WMS servers.");
+        str.append("<html>\n"
+                + ServletUtils.gwcHtmlHeader(baseUrl, "GWC Home")
+                + "<body>\n"
+                + ServletUtils.gwcHtmlLogoLink(baseUrl));
+        str.append("<h3>Welcome to GeoWebCache version " + version + ", build " + commitId + "</h3>\n");
+        str.append("<p><a href=\"http://geowebcache.org\">GeoWebCache</a> is an advanced tile cache for WMS servers.");
         str.append(
                 "It supports a large variety of protocols and formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</p>");
         str.append("<h3>Automatically Generated Demos:</h3>\n");
         str.append(
-                "<ul><li><a href=\""
-                        + baseUrl
-                        + "demo\">A list of all the layers and automatic demos</a></li></ul>\n");
+                "<ul><li><a href=\"" + baseUrl + "demo\">A list of all the layers and automatic demos</a></li></ul>\n");
         str.append("<h3>GetCapabilities:</h3>\n");
-        str.append(
-                "<ul><li><a href=\""
-                        + baseUrl
-                        + "service/wmts?REQUEST=getcapabilities\">WMTS 1.0.0 GetCapabilities document</a></li>");
+        str.append("<ul><li><a href=\""
+                + baseUrl
+                + "service/wmts?REQUEST=getcapabilities\">WMTS 1.0.0 GetCapabilities document</a></li>");
         str.append(
                 "<li><a href=\""
                         + baseUrl
                         + "service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities&TILED=true\">WMS 1.1.1 GetCapabilities document</a></li>");
         str.append("<li><a href=\"" + baseUrl + "service/tms/1.0.0\">TMS 1.0.0 document</a></li>");
         str.append("<li>Note that the latter will only work with clients that are ");
-        str.append(
-                "<a href=\"http://wiki.osgeo.org/wiki/WMS_Tiling_Client_Recommendation\">WMS-C capable</a>.</li>\n");
-        str.append(
-                "<li>Omitting tiled=true from the URL will omit the TileSet elements.</li></ul>\n");
+        str.append("<a href=\"http://wiki.osgeo.org/wiki/WMS_Tiling_Client_Recommendation\">WMS-C capable</a>.</li>\n");
+        str.append("<li>Omitting tiled=true from the URL will omit the TileSet elements.</li></ul>\n");
         if (runtimeStats != null) {
             str.append("<h3>Runtime Statistics</h3>\n");
             str.append(runtimeStats.getHTMLStats());
             str.append("</table>\n");
         }
-        if (!Boolean.parseBoolean(
-                GeoWebCacheExtensions.getProperty("GEOWEBCACHE_HIDE_STORAGE_LOCATIONS"))) {
+        if (!Boolean.parseBoolean(GeoWebCacheExtensions.getProperty("GEOWEBCACHE_HIDE_STORAGE_LOCATIONS"))) {
             appendStorageLocations(str);
         }
 
@@ -539,8 +510,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
         str.append("</body></html>\n");
 
-        ResponseUtils.writePage(
-                response, 200, str.toString(), runtimeStats, MediaType.TEXT_HTML_VALUE);
+        ResponseUtils.writePage(response, 200, str.toString(), runtimeStats, MediaType.TEXT_HTML_VALUE);
     }
 
     private void appendStorageLocations(StringBuilder str) {
@@ -667,9 +637,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
         str.append("<table border=\"0\" cellspacing=\"5\">");
 
-        str.append(
-                "<tr><td colspan=\"2\">Total number of requests:</td><td colspan=\"3\">"
-                        + (requestCount >= 0 ? requestCount + "" : "Unavailable"));
+        str.append("<tr><td colspan=\"2\">Total number of requests:</td><td colspan=\"3\">"
+                + (requestCount >= 0 ? requestCount + "" : "Unavailable"));
         str.append("</td></tr>\n");
 
         str.append("<tr><td colspan=\"5\"> </td></tr>");
@@ -692,25 +661,20 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
         str.append("<tr><td colspan=\"5\"> </td></tr>");
 
-        str.append(
-                "<tr><td colspan=\"2\">Total number of evicted tiles:</td><td colspan=\"3\">"
-                        + (evictionCount >= 0 ? evictionCount + "" : "Unavailable"));
+        str.append("<tr><td colspan=\"2\">Total number of evicted tiles:</td><td colspan=\"3\">"
+                + (evictionCount >= 0 ? evictionCount + "" : "Unavailable"));
         str.append("</td></tr>\n");
 
         str.append("<tr><td colspan=\"5\"> </td></tr>");
 
-        str.append(
-                "<tr><td colspan=\"2\">Cache Memory occupation:</td><td colspan=\"3\">"
-                        + (currentMemory >= 0 ? currentMemory + " %" : "Unavailable"));
+        str.append("<tr><td colspan=\"2\">Cache Memory occupation:</td><td colspan=\"3\">"
+                + (currentMemory >= 0 ? currentMemory + " %" : "Unavailable"));
         str.append("</td></tr>\n");
 
         str.append("<tr><td colspan=\"5\"> </td></tr>");
 
-        str.append(
-                "<tr><td colspan=\"2\">Cache Actual Size/ Total Size :</td><td colspan=\"3\">"
-                        + (totalSize >= 0 && actualSize >= 0
-                                ? actualSize + " / " + totalSize + " Mb"
-                                : "Unavailable"));
+        str.append("<tr><td colspan=\"2\">Cache Actual Size/ Total Size :</td><td colspan=\"3\">"
+                + (totalSize >= 0 && actualSize >= 0 ? actualSize + " / " + totalSize + " Mb" : "Unavailable"));
         str.append("</td></tr>\n");
 
         str.append("<tr><td colspan=\"5\"> </td></tr>");

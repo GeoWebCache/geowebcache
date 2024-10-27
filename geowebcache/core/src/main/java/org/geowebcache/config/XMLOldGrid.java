@@ -30,10 +30,7 @@ import org.geowebcache.util.SuppressFBWarnings;
  * <p>The problem is that it cannot use the GridSetBroker, so we end up with one GridSet per layer
  * anyway.
  */
-@SuppressFBWarnings({
-    "NP_UNWRITTEN_FIELD",
-    "NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD",
-    "UWF_NULL_FIELD"
+@SuppressFBWarnings({"NP_UNWRITTEN_FIELD", "NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD", "UWF_NULL_FIELD"
 }) // field assignment done by XStream
 public class XMLOldGrid implements Serializable {
 
@@ -72,52 +69,45 @@ public class XMLOldGrid implements Serializable {
 
         GridSet gridSet;
 
-        if (srs.equals(SRS.getEPSG4326())
-                && gridBounds.equals(BoundingBox.WORLD4326)
-                && resolutions == null) {
+        if (srs.equals(SRS.getEPSG4326()) && gridBounds.equals(BoundingBox.WORLD4326) && resolutions == null) {
             gridSet = gridSetBroker.getWorldEpsg4326();
-        } else if (srs.equals(SRS.getEPSG3857())
-                && gridBounds.equals(BoundingBox.WORLD3857)
-                && resolutions == null) {
+        } else if (srs.equals(SRS.getEPSG3857()) && gridBounds.equals(BoundingBox.WORLD3857) && resolutions == null) {
             gridSet = gridSetBroker.getWorldEpsg3857();
         } else {
             if (resolutions != null) {
-                gridSet =
-                        GridSetFactory.createGridSet(
-                                srs.toString(),
-                                srs,
-                                gridBounds,
-                                false,
-                                resolutions,
-                                null,
-                                null,
-                                GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
-                                null,
-                                256,
-                                256,
-                                false);
+                gridSet = GridSetFactory.createGridSet(
+                        srs.toString(),
+                        srs,
+                        gridBounds,
+                        false,
+                        resolutions,
+                        null,
+                        null,
+                        GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                        null,
+                        256,
+                        256,
+                        false);
             } else {
                 if (zoomStop == null) {
                     zoomStop = 30;
                 }
 
-                gridSet =
-                        GridSetFactory.createGridSet(
-                                srs.toString(),
-                                srs,
-                                gridBounds,
-                                false,
-                                zoomStop + 1,
-                                null,
-                                GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
-                                256,
-                                256,
-                                false);
+                gridSet = GridSetFactory.createGridSet(
+                        srs.toString(),
+                        srs,
+                        gridBounds,
+                        false,
+                        zoomStop + 1,
+                        null,
+                        GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                        256,
+                        256,
+                        false);
             }
         }
 
-        GridSubset gridSubset =
-                GridSubsetFactory.createGridSubSet(gridSet, dataBounds, zoomStart, zoomStop);
+        GridSubset gridSubset = GridSubsetFactory.createGridSubSet(gridSet, dataBounds, zoomStart, zoomStop);
 
         return gridSubset;
     }

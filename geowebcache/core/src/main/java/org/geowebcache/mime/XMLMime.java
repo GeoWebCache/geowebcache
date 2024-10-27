@@ -17,46 +17,21 @@ package org.geowebcache.mime;
 public class XMLMime extends MimeType {
 
     public static final XMLMime ogcxml =
-            new XMLMime(
-                    "application/vnd.ogc.se_xml",
-                    "ogc-xml",
-                    "ogc-xml",
-                    "application/vnd.ogc.se_xml",
-                    false);
+            new XMLMime("application/vnd.ogc.se_xml", "ogc-xml", "ogc-xml", "application/vnd.ogc.se_xml", false);
 
-    public static final XMLMime kml =
-            new XMLMime(
-                    "application/vnd.google-earth.kml+xml",
-                    "kml",
-                    "kml",
-                    "application/vnd.google-earth.kml+xml",
-                    false);
+    public static final XMLMime kml = new XMLMime(
+            "application/vnd.google-earth.kml+xml", "kml", "kml", "application/vnd.google-earth.kml+xml", false);
 
     public static final XMLMime kmz =
-            new XMLMime(
-                    "application/vnd.google-earth.kmz",
-                    "kmz",
-                    "kmz",
-                    "application/vnd.google-earth.kmz",
-                    false);
+            new XMLMime("application/vnd.google-earth.kmz", "kmz", "kmz", "application/vnd.google-earth.kmz", false);
 
     public static final XMLMime gml =
             new XMLMime("application/vnd.ogc.gml", "gml", "gml", "application/vnd.ogc.gml", false);
 
     public static final XMLMime gml3 =
-            new XMLMime(
-                    "application/vnd.ogc.gml/3.1.1",
-                    "gml3",
-                    "gml3",
-                    "application/vnd.ogc.gml/3.1.1",
-                    false);
+            new XMLMime("application/vnd.ogc.gml/3.1.1", "gml3", "gml3", "application/vnd.ogc.gml/3.1.1", false);
 
-    private XMLMime(
-            String mimeType,
-            String fileExtension,
-            String internalName,
-            String format,
-            boolean noop) {
+    private XMLMime(String mimeType, String fileExtension, String internalName, String format, boolean noop) {
         super(mimeType, fileExtension, internalName, format, false);
     }
 

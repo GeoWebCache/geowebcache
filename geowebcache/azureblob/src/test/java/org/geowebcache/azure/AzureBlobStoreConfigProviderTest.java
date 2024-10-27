@@ -34,8 +34,7 @@ public class AzureBlobStoreConfigProviderTest {
         System.setProperty("CONNECTIONS", "30");
         System.setProperty("ENABLED", "true");
         System.setProperty("ALLOW_ENV_PARAMETRIZATION", "true");
-        ClassPathXmlApplicationContext context =
-                new ClassPathXmlApplicationContext("appContextTestAzure.xml");
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("appContextTestAzure.xml");
 
         GeoWebCacheExtensions gse = new GeoWebCacheExtensions();
         gse.setApplicationContext(context);

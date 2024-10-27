@@ -31,14 +31,7 @@ public class DiscontinuousTileRange extends TileRange {
             MimeType mimeType,
             Map<String, String> parameters) {
 
-        super(
-                layerName,
-                gridSetId,
-                zoomStart,
-                zoomStop,
-                rasterMask.getGridCoverages(),
-                mimeType,
-                parameters);
+        super(layerName, gridSetId, zoomStart, zoomStop, rasterMask.getGridCoverages(), mimeType, parameters);
 
         this.mask = rasterMask;
     }

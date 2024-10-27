@@ -38,7 +38,8 @@ import org.springframework.web.context.WebApplicationContext;
 })
 public class BoundsControllerMVCTest {
 
-    @Autowired private WebApplicationContext wac;
+    @Autowired
+    private WebApplicationContext wac;
 
     private MockMvc mockMvc;
 
@@ -50,9 +51,8 @@ public class BoundsControllerMVCTest {
     /** Checks correct media type for RestException response handling. GET method. */
     @Test
     public void testBoundsGetContentType() throws Exception {
-        mockMvc.perform(
-                        get("/rest/bounds/{layer}/{srs}/{type}", "xxxp4z85", "4326", "nothanks")
-                                .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/rest/bounds/{layer}/{srs}/{type}", "xxxp4z85", "4326", "nothanks")
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(status().is4xxClientError());
     }

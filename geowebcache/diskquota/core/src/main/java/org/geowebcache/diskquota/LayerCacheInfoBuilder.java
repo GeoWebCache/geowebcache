@@ -61,9 +61,7 @@ final class LayerCacheInfoBuilder {
     private boolean closed = false;
 
     public LayerCacheInfoBuilder(
-            final File rootCacheDir,
-            final ExecutorService threadPool,
-            QuotaUpdatesMonitor quotaUsageMonitor) {
+            final File rootCacheDir, final ExecutorService threadPool, QuotaUpdatesMonitor quotaUsageMonitor) {
         this.rootCacheDir = rootCacheDir;
         this.threadPool = threadPool;
         this.quotaUsageMonitor = quotaUsageMonitor;
@@ -96,8 +94,7 @@ final class LayerCacheInfoBuilder {
 
         // gathering the on disk tilesets can take a very long time, in case there are
         // many parameters (e.g., long list of times), so moving this task also on background exec
-        Future<?> tilesetCollector =
-                threadPool.submit(() -> gatherStatsByTileset(tileLayer, layerName, layerDir));
+        Future<?> tilesetCollector = threadPool.submit(() -> gatherStatsByTileset(tileLayer, layerName, layerDir));
         // make sure the list has at this task too, so early calls to #isRunning find
         // that something is executing, even if the stats collectors have not been created yet
         perLayerRunningTasks.get(layerName).add(tilesetCollector);
@@ -115,33 +112,25 @@ final class LayerCacheInfoBuilder {
             final int zoomStop = gs.getZoomStop();
 
             for (int zoomLevel = zoomStart; zoomLevel <= zoomStop && !closed; zoomLevel++) {
-                String gridsetZLevelParamsDirName =
-                        FilePathUtils.gridsetZoomLevelDir(gridSetId, zoomLevel);
+                String gridsetZLevelParamsDirName = FilePathUtils.gridsetZoomLevelDir(gridSetId, zoomLevel);
                 if (parametersId != null) {
                     gridsetZLevelParamsDirName += "_" + parametersId;
                 }
                 final File gridsetZLevelDir = new File(layerDir, gridsetZLevelParamsDirName);
 
                 if (gridsetZLevelDir.exists()) {
-                    ZoomLevelVisitor cacheInfoBuilder =
-                            new ZoomLevelVisitor(
-                                    layerName,
-                                    gridsetZLevelDir,
-                                    gridSetId,
-                                    zoomLevel,
-                                    parametersId,
-                                    quotaUsageMonitor);
+                    ZoomLevelVisitor cacheInfoBuilder = new ZoomLevelVisitor(
+                            layerName, gridsetZLevelDir, gridSetId, zoomLevel, parametersId, quotaUsageMonitor);
 
                     Future<ZoomLevelVisitor.Stats> cacheTask = threadPool.submit(cacheInfoBuilder);
 
                     perLayerRunningTasks.get(layerName).add(cacheTask);
-                    log.fine(
-                            "Submitted background task to gather cache info for '"
-                                    + layerName
-                                    + "'/"
-                                    + gridSetId
-                                    + "/"
-                                    + zoomLevel);
+                    log.fine("Submitted background task to gather cache info for '"
+                            + layerName
+                            + "'/"
+                            + gridSetId
+                            + "/"
+                            + zoomLevel);
                 }
             }
         }
@@ -154,13 +143,12 @@ final class LayerCacheInfoBuilder {
         Set<TileSet> foundTileSets = new HashSet<>();
         for (String gridSetName : griSetNames) {
             final String gridSetDirPrefix = FilePathUtils.filteredGridSetId(gridSetName);
-            FileFilter prefixFilter =
-                    pathname -> {
-                        if (!pathname.isDirectory()) {
-                            return false;
-                        }
-                        return pathname.getName().startsWith(gridSetDirPrefix + "_");
-                    };
+            FileFilter prefixFilter = pathname -> {
+                if (!pathname.isDirectory()) {
+                    return false;
+                }
+                return pathname.getName().startsWith(gridSetDirPrefix + "_");
+            };
             File[] thisGridSetDirs = FileUtils.listFilesNullSafe(layerDir, prefixFilter);
             for (File directory : thisGridSetDirs) {
                 // <Filtered gridset id><_zoom level>[_<parametersId>]
@@ -230,14 +218,13 @@ final class LayerCacheInfoBuilder {
         /** @see java.util.concurrent.Callable#call() */
         @Override
         public Stats call() throws Exception {
-            final String zLevelKey =
-                    layerName
-                            + "'/"
-                            + gridSetId
-                            + "/paramId:"
-                            + (parametersId == null ? "default" : parametersId)
-                            + "/zlevel:"
-                            + tileZ;
+            final String zLevelKey = layerName
+                    + "'/"
+                    + gridSetId
+                    + "/paramId:"
+                    + (parametersId == null ? "default" : parametersId)
+                    + "/zlevel:"
+                    + tileZ;
             try {
                 log.fine("Gathering cache information for '" + zLevelKey);
                 stats.numTiles = 0L;
@@ -252,15 +239,14 @@ final class LayerCacheInfoBuilder {
             } catch (Exception e) {
                 throw e;
             }
-            log.fine(
-                    "Cache information for "
-                            + zLevelKey
-                            + " collected in "
-                            + stats.runTimeMillis / 1000D
-                            + "s. Counted "
-                            + stats.numTiles
-                            + " tiles for a storage space of "
-                            + stats.collectedQuota.toNiceString());
+            log.fine("Cache information for "
+                    + zLevelKey
+                    + " collected in "
+                    + stats.runTimeMillis / 1000D
+                    + "s. Counted "
+                    + stats.numTiles
+                    + " tiles for a storage space of "
+                    + stats.collectedQuota.toNiceString());
             return stats;
         }
 
@@ -293,8 +279,7 @@ final class LayerCacheInfoBuilder {
             final long x = Long.valueOf(path.substring(fileNameIdx, coordSepIdx));
             final long y = Long.valueOf(path.substring(1 + coordSepIdx, dotIdx));
 
-            this.quotaUsageMonitor.tileStored(
-                    layerName, gridSetId, blobFormat, parametersId, x, y, tileZ, length);
+            this.quotaUsageMonitor.tileStored(layerName, gridSetId, blobFormat, parametersId, x, y, tileZ, length);
             stats.numTiles++;
             stats.collectedQuota.addBytes(length);
             return true;

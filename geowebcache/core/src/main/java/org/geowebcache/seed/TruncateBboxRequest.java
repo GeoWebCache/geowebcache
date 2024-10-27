@@ -51,8 +51,7 @@ public class TruncateBboxRequest implements MassTruncateRequest {
     }
 
     @Override
-    public boolean doTruncate(StorageBroker sb, TileBreeder breeder)
-            throws StorageException, GeoWebCacheException {
+    public boolean doTruncate(StorageBroker sb, TileBreeder breeder) throws StorageException, GeoWebCacheException {
         final Set<Map<String, String>> allParams = sb.getCachedParameters(layerName);
         final TileLayer tileLayer = breeder.findTileLayer(layerName);
         final Collection<MimeType> allFormats = tileLayer.getMimeTypes();
@@ -60,40 +59,32 @@ public class TruncateBboxRequest implements MassTruncateRequest {
         final int minZ = Optional.fromNullable(subSet.getMinCachedZoom()).or(subSet.getZoomStart());
         final int maxZ = Optional.fromNullable(subSet.getMaxCachedZoom()).or(subSet.getZoomStop());
         // Create seed request for each combination of params and format
-        Function<Map<String, String>, Stream<SeedRequest>> seedRequestMapper =
-                params ->
-                        allFormats.stream()
-                                .map(
-                                        format ->
-                                                new SeedRequest(
-                                                        layerName,
-                                                        bounds,
-                                                        gridSetId,
-                                                        1,
-                                                        minZ,
-                                                        maxZ,
-                                                        format.getMimeType(),
-                                                        GWCTask.TYPE.TRUNCATE,
-                                                        params));
+        Function<Map<String, String>, Stream<SeedRequest>> seedRequestMapper = params -> allFormats.stream()
+                .map(format -> new SeedRequest(
+                        layerName,
+                        bounds,
+                        gridSetId,
+                        1,
+                        minZ,
+                        maxZ,
+                        format.getMimeType(),
+                        GWCTask.TYPE.TRUNCATE,
+                        params));
         try {
-            int taskCount =
-                    Stream.concat(
-                                    allParams.stream(),
-                                    Stream.of(
-                                            (Map<String, String>)
-                                                    null)) // Add null for the default parameters
-                            .flatMap(seedRequestMapper)
-                            .map(
-                                    request -> {
-                                        try {
-                                            breeder.seed(layerName, request);
-                                            return 1;
-                                        } catch (GeoWebCacheException e) {
-                                            throw new UncheckedGeoWebCacheException(e);
-                                        }
-                                    })
-                            .reduce((x, y) -> x + y)
-                            .orElse(0);
+            int taskCount = Stream.concat(
+                            allParams.stream(),
+                            Stream.of((Map<String, String>) null)) // Add null for the default parameters
+                    .flatMap(seedRequestMapper)
+                    .map(request -> {
+                        try {
+                            breeder.seed(layerName, request);
+                            return 1;
+                        } catch (GeoWebCacheException e) {
+                            throw new UncheckedGeoWebCacheException(e);
+                        }
+                    })
+                    .reduce((x, y) -> x + y)
+                    .orElse(0);
             return taskCount > 0;
         } catch (UncheckedGeoWebCacheException e) {
             throw e.getCause();

@@ -64,42 +64,38 @@ public class GeoRSSPoller {
         tf.setThreadPriority(Thread.MIN_PRIORITY + 1);
         schedulingPollExecutorService = Executors.newScheduledThreadPool(corePoolSize, tf);
 
-        schedulingPollExecutorService.submit(
-                () -> {
-                    findEnabledPolls();
+        schedulingPollExecutorService.submit(() -> {
+            findEnabledPolls();
 
-                    if (pollCount() > 0) {
-                        LOGGER.fine("Initializing GeoRSS poller in a background job...");
+            if (pollCount() > 0) {
+                LOGGER.fine("Initializing GeoRSS poller in a background job...");
 
-                        final TimeUnit seconds = TimeUnit.SECONDS;
-                        for (PollDef poll : scheduledPolls) {
-                            GeoRSSPollTask command = new GeoRSSPollTask(poll, seeder);
-                            GeoRSSFeedDefinition pollDef = poll.getPollDef();
-                            long period = pollDef.getPollInterval();
+                final TimeUnit seconds = TimeUnit.SECONDS;
+                for (PollDef poll : scheduledPolls) {
+                    GeoRSSPollTask command = new GeoRSSPollTask(poll, seeder);
+                    GeoRSSFeedDefinition pollDef = poll.getPollDef();
+                    long period = pollDef.getPollInterval();
 
-                            LOGGER.config(
-                                    "Scheduling layer "
-                                            + poll.getLayer().getName()
-                                            + " to poll the GeoRSS feed "
-                                            + pollDef.getFeedUrl()
-                                            + " every "
-                                            + pollDef.getPollIntervalStr());
+                    LOGGER.config("Scheduling layer "
+                            + poll.getLayer().getName()
+                            + " to poll the GeoRSS feed "
+                            + pollDef.getFeedUrl()
+                            + " every "
+                            + pollDef.getPollIntervalStr());
 
-                            schedulingPollExecutorService.scheduleAtFixedRate(
-                                    command, startUpDelaySecs, period, seconds);
+                    schedulingPollExecutorService.scheduleAtFixedRate(command, startUpDelaySecs, period, seconds);
 
-                            scheduledTasks.add(command);
-                        }
-                        LOGGER.fine(
-                                "Will wait "
-                                        + startUpDelaySecs
-                                        + " seconds before launching the "
-                                        + pollCount()
-                                        + " GeoRSS polls found");
-                    } else {
-                        LOGGER.fine("No enabled GeoRSS feeds found, poller will not run.");
-                    }
-                });
+                    scheduledTasks.add(command);
+                }
+                LOGGER.fine("Will wait "
+                        + startUpDelaySecs
+                        + " seconds before launching the "
+                        + pollCount()
+                        + " GeoRSS polls found");
+            } else {
+                LOGGER.fine("No enabled GeoRSS feeds found, poller will not run.");
+            }
+        });
     }
 
     private void findEnabledPolls() {
@@ -109,10 +105,9 @@ public class GeoRSSPoller {
                 continue;
             }
             if (!layer.isEnabled()) {
-                LOGGER.info(
-                        "Ignoring polling GeoRSS update sources for layer '"
-                                + layer.getName()
-                                + "' as the layer is disabled");
+                LOGGER.info("Ignoring polling GeoRSS update sources for layer '"
+                        + layer.getName()
+                        + "' as the layer is disabled");
             }
             for (UpdateSourceDefinition usd : layer.getUpdateSources()) {
                 if (usd instanceof GeoRSSFeedDefinition) {
@@ -121,28 +116,19 @@ public class GeoRSSPoller {
                     final String gridSetId = georssDef.getGridSetId();
                     final GridSubset gridSubset = layer.getGridSubset(gridSetId);
                     if (gridSubset == null) {
-                        throw new IllegalStateException(
-                                "Layer "
-                                        + layer.getName()
-                                        + " has no grid subset "
-                                        + gridSetId
-                                        + " as configured by its GeoRSS seeding feed "
-                                        + georssDef);
+                        throw new IllegalStateException("Layer "
+                                + layer.getName()
+                                + " has no grid subset "
+                                + gridSetId
+                                + " as configured by its GeoRSS seeding feed "
+                                + georssDef);
                     }
 
                     if (georssDef.getPollInterval() > 0) {
-                        LOGGER.info(
-                                "Scheduling GeoRSS feed for layer "
-                                        + layer.getName()
-                                        + ":"
-                                        + georssDef);
+                        LOGGER.info("Scheduling GeoRSS feed for layer " + layer.getName() + ":" + georssDef);
                         scheduledPolls.add(new PollDef(layer, georssDef));
                     } else {
-                        LOGGER.info(
-                                "Feed disabled for layer "
-                                        + layer.getName()
-                                        + ", ignoring: "
-                                        + georssDef);
+                        LOGGER.info("Feed disabled for layer " + layer.getName() + ", ignoring: " + georssDef);
                     }
                 }
             }

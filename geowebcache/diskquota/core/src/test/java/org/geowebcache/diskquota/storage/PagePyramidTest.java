@@ -40,12 +40,10 @@ public class PagePyramidTest {
     static final Logger LOG = Logging.getLogger(PagePyramidTest.class.getName());
 
     GridSet world_EPSG3857 =
-            new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, false)))
-                    .getWorldEpsg3857();
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, false))).getWorldEpsg3857();
 
     GridSet world_EPSG4326 =
-            new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, false)))
-                    .getWorldEpsg4326();
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, false))).getWorldEpsg4326();
 
     private long[][] coverages;
 
@@ -53,13 +51,12 @@ public class PagePyramidTest {
 
     @Before
     public void setUp() {
-        coverages =
-                new long[][] { //
-                    {0, 0, 1, 1, 0}, // 2x2 tiles
-                    {3, 3, 10, 10, 1}, // 11x11 tiles
-                    {0, 0, 101, 101, 2}, // 102x102 tiles
-                    {1000, 1000, 3000, 3000, 3} // 2001x2001 tiles
-                };
+        coverages = new long[][] { //
+            {0, 0, 1, 1, 0}, // 2x2 tiles
+            {3, 3, 10, 10, 1}, // 11x11 tiles
+            {0, 0, 101, 101, 2}, // 102x102 tiles
+            {1000, 1000, 3000, 3000, 3} // 2001x2001 tiles
+        };
         pyramid = new PagePyramid(coverages, 0, 3);
     }
 
@@ -90,15 +87,14 @@ public class PagePyramidTest {
             totalPages += levelPages;
             totalTiles = totalTiles.add(tilesPerPage.multiply(BigInteger.valueOf(levelPages)));
 
-            LOG.info(
-                    FilePathUtils.zeroPadder(z, 2)
-                            + ": (total pages ="
-                            + nf.format(totalPages)
-                            + ") "
-                            + pageInfo.toString()
-                            + "(level tiles = "
-                            + nf.format(tilesPerPage.multiply(BigInteger.valueOf(levelPages)))
-                            + ") ");
+            LOG.info(FilePathUtils.zeroPadder(z, 2)
+                    + ": (total pages ="
+                    + nf.format(totalPages)
+                    + ") "
+                    + pageInfo.toString()
+                    + "(level tiles = "
+                    + nf.format(tilesPerPage.multiply(BigInteger.valueOf(levelPages)))
+                    + ") ");
         }
         LOG.info("Total pages: " + totalPages);
     }

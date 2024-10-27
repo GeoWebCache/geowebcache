@@ -60,8 +60,7 @@ public class WMTSExtensionImpl implements WMTSExtension {
     }
 
     @Override
-    public Conveyor getConveyor(
-            HttpServletRequest request, HttpServletResponse response, StorageBroker storageBroker)
+    public Conveyor getConveyor(HttpServletRequest request, HttpServletResponse response, StorageBroker storageBroker)
             throws GeoWebCacheException, OWSException {
         return null;
     }

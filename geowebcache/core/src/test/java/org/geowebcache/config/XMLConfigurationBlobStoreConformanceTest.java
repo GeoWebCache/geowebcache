@@ -34,7 +34,9 @@ import org.junit.rules.TemporaryFolder;
 /** */
 public class XMLConfigurationBlobStoreConformanceTest extends BlobStoreConfigurationTest {
 
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
+
     private File configDir;
     private File configFile;
 
@@ -82,25 +84,16 @@ public class XMLConfigurationBlobStoreConformanceTest extends BlobStoreConfigura
     public void testBlobStoreConfigIsLoaded() throws Exception {
         // get the blobstores from the config (from test resource geowebcache_190.xml)
         final List<BlobStoreInfo> blobStores = config.getBlobStores();
-        assertEquals(
-                "Unexpected number of BlobStoreInfo elements configured", 1, blobStores.size());
+        assertEquals("Unexpected number of BlobStoreInfo elements configured", 1, blobStores.size());
         // get the 1 configured BlobStoreInfo
         BlobStoreInfo info = blobStores.get(0);
         assertFalse("Unexpected BlobStoreInfo default setting", info.isDefault());
         assertFalse("Unexpected BlobStoreInfo enabled setting", info.isEnabled());
-        assertTrue(
-                "Unexpected BlobeStoreInfo class type",
-                FileBlobStoreInfo.class.isAssignableFrom(info.getClass()));
+        assertTrue("Unexpected BlobeStoreInfo class type", FileBlobStoreInfo.class.isAssignableFrom(info.getClass()));
         // cast the info to a FileBlobStoreInfo
         final FileBlobStoreInfo fileInfo = FileBlobStoreInfo.class.cast(info);
-        assertEquals(
-                "Unexpected FileBlobStoreInfo filesystem block size",
-                4096,
-                fileInfo.getFileSystemBlockSize());
-        assertEquals(
-                "Unexpected FileBlobStoreInfo location value",
-                "/tmp/defaultCache",
-                fileInfo.getBaseDirectory());
+        assertEquals("Unexpected FileBlobStoreInfo filesystem block size", 4096, fileInfo.getFileSystemBlockSize());
+        assertEquals("Unexpected FileBlobStoreInfo location value", "/tmp/defaultCache", fileInfo.getBaseDirectory());
     }
 
     @Override
@@ -120,13 +113,12 @@ public class XMLConfigurationBlobStoreConformanceTest extends BlobStoreConfigura
 
     @Override
     protected BlobStoreInfo getBadInfo(String id, int rand) throws Exception {
-        FileBlobStoreInfo info =
-                new FileBlobStoreInfo(id) {
-                    @Override
-                    public String getName() {
-                        return null;
-                    }
-                };
+        FileBlobStoreInfo info = new FileBlobStoreInfo(id) {
+            @Override
+            public String getName() {
+                return null;
+            }
+        };
         return info;
     }
 
@@ -152,8 +144,7 @@ public class XMLConfigurationBlobStoreConformanceTest extends BlobStoreConfigura
             @Override
             public boolean matches(Object item) {
                 return item instanceof FileBlobStoreInfo
-                        && (Objects.equals(
-                                ((FileBlobStoreInfo) item).getFileSystemBlockSize(), expected));
+                        && (Objects.equals(((FileBlobStoreInfo) item).getFileSystemBlockSize(), expected));
             }
         };
     }

@@ -123,13 +123,11 @@ public class LegendInfoBuilder {
         String finalStyleName = styleName == null ? "" : styleName;
         // building the legend url
         String finalUrl = buildFinalUrl(finalStyleName, finalWidth, finalHeight, finalFormat);
-        return new LegendInfo(
-                finalStyleName, finalWidth, finalHeight, finalFormat, finalUrl, minScale, maxScale);
+        return new LegendInfo(finalStyleName, finalWidth, finalHeight, finalFormat, finalUrl, minScale, maxScale);
     }
 
     /** Helper method that builds the legend get url using the available info. */
-    private String buildFinalUrl(
-            String finalStyleName, Integer finalWidth, Integer finalHeight, String finalFormat) {
+    private String buildFinalUrl(String finalStyleName, Integer finalWidth, Integer finalHeight, String finalFormat) {
         if (completeUrl != null) {
             // we have a complete url so let's just return it
             return completeUrl;

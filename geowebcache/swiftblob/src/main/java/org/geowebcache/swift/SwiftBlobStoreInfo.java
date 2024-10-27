@@ -85,9 +85,7 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
 
         checkNotNull(layers);
         checkState(getName() != null);
-        checkState(
-                isEnabled(),
-                "Can't call SwiftBlobStoreConfig.createInstance() if blob store is not enabled");
+        checkState(isEnabled(), "Can't call SwiftBlobStoreConfig.createInstance() if blob store is not enabled");
         return new SwiftBlobStore(this, layers);
     }
 
@@ -131,12 +129,11 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
         overrides.put(Constants.PROPERTY_MAX_CONNECTIONS_PER_CONTEXT, 32);
         overrides.put(Constants.PROPERTY_MAX_RETRIES, 0);
 
-        SwiftApi context =
-                ContextBuilder.newBuilder(provider)
-                        .endpoint(endpoint)
-                        .credentials(identity, password)
-                        .overrides(overrides)
-                        .buildApi(SwiftApi.class);
+        SwiftApi context = ContextBuilder.newBuilder(provider)
+                .endpoint(endpoint)
+                .credentials(identity, password)
+                .overrides(overrides)
+                .buildApi(SwiftApi.class);
 
         ContainerApi containerApi = context.getContainerApi(region);
 
@@ -156,11 +153,10 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
         overrides.put(KeystoneProperties.SCOPE, keystoneScope);
         overrides.put(KeystoneProperties.PROJECT_DOMAIN_NAME, keystoneDomainName);
 
-        ContextBuilder builder =
-                ContextBuilder.newBuilder(provider)
-                        .endpoint(endpoint)
-                        .credentials(identity, password)
-                        .overrides(overrides);
+        ContextBuilder builder = ContextBuilder.newBuilder(provider)
+                .endpoint(endpoint)
+                .credentials(identity, password)
+                .overrides(overrides);
 
         return builder.build(RegionScopedBlobStoreContext.class);
     }
@@ -177,17 +173,8 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
     }
 
     public boolean isValid() {
-        final List<String> fields =
-                Arrays.asList(
-                        new String[] {
-                            endpoint,
-                            identity,
-                            password,
-                            region,
-                            container,
-                            keystoneVersion,
-                            keystoneScope
-                        });
+        final List<String> fields = Arrays.asList(
+                new String[] {endpoint, identity, password, region, container, keystoneVersion, keystoneScope});
 
         return !(fields.contains(null) || fields.contains(""));
     }

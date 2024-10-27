@@ -162,11 +162,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         assertNotNull(serviceInfo.getServiceProvider().getProviderName());
         assertNotNull(serviceInfo.getServiceProvider().getProviderSite());
         assertNotNull(serviceInfo.getServiceProvider().getServiceContact());
-        assertNotNull(
-                serviceInfo
-                        .getServiceProvider()
-                        .getServiceContact()
-                        .getAddressAdministrativeArea());
+        assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getAddressAdministrativeArea());
         assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getAddressCity());
         assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getAddressCountry());
         assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getAddressEmail());
@@ -186,8 +182,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         assertTrue(layer.getGridSubsets().contains("EPSG:2163"));
     }
 
-    private TileLayer findLayer(Iterable<TileLayer> layers, String layerName)
-            throws GeoWebCacheException {
+    private TileLayer findLayer(Iterable<TileLayer> layers, String layerName) throws GeoWebCacheException {
         Iterator<TileLayer> iter = layers.iterator();
 
         int i = 0;
@@ -199,8 +194,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
             i++;
         }
 
-        throw new GeoWebCacheException(
-                "Layer " + layerName + " not found, set has " + i + " layers.");
+        throw new GeoWebCacheException("Layer " + layerName + " not found, set has " + i + " layers.");
     }
 
     private Iterable<TileLayer> loadResource(String fileName) throws Exception {
@@ -214,14 +208,11 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         //     print(root.getOwnerDocument());
         // }
 
-        XMLConfiguration xmlConfig =
-                new XMLConfiguration(
-                        null,
-                        new MockConfigurationResourceProvider(
-                                () -> XMLConfiguration.class.getResourceAsStream(fileName)));
+        XMLConfiguration xmlConfig = new XMLConfiguration(
+                null,
+                new MockConfigurationResourceProvider(() -> XMLConfiguration.class.getResourceAsStream(fileName)));
 
-        GridSetBroker gsb =
-                new GridSetBroker(Arrays.asList(new DefaultGridsets(true, true), xmlConfig));
+        GridSetBroker gsb = new GridSetBroker(Arrays.asList(new DefaultGridsets(true, true), xmlConfig));
         xmlConfig.setGridSetBroker(gsb);
         xmlConfig.afterPropertiesSet();
 
@@ -239,8 +230,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
     protected void print(Document dom) throws Exception {
         TransformerFactory txFactory = TransformerFactory.newInstance();
         try {
-            txFactory.setAttribute(
-                    "{http://xml.apache.org/xalan}indent-number", Integer.valueOf(2));
+            txFactory.setAttribute("{http://xml.apache.org/xalan}indent-number", Integer.valueOf(2));
         } catch (Exception e) {
             // some
         }
@@ -249,7 +239,6 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         tx.setOutputProperty(OutputKeys.METHOD, "xml");
         tx.setOutputProperty(OutputKeys.INDENT, "yes");
 
-        tx.transform(
-                new DOMSource(dom), new StreamResult(new OutputStreamWriter(System.out, UTF_8)));
+        tx.transform(new DOMSource(dom), new StreamResult(new OutputStreamWriter(System.out, UTF_8)));
     }
 }

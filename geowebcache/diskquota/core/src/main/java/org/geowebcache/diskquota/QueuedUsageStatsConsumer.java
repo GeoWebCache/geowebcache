@@ -95,15 +95,13 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
     public Long call() {
         while (true) {
             if (Thread.interrupted()) {
-                log.fine(
-                        "Job "
-                                + getClass().getSimpleName()
-                                + " finished due to interrupted thread.");
+                log.fine("Job " + getClass().getSimpleName() + " finished due to interrupted thread.");
                 break;
             }
 
             if (terminate) {
-                log.fine("Exiting on explicit termination request: " + getClass().getSimpleName());
+                log.fine(
+                        "Exiting on explicit termination request: " + getClass().getSimpleName());
                 break;
             }
 
@@ -111,8 +109,7 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
                 /*
                  * do not wait for more than 5 seconds for data to become available on the queue
                  */
-                UsageStats requestedTile =
-                        usageStatsQueue.poll(DEFAULT_SYNC_TIMEOUT, TimeUnit.MILLISECONDS);
+                UsageStats requestedTile = usageStatsQueue.poll(DEFAULT_SYNC_TIMEOUT, TimeUnit.MILLISECONDS);
                 if (requestedTile == null) {
                     /*
                      * poll timed out, nothing new, check there are no pending aggregated updates
@@ -154,8 +151,7 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
      * @param requestedTile represents a single tile that was requested and for which its tile page
      *     needs to be looked up and updated
      */
-    private void performAggregatedUpdate(final UsageStats requestedTile)
-            throws InterruptedException {
+    private void performAggregatedUpdate(final UsageStats requestedTile) throws InterruptedException {
 
         final TileSet tileSet = requestedTile.getTileSet();
         final String tileSetId = tileSet.getId();
@@ -209,21 +205,17 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
 
         if (timeout || tooManyPendingCommits) {
             if (log.isLoggable(Level.FINER)) {
-                log.finer(
-                        "Committing "
-                                + numAggregations
-                                + " aggregated usage stats to quota store due to "
-                                + (tooManyPendingCommits
-                                        ? "too many pending commits"
-                                        : "max wait time reached"));
+                log.finer("Committing "
+                        + numAggregations
+                        + " aggregated usage stats to quota store due to "
+                        + (tooManyPendingCommits ? "too many pending commits" : "max wait time reached"));
             }
             commit();
         }
     }
 
     private void commit() {
-        Collection<PageStatsPayload> pendingCommits =
-                new ArrayList<>(aggregatedPendingUpdates.pages.values());
+        Collection<PageStatsPayload> pendingCommits = new ArrayList<>(aggregatedPendingUpdates.pages.values());
         quotaStore.addHitsAndSetAccesTime(pendingCommits);
         aggregatedPendingUpdates.lastCommitTime = System.currentTimeMillis();
         aggregatedPendingUpdates.numAggregations = 0;

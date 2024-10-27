@@ -133,7 +133,9 @@ public class WMSLayerTest extends TileLayerTest {
 
         final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
         Capture<TileObject> captured = EasyMock.newCapture();
-        expect(mockStorageBroker.put(EasyMock.capture(captured))).andReturn(true).anyTimes();
+        expect(mockStorageBroker.put(EasyMock.capture(captured)))
+                .andReturn(true)
+                .anyTimes();
         replay(mockStorageBroker);
 
         String layerId = layer.getName();
@@ -144,16 +146,8 @@ public class WMSLayerTest extends TileLayerTest {
         MimeType mimeType = layer.getMimeTypes().get(0);
         GridSet gridSet = gridSetBroker.getWorldEpsg4326();
         String gridSetId = gridSet.getName();
-        ConveyorTile tile =
-                new ConveyorTile(
-                        mockStorageBroker,
-                        layerId,
-                        gridSetId,
-                        gridLoc,
-                        mimeType,
-                        null,
-                        servletReq,
-                        servletResp);
+        ConveyorTile tile = new ConveyorTile(
+                mockStorageBroker, layerId, gridSetId, gridLoc, mimeType, null, servletReq, servletResp);
 
         boolean tryCache = false;
         layer.seedTile(tile, tryCache);
@@ -259,8 +253,7 @@ public class WMSLayerTest extends TileLayerTest {
                 new GrayAlphaSourceHelper());
     }
 
-    public void checkJpegPng(
-            String format, IAnswer<Boolean> tileVerifier, WMSSourceHelper sourceHelper)
+    public void checkJpegPng(String format, IAnswer<Boolean> tileVerifier, WMSSourceHelper sourceHelper)
             throws GeoWebCacheException, IOException {
         WMSLayer layer = createWMSLayer(format);
 
@@ -283,16 +276,8 @@ public class WMSLayerTest extends TileLayerTest {
         MimeType mimeType = layer.getMimeTypes().get(0);
         GridSet gridSet = gridSetBroker.getWorldEpsg4326();
         String gridSetId = gridSet.getName();
-        ConveyorTile tile =
-                new ConveyorTile(
-                        mockStorageBroker,
-                        layerId,
-                        gridSetId,
-                        gridLoc,
-                        mimeType,
-                        null,
-                        servletReq,
-                        servletResp);
+        ConveyorTile tile = new ConveyorTile(
+                mockStorageBroker, layerId, gridSetId, gridLoc, mimeType, null, servletReq, servletResp);
 
         boolean tryCache = false;
         layer.seedTile(tile, tryCache);
@@ -324,21 +309,19 @@ public class WMSLayerTest extends TileLayerTest {
         expect(response.getEntity()).andReturn(entity);
         Header contentEncoding = new BasicHeader("ContentEncoding", "UTF-8");
         expect(entity.getContentEncoding()).andReturn(contentEncoding);
-        expect(response.getFirstHeader("Content-Type"))
-                .andReturn(new BasicHeader("Content-Type", "image/png"));
+        expect(response.getFirstHeader("Content-Type")).andReturn(new BasicHeader("Content-Type", "image/png"));
 
         replay(entity);
         replay(response);
         HttpClient httpClient = EasyMock.createNiceMock(HttpClient.class);
         expect(httpClient.execute(anyObject())).andReturn(response);
         replay(httpClient);
-        WMSHttpHelper httpHelper =
-                new WMSHttpHelper() {
-                    public WMSHttpHelper setClient(HttpClient httpClient) {
-                        this.client = httpClient;
-                        return this;
-                    }
-                }.setClient(httpClient);
+        WMSHttpHelper httpHelper = new WMSHttpHelper() {
+            public WMSHttpHelper setClient(HttpClient httpClient) {
+                this.client = httpClient;
+                return this;
+            }
+        }.setClient(httpClient);
         httpHelper.setBackendTimeout(10);
         layer.setSourceHelper(httpHelper);
 
@@ -361,36 +344,33 @@ public class WMSLayerTest extends TileLayerTest {
         // setup the layer
         WMSLayer layer = createWMSLayer("image/png");
         final byte[] responseBody = "Fake body".getBytes();
-        layer.setSourceHelper(
-                new WMSHttpHelper() {
-                    @Override
-                    public HttpResponse executeRequest(
-                            URL url,
-                            Map<String, String> queryParams,
-                            Integer backendTimeout,
-                            WMSLayer.HttpRequestMode httpRequestMode)
-                            throws UnsupportedOperationException, IOException {
+        layer.setSourceHelper(new WMSHttpHelper() {
+            @Override
+            public HttpResponse executeRequest(
+                    URL url,
+                    Map<String, String> queryParams,
+                    Integer backendTimeout,
+                    WMSLayer.HttpRequestMode httpRequestMode)
+                    throws UnsupportedOperationException, IOException {
 
-                        HttpResponse response = EasyMock.createNiceMock(HttpResponse.class);
-                        StatusLine statusLine = EasyMock.createMock(StatusLine.class);
-                        expect(response.getStatusLine()).andReturn(statusLine);
+                HttpResponse response = EasyMock.createNiceMock(HttpResponse.class);
+                StatusLine statusLine = EasyMock.createMock(StatusLine.class);
+                expect(response.getStatusLine()).andReturn(statusLine);
 
-                        HttpEntity entity = EasyMock.createMock(HttpEntity.class);
+                HttpEntity entity = EasyMock.createMock(HttpEntity.class);
 
-                        expect(entity.getContent())
-                                .andReturn(new ByteArrayInputStream(responseBody));
-                        expect(response.getEntity()).andReturn(entity);
-                        Header contentEncoding = new BasicHeader("ContentEncoding", "UTF-8");
-                        expect(entity.getContentEncoding()).andReturn(contentEncoding);
-                        expect(response.getFirstHeader("Content-Type"))
-                                .andReturn(new BasicHeader("Content-Type", "image/png"));
+                expect(entity.getContent()).andReturn(new ByteArrayInputStream(responseBody));
+                expect(response.getEntity()).andReturn(entity);
+                Header contentEncoding = new BasicHeader("ContentEncoding", "UTF-8");
+                expect(entity.getContentEncoding()).andReturn(contentEncoding);
+                expect(response.getFirstHeader("Content-Type")).andReturn(new BasicHeader("Content-Type", "image/png"));
 
-                        replay(entity);
-                        // expectLastCall();
-                        replay(response);
-                        return response;
-                    }
-                });
+                replay(entity);
+                // expectLastCall();
+                replay(response);
+                return response;
+            }
+        });
         MockLockProvider lockProvider = new MockLockProvider();
         layer.setLockProvider(lockProvider);
 
@@ -407,16 +387,8 @@ public class WMSLayerTest extends TileLayerTest {
         MimeType mimeType = layer.getMimeTypes().get(0);
         GridSet gridSet = gridSetBroker.getWorldEpsg4326();
         String gridSetId = gridSet.getName();
-        ConveyorTile tile =
-                new ConveyorTile(
-                        mockStorageBroker,
-                        layerId,
-                        gridSetId,
-                        gridLoc,
-                        mimeType,
-                        null,
-                        servletReq,
-                        servletResp);
+        ConveyorTile tile = new ConveyorTile(
+                mockStorageBroker, layerId, gridSetId, gridLoc, mimeType, null, servletReq, servletResp);
 
         // proxy the request, and check the response
         layer.proxyRequest(tile);
@@ -431,33 +403,31 @@ public class WMSLayerTest extends TileLayerTest {
         // setup the layer
         WMSLayer layer = createWMSLayer("image/png");
         final byte[] responseBody = "Fake body".getBytes();
-        layer.setSourceHelper(
-                new WMSHttpHelper() {
-                    @Override
-                    public HttpResponse executeRequest(
-                            URL url,
-                            Map<String, String> queryParams,
-                            Integer backendTimeout,
-                            WMSLayer.HttpRequestMode httpRequestMode)
-                            throws UnsupportedOperationException, IOException {
-                        HttpResponse response = EasyMock.createNiceMock(HttpResponse.class);
-                        StatusLine statusLine = EasyMock.createMock(StatusLine.class);
-                        expect(response.getStatusLine()).andReturn(statusLine);
-                        expect(response.getFirstHeader("Content-Type")).andReturn(null);
-                        HttpEntity entity = EasyMock.createMock(HttpEntity.class);
+        layer.setSourceHelper(new WMSHttpHelper() {
+            @Override
+            public HttpResponse executeRequest(
+                    URL url,
+                    Map<String, String> queryParams,
+                    Integer backendTimeout,
+                    WMSLayer.HttpRequestMode httpRequestMode)
+                    throws UnsupportedOperationException, IOException {
+                HttpResponse response = EasyMock.createNiceMock(HttpResponse.class);
+                StatusLine statusLine = EasyMock.createMock(StatusLine.class);
+                expect(response.getStatusLine()).andReturn(statusLine);
+                expect(response.getFirstHeader("Content-Type")).andReturn(null);
+                HttpEntity entity = EasyMock.createMock(HttpEntity.class);
 
-                        expect(entity.getContent())
-                                .andReturn(new ByteArrayInputStream(responseBody));
-                        expect(response.getEntity()).andReturn(entity);
-                        Header contentEncoding = new BasicHeader("ContentEncoding", "UTF-8");
-                        expect(entity.getContentEncoding()).andReturn(contentEncoding);
+                expect(entity.getContent()).andReturn(new ByteArrayInputStream(responseBody));
+                expect(response.getEntity()).andReturn(entity);
+                Header contentEncoding = new BasicHeader("ContentEncoding", "UTF-8");
+                expect(entity.getContentEncoding()).andReturn(contentEncoding);
 
-                        replay(entity);
-                        // expectLastCall();
-                        replay(response);
-                        return response;
-                    }
-                });
+                replay(entity);
+                // expectLastCall();
+                replay(response);
+                return response;
+            }
+        });
         final StorageBroker mockStorageBroker = EasyMock.createMock(StorageBroker.class);
         MockHttpServletRequest servletReq = new MockHttpServletRequest();
         MockHttpServletResponse servletResp = new MockHttpServletResponse();
@@ -497,33 +467,19 @@ public class WMSLayerTest extends TileLayerTest {
         assertNotNull(l.getWmsLayers());
         assertNull(l.getWmsQueryLayers());
         Map<String, String> rt =
-                l.getWMSRequestTemplate(
-                        MimeType.createFromFormat("text/plain"), RequestType.FEATUREINFO);
+                l.getWMSRequestTemplate(MimeType.createFromFormat("text/plain"), RequestType.FEATUREINFO);
         assertEquals(l.getWmsLayers(), rt.get("QUERY_LAYERS"));
 
         // a layer with query layers
         l = createFeatureInfoLayer("a,b", "b");
         assertNotNull(l.getWmsLayers());
         assertNotNull(l.getWmsQueryLayers());
-        rt =
-                l.getWMSRequestTemplate(
-                        MimeType.createFromFormat("text/plain"), RequestType.FEATUREINFO);
+        rt = l.getWMSRequestTemplate(MimeType.createFromFormat("text/plain"), RequestType.FEATUREINFO);
         assertEquals(l.getWmsQueryLayers(), rt.get("QUERY_LAYERS"));
     }
 
     private WMSLayer createFeatureInfoLayer(String wmsLayers, String wmsQueryLayers) {
-        return new WMSLayer(
-                "name",
-                new String[0],
-                null,
-                wmsLayers,
-                null,
-                null,
-                null,
-                null,
-                null,
-                true,
-                wmsQueryLayers);
+        return new WMSLayer("name", new String[0], null, wmsLayers, null, null, null, null, null, true, wmsQueryLayers);
     }
 
     // ignore to fix the build until the failing assertion is worked out
@@ -563,8 +519,7 @@ public class WMSLayerTest extends TileLayerTest {
         // stats
     }
 
-    private void seedTiles(StorageBroker storageBroker, TileRange tr, final WMSLayer tl)
-            throws Exception {
+    private void seedTiles(StorageBroker storageBroker, TileRange tr, final WMSLayer tl) throws Exception {
         final String layerName = tl.getName();
         // define the meta tile size to 1,1 so we hit all the tiles
         final TileRangeIterator trIter = new TileRangeIterator(tr, tl.getMetaTilingFactors());
@@ -574,16 +529,8 @@ public class WMSLayerTest extends TileLayerTest {
         while (gridLoc != null) {
             Map<String, String> fullParameters = tr.getParameters();
 
-            final ConveyorTile tile =
-                    new ConveyorTile(
-                            storageBroker,
-                            layerName,
-                            tr.getGridSetId(),
-                            gridLoc,
-                            tr.getMimeType(),
-                            fullParameters,
-                            null,
-                            null);
+            final ConveyorTile tile = new ConveyorTile(
+                    storageBroker, layerName, tr.getGridSetId(), gridLoc, tr.getMimeType(), fullParameters, null, null);
             tile.setTileLayer(tl);
 
             tl.seedTile(tile, false);
@@ -592,8 +539,7 @@ public class WMSLayerTest extends TileLayerTest {
         }
     }
 
-    private List<ConveyorTile> getTiles(
-            StorageBroker storageBroker, TileRange tr, final WMSLayer tl) throws Exception {
+    private List<ConveyorTile> getTiles(StorageBroker storageBroker, TileRange tr, final WMSLayer tl) throws Exception {
         final String layerName = tl.getName();
         // define the meta tile size to 1,1 so we hit all the tiles
         final TileRangeIterator trIter = new TileRangeIterator(tr, new int[] {1, 1});
@@ -603,32 +549,21 @@ public class WMSLayerTest extends TileLayerTest {
         // six concurrent requests max
         @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService requests = Executors.newFixedThreadPool(6);
-        ExecutorCompletionService<ConveyorTile> completer =
-                new ExecutorCompletionService<>(requests);
+        ExecutorCompletionService<ConveyorTile> completer = new ExecutorCompletionService<>(requests);
 
         List<Future<ConveyorTile>> futures = new ArrayList<>();
         while (gridLoc != null) {
             Map<String, String> fullParameters = tr.getParameters();
 
-            final ConveyorTile tile =
-                    new ConveyorTile(
-                            storageBroker,
-                            layerName,
-                            tr.getGridSetId(),
-                            gridLoc,
-                            tr.getMimeType(),
-                            fullParameters,
-                            null,
-                            null);
-            futures.add(
-                    completer.submit(
-                            () -> {
-                                try {
-                                    return tl.getTile(tile);
-                                } catch (OutsideCoverageException oce) {
-                                    return null;
-                                }
-                            }));
+            final ConveyorTile tile = new ConveyorTile(
+                    storageBroker, layerName, tr.getGridSetId(), gridLoc, tr.getMimeType(), fullParameters, null, null);
+            futures.add(completer.submit(() -> {
+                try {
+                    return tl.getTile(tile);
+                } catch (OutsideCoverageException oce) {
+                    return null;
+                }
+            }));
 
             gridLoc = trIter.nextMetaGridLocation(gridLoc);
         }
@@ -675,8 +610,7 @@ public class WMSLayerTest extends TileLayerTest {
             }
 
             try {
-                target.transferFrom(
-                        Channels.newChannel(new ByteArrayInputStream(output.toByteArray())));
+                target.transferFrom(Channels.newChannel(new ByteArrayInputStream(output.toByteArray())));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -696,21 +630,19 @@ public class WMSLayerTest extends TileLayerTest {
             int height = Integer.parseInt(wmsParams.get("HEIGHT"));
             assertEquals(768, width);
             assertEquals(768, height);
-            BufferedImage baseImage =
-                    new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+            BufferedImage baseImage = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
             Graphics2D graphics = baseImage.createGraphics();
             graphics.setColor(Color.BLACK);
             // fill an L shaped set of tiles, making a few partially filled
             graphics.fillRect(0, 0, width, 300);
             graphics.fillRect(0, 0, 300, height);
             graphics.dispose();
-            ColorModel cm =
-                    new ComponentColorModel(
-                            ColorSpace.getInstance(ColorSpace.CS_GRAY),
-                            true,
-                            false,
-                            Transparency.TRANSLUCENT,
-                            DataBuffer.TYPE_BYTE);
+            ColorModel cm = new ComponentColorModel(
+                    ColorSpace.getInstance(ColorSpace.CS_GRAY),
+                    true,
+                    false,
+                    Transparency.TRANSLUCENT,
+                    DataBuffer.TYPE_BYTE);
             SampleModel sm = cm.createCompatibleSampleModel(width, height);
             ImageLayout il = new ImageLayout();
             il.setSampleModel(sm);
@@ -725,8 +657,7 @@ public class WMSLayerTest extends TileLayerTest {
             }
 
             try {
-                target.transferFrom(
-                        Channels.newChannel(new ByteArrayInputStream(output.toByteArray())));
+                target.transferFrom(Channels.newChannel(new ByteArrayInputStream(output.toByteArray())));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -759,20 +690,16 @@ public class WMSLayerTest extends TileLayerTest {
             Capture<WMSMetaTile> metaTileCapturer = EasyMock.newCapture();
             Capture<Resource> resourceCapturer = EasyMock.newCapture();
             mockSourceHelper.makeRequest(capture(metaTileCapturer), capture(resourceCapturer));
-            EasyMock.expectLastCall()
-                    .andAnswer(
-                            () -> {
-                                Resource resource = resourceCapturer.getValue();
-                                wmsMetaRequestCounter.incrementAndGet();
-                                try {
-                                    resource.transferFrom(
-                                            Channels.newChannel(
-                                                    new ByteArrayInputStream(fakeWMSResponse)));
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
-                                return null;
-                            });
+            EasyMock.expectLastCall().andAnswer(() -> {
+                Resource resource = resourceCapturer.getValue();
+                wmsMetaRequestCounter.incrementAndGet();
+                try {
+                    resource.transferFrom(Channels.newChannel(new ByteArrayInputStream(fakeWMSResponse)));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                return null;
+            });
             expectLastCall().anyTimes().asStub();
             mockSourceHelper.setConcurrency(32);
             mockSourceHelper.setBackendTimeout(120);
@@ -783,61 +710,57 @@ public class WMSLayerTest extends TileLayerTest {
 
         private void installMockBroker() throws Exception {
             expect(storageBroker.getTransient(anyObject()))
-                    .andAnswer(
-                            () -> {
-                                TileObject tile = (TileObject) EasyMock.getCurrentArguments()[0];
-                                String key = TransientCache.computeTransientKey(tile);
-                                Resource resource;
-                                synchronized (transientCache) {
-                                    resource = transientCache.get(key);
-                                }
-                                if (resource != null) {
-                                    cacheHits.incrementAndGet();
-                                } else {
-                                    cacheMisses.incrementAndGet();
-                                }
-                                tile.setBlob(resource);
-                                return resource != null;
-                            })
+                    .andAnswer(() -> {
+                        TileObject tile = (TileObject) EasyMock.getCurrentArguments()[0];
+                        String key = TransientCache.computeTransientKey(tile);
+                        Resource resource;
+                        synchronized (transientCache) {
+                            resource = transientCache.get(key);
+                        }
+                        if (resource != null) {
+                            cacheHits.incrementAndGet();
+                        } else {
+                            cacheMisses.incrementAndGet();
+                        }
+                        tile.setBlob(resource);
+                        return resource != null;
+                    })
                     .anyTimes();
 
             Capture<TileObject> tileCapturer = EasyMock.newCapture();
             storageBroker.putTransient(capture(tileCapturer));
             expectLastCall()
-                    .andAnswer(
-                            () -> {
-                                TileObject tile = tileCapturer.getValue();
-                                String key = TransientCache.computeTransientKey(tile);
-                                synchronized (transientCache) {
-                                    transientCache.put(key, tile.getBlob());
-                                }
-                                return null;
-                            })
+                    .andAnswer(() -> {
+                        TileObject tile = tileCapturer.getValue();
+                        String key = TransientCache.computeTransientKey(tile);
+                        synchronized (transientCache) {
+                            transientCache.put(key, tile.getBlob());
+                        }
+                        return null;
+                    })
                     .anyTimes();
 
             final HashSet<String> puts = new HashSet<>();
             expect(storageBroker.put(capture(tileCapturer)))
-                    .andAnswer(
-                            () -> {
-                                TileObject tile = tileCapturer.getValue();
-                                puts.add(TransientCache.computeTransientKey(tile));
-                                storagePutCounter.incrementAndGet();
-                                return true;
-                            })
+                    .andAnswer(() -> {
+                        TileObject tile = tileCapturer.getValue();
+                        puts.add(TransientCache.computeTransientKey(tile));
+                        storagePutCounter.incrementAndGet();
+                        return true;
+                    })
                     .anyTimes();
 
             expect(storageBroker.get(anyObject()))
-                    .andAnswer(
-                            () -> {
-                                TileObject tile = (TileObject) EasyMock.getCurrentArguments()[0];
-                                if (puts.contains(TransientCache.computeTransientKey(tile))) {
-                                    tile.setBlob(new ByteArrayResource(fakeWMSResponse));
-                                    storageGetCounter.incrementAndGet();
-                                    return true;
-                                } else {
-                                    return false;
-                                }
-                            })
+                    .andAnswer(() -> {
+                        TileObject tile = (TileObject) EasyMock.getCurrentArguments()[0];
+                        if (puts.contains(TransientCache.computeTransientKey(tile))) {
+                            tile.setBlob(new ByteArrayResource(fakeWMSResponse));
+                            storageGetCounter.incrementAndGet();
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    })
                     .anyTimes();
             replay(storageBroker);
         }

@@ -176,8 +176,7 @@ public final class ResponseUtils {
         }
 
         int contentLength = (int) (blob == null ? -1 : blob.getSize());
-        writeFixedResponse(
-                servletResp, httpCode, mimeType, blob, cacheResult, contentLength, runtimeStats);
+        writeFixedResponse(servletResp, httpCode, mimeType, blob, cacheResult, contentLength, runtimeStats);
     }
 
     private static void writeEmpty(
@@ -206,13 +205,7 @@ public final class ResponseUtils {
         // handle no-content in case we have to return no result at all (e.g., expected for pbf)
         int status = emptyTileContents == null ? 204 : 200;
 
-        writeFixedResponse(
-                tile.servletResp,
-                status,
-                mimeType,
-                emptyTileContents,
-                CacheResult.OTHER,
-                runtimeStats);
+        writeFixedResponse(tile.servletResp, status, mimeType, emptyTileContents, CacheResult.OTHER, runtimeStats);
     }
 
     /**
@@ -220,10 +213,7 @@ public final class ResponseUtils {
      * tiles
      */
     private static void writeEmpty(
-            DefaultStorageFinder defaultStorageFinder,
-            ConveyorTile tile,
-            String message,
-            RuntimeStats runtimeStats) {
+            DefaultStorageFinder defaultStorageFinder, ConveyorTile tile, String message, RuntimeStats runtimeStats) {
         writeEmpty(
                 defaultStorageFinder,
                 tile,
@@ -252,8 +242,7 @@ public final class ResponseUtils {
             RuntimeStats runtimeStats) {
 
         int contentLength = (int) (resource == null ? -1 : resource.getSize());
-        writeFixedResponse(
-                response, httpCode, contentType, resource, cacheRes, contentLength, runtimeStats);
+        writeFixedResponse(response, httpCode, contentType, resource, cacheRes, contentLength, runtimeStats);
     }
 
     /**
@@ -295,8 +284,7 @@ public final class ResponseUtils {
 
     private static ByteArrayResource loadBlankTile(DefaultStorageFinder defaultStorageFinder) {
         ByteArrayResource blankTile = null;
-        String blankTilePath =
-                defaultStorageFinder.findEnvVar(DefaultStorageFinder.GWC_BLANK_TILE_PATH);
+        String blankTilePath = defaultStorageFinder.findEnvVar(DefaultStorageFinder.GWC_BLANK_TILE_PATH);
 
         if (blankTilePath != null) {
             File fh = new File(blankTilePath);
@@ -353,22 +341,18 @@ public final class ResponseUtils {
      * @param errorMsg the actual error message, human readable
      */
     public static void writeErrorPage(
-            HttpServletResponse response,
-            int httpCode,
-            String errorMsg,
-            RuntimeStats runtimeStats) {
+            HttpServletResponse response, int httpCode, String errorMsg, RuntimeStats runtimeStats) {
         log.fine(errorMsg);
-        errorMsg =
-                "<html>\n"
-                        + ServletUtils.gwcHtmlHeader("../", "GWC Error")
-                        + "<body>\n"
-                        + ServletUtils.gwcHtmlLogoLink("../")
-                        + "<h4>"
-                        + httpCode
-                        + ": "
-                        + ServletUtils.disableHTMLTags(errorMsg)
-                        + "</h4>"
-                        + "</body></html>\n";
+        errorMsg = "<html>\n"
+                + ServletUtils.gwcHtmlHeader("../", "GWC Error")
+                + "<body>\n"
+                + ServletUtils.gwcHtmlLogoLink("../")
+                + "<h4>"
+                + httpCode
+                + ": "
+                + ServletUtils.disableHTMLTags(errorMsg)
+                + "</h4>"
+                + "</body></html>\n";
         writePage(response, httpCode, errorMsg, runtimeStats, MediaType.TEXT_HTML_VALUE);
     }
 
@@ -382,10 +366,7 @@ public final class ResponseUtils {
      * @param runtimeStats runtime statistics
      */
     public static void writeErrorAsXML(
-            HttpServletResponse response,
-            int httpCode,
-            String errorMsg,
-            RuntimeStats runtimeStats) {
+            HttpServletResponse response, int httpCode, String errorMsg, RuntimeStats runtimeStats) {
         log.fine(errorMsg);
         writePage(response, httpCode, errorMsg, runtimeStats, MediaType.APPLICATION_XML_VALUE);
     }
@@ -401,16 +382,11 @@ public final class ResponseUtils {
      * @param contentType HTTP response content type
      */
     public static void writePage(
-            HttpServletResponse response,
-            int httpCode,
-            String message,
-            RuntimeStats runtimeStats,
-            String contentType) {
+            HttpServletResponse response, int httpCode, String message, RuntimeStats runtimeStats, String contentType) {
         Resource res = null;
         if (message != null) {
             res = new ByteArrayResource(message.getBytes());
         }
-        ResponseUtils.writeFixedResponse(
-                response, httpCode, contentType, res, CacheResult.OTHER, runtimeStats);
+        ResponseUtils.writeFixedResponse(response, httpCode, contentType, res, CacheResult.OTHER, runtimeStats);
     }
 }

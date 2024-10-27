@@ -55,9 +55,7 @@ public class FloatParameterFilterTest {
         assertThat(filter.getLegalValues(), containsInAnyOrder("42.0", "6.283", "-17.5"));
 
         for (String test : Arrays.asList("42.0", "6.283", "-17.5", "42", "6.2830", "-1.75e1")) {
-            assertThat(
-                    filter.applies(test),
-                    Matchers.describedAs("Filter should apply to %0", is(true), test));
+            assertThat(filter.applies(test), Matchers.describedAs("Filter should apply to %0", is(true), test));
             // assertThat(filter.apply(test), equalTo(test));
         }
         for (String test : Arrays.asList("42.0", "42", "4.2e1")) {
@@ -83,31 +81,21 @@ public class FloatParameterFilterTest {
         assertThat(filter.getLegalValues(), containsInAnyOrder("42.0", "6.283", "-17.5"));
 
         for (String test : Arrays.asList("42.0", "6.283", "-17.5", "42", "6.2830", "-1.75e1")) {
-            assertThat(
-                    filter.applies(test),
-                    Matchers.describedAs("Filter should apply to %0", is(true), test));
+            assertThat(filter.applies(test), Matchers.describedAs("Filter should apply to %0", is(true), test));
         }
         for (String test : Arrays.asList("42", "56.99999", "27.00001")) {
             assertThat(filter.apply(test), equalTo("42.0"));
         }
-        for (String test :
-                Arrays.asList(
-                        "6.283",
-                        Float.toString(6.283f + 15f - 0.00001f),
-                        Float.toString((6.283f - 17.5f) / 2 + 0.000001f))) {
+        for (String test : Arrays.asList(
+                "6.283", Float.toString(6.283f + 15f - 0.00001f), Float.toString((6.283f - 17.5f) / 2 + 0.000001f))) {
             assertThat(filter.apply(test), equalTo("6.283"));
         }
-        for (String test :
-                Arrays.asList(
-                        "-17.5",
-                        Float.toString(-17.5f - 15f + 0.00001f),
-                        Float.toString((6.283f - 17.5f) / 2 - 0.000001f))) {
+        for (String test : Arrays.asList(
+                "-17.5", Float.toString(-17.5f - 15f + 0.00001f), Float.toString((6.283f - 17.5f) / 2 - 0.000001f))) {
             assertThat(filter.apply(test), equalTo("-17.5"));
         }
         for (String test : Arrays.asList("57", "27", "-42")) {
-            assertThat(
-                    filter.applies(test),
-                    Matchers.describedAs("Filter should not apply to %0", is(false), test));
+            assertThat(filter.applies(test), Matchers.describedAs("Filter should not apply to %0", is(false), test));
             try {
                 filter.apply(test);
                 fail();
@@ -137,18 +125,16 @@ public class FloatParameterFilterTest {
 
     @Test
     public void testFromXML() throws Exception {
-        Object o =
-                xs.fromXML(
-                        "<floatParameterFilter>\n"
-                                + "  <key>TEST</key>\n"
-                                + "  <defaultValue>Default</defaultValue>\n"
-                                + "  <values>\n"
-                                + "    <float>42</float>\n"
-                                + "    <float>6.283</float>\n"
-                                + "    <float>-17.5</float>\n"
-                                + "  </values>\n"
-                                + "  <threshold>0.00001</threshold>\n"
-                                + "</floatParameterFilter>");
+        Object o = xs.fromXML("<floatParameterFilter>\n"
+                + "  <key>TEST</key>\n"
+                + "  <defaultValue>Default</defaultValue>\n"
+                + "  <values>\n"
+                + "    <float>42</float>\n"
+                + "    <float>6.283</float>\n"
+                + "    <float>-17.5</float>\n"
+                + "  </values>\n"
+                + "  <threshold>0.00001</threshold>\n"
+                + "</floatParameterFilter>");
 
         assertThat(o, instanceOf(FloatParameterFilter.class));
         assertThat(o, hasProperty("key", equalTo("TEST")));

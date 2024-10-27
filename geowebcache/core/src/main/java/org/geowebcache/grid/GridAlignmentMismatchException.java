@@ -17,18 +17,17 @@ package org.geowebcache.grid;
 public class GridAlignmentMismatchException extends GridMismatchException {
 
     public GridAlignmentMismatchException(double x, long posX, double y, long posY) {
-        super(
-                "X,Y values for the tile index were calculated to be {"
-                        + x
-                        + ", "
-                        + y
-                        + "} "
-                        + " which had to be rounded to {"
-                        + posX
-                        + ", "
-                        + posY
-                        + "} "
-                        + " and exceeds the threshold of 10%. Perhaps the client is using"
-                        + " the wrong origin ?");
+        super("X,Y values for the tile index were calculated to be {"
+                + x
+                + ", "
+                + y
+                + "} "
+                + " which had to be rounded to {"
+                + posX
+                + ", "
+                + posY
+                + "} "
+                + " and exceeds the threshold of 10%. Perhaps the client is using"
+                + " the wrong origin ?");
     }
 }

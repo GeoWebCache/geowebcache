@@ -91,8 +91,7 @@ public class GeoWebCacheConfiguration {
 
         xmlns = "http://geowebcache.org/schema/" + getVersion();
 
-        xsi_schemaLocation =
-                xmlns + " http://geowebcache.org/schema/" + getVersion() + "/geowebcache.xsd";
+        xsi_schemaLocation = xmlns + " http://geowebcache.org/schema/" + getVersion() + "/geowebcache.xsd";
 
         if (layers == null) {
             layers = new ArrayList<>();
@@ -117,8 +116,7 @@ public class GeoWebCacheConfiguration {
     public void setVersion(String version) {
         this.version = version;
         xmlns = "http://geowebcache.org/schema/" + version;
-        xsi_schemaLocation =
-                xmlns + " http://geowebcache.org/schema/" + version + "/geowebcache.xsd";
+        xsi_schemaLocation = xmlns + " http://geowebcache.org/schema/" + version + "/geowebcache.xsd";
     }
 
     /** @see ServerConfiguration#getBackendTimeout() */
@@ -231,14 +229,11 @@ public class GeoWebCacheConfiguration {
                 Object provider = GeoWebCacheExtensions.bean(lockProvider);
                 if (provider == null) {
                     throw new RuntimeException(
-                            "Could not find lock provider "
-                                    + lockProvider
-                                    + " in the spring application context");
+                            "Could not find lock provider " + lockProvider + " in the spring application context");
                 } else if (!(provider instanceof LockProvider)) {
-                    throw new RuntimeException(
-                            "Found bean "
-                                    + lockProvider
-                                    + " in the spring application context, but it was not a LockProvider");
+                    throw new RuntimeException("Found bean "
+                            + lockProvider
+                            + " in the spring application context, but it was not a LockProvider");
                 } else {
                     lockProviderInstance = (LockProvider) provider;
                 }

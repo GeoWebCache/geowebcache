@@ -65,8 +65,7 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
             throws ConfigurationException {
 
         if (configFileDirectory == null && storageDirFinder == null) {
-            throw new NullPointerException(
-                    "At least one of configFileDirectory or storageDirFinder must not be null");
+            throw new NullPointerException("At least one of configFileDirectory or storageDirFinder must not be null");
         }
 
         this.context = appCtx;
@@ -76,24 +75,19 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
             // Use the given path
             if (new File(configFileDirectory).isAbsolute()) {
 
-                log.config(
-                        "Provided configuration directory as absolute path '"
-                                + configFileDirectory
-                                + "'");
+                log.config("Provided configuration directory as absolute path '" + configFileDirectory + "'");
                 this.configDirectory = new File(configFileDirectory);
             } else {
                 ServletContext servletContext = context.getServletContext();
                 if (servletContext != null) {
                     String baseDir = servletContext.getRealPath("");
-                    log.config(
-                            "Provided configuration directory relative to servlet context '"
-                                    + baseDir
-                                    + "': "
-                                    + configFileDirectory);
+                    log.config("Provided configuration directory relative to servlet context '"
+                            + baseDir
+                            + "': "
+                            + configFileDirectory);
                     this.configDirectory = new File(baseDir, configFileDirectory);
                 } else {
-                    throw new IllegalStateException(
-                            "Unexpected, cannot locate the config directory");
+                    throw new IllegalStateException("Unexpected, cannot locate the config directory");
                 }
             }
         } else {
@@ -127,11 +121,7 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
             final ApplicationContextProvider appCtx,
             final DefaultStorageFinder storageDirFinder)
             throws ConfigurationException {
-        this(
-                configFileName,
-                appCtx,
-                getConfigDirVar(appCtx.getApplicationContext()),
-                storageDirFinder);
+        this(configFileName, appCtx, getConfigDirVar(appCtx.getApplicationContext()), storageDirFinder);
     }
 
     /**
@@ -183,16 +173,13 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
         }
 
         if (!configDirectory.exists() && !configDirectory.mkdirs()) {
-            throw new IOException(
-                    "TileLayerConfiguration directory does not exist and cannot be created: '"
-                            + configDirectory.getAbsolutePath()
-                            + "'");
+            throw new IOException("TileLayerConfiguration directory does not exist and cannot be created: '"
+                    + configDirectory.getAbsolutePath()
+                    + "'");
         }
         if (!configDirectory.canWrite()) {
             throw new IOException(
-                    "TileLayerConfiguration directory is not writable: '"
-                            + configDirectory.getAbsolutePath()
-                            + "'");
+                    "TileLayerConfiguration directory is not writable: '" + configDirectory.getAbsolutePath() + "'");
         }
 
         File xmlFile = new File(configDirectory, configFileName);
@@ -216,11 +203,10 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
         if (xmlFile.exists()) {
             log.config("Found configuration file in " + configDirectory.getAbsolutePath());
         } else if (templateLocation != null) {
-            log.warning(
-                    "Found no configuration file in config directory, will create one at '"
-                            + xmlFile.getAbsolutePath()
-                            + "' from template "
-                            + getClass().getResource(templateLocation).toExternalForm());
+            log.warning("Found no configuration file in config directory, will create one at '"
+                    + xmlFile.getAbsolutePath()
+                    + "' from template "
+                    + getClass().getResource(templateLocation).toExternalForm());
             // grab template from classpath
             try {
                 try (InputStream templateStream = getClass().getResourceAsStream(templateLocation);
@@ -229,8 +215,7 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
                     output.flush();
                 }
             } catch (IOException e) {
-                throw new IOException(
-                        "Error copying template config to " + xmlFile.getAbsolutePath(), e);
+                throw new IOException("Error copying template config to " + xmlFile.getAbsolutePath(), e);
             }
         }
 
@@ -244,28 +229,21 @@ public class XMLFileResourceProvider implements ConfigurationResourceProvider {
 
         log.fine("Backing up config file " + xmlFile.getName() + " to " + backUpFileName);
 
-        String[] previousBackUps =
-                parentFile.list(
-                        (dir, name) -> {
-                            if (configFileName.equals(name)) {
-                                return false;
-                            }
-                            if (name.startsWith(configFileName) && name.endsWith(".bak")) {
-                                return true;
-                            }
-                            return false;
-                        });
+        String[] previousBackUps = parentFile.list((dir, name) -> {
+            if (configFileName.equals(name)) {
+                return false;
+            }
+            if (name.startsWith(configFileName) && name.endsWith(".bak")) {
+                return true;
+            }
+            return false;
+        });
 
         final int maxBackups = 10;
         if (previousBackUps != null && previousBackUps.length > maxBackups) {
             Arrays.sort(previousBackUps);
             String oldest = previousBackUps[0];
-            log.fine(
-                    "Deleting oldest config backup "
-                            + oldest
-                            + " to keep a maximum of "
-                            + maxBackups
-                            + " backups.");
+            log.fine("Deleting oldest config backup " + oldest + " to keep a maximum of " + maxBackups + " backups.");
             new File(parentFile, oldest).delete();
         }
 

@@ -79,8 +79,7 @@ public class FileUtils {
         }
         if (!path.exists() || !path.isDirectory() || !path.canRead()) {
             throw new IllegalArgumentException(
-                    path.getAbsolutePath()
-                            + " either does not exist, or is not a readable directory");
+                    path.getAbsolutePath() + " either does not exist, or is not a readable directory");
         }
         // Use path.list() instead of path.listFiles() to avoid the simultaneous creation of
         // thousands of File objects as well as its String objects for the path name. Faster and

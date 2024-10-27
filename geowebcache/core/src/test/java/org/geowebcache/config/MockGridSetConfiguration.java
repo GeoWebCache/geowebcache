@@ -45,9 +45,7 @@ public class MockGridSetConfiguration extends SimpleGridSetConfiguration {
     /** List containing a DefaultGridsets and a MockGridSetConfiguration */
     public static List<GridSetConfiguration> withDefaults(
             boolean useEPSG900913, boolean useGWC11xNames, GridSet... mocks) {
-        return Arrays.asList(
-                new DefaultGridsets(useEPSG900913, useGWC11xNames),
-                new MockGridSetConfiguration(mocks));
+        return Arrays.asList(new DefaultGridsets(useEPSG900913, useGWC11xNames), new MockGridSetConfiguration(mocks));
     }
 
     /** List containing a DefaultGridsets and a MockGridSetConfiguration */

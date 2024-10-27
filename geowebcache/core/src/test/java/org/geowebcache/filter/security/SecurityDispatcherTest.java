@@ -28,7 +28,8 @@ import org.junit.Test;
 
 public class SecurityDispatcherTest {
 
-    @Rule public MockExtensionRule extensions = new MockExtensionRule();
+    @Rule
+    public MockExtensionRule extensions = new MockExtensionRule();
 
     @Test
     public void testOneFilterPass() throws Exception {

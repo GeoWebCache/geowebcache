@@ -42,8 +42,7 @@ public class EntityStoreBuilder {
      *     provided {@code environment.properties} will be looked up for inside {@code
      *     storeDirectory}
      */
-    public EntityStore buildEntityStore(
-            final File storeDirectory, final Properties bdbEnvProperties) {
+    public EntityStore buildEntityStore(final File storeDirectory, final Properties bdbEnvProperties) {
 
         EnvironmentConfig envCfg = new EnvironmentConfig();
         envCfg.setAllowCreate(true);
@@ -58,9 +57,8 @@ public class EntityStoreBuilder {
         Integer cacheSizeMB = config.getCacheSizeMB();
         if (cacheMemoryPercentAllowed == null) {
             if (cacheSizeMB == null) {
-                log.config(
-                        "Neither disk quota page store' cache memory percent nor cache size was provided."
-                                + " Defaulting to 25% Heap Size");
+                log.config("Neither disk quota page store' cache memory percent nor cache size was provided."
+                        + " Defaulting to 25% Heap Size");
                 envCfg.setCachePercent(25);
             } else {
                 log.config("Disk quota page store cache explicitly set to " + cacheSizeMB + "MB");

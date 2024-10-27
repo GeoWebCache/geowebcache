@@ -38,7 +38,8 @@ import org.springframework.web.context.WebApplicationContext;
 })
 public class TileLayerControllerTest {
 
-    @Autowired private WebApplicationContext wac;
+    @Autowired
+    private WebApplicationContext wac;
 
     private MockMvc mockMvc;
 

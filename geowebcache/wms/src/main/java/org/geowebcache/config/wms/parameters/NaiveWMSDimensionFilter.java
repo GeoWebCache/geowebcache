@@ -45,8 +45,7 @@ public class NaiveWMSDimensionFilter extends ParameterFilter implements WMSDimen
 
         String keyName = dimension.getName();
 
-        if (keyName.compareToIgnoreCase("time") != 0
-                && keyName.compareToIgnoreCase("elevation") != 0) {
+        if (keyName.compareToIgnoreCase("time") != 0 && keyName.compareToIgnoreCase("elevation") != 0) {
             keyName = "dim_" + keyName;
         }
 
@@ -130,11 +129,7 @@ public class NaiveWMSDimensionFilter extends ParameterFilter implements WMSDimen
         return a == null
                 ? 1
                 : Objects.hash(
-                        a.getName(),
-                        a.getDefaultValue(),
-                        a.getNearestValue(),
-                        a.isMultipleValues(),
-                        a.isCurrent());
+                        a.getName(), a.getDefaultValue(), a.getNearestValue(), a.isMultipleValues(), a.isCurrent());
     }
 
     // Dimension does not implement equals, so do it here

@@ -31,7 +31,8 @@ import org.junit.rules.TemporaryFolder;
 import org.springframework.context.ApplicationContext;
 
 public class ArcGISCacheLayerTest {
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
 
     @Test
     public void testArcGISCacheLayerInitialization() throws Exception {

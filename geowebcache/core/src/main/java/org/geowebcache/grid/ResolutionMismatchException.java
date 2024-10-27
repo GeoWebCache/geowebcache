@@ -17,13 +17,12 @@ package org.geowebcache.grid;
 public class ResolutionMismatchException extends GridMismatchException {
 
     public ResolutionMismatchException(double wRes, double bestResolution) {
-        super(
-                "Requested horizontal resolution: "
-                        + wRes
-                        + " , best match: "
-                        + bestResolution
-                        + " exceeds 10% threshold. Perhaps the client is configured "
-                        + " with an incorrect set of scales (resolutions), "
-                        + " or the DPI setting is off compared to the one in GWC ?");
+        super("Requested horizontal resolution: "
+                + wRes
+                + " , best match: "
+                + bestResolution
+                + " exceeds 10% threshold. Perhaps the client is configured "
+                + " with an incorrect set of scales (resolutions), "
+                + " or the DPI setting is off compared to the one in GWC ?");
     }
 }

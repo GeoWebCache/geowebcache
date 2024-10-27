@@ -83,9 +83,7 @@ public class S3BlobStoreSuitabilityTest extends BlobStoreSuitabilityTest {
         for (String path : (String[]) dir) {
             String fullPath = info.getPrefix() + "/" + path;
             try (InputStream is = new NullInputStream(0)) {
-                tempFolder
-                        .getClient()
-                        .putObject(info.getBucket(), fullPath, is, new ObjectMetadata());
+                tempFolder.getClient().putObject(info.getBucket(), fullPath, is, new ObjectMetadata());
             }
         }
         return new S3BlobStore(info, tld, locks);

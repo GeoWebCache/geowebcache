@@ -44,14 +44,12 @@ public abstract class SimpleGridSetConfiguration implements GridSetConfiguration
     }
 
     @Override
-    public void addGridSet(GridSet gridSet)
-            throws UnsupportedOperationException, IllegalArgumentException {
+    public void addGridSet(GridSet gridSet) throws UnsupportedOperationException, IllegalArgumentException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void removeGridSet(String gridSetName)
-            throws NoSuchElementException, UnsupportedOperationException {
+    public void removeGridSet(String gridSetName) throws NoSuchElementException, UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 

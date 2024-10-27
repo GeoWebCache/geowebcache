@@ -44,11 +44,7 @@ public class TileObject extends StorageObject implements Serializable {
     String gridSetId;
 
     public static TileObject createQueryTileObject(
-            String layerName,
-            long[] xyz,
-            String gridSetId,
-            String format,
-            Map<String, String> parameters) {
+            String layerName, long[] xyz, String gridSetId, String format, Map<String, String> parameters) {
         TileObject obj = new TileObject();
 
         obj.layer_name = layerName;

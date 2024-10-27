@@ -55,24 +55,19 @@ public class GWCConfigIntegrationTestData {
         // TODO: Update to use the new api
         GridSetConfiguration gridSetConfiguration = testSupport.getWritableGridSetConfiguration();
 
-        GridSet epsg2163 =
-                GridSetFactory.createGridSet(
-                        GRIDSET_EPSG2163,
-                        SRS.getSRS(GRIDSET_EPSG2163),
-                        new BoundingBox(
-                                -2495667.977678598,
-                                -2223677.196231552,
-                                3291070.6104286816,
-                                959189.3312465074),
-                        false,
-                        null,
-                        new double[] {25000000, 1000000, 100000, 25000},
-                        null,
-                        GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
-                        null,
-                        200,
-                        200,
-                        false);
+        GridSet epsg2163 = GridSetFactory.createGridSet(
+                GRIDSET_EPSG2163,
+                SRS.getSRS(GRIDSET_EPSG2163),
+                new BoundingBox(-2495667.977678598, -2223677.196231552, 3291070.6104286816, 959189.3312465074),
+                false,
+                null,
+                new double[] {25000000, 1000000, 100000, 25000},
+                null,
+                GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                null,
+                200,
+                200,
+                false);
 
         gridSetConfiguration.addGridSet(epsg2163);
 
@@ -106,19 +101,18 @@ public class GWCConfigIntegrationTestData {
         parameterFilter.setDefaultValue("population");
         parameterFilter.setValues(Arrays.asList("population", "polygon", "pophatch"));
 
-        WMSLayer wmsLayer =
-                new WMSLayer(
-                        LAYER_TOPP_STATES,
-                        new String[] {"http://demo.opengeo.org/geoserver/topp/wms"},
-                        null,
-                        null,
-                        Arrays.asList("image/gif", "image/jpeg", "image/png", "image/png8"),
-                        subSets,
-                        Collections.singletonList(parameterFilter),
-                        null,
-                        null,
-                        true,
-                        null);
+        WMSLayer wmsLayer = new WMSLayer(
+                LAYER_TOPP_STATES,
+                new String[] {"http://demo.opengeo.org/geoserver/topp/wms"},
+                null,
+                null,
+                Arrays.asList("image/gif", "image/jpeg", "image/png", "image/png8"),
+                subSets,
+                Collections.singletonList(parameterFilter),
+                null,
+                null,
+                true,
+                null);
         wmsLayer.setBlobStoreId(blobStore.getName());
         tileLayerConfiguration.addLayer(wmsLayer);
     }

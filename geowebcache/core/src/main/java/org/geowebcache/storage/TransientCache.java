@@ -51,17 +51,16 @@ public class TransientCache {
      */
     private static FilePathGenerator keyGenerator = new DefaultFilePathGenerator("");
 
-    private Map<String, CachedResource> cache =
-            new LinkedHashMap<>() {
+    private Map<String, CachedResource> cache = new LinkedHashMap<>() {
 
-                /** serialVersionUID */
-                private static final long serialVersionUID = -4106644240603796847L;
+        /** serialVersionUID */
+        private static final long serialVersionUID = -4106644240603796847L;
 
-                @Override
-                protected boolean removeEldestEntry(Entry<String, CachedResource> eldest) {
-                    return removeEntries(eldest);
-                }
-            };
+        @Override
+        protected boolean removeEldestEntry(Entry<String, CachedResource> eldest) {
+            return removeEntries(eldest);
+        }
+    };
 
     /**
      * @param maxTiles Maximum number of tiles in cache

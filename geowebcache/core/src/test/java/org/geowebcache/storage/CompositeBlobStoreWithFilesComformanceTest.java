@@ -31,10 +31,10 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
-public class CompositeBlobStoreWithFilesComformanceTest
-        extends AbstractBlobStoreTest<CompositeBlobStore> {
+public class CompositeBlobStoreWithFilesComformanceTest extends AbstractBlobStoreTest<CompositeBlobStore> {
 
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
 
     private TileLayerDispatcher tld;
     private BlobStoreAggregator bsa;
@@ -68,22 +68,10 @@ public class CompositeBlobStoreWithFilesComformanceTest
         expect(tld.getTileLayer(eq(DEFAULT_LAYER))).andStubReturn(defaultLayer);
         expect(tld.getTileLayer(eq(DEFAULT_LAYER1))).andStubReturn(defaultLayer1);
         expect(tld.getTileLayer(eq(DEFAULT_LAYER2))).andStubReturn(defaultLayer2);
-        expect(
-                        tld.getTileLayer(
-                                not(
-                                        or(
-                                                eq(DEFAULT_LAYER),
-                                                or(eq(DEFAULT_LAYER1), eq(DEFAULT_LAYER2))))))
+        expect(tld.getTileLayer(not(or(eq(DEFAULT_LAYER), or(eq(DEFAULT_LAYER1), eq(DEFAULT_LAYER2))))))
                 .andStubThrow(new GeoWebCacheException("layer not found"));
 
-        EasyMock.replay(
-                tld,
-                bsa,
-                defaultStorageFinder,
-                configuration,
-                defaultLayer,
-                defaultLayer1,
-                defaultLayer2);
+        EasyMock.replay(tld, bsa, defaultStorageFinder, configuration, defaultLayer, defaultLayer1, defaultLayer2);
         store = new CompositeBlobStore(tld, defaultStorageFinder, configuration, bsa);
     }
 

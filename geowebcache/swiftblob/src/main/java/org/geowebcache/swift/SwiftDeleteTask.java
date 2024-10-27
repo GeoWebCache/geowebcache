@@ -32,10 +32,7 @@ class SwiftDeleteTask implements Runnable {
     private final IBlobStoreListenerNotifier notifier;
 
     SwiftDeleteTask(
-            RegionScopedSwiftBlobStore blobStore,
-            String path,
-            String container,
-            IBlobStoreListenerNotifier notifier) {
+            RegionScopedSwiftBlobStore blobStore, String path, String container, IBlobStoreListenerNotifier notifier) {
         this.blobStore = blobStore;
         this.path = path;
         this.container = container;
@@ -44,7 +41,8 @@ class SwiftDeleteTask implements Runnable {
 
     @Override
     public void run() {
-        final ListContainerOptions options = new ListContainerOptions().prefix(path).recursive();
+        final ListContainerOptions options =
+                new ListContainerOptions().prefix(path).recursive();
 
         int delayMs = 1000;
         boolean deleted = false;
@@ -76,8 +74,7 @@ class SwiftDeleteTask implements Runnable {
             log.log(
                     Level.SEVERE,
                     String.format(
-                            "Failed to delete Swift tile cache at %s/%s after %d retries.",
-                            container, path, RETRIES));
+                            "Failed to delete Swift tile cache at %s/%s after %d retries.", container, path, RETRIES));
         }
     }
 }

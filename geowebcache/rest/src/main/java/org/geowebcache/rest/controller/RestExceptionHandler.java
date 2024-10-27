@@ -38,8 +38,7 @@ public class RestExceptionHandler {
      * is text/plain.
      */
     @ExceptionHandler(RestException.class)
-    public void handleRestException(
-            RestException e, HttpServletResponse response, WebRequest request, OutputStream os)
+    public void handleRestException(RestException e, HttpServletResponse response, WebRequest request, OutputStream os)
             throws IOException {
         LOGGER.log(Level.SEVERE, e.getMessage(), e);
         response.setStatus(e.getStatus().value());

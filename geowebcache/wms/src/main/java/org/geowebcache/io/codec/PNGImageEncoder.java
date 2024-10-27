@@ -64,12 +64,7 @@ public class PNGImageEncoder extends ImageEncoderImpl {
             Map<String, String> inputParams,
             boolean disablePNG,
             ImageIOInitializer initializer) {
-        super(
-                aggressiveOutputStreamOptimization,
-                supportedMimeTypes,
-                writerSpi,
-                inputParams,
-                initializer);
+        super(aggressiveOutputStreamOptimization, supportedMimeTypes, writerSpi, inputParams, initializer);
 
         if (quality != null) {
             this.quality = quality;
@@ -113,11 +108,10 @@ public class PNGImageEncoder extends ImageEncoderImpl {
                 if (destination instanceof OutputStream) {
                     boolean isScanlinePresent = writer.isScanlineSupported(image);
                     if (!isScanlinePresent) {
-                        image =
-                                new ImageWorker(image)
-                                        .rescaleToBytes()
-                                        .forceComponentColorModel()
-                                        .getRenderedImage();
+                        image = new ImageWorker(image)
+                                .rescaleToBytes()
+                                .forceComponentColorModel()
+                                .getRenderedImage();
                     }
                     Object filterObj = null;
                     if (map != null) {
@@ -140,8 +134,7 @@ public class PNGImageEncoder extends ImageEncoderImpl {
                     // Image writing
                     writer.writePNG(finalImage, stream, quality, filter);
                 } else {
-                    throw new IllegalArgumentException(
-                            "Only an OutputStream can be provided to the PNGEncoder");
+                    throw new IllegalArgumentException("Only an OutputStream can be provided to the PNGEncoder");
                 }
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, e.getMessage(), e);

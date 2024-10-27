@@ -34,16 +34,14 @@ public class SRS implements Comparable<SRS>, Serializable {
      * EPSG:102113 or EPSG:102100 identifies web mercator. The "community" first defined it as
      * EPSG:900913.
      */
-    private static final SRS EPSG3857 =
-            new SRS(3857, new ArrayList<>(asList(900913, 102113, 102100)));
+    private static final SRS EPSG3857 = new SRS(3857, new ArrayList<>(asList(900913, 102113, 102100)));
 
     /**
      * The EPSG says EPSG:3857 is the identifier for web mercator. ArcGIS 10 says either of
      * EPSG:102113 or EPSG:102100 identifies web mercator. The "community" first defined it as
      * EPSG:900913.
      */
-    private static final SRS EPSG900913 =
-            new SRS(900913, new ArrayList<>(asList(3857, 102113, 102100)));
+    private static final SRS EPSG900913 = new SRS(900913, new ArrayList<>(asList(3857, 102113, 102100)));
 
     private int number;
 

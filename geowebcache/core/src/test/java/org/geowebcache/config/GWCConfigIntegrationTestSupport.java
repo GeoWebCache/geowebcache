@@ -26,8 +26,7 @@ import org.geowebcache.grid.GridSetBroker;
  */
 public abstract class GWCConfigIntegrationTestSupport {
 
-    GridSetBroker broker =
-            new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
+    GridSetBroker broker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
 
     /** Resets to an empty configuration; */
     public abstract void resetConfiguration() throws Exception;

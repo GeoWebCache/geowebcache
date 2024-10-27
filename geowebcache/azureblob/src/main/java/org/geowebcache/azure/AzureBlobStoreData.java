@@ -38,14 +38,11 @@ public class AzureBlobStoreData {
 
     public AzureBlobStoreData() {}
 
-    public AzureBlobStoreData(
-            final AzureBlobStoreInfo storeInfo, final GeoWebCacheEnvironment environment) {
+    public AzureBlobStoreData(final AzureBlobStoreInfo storeInfo, final GeoWebCacheEnvironment environment) {
         environment
                 .resolveValueIfEnabled(storeInfo.getContainer(), String.class)
                 .ifPresent(x -> this.container = x);
-        environment
-                .resolveValueIfEnabled(storeInfo.getPrefix(), String.class)
-                .ifPresent(x -> this.prefix = x);
+        environment.resolveValueIfEnabled(storeInfo.getPrefix(), String.class).ifPresent(x -> this.prefix = x);
         environment
                 .resolveValueIfEnabled(storeInfo.getAccountName(), String.class)
                 .ifPresent(x -> this.accountName = x);
@@ -175,9 +172,7 @@ public class AzureBlobStoreData {
 
     Proxy getProxy() {
         if (proxyHost != null) {
-            return new Proxy(
-                    Proxy.Type.HTTP,
-                    new InetSocketAddress(proxyHost, proxyPort != null ? proxyPort : 8888));
+            return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort != null ? proxyPort : 8888));
         }
         return null;
     }

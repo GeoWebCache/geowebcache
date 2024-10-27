@@ -56,8 +56,7 @@ public abstract class GWCSeedingController extends GWCController {
     public abstract ResponseEntity<?> doGet(HttpServletRequest request) throws RestException;
 
     /** Handle a POST request */
-    public void doPost(HttpServletRequest req, HttpServletResponse resp)
-            throws RestException, IOException {
+    public void doPost(HttpServletRequest req, HttpServletResponse resp) throws RestException, IOException {
         String formatExtension = req.getParameter("extension");
 
         XStream xs = configXStream(new GeoWebCacheXStream(new DomDriver()));
@@ -70,15 +69,13 @@ public abstract class GWCSeedingController extends GWCController {
             obj = xs.fromXML(convertJson(req.getInputStream().toString()));
         } else {
             throw new RestException(
-                    "Format extension unknown or not specified: " + formatExtension,
-                    HttpStatus.BAD_REQUEST);
+                    "Format extension unknown or not specified: " + formatExtension, HttpStatus.BAD_REQUEST);
         }
 
         handleRequest(req, resp, obj);
     }
 
-    protected abstract void handleRequest(
-            HttpServletRequest req, HttpServletResponse resp, Object obj);
+    protected abstract void handleRequest(HttpServletRequest req, HttpServletResponse resp, Object obj);
 
     /**
      * Deserializing a json string is more complicated.

@@ -33,8 +33,7 @@ public class AzureBlobStoreDataTest {
         System.setProperty("ACCOUNT_KEY", "MYKEY");
         System.setProperty("CONNECTIONS", "30");
         System.setProperty("ALLOW_ENV_PARAMETRIZATION", "true");
-        ClassPathXmlApplicationContext context =
-                new ClassPathXmlApplicationContext("appContextTestAzure.xml");
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("appContextTestAzure.xml");
         GeoWebCacheExtensions gse = new GeoWebCacheExtensions();
         gse.setApplicationContext(context);
     }
@@ -50,8 +49,7 @@ public class AzureBlobStoreDataTest {
 
     @Test
     public void testEnvironmentProperties() {
-        GeoWebCacheEnvironment typedEnvironment =
-                GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
+        GeoWebCacheEnvironment typedEnvironment = GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
         final AzureBlobStoreInfo storeInfo = new AzureBlobStoreInfo("info1");
         storeInfo.setContainer("${CONTAINER}");
         storeInfo.setAccountName("${ACCOUNT_NAME}");

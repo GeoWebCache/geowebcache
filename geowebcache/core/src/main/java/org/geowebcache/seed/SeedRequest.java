@@ -42,8 +42,7 @@ public class SeedRequest {
 
     private String format = null;
 
-    private String type =
-            null; //  TODO: This appears to do nothing as it is never changed from being null
+    private String type = null; //  TODO: This appears to do nothing as it is never changed from being null
 
     private TYPE enumType = null;
 

@@ -29,7 +29,8 @@ import org.junit.rules.TemporaryFolder;
 
 public class XMLConfigurationGridsetConformanceTest extends GridSetConfigurationTest {
 
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
 
     protected File configDir;
     protected File configFile;
@@ -59,17 +60,14 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
             configDir = temp.getRoot();
             configFile = temp.newFile("geowebcache.xml");
 
-            URL source =
-                    XMLConfiguration.class.getResource(
-                            XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
+            URL source = XMLConfiguration.class.getResource(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
             FileUtils.copyURLToFile(source, configFile);
         }
     }
 
     @Override
     protected Matcher<GridSet> infoEquals(GridSet expected) {
-        return new CustomMatcher<>(
-                "GridSet matching " + expected.getName() + " with " + expected.getDescription()) {
+        return new CustomMatcher<>("GridSet matching " + expected.getName() + " with " + expected.getDescription()) {
 
             @Override
             public boolean matches(Object item) {
@@ -87,8 +85,7 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
             @Override
             public boolean matches(Object item) {
                 return item instanceof GridSet
-                        && (Objects.equals(
-                                ((GridSet) item).getDescription(), Integer.toString(expected)));
+                        && (Objects.equals(((GridSet) item).getDescription(), Integer.toString(expected)));
             }
         };
     }
@@ -109,8 +106,7 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
     }
 
     @Override
-    protected void renameInfo(GridSetConfiguration config, String name1, String name2)
-            throws Exception {
+    protected void renameInfo(GridSetConfiguration config, String name1, String name2) throws Exception {
         Assume.assumeFalse(true);
     }
 }

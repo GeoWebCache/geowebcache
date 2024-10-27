@@ -37,13 +37,13 @@ public abstract class GWCConfigIntegrationTest {
 
     @Parameters
     public static Collection<GWCConfigIntegrationTestSupport[]> data() throws Exception {
-        return Arrays.asList(
-                new GWCConfigIntegrationTestSupport[][] {{new GWCXMLConfigIntegrationTestSupport()}
-                    // TODO: Add new configurations as they are implemented
-                });
+        return Arrays.asList(new GWCConfigIntegrationTestSupport[][] {{new GWCXMLConfigIntegrationTestSupport()}
+            // TODO: Add new configurations as they are implemented
+        });
     }
 
-    @Parameter public GWCConfigIntegrationTestSupport testSupport;
+    @Parameter
+    public GWCConfigIntegrationTestSupport testSupport;
 
     public GridSetBroker gridSetBroker;
     public TileLayerDispatcher tileLayerDispatcher;
@@ -55,12 +55,8 @@ public abstract class GWCConfigIntegrationTest {
         GWCConfigIntegrationTestData.setUpTestData(testSupport);
 
         gridSetBroker = testSupport.getGridSetBroker();
-        tileLayerDispatcher =
-                new TileLayerDispatcher(
-                        gridSetBroker, testSupport.getTileLayerConfigurations(), null);
-        blobStoreAggregator =
-                new BlobStoreAggregator(
-                        Collections.singletonList(testSupport.getBlobStoreConfiguration()),
-                        tileLayerDispatcher);
+        tileLayerDispatcher = new TileLayerDispatcher(gridSetBroker, testSupport.getTileLayerConfigurations(), null);
+        blobStoreAggregator = new BlobStoreAggregator(
+                Collections.singletonList(testSupport.getBlobStoreConfiguration()), tileLayerDispatcher);
     }
 }

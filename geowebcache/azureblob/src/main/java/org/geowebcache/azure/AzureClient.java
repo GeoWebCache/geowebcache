@@ -93,11 +93,10 @@ public class AzureClient {
         AzureNamedKeyCredential creds = getCredentials(configuration);
         ClientOptions clientOpts = new ClientOptions();
         HttpClient httpClient = createHttpClient(configuration);
-        BlobServiceClientBuilder builder =
-                new BlobServiceClientBuilder()
-                        .endpoint(serviceURL)
-                        .clientOptions(clientOpts)
-                        .httpClient(httpClient);
+        BlobServiceClientBuilder builder = new BlobServiceClientBuilder()
+                .endpoint(serviceURL)
+                .clientOptions(clientOpts)
+                .httpClient(httpClient);
         if (null != creds) {
             builder = builder.credential(creds);
         }
@@ -193,9 +192,7 @@ public class AzureClient {
         byte[] bytes = getBytes(key);
         if (bytes != null) {
             try {
-                properties.load(
-                        new InputStreamReader(
-                                new ByteArrayInputStream(bytes), StandardCharsets.UTF_8));
+                properties.load(new InputStreamReader(new ByteArrayInputStream(bytes), StandardCharsets.UTF_8));
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
@@ -211,13 +208,11 @@ public class AzureClient {
         try {
             upload(resourceKey, data, contentType);
         } catch (StorageException e) {
-            throw new StorageException(
-                    "Failed to update e property file at " + resourceKey, e.getCause());
+            throw new StorageException("Failed to update e property file at " + resourceKey, e.getCause());
         }
     }
 
-    public void upload(String resourceKey, BinaryData data, String contentType)
-            throws StorageException {
+    public void upload(String resourceKey, BinaryData data, String contentType) throws StorageException {
 
         BlockBlobSimpleUploadOptions upload = new BlockBlobSimpleUploadOptions(data);
         upload.setHeaders(new BlobHttpHeaders().setContentType(contentType));
@@ -233,8 +228,7 @@ public class AzureClient {
         }
         int status = response.getStatusCode();
         if (!HttpStatus.valueOf(status).is2xxSuccessful()) {
-            throw new StorageException(
-                    "Upload request failed with status " + status + " on resource " + resourceKey);
+            throw new StorageException("Upload request failed with status " + status + " on resource " + resourceKey);
         }
     }
 

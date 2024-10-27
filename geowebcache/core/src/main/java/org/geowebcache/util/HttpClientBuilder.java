@@ -36,8 +36,7 @@ public class HttpClientBuilder {
     private AuthScope authscope = null;
 
     private Integer backendTimeoutMillis = null;
-    private static final HttpClientConnectionManager connectionManager =
-            new PoolingHttpClientConnectionManager();
+    private static final HttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
 
     private boolean doAuthentication = false;
 
@@ -56,27 +55,20 @@ public class HttpClientBuilder {
      *     to be used against a single server only
      */
     public HttpClientBuilder(
-            URL url,
-            Integer backendTimeout,
-            String httpUsername,
-            String httpPassword,
-            URL proxyUrl,
-            int concurrency) {
+            URL url, Integer backendTimeout, String httpUsername, String httpPassword, URL proxyUrl, int concurrency) {
         if (url != null) {
-            this.setHttpCredentials(
-                    httpUsername, httpPassword, new AuthScope(url.getHost(), url.getPort()));
+            this.setHttpCredentials(httpUsername, httpPassword, new AuthScope(url.getHost(), url.getPort()));
         } else {
             this.setHttpCredentials(httpUsername, httpPassword, AuthScope.ANY);
         }
         this.setBackendTimeout(backendTimeout);
-        setConnectionConfig(
-                RequestConfig.custom()
-                        .setCookieSpec(CookieSpecs.DEFAULT)
-                        .setExpectContinueEnabled(true)
-                        .setSocketTimeout(backendTimeoutMillis)
-                        .setConnectTimeout(backendTimeoutMillis)
-                        .setRedirectsEnabled(true)
-                        .build());
+        setConnectionConfig(RequestConfig.custom()
+                .setCookieSpec(CookieSpecs.DEFAULT)
+                .setExpectContinueEnabled(true)
+                .setSocketTimeout(backendTimeoutMillis)
+                .setConnectTimeout(backendTimeoutMillis)
+                .setRedirectsEnabled(true)
+                .build());
 
         clientBuilder = org.apache.http.impl.client.HttpClientBuilder.create();
         clientBuilder.useSystemProperties();

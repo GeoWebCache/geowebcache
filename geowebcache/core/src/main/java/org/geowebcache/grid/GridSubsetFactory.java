@@ -24,9 +24,7 @@ public class GridSubsetFactory {
 
     public static GridSubset createGridSubSet(GridSet gridSet) {
 
-        GridSubset ret =
-                createGridSubSet(
-                        gridSet, gridSet.getOriginalExtent(), 0, gridSet.getNumLevels() - 1);
+        GridSubset ret = createGridSubSet(gridSet, gridSet.getOriginalExtent(), 0, gridSet.getNumLevels() - 1);
         return ret;
     }
 
@@ -54,15 +52,14 @@ public class GridSubsetFactory {
         if (zoomStop == null) {
             zoomStop = maxLevel;
         } else if (zoomStop > maxLevel) {
-            String message =
-                    "Requested to create GridSubset with zoomStop "
-                            + zoomStop
-                            + " for GridSet "
-                            + gridSet.getName()
-                            + " whose max zoom level is "
-                            + maxLevel
-                            + ". Limiting GridSubset to zoomStop = "
-                            + maxLevel;
+            String message = "Requested to create GridSubset with zoomStop "
+                    + zoomStop
+                    + " for GridSet "
+                    + gridSet.getName()
+                    + " whose max zoom level is "
+                    + maxLevel
+                    + ". Limiting GridSubset to zoomStop = "
+                    + maxLevel;
             log.warning(message);
             zoomStop = maxLevel;
         }
@@ -96,14 +93,7 @@ public class GridSubsetFactory {
             originalExtent = gridSetBounds;
         }
 
-        GridSubset ret =
-                new GridSubset(
-                        gridSet,
-                        coverages,
-                        originalExtent,
-                        fullCoverage,
-                        minCachedZoom,
-                        maxCachedZoom);
+        GridSubset ret = new GridSubset(gridSet, coverages, originalExtent, fullCoverage, minCachedZoom, maxCachedZoom);
         return ret;
     }
 }

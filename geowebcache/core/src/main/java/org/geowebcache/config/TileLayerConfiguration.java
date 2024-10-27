@@ -87,8 +87,7 @@ public interface TileLayerConfiguration extends BaseConfiguration {
      * @throws NoSuchElementException If no tile layer with a matching name exists.
      * @throws IllegalArgumentException If a tile layer with the new name already exists
      */
-    void renameLayer(String oldName, String newName)
-            throws NoSuchElementException, IllegalArgumentException;
+    void renameLayer(String oldName, String newName) throws NoSuchElementException, IllegalArgumentException;
 
     /**
      * Adds the given tile layer to this configuration, provided {@link #canSave(TileLayer)

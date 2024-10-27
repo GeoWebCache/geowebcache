@@ -24,8 +24,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-public class QuotaStoreProvider
-        implements ApplicationContextAware, InitializingBean, DisposableBean {
+public class QuotaStoreProvider implements ApplicationContextAware, InitializingBean, DisposableBean {
 
     protected QuotaStore store;
 
@@ -77,8 +76,7 @@ public class QuotaStoreProvider
         store = getQuotaStoreByName(quotaStoreName);
     }
 
-    protected QuotaStore getQuotaStoreByName(String quotaStoreName)
-            throws ConfigurationException, IOException {
+    protected QuotaStore getQuotaStoreByName(String quotaStoreName) throws ConfigurationException, IOException {
         List<QuotaStoreFactory> factories =
                 GeoWebCacheExtensions.extensions(QuotaStoreFactory.class, applicationContext);
         for (QuotaStoreFactory factory : factories) {

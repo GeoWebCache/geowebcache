@@ -45,11 +45,11 @@ public class XMLConfigurationConstructorsTest {
     public static final String MARKED_CONFIG_FILE_NAME = "geowebcache-test-correct-config.xml";
     public static final String MARKED_LAYER = "LOADED_CORRECT_CONFIG_FILE";
 
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
 
     @Rule
-    public PropertyRule gwcConfigDirProp =
-            PropertyRule.system(XMLFileResourceProvider.GWC_CONFIG_DIR_VAR);
+    public PropertyRule gwcConfigDirProp = PropertyRule.system(XMLFileResourceProvider.GWC_CONFIG_DIR_VAR);
 
     File configDir;
     File cacheDir;
@@ -100,9 +100,8 @@ public class XMLConfigurationConstructorsTest {
 
     public void shouldNotLoadFrom(File dir) throws IOException {
         File configFile = configFile(dir);
-        URL source =
-                XMLConfigurationConstructorsTest.class.getResource(
-                        XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
+        URL source = XMLConfigurationConstructorsTest.class.getResource(
+                XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
         FileUtils.copyURLToFile(source, configFile);
     }
 

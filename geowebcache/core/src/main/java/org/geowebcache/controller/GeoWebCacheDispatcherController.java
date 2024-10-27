@@ -39,8 +39,7 @@ public class GeoWebCacheDispatcherController {
     private GeoWebCacheDispatcher gwcDispatcher;
 
     @RequestMapping(path = {"", "/home", "/service/**", "/demo/**", "/proxy/**"})
-    public void handleRestApiRequest(HttpServletRequest request, HttpServletResponse response)
-            throws Exception {
+    public void handleRestApiRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
         gwcDispatcher.handleRequest(
                 new HttpServletRequestWrapper(request) {
                     @Override

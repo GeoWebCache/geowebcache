@@ -53,8 +53,7 @@ public class DefaultStorageBroker implements StorageBroker {
     }
 
     @Override
-    public boolean deleteByGridSetId(final String layerName, final String gridSetId)
-            throws StorageException {
+    public boolean deleteByGridSetId(final String layerName, final String gridSetId) throws StorageException {
         return blobStore.deleteByGridsetId(layerName, gridSetId);
     }
 
@@ -65,8 +64,7 @@ public class DefaultStorageBroker implements StorageBroker {
     }
 
     @Override
-    public boolean deleteByParametersId(final String layerName, String parametersId)
-            throws StorageException {
+    public boolean deleteByParametersId(final String layerName, String parametersId) throws StorageException {
         return blobStore.deleteByParametersId(layerName, parametersId);
     }
 

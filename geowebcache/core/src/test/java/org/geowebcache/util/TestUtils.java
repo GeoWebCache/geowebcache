@@ -46,8 +46,7 @@ public class TestUtils {
         // nothing to do
     }
 
-    public static byte[] createFakeSourceImage(final WMSLayer layer, final String gridsetId)
-            throws IOException {
+    public static byte[] createFakeSourceImage(final WMSLayer layer, final String gridsetId) throws IOException {
 
         int tileWidth = layer.getGridSubset(gridsetId).getGridSet().getTileWidth();
         int tileHeight = layer.getGridSubset(gridsetId).getGridSet().getTileHeight();
@@ -73,26 +72,23 @@ public class TestUtils {
 
         Map<String, GridSubset> grids = new HashMap<>();
 
-        GridSubset grid =
-                GridSubsetFactory.createGridSubSet(
-                        gridSetBroker.getWorldEpsg4326(), boundingBox, 0, 10);
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), boundingBox, 0, 10);
 
         grids.put(grid.getName(), grid);
         int[] metaWidthHeight = {metaTileFactorX, metaTileFactorY};
 
-        WMSLayer layer =
-                new WMSLayer(
-                        "test:layer",
-                        urls,
-                        "aStyle",
-                        "test:layer",
-                        formatList,
-                        grids,
-                        null,
-                        metaWidthHeight,
-                        "vendorparam=true",
-                        false,
-                        null);
+        WMSLayer layer = new WMSLayer(
+                "test:layer",
+                urls,
+                "aStyle",
+                "test:layer",
+                formatList,
+                grids,
+                null,
+                metaWidthHeight,
+                "vendorparam=true",
+                false,
+                null);
 
         layer.initialize(gridSetBroker);
 
@@ -142,8 +138,7 @@ public class TestUtils {
     }
 
     public static void assertEquals(long[] expected, long[] actual) {
-        String errstr =
-                "expected: " + Arrays.toString(expected) + ", actual: " + Arrays.toString(actual);
+        String errstr = "expected: " + Arrays.toString(expected) + ", actual: " + Arrays.toString(actual);
         if (expected.length != actual.length) {
             Assert.fail(errstr);
         }
@@ -219,9 +214,6 @@ public class TestUtils {
      * @return The optional's value
      */
     public static <T> T requirePresent(Optional<T> opt) throws IllegalStateException {
-        return opt.orElseThrow(
-                () ->
-                        new IllegalStateException(
-                                "Optional was not present and is required for test"));
+        return opt.orElseThrow(() -> new IllegalStateException("Optional was not present and is required for test"));
     }
 }

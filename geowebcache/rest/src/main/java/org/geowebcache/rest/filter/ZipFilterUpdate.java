@@ -43,17 +43,10 @@ public class ZipFilterUpdate {
             ZipEntry ze = zis.getNextEntry();
 
             while (ze != null) {
-                log.info(
-                        "Reading "
-                                + ze.getName()
-                                + " ("
-                                + ze.getSize()
-                                + " bytes ) for "
-                                + filter.getName());
+                log.info("Reading " + ze.getName() + " (" + ze.getSize() + " bytes ) for " + filter.getName());
 
                 if (ze.isDirectory()) {
-                    throw new RestException(
-                            "Zip file cannot contain directories.", HttpStatus.BAD_REQUEST);
+                    throw new RestException("Zip file cannot contain directories.", HttpStatus.BAD_REQUEST);
                 }
 
                 String[] parsedName = parseName(ze.getName());
@@ -73,8 +66,7 @@ public class ZipFilterUpdate {
             }
 
         } catch (IOException ioe) {
-            throw new RestException(
-                    "IOException while reading zip, " + ioe.getMessage(), HttpStatus.BAD_REQUEST);
+            throw new RestException("IOException while reading zip, " + ioe.getMessage(), HttpStatus.BAD_REQUEST);
         } finally {
             try {
                 is.close();

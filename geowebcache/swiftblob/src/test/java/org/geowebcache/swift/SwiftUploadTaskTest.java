@@ -35,8 +35,7 @@ public class SwiftUploadTaskTest extends SwiftTileTest {
 
     @Test
     public void testRunWithEmptyListeners() {
-        SwiftUploadTask swiftUploadTask =
-                new SwiftUploadTask(testKey, swiftTile, testListeners, testObjectApi);
+        SwiftUploadTask swiftUploadTask = new SwiftUploadTask(testKey, swiftTile, testListeners, testObjectApi);
         swiftUploadTask.run();
 
         // Testing that the function checkExisted returns early
@@ -49,8 +48,7 @@ public class SwiftUploadTaskTest extends SwiftTileTest {
         when(testObjectApi.getWithoutBody(testKey)).thenReturn(null);
         addListener();
 
-        SwiftUploadTask swiftUploadTask =
-                new SwiftUploadTask(testKey, swiftTile, testListeners, testObjectApi);
+        SwiftUploadTask swiftUploadTask = new SwiftUploadTask(testKey, swiftTile, testListeners, testObjectApi);
         swiftUploadTask.run();
 
         // Testing that the function checkExisted returns early
@@ -70,8 +68,7 @@ public class SwiftUploadTaskTest extends SwiftTileTest {
         when(testObjectApi.getWithoutBody(testKey)).thenReturn(testSwiftObject);
         addListener();
 
-        SwiftUploadTask swiftUploadTask =
-                new SwiftUploadTask(testKey, swiftTile, testListeners, testObjectApi);
+        SwiftUploadTask swiftUploadTask = new SwiftUploadTask(testKey, swiftTile, testListeners, testObjectApi);
 
         swiftUploadTask.run();
 

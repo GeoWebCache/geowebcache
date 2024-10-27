@@ -80,14 +80,8 @@ public abstract class GWCTask {
             dispose();
             int membersRemaining = this.sharedThreadCount.decrementAndGet();
             if (0 == membersRemaining) {
-                double groupTotalTimeSecs =
-                        (System.currentTimeMillis() - (double) groupStartTime) / 1000;
-                log.info(
-                        "Thread group finished "
-                                + parsedType
-                                + " task after "
-                                + groupTotalTimeSecs
-                                + " seconds");
+                double groupTotalTimeSecs = (System.currentTimeMillis() - (double) groupStartTime) / 1000;
+                log.info("Thread group finished " + parsedType + " task after " + groupTotalTimeSecs + " seconds");
             }
         }
     }

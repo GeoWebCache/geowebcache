@@ -60,15 +60,13 @@ public class ConfigLoaderTest {
     public void setUp() throws Exception {
         cacheDir = new File("target" + File.separator + getClass().getSimpleName());
         if (!cacheDir.getParentFile().exists()) {
-            throw new IllegalStateException(
-                    cacheDir.getParentFile().getAbsolutePath() + " does not exist");
+            throw new IllegalStateException(cacheDir.getParentFile().getAbsolutePath() + " does not exist");
         }
         FileUtils.rmFileCacheDir(cacheDir, null);
         cacheDir.mkdirs();
         // copy configuration file to cache directory
         try (InputStream in = getClass().getResourceAsStream("/geowebcache-diskquota.xml");
-                FileOutputStream out =
-                        new FileOutputStream(new File(cacheDir, "geowebcache-diskquota.xml"))) {
+                FileOutputStream out = new FileOutputStream(new File(cacheDir, "geowebcache-diskquota.xml"))) {
             int c;
             while ((c = in.read()) != -1) {
                 out.write(c);
@@ -82,11 +80,15 @@ public class ConfigLoaderTest {
 
         ServletContext mockServletCtx = EasyMock.createMock(ServletContext.class);
         String tmpPath = System.getProperty("java.io.tmpdir");
-        EasyMock.expect(mockServletCtx.getRealPath(EasyMock.eq(""))).andReturn(tmpPath).anyTimes();
+        EasyMock.expect(mockServletCtx.getRealPath(EasyMock.eq("")))
+                .andReturn(tmpPath)
+                .anyTimes();
         EasyMock.replay(mockServletCtx);
 
         WebApplicationContext appContext = EasyMock.createMock(WebApplicationContext.class);
-        EasyMock.expect(appContext.getServletContext()).andReturn(mockServletCtx).anyTimes();
+        EasyMock.expect(appContext.getServletContext())
+                .andReturn(mockServletCtx)
+                .anyTimes();
         EasyMock.replay(appContext);
 
         contextProvider = new ApplicationContextProvider();
@@ -139,7 +141,8 @@ public class ConfigLoaderTest {
 
         Assert.assertNotNull(config.getGlobalQuota());
         Assert.assertEquals(
-                GiB.convertTo(200, B).longValue(), config.getGlobalQuota().getBytes().longValue());
+                GiB.convertTo(200, B).longValue(),
+                config.getGlobalQuota().getBytes().longValue());
 
         Assert.assertNotNull(config.getLayerQuotas());
         Assert.assertEquals(2, config.getLayerQuotas().size());

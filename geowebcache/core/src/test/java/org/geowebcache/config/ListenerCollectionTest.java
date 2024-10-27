@@ -32,10 +32,9 @@ public class ListenerCollectionTest {
     public void testEmpty() throws Exception {
         ListenerCollection<Runnable> collection = new ListenerCollection<>();
 
-        collection.safeForEach(
-                (x) -> {
-                    fail("should not be called");
-                });
+        collection.safeForEach((x) -> {
+            fail("should not be called");
+        });
     }
 
     @Test
@@ -116,8 +115,7 @@ public class ListenerCollectionTest {
         control.replay();
 
         collection.add(l1);
-        Exception exception =
-                assertThrows(Exception.class, () -> collection.safeForEach(Runnable::run));
+        Exception exception = assertThrows(Exception.class, () -> collection.safeForEach(Runnable::run));
         assertThat(exception, sameInstance(e1));
         control.verify();
     }
@@ -141,8 +139,7 @@ public class ListenerCollectionTest {
 
         collection.add(l1);
         collection.add(l2);
-        Exception exception =
-                assertThrows(Exception.class, () -> collection.safeForEach(Runnable::run));
+        Exception exception = assertThrows(Exception.class, () -> collection.safeForEach(Runnable::run));
         assertThat(exception, sameInstance(e1));
         control.verify();
     }
@@ -168,12 +165,8 @@ public class ListenerCollectionTest {
 
         collection.add(l1);
         collection.add(l2);
-        Exception exception =
-                assertThrows(Exception.class, () -> collection.safeForEach(Runnable::run));
-        assertThat(
-                exception,
-                both(sameInstance(e2))
-                        .and(hasProperty("suppressed", arrayContaining(sameInstance(e1)))));
+        Exception exception = assertThrows(Exception.class, () -> collection.safeForEach(Runnable::run));
+        assertThat(exception, both(sameInstance(e2)).and(hasProperty("suppressed", arrayContaining(sameInstance(e1)))));
         control.verify();
     }
 }

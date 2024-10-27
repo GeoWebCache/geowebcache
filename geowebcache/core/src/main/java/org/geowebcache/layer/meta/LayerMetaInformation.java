@@ -31,10 +31,7 @@ public class LayerMetaInformation {
     }
 
     public LayerMetaInformation(
-            String title,
-            String description,
-            List<String> keywords,
-            List<ContactInformation> contacts) {
+            String title, String description, List<String> keywords, List<ContactInformation> contacts) {
         this.title = title;
         this.description = description;
         this.keywords = keywords;

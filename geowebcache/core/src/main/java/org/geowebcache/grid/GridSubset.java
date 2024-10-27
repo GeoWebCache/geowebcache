@@ -41,10 +41,7 @@ public class GridSubset {
     private final Integer maxCachedZoom;
 
     protected GridSubset(
-            GridSet gridSet,
-            Map<Integer, GridCoverage> coverages,
-            BoundingBox originalExtent,
-            boolean fullCoverage) {
+            GridSet gridSet, Map<Integer, GridCoverage> coverages, BoundingBox originalExtent, boolean fullCoverage) {
         this(gridSet, coverages, originalExtent, fullCoverage, null, null);
     }
 
@@ -109,10 +106,7 @@ public class GridSubset {
             return false;
         }
 
-        if (index[0] >= coverage[0]
-                && index[0] <= coverage[2]
-                && index[1] >= coverage[1]
-                && index[1] <= coverage[3]) {
+        if (index[0] >= coverage[0] && index[0] <= coverage[2] && index[1] >= coverage[1] && index[1] <= coverage[3]) {
             return true;
         }
 
@@ -135,8 +129,7 @@ public class GridSubset {
     public void checkTileDimensions(int width, int height) throws TileDimensionsMismatchException {
 
         if (width != gridSet.getTileWidth() || height != gridSet.getTileHeight()) {
-            throw new TileDimensionsMismatchException(
-                    width, height, gridSet.getTileWidth(), gridSet.getTileWidth());
+            throw new TileDimensionsMismatchException(width, height, gridSet.getTileWidth(), gridSet.getTileWidth());
         }
     }
 
@@ -332,14 +325,12 @@ public class GridSubset {
 
         if ((idx - firstLevel + 1) <= zoomStop) {
             // Check whether this grid is doubling
-            double resolutionCheck =
-                    gridSet.getGrid(idx).getResolution() / 2
-                            - gridSet.getGrid(idx + 1).getResolution();
+            double resolutionCheck = gridSet.getGrid(idx).getResolution() / 2
+                    - gridSet.getGrid(idx + 1).getResolution();
 
             if (Math.abs(resolutionCheck) > gridSet.getGrid(idx + 1).getResolution() * 0.025) {
                 throw new GeoWebCacheException(
-                        "The resolution is not decreasing by a factor of two for "
-                                + this.getName());
+                        "The resolution is not decreasing by a factor of two for " + this.getName());
             } else {
                 long[] coverage = getCoverage(idx + 1);
 

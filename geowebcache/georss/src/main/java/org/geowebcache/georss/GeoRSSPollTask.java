@@ -144,23 +144,20 @@ class GeoRSSPollTask implements Runnable {
             return;
         }
 
-        LOGGER.fine(
-                "Got reader for "
-                        + pollDef.getFeedUrl()
-                        + ". Creating geometry filter matrix for gridset "
-                        + gridSetId
-                        + " on layer "
-                        + layerName);
+        LOGGER.fine("Got reader for "
+                + pollDef.getFeedUrl()
+                + ". Creating geometry filter matrix for gridset "
+                + gridSetId
+                + " on layer "
+                + layerName);
 
         final int maxMaskLevel = pollDef.getMaxMaskLevel();
-        final GeoRSSTileRangeBuilder matrixBuilder =
-                new GeoRSSTileRangeBuilder(layer, gridSetId, maxMaskLevel);
+        final GeoRSSTileRangeBuilder matrixBuilder = new GeoRSSTileRangeBuilder(layer, gridSetId, maxMaskLevel);
 
-        LOGGER.fine(
-                "Creating tile range mask based on GeoRSS feed's geometries from "
-                        + feedUrl.toExternalForm()
-                        + " for "
-                        + layerName);
+        LOGGER.fine("Creating tile range mask based on GeoRSS feed's geometries from "
+                + feedUrl.toExternalForm()
+                + " for "
+                + layerName);
 
         final GeometryRasterMaskBuilder tileRangeMask =
                 matrixBuilder.buildTileRangeMask(geoRSSReader, previousUpdatedEntry);
@@ -174,29 +171,25 @@ class GeoRSSPollTask implements Runnable {
         final String lastUpdatedEntry = matrixBuilder.getLastEntryUpdate();
         storageBroker.putLayerMetadata(layerName, LAST_UPDATED, lastUpdatedEntry);
 
-        LOGGER.fine(
-                "Created tile range mask based on GeoRSS geometry feed from "
-                        + pollDef
-                        + " for "
-                        + layerName
-                        + ". Calculating number of affected tiles...");
+        LOGGER.fine("Created tile range mask based on GeoRSS geometry feed from "
+                + pollDef
+                + " for "
+                + layerName
+                + ". Calculating number of affected tiles...");
         _logImagesToDisk(tileRangeMask);
 
         final boolean tilesAffected = tileRangeMask.hasTilesSet();
         if (tilesAffected) {
             LOGGER.info("Launching reseed process " + pollDef + " for " + layerName);
         } else {
-            LOGGER.info(
-                    pollDef + " for " + layerName + " did not affect any tile. No need to reseed.");
+            LOGGER.info(pollDef + " for " + layerName + " did not affect any tile. No need to reseed.");
             return;
         }
 
         launchSeeding(layer, pollDef, gridSetId, tileRangeMask);
 
         LOGGER.info(
-                "Seeding process for tiles affected by feed "
-                        + feedUrl.toExternalForm()
-                        + " successfully launched.");
+                "Seeding process for tiles affected by feed " + feedUrl.toExternalForm() + " successfully launched.");
     }
 
     private String templateFeedUrl(final String feedUrl, final String lastUpdatedEntry) {
@@ -224,14 +217,11 @@ class GeoRSSPollTask implements Runnable {
         File target = new File(System.getProperty("org.geowebcache.georss.debugToDisk"));
         if (!target.isDirectory() || !target.canWrite()) {
             throw new IllegalStateException(
-                    "Can't access debug directory for "
-                            + "dumping mask images: "
-                            + target.getAbsolutePath());
+                    "Can't access debug directory for " + "dumping mask images: " + target.getAbsolutePath());
         }
 
-        LOGGER.warning(
-                "\n!!!!!!!!!!!\n REMEMBER NOT TO SET THE org.geowebcache.georss.debugToDisk"
-                        + " SYSTEM PROPERTY ON A PRODUCTION ENVIRONMENT \n!!!!!!!!!!!");
+        LOGGER.warning("\n!!!!!!!!!!!\n REMEMBER NOT TO SET THE org.geowebcache.georss.debugToDisk"
+                + " SYSTEM PROPERTY ON A PRODUCTION ENVIRONMENT \n!!!!!!!!!!!");
         BufferedImage[] byLevelMasks = matrix.getByLevelMasks();
 
         for (int i = 0; i < byLevelMasks.length; i++) {
@@ -284,15 +274,14 @@ class GeoRSSPollTask implements Runnable {
 
         // We do the truncate synchronously to get rid of stale data as quickly as we can
         while (mimeIter.hasNext()) {
-            DiscontinuousTileRange dtr =
-                    new DiscontinuousTileRange(
-                            layer.getName(),
-                            gridSetId,
-                            gridSub.getZoomStart(),
-                            gridSub.getZoomStop(),
-                            rasterMask,
-                            mimeIter.next(),
-                            null);
+            DiscontinuousTileRange dtr = new DiscontinuousTileRange(
+                    layer.getName(),
+                    gridSetId,
+                    gridSub.getZoomStart(),
+                    gridSub.getZoomStop(),
+                    rasterMask,
+                    mimeIter.next(),
+                    null);
             try {
                 GWCTask[] tasks = seeder.createTasks(dtr, layer, GWCTask.TYPE.TRUNCATE, 1, false);
                 tasks[0].doAction();
@@ -314,15 +303,14 @@ class GeoRSSPollTask implements Runnable {
         // ... else we seed
         mimeIter = mimeList.iterator();
         while (mimeIter.hasNext()) {
-            DiscontinuousTileRange dtr =
-                    new DiscontinuousTileRange(
-                            layer.getName(),
-                            gridSetId,
-                            gridSub.getZoomStart(),
-                            gridSub.getZoomStop(),
-                            rasterMask,
-                            mimeIter.next(),
-                            null);
+            DiscontinuousTileRange dtr = new DiscontinuousTileRange(
+                    layer.getName(),
+                    gridSetId,
+                    gridSub.getZoomStart(),
+                    gridSub.getZoomStop(),
+                    rasterMask,
+                    mimeIter.next(),
+                    null);
 
             final int seedingThreads = pollDef.getSeedingThreads();
             GWCTask[] tasks;
@@ -363,10 +351,7 @@ class GeoRSSPollTask implements Runnable {
             }
 
             try {
-                LOGGER.fine(
-                        "Found "
-                                + liveCount
-                                + " running seed threads. Waiting 3s for them to terminate.");
+                LOGGER.fine("Found " + liveCount + " running seed threads. Waiting 3s for them to terminate.");
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
                 LOGGER.log(Level.FINE, e.getMessage(), e);
@@ -384,9 +369,7 @@ class GeoRSSPollTask implements Runnable {
                 }
             }
             if (liveCount > 0) {
-                LOGGER.info(
-                        liveCount
-                                + " seed jobs are still waiting to terminate, proceeding anyway.");
+                LOGGER.info(liveCount + " seed jobs are still waiting to terminate, proceeding anyway.");
             }
 
         } else {

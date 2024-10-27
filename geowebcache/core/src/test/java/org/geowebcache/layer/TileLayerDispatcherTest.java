@@ -56,19 +56,8 @@ public class TileLayerDispatcherTest extends GWCConfigIntegrationTest {
     public void testAddLayer() throws GeoWebCacheException {
         String layerName = "newLayer";
 
-        WMSLayer layer =
-                new WMSLayer(
-                        layerName,
-                        new String[] {"http://example.com/"},
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        false,
-                        null);
+        WMSLayer layer = new WMSLayer(
+                layerName, new String[] {"http://example.com/"}, null, null, null, null, null, null, null, false, null);
 
         tileLayerDispatcher.addLayer(layer);
 
@@ -88,19 +77,18 @@ public class TileLayerDispatcherTest extends GWCConfigIntegrationTest {
         } catch (IllegalArgumentException e) {
 
         }
-        layer =
-                new WMSLayer(
-                        transientLayerName,
-                        new String[] {"http://example.com/"},
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        false,
-                        null);
+        layer = new WMSLayer(
+                transientLayerName,
+                new String[] {"http://example.com/"},
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+                null);
         layer.setTransientLayer(true);
 
         try {
@@ -168,19 +156,8 @@ public class TileLayerDispatcherTest extends GWCConfigIntegrationTest {
     public void testModifyBadLayer() {
         String layerName = "newLayer";
 
-        WMSLayer layer =
-                new WMSLayer(
-                        layerName,
-                        new String[] {"http://example.com/"},
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        false,
-                        null);
+        WMSLayer layer = new WMSLayer(
+                layerName, new String[] {"http://example.com/"}, null, null, null, null, null, null, null, false, null);
 
         try {
             tileLayerDispatcher.modify(layer);
@@ -200,20 +177,19 @@ public class TileLayerDispatcherTest extends GWCConfigIntegrationTest {
     @Test
     public void testAddGridset() throws GeoWebCacheException, IOException {
         String gridsetName = "EPSG:3005";
-        GridSet epsg3005 =
-                GridSetFactory.createGridSet(
-                        gridsetName,
-                        SRS.getSRS(gridsetName),
-                        new BoundingBox(35043.6538, 440006.8768, 1885895.3117, 1735643.8497),
-                        false,
-                        null,
-                        new double[] {25000000, 1250000, 500000, 250000},
-                        null,
-                        GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
-                        null,
-                        256,
-                        256,
-                        false);
+        GridSet epsg3005 = GridSetFactory.createGridSet(
+                gridsetName,
+                SRS.getSRS(gridsetName),
+                new BoundingBox(35043.6538, 440006.8768, 1885895.3117, 1735643.8497),
+                false,
+                null,
+                new double[] {25000000, 1250000, 500000, 250000},
+                null,
+                GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                null,
+                256,
+                256,
+                false);
 
         tileLayerDispatcher.addGridSet(epsg3005);
 
@@ -275,16 +251,14 @@ public class TileLayerDispatcherTest extends GWCConfigIntegrationTest {
         // setup the tileLayerDispatcherFilter so that
         // tileLayer1 -> excluded
         // tileLayer2 -> NOT excluded
-        TileLayerDispatcherFilter tileLayerDispatcherFilter =
-                Mockito.mock(TileLayerDispatcherFilter.class);
+        TileLayerDispatcherFilter tileLayerDispatcherFilter = Mockito.mock(TileLayerDispatcherFilter.class);
         Mockito.doReturn(true).when(tileLayerDispatcherFilter).exclude(tileLayer1);
         Mockito.doReturn(false).when(tileLayerDispatcherFilter).exclude(tileLayer2);
 
         // we use mokito spy to make testing the getLayerListFiltered() method easy
         // tileLayerDispatcher will return the list [tileLayer1,tileLayer2] when getLayerList()
         // called
-        TileLayerDispatcher tileLayerDispatcher =
-                new TileLayerDispatcher(null, tileLayerDispatcherFilter);
+        TileLayerDispatcher tileLayerDispatcher = new TileLayerDispatcher(null, tileLayerDispatcherFilter);
         TileLayerDispatcher tileLayerDispatcherSpy = Mockito.spy(tileLayerDispatcher);
         Mockito.doReturn(Arrays.asList(tileLayer1, tileLayer2))
                 .when(tileLayerDispatcherSpy)

@@ -49,14 +49,12 @@ public class GeoRSSTileRangeBuilderTest {
     @Before
     public void setUp() {
         RasterMaskTestUtils.debugToDisk = debugToDisk;
-        layer =
-                TestUtils.createWMSLayer(
-                        "image/png",
-                        new GridSetBroker(
-                                Collections.singletonList(new DefaultGridsets(false, false))),
-                        3,
-                        3,
-                        new BoundingBox(-180, -90, 180, 90));
+        layer = TestUtils.createWMSLayer(
+                "image/png",
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false))),
+                3,
+                3,
+                new BoundingBox(-180, -90, 180, 90));
         gridsetId = layer.getGridSubsets().iterator().next();
     }
 
@@ -68,8 +66,7 @@ public class GeoRSSTileRangeBuilderTest {
         Assert.assertNotNull(tileRangeMask);
         Assert.assertEquals(0, tileRangeMask.getStartLevel());
         Assert.assertEquals(11, tileRangeMask.getNumLevels());
-        Assert.assertEquals(
-                layer.getGridSubset(gridsetId).getCoverages().length, tileRangeMask.getNumLevels());
+        Assert.assertEquals(layer.getGridSubset(gridsetId).getCoverages().length, tileRangeMask.getNumLevels());
     }
 
     /** Test for {@link GeometryRasterMaskBuilder#getCoveredBounds(int)} */
@@ -102,15 +99,12 @@ public class GeoRSSTileRangeBuilderTest {
         TestUtils.assertEquals(new long[] {31, 0, 127, 48, 6}, tileRangeMask.getCoveredBounds(6));
         TestUtils.assertEquals(new long[] {63, 0, 255, 96, 7}, tileRangeMask.getCoveredBounds(7));
         TestUtils.assertEquals(new long[] {127, 0, 511, 192, 8}, tileRangeMask.getCoveredBounds(8));
-        TestUtils.assertEquals(
-                new long[] {255, 0, 1023, 384, 9}, tileRangeMask.getCoveredBounds(9));
-        TestUtils.assertEquals(
-                new long[] {511, 0, 2047, 768, 10}, tileRangeMask.getCoveredBounds(10));
+        TestUtils.assertEquals(new long[] {255, 0, 1023, 384, 9}, tileRangeMask.getCoveredBounds(9));
+        TestUtils.assertEquals(new long[] {511, 0, 2047, 768, 10}, tileRangeMask.getCoveredBounds(10));
     }
 
     @Test
-    public void testLatestUpdate()
-            throws IOException, XMLStreamException, FactoryConfigurationError {
+    public void testLatestUpdate() throws IOException, XMLStreamException, FactoryConfigurationError {
         assertLatestUpdate("2005-08-17T07:02:34Z", "point_feed.xml");
         assertLatestUpdate("2010-08-17T07:02:32Z", "mixedgeometries_feed.xml");
     }

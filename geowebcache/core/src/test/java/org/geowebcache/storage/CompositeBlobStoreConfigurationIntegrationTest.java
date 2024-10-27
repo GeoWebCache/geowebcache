@@ -42,28 +42,25 @@ public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigInt
 
     CompositeBlobStore compositeBlobStore;
 
-    @Rule public TemporaryFolder tmpFolder = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder tmpFolder = new TemporaryFolder();
 
-    @Rule public MockWepAppContextRule context = new MockWepAppContextRule();
+    @Rule
+    public MockWepAppContextRule context = new MockWepAppContextRule();
 
     @Override
     @Before
     public void setUpTest() throws Exception {
         super.setUpTest();
-        compositeBlobStore =
-                new CompositeBlobStore(
-                        tileLayerDispatcher,
-                        new DefaultStorageFinder(context.getContextProvider()),
-                        testSupport.getServerConfiguration(),
-                        blobStoreAggregator);
+        compositeBlobStore = new CompositeBlobStore(
+                tileLayerDispatcher,
+                new DefaultStorageFinder(context.getContextProvider()),
+                testSupport.getServerConfiguration(),
+                blobStoreAggregator);
     }
 
     private FileBlobStoreInfo createInfo(
-            String id,
-            boolean isDefault,
-            boolean isEnabled,
-            String baseDirectory,
-            int fileSystemBlockSize) {
+            String id, boolean isDefault, boolean isEnabled, String baseDirectory, int fileSystemBlockSize) {
         FileBlobStoreInfo c = new FileBlobStoreInfo(id);
         c.setDefault(isDefault);
         c.setEnabled(isEnabled);
@@ -76,13 +73,8 @@ public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigInt
     public void testAdd() throws IOException {
         assertFalse(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
 
-        BlobStoreInfo info =
-                createInfo(
-                        "newFileBlobStore",
-                        false,
-                        true,
-                        tmpFolder.newFolder().getAbsolutePath(),
-                        1024);
+        BlobStoreInfo info = createInfo(
+                "newFileBlobStore", false, true, tmpFolder.newFolder().getAbsolutePath(), 1024);
         blobStoreAggregator.addBlobStore(info);
 
         assertTrue(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
@@ -93,12 +85,7 @@ public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigInt
         assertFalse(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
 
         BlobStoreInfo info =
-                createInfo(
-                        "newFileBlobStore",
-                        true,
-                        true,
-                        tmpFolder.newFolder().getAbsolutePath(),
-                        1024);
+                createInfo("newFileBlobStore", true, true, tmpFolder.newFolder().getAbsolutePath(), 1024);
         blobStoreAggregator.addBlobStore(info);
 
         assertTrue(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
@@ -111,36 +98,28 @@ public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigInt
     public void testModify() throws IOException, GeoWebCacheException {
         testAdd();
 
-        BlobStore oldLiveInstance =
-                compositeBlobStore.blobStores.get("newFileBlobStore").liveInstance;
+        BlobStore oldLiveInstance = compositeBlobStore.blobStores.get("newFileBlobStore").liveInstance;
 
-        FileBlobStoreInfo info =
-                (FileBlobStoreInfo) blobStoreAggregator.getBlobStore("newFileBlobStore");
+        FileBlobStoreInfo info = (FileBlobStoreInfo) blobStoreAggregator.getBlobStore("newFileBlobStore");
         info.setFileSystemBlockSize(2048);
 
         blobStoreAggregator.modifyBlobStore(info);
         assertTrue(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
-        assertNotEquals(
-                oldLiveInstance,
-                compositeBlobStore.blobStores.get("newFileBlobStore").liveInstance);
+        assertNotEquals(oldLiveInstance, compositeBlobStore.blobStores.get("newFileBlobStore").liveInstance);
     }
 
     @Test
     public void testModifyDefault() throws IOException, GeoWebCacheException {
         testAddDefault();
 
-        BlobStore oldLiveInstance =
-                compositeBlobStore.blobStores.get("newFileBlobStore").liveInstance;
+        BlobStore oldLiveInstance = compositeBlobStore.blobStores.get("newFileBlobStore").liveInstance;
 
-        FileBlobStoreInfo info =
-                (FileBlobStoreInfo) blobStoreAggregator.getBlobStore("newFileBlobStore");
+        FileBlobStoreInfo info = (FileBlobStoreInfo) blobStoreAggregator.getBlobStore("newFileBlobStore");
         info.setFileSystemBlockSize(2048);
 
         blobStoreAggregator.modifyBlobStore(info);
         assertTrue(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
-        assertNotEquals(
-                oldLiveInstance,
-                compositeBlobStore.blobStores.get("newFileBlobStore").liveInstance);
+        assertNotEquals(oldLiveInstance, compositeBlobStore.blobStores.get("newFileBlobStore").liveInstance);
         assertEquals(
                 compositeBlobStore.blobStores.get("newFileBlobStore"),
                 compositeBlobStore.blobStores.get(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID));
@@ -150,8 +129,7 @@ public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigInt
     public void testModifySetDefault() throws IOException, GeoWebCacheException {
         testAdd();
 
-        FileBlobStoreInfo info =
-                (FileBlobStoreInfo) blobStoreAggregator.getBlobStore("newFileBlobStore");
+        FileBlobStoreInfo info = (FileBlobStoreInfo) blobStoreAggregator.getBlobStore("newFileBlobStore");
         info.setDefault(true);
 
         blobStoreAggregator.modifyBlobStore(info);

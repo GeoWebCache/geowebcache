@@ -74,14 +74,12 @@ public class CircularExtentFilter extends RequestFilter {
     }
 
     @Override
-    public void update(TileLayer layer, String gridSetId, int zoomStart, int zoomStop)
-            throws GeoWebCacheException {
+    public void update(TileLayer layer, String gridSetId, int zoomStart, int zoomStop) throws GeoWebCacheException {
         // Do nothing
     }
 
     @Override
-    public void update(byte[] filterData, TileLayer layer, String gridSetId, int z)
-            throws GeoWebCacheException {
+    public void update(byte[] filterData, TileLayer layer, String gridSetId, int z) throws GeoWebCacheException {
         // Do nothing
     }
 

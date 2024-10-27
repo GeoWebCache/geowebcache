@@ -98,11 +98,7 @@ public class LegendRawInfo {
      * values.
      */
     public LegendInfo getLegendInfo(
-            String layerName,
-            String layerUrl,
-            Integer defaultWidth,
-            Integer defaultHeight,
-            String defaultFormat) {
+            String layerName, String layerUrl, Integer defaultWidth, Integer defaultHeight, String defaultFormat) {
         return new LegendInfoBuilder()
                 .withLayerName(layerName)
                 .withLayerUrl(layerUrl)
@@ -130,10 +126,8 @@ public class LegendRawInfo {
         if (height != null ? !height.equals(that.height) : that.height != null) return false;
         if (format != null ? !format.equals(that.format) : that.format != null) return false;
         if (url != null ? !url.equals(that.url) : that.url != null) return false;
-        if (completeUrl != null ? !completeUrl.equals(that.completeUrl) : that.completeUrl != null)
-            return false;
-        if (minScale != null ? !minScale.equals(that.minScale) : that.minScale != null)
-            return false;
+        if (completeUrl != null ? !completeUrl.equals(that.completeUrl) : that.completeUrl != null) return false;
+        if (minScale != null ? !minScale.equals(that.minScale) : that.minScale != null) return false;
         return maxScale != null ? maxScale.equals(that.maxScale) : that.maxScale == null;
     }
 

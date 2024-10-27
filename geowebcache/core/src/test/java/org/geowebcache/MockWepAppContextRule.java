@@ -53,17 +53,14 @@ public class MockWepAppContextRule extends MockExtensionRule {
     @Override
     protected ApplicationContext makeContext() throws IllegalArgumentException {
         servletInitParameters = new HashMap<>();
-        servletContext =
-                (ServletContext)
-                        Proxy.newProxyInstance(
-                                MockExtensionRule.class.getClassLoader(),
-                                new Class[] {ServletContext.class},
-                                new ServletContextInvocationHandler());
-        return (ApplicationContext)
-                Proxy.newProxyInstance(
-                        MockExtensionRule.class.getClassLoader(),
-                        new Class[] {ApplicationContext.class, WebApplicationContext.class},
-                        new WebContextInvocationHandler());
+        servletContext = (ServletContext) Proxy.newProxyInstance(
+                MockExtensionRule.class.getClassLoader(),
+                new Class[] {ServletContext.class},
+                new ServletContextInvocationHandler());
+        return (ApplicationContext) Proxy.newProxyInstance(
+                MockExtensionRule.class.getClassLoader(),
+                new Class[] {ApplicationContext.class, WebApplicationContext.class},
+                new WebContextInvocationHandler());
     }
 
     class WebContextInvocationHandler extends ContextInvocationHandler {

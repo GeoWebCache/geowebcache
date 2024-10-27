@@ -111,8 +111,7 @@ public abstract class ParameterFilter implements Serializable, Cloneable {
     public void setKey(String key) {
         Preconditions.checkNotNull(key);
         Preconditions.checkArgument(!key.isEmpty(), "ParameterFilter key must be non-empty");
-        Preconditions.checkState(
-                this.key == null, "The key for this ParameterFilter has already been set");
+        Preconditions.checkState(this.key == null, "The key for this ParameterFilter has already been set");
         this.key = key;
     }
 

@@ -68,23 +68,17 @@ public class TreeMapConverter extends MapConverter {
     }
 
     @Override
-    public void marshal(
-            Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+    public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
         SortedMap sortedMap = (SortedMap) source;
         marshalComparator(mapper(), sortedMap.comparator(), writer, context);
         super.marshal(source, writer, context);
     }
 
     protected static void marshalComparator(
-            Mapper mapper,
-            Comparator comparator,
-            HierarchicalStreamWriter writer,
-            MarshallingContext context) {
+            Mapper mapper, Comparator comparator, HierarchicalStreamWriter writer, MarshallingContext context) {
         if (comparator != null) {
             writer.startNode("comparator");
-            writer.addAttribute(
-                    mapper.aliasForSystemAttribute("class"),
-                    mapper.serializedClass(comparator.getClass()));
+            writer.addAttribute(mapper.aliasForSystemAttribute("class"), mapper.serializedClass(comparator.getClass()));
             context.convertAnother(comparator);
             writer.endNode();
         }
@@ -94,8 +88,7 @@ public class TreeMapConverter extends MapConverter {
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
         TreeMap<Object, Object> result = null;
         @SuppressWarnings("unchecked")
-        final Comparator<Object> comparator =
-                unmarshalComparator(mapper(), reader, context, result);
+        final Comparator<Object> comparator = unmarshalComparator(mapper(), reader, context, result);
         if (result == null) {
             result = comparator == null ? new TreeMap<>() : new TreeMap<>(comparator);
         }
@@ -104,10 +97,7 @@ public class TreeMapConverter extends MapConverter {
     }
 
     protected static Comparator unmarshalComparator(
-            Mapper mapper,
-            HierarchicalStreamReader reader,
-            UnmarshallingContext context,
-            TreeMap result) {
+            Mapper mapper, HierarchicalStreamReader reader, UnmarshallingContext context, TreeMap result) {
         final Comparator comparator;
         if (reader.hasMoreChildren()) {
             reader.moveDown();
@@ -128,17 +118,13 @@ public class TreeMapConverter extends MapConverter {
     }
 
     protected void populateTreeMap(
-            HierarchicalStreamReader reader,
-            UnmarshallingContext context,
-            TreeMap result,
-            Comparator comparator) {
+            HierarchicalStreamReader reader, UnmarshallingContext context, TreeMap result, Comparator comparator) {
         boolean inFirstElement = comparator == NULL_MARKER;
         if (inFirstElement) {
             comparator = null;
         }
         SortedMap sortedMap =
-                new PresortedMap(
-                        comparator != null && JVM.hasOptimizedTreeMapPutAll() ? comparator : null);
+                new PresortedMap(comparator != null && JVM.hasOptimizedTreeMapPutAll() ? comparator : null);
         if (inFirstElement) {
             // we are already within the first entry
             putCurrentEntryIntoMap(reader, context, result, sortedMap);

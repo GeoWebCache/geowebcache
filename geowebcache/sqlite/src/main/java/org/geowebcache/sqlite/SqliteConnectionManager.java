@@ -52,10 +52,9 @@ public final class SqliteConnectionManager {
 
     SqliteConnectionManager(long poolSize, long poolReaperIntervalMs) {
         if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info(
-                    String.format(
-                            "Initiating connection poll: [poolSize='%d', poolReaperIntervalMs='%d'].",
-                            poolSize, poolReaperIntervalMs));
+            LOGGER.info(String.format(
+                    "Initiating connection poll: [poolSize='%d', poolReaperIntervalMs='%d'].",
+                    poolSize, poolReaperIntervalMs));
         }
         // let's load the sqlite driver
         try {
@@ -67,46 +66,38 @@ public final class SqliteConnectionManager {
         double poolSizeThreshold = poolSize * 0.9;
         double connectionsToRemove = poolSize * 0.1;
         // starting the connection pool reaper
-        new Thread(
-                        () -> {
-                            while (!stopPoolReaper) {
-                                if (LOGGER.isLoggable(Level.FINE)) {
-                                    LOGGER.fine(
-                                            String.format(
-                                                    "Current pool size is '%d' and threshold is '%f'.",
-                                                    pool.size(), poolSizeThreshold));
-                                }
-                                if (pool.size() > poolSizeThreshold) {
-                                    // we exceed the pool size threshold, time to reap the less used
-                                    // connections
-                                    if (LOGGER.isLoggable(Level.INFO)) {
-                                        LOGGER.info(
-                                                String.format(
-                                                        "Reaping connections, current pool size %d.",
-                                                        pool.size()));
-                                    }
-                                    List<PooledConnection> pooledConnections =
-                                            new ArrayList<>(pool.values());
-                                    Collections.sort(pooledConnections);
-                                    for (int i = 0;
-                                            i < connectionsToRemove && i < pooledConnections.size();
-                                            i++) {
-                                        pooledConnections.get(i).reapConnection();
-                                    }
-                                }
-                                try {
-                                    Thread.sleep(poolReaperIntervalMs);
-                                } catch (Exception exception) {
-                                    Thread.currentThread().interrupt();
-                                    if (LOGGER.isLoggable(Level.WARNING)) {
-                                        LOGGER.warning("Pool reaper interrupted.");
-                                    }
-                                }
+        new Thread(() -> {
+                    while (!stopPoolReaper) {
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine(String.format(
+                                    "Current pool size is '%d' and threshold is '%f'.",
+                                    pool.size(), poolSizeThreshold));
+                        }
+                        if (pool.size() > poolSizeThreshold) {
+                            // we exceed the pool size threshold, time to reap the less used
+                            // connections
+                            if (LOGGER.isLoggable(Level.INFO)) {
+                                LOGGER.info(String.format("Reaping connections, current pool size %d.", pool.size()));
                             }
+                            List<PooledConnection> pooledConnections = new ArrayList<>(pool.values());
+                            Collections.sort(pooledConnections);
+                            for (int i = 0; i < connectionsToRemove && i < pooledConnections.size(); i++) {
+                                pooledConnections.get(i).reapConnection();
+                            }
+                        }
+                        try {
+                            Thread.sleep(poolReaperIntervalMs);
+                        } catch (Exception exception) {
+                            Thread.currentThread().interrupt();
                             if (LOGGER.isLoggable(Level.WARNING)) {
-                                LOGGER.warning("Pool reaper stop.");
+                                LOGGER.warning("Pool reaper interrupted.");
                             }
-                        })
+                        }
+                    }
+                    if (LOGGER.isLoggable(Level.WARNING)) {
+                        LOGGER.warning("Pool reaper stop.");
+                    }
+                })
                 .start();
     }
 
@@ -127,12 +118,9 @@ public final class SqliteConnectionManager {
 
     /** Submit an SQL statement to be executed. */
     void executeSql(File file, String sql, Object... parameters) {
-        doWork(
-                file,
-                false,
-                connection -> {
-                    executeSql(connection, sql, parameters);
-                });
+        doWork(file, false, connection -> {
+            executeSql(connection, sql, parameters);
+        });
     }
 
     /** Submit an SQL statement to be executed with the provided connection. */
@@ -151,22 +139,14 @@ public final class SqliteConnectionManager {
     }
 
     /** Submit a query to be executed. */
-    <T> T executeQuery(
-            File file, ResultExtractor<T> extractor, String query, Object... parameters) {
-        return doWork(
-                file,
-                true,
-                connection -> {
-                    return executeQuery(connection, extractor, query, parameters);
-                });
+    <T> T executeQuery(File file, ResultExtractor<T> extractor, String query, Object... parameters) {
+        return doWork(file, true, connection -> {
+            return executeQuery(connection, extractor, query, parameters);
+        });
     }
 
     /** Submit a query to be executed with the provided connection. */
-    <T> T executeQuery(
-            Connection connection,
-            ResultExtractor<T> extractor,
-            String query,
-            Object... parameters) {
+    <T> T executeQuery(Connection connection, ResultExtractor<T> extractor, String query, Object... parameters) {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(String.format("Executing query '%s'.", query));
         }
@@ -182,14 +162,10 @@ public final class SqliteConnectionManager {
 
     /** Submit some work to be executed. */
     void doWork(File file, boolean readOnly, Work work) {
-        doWork(
-                file,
-                readOnly,
-                (WorkWithResult<Void>)
-                        connection -> {
-                            work.doWork(connection);
-                            return null;
-                        });
+        doWork(file, readOnly, (WorkWithResult<Void>) connection -> {
+            work.doWork(connection);
+            return null;
+        });
     }
 
     /** Submit some work to be executed that need to return something. */
@@ -206,10 +182,9 @@ public final class SqliteConnectionManager {
         // let's find or instantiate on the fly a pool connection for the current file
         PooledConnection pooledConnection = getPooledConnection(file);
         // acquiring the proper lock on the pooled connection (read or write lock)
-        pooledConnection =
-                readOnly
-                        ? pooledConnection.getReadLockOnValidConnection()
-                        : pooledConnection.getWriteLockOnValidConnection();
+        pooledConnection = readOnly
+                ? pooledConnection.getReadLockOnValidConnection()
+                : pooledConnection.getWriteLockOnValidConnection();
         // the PooledConnection seems to  manage the actual connection
         @SuppressWarnings("PMD.CloseResource")
         ExtendedConnection connection = pooledConnection.getExtendedConnection();
@@ -250,12 +225,10 @@ public final class SqliteConnectionManager {
             }
             FileUtils.moveFile(newFile, currentFile);
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.info(
-                        String.format("File '%s' replaced with file '%s'.", currentFile, newFile));
+                LOGGER.info(String.format("File '%s' replaced with file '%s'.", currentFile, newFile));
             }
         } catch (Exception exception) {
-            throw Utils.exception(
-                    exception, "Error replacing file '%s' with file '%s'.", currentFile, newFile);
+            throw Utils.exception(exception, "Error replacing file '%s' with file '%s'.", currentFile, newFile);
         } finally {
             currentPooledConnection.releaseWriteLock();
         }
@@ -271,8 +244,7 @@ public final class SqliteConnectionManager {
             }
             return;
         }
-        PooledConnection pooledConnection =
-                getPooledConnection(file).getWriteLockOnValidConnection();
+        PooledConnection pooledConnection = getPooledConnection(file).getWriteLockOnValidConnection();
         try {
             pooledConnection.closeConnection();
             FileUtils.deleteQuietly(file);
@@ -291,8 +263,7 @@ public final class SqliteConnectionManager {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(String.format("Renaming file '%s' to '%s'.", currentFile, newFile));
         }
-        PooledConnection pooledConnection =
-                getPooledConnection(currentFile).getWriteLockOnValidConnection();
+        PooledConnection pooledConnection = getPooledConnection(currentFile).getWriteLockOnValidConnection();
         try {
             pooledConnection.closeConnection();
             pool.remove(currentFile);
@@ -343,10 +314,7 @@ public final class SqliteConnectionManager {
                 if (existing != null) {
                     // someone create a pooled connection for this file in the meantime
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(
-                                String.format(
-                                        "Connection to file '%s' already exists, closing this one.",
-                                        file));
+                        LOGGER.fine(String.format("Connection to file '%s' already exists, closing this one.", file));
                     }
                     pooledConnection.closeConnection();
                     return existing;
@@ -445,8 +413,7 @@ public final class SqliteConnectionManager {
             // this connection was closed in the meantime we need to create a new one (trying 10
             // times)
             for (int i = 0; i < 10; i++) {
-                PooledConnection pooledConnection =
-                        SqliteConnectionManager.this.getPooledConnection(file);
+                PooledConnection pooledConnection = SqliteConnectionManager.this.getPooledConnection(file);
                 // obtain the read lock
                 pooledConnection.getReadLock();
                 if (!pooledConnection.closed) {
@@ -467,8 +434,7 @@ public final class SqliteConnectionManager {
             String logId = "";
             if (LOGGER.isLoggable(Level.FINE)) {
                 logId = UUID.randomUUID().toString();
-                LOGGER.fine(
-                        String.format("[%s] Waiting for write lock on file '%s'.", logId, file));
+                LOGGER.fine(String.format("[%s] Waiting for write lock on file '%s'.", logId, file));
             }
             lock.writeLock().lock();
             if (LOGGER.isLoggable(Level.FINE)) {
@@ -486,8 +452,7 @@ public final class SqliteConnectionManager {
             // this connection was closed in the meantime we need to create a new one (trying 10
             // times)
             for (int i = 0; i < 10; i++) {
-                PooledConnection pooledConnection =
-                        SqliteConnectionManager.this.getPooledConnection(file);
+                PooledConnection pooledConnection = SqliteConnectionManager.this.getPooledConnection(file);
                 // obtain the write lock
                 pooledConnection.getWriteLock();
                 if (!pooledConnection.closed) {

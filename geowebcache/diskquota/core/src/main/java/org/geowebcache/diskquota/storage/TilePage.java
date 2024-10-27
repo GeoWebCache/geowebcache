@@ -43,8 +43,7 @@ public class TilePage {
 
     public TilePage() {}
 
-    public TilePage(
-            String tileSetId, int pageX, int pageY, int zoomLevel, int creationTimeMinutes) {
+    public TilePage(String tileSetId, int pageX, int pageY, int zoomLevel, int creationTimeMinutes) {
         this.tileSetId = tileSetId;
         this.pageX = pageX;
         this.pageY = pageY;
@@ -59,8 +58,7 @@ public class TilePage {
         this(tileSetId, pageX, pageY, zoomLevel, SystemUtils.get().currentTimeMinutes());
     }
 
-    public static void computeId(
-            String tileSetId, int pageX, int pageY, int pageZ, StringBuilder target) {
+    public static void computeId(String tileSetId, int pageX, int pageY, int pageZ, StringBuilder target) {
 
         target.append(tileSetId)
                 .append('@')

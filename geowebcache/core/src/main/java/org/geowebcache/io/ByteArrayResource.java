@@ -66,8 +66,7 @@ public class ByteArrayResource implements Resource, Serializable {
         } else {
             this.data = data;
             Assert.isTrue(offset < data.length, "Offset should be less than data length");
-            Assert.isTrue(
-                    offset + length <= data.length, "Offset + length should be less than length");
+            Assert.isTrue(offset + length <= data.length, "Offset + length should be less than length");
             this.offset = offset;
             this.length = length;
         }
@@ -97,7 +96,8 @@ public class ByteArrayResource implements Resource, Serializable {
         if (length > 0) {
             ByteBuffer buffer = ByteBuffer.wrap(data, offset, length);
             long written = 0;
-            while ((written += channel.write(buffer)) < length) ;
+            while ((written += channel.write(buffer)) < length)
+                ;
         }
         return length;
     }
@@ -115,7 +115,8 @@ public class ByteArrayResource implements Resource, Serializable {
             }
             ByteBuffer buffer = ByteBuffer.wrap(data);
             int read = 0;
-            while ((read += channel.read(buffer)) < length) ;
+            while ((read += channel.read(buffer)) < length)
+                ;
         } else {
             offset = 0;
             length = 0;
@@ -198,8 +199,7 @@ public class ByteArrayResource implements Resource, Serializable {
 
         public void seek(long pos) throws IOException {
             if (pos < 0 || pos > super.count) {
-                throw new IOException(
-                        "Can't seek to pos " + pos + ". buffer is 0.." + (super.count - 1));
+                throw new IOException("Can't seek to pos " + pos + ". buffer is 0.." + (super.count - 1));
             }
             super.pos = (int) (lower + pos);
         }

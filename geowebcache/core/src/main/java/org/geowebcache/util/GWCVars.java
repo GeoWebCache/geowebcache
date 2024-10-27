@@ -53,8 +53,7 @@ public class GWCVars {
         SERVLET("servlet context parameter") {
             protected @Override String apply(ApplicationContext context, String varName) {
                 if (context instanceof WebApplicationContext) {
-                    ServletContext servletContext =
-                            ((WebApplicationContext) context).getServletContext();
+                    ServletContext servletContext = ((WebApplicationContext) context).getServletContext();
                     return servletContext == null ? null : servletContext.getInitParameter(varName);
                 }
                 return null;

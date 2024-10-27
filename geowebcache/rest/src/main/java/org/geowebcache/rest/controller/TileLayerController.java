@@ -44,9 +44,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "${gwc.context.suffix:}/rest")
 public class TileLayerController extends GWCController {
 
-    @Autowired TileLayerDispatcher layerDispatcher;
+    @Autowired
+    TileLayerDispatcher layerDispatcher;
 
-    @Autowired private StorageBroker storageBroker;
+    @Autowired
+    private StorageBroker storageBroker;
 
     // set by spring
     public void setStorageBroker(StorageBroker storageBroker) {
@@ -60,8 +62,7 @@ public class TileLayerController extends GWCController {
     /** Get List of layers as xml */
     @RequestMapping(value = "/layers", method = RequestMethod.GET)
     public XStreamListAliasWrapper layersGet(HttpServletRequest request) {
-        return new XStreamListAliasWrapper(
-                layerDispatcher.getLayerNames(), "layer", Set.class, this.getClass());
+        return new XStreamListAliasWrapper(layerDispatcher.getLayerNames(), "layer", Set.class, this.getClass());
     }
 
     /** Get layer by name and requested output {xml, json} */
@@ -161,8 +162,7 @@ public class TileLayerController extends GWCController {
     }
 
     @SuppressWarnings("PMD.EmptyControlStatement")
-    protected TileLayer checkLayer(String layerName, TileLayer newLayer)
-            throws RestException, IOException {
+    protected TileLayer checkLayer(String layerName, TileLayer newLayer) throws RestException, IOException {
         if (!newLayer.getName().equals(layerName)) {
             throw new RestException(
                     "There is a mismatch between the name of the "
@@ -173,8 +173,7 @@ public class TileLayerController extends GWCController {
         // Check that the parameter filters deserialized correctly
         if (newLayer.getParameterFilters() != null) {
             try {
-                for (@SuppressWarnings({"unused"})
-                ParameterFilter filter : newLayer.getParameterFilters()) {
+                for (@SuppressWarnings({"unused"}) ParameterFilter filter : newLayer.getParameterFilters()) {
                     // Don't actually need to do anything here.  Just iterate over the elements
                     // casting them into ParameterFilter
                 }
@@ -182,8 +181,7 @@ public class TileLayerController extends GWCController {
                 // By this point it has already been turned into a POJO, so the XML is no longer
                 // available.  Otherwise it would be helpful to include in the error message.
                 throw new RestException(
-                        "parameterFilters contains an element that is not "
-                                + "a known ParameterFilter",
+                        "parameterFilters contains an element that is not " + "a known ParameterFilter",
                         HttpStatus.BAD_REQUEST);
             }
         }

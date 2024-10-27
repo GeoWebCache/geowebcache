@@ -45,8 +45,7 @@ public class ArcGISCompactCacheV2 extends ArcGISCompactCache {
      *     contain directories for zoom levels (named "Lxx").
      */
     public ArcGISCompactCacheV2(String pathToCacheRoot) {
-        if (pathToCacheRoot.endsWith("" + File.separatorChar))
-            this.pathToCacheRoot = pathToCacheRoot;
+        if (pathToCacheRoot.endsWith("" + File.separatorChar)) this.pathToCacheRoot = pathToCacheRoot;
         else this.pathToCacheRoot = pathToCacheRoot + File.separatorChar;
 
         indexCache = new BundlxCache(10000);
@@ -62,8 +61,7 @@ public class ArcGISCompactCacheV2 extends ArcGISCompactCache {
         Resource res = null;
 
         if ((entry = indexCache.get(key)) != null) {
-            if (entry.size > 0)
-                res = new BundleFileResource(entry.pathToBundleFile, entry.offset, entry.size);
+            if (entry.size > 0) res = new BundleFileResource(entry.pathToBundleFile, entry.offset, entry.size);
         } else {
 
             String basePath = buildBundleFilePath(zoom, row, col);
@@ -73,8 +71,7 @@ public class ArcGISCompactCacheV2 extends ArcGISCompactCache {
 
             entry = createCacheEntry(pathToBundleFile, row, col);
 
-            if (entry.size > 0)
-                res = new BundleFileResource(pathToBundleFile, entry.offset, entry.size);
+            if (entry.size > 0) res = new BundleFileResource(pathToBundleFile, entry.offset, entry.size);
 
             indexCache.put(key, entry);
         }
@@ -87,8 +84,7 @@ public class ArcGISCompactCacheV2 extends ArcGISCompactCache {
         int index = BUNDLX_MAXIDX * (row % BUNDLX_MAXIDX) + (col % BUNDLX_MAXIDX);
 
         // to save one addtional read, we read all 8 bytes in one read
-        ByteBuffer offsetAndSize =
-                readFromLittleEndianFile(bundleFile, (index * 8) + COMPACT_CACHE_HEADER_LENGTH, 8);
+        ByteBuffer offsetAndSize = readFromLittleEndianFile(bundleFile, (index * 8) + COMPACT_CACHE_HEADER_LENGTH, 8);
 
         byte[] offsetBytes = new byte[8];
         byte[] sizeBytes = new byte[4];
@@ -96,7 +92,8 @@ public class ArcGISCompactCacheV2 extends ArcGISCompactCache {
         offsetAndSize.get(offsetBytes, 0, 5);
         offsetAndSize.get(sizeBytes, 0, 3);
 
-        long tileOffset = ByteBuffer.wrap(offsetBytes).order(ByteOrder.LITTLE_ENDIAN).getLong();
+        long tileOffset =
+                ByteBuffer.wrap(offsetBytes).order(ByteOrder.LITTLE_ENDIAN).getLong();
         int tileSize = ByteBuffer.wrap(sizeBytes).order(ByteOrder.LITTLE_ENDIAN).getInt();
 
         return new BundlxCache.CacheEntry(bundleFile, tileOffset, tileSize);

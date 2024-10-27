@@ -68,8 +68,7 @@ public class GMapsConverter extends Service {
         String strMetaTiled = ServletUtils.stringFromMap(params, encoding, "metatiled");
 
         long[] gridLoc =
-                GMapsConverter.convert(
-                        Integer.parseInt(strZoom), Integer.parseInt(strX), Integer.parseInt(strY));
+                GMapsConverter.convert(Integer.parseInt(strZoom), Integer.parseInt(strX), Integer.parseInt(strY));
 
         String layers = ServletUtils.stringFromMap(params, encoding, "layers");
         if (layers == null || layers.length() == 0) {
@@ -77,8 +76,7 @@ public class GMapsConverter extends Service {
         }
 
         TileLayer tileLayer = tld.getTileLayer(layers);
-        Map<String, String> filteringParameters =
-                tileLayer.getModifiableParameters(params, encoding);
+        Map<String, String> filteringParameters = tileLayer.getModifiableParameters(params, encoding);
 
         MimeType mimeType = null;
         try {
@@ -90,16 +88,15 @@ public class GMapsConverter extends Service {
             throw new ServiceException("Unable to determine requested format, " + strFormat);
         }
 
-        ConveyorTile ret =
-                new ConveyorTile(
-                        sb,
-                        layerId,
-                        gsb.getWorldEpsg3857().getName(),
-                        gridLoc,
-                        mimeType,
-                        filteringParameters,
-                        request,
-                        response);
+        ConveyorTile ret = new ConveyorTile(
+                sb,
+                layerId,
+                gsb.getWorldEpsg3857().getName(),
+                gridLoc,
+                mimeType,
+                filteringParameters,
+                request,
+                response);
 
         if (strCached != null && !Boolean.parseBoolean(strCached)) {
             ret.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
@@ -132,9 +129,7 @@ public class GMapsConverter extends Service {
 
             if (!tl.isCacheBypassAllowed().booleanValue()) {
                 throw new GeoWebCacheException(
-                        "Layer "
-                                + tile.getLayerId()
-                                + " is not configured to allow bypassing the cache.");
+                        "Layer " + tile.getLayerId() + " is not configured to allow bypassing the cache.");
             }
 
             tile.setTileLayer(tl);

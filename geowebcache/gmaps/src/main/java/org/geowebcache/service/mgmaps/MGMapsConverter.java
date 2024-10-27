@@ -53,8 +53,7 @@ public class MGMapsConverter extends Service {
     }
 
     @Override
-    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response)
-            throws ServiceException {
+    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response) throws ServiceException {
         String layerId = super.getLayersParameter(request);
 
         String encoding = request.getCharacterEncoding();
@@ -68,8 +67,7 @@ public class MGMapsConverter extends Service {
         String strMetaTiled = ServletUtils.stringFromMap(params, encoding, "metatiled");
 
         long[] gridLoc =
-                MGMapsConverter.convert(
-                        Integer.parseInt(strZoom), Integer.parseInt(strX), Integer.parseInt(strY));
+                MGMapsConverter.convert(Integer.parseInt(strZoom), Integer.parseInt(strX), Integer.parseInt(strY));
 
         MimeType mimeType = null;
         try {
@@ -81,16 +79,8 @@ public class MGMapsConverter extends Service {
             throw new ServiceException("Unable to determine requested format, " + strFormat);
         }
 
-        ConveyorTile ret =
-                new ConveyorTile(
-                        sb,
-                        layerId,
-                        gsb.getWorldEpsg3857().getName(),
-                        gridLoc,
-                        mimeType,
-                        null,
-                        request,
-                        response);
+        ConveyorTile ret = new ConveyorTile(
+                sb, layerId, gsb.getWorldEpsg3857().getName(), gridLoc, mimeType, null, request, response);
 
         if (strCached != null && !Boolean.parseBoolean(strCached)) {
             ret.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
@@ -121,9 +111,7 @@ public class MGMapsConverter extends Service {
 
             if (!tl.isCacheBypassAllowed().booleanValue()) {
                 throw new GeoWebCacheException(
-                        "Layer "
-                                + tile.getLayerId()
-                                + " is not configured to allow bypassing the cache.");
+                        "Layer " + tile.getLayerId() + " is not configured to allow bypassing the cache.");
             }
 
             tile.setTileLayer(tl);
