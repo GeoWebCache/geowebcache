@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.logging.Logger;
 import org.apache.commons.lang3.SerializationUtils;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.ConfigurationException;
@@ -34,6 +36,7 @@ import org.geowebcache.io.GeoWebCacheXStream;
  * @author Andrea Aime - GeoSolutions
  */
 public class JDBCConfiguration implements Serializable {
+    private static final Logger LOG = Logging.getLogger(JDBCConfiguration.class.getName());
 
     String dialect;
 
@@ -73,18 +76,32 @@ public class JDBCConfiguration implements Serializable {
         return conf;
     }
 
-    private static void validateConfiguration(JDBCConfiguration conf)
-            throws ConfigurationException {
+    /**
+     * Validate configuration, producing a configuration exception for common problems.
+     *
+     * <p>This method is used to validate {@link JDBCConfiguration#load(InputStream)} and is
+     * available to validate user input. Errors for required parameters result in an exception,
+     * while warnings are logged.
+     *
+     * <p>Checks required JDBC driver and jdbc URL parameters are present.
+     *
+     * <p>Checks H2 and Oracle validation query if provided.
+     *
+     * @param conf configuration
+     * @throws ConfigurationException for incomplete or inconsistent configuration.
+     */
+    public static void validateConfiguration(JDBCConfiguration conf) throws ConfigurationException {
         if (conf.getDialect() == null) {
             throw new ConfigurationException(
                     "A dialect must be provided, possible values are H2, HSQL, Oracle, PostgresSQL");
         }
 
         ConnectionPoolConfiguration cp = conf.getConnectionPool();
+        String dialect = conf.getDialect();
         if (conf.getJNDISource() == null
                 && cp == null
-                && !"H2".equals(conf.getDialect())
-                && !"HSQL".equals(conf.getDialect())) {
+                && !"H2".equals(dialect)
+                && !"HSQL".equals(dialect)) {
             throw new ConfigurationException(
                     "No data source provided, either configure JNDISource or connectionPool");
         }
@@ -95,6 +112,30 @@ public class JDBCConfiguration implements Serializable {
             }
             if (cp.getUrl() == null) {
                 throw new ConfigurationException("No JDBC URL provided");
+            }
+
+            String vq = cp.getValidationQuery();
+            if (vq != null) {
+                if ("H2".equalsIgnoreCase(dialect)) {
+                    if (!vq.equalsIgnoreCase("SELECT 1")) {
+                        throw new ConfigurationException(
+                                "H2 validation query required to be: SELECT 1");
+                    }
+                } else if ("Oracle".equalsIgnoreCase(dialect)) {
+                    if (!vq.equalsIgnoreCase("SELECT 1 FROM DUAL")) {
+                        throw new ConfigurationException(
+                                "Oracle validation query required to be: SELECT 1 FROM DUAL");
+                    }
+                } else {
+                    if (!vq.equalsIgnoreCase("SELECT 1")
+                            && !vq.equalsIgnoreCase("SELECT 1 FROM DUAL")) {
+                        LOG.config(
+                                dialect
+                                        + " non standard validation query '"
+                                        + vq
+                                        + "', recommended either 'SELECT 1' or 'SELECT 1 FROM DUAL'.");
+                    }
+                }
             }
         }
     }
@@ -195,7 +236,7 @@ public class JDBCConfiguration implements Serializable {
 
     /**
      * The connection pool configuration, used to build a local connection pool (with DBCP or other
-     * connection pool library)
+     * connection pool library).
      *
      * @author Andrea Aime - GeoSolutions
      */
