@@ -180,7 +180,7 @@ In order to switch from the Berkeley DB to the freeform JDBC sources the :file:`
 
     </gwcQuotaConfiguration>
 
-In this case a separate file, :file:`geowebcache-diskquota-jdbc.xml` will contain the configuration for the chosen database containing the chosen DBMS dialect, at the time of writing the possible values are ``H2``, ``Oracle``, ``PostgreSQL``.
+In this case a separate file, :file:`geowebcache-diskquota-jdbc.xml` will contain the configuration for the chosen database containing the chosen DBMS dialect, at the time of writing the possible values are ``HSQL``, ``H2``, ``Oracle``, ``PostgreSQL``.
 
 The connection pool can be either provided locally, in such case a DBCP based connection pool will be instantiated, or provided via JNDI.
 The JDNI configuration is as simple as follows:
@@ -211,6 +211,10 @@ The local connection pool can instead be configured by specifying the following:
         <maxOpenPreparedStatements>50</maxOpenPreparedStatements>
       </connectionPool>
     </gwcJdbcConfiguration>
+
+.. note::
+   
+   The `validationQuery` parameter is optional. Any supplied value is restricted based on dialect: `H2` requires ``SELECT 1``, and `Oracle` uses ``SELECT 1 FROM DUAL``. Remaining dialects are recommendation to use ``SELECT 1``.
 
 Disk quota schema
 -----------------

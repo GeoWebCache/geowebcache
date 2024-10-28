@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.GeoWebCacheExtensions;
+import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.diskquota.jdbc.JDBCConfiguration.ConnectionPoolConfiguration;
 import org.junit.After;
 import org.junit.Assert;
@@ -129,5 +130,52 @@ public class JDBCConfigurationTest {
         config.store(config.clone(false), file2);
         JDBCConfiguration config2 = config.load(file2);
         Assert.assertEquals(config2, config);
+    }
+
+    @Test
+    public void testValidationQueryValidation() throws Exception {
+        JDBCConfiguration config = new JDBCConfiguration();
+        ConnectionPoolConfiguration cp = new ConnectionPoolConfiguration();
+
+        // h2 testing
+        config.setDialect("H2");
+        cp.setDriver("org.h2.Driver");
+        cp.setUrl("jdbc:h2:database");
+        config.setConnectionPool(cp);
+
+        cp.setValidationQuery("select 1");
+        JDBCConfiguration.validateConfiguration(config);
+
+        cp.setValidationQuery("select 1 from DUO");
+        try {
+            JDBCConfiguration.validateConfiguration(config);
+            Assert.fail("select 1 required");
+        } catch (ConfigurationException expected) {
+        }
+
+        // oracle testing
+        config.setDialect("Oracle");
+        cp.setDriver("oracle.jdbc.driver.OracleDriver");
+        cp.setUrl("jdbc:oracle:thin:@localhost:1521:xe");
+
+        cp.setValidationQuery("select 1 from DUAL");
+        JDBCConfiguration.validateConfiguration(config);
+
+        cp.setValidationQuery("select 1");
+        try {
+            JDBCConfiguration.validateConfiguration(config);
+            Assert.fail("select 1 from DUO required");
+        } catch (ConfigurationException expected) {
+        }
+
+        // postgres
+        config.setDialect("PostgreSQL");
+        cp.setDriver("org.postgresql.Driver");
+        cp.setUrl("jdbc:postgresql:gttest");
+
+        cp.setValidationQuery("select 1 from DUAL");
+        JDBCConfiguration.validateConfiguration(config);
+        cp.setValidationQuery("select 1");
+        JDBCConfiguration.validateConfiguration(config);
     }
 }
