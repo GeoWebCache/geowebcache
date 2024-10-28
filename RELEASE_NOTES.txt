@@ -1,3 +1,19 @@
+GeoWebCache 1.25.3 (2024-10-28)
+-------------------------------
+
+Stable release of the 1.25.x series.
+
+Improvements:
++++++++++++++
+- Check disk query validation query is SELECT 1 for H2, and SELECT 1 FROM DUAL Oracle.
+- Update Jackson 2 libs from 2.17.1 to 2.17.2
+- Upgraded GeoTools dependencies to 31.4
+
+Fixes:
+++++++
+- Avoid infinite number of calls to listBlobs when doing prefix removals (e..g, gridset or layer removals)
+- Set disk quota store isolation to serializable
+
 GeoWebCache 1.25.2 (2024-06-15)
 -------------------------------
 
