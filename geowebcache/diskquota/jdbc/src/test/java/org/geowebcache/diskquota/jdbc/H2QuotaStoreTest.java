@@ -1,6 +1,7 @@
 package org.geowebcache.diskquota.jdbc;
 
 import java.util.Properties;
+import org.junit.Test;
 
 public class H2QuotaStoreTest extends JDBCQuotaStoreTest {
 
@@ -28,4 +29,7 @@ public class H2QuotaStoreTest extends JDBCQuotaStoreTest {
     protected String getFixtureId() {
         return "h2";
     }
+
+    @Test
+    public void checkConnectionTest() {}
 }
