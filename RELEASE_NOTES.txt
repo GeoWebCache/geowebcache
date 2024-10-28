@@ -1,7 +1,7 @@
 GeoWebCache 1.25.3 (2024-10-28)
 -------------------------------
 
-Stable release of the 1.25.x series.
+Maintenance release of the 1.25.x series.
 
 Improvements:
 +++++++++++++
