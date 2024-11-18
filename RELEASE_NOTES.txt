@@ -1,3 +1,14 @@
+GeoWebCache 1.26.1 (2024-11-18)
+-------------------------------
+
+Stable release of the 1.26.x series.
+
+Fixes:
+++++++
+- Make JDBCConfiguration.validateConfiguration public to allow checking of validation query
+- Set disk quota store isolation to serializable
+
+
 GeoWebCache 1.26.0 (2024-09-18)
 -------------------------------
 
