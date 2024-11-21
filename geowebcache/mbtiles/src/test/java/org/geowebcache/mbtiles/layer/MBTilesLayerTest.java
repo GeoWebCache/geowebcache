@@ -53,6 +53,7 @@ import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.layer.meta.TileJSON;
 import org.geowebcache.layer.meta.VectorLayerMetadata;
 import org.geowebcache.mime.ApplicationMime;
+import org.geowebcache.storage.TileIndex;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -168,7 +169,7 @@ public class MBTilesLayerTest {
                         null,
                         testLayer.getId(),
                         subset.getName(),
-                        new long[] {4L, 4L, 3L},
+                        TileIndex.valueOf(4L, 4L, 3),
                         ApplicationMime.mapboxVector,
                         null,
                         null,
@@ -239,7 +240,7 @@ public class MBTilesLayerTest {
                         null,
                         testLayer.getId(),
                         "EPSG:900913",
-                        new long[] {38L, 42L, 6L},
+                        TileIndex.valueOf(38L, 42L, 6),
                         ApplicationMime.mapboxVector,
                         null,
                         null,
@@ -261,7 +262,7 @@ public class MBTilesLayerTest {
                             null,
                             testLayer.getId(),
                             "EPSG:900913",
-                            new long[] {38L, 39L, 6L},
+                            TileIndex.valueOf(38L, 39L, 6),
                             ApplicationMime.mapboxVector,
                             null,
                             null,

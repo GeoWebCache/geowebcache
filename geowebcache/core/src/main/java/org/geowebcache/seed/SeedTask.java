@@ -30,6 +30,7 @@ import org.geowebcache.filter.request.RequestFilter;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.TileIndex;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.TileRangeIterator;
 import org.geowebcache.util.Sleeper;
@@ -127,7 +128,7 @@ class SeedTask extends GWCTask {
                             storageBroker,
                             layerName,
                             tr.getGridSetId(),
-                            gridLoc,
+                            TileIndex.valueOf(gridLoc),
                             tr.getMimeType(),
                             fullParameters,
                             null,

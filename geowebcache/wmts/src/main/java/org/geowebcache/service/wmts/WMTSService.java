@@ -48,6 +48,7 @@ import org.geowebcache.service.OWSException;
 import org.geowebcache.service.Service;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.TileIndex;
 import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
@@ -489,7 +490,7 @@ public class WMTSService extends Service {
             throw new OWSException(
                     400, "MissingParameterValue", "TILEMATRIX", "No TILEMATRIX specified");
         }
-        long z = gridSubset.getGridIndex(tileMatrix);
+        int z = gridSubset.getGridIndex(tileMatrix);
 
         if (z < 0) {
             throw new OWSException(
@@ -502,7 +503,7 @@ public class WMTSService extends Service {
             throw new OWSException(400, "MissingParameterValue", "TILEROW", "No TILEROW specified");
         }
 
-        final long tilesHigh = gridSubset.getNumTilesHigh((int) z);
+        final long tilesHigh = gridSubset.getNumTilesHigh(z);
 
         long y = tilesHigh - Long.parseLong(tileRow) - 1;
 
@@ -512,7 +513,7 @@ public class WMTSService extends Service {
         }
         long x = Long.parseLong(tileCol);
 
-        long[] gridCov = gridSubset.getCoverage((int) z);
+        long[] gridCov = gridSubset.getCoverage(z);
 
         if (x < gridCov[0] || x > gridCov[2]) {
             throw new OWSException(
@@ -533,7 +534,7 @@ public class WMTSService extends Service {
                     "Row " + tileRow + " is out of range, min: " + minRow + " max:" + maxRow);
         }
 
-        long[] tileIndex = {x, y, z};
+        TileIndex tileIndex = TileIndex.valueOf(x, y, z);
 
         try {
             gridSubset.checkCoverage(tileIndex);

@@ -26,6 +26,7 @@ import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.layer.TileLayer;
+import org.geowebcache.storage.TileIndex;
 
 /**
  * A raster filter allows to optimize data loading by avoiding the generation of requests and the
@@ -109,51 +110,54 @@ public abstract class RasterFilter extends RequestFilter {
 
     @Override
     public void apply(ConveyorTile convTile) throws RequestFilterException {
-        long[] idx = convTile.getTileIndex().clone();
         String gridSetId = convTile.getGridSetId();
 
         // Basic bounds test first
         try {
-            convTile.getGridSubset().checkCoverage(idx);
+            convTile.getGridSubset().checkCoverage(convTile.getIndex());
         } catch (OutsideCoverageException oce) {
             throw new BlankTileException(this);
         }
 
+        long x = convTile.getIndex().getX();
+        long y = convTile.getIndex().getY();
+        int z = convTile.getIndex().getZ();
         int zoomDiff = 0;
 
         // Three scenarios below:
         // 1. z is too low , upsample if resampling is enabled
         // 2. z is within range, downsample one level and apply
         // 3. z is too large , downsample
-        if (zoomStart != null && idx[2] < zoomStart) {
+        if (zoomStart != null && z < zoomStart) {
             if (resample == null || !resample) {
                 // Filter does not apply, zoomlevel is too low
                 return;
             } else {
                 // Upsample
-                zoomDiff = (int) (idx[2] - zoomStart);
-                idx[0] = idx[0] << (-1 * zoomDiff);
-                idx[1] = idx[1] << (-1 * zoomDiff);
-                idx[2] = zoomStart;
+                zoomDiff = z - zoomStart;
+                x = (x << (-1 * zoomDiff));
+                y = (y << (-1 * zoomDiff));
+                z = zoomStart;
             }
-        } else if (idx[2] < zoomStop) {
+        } else if (z < zoomStop) {
             // Sample one level higher
-            idx[0] = idx[0] * 2;
-            idx[1] = idx[1] * 2;
-            idx[2] = idx[2] + 1;
+            x = x * 2;
+            y = y * 2;
+            z = z + 1;
         } else {
             // Reduce to highest supported resolution
-            zoomDiff = (int) (idx[2] - zoomStop);
-            idx[0] = idx[0] >> zoomDiff;
-            idx[1] = idx[1] >> zoomDiff;
-            idx[2] = zoomStop;
+            zoomDiff = z - zoomStop;
+            x = x >> zoomDiff;
+            y = y >> zoomDiff;
+            z = zoomStop;
         }
 
+        TileIndex idx = TileIndex.valueOf(x, y, z);
         if (matrices == null
                 || matrices.get(gridSetId) == null
-                || matrices.get(gridSetId)[(int) idx[2]] == null) {
+                || matrices.get(gridSetId)[idx.getZ()] == null) {
             try {
-                setMatrix(convTile.getLayer(), gridSetId, (int) idx[2], false);
+                setMatrix(convTile.getLayer(), gridSetId, idx.getZ(), false);
             } catch (Exception e) {
                 log.log(
                         Level.SEVERE,
@@ -162,14 +166,14 @@ public abstract class RasterFilter extends RequestFilter {
                                 + ", "
                                 + gridSetId
                                 + ", "
-                                + idx[2]
+                                + idx.getZ()
                                 + " : "
                                 + e.getMessage());
                 throw new RequestFilterException(
                         this,
                         500,
                         "Failed while trying to load filter for "
-                                + idx[2]
+                                + idx.getZ()
                                 + ", please check the logs");
             }
         }
@@ -229,14 +233,14 @@ public abstract class RasterFilter extends RequestFilter {
     }
 
     /** Performs a lookup against an internal raster. */
-    private boolean lookup(GridSubset grid, long[] idx) {
-        BufferedImage mat = matrices.get(grid.getName())[(int) idx[2]];
+    private boolean lookup(GridSubset grid, TileIndex idx) {
+        BufferedImage mat = matrices.get(grid.getName())[idx.getZ()];
 
-        long[] gridCoverage = grid.getCoverage((int) idx[2]);
+        long[] gridCoverage = grid.getCoverage(idx.getZ());
 
         // Changing index to top left hand origin
-        long x = idx[0] - gridCoverage[0];
-        long y = gridCoverage[3] - idx[1];
+        long x = idx.getX() - gridCoverage[0];
+        long y = gridCoverage[3] - idx.getY();
 
         return (mat.getRaster().getSample((int) x, (int) y, 0) == 0);
     }
@@ -245,14 +249,14 @@ public abstract class RasterFilter extends RequestFilter {
      * Performs a lookup against an internal raster. The sampling is actually done against 4 pixels,
      * idx should already have been modified to use one level higher than strictly necessary.
      */
-    private boolean lookupQuad(GridSubset grid, long[] idx) {
-        BufferedImage mat = matrices.get(grid.getName())[(int) idx[2]];
+    private boolean lookupQuad(GridSubset grid, TileIndex idx) {
+        BufferedImage mat = matrices.get(grid.getName())[idx.getZ()];
 
-        long[] gridCoverage = grid.getCoverage((int) idx[2]);
+        long[] gridCoverage = grid.getCoverage(idx.getZ());
 
         // Changing index to top left hand origin
-        int baseX = (int) (idx[0] - gridCoverage[0]);
-        int baseY = (int) (gridCoverage[3] - idx[1]);
+        int baseX = (int) (idx.getX() - gridCoverage[0]);
+        int baseY = (int) (gridCoverage[3] - idx.getY());
 
         int width = mat.getWidth();
         int height = mat.getHeight();
@@ -298,16 +302,16 @@ public abstract class RasterFilter extends RequestFilter {
         return hasData;
     }
 
-    private boolean lookupSubsample(GridSubset grid, long[] idx, int zoomDiff) {
-        BufferedImage mat = matrices.get(grid.getName())[(int) idx[2]];
+    private boolean lookupSubsample(GridSubset grid, TileIndex idx, int zoomDiff) {
+        BufferedImage mat = matrices.get(grid.getName())[idx.getZ()];
 
         int sampleChange = 1 << (-1 * zoomDiff);
 
-        long[] gridCoverage = grid.getCoverage((int) idx[2]);
+        long[] gridCoverage = grid.getCoverage(idx.getZ());
 
         // Changing index to top left hand origin
-        int baseX = (int) (idx[0] - gridCoverage[0]);
-        int baseY = (int) (gridCoverage[3] - idx[1]);
+        int baseX = (int) (idx.getX() - gridCoverage[0]);
+        int baseY = (int) (gridCoverage[3] - idx.getY());
 
         int width = mat.getWidth();
         int height = mat.getHeight();

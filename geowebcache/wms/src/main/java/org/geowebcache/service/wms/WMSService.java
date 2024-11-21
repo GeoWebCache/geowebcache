@@ -57,6 +57,7 @@ import org.geowebcache.service.Service;
 import org.geowebcache.service.ServiceException;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.TileIndex;
 import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
@@ -292,7 +293,7 @@ public class WMSService extends Service {
                 sb,
                 layers,
                 gridSubset.getName(),
-                tileIndex,
+                TileIndex.valueOf(tileIndex),
                 mimeType,
                 fullParameters,
                 request,

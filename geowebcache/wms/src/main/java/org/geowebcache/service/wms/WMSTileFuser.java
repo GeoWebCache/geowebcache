@@ -53,6 +53,7 @@ import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
+import org.geowebcache.storage.TileIndex;
 import org.geowebcache.util.AccountingOutputStream;
 import org.geowebcache.util.IOUtils;
 import org.geowebcache.util.ServletUtils;
@@ -595,7 +596,7 @@ public class WMSTileFuser {
             long startx = srcRectangle[0];
             for (long gridx = startx; gridx <= srcRectangle[2]; gridx++) {
 
-                long[] gridLoc = {gridx, gridy, srcIdx};
+                TileIndex gridLoc = TileIndex.valueOf(gridx, gridy, srcIdx);
 
                 ConveyorTile tile =
                         new ConveyorTile(
@@ -681,13 +682,7 @@ public class WMSTileFuser {
                 }
 
                 // Render the tile on the big canvas
-                log.fine(
-                        "drawImage(subtile,"
-                                + canvasx
-                                + ","
-                                + canvasy
-                                + ",null) "
-                                + Arrays.toString(gridLoc));
+                log.fine("drawImage(subtile," + canvasx + "," + canvasy + ",null) " + gridLoc);
 
                 bufferedImageWrapper.drawImage(tileImg, canvasx, canvasy);
             }
