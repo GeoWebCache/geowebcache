@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Kevin Smith, Boundless, 2017
  */
@@ -52,9 +51,9 @@ public class MockExtensionRule extends ExternalResource {
     final boolean staticContext;
 
     /**
-     * If true this rule will modify the static context used by GeoWebCacheExtensions by default.
-     * Otherwise only the context produced by this rule will be affected. Only one rule affecting
-     * the static context can be active at one time.
+     * If true this rule will modify the static context used by GeoWebCacheExtensions by default. Otherwise only the
+     * context produced by this rule will be affected. Only one rule affecting the static context can be active at one
+     * time.
      */
     public MockExtensionRule(boolean staticContext) {
         super();
@@ -82,11 +81,10 @@ public class MockExtensionRule extends ExternalResource {
     }
 
     protected ApplicationContext makeContext() throws IllegalArgumentException {
-        return (ApplicationContext)
-                Proxy.newProxyInstance(
-                        MockExtensionRule.class.getClassLoader(),
-                        new Class[] {ApplicationContext.class},
-                        new ContextInvocationHandler());
+        return (ApplicationContext) Proxy.newProxyInstance(
+                MockExtensionRule.class.getClassLoader(),
+                new Class[] {ApplicationContext.class},
+                new ContextInvocationHandler());
     }
 
     /** Register a mock extension bean */
@@ -133,7 +131,8 @@ public class MockExtensionRule extends ExternalResource {
                             .orElseThrow(() -> new NoSuchBeanDefinitionException((String) args[0]));
                 } else if (method.getParameterTypes()[0].equals(Class.class)) {
                     for (Entry<String, Object> pair : beans.entrySet()) {
-                        if (((Class<?>) args[0]).isAssignableFrom(pair.getValue().getClass())) {
+                        if (((Class<?>) args[0])
+                                .isAssignableFrom(pair.getValue().getClass())) {
                             return pair.getValue();
                         }
                         throw new NoSuchBeanDefinitionException((Class<?>) args[0]);

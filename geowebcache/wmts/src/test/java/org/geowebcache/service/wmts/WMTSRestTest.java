@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Sandro Salari, GeoSolutions S.A.S., Copyright 2017
  */
@@ -80,8 +79,7 @@ import org.w3c.dom.Document;
 
 public class WMTSRestTest {
 
-    GridSetBroker broker =
-            new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
+    GridSetBroker broker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
     private WMTSService wmtsService;
     private StorageBroker storageBroker;
     private TileLayerDispatcher tileLayerDispatcher;
@@ -93,8 +91,7 @@ public class WMTSRestTest {
         this.storageBroker = mock(StorageBroker.class);
         this.tileLayerDispatcher = tileLayerDispatcher();
         this.runtimeStats = mock(RuntimeStats.class);
-        this.wmtsService =
-                new WMTSService(storageBroker, tileLayerDispatcher, broker, runtimeStats);
+        this.wmtsService = new WMTSService(storageBroker, tileLayerDispatcher, broker, runtimeStats);
         this.securityDispatcher = securityDispatcher();
         wmtsService.setSecurityDispatcher(securityDispatcher);
     }
@@ -120,8 +117,7 @@ public class WMTSRestTest {
         final Document doc = XMLUnit.buildTestDocument(resp.getContentAsString());
         assertXpathExists("//wmts:Contents/wmts:Layer", doc);
         assertXpathExists("//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer']", doc);
-        assertXpathEvaluatesTo(
-                "2", "count(//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier)", doc);
+        assertXpathEvaluatesTo("2", "count(//wmts:Contents/wmts:Layer/wmts:Style/ows:Identifier)", doc);
         assertXpathExists("//wmts:Contents/wmts:Layer/wmts:Style[ows:Identifier='style-a']", doc);
         assertXpathExists(
                 "//wmts:Contents/wmts:Layer/wmts:Style[ows:Identifier='style-b']/wmts:LegendURL"
@@ -142,16 +138,14 @@ public class WMTSRestTest {
                         + "/mockLayer/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}/{J}/{I}?format=text/plain&time={time}&elevation={elevation}']",
                 doc);
         assertXpathExists(
-                "//wmts:ServiceMetadataURL[@xlink:href='http://localhost/service/wmts/rest"
-                        + "/WMTSCapabilities.xml']",
+                "//wmts:ServiceMetadataURL[@xlink:href='http://localhost/service/wmts/rest" + "/WMTSCapabilities.xml']",
                 doc);
     }
 
     @Test
     public void testGetTileWithStyle() throws Exception {
         MockHttpServletRequest req = new MockHttpServletRequest();
-        req.setPathInfo(
-                "geowebcache/service/wmts/rest/mockLayer/style-a/EPSG:4326/EPSG:4326:0/0/0");
+        req.setPathInfo("geowebcache/service/wmts/rest/mockLayer/style-a/EPSG:4326/EPSG:4326:0/0/0");
         req.addParameter("format", "image/png");
 
         MockHttpServletResponse resp = dispatch(req);
@@ -195,11 +189,10 @@ public class WMTSRestTest {
         String content = resp.getContentAsString();
 
         // Checking the response contains a tileUrl without the style
-        assertTrue(
-                content.contains(
-                        "\"tiles\":[\"http://localhost/service/wmts/rest/mockLayerTileJSON/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format="
-                                + mvt
-                                + "\"]"));
+        assertTrue(content.contains(
+                "\"tiles\":[\"http://localhost/service/wmts/rest/mockLayerTileJSON/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format="
+                        + mvt
+                        + "\"]"));
         assertTrue(content.contains("vector_layers"));
     }
 
@@ -207,8 +200,7 @@ public class WMTSRestTest {
 
         final MimeType mimeType1 = MimeType.createFromFormat(mimeType);
         String layerNameJson = "mockLayerTileJSON";
-        TileLayer tileLayerJson =
-                mock(TileLayer.class, withSettings().extraInterfaces(TileJSONProvider.class));
+        TileLayer tileLayerJson = mock(TileLayer.class, withSettings().extraInterfaces(TileJSONProvider.class));
         when(tileLayerDispatcher.getTileLayer(eq(layerNameJson))).thenReturn(tileLayerJson);
         when(tileLayerJson.getName()).thenReturn(layerNameJson);
         when(tileLayerJson.isEnabled()).thenReturn(true);
@@ -245,10 +237,7 @@ public class WMTSRestTest {
                     layer = tileLayerDispatcher.getTileLayer(layerName);
                     if (layer != null && !layer.isEnabled()) {
                         throw new OWSException(
-                                400,
-                                "InvalidParameterValue",
-                                "LAYERS",
-                                "Layer '" + layerName + "' is disabled");
+                                400, "InvalidParameterValue", "LAYERS", "Layer '" + layerName + "' is disabled");
                     }
                     if (conveyor instanceof ConveyorTile) {
                         ((ConveyorTile) conveyor).setTileLayer(layer);
@@ -300,8 +289,7 @@ public class WMTSRestTest {
     @Test
     public void testGetInfoWithStyle() throws Exception {
         MockHttpServletRequest req = new MockHttpServletRequest();
-        req.setPathInfo(
-                "geowebcache/service/wmts/rest/mockLayer/style-a/EPSG:4326/EPSG:4326:0/0/0/0/0");
+        req.setPathInfo("geowebcache/service/wmts/rest/mockLayer/style-a/EPSG:4326/EPSG:4326:0/0/0/0/0");
         req.addParameter("format", "text/plain");
 
         final MockHttpServletResponse resp = dispatch(req);
@@ -334,8 +322,7 @@ public class WMTSRestTest {
         assertEquals("text/xml", resp.getContentType());
 
         Document doc = XMLUnit.buildTestDocument(resp.getContentAsString());
-        assertXpathExists(
-                "//ows:ExceptionReport/ows:Exception[@exceptionCode='InvalidParameterValue']", doc);
+        assertXpathExists("//ows:ExceptionReport/ows:Exception[@exceptionCode='InvalidParameterValue']", doc);
     }
 
     @FunctionalInterface
@@ -350,20 +337,18 @@ public class WMTSRestTest {
 
     @Test
     public void testGetTileWithCiteValidation() throws Exception {
-        testCiteValidationIsSuccessful(
-                () -> {
-                    testGetTileWithStyle();
-                    testGetTileWithoutStyle();
-                });
+        testCiteValidationIsSuccessful(() -> {
+            testGetTileWithStyle();
+            testGetTileWithoutStyle();
+        });
     }
 
     @Test
     public void testGetInfoWithCiteValidation() throws Exception {
-        testCiteValidationIsSuccessful(
-                () -> {
-                    testGetInfoWithStyle();
-                    testGetInfoWithoutStyle();
-                });
+        testCiteValidationIsSuccessful(() -> {
+            testGetInfoWithStyle();
+            testGetInfoWithoutStyle();
+        });
     }
 
     /** Helper method that just executes the provided test with CITE validation activated. */
@@ -384,8 +369,7 @@ public class WMTSRestTest {
 
     public TileLayerDispatcher tileLayerDispatcher() throws Exception {
         TileLayerDispatcher tld = mock(TileLayerDispatcher.class);
-        List<String> gridSetNames =
-                Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
+        List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
         String layerName = "mockLayer";
         TileLayer tileLayer = mock(TileLayer.class);
 
@@ -403,19 +387,16 @@ public class WMTSRestTest {
 
         when(tileLayer.getParameterFilters()).thenReturn(Arrays.asList(styles, time, elevation));
 
-        LegendInfo legendInfo2 =
-                new LegendInfoBuilder()
-                        .withStyleName("styla-b-legend")
-                        .withWidth(125)
-                        .withHeight(130)
-                        .withFormat("image/png")
-                        .withCompleteUrl(
-                                "https://some-url?some-parameter=value3&another-parameter=value4")
-                        .withMinScale(5000D)
-                        .withMaxScale(10000D)
-                        .build();
-        when(tileLayer.getLayerLegendsInfo())
-                .thenReturn(Collections.singletonMap("style-b", legendInfo2));
+        LegendInfo legendInfo2 = new LegendInfoBuilder()
+                .withStyleName("styla-b-legend")
+                .withWidth(125)
+                .withHeight(130)
+                .withFormat("image/png")
+                .withCompleteUrl("https://some-url?some-parameter=value3&another-parameter=value4")
+                .withMinScale(5000D)
+                .withMaxScale(10000D)
+                .build();
+        when(tileLayer.getLayerLegendsInfo()).thenReturn(Collections.singletonMap("style-b", legendInfo2));
 
         when(tld.getTileLayer(eq(layerName))).thenReturn(tileLayer);
         when(tileLayer.getName()).thenReturn(layerName);
@@ -429,8 +410,7 @@ public class WMTSRestTest {
         final MimeType infoMimeType1 = MimeType.createFromFormat("text/plain");
         final MimeType infoMimeType2 = MimeType.createFromFormat("text/html");
         final MimeType infoMimeType3 = MimeType.createFromFormat("application/vnd.ogc.gml");
-        when(tileLayer.getInfoMimeTypes())
-                .thenReturn(Arrays.asList(infoMimeType1, infoMimeType2, infoMimeType3));
+        when(tileLayer.getInfoMimeTypes()).thenReturn(Arrays.asList(infoMimeType1, infoMimeType2, infoMimeType3));
         Map<String, GridSubset> subsets = new HashMap<>();
         Map<SRS, List<GridSubset>> bySrs = new HashMap<>();
 
@@ -461,32 +441,22 @@ public class WMTSRestTest {
         when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
         when(tld.getLayerListFiltered()).thenReturn(Arrays.asList(tileLayer));
 
-        when(tileLayer.getTile(any(ConveyorTile.class)))
-                .thenAnswer(
-                        (Answer<ConveyorTile>)
-                                invocation -> {
-                                    ConveyorTile sourceTile =
-                                            (ConveyorTile) invocation.getArguments()[0];
-                                    sourceTile.setBlob(getSampleTileContent());
-                                    return sourceTile;
-                                });
+        when(tileLayer.getTile(any(ConveyorTile.class))).thenAnswer((Answer<ConveyorTile>) invocation -> {
+            ConveyorTile sourceTile = (ConveyorTile) invocation.getArguments()[0];
+            sourceTile.setBlob(getSampleTileContent());
+            return sourceTile;
+        });
 
         when(tileLayer.getFeatureInfo(
-                        any(ConveyorTile.class),
-                        any(BoundingBox.class),
-                        anyInt(),
-                        anyInt(),
-                        anyInt(),
-                        anyInt()))
+                        any(ConveyorTile.class), any(BoundingBox.class), anyInt(), anyInt(), anyInt(), anyInt()))
                 .thenAnswer((Answer<Resource>) invocation -> new ByteArrayResource(new byte[0]));
 
         return tld;
     }
 
     public ByteArrayResource getSampleTileContent() throws IOException, URISyntaxException {
-        return new ByteArrayResource(
-                FileUtils.readFileToByteArray(
-                        new File(getClass().getResource("/image.png").toURI())));
+        return new ByteArrayResource(FileUtils.readFileToByteArray(
+                new File(getClass().getResource("/image.png").toURI())));
     }
 
     @Bean

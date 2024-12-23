@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan, Boundless Spatial Inc, Copyright 2015
  */
@@ -73,9 +72,11 @@ public class CompositeBlobStoreTest {
         }
     }
 
-    @Rule public TemporaryFolder tmpFolder = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder tmpFolder = new TemporaryFolder();
 
-    @Rule public SuitabilityCheckRule suitability = SuitabilityCheckRule.system();
+    @Rule
+    public SuitabilityCheckRule suitability = SuitabilityCheckRule.system();
 
     TileLayerDispatcher layers;
 
@@ -132,10 +133,8 @@ public class CompositeBlobStoreTest {
     @Test
     public void noExplicitDefaultCreatesLegacyDefaultStore() throws Exception {
         final boolean isDefault = false;
-        configs.add(
-                config("store1", isDefault, true, tmpFolder.newFolder().getAbsolutePath(), 1024));
-        configs.add(
-                config("store2", isDefault, true, tmpFolder.newFolder().getAbsolutePath(), 2048));
+        configs.add(config("store1", isDefault, true, tmpFolder.newFolder().getAbsolutePath(), 1024));
+        configs.add(config("store2", isDefault, true, tmpFolder.newFolder().getAbsolutePath(), 2048));
 
         store = create();
 
@@ -151,10 +150,8 @@ public class CompositeBlobStoreTest {
     public void duplicateDefaultStoreFails() throws Exception {
 
         final boolean isDefault = true;
-        configs.add(
-                config("store1", isDefault, true, tmpFolder.newFolder().getAbsolutePath(), 1024));
-        configs.add(
-                config("store2", isDefault, true, tmpFolder.newFolder().getAbsolutePath(), 2048));
+        configs.add(config("store1", isDefault, true, tmpFolder.newFolder().getAbsolutePath(), 1024));
+        configs.add(config("store2", isDefault, true, tmpFolder.newFolder().getAbsolutePath(), 2048));
 
         Exception ex = assertThrows(ConfigurationException.class, () -> store = create());
         assertThat(ex.getMessage(), containsString("Duplicate default blob store"));
@@ -183,13 +180,7 @@ public class CompositeBlobStoreTest {
     public void defaultAndDisaledFails() throws Exception {
         boolean isDefault = true;
         boolean enabled = false;
-        configs.add(
-                config(
-                        "storeId",
-                        isDefault,
-                        enabled,
-                        tmpFolder.newFolder().getAbsolutePath(),
-                        1024));
+        configs.add(config("storeId", isDefault, enabled, tmpFolder.newFolder().getAbsolutePath(), 1024));
 
         Exception ex = assertThrows(ConfigurationException.class, () -> store = create());
         assertThat(ex.getMessage(), containsString("The default blob store can't be disabled"));
@@ -198,8 +189,7 @@ public class CompositeBlobStoreTest {
     @Test
     public void disabledStoreHasNoLiveInstance() throws Exception {
         boolean enabled = false;
-        configs.add(
-                config("storeId", false, enabled, tmpFolder.newFolder().getAbsolutePath(), 1024));
+        configs.add(config("storeId", false, enabled, tmpFolder.newFolder().getAbsolutePath(), 1024));
 
         store = create();
         assertNotNull(store.blobStores.get("storeId"));
@@ -217,13 +207,8 @@ public class CompositeBlobStoreTest {
 
     @Test
     public void configuredDefaultRespectedAndNoLegacyDefaultCreated() throws Exception {
-        configs.add(
-                config(
-                        "some-other",
-                        false /* isDefault */,
-                        true,
-                        tmpFolder.newFolder().getAbsolutePath(),
-                        1024));
+        configs.add(config(
+                "some-other", false /* isDefault */, true, tmpFolder.newFolder().getAbsolutePath(), 1024));
         FileBlobStoreInfo defaultStore =
                 config("default-store", true, true, tmpFolder.newFolder().getAbsolutePath(), 1024);
         configs.add(defaultStore);
@@ -232,9 +217,7 @@ public class CompositeBlobStoreTest {
         // defaultStore is cached twice, with its own id for when layers refers to it explicitly,
         // and as CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID for layers that do not specify a blob
         // store
-        assertSame(
-                defaultStore,
-                store.blobStores.get(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID).config);
+        assertSame(defaultStore, store.blobStores.get(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID).config);
         assertSame(defaultStore, store.blobStores.get("default-store").config);
         assertEquals(3, store.blobStores.size());
     }
@@ -247,8 +230,7 @@ public class CompositeBlobStoreTest {
 
         when(defaultLayer.getBlobStoreId()).thenReturn("nonExistentStore");
         Exception ex = assertThrows(StorageException.class, () -> store.get(queryTile(0, 0, 0)));
-        assertThat(
-                ex.getMessage(), containsString("No BlobStore with id 'nonExistentStore' found"));
+        assertThat(ex.getMessage(), containsString("No BlobStore with id 'nonExistentStore' found"));
     }
 
     @Test
@@ -281,8 +263,7 @@ public class CompositeBlobStoreTest {
     @Test
     public void getTileDisabledStore() throws Exception {
         boolean isEnabled = false;
-        configs.add(
-                config("store1", false, isEnabled, tmpFolder.newFolder().getAbsolutePath(), 1024));
+        configs.add(config("store1", false, isEnabled, tmpFolder.newFolder().getAbsolutePath(), 1024));
 
         store = create();
 
@@ -290,8 +271,7 @@ public class CompositeBlobStoreTest {
         TileObject tile = queryTile(0, 0, 0);
 
         Exception ex = assertThrows(StorageException.class, () -> store.get(tile));
-        assertThat(
-                ex.getMessage(), containsString("Attempted to use a blob store that's disabled"));
+        assertThat(ex.getMessage(), containsString("Attempted to use a blob store that's disabled"));
     }
 
     @Test
@@ -305,15 +285,13 @@ public class CompositeBlobStoreTest {
         when(info.getName()).thenReturn("testStore");
         when(info.isEnabled()).thenReturn(true);
         BlobStore subStore = mock(BlobStore.class);
-        when(info.createInstance(Mockito.any(), Mockito.any()))
-                .thenAnswer(
-                        invocation -> {
-                            // When this gets called we should be skipping suitability checks
-                            assertThat(
-                                    CompositeBlobStore.getStoreSuitabilityCheck(),
-                                    equalTo(CompositeBlobStore.StoreSuitabilityCheck.NONE));
-                            return subStore;
-                        });
+        when(info.createInstance(Mockito.any(), Mockito.any())).thenAnswer(invocation -> {
+            // When this gets called we should be skipping suitability checks
+            assertThat(
+                    CompositeBlobStore.getStoreSuitabilityCheck(),
+                    equalTo(CompositeBlobStore.StoreSuitabilityCheck.NONE));
+            return subStore;
+        });
         configs.add(info);
 
         store = create();
@@ -332,14 +310,12 @@ public class CompositeBlobStoreTest {
         when(info.getName()).thenReturn("testStore");
         when(info.isEnabled()).thenReturn(true);
         BlobStore subStore = mock(BlobStore.class);
-        when(info.createInstance(Mockito.any(), Mockito.any()))
-                .thenAnswer(
-                        invocation -> {
-                            assertThat(
-                                    CompositeBlobStore.getStoreSuitabilityCheck(),
-                                    equalTo(CompositeBlobStore.StoreSuitabilityCheck.EXISTING));
-                            return subStore;
-                        });
+        when(info.createInstance(Mockito.any(), Mockito.any())).thenAnswer(invocation -> {
+            assertThat(
+                    CompositeBlobStore.getStoreSuitabilityCheck(),
+                    equalTo(CompositeBlobStore.StoreSuitabilityCheck.EXISTING));
+            return subStore;
+        });
 
         store = create();
 
@@ -351,22 +327,19 @@ public class CompositeBlobStoreTest {
     public void testNonDefaultSuitabilityOnStartup() throws Exception {
         suitability.setValue(CompositeBlobStore.StoreSuitabilityCheck.EMPTY);
         assertThat(
-                CompositeBlobStore.getStoreSuitabilityCheck(),
-                equalTo(CompositeBlobStore.StoreSuitabilityCheck.EMPTY));
+                CompositeBlobStore.getStoreSuitabilityCheck(), equalTo(CompositeBlobStore.StoreSuitabilityCheck.EMPTY));
 
         final BlobStoreInfo info = mock(BlobStoreInfo.class);
         when(info.getName()).thenReturn("testStore");
         when(info.isEnabled()).thenReturn(true);
         BlobStore subStore = mock(BlobStore.class);
-        when(info.createInstance(Mockito.any(), Mockito.any()))
-                .thenAnswer(
-                        invocation -> {
-                            // When this gets called we should be skipping suitability checks
-                            assertThat(
-                                    CompositeBlobStore.getStoreSuitabilityCheck(),
-                                    equalTo(CompositeBlobStore.StoreSuitabilityCheck.NONE));
-                            return subStore;
-                        });
+        when(info.createInstance(Mockito.any(), Mockito.any())).thenAnswer(invocation -> {
+            // When this gets called we should be skipping suitability checks
+            assertThat(
+                    CompositeBlobStore.getStoreSuitabilityCheck(),
+                    equalTo(CompositeBlobStore.StoreSuitabilityCheck.NONE));
+            return subStore;
+        });
         configs.add(info);
 
         store = create();
@@ -375,8 +348,7 @@ public class CompositeBlobStoreTest {
 
         // Should be back to default after startup.
         assertThat(
-                CompositeBlobStore.getStoreSuitabilityCheck(),
-                equalTo(CompositeBlobStore.StoreSuitabilityCheck.EMPTY));
+                CompositeBlobStore.getStoreSuitabilityCheck(), equalTo(CompositeBlobStore.StoreSuitabilityCheck.EMPTY));
     }
 
     @Test
@@ -386,14 +358,12 @@ public class CompositeBlobStoreTest {
         when(info.getName()).thenReturn("testStore");
         when(info.isEnabled()).thenReturn(true);
         BlobStore subStore = mock(BlobStore.class);
-        when(info.createInstance(Mockito.any(), Mockito.any()))
-                .thenAnswer(
-                        invocation -> {
-                            assertThat(
-                                    CompositeBlobStore.getStoreSuitabilityCheck(),
-                                    equalTo(CompositeBlobStore.StoreSuitabilityCheck.EMPTY));
-                            return subStore;
-                        });
+        when(info.createInstance(Mockito.any(), Mockito.any())).thenAnswer(invocation -> {
+            assertThat(
+                    CompositeBlobStore.getStoreSuitabilityCheck(),
+                    equalTo(CompositeBlobStore.StoreSuitabilityCheck.EMPTY));
+            return subStore;
+        });
 
         store = create();
 
@@ -402,11 +372,7 @@ public class CompositeBlobStoreTest {
     }
 
     private FileBlobStoreInfo config(
-            String id,
-            boolean isDefault,
-            boolean isEnabled,
-            String baseDirectory,
-            int fileSystemBlockSize) {
+            String id, boolean isDefault, boolean isEnabled, String baseDirectory, int fileSystemBlockSize) {
         FileBlobStoreInfo c = new FileBlobStoreInfo(id);
         c.setDefault(isDefault);
         c.setEnabled(isEnabled);
@@ -419,19 +385,12 @@ public class CompositeBlobStoreTest {
         return queryTile(DEFAULT_LAYER, DEFAULT_GRIDSET, DEFAULT_FORMAT, x, y, z);
     }
 
-    private TileObject queryTile(
-            String layer, String gridset, String extension, long x, long y, int z) {
+    private TileObject queryTile(String layer, String gridset, String extension, long x, long y, int z) {
         return queryTile(layer, gridset, extension, x, y, z, null);
     }
 
     private TileObject queryTile(
-            String layer,
-            String gridset,
-            String extension,
-            long x,
-            long y,
-            int z,
-            Map<String, String> parameters) {
+            String layer, String gridset, String extension, long x, long y, int z, Map<String, String> parameters) {
 
         String format;
         try {
@@ -440,9 +399,7 @@ public class CompositeBlobStoreTest {
             throw new RuntimeException(e);
         }
 
-        TileObject tile =
-                TileObject.createQueryTileObject(
-                        layer, new long[] {x, y, z}, gridset, format, parameters);
+        TileObject tile = TileObject.createQueryTileObject(layer, new long[] {x, y, z}, gridset, format, parameters);
         return tile;
     }
 }

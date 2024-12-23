@@ -22,10 +22,7 @@ public abstract class SetSingletonRule<T> extends ExternalResource {
         this.newValue = newValue;
     }
 
-    /**
-     * @param newValue Supplier for value to set the value to on start. Do not set on test start if
-     *     null.
-     */
+    /** @param newValue Supplier for value to set the value to on start. Do not set on test start if null. */
     public SetSingletonRule(@Nullable Supplier<T> newValue) {
         super();
         this.newValue = newValue;
@@ -38,11 +35,9 @@ public abstract class SetSingletonRule<T> extends ExternalResource {
     /**
      * @param get Getter for the singleton value
      * @param set Setter for the singleton value
-     * @param newValue Supplier for value to set the value to on start. Do not set on test start if
-     *     null.
+     * @param newValue Supplier for value to set the value to on start. Do not set on test start if null.
      */
-    public static <T> SetSingletonRule<T> create(
-            Supplier<T> get, Consumer<T> set, @Nullable Supplier<T> newValue) {
+    public static <T> SetSingletonRule<T> create(Supplier<T> get, Consumer<T> set, @Nullable Supplier<T> newValue) {
         return new SetSingletonRule<>(newValue) {
 
             @Override

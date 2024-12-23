@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan - 2011
  */
@@ -44,31 +43,22 @@ public class ClassMetadataBuilder {
         Field pkField = getField(field);
 
         primaryKey =
-                new PrimaryKeyMetadata(
-                        pkField.getName(),
-                        pkField.getType().getName(),
-                        entityClass.getName(),
-                        sequence);
+                new PrimaryKeyMetadata(pkField.getName(), pkField.getType().getName(), entityClass.getName(), sequence);
     }
 
     public void secondaryKey(
-            String field,
-            String keyName,
-            Relationship relationship,
-            Class relatedEntity,
-            DeleteAction deleteAction) {
+            String field, String keyName, Relationship relationship, Class relatedEntity, DeleteAction deleteAction) {
 
         Field skField = getField(field);
-        secondaryKeys.add(
-                new SecondaryKeyMetadata(
-                        skField.getName(),
-                        entityClass.getName(),
-                        entityClass.getName(),
-                        skField.getType().getName(),
-                        keyName,
-                        relationship,
-                        relatedEntity != null ? relatedEntity.getName() : null,
-                        deleteAction));
+        secondaryKeys.add(new SecondaryKeyMetadata(
+                skField.getName(),
+                entityClass.getName(),
+                entityClass.getName(),
+                skField.getType().getName(),
+                keyName,
+                relationship,
+                relatedEntity != null ? relatedEntity.getName() : null,
+                deleteAction));
     }
 
     private Field getField(String lookup) {
@@ -87,8 +77,7 @@ public class ClassMetadataBuilder {
         // check it's a valid type
         if (type.isEnum() || type.isInterface() || type.isPrimitive()) {
             throw new IllegalArgumentException(
-                    "Enumerations, interfaces or primitive types cannot be entities: "
-                            + type.getName());
+                    "Enumerations, interfaces or primitive types cannot be entities: " + type.getName());
         }
 
         // setup the fields
@@ -101,8 +90,7 @@ public class ClassMetadataBuilder {
             }
 
             // grab the field
-            fields.add(
-                    new FieldMetadata(field.getName(), field.getType().getName(), type.getName()));
+            fields.add(new FieldMetadata(field.getName(), field.getType().getName(), type.getName()));
         }
 
         // create the class metadata
@@ -114,8 +102,7 @@ public class ClassMetadataBuilder {
             secondaryKeys.clear();
         }
         ClassMetadata classMetadata =
-                new ClassMetadata(
-                        type.getName(), 0, null, true, primaryKey, secondaryKeyMap, null, fields);
+                new ClassMetadata(type.getName(), 0, null, true, primaryKey, secondaryKeyMap, null, fields);
         primaryKey = null;
         entityClass = null;
         return classMetadata;

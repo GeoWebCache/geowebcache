@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan Copyright 2011
  */
@@ -38,12 +37,10 @@ public class EntityStoreBuilder {
     }
 
     /**
-     * @param bdbEnvProperties properties for the {@link EnvironmentConfig}, or {@code null}. If not
-     *     provided {@code environment.properties} will be looked up for inside {@code
-     *     storeDirectory}
+     * @param bdbEnvProperties properties for the {@link EnvironmentConfig}, or {@code null}. If not provided
+     *     {@code environment.properties} will be looked up for inside {@code storeDirectory}
      */
-    public EntityStore buildEntityStore(
-            final File storeDirectory, final Properties bdbEnvProperties) {
+    public EntityStore buildEntityStore(final File storeDirectory, final Properties bdbEnvProperties) {
 
         EnvironmentConfig envCfg = new EnvironmentConfig();
         envCfg.setAllowCreate(true);
@@ -58,9 +55,8 @@ public class EntityStoreBuilder {
         Integer cacheSizeMB = config.getCacheSizeMB();
         if (cacheMemoryPercentAllowed == null) {
             if (cacheSizeMB == null) {
-                log.config(
-                        "Neither disk quota page store' cache memory percent nor cache size was provided."
-                                + " Defaulting to 25% Heap Size");
+                log.config("Neither disk quota page store' cache memory percent nor cache size was provided."
+                        + " Defaulting to 25% Heap Size");
                 envCfg.setCachePercent(25);
             } else {
                 log.config("Disk quota page store cache explicitly set to " + cacheSizeMB + "MB");

@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Björn Hartell, Copyright 2010
  */
@@ -23,11 +22,11 @@ import org.geowebcache.filter.parameters.ParameterException;
 import org.geowebcache.filter.parameters.ParameterFilter;
 
 /**
- * This class is used to forward information about WMS 1.1.x dimensions from the getcapabilities
- * configuration to GWC clients.
+ * This class is used to forward information about WMS 1.1.x dimensions from the getcapabilities configuration to GWC
+ * clients.
  *
- * <p>It is naive in the sense that it does not really parse or understand the values it is dealing
- * with, anything is accepted.
+ * <p>It is naive in the sense that it does not really parse or understand the values it is dealing with, anything is
+ * accepted.
  */
 public class NaiveWMSDimensionFilter extends ParameterFilter implements WMSDimensionProvider {
 
@@ -45,8 +44,7 @@ public class NaiveWMSDimensionFilter extends ParameterFilter implements WMSDimen
 
         String keyName = dimension.getName();
 
-        if (keyName.compareToIgnoreCase("time") != 0
-                && keyName.compareToIgnoreCase("elevation") != 0) {
+        if (keyName.compareToIgnoreCase("time") != 0 && keyName.compareToIgnoreCase("elevation") != 0) {
             keyName = "dim_" + keyName;
         }
 
@@ -130,11 +128,7 @@ public class NaiveWMSDimensionFilter extends ParameterFilter implements WMSDimen
         return a == null
                 ? 1
                 : Objects.hash(
-                        a.getName(),
-                        a.getDefaultValue(),
-                        a.getNearestValue(),
-                        a.isMultipleValues(),
-                        a.isCurrent());
+                        a.getName(), a.getDefaultValue(), a.getNearestValue(), a.isMultipleValues(), a.isCurrent());
     }
 
     // Dimension does not implement equals, so do it here

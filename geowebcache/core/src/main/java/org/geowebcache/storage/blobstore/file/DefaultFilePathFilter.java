@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
@@ -59,8 +58,7 @@ public class DefaultFilePathFilter implements FilenameFilter {
     }
 
     /**
-     * Assumes it will get fed something like path: name: *EPSG_2163_01/0_0 01_01.png *EPSG_2163_01/
-     * 0_0 * EPSG_2163_01
+     * Assumes it will get fed something like path: name: *EPSG_2163_01/0_0 01_01.png *EPSG_2163_01/ 0_0 * EPSG_2163_01
      *
      * @see java.io.FilenameFilter#accept(java.io.File, java.lang.String)
      */
@@ -83,8 +81,7 @@ public class DefaultFilePathFilter implements FilenameFilter {
     }
 
     /**
-     * Example: nyc_01, nyc_05_1,EPSG_2163_01, EPSG_2163_01_7 (i.e. {@code
-     * <gridsetPrefix>_<zLevel>[_<parametersId>]})
+     * Example: nyc_01, nyc_05_1,EPSG_2163_01, EPSG_2163_01_7 (i.e. {@code <gridsetPrefix>_<zLevel>[_<parametersId>]})
      */
     private boolean acceptZoomLevelDir(String name) {
         if (!name.startsWith(gridSetPrefix)) {

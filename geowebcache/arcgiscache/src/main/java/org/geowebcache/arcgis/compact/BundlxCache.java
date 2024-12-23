@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2019
  */
@@ -20,8 +19,8 @@ import com.google.common.cache.CacheBuilder;
 /**
  * Cache that stores data from .bundlx files.
  *
- * <p>Zoom, row, and column of the tile are used as key. Entries contain the path to the .bundle
- * file, the size of the tile and the offset of the image data inside the .bundle file.
+ * <p>Zoom, row, and column of the tile are used as key. Entries contain the path to the .bundle file, the size of the
+ * tile and the offset of the image data inside the .bundle file.
  *
  * @author Bjoern Saxe
  */
@@ -79,8 +78,8 @@ public class BundlxCache {
     /**
      * Cache that stores the path ot the .
      *
-     * @param maxSize Maximum size of cache. If the size of the cache equals maxSize, adding a new
-     *     entry will remove the least recently used entry from the cache.
+     * @param maxSize Maximum size of cache. If the size of the cache equals maxSize, adding a new entry will remove the
+     *     least recently used entry from the cache.
      */
     public BundlxCache(int maxSize) {
         indexCache = CacheBuilder.newBuilder().maximumSize(maxSize).build();
@@ -90,8 +89,7 @@ public class BundlxCache {
      * Get the entry for a key from the cache.
      *
      * @param key Key.
-     * @return Returns the entry. Returns null if the key has a null value or if the key has no
-     *     entry.
+     * @return Returns the entry. Returns null if the key has a null value or if the key has no entry.
      */
     public synchronized CacheEntry get(CacheKey key) {
         return indexCache.getIfPresent(key);

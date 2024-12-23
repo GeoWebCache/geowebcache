@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2018
  */
@@ -39,36 +38,36 @@ public class OnlineTestRule extends ExternalResource {
     /** System property set to totally disable any online tests */
     public static final String ONLINE_TEST_PROFILE = "onlineTestProfile";
     /**
-     * The key in the test fixture property file used to set the behaviour of the online test if
-     * {@link #connect()} fails.
+     * The key in the test fixture property file used to set the behaviour of the online test if {@link #connect()}
+     * fails.
      */
     public static final String SKIP_ON_FAILURE_KEY = "skip.on.failure";
     /** The default value used for {@link #SKIP_ON_FAILURE_KEY} if it is not present. */
     public static final String SKIP_ON_FAILURE_DEFAULT = "true";
     /**
-     * A static map which tracks which fixtures are offline. This prevents continually trying to run
-     * a test when an external resource is offline.
+     * A static map which tracks which fixtures are offline. This prevents continually trying to run a test when an
+     * external resource is offline.
      */
     protected static Map<String, Boolean> online = new HashMap<>();
     /**
-     * A static map which tracks which fixture files can not be found. This prevents continually
-     * looking up the file and reporting it not found to the user.
+     * A static map which tracks which fixture files can not be found. This prevents continually looking up the file and
+     * reporting it not found to the user.
      */
     protected static Map<String, Boolean> found = new HashMap<>();
     /** The test fixture, {@code null} if the fixture is not available. */
     protected Properties fixture;
     /**
-     * Flag that determines effect of exceptions in connect/disconnect. If true (the default),
-     * exceptions in connect cause the the test to be disabled, and exceptions in disconnect to be
-     * ignored. If false, exceptions will be rethrown, and cause the test to fail.
+     * Flag that determines effect of exceptions in connect/disconnect. If true (the default), exceptions in connect
+     * cause the the test to be disabled, and exceptions in disconnect to be ignored. If false, exceptions will be
+     * rethrown, and cause the test to fail.
      */
     protected boolean skipOnFailure = true;
 
     protected final String fixtureId;
 
     /**
-     * Check whether the fixture is available. This method also loads the configuration if present,
-     * and tests the connection using {@link #isOnline()}.
+     * Check whether the fixture is available. This method also loads the configuration if present, and tests the
+     * connection using {@link #isOnline()}.
      *
      * @return true if fixture is available for use
      */
@@ -83,8 +82,7 @@ public class OnlineTestRule extends ExternalResource {
         try {
             available = isOnline();
         } catch (Throwable t) {
-            LOG.info(
-                    "Skipping " + fixtureId + " tests, resources not available: " + t.getMessage());
+            LOG.info("Skipping " + fixtureId + " tests, resources not available: " + t.getMessage());
             LOG.log(Level.WARNING, t.getMessage(), t);
             available = Boolean.FALSE;
         }
@@ -117,8 +115,7 @@ public class OnlineTestRule extends ExternalResource {
                         if (profile == null) {
                             Properties exampleFixture = createExampleFixture();
                             if (exampleFixture != null) {
-                                File exFixtureFile =
-                                        new File(fixtureFile.getAbsolutePath() + ".example");
+                                File exFixtureFile = new File(fixtureFile.getAbsolutePath() + ".example");
                                 if (!exFixtureFile.exists()) {
                                     createExampleFixture(exFixtureFile, exampleFixture);
                                 }
@@ -171,19 +168,15 @@ public class OnlineTestRule extends ExternalResource {
         checkAvailable();
         setUpInternal();
 
-        skipOnFailure =
-                Boolean.parseBoolean(
-                        fixture.getProperty(
-                                OnlineTestRule.SKIP_ON_FAILURE_KEY,
-                                OnlineTestRule.SKIP_ON_FAILURE_DEFAULT));
+        skipOnFailure = Boolean.parseBoolean(
+                fixture.getProperty(OnlineTestRule.SKIP_ON_FAILURE_KEY, OnlineTestRule.SKIP_ON_FAILURE_DEFAULT));
         // call the setUp template method
         try {
             connect();
         } catch (Exception e) {
             if (skipOnFailure) {
                 fixture = null;
-                throw new AssumptionViolatedException(
-                        "Failure during connection to fixture " + fixtureId, e);
+                throw new AssumptionViolatedException("Failure during connection to fixture " + fixtureId, e);
             } else {
                 // do not swallow the exception
                 throw e;
@@ -207,8 +200,7 @@ public class OnlineTestRule extends ExternalResource {
                     disconnect();
                 } catch (Exception e) {
                     if (!skipOnFailure) {
-                        throw new AssertionError(
-                                "Exception during disconnect of fixture " + fixtureId, e);
+                        throw new AssertionError("Exception during disconnect of fixture " + fixtureId, e);
                     }
                 }
             }
@@ -221,8 +213,7 @@ public class OnlineTestRule extends ExternalResource {
     /**
      * Tests if external resources needed to run the tests are online.
      *
-     * <p>This method can return false to indicate the online resources are not up, or can simply
-     * throw an exception.
+     * <p>This method can return false to indicate the online resources are not up, or can simply throw an exception.
      *
      * @return True if external resources are online, otherwise false.
      * @throws Exception Any errors that occur determining if online resources are available.
@@ -234,8 +225,8 @@ public class OnlineTestRule extends ExternalResource {
     /**
      * Connection method, called from {@link #setUp()}.
      *
-     * <p>Subclasses should do all initialization / connection here. In the event of a connection
-     * not being available, this method should throw an exception to abort the test case.
+     * <p>Subclasses should do all initialization / connection here. In the event of a connection not being available,
+     * this method should throw an exception to abort the test case.
      *
      * @throws Exception if the connection failed.
      */
@@ -251,12 +242,12 @@ public class OnlineTestRule extends ExternalResource {
     protected void disconnect() throws Exception {}
 
     /**
-     * Allows tests to create an offline fixture in cases where the user has not specified an
-     * explicit fixture for the test.
+     * Allows tests to create an offline fixture in cases where the user has not specified an explicit fixture for the
+     * test.
      *
-     * <p>Note, that this should method should on be implemented if the test case is created of
-     * creating a fixture which relies soley on embedded or offline resources. It should not
-     * reference any external or online resources as it prevents the user from running offline.
+     * <p>Note, that this should method should on be implemented if the test case is created of creating a fixture which
+     * relies soley on embedded or offline resources. It should not reference any external or online resources as it
+     * prevents the user from running offline.
      */
     protected Properties createOfflineFixture() {
         return null;
@@ -265,8 +256,8 @@ public class OnlineTestRule extends ExternalResource {
     /**
      * Allows test to create a sample fixture for users.
      *
-     * <p>If this method returns a value the first time a fixture is looked up and not found this
-     * method will be called to create a fixture file with teh same id, but suffixed with .template.
+     * <p>If this method returns a value the first time a fixture is looked up and not found this method will be called
+     * to create a fixture file with teh same id, but suffixed with .template.
      */
     protected Properties createExampleFixture() {
         return null;

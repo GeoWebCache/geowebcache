@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Nuno Oliveira, GeoSolutions S.A.S., Copyright 2016
  */
@@ -36,85 +35,23 @@ public final class FileManagerTest extends TestSupport {
     @Test
     public void testGetLayerAssociatedFilesWithMultipleLevels() throws Exception {
         String pathTemplate =
-                Utils.buildPath(
-                        "tiles",
-                        "{format}",
-                        "{style}",
-                        "zoom-{z}",
-                        "{layer}",
-                        "ranges-{x}-{y}.sqlite");
-        File fileAsiaA =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "tiles",
-                                "png",
-                                "default",
-                                "zoom-10",
-                                "asia",
-                                "ranges-0-500.sqlite"));
-        File fileAsiaB =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "tiles",
-                                "png",
-                                "default",
-                                "zoom-11",
-                                "asia",
-                                "ranges-100-500.sqlite"));
-        File fileAsiaC =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "tiles",
-                                "png",
-                                "dark-borders",
-                                "zoom-10",
-                                "asia",
-                                "ranges-0-500.sqlite"));
-        File fileAsiaD =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "tiles",
-                                "jpeg",
-                                "dark-borders",
-                                "zoom-10",
-                                "asia",
-                                "ranges-0-500.sqlite"));
-        File fileAfricaA =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "tiles",
-                                "png",
-                                "default",
-                                "zoom-10",
-                                "africa",
-                                "ranges-0-500.sqlite"));
-        File fileAmericaA =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "tiles",
-                                "png",
-                                "dark-borders",
-                                "zoom-10",
-                                "america",
-                                "ranges-0-500.sqlite"));
-        File fileAmericaB =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "tiles",
-                                "jpeg",
-                                "dark-borders",
-                                "zoom-10",
-                                "america",
-                                "ranges-0-500.sqlite"));
-        File fileEuropeA =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "tiles",
-                                "gif",
-                                "dark-borders",
-                                "zoom-15",
-                                "europe",
-                                "ranges-4000-500.sqlite"));
+                Utils.buildPath("tiles", "{format}", "{style}", "zoom-{z}", "{layer}", "ranges-{x}-{y}.sqlite");
+        File fileAsiaA = createFileInRootDir(
+                Utils.buildPath("tiles", "png", "default", "zoom-10", "asia", "ranges-0-500.sqlite"));
+        File fileAsiaB = createFileInRootDir(
+                Utils.buildPath("tiles", "png", "default", "zoom-11", "asia", "ranges-100-500.sqlite"));
+        File fileAsiaC = createFileInRootDir(
+                Utils.buildPath("tiles", "png", "dark-borders", "zoom-10", "asia", "ranges-0-500.sqlite"));
+        File fileAsiaD = createFileInRootDir(
+                Utils.buildPath("tiles", "jpeg", "dark-borders", "zoom-10", "asia", "ranges-0-500.sqlite"));
+        File fileAfricaA = createFileInRootDir(
+                Utils.buildPath("tiles", "png", "default", "zoom-10", "africa", "ranges-0-500.sqlite"));
+        File fileAmericaA = createFileInRootDir(
+                Utils.buildPath("tiles", "png", "dark-borders", "zoom-10", "america", "ranges-0-500.sqlite"));
+        File fileAmericaB = createFileInRootDir(
+                Utils.buildPath("tiles", "jpeg", "dark-borders", "zoom-10", "america", "ranges-0-500.sqlite"));
+        File fileEuropeA = createFileInRootDir(
+                Utils.buildPath("tiles", "gif", "dark-borders", "zoom-15", "europe", "ranges-4000-500.sqlite"));
         FileManager fileManager = new FileManager(getRootDirectory(), pathTemplate, 500, 500);
         List<File> asiaFiles = fileManager.getFiles("asia");
         assertThat(asiaFiles, containsInAnyOrder(fileAsiaA, fileAsiaB, fileAsiaC, fileAsiaD));
@@ -160,95 +97,24 @@ public final class FileManagerTest extends TestSupport {
 
     @Test
     public void testGetGridSetAndLayerAssociatedFiles() throws Exception {
-        String pathTemplate =
-                Utils.buildPath(
-                        "tiles",
-                        "{grid}",
-                        "{format}",
-                        "{style}",
-                        "zoom-{z}",
-                        "{layer}",
-                        "ranges-{x}-{y}.sqlite");
-        File fileAsiaGrid1A =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "tiles",
-                                "grid1",
-                                "png",
-                                "default",
-                                "zoom-10",
-                                "asia",
-                                "ranges-0-500.sqlite"));
-        File fileAsiaGrid2B =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "tiles",
-                                "grid2",
-                                "png",
-                                "default",
-                                "zoom-11",
-                                "asia",
-                                "ranges-100-500.sqlite"));
-        File fileAsiaGrid3C =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "tiles",
-                                "grid3",
-                                "png",
-                                "dark-borders",
-                                "zoom-10",
-                                "asia",
-                                "ranges-0-500.sqlite"));
-        File fileAsiaGrid3D =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "tiles",
-                                "grid3",
-                                "jpeg",
-                                "dark-borders",
-                                "zoom-10",
-                                "asia",
-                                "ranges-0-500.sqlite"));
-        File fileAfricaGrid1A =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "tiles",
-                                "grid1",
-                                "png",
-                                "default",
-                                "zoom-10",
-                                "africa",
-                                "ranges-0-500.sqlite"));
-        File fileAmericaGrid1A =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "tiles",
-                                "grid1",
-                                "png",
-                                "dark-borders",
-                                "zoom-10",
-                                "america",
-                                "ranges-0-500.sqlite"));
-        File fileAmericaGrid2B =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "tiles",
-                                "grid2",
-                                "jpeg",
-                                "dark-borders",
-                                "zoom-10",
-                                "america",
-                                "ranges-0-500.sqlite"));
-        File fileEuropeGrid1A =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "tiles",
-                                "grid1",
-                                "gif",
-                                "dark-borders",
-                                "zoom-15",
-                                "europe",
-                                "ranges-4000-500.sqlite"));
+        String pathTemplate = Utils.buildPath(
+                "tiles", "{grid}", "{format}", "{style}", "zoom-{z}", "{layer}", "ranges-{x}-{y}.sqlite");
+        File fileAsiaGrid1A = createFileInRootDir(
+                Utils.buildPath("tiles", "grid1", "png", "default", "zoom-10", "asia", "ranges-0-500.sqlite"));
+        File fileAsiaGrid2B = createFileInRootDir(
+                Utils.buildPath("tiles", "grid2", "png", "default", "zoom-11", "asia", "ranges-100-500.sqlite"));
+        File fileAsiaGrid3C = createFileInRootDir(
+                Utils.buildPath("tiles", "grid3", "png", "dark-borders", "zoom-10", "asia", "ranges-0-500.sqlite"));
+        File fileAsiaGrid3D = createFileInRootDir(
+                Utils.buildPath("tiles", "grid3", "jpeg", "dark-borders", "zoom-10", "asia", "ranges-0-500.sqlite"));
+        File fileAfricaGrid1A = createFileInRootDir(
+                Utils.buildPath("tiles", "grid1", "png", "default", "zoom-10", "africa", "ranges-0-500.sqlite"));
+        File fileAmericaGrid1A = createFileInRootDir(
+                Utils.buildPath("tiles", "grid1", "png", "dark-borders", "zoom-10", "america", "ranges-0-500.sqlite"));
+        File fileAmericaGrid2B = createFileInRootDir(
+                Utils.buildPath("tiles", "grid2", "jpeg", "dark-borders", "zoom-10", "america", "ranges-0-500.sqlite"));
+        File fileEuropeGrid1A = createFileInRootDir(Utils.buildPath(
+                "tiles", "grid1", "gif", "dark-borders", "zoom-15", "europe", "ranges-4000-500.sqlite"));
         FileManager fileManager = new FileManager(getRootDirectory(), pathTemplate, 500, 500);
         List<File> asiaFilesGrid1 = fileManager.getFiles("asia", "grid1");
         assertThat(asiaFilesGrid1, containsInAnyOrder(fileAsiaGrid1A));
@@ -293,18 +159,8 @@ public final class FileManagerTest extends TestSupport {
     @Test
     public void testPathTemplateWithParameters() throws Exception {
         genericTestPath(
-                Utils.buildPath(
-                        "{background}-tiles",
-                        "{grid}",
-                        "{layer}-{style}",
-                        "zoom-{z}",
-                        "ranges{x}{y}.sqlite"),
-                Utils.buildPath(
-                        "blue-tiles",
-                        "wgs84",
-                        "america-default",
-                        "zoom-15",
-                        "ranges30001000.sqlite"),
+                Utils.buildPath("{background}-tiles", "{grid}", "{layer}-{style}", "zoom-{z}", "ranges{x}{y}.sqlite"),
+                Utils.buildPath("blue-tiles", "wgs84", "america-default", "zoom-15", "ranges30001000.sqlite"),
                 null,
                 new long[] {3024, 1534, 15},
                 "america",
@@ -316,33 +172,20 @@ public final class FileManagerTest extends TestSupport {
 
     @Test
     public void testPathTemplateWithTileObject() throws Exception {
-        TileObject tile =
-                TileObject.createCompleteTileObject(
-                        "africa",
-                        new long[] {7050, 5075, 11},
-                        "wgs84",
-                        "jpeg",
-                        tuplesToMap(tuple("style", "dark borders"), tuple("background", "blue")),
-                        null);
+        TileObject tile = TileObject.createCompleteTileObject(
+                "africa",
+                new long[] {7050, 5075, 11},
+                "wgs84",
+                "jpeg",
+                tuplesToMap(tuple("style", "dark borders"), tuple("background", "blue")),
+                null);
         String pathTemplate =
-                Utils.buildPath(
-                        "{format}-tiles",
-                        "{grid}",
-                        "{layer}-{style}",
-                        "zoom-{z}",
-                        "ranges-{x}_{y}.sqlite");
+                Utils.buildPath("{format}-tiles", "{grid}", "{layer}-{style}", "zoom-{z}", "ranges-{x}_{y}.sqlite");
         String expectedPath =
-                Utils.buildPath(
-                        "jpeg-tiles",
-                        "wgs84",
-                        "africa-dark_borders",
-                        "zoom-11",
-                        "ranges-7000_4000.sqlite");
+                Utils.buildPath("jpeg-tiles", "wgs84", "africa-dark_borders", "zoom-11", "ranges-7000_4000.sqlite");
         FileManager fileManager = new FileManager(getRootDirectory(), pathTemplate, 2000, 1000);
         File file = fileManager.getFile(tile);
-        assertThat(
-                file.getCanonicalPath(),
-                is(getRootDirectoryPath() + File.separator + expectedPath));
+        assertThat(file.getCanonicalPath(), is(getRootDirectoryPath() + File.separator + expectedPath));
     }
 
     @Test
@@ -370,15 +213,8 @@ public final class FileManagerTest extends TestSupport {
             {9, 9, 12, 13, 5},
             {16, 5, 16, 5, 6}
         };
-        TileRange tileRange =
-                new TileRange(
-                        "layer",
-                        "EPSG:4326",
-                        5,
-                        6,
-                        rangeBounds,
-                        MimeType.createFromExtension("png"),
-                        Collections.emptyMap());
+        TileRange tileRange = new TileRange(
+                "layer", "EPSG:4326", 5, 6, rangeBounds, MimeType.createFromExtension("png"), Collections.emptyMap());
         Map<File, List<long[]>> files = fileManager.getFiles(tileRange);
         assertThat(files, notNullValue());
         assertThat(files.size(), is(5));
@@ -391,31 +227,22 @@ public final class FileManagerTest extends TestSupport {
 
     @Test
     public void testPathSeparatorsAreConvertedToOsOnes() {
-        String pathTemplate =
-                "something-{layer}\\{grid-something}-something{grid}\\-el/se{format}/something-{params}";
+        String pathTemplate = "something-{layer}\\{grid-something}-something{grid}\\-el/se{format}/something-{params}";
         FileManager fileManager = new FileManager(getRootDirectory(), pathTemplate, 250, 250);
-        File file =
-                fileManager.getFile(
-                        "parameters_id",
-                        new long[] {0, 0, 0},
-                        "layer_name",
-                        "grid_set",
-                        "format_name",
-                        Collections.emptyMap());
+        File file = fileManager.getFile(
+                "parameters_id", new long[] {0, 0, 0}, "layer_name", "grid_set", "format_name", Collections.emptyMap());
         assertThat(
                 file.toString(),
-                is(
-                        buildRootFile(
-                                        "something-layer_name",
-                                        "null-somethinggrid_set",
-                                        "-el",
-                                        "seformat_name",
-                                        "something-parameters_id")
-                                .toString()));
+                is(buildRootFile(
+                                "something-layer_name",
+                                "null-somethinggrid_set",
+                                "-el",
+                                "seformat_name",
+                                "something-parameters_id")
+                        .toString()));
     }
 
-    private void checkFileExistsAndContainsTiles(
-            Map<File, List<long[]>> files, File file, long[]... expectedTiles) {
+    private void checkFileExistsAndContainsTiles(Map<File, List<long[]>> files, File file, long[]... expectedTiles) {
         List<long[]> tiles = files.get(file);
         assertThat(tiles, notNullValue());
         assertThat(tiles.size(), is(expectedTiles.length));
@@ -433,14 +260,7 @@ public final class FileManagerTest extends TestSupport {
             String format,
             Tuple<String, String>... tuples) {
         genericTestPath(
-                pathTemplate,
-                expectedPath,
-                parametersId,
-                xyz,
-                layerName,
-                gridSetId,
-                format,
-                tuplesToMap(tuples));
+                pathTemplate, expectedPath, parametersId, xyz, layerName, gridSetId, format, tuplesToMap(tuples));
     }
 
     private void genericTestPath(
@@ -453,8 +273,7 @@ public final class FileManagerTest extends TestSupport {
             String format,
             Map<String, String> parameters) {
         FileManager fileManager = new FileManager(getRootDirectory(), pathTemplate, 1000, 1000);
-        File file =
-                fileManager.getFile(parametersId, xyz, layerName, gridSetId, format, parameters);
+        File file = fileManager.getFile(parametersId, xyz, layerName, gridSetId, format, parameters);
         assertThat(file.getPath(), is(new File(getRootDirectory(), expectedPath).getPath()));
     }
 }

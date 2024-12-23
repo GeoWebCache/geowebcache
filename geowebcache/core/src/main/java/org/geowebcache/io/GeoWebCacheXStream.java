@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Kevin Smith, Boundless, Copyright 2015
  */
@@ -89,13 +88,7 @@ public class GeoWebCacheXStream extends XStream {
             Mapper mapper,
             ConverterLookup converterLookup,
             ConverterRegistry converterRegistry) {
-        super(
-                reflectionProvider,
-                driver,
-                classLoaderReference,
-                mapper,
-                converterLookup,
-                converterRegistry);
+        super(reflectionProvider, driver, classLoaderReference, mapper, converterLookup, converterRegistry);
         init();
     }
 
@@ -117,8 +110,7 @@ public class GeoWebCacheXStream extends XStream {
     }
 
     public GeoWebCacheXStream(
-            ReflectionProvider reflectionProvider,
-            HierarchicalStreamDriver hierarchicalStreamDriver) {
+            ReflectionProvider reflectionProvider, HierarchicalStreamDriver hierarchicalStreamDriver) {
         super(reflectionProvider, hierarchicalStreamDriver);
         init();
     }
@@ -152,16 +144,13 @@ public class GeoWebCacheXStream extends XStream {
 
     @Deprecated
     public GeoWebCacheXStream(
-            ReflectionProvider reflectionProvider,
-            HierarchicalStreamDriver driver,
-            ClassLoader classLoader) {
+            ReflectionProvider reflectionProvider, HierarchicalStreamDriver driver, ClassLoader classLoader) {
         super(reflectionProvider, driver, classLoader);
         init();
     }
 
     @Deprecated
-    public GeoWebCacheXStream(
-            ReflectionProvider reflectionProvider, Mapper mapper, HierarchicalStreamDriver driver) {
+    public GeoWebCacheXStream(ReflectionProvider reflectionProvider, Mapper mapper, HierarchicalStreamDriver driver) {
         super(reflectionProvider, mapper, driver);
         init();
     }
@@ -190,29 +179,27 @@ public class GeoWebCacheXStream extends XStream {
         addPermission(new PrimitiveTypePermission());
 
         // Common non-primitives
-        allowTypes(
-                new Class[] {
-                    java.lang.String.class,
-                    java.util.Date.class,
-                    java.sql.Date.class,
-                    java.sql.Timestamp.class,
-                    java.sql.Time.class,
-                });
+        allowTypes(new Class[] {
+            java.lang.String.class,
+            java.util.Date.class,
+            java.sql.Date.class,
+            java.sql.Timestamp.class,
+            java.sql.Time.class,
+        });
 
         // Common collections
-        allowTypes(
-                new Class[] {
-                    java.util.TreeSet.class,
-                    java.util.SortedSet.class,
-                    java.util.Set.class,
-                    java.util.HashSet.class,
-                    java.util.List.class,
-                    java.util.ArrayList.class,
-                    java.util.Map.class,
-                    java.util.HashMap.class,
-                    java.util.concurrent.CopyOnWriteArrayList.class,
-                    java.util.concurrent.ConcurrentHashMap.class,
-                });
+        allowTypes(new Class[] {
+            java.util.TreeSet.class,
+            java.util.SortedSet.class,
+            java.util.Set.class,
+            java.util.HashSet.class,
+            java.util.List.class,
+            java.util.ArrayList.class,
+            java.util.Map.class,
+            java.util.HashMap.class,
+            java.util.concurrent.CopyOnWriteArrayList.class,
+            java.util.concurrent.ConcurrentHashMap.class,
+        });
 
         String whitelistProp = GeoWebCacheExtensions.getProperty("GEOWEBCACHE_XSTREAM_WHITELIST");
         if (whitelistProp != null) {
@@ -222,10 +209,9 @@ public class GeoWebCacheXStream extends XStream {
     }
 
     /**
-     * This method is a clone of the base class one, leaving the converters in the same order where
-     * possible, but altering a few ones performing illegal reflective accesses against Java core
-     * classes, replacing them with alternatives that do not, or simply removing them, if we are not
-     * using them
+     * This method is a clone of the base class one, leaving the converters in the same order where possible, but
+     * altering a few ones performing illegal reflective accesses against Java core classes, replacing them with
+     * alternatives that do not, or simply removing them, if we are not using them
      */
     @Override
     protected void setupConverters() {
@@ -279,8 +265,7 @@ public class GeoWebCacheXStream extends XStream {
             registerConverter(new ColorConverter(), PRIORITY_NORMAL);
         }
         if (JVM.isSwingAvailable()) {
-            registerConverter(
-                    new LookAndFeelConverter(mapper, reflectionProvider), PRIORITY_NORMAL);
+            registerConverter(new LookAndFeelConverter(mapper, reflectionProvider), PRIORITY_NORMAL);
         }
         registerConverter(new LocaleConverter(), PRIORITY_NORMAL);
         registerConverter(new GregorianCalendarConverter(), PRIORITY_NORMAL);
@@ -297,49 +282,25 @@ public class GeoWebCacheXStream extends XStream {
                 new Class[] {ConverterLookup.class},
                 new Object[] {converterLookup});
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.extended.StackTraceElementConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.extended.StackTraceElementConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.extended.CurrencyConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.extended.CurrencyConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.extended.RegexPatternConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.extended.RegexPatternConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.extended.CharsetConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.extended.CharsetConverter", PRIORITY_NORMAL, null, null);
 
         // late bound converters - allows XStream to be compiled on earlier JDKs
         if (JVM.loadClassForName("javax.xml.datatype.Duration") != null) {
             registerConverterDynamically(
-                    "com.thoughtworks.xstream.converters.extended.DurationConverter",
-                    PRIORITY_NORMAL,
-                    null,
-                    null);
+                    "com.thoughtworks.xstream.converters.extended.DurationConverter", PRIORITY_NORMAL, null, null);
         }
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.enums.EnumConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.enums.EnumConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.basic.StringBuilderConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.basic.StringBuilderConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.basic.UUIDConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.basic.UUIDConverter", PRIORITY_NORMAL, null, null);
         if (JVM.loadClassForName("javax.activation.ActivationDataFlavor") != null) {
             registerConverterDynamically(
                     "com.thoughtworks.xstream.converters.extended.ActivationDataFlavorConverter",
@@ -348,91 +309,43 @@ public class GeoWebCacheXStream extends XStream {
                     null);
         }
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.extended.PathConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.extended.PathConverter", PRIORITY_NORMAL, null, null);
 
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.ChronologyConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.ChronologyConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.DurationConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.DurationConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.HijrahDateConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.HijrahDateConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.JapaneseDateConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.JapaneseDateConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.JapaneseEraConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.JapaneseEraConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.InstantConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.InstantConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.LocalDateConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.LocalDateConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.LocalDateTimeConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.LocalDateTimeConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.LocalTimeConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.LocalTimeConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.MinguoDateConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.MinguoDateConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.MonthDayConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.MonthDayConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.OffsetDateTimeConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.OffsetDateTimeConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.OffsetTimeConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.OffsetTimeConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.PeriodConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.PeriodConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
                 "com.thoughtworks.xstream.converters.time.SystemClockConverter",
                 PRIORITY_NORMAL,
                 new Class[] {Mapper.class},
                 new Object[] {mapper});
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.ThaiBuddhistDateConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.ThaiBuddhistDateConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
                 "com.thoughtworks.xstream.converters.time.ValueRangeConverter",
                 PRIORITY_NORMAL,
@@ -444,25 +357,13 @@ public class GeoWebCacheXStream extends XStream {
                 new Class[] {Mapper.class},
                 new Object[] {mapper});
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.YearConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.YearConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.YearMonthConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.YearMonthConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.ZonedDateTimeConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.ZonedDateTimeConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
-                "com.thoughtworks.xstream.converters.time.ZoneIdConverter",
-                PRIORITY_NORMAL,
-                null,
-                null);
+                "com.thoughtworks.xstream.converters.time.ZoneIdConverter", PRIORITY_NORMAL, null, null);
         registerConverterDynamically(
                 "com.thoughtworks.xstream.converters.reflection.LambdaConverter",
                 PRIORITY_NORMAL,
@@ -473,14 +374,11 @@ public class GeoWebCacheXStream extends XStream {
     }
 
     /**
-     * Straight copy of the registerConverterDynamically private method of XStream, hopefully it
-     * will be removed if XStream relaxes access control
+     * Straight copy of the registerConverterDynamically private method of XStream, hopefully it will be removed if
+     * XStream relaxes access control
      */
     private void registerConverterDynamically(
-            String className,
-            int priority,
-            Class[] constructorParamTypes,
-            Object[] constructorParamValues) {
+            String className, int priority, Class[] constructorParamTypes, Object[] constructorParamValues) {
         try {
             Class<?> type =
                     Class.forName(className, false, getClassLoaderReference().getReference());

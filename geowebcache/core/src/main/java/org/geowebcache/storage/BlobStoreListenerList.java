@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2019
  */
@@ -41,31 +40,27 @@ public final class BlobStoreListenerList {
     }
 
     public void sendLayerDeleted(String layerName) {
-        listeners.forEach(
-                listener -> {
-                    listener.layerDeleted(layerName);
-                });
+        listeners.forEach(listener -> {
+            listener.layerDeleted(layerName);
+        });
     }
 
     public void sendLayerRenamed(String oldLayerName, String newLayerName) {
-        listeners.forEach(
-                listener -> {
-                    listener.layerRenamed(oldLayerName, newLayerName);
-                });
+        listeners.forEach(listener -> {
+            listener.layerRenamed(oldLayerName, newLayerName);
+        });
     }
 
     public void sendGridSubsetDeleted(String layerName, String gridSetId) {
-        listeners.forEach(
-                listener -> {
-                    listener.gridSubsetDeleted(layerName, gridSetId);
-                });
+        listeners.forEach(listener -> {
+            listener.gridSubsetDeleted(layerName, gridSetId);
+        });
     }
 
     public void sendParametersDeleted(String layerName, String parametersId) {
-        listeners.forEach(
-                listener -> {
-                    listener.parametersDeleted(layerName, parametersId);
-                });
+        listeners.forEach(listener -> {
+            listener.parametersDeleted(layerName, parametersId);
+        });
     }
 
     public void sendTileDeleted(
@@ -77,11 +72,9 @@ public final class BlobStoreListenerList {
             long y,
             int z,
             long length) {
-        listeners.forEach(
-                listener -> {
-                    listener.tileDeleted(
-                            layerName, gridSetId, blobFormat, parametersId, x, y, z, length);
-                });
+        listeners.forEach(listener -> {
+            listener.tileDeleted(layerName, gridSetId, blobFormat, parametersId, x, y, z, length);
+        });
     }
 
     public void sendTileDeleted(final TileObject stObj) {
@@ -93,8 +86,7 @@ public final class BlobStoreListenerList {
         final String paramsId = stObj.getParametersId();
         final int blobSize = stObj.getBlobSize();
 
-        sendTileDeleted(
-                layerName, gridSetId, blobFormat, paramsId, xyz[0], xyz[1], (int) xyz[2], blobSize);
+        sendTileDeleted(layerName, gridSetId, blobFormat, paramsId, xyz[0], xyz[1], (int) xyz[2], blobSize);
     }
 
     public void sendTileStored(
@@ -106,11 +98,9 @@ public final class BlobStoreListenerList {
             long y,
             int z,
             long length) {
-        listeners.forEach(
-                listener -> {
-                    listener.tileStored(
-                            layerName, gridSetId, blobFormat, parametersId, x, y, z, length);
-                });
+        listeners.forEach(listener -> {
+            listener.tileStored(layerName, gridSetId, blobFormat, parametersId, x, y, z, length);
+        });
     }
 
     public void sendTileStored(final TileObject stObj) {
@@ -122,8 +112,7 @@ public final class BlobStoreListenerList {
         final String paramsId = stObj.getParametersId();
         final int blobSize = stObj.getBlobSize();
 
-        sendTileStored(
-                layerName, gridSetId, blobFormat, paramsId, xyz[0], xyz[1], (int) xyz[2], blobSize);
+        sendTileStored(layerName, gridSetId, blobFormat, paramsId, xyz[0], xyz[1], (int) xyz[2], blobSize);
     }
 
     public void sendTileUpdated(
@@ -136,19 +125,9 @@ public final class BlobStoreListenerList {
             int z,
             long blobSize,
             long oldSize) {
-        listeners.forEach(
-                listener -> {
-                    listener.tileUpdated(
-                            layerName,
-                            gridSetId,
-                            blobFormat,
-                            parametersId,
-                            x,
-                            y,
-                            z,
-                            blobSize,
-                            oldSize);
-                });
+        listeners.forEach(listener -> {
+            listener.tileUpdated(layerName, gridSetId, blobFormat, parametersId, x, y, z, blobSize, oldSize);
+        });
     }
 
     public void sendTileUpdated(final TileObject stObj, final long oldSize) {
@@ -160,15 +139,6 @@ public final class BlobStoreListenerList {
         final String paramsId = stObj.getParametersId();
         final int blobSize = stObj.getBlobSize();
 
-        sendTileUpdated(
-                layerName,
-                gridSetId,
-                blobFormat,
-                paramsId,
-                xyz[0],
-                xyz[1],
-                (int) xyz[2],
-                blobSize,
-                oldSize);
+        sendTileUpdated(layerName, gridSetId, blobFormat, paramsId, xyz[0], xyz[1], (int) xyz[2], blobSize, oldSize);
     }
 }

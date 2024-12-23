@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2018
  */
@@ -44,8 +43,7 @@ public class DefaultGridSetsTest {
         // get the default mercator gridset and make sure it matches the EPSG:3857 gridset
         GridSet defaultMercatorGridSet = broker.getWorldEpsg3857();
         assertNotNull("GridSetBroker missing default mercator GridSet", defaultMercatorGridSet);
-        assertEquals(
-                "Unexpected default mercator GridSet", epsg3857GridSet, defaultMercatorGridSet);
+        assertEquals("Unexpected default mercator GridSet", epsg3857GridSet, defaultMercatorGridSet);
     }
 
     @Test
@@ -64,12 +62,8 @@ public class DefaultGridSetsTest {
         // get the default unprojected gridset and make sure it matches the GlobalCRS84Geometric
         // gridset
         GridSet defaultUnprojectedGridSet = broker.getWorldEpsg4326();
-        assertNotNull(
-                "GridSetBroker missing default unprojected GridSet", defaultUnprojectedGridSet);
-        assertEquals(
-                "Unexpected default unprojected GridSet",
-                globalCrs84GridSet,
-                defaultUnprojectedGridSet);
+        assertNotNull("GridSetBroker missing default unprojected GridSet", defaultUnprojectedGridSet);
+        assertEquals("Unexpected default unprojected GridSet", globalCrs84GridSet, defaultUnprojectedGridSet);
         // make sure GoogleMapsCompatible is available and is the mercator default
         GridSet googleMapsCompatible = broker.get("GoogleMapsCompatible");
         assertNotNull("GridSetBroker missing GoogleMapsCompatible GridSet", googleMapsCompatible);
@@ -83,10 +77,7 @@ public class DefaultGridSetsTest {
         // gridset
         GridSet defaultMercatorGridSet = broker.getWorldEpsg3857();
         assertNotNull("GridSetBroker missing default mercator GridSet", defaultMercatorGridSet);
-        assertEquals(
-                "Unexpected default mercator GridSet",
-                googleMapsCompatible,
-                defaultMercatorGridSet);
+        assertEquals("Unexpected default mercator GridSet", googleMapsCompatible, defaultMercatorGridSet);
     }
 
     @Test
@@ -108,9 +99,7 @@ public class DefaultGridSetsTest {
         // reference pixel size and scale denominators
         for (int level = 0; level < base.getNumLevels(); level++) {
             assertEquals(
-                    base.getGrid(level).getScaleDenominator(),
-                    x2.getGrid(level).getScaleDenominator() * 2,
-                    1e-6);
+                    base.getGrid(level).getScaleDenominator(), x2.getGrid(level).getScaleDenominator() * 2, 1e-6);
         }
     }
 
@@ -133,9 +122,7 @@ public class DefaultGridSetsTest {
         // reference pixel size and scale denominators
         for (int level = 0; level < base.getNumLevels(); level++) {
             assertEquals(
-                    base.getGrid(level).getScaleDenominator(),
-                    x2.getGrid(level).getScaleDenominator() * 2,
-                    1e-6);
+                    base.getGrid(level).getScaleDenominator(), x2.getGrid(level).getScaleDenominator() * 2, 1e-6);
         }
     }
 }

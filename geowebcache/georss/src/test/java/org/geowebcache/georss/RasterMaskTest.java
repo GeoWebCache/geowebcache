@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan (OpenGeo) 2010
  */
@@ -27,8 +26,8 @@ import org.junit.Test;
 
 public class RasterMaskTest {
     /**
-     * Use the System property {@code org.geowebcache.debugToDisk} in order for the mask images
-     * produces to be logged to the target directory
+     * Use the System property {@code org.geowebcache.debugToDisk} in order for the mask images produces to be logged to
+     * the target directory
      */
     private static final boolean debugToDisk = Boolean.getBoolean("org.geowebcache.debugToDisk");
 
@@ -41,28 +40,21 @@ public class RasterMaskTest {
     @Before
     public void setUp() {
         RasterMaskTestUtils.debugToDisk = debugToDisk;
-        layer =
-                TestUtils.createWMSLayer(
-                        "image/png",
-                        new GridSetBroker(
-                                Collections.singletonList(new DefaultGridsets(false, false))),
-                        3,
-                        3,
-                        new BoundingBox(-180, -90, 180, 90));
+        layer = TestUtils.createWMSLayer(
+                "image/png",
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false))),
+                3,
+                3,
+                new BoundingBox(-180, -90, 180, 90));
         gridsetId = layer.getGridSubsets().iterator().next();
         fullCoverage = layer.getGridSubset(gridsetId).getCoverages();
     }
 
-    /**
-     * Once the matrix is built, test the expected tiles are marked as covered by the consumed
-     * geometries
-     */
+    /** Once the matrix is built, test the expected tiles are marked as covered by the consumed geometries */
     @Test
     public void testTileIsPresent() throws Exception {
-        GeometryRasterMaskBuilder mask =
-                RasterMaskTestUtils.buildSampleFilterMatrix(layer, gridsetId);
-        RasterMask tileRangeMask =
-                new RasterMask(mask.getByLevelMasks(), fullCoverage, mask.getCoveredBounds());
+        GeometryRasterMaskBuilder mask = RasterMaskTestUtils.buildSampleFilterMatrix(layer, gridsetId);
+        RasterMask tileRangeMask = new RasterMask(mask.getByLevelMasks(), fullCoverage, mask.getCoveredBounds());
 
         // level 0
         Assert.assertTrue(tileRangeMask.lookup(0, 0, 0));
@@ -101,22 +93,20 @@ public class RasterMaskTest {
     @Test
     public void testTileIsPresentBuffering() throws Exception {
 
-        GeometryRasterMaskBuilder mask =
-                RasterMaskTestUtils.buildSampleFilterMatrix(layer, gridsetId);
-        RasterMask tileRangeMask =
-                new RasterMask(mask.getByLevelMasks(), fullCoverage, mask.getCoveredBounds());
+        GeometryRasterMaskBuilder mask = RasterMaskTestUtils.buildSampleFilterMatrix(layer, gridsetId);
+        RasterMask tileRangeMask = new RasterMask(mask.getByLevelMasks(), fullCoverage, mask.getCoveredBounds());
 
         // level 5 (coverage is 0, 0, 63, 31)
 
         /**
          * 2010-02-15 , arneke:
          *
-         * <p>The raster is 64 pixels wide, 32 pixels tall. The feature is at 0deg,45deg, which on
-         * the 360,180 canvas should correspond to 4 tiles (smack in the middle) which means 31,32
-         * in the X direction, 23,24 in the Y direction
+         * <p>The raster is 64 pixels wide, 32 pixels tall. The feature is at 0deg,45deg, which on the 360,180 canvas
+         * should correspond to 4 tiles (smack in the middle) which means 31,32 in the X direction, 23,24 in the Y
+         * direction
          *
-         * <p>We only guarantee one tile buffering, so I'm not sure why we are testing all the tests
-         * below, some of which fail. I've just commented them out to get the build back to normal.
+         * <p>We only guarantee one tile buffering, so I'm not sure why we are testing all the tests below, some of
+         * which fail. I've just commented them out to get the build back to normal.
          */
         Assert.assertTrue(tileRangeMask.lookup(32, 23, 5)); // point location
 
@@ -133,17 +123,15 @@ public class RasterMaskTest {
     }
 
     /**
-     * maxMaskLevel is lower then max zoom level, then downsampling needs to be applied to {@link
-     * RasterMask#lookup(long, long, int)}
+     * maxMaskLevel is lower then max zoom level, then downsampling needs to be applied to
+     * {@link RasterMask#lookup(long, long, int)}
      */
     @Test
     public void testTileIsPresentWithSubSampling() throws Exception {
 
         final int maxMaskLevel = 3;
-        GeometryRasterMaskBuilder mask =
-                RasterMaskTestUtils.buildSampleFilterMatrix(layer, gridsetId, maxMaskLevel);
-        RasterMask tileRangeMask =
-                new RasterMask(mask.getByLevelMasks(), fullCoverage, mask.getCoveredBounds());
+        GeometryRasterMaskBuilder mask = RasterMaskTestUtils.buildSampleFilterMatrix(layer, gridsetId, maxMaskLevel);
+        RasterMask tileRangeMask = new RasterMask(mask.getByLevelMasks(), fullCoverage, mask.getCoveredBounds());
 
         // level 5 (coverage is 0, 0, 63, 31)
 

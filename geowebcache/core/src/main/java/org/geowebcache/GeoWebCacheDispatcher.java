@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
@@ -137,10 +136,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         this.defaultStorageFinder = defaultStorageFinder;
     }
 
-    /**
-     * GeoServer and other solutions that embedded this dispatcher will prepend a path, this is used
-     * to remove it.
-     */
+    /** GeoServer and other solutions that embedded this dispatcher will prepend a path, this is used to remove it. */
     public void setServletPrefix(String servletPrefix) {
         if (!servletPrefix.startsWith("/")) {
             this.servletPrefix = "/" + servletPrefix;
@@ -150,20 +146,16 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
         LOG.config("Invoked setServletPrefix(" + servletPrefix + ")");
     }
-    /**
-     * GeoServer and other solutions that embedded this dispatcher will prepend a path, this is used
-     * to remove it.
-     */
+    /** GeoServer and other solutions that embedded this dispatcher will prepend a path, this is used to remove it. */
     public String getServletPrefix() {
         return servletPrefix;
     }
 
     /**
-     * Services convert HTTP requests into the internal grid representation and specify what layer
-     * the response should come from.
+     * Services convert HTTP requests into the internal grid representation and specify what layer the response should
+     * come from.
      *
-     * <p>The application context is scanned for objects extending Service, thereby making it easy
-     * to add new services.
+     * <p>The application context is scanned for objects extending Service, thereby making it easy to add new services.
      */
     private Map<String, Service> loadServices() {
         LOG.info("Loading GWC Service extensions...");
@@ -174,15 +166,12 @@ public class GeoWebCacheDispatcher extends AbstractController {
         for (Service aService : plugins) {
             services.put(aService.getPathName(), aService);
         }
-        LOG.info(
-                "Done loading GWC Service extensions. Found : "
-                        + new ArrayList<>(services.keySet()));
+        LOG.info("Done loading GWC Service extensions. Found : " + new ArrayList<>(services.keySet()));
         return services;
     }
 
     private void loadBlankTile() {
-        String blankTilePath =
-                defaultStorageFinder.findEnvVar(DefaultStorageFinder.GWC_BLANK_TILE_PATH);
+        String blankTilePath = defaultStorageFinder.findEnvVar(DefaultStorageFinder.GWC_BLANK_TILE_PATH);
 
         if (blankTilePath != null) {
             File fh = new File(blankTilePath);
@@ -260,16 +249,15 @@ public class GeoWebCacheDispatcher extends AbstractController {
      * <p>If a tile is requested the request will be handed off to handleServiceRequest.
      */
     @Override
-    protected ModelAndView handleRequestInternal(
-            HttpServletRequest request, HttpServletResponse originalResponse) throws Exception {
+    protected ModelAndView handleRequestInternal(HttpServletRequest request, HttpServletResponse originalResponse)
+            throws Exception {
 
-        HttpServletResponseWrapper response =
-                new HttpServletResponseWrapper(originalResponse) {
-                    @Override
-                    public ServletOutputStream getOutputStream() throws IOException {
-                        return new DispatcherOutputStream(super.getOutputStream());
-                    }
-                };
+        HttpServletResponseWrapper response = new HttpServletResponseWrapper(originalResponse) {
+            @Override
+            public ServletOutputStream getOutputStream() throws IOException {
+                return new DispatcherOutputStream(super.getOutputStream());
+            }
+        };
 
         // Break the request into components, {type, service name}
         String[] requestComps = null;
@@ -290,8 +278,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
                     || requestComps[0].equalsIgnoreCase(TYPE_DEMO + "s")) {
                 handleDemoRequest(requestComps[1], request, response);
             } else {
-                ResponseUtils.writeErrorPage(
-                        response, 404, "Unknown path: " + requestComps[0], runtimeStats);
+                ResponseUtils.writeErrorPage(response, 404, "Unknown path: " + requestComps[0], runtimeStats);
             }
         } catch (HttpErrorCodeException e) {
             ResponseUtils.writeFixedResponse(
@@ -361,10 +348,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         return false;
     }
 
-    /**
-     * Destroy function, has to be referenced in bean declaration: <bean ...
-     * destroy="destroy">...</bean>
-     */
+    /** Destroy function, has to be referenced in bean declaration: <bean ... destroy="destroy">...</bean> */
     public void destroy() {
         LOG.fine("GeoWebCacheDispatcher.destroy() was invoked, shutting down.");
     }
@@ -390,8 +374,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     }
 
     /** This is the main method for handling service requests. See comments in the code. */
-    private void handleServiceRequest(
-            String serviceStr, HttpServletRequest request, HttpServletResponse response)
+    private void handleServiceRequest(String serviceStr, HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
         Conveyor conv = null;
@@ -407,11 +390,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         if (Objects.nonNull(layerName)) {
             layer = tileLayerDispatcher.getTileLayer(layerName);
             if (!layer.isEnabled()) {
-                throw new OWSException(
-                        400,
-                        "InvalidParameterValue",
-                        "LAYERS",
-                        "Layer '" + layerName + "' is disabled");
+                throw new OWSException(400, "InvalidParameterValue", "LAYERS", "Layer '" + layerName + "' is disabled");
             }
             if (conv instanceof ConveyorTile) {
                 ((ConveyorTile) conv).setTileLayer(layer);
@@ -426,17 +405,11 @@ public class GeoWebCacheDispatcher extends AbstractController {
             service.handleRequest(conv);
         } else {
             ResponseUtils.writeTile(
-                    getSecurityDispatcher(),
-                    conv,
-                    layerName,
-                    tileLayerDispatcher,
-                    defaultStorageFinder,
-                    runtimeStats);
+                    getSecurityDispatcher(), conv, layerName, tileLayerDispatcher, defaultStorageFinder, runtimeStats);
         }
     }
 
-    private void handleDemoRequest(
-            String action, HttpServletRequest request, HttpServletResponse response)
+    private void handleDemoRequest(String action, HttpServletRequest request, HttpServletResponse response)
             throws GeoWebCacheException {
         Demo.makeMap(tileLayerDispatcher, gridSetBroker, action, request, response);
     }
@@ -489,48 +462,35 @@ public class GeoWebCacheDispatcher extends AbstractController {
             commitId = "{NO BUILD INFO IN MANIFEST}";
         }
 
-        str.append(
-                "<html>\n"
-                        + ServletUtils.gwcHtmlHeader(baseUrl, "GWC Home")
-                        + "<body>\n"
-                        + ServletUtils.gwcHtmlLogoLink(baseUrl));
-        str.append(
-                "<h3>Welcome to GeoWebCache version "
-                        + version
-                        + ", build "
-                        + commitId
-                        + "</h3>\n");
-        str.append(
-                "<p><a href=\"http://geowebcache.org\">GeoWebCache</a> is an advanced tile cache for WMS servers.");
+        str.append("<html>\n"
+                + ServletUtils.gwcHtmlHeader(baseUrl, "GWC Home")
+                + "<body>\n"
+                + ServletUtils.gwcHtmlLogoLink(baseUrl));
+        str.append("<h3>Welcome to GeoWebCache version " + version + ", build " + commitId + "</h3>\n");
+        str.append("<p><a href=\"http://geowebcache.org\">GeoWebCache</a> is an advanced tile cache for WMS servers.");
         str.append(
                 "It supports a large variety of protocols and formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</p>");
         str.append("<h3>Automatically Generated Demos:</h3>\n");
         str.append(
-                "<ul><li><a href=\""
-                        + baseUrl
-                        + "demo\">A list of all the layers and automatic demos</a></li></ul>\n");
+                "<ul><li><a href=\"" + baseUrl + "demo\">A list of all the layers and automatic demos</a></li></ul>\n");
         str.append("<h3>GetCapabilities:</h3>\n");
-        str.append(
-                "<ul><li><a href=\""
-                        + baseUrl
-                        + "service/wmts?REQUEST=getcapabilities\">WMTS 1.0.0 GetCapabilities document</a></li>");
+        str.append("<ul><li><a href=\""
+                + baseUrl
+                + "service/wmts?REQUEST=getcapabilities\">WMTS 1.0.0 GetCapabilities document</a></li>");
         str.append(
                 "<li><a href=\""
                         + baseUrl
                         + "service/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities&TILED=true\">WMS 1.1.1 GetCapabilities document</a></li>");
         str.append("<li><a href=\"" + baseUrl + "service/tms/1.0.0\">TMS 1.0.0 document</a></li>");
         str.append("<li>Note that the latter will only work with clients that are ");
-        str.append(
-                "<a href=\"http://wiki.osgeo.org/wiki/WMS_Tiling_Client_Recommendation\">WMS-C capable</a>.</li>\n");
-        str.append(
-                "<li>Omitting tiled=true from the URL will omit the TileSet elements.</li></ul>\n");
+        str.append("<a href=\"http://wiki.osgeo.org/wiki/WMS_Tiling_Client_Recommendation\">WMS-C capable</a>.</li>\n");
+        str.append("<li>Omitting tiled=true from the URL will omit the TileSet elements.</li></ul>\n");
         if (runtimeStats != null) {
             str.append("<h3>Runtime Statistics</h3>\n");
             str.append(runtimeStats.getHTMLStats());
             str.append("</table>\n");
         }
-        if (!Boolean.parseBoolean(
-                GeoWebCacheExtensions.getProperty("GEOWEBCACHE_HIDE_STORAGE_LOCATIONS"))) {
+        if (!Boolean.parseBoolean(GeoWebCacheExtensions.getProperty("GEOWEBCACHE_HIDE_STORAGE_LOCATIONS"))) {
             appendStorageLocations(str);
         }
 
@@ -539,8 +499,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
         str.append("</body></html>\n");
 
-        ResponseUtils.writePage(
-                response, 200, str.toString(), runtimeStats, MediaType.TEXT_HTML_VALUE);
+        ResponseUtils.writePage(response, 200, str.toString(), runtimeStats, MediaType.TEXT_HTML_VALUE);
     }
 
     private void appendStorageLocations(StringBuilder str) {
@@ -602,8 +561,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
     }
 
     /**
-     * This method appends the cache statistics to the GWC homepage if the blobstore used is an
-     * instance of the {@link MemoryBlobStore} class
+     * This method appends the cache statistics to the GWC homepage if the blobstore used is an instance of the
+     * {@link MemoryBlobStore} class
      *
      * @param strGlobal Input {@link StringBuilder} containing the HTML for the GWC homepage
      */
@@ -667,9 +626,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
         str.append("<table border=\"0\" cellspacing=\"5\">");
 
-        str.append(
-                "<tr><td colspan=\"2\">Total number of requests:</td><td colspan=\"3\">"
-                        + (requestCount >= 0 ? requestCount + "" : "Unavailable"));
+        str.append("<tr><td colspan=\"2\">Total number of requests:</td><td colspan=\"3\">"
+                + (requestCount >= 0 ? requestCount + "" : "Unavailable"));
         str.append("</td></tr>\n");
 
         str.append("<tr><td colspan=\"5\"> </td></tr>");
@@ -692,25 +650,20 @@ public class GeoWebCacheDispatcher extends AbstractController {
 
         str.append("<tr><td colspan=\"5\"> </td></tr>");
 
-        str.append(
-                "<tr><td colspan=\"2\">Total number of evicted tiles:</td><td colspan=\"3\">"
-                        + (evictionCount >= 0 ? evictionCount + "" : "Unavailable"));
+        str.append("<tr><td colspan=\"2\">Total number of evicted tiles:</td><td colspan=\"3\">"
+                + (evictionCount >= 0 ? evictionCount + "" : "Unavailable"));
         str.append("</td></tr>\n");
 
         str.append("<tr><td colspan=\"5\"> </td></tr>");
 
-        str.append(
-                "<tr><td colspan=\"2\">Cache Memory occupation:</td><td colspan=\"3\">"
-                        + (currentMemory >= 0 ? currentMemory + " %" : "Unavailable"));
+        str.append("<tr><td colspan=\"2\">Cache Memory occupation:</td><td colspan=\"3\">"
+                + (currentMemory >= 0 ? currentMemory + " %" : "Unavailable"));
         str.append("</td></tr>\n");
 
         str.append("<tr><td colspan=\"5\"> </td></tr>");
 
-        str.append(
-                "<tr><td colspan=\"2\">Cache Actual Size/ Total Size :</td><td colspan=\"3\">"
-                        + (totalSize >= 0 && actualSize >= 0
-                                ? actualSize + " / " + totalSize + " Mb"
-                                : "Unavailable"));
+        str.append("<tr><td colspan=\"2\">Cache Actual Size/ Total Size :</td><td colspan=\"3\">"
+                + (totalSize >= 0 && actualSize >= 0 ? actualSize + " / " + totalSize + " Mb" : "Unavailable"));
         str.append("</td></tr>\n");
 
         str.append("<tr><td colspan=\"5\"> </td></tr>");

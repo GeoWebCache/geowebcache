@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Nicola Lagomarsini, GeoSolutions S.A.S., Copyright 2014
  */
@@ -30,8 +29,8 @@ import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 
 /**
- * Subclass of the {@link ImageEncoderImpl} class optimized for the PNG format. It uses a new
- * PNGEncoder which provides better performances.
+ * Subclass of the {@link ImageEncoderImpl} class optimized for the PNG format. It uses a new PNGEncoder which provides
+ * better performances.
  */
 public class PNGImageEncoder extends ImageEncoderImpl {
     /** Filter type associated string */
@@ -64,12 +63,7 @@ public class PNGImageEncoder extends ImageEncoderImpl {
             Map<String, String> inputParams,
             boolean disablePNG,
             ImageIOInitializer initializer) {
-        super(
-                aggressiveOutputStreamOptimization,
-                supportedMimeTypes,
-                writerSpi,
-                inputParams,
-                initializer);
+        super(aggressiveOutputStreamOptimization, supportedMimeTypes, writerSpi, inputParams, initializer);
 
         if (quality != null) {
             this.quality = quality;
@@ -113,11 +107,10 @@ public class PNGImageEncoder extends ImageEncoderImpl {
                 if (destination instanceof OutputStream) {
                     boolean isScanlinePresent = writer.isScanlineSupported(image);
                     if (!isScanlinePresent) {
-                        image =
-                                new ImageWorker(image)
-                                        .rescaleToBytes()
-                                        .forceComponentColorModel()
-                                        .getRenderedImage();
+                        image = new ImageWorker(image)
+                                .rescaleToBytes()
+                                .forceComponentColorModel()
+                                .getRenderedImage();
                     }
                     Object filterObj = null;
                     if (map != null) {
@@ -140,8 +133,7 @@ public class PNGImageEncoder extends ImageEncoderImpl {
                     // Image writing
                     writer.writePNG(finalImage, stream, quality, filter);
                 } else {
-                    throw new IllegalArgumentException(
-                            "Only an OutputStream can be provided to the PNGEncoder");
+                    throw new IllegalArgumentException("Only an OutputStream can be provided to the PNGEncoder");
                 }
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, e.getMessage(), e);

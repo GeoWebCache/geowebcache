@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2022
  */
@@ -25,9 +24,8 @@ import org.mockito.Mockito;
 public class SecurityDispatcherTileLayerDispatcherFilterTest {
 
     /**
-     * Tests that the SecurityDispatcherTileLayerDispatcherFilter passes the request off to the
-     * SecurityDispatcher. If the SecurityDispatcher#checkSecurity() doesn't throw, then that
-     * TileLayer is NOT filtered ("false").
+     * Tests that the SecurityDispatcherTileLayerDispatcherFilter passes the request off to the SecurityDispatcher. If
+     * the SecurityDispatcher#checkSecurity() doesn't throw, then that TileLayer is NOT filtered ("false").
      */
     @Test
     public void testFilterIn() throws GeoWebCacheException {
@@ -46,9 +44,8 @@ public class SecurityDispatcherTileLayerDispatcherFilterTest {
     }
 
     /**
-     * Tests that the SecurityDispatcherTileLayerDispatcherFilter passes the request off to the
-     * SecurityDispatcher. If the SecurityDispatcher#checkSecurity() throws, then that TileLayer is
-     * filtered out ("true").
+     * Tests that the SecurityDispatcherTileLayerDispatcherFilter passes the request off to the SecurityDispatcher. If
+     * the SecurityDispatcher#checkSecurity() throws, then that TileLayer is filtered out ("true").
      */
     @Test
     public void testFilterOut() throws GeoWebCacheException {
@@ -58,9 +55,7 @@ public class SecurityDispatcherTileLayerDispatcherFilterTest {
                 new SecurityDispatcherTileLayerDispatcherFilter(securityDispatcher);
         TileLayer tileLayer = Mockito.mock(TileLayer.class);
         // throws -> filter.exclude() will be true
-        Mockito.doThrow(new GeoWebCacheException(""))
-                .when(securityDispatcher)
-                .checkSecurity(tileLayer, null, null);
+        Mockito.doThrow(new GeoWebCacheException("")).when(securityDispatcher).checkSecurity(tileLayer, null, null);
 
         boolean result = filter.exclude(tileLayer);
 

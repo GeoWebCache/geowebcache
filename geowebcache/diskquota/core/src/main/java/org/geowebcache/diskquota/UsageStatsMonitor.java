@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2019
  */
@@ -50,14 +49,12 @@ public class UsageStatsMonitor extends AbstractMonitor {
     private QueuedUsageStatsProducer usageStatsProducer;
 
     /**
-     * Task that constantly polls the {@link #sharedQueue} for usage statistics payload objects and
-     * aggregates them to be saved to the {@link #quotaStore} for the LRU and LFU {@link
-     * ExpirationPolicy expiration policies}
+     * Task that constantly polls the {@link #sharedQueue} for usage statistics payload objects and aggregates them to
+     * be saved to the {@link #quotaStore} for the LRU and LFU {@link ExpirationPolicy expiration policies}
      */
     private QueuedUsageStatsConsumer usageStatsConsumer;
 
-    public UsageStatsMonitor(
-            final QuotaStore quotaStore, final TileLayerDispatcher tileLayerDispatcher) {
+    public UsageStatsMonitor(final QuotaStore quotaStore, final TileLayerDispatcher tileLayerDispatcher) {
 
         Assert.notNull(quotaStore, "quotaStore is null");
         Assert.notNull(tileLayerDispatcher, "tileLayerDispatcher is null");
@@ -73,8 +70,7 @@ public class UsageStatsMonitor extends AbstractMonitor {
 
         sharedQueue = new LinkedBlockingQueue<>(1000);
 
-        usageStatsConsumer =
-                new QueuedUsageStatsConsumer(quotaStore, sharedQueue, tilePageCalculator);
+        usageStatsConsumer = new QueuedUsageStatsConsumer(quotaStore, sharedQueue, tilePageCalculator);
         getExecutorService().submit(usageStatsConsumer);
 
         usageStatsProducer = new QueuedUsageStatsProducer(sharedQueue);

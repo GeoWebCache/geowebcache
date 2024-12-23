@@ -5,8 +5,7 @@ import org.junit.Test;
 import org.owasp.encoder.Encode;
 
 /**
- * Unit test for {@link OWSException} This fails if the encoding of the Exception Text or locator is
- * not done
+ * Unit test for {@link OWSException} This fails if the encoding of the Exception Text or locator is not done
  *
  * @author Thijs Brentjens (thijs@brentjensgeoict.nl)
  * @version $Id$
@@ -21,15 +20,13 @@ public class OWSExceptionEncodingTest {
     // Other parts of the Exception are fine.
     @Test
     public void testLocator() throws Exception {
-        OWSException xssExceptionLocator =
-                new OWSException(httpCode, exceptionCode, textToEncode, "exceptionText");
+        OWSException xssExceptionLocator = new OWSException(httpCode, exceptionCode, textToEncode, "exceptionText");
         Assert.assertTrue(isXmlEncoded(xssExceptionLocator));
     }
 
     @Test
     public void testText() throws Exception {
-        OWSException xssExceptionText =
-                new OWSException(httpCode, exceptionCode, "locator", textToEncode);
+        OWSException xssExceptionText = new OWSException(httpCode, exceptionCode, "locator", textToEncode);
         Assert.assertTrue(isXmlEncoded(xssExceptionText));
     }
 

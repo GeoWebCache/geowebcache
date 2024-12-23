@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2019
  */
@@ -21,13 +20,12 @@ import org.geowebcache.io.Resource;
 /**
  * Implementation of ArcGIS compact caches for ArcGIS 10.0 - 10.2
  *
- * <p>The compact cache consists of bundle index files (*.bundlx) and bundle files (*.bundle), that
- * contain the actual image data. Every .bundlx file contains a 16 byte header and 16 byte footer.
- * Between header and footer is 128x128 matrix (16384 tiles) of 5 byte offsets. Every offset points
- * to a 4 byte word in the corresponding .bundle file which contains the size of the tile image
- * data. The actual image data starts at offset+4. If the size is zero there is no image data
- * available and the index entry is not used. If the map cache has more than 128 rows or columns it
- * is divided into several .bundlx and .bundle files.
+ * <p>The compact cache consists of bundle index files (*.bundlx) and bundle files (*.bundle), that contain the actual
+ * image data. Every .bundlx file contains a 16 byte header and 16 byte footer. Between header and footer is 128x128
+ * matrix (16384 tiles) of 5 byte offsets. Every offset points to a 4 byte word in the corresponding .bundle file which
+ * contains the size of the tile image data. The actual image data starts at offset+4. If the size is zero there is no
+ * image data available and the index entry is not used. If the map cache has more than 128 rows or columns it is
+ * divided into several .bundlx and .bundle files.
  *
  * @author Bjoern Saxe
  */
@@ -39,12 +37,11 @@ public class ArcGISCompactCacheV1 extends ArcGISCompactCache {
     /**
      * Constructs new ArcGIS 10.0-10.2 compact cache.
      *
-     * @param pathToCacheRoot Path to compact cache directory (usually ".../_alllayers/"). Path must
-     *     contain directories for zoom levels (named "Lxx").
+     * @param pathToCacheRoot Path to compact cache directory (usually ".../_alllayers/"). Path must contain directories
+     *     for zoom levels (named "Lxx").
      */
     public ArcGISCompactCacheV1(String pathToCacheRoot) {
-        if (pathToCacheRoot.endsWith("" + File.separatorChar))
-            this.pathToCacheRoot = pathToCacheRoot;
+        if (pathToCacheRoot.endsWith("" + File.separatorChar)) this.pathToCacheRoot = pathToCacheRoot;
         else this.pathToCacheRoot = pathToCacheRoot + File.separatorChar;
 
         indexCache = new BundlxCache(10000);
@@ -60,16 +57,14 @@ public class ArcGISCompactCacheV1 extends ArcGISCompactCache {
         Resource res = null;
 
         if ((entry = indexCache.get(key)) != null) {
-            if (entry.size > 0)
-                res = new BundleFileResource(entry.pathToBundleFile, entry.offset, entry.size);
+            if (entry.size > 0) res = new BundleFileResource(entry.pathToBundleFile, entry.offset, entry.size);
         } else {
 
             String basePath = buildBundleFilePath(zoom, row, col);
             String pathToBundlxFile = basePath + BUNDLX_EXT;
             String pathToBundleFile = basePath + BUNDLE_EXT;
 
-            if (!(new File(pathToBundleFile)).exists() || !(new File(pathToBundlxFile)).exists())
-                return null;
+            if (!(new File(pathToBundleFile)).exists() || !(new File(pathToBundlxFile)).exists()) return null;
 
             long tileOffset = readTileStartOffset(pathToBundlxFile, row, col);
             int tileSize = readTileSize(pathToBundleFile, tileOffset);
@@ -89,8 +84,7 @@ public class ArcGISCompactCacheV1 extends ArcGISCompactCache {
     private long readTileStartOffset(String bundlxFile, int row, int col) {
         int index = BUNDLX_MAXIDX * (col % BUNDLX_MAXIDX) + (row % BUNDLX_MAXIDX);
 
-        ByteBuffer idxBytes =
-                readFromLittleEndianFile(bundlxFile, (index * 5) + COMPACT_CACHE_HEADER_LENGTH, 5);
+        ByteBuffer idxBytes = readFromLittleEndianFile(bundlxFile, (index * 5) + COMPACT_CACHE_HEADER_LENGTH, 5);
 
         return idxBytes.getLong();
     }

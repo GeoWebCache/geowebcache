@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, OpenGeo, Copyright 2009
  */
@@ -24,9 +23,7 @@ public class GridSubsetFactory {
 
     public static GridSubset createGridSubSet(GridSet gridSet) {
 
-        GridSubset ret =
-                createGridSubSet(
-                        gridSet, gridSet.getOriginalExtent(), 0, gridSet.getNumLevels() - 1);
+        GridSubset ret = createGridSubSet(gridSet, gridSet.getOriginalExtent(), 0, gridSet.getNumLevels() - 1);
         return ret;
     }
 
@@ -54,15 +51,14 @@ public class GridSubsetFactory {
         if (zoomStop == null) {
             zoomStop = maxLevel;
         } else if (zoomStop > maxLevel) {
-            String message =
-                    "Requested to create GridSubset with zoomStop "
-                            + zoomStop
-                            + " for GridSet "
-                            + gridSet.getName()
-                            + " whose max zoom level is "
-                            + maxLevel
-                            + ". Limiting GridSubset to zoomStop = "
-                            + maxLevel;
+            String message = "Requested to create GridSubset with zoomStop "
+                    + zoomStop
+                    + " for GridSet "
+                    + gridSet.getName()
+                    + " whose max zoom level is "
+                    + maxLevel
+                    + ". Limiting GridSubset to zoomStop = "
+                    + maxLevel;
             log.warning(message);
             zoomStop = maxLevel;
         }
@@ -96,14 +92,7 @@ public class GridSubsetFactory {
             originalExtent = gridSetBounds;
         }
 
-        GridSubset ret =
-                new GridSubset(
-                        gridSet,
-                        coverages,
-                        originalExtent,
-                        fullCoverage,
-                        minCachedZoom,
-                        maxCachedZoom);
+        GridSubset ret = new GridSubset(gridSet, coverages, originalExtent, fullCoverage, minCachedZoom, maxCachedZoom);
         return ret;
     }
 }

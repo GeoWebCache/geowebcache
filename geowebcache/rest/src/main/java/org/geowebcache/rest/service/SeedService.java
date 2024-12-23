@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Marius Suta / The Open Planning Project 2008
  * @author Arne Kepp / The Open Planning Project 2009
@@ -64,7 +63,8 @@ public class SeedService {
 
     static final Logger LOG = Logging.getLogger(SeedService.class.getName());
 
-    @Autowired TileBreeder seeder;
+    @Autowired
+    TileBreeder seeder;
 
     private final WebApplicationContext context;
 
@@ -81,8 +81,7 @@ public class SeedService {
             JSONObject obj = new JSONObject(xs.toXML(list));
             return constructResponse(MediaType.APPLICATION_JSON, obj.toString(), HttpStatus.OK);
         } catch (JSONException jse) {
-            return constructResponse(
-                    MediaType.TEXT_PLAIN, "error", HttpStatus.INTERNAL_SERVER_ERROR);
+            return constructResponse(MediaType.TEXT_PLAIN, "error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -94,15 +93,13 @@ public class SeedService {
             try {
                 list = findTileLayer(layer);
             } catch (GeoWebCacheException e) {
-                return constructResponse(
-                        MediaType.TEXT_PLAIN, e.getMessage(), HttpStatus.BAD_REQUEST);
+                return constructResponse(MediaType.TEXT_PLAIN, e.getMessage(), HttpStatus.BAD_REQUEST);
             }
             JSONObject obj = new JSONObject(xs.toXML(list));
             return constructResponse(MediaType.APPLICATION_JSON, obj.toString(), HttpStatus.OK);
         } catch (JSONException jse) {
             LOG.log(Level.SEVERE, jse.getMessage(), jse);
-            return constructResponse(
-                    MediaType.TEXT_PLAIN, "error", HttpStatus.INTERNAL_SERVER_ERROR);
+            return constructResponse(MediaType.TEXT_PLAIN, "error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -117,8 +114,7 @@ public class SeedService {
         return constructResponse(MediaType.APPLICATION_XML, xs.toXML(list), HttpStatus.OK);
     }
 
-    private ResponseEntity<?> constructResponse(
-            MediaType mediaType, String message, HttpStatus status) {
+    private ResponseEntity<?> constructResponse(MediaType mediaType, String message, HttpStatus status) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(mediaType);
         return new ResponseEntity<>(message, headers, status);
@@ -166,9 +162,7 @@ public class SeedService {
                     tasks = seeder.getRunningAndPendingTasks();
                 } else {
                     throw new RestException(
-                            "Unknown kill_all code: '"
-                                    + killCode
-                                    + "'. One of all|running|pending is expected.",
+                            "Unknown kill_all code: '" + killCode + "'. One of all|running|pending is expected.",
                             HttpStatus.BAD_REQUEST);
                 }
                 List<GWCTask> terminatedTasks = new LinkedList<>();
@@ -208,8 +202,7 @@ public class SeedService {
     }
 
     /** Method to do the seeding and truncating. */
-    public ResponseEntity<?> doSeeding(
-            HttpServletRequest request, String layer, String extension, String body) {
+    public ResponseEntity<?> doSeeding(HttpServletRequest request, String layer, String extension, String body) {
         XStream xs = configXStream(new GeoWebCacheXStream(new DomDriver()));
 
         Object obj = null;
@@ -221,8 +214,7 @@ public class SeedService {
                 obj = xs.fromXML(convertJson(body));
             } else {
                 throw new RestException(
-                        "Format extension unknown or not specified: " + extension,
-                        HttpStatus.BAD_REQUEST);
+                        "Format extension unknown or not specified: " + extension, HttpStatus.BAD_REQUEST);
             }
             handleRequest(layer, obj);
             HttpHeaders headers = new HttpHeaders();
@@ -263,15 +255,14 @@ public class SeedService {
     /**
      * Deserializing a json string is more complicated.
      *
-     * <p>XStream does not natively support it. Rather, it uses a JettisonMappedXmlDriver to convert
-     * to intermediate xml and then deserializes that into the desired object. At this time, there
-     * is a known issue with the Jettison driver involving elements that come after an array in the
-     * json string.
+     * <p>XStream does not natively support it. Rather, it uses a JettisonMappedXmlDriver to convert to intermediate xml
+     * and then deserializes that into the desired object. At this time, there is a known issue with the Jettison driver
+     * involving elements that come after an array in the json string.
      *
      * <p>http://jira.codehaus.org/browse/JETTISON-48
      *
-     * <p>The code below is a hack: it treats the json string as text, then converts it to the
-     * intermediate xml and then deserializes that into the SeedRequest object.
+     * <p>The code below is a hack: it treats the json string as text, then converts it to the intermediate xml and then
+     * deserializes that into the SeedRequest object.
      */
     protected String convertJson(String entityText) throws IOException {
         HierarchicalStreamDriver driver = new JettisonMappedXmlDriver();

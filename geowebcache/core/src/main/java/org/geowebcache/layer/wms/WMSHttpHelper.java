@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
@@ -79,14 +78,8 @@ public class WMSHttpHelper extends WMSSourceHelper {
                     return client;
                 }
 
-                HttpClientBuilder builder =
-                        new HttpClientBuilder(
-                                null,
-                                getBackendTimeout(),
-                                httpUsername,
-                                httpPassword,
-                                proxyUrl,
-                                getConcurrency());
+                HttpClientBuilder builder = new HttpClientBuilder(
+                        null, getBackendTimeout(), httpUsername, httpPassword, proxyUrl, getConcurrency());
 
                 client = builder.buildClient();
             }
@@ -118,8 +111,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
             try {
                 wmsBackendUrl = URLs.of(requestUrl);
             } catch (MalformedURLException maue) {
-                throw new GeoWebCacheException(
-                        "Malformed URL: " + requestUrl + " " + maue.getMessage());
+                throw new GeoWebCacheException("Malformed URL: " + requestUrl + " " + maue.getMessage());
             }
             try {
                 connectAndCheckHeaders(
@@ -142,13 +134,10 @@ public class WMSHttpHelper extends WMSSourceHelper {
             if (fetchException != null) {
                 msg += " Reason: " + fetchException.getMessage() + ". ";
             }
-            msg +=
-                    " Last request: '"
-                            + wmsBackendUrl.toString()
-                            + "'. "
-                            + (tileRespRecv.getErrorMessage() == null
-                                    ? ""
-                                    : tileRespRecv.getErrorMessage());
+            msg += " Last request: '"
+                    + wmsBackendUrl.toString()
+                    + "'. "
+                    + (tileRespRecv.getErrorMessage() == null ? "" : tileRespRecv.getErrorMessage());
 
             tileRespRecv.setError();
             tileRespRecv.setErrorMessage(msg);
@@ -176,16 +165,15 @@ public class WMSHttpHelper extends WMSSourceHelper {
             responseCode = method.getStatusLine().getStatusCode();
             if (responseCode == 200) {
                 if (method.getFirstHeader("length") != null) {
-                    responseLength = Integer.parseInt(method.getFirstHeader("length").getValue());
-                } else if (method.getFirstHeader("Content-Length") != null) {
                     responseLength =
-                            Integer.parseInt(method.getFirstHeader("Content-Length").getValue());
+                            Integer.parseInt(method.getFirstHeader("length").getValue());
+                } else if (method.getFirstHeader("Content-Length") != null) {
+                    responseLength = Integer.parseInt(
+                            method.getFirstHeader("Content-Length").getValue());
                 } else if (method.getEntity() != null) {
                     responseLength = Math.toIntExact(method.getEntity().getContentLength());
                 } else {
-                    throw new ServiceException(
-                            "Unable to determine response length from: "
-                                    + wmsBackendUrl.toString());
+                    throw new ServiceException("Unable to determine response length from: " + wmsBackendUrl.toString());
                 }
             }
             // Do not set error at this stage
@@ -201,17 +189,12 @@ public class WMSHttpHelper extends WMSSourceHelper {
         if (responseCode != 200 && responseCode != 204) {
             tileRespRecv.setError();
             throw new ServiceException(
-                    "Unexpected response code from backend: "
-                            + responseCode
-                            + " for "
-                            + wmsBackendUrl.toString());
+                    "Unexpected response code from backend: " + responseCode + " for " + wmsBackendUrl.toString());
         }
 
         // Check that we're not getting an error MIME back.
         String responseMime = method.getFirstHeader("Content-Type").getValue();
-        if (responseCode != 204
-                && responseMime != null
-                && !requestMimeType.isCompatible(responseMime)) {
+        if (responseCode != 204 && responseMime != null && !requestMimeType.isCompatible(responseMime)) {
             String message = null;
             if (responseMime.equalsIgnoreCase(ErrorMime.vnd_ogc_se_inimage.getFormat())) {
                 // TODO: revisit: I don't understand why it's trying to create a String message
@@ -223,22 +206,20 @@ public class WMSHttpHelper extends WMSSourceHelper {
                 } catch (IOException ioe) {
                     // Do nothing
                 }
-            } else if (responseMime != null
-                    && responseMime.toLowerCase().startsWith("application/vnd.ogc.se_xml")) {
+            } else if (responseMime != null && responseMime.toLowerCase().startsWith("application/vnd.ogc.se_xml")) {
                 try (InputStream stream = method.getEntity().getContent()) {
                     message = IOUtils.toString(stream, StandardCharsets.UTF_8);
                 } catch (IOException e) {
                     //
                 }
             }
-            String msg =
-                    "MimeType mismatch, expected "
-                            + requestMimeType
-                            + " but got "
-                            + responseMime
-                            + " from "
-                            + wmsBackendUrl.toString()
-                            + (message == null ? "" : (":\n" + message));
+            String msg = "MimeType mismatch, expected "
+                    + requestMimeType
+                    + " but got "
+                    + responseMime
+                    + " from "
+                    + wmsBackendUrl.toString()
+                    + (message == null ? "" : (":\n" + message));
             tileRespRecv.setError();
             tileRespRecv.setErrorMessage(msg);
             log.warning(msg);
@@ -267,22 +248,17 @@ public class WMSHttpHelper extends WMSSourceHelper {
                     int readAccu = (int) target.getSize();
                     if (readAccu != responseLength) {
                         tileRespRecv.setError();
-                        throw new GeoWebCacheException(
-                                "Responseheader advertised "
-                                        + responseLength
-                                        + " bytes, but only received "
-                                        + readAccu
-                                        + " from "
-                                        + wmsBackendUrl.toString());
+                        throw new GeoWebCacheException("Responseheader advertised "
+                                + responseLength
+                                + " bytes, but only received "
+                                + readAccu
+                                + " from "
+                                + wmsBackendUrl.toString());
                     }
                 }
             } catch (IOException ioe) {
                 tileRespRecv.setError();
-                log.severe(
-                        "Caught IO exception, "
-                                + wmsBackendUrl.toString()
-                                + " "
-                                + ioe.getMessage());
+                log.severe("Caught IO exception, " + wmsBackendUrl.toString() + " " + ioe.getMessage());
             }
         }
     }
@@ -293,8 +269,8 @@ public class WMSHttpHelper extends WMSSourceHelper {
      * @param url endpoint to talk to
      * @param queryParams parameters for the query string
      * @param backendTimeout timeout to use in seconds
-     * @param httpRequestMode the method used to perform requests (can be null, in such case {@link
-     *     org.geowebcache.layer.wms.WMSLayer.HttpRequestMode#Get} will be used
+     * @param httpRequestMode the method used to perform requests (can be null, in such case
+     *     {@link org.geowebcache.layer.wms.WMSLayer.HttpRequestMode#Get} will be used
      * @return executed method (that has to be closed after reading the response!)
      */
     public HttpResponse executeRequest(
@@ -346,16 +322,12 @@ public class WMSHttpHelper extends WMSSourceHelper {
         return getHttpClient().execute(method);
     }
 
-    private String processRequestParameters(Map<String, String> parameters)
-            throws UnsupportedEncodingException {
+    private String processRequestParameters(Map<String, String> parameters) throws UnsupportedEncodingException {
         StringBuilder sb = new StringBuilder();
         for (String parameterName : parameters.keySet()) {
             sb.append(parameterName)
                     .append('=')
-                    .append(
-                            URLEncoder.encode(
-                                    parameters.get(parameterName),
-                                    StandardCharsets.UTF_8.toString()))
+                    .append(URLEncoder.encode(parameters.get(parameterName), StandardCharsets.UTF_8.toString()))
                     .append('&');
         }
         return sb.substring(0, sb.length() - 1);

@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Imran Rajjad / Geosolutions 2019
  */
@@ -37,11 +36,11 @@ public class TruncateAllRequest implements MassTruncateRequest, Serializable {
 
     private static final Logger log = Logging.getLogger(TruncateAllRequest.class.getName());
 
-    @XStreamOmitField private StringBuilder trucatedLayers = new StringBuilder();
+    @XStreamOmitField
+    private StringBuilder trucatedLayers = new StringBuilder();
 
     @Override
-    public boolean doTruncate(StorageBroker sb, TileBreeder breeder)
-            throws StorageException, GeoWebCacheException {
+    public boolean doTruncate(StorageBroker sb, TileBreeder breeder) throws StorageException, GeoWebCacheException {
         Iterator<TileLayer> iterator = breeder.getLayers().iterator();
         TileLayer toTruncate;
         Iterator<String> gridSetIterator;
@@ -87,17 +86,15 @@ public class TruncateAllRequest implements MassTruncateRequest, Serializable {
 
     private StringBuilder getResponsePage() {
         StringBuilder doc = new StringBuilder();
-        String content =
-                "<p>Truncated All Layers</p>\n"
-                        + "<p>Truncated Layers:"
-                        + getTrucatedLayersList().toString()
-                        + "</p>";
+        String content = "<p>Truncated All Layers</p>\n"
+                + "<p>Truncated Layers:"
+                + getTrucatedLayersList().toString()
+                + "</p>";
 
-        doc.append(
-                "<html>\n"
-                        + ServletUtils.gwcHtmlHeader("../", "GWC Seed Form")
-                        + "<body>\n"
-                        + ServletUtils.gwcHtmlLogoLink("../"));
+        doc.append("<html>\n"
+                + ServletUtils.gwcHtmlHeader("../", "GWC Seed Form")
+                + "<body>\n"
+                + ServletUtils.gwcHtmlLogoLink("../"));
         doc.append("<p>" + content + "</p> ");
         doc.append("<p><a href=\"../demo\">Go back</a></p>");
         return doc;

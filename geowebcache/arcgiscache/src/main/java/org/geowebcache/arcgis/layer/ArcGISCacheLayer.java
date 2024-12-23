@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2019
  */
@@ -72,15 +71,13 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
     private File tilingScheme;
 
     /**
-     * Optional, location of the actual tiles folder. If not provided defaults to the {@code
-     * _alllayers} directory at the same location than the {@link #getTilingScheme() conf.xml}
-     * tiling scheme.
+     * Optional, location of the actual tiles folder. If not provided defaults to the {@code _alllayers} directory at
+     * the same location than the {@link #getTilingScheme() conf.xml} tiling scheme.
      */
     private File tileCachePath;
 
     /**
-     * Optional, configure whether or not the z-values should be hex-encoded or not. If not provided
-     * defaults to false
+     * Optional, configure whether or not the z-values should be hex-encoded or not. If not provided defaults to false
      */
     private Boolean hexZoom;
 
@@ -122,18 +119,17 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
     }
 
     /**
-     * Returns the location of the actual tiles folder, or {@code null} if not provided, in which
-     * case defaults internally to the {@code _alllayers} directory at the same location than the
-     * {@link #getTilingScheme() conf.xml} tiling scheme.
+     * Returns the location of the actual tiles folder, or {@code null} if not provided, in which case defaults
+     * internally to the {@code _alllayers} directory at the same location than the {@link #getTilingScheme() conf.xml}
+     * tiling scheme.
      */
     public File getTileCachePath() {
         return tileCachePath;
     }
 
     /**
-     * Options, location of the actual tiles folder. If not provided defaults to the {@code
-     * _alllayers} directory at the same location than the {@link #getTilingScheme() conf.xml}
-     * tiling scheme.
+     * Options, location of the actual tiles folder. If not provided defaults to the {@code _alllayers} directory at the
+     * same location than the {@link #getTilingScheme() conf.xml} tiling scheme.
      */
     public void setTileCachePath(File tileCachePath) {
         this.tileCachePath = tileCachePath;
@@ -148,8 +144,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
     }
 
     /**
-     * @return {@code true} if success. Note this method's return type should be void. It's not
-     *     checked anywhere
+     * @return {@code true} if success. Note this method's return type should be void. It's not checked anywhere
      * @see org.geowebcache.layer.TileLayer#initialize(org.geowebcache.grid.GridSetBroker)
      */
     @Override
@@ -158,20 +153,16 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
             this.enabled = true;
         }
         if (this.tilingScheme == null) {
-            throw new IllegalStateException(
-                    "tilingScheme has not been set. It should point to the ArcGIS "
-                            + "cache tiling scheme file for this layer (conf.xml)");
+            throw new IllegalStateException("tilingScheme has not been set. It should point to the ArcGIS "
+                    + "cache tiling scheme file for this layer (conf.xml)");
         }
         if (tileCachePath != null) {
-            if (!tileCachePath.exists()
-                    || !tileCachePath.isDirectory()
-                    || !tileCachePath.canRead()) {
-                throw new IllegalStateException(
-                        "tileCachePath property for layer '"
-                                + getName()
-                                + "' is set to '"
-                                + tileCachePath
-                                + "' but the directory either does not exist or is not readable");
+            if (!tileCachePath.exists() || !tileCachePath.isDirectory() || !tileCachePath.canRead()) {
+                throw new IllegalStateException("tileCachePath property for layer '"
+                        + getName()
+                        + "' is set to '"
+                        + tileCachePath
+                        + "' but the directory either does not exist or is not readable");
             }
         }
         if (this.hexZoom == null) {
@@ -182,8 +173,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
             cacheInfo = tilingSchemeLoader.load(new FileReader(tilingScheme));
             File layerBoundsFile = new File(tilingScheme.getParentFile(), "conf.cdi");
             if (!layerBoundsFile.exists()) {
-                throw new RuntimeException(
-                        "Layer bounds file not found: " + layerBoundsFile.getAbsolutePath());
+                throw new RuntimeException("Layer bounds file not found: " + layerBoundsFile.getAbsolutePath());
             }
             log.info("Parsing layer bounds for " + getName());
             this.layerBounds = tilingSchemeLoader.parseLayerBounds(new FileReader(layerBoundsFile));
@@ -204,14 +194,12 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
                 }
             }
         } catch (FileNotFoundException e) {
-            throw new IllegalStateException(
-                    "Tiling scheme file not found: " + tilingScheme.getAbsolutePath());
+            throw new IllegalStateException("Tiling scheme file not found: " + tilingScheme.getAbsolutePath());
         }
-        log.info(
-                "Configuring layer "
-                        + getName()
-                        + " out of the ArcGIS tiling scheme "
-                        + tilingScheme.getAbsolutePath());
+        log.info("Configuring layer "
+                + getName()
+                + " out of the ArcGIS tiling scheme "
+                + tilingScheme.getAbsolutePath());
 
         super.subSets = createGridSubsets(gridSetBroker);
         super.formats = loadMimeTypes();
@@ -251,8 +239,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         Integer zoomStart = lodInfos.get(0).getLevelID();
         Integer zoomStop = lodInfos.get(lodInfos.size() - 1).getLevelID();
 
-        GridSubset subSet =
-                GridSubsetFactory.createGridSubSet(gridSet, this.layerBounds, zoomStart, zoomStop);
+        GridSubset subSet = GridSubsetFactory.createGridSubSet(gridSet, this.layerBounds, zoomStart, zoomStop);
 
         HashMap<String, GridSubset> subsets = new HashMap<>();
         subsets.put(gridSet.getName(), subSet);
@@ -453,27 +440,19 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         return res;
     }
 
-    /**
-     * @see org.geowebcache.layer.TileLayer#getNoncachedTile(org.geowebcache.conveyor.ConveyorTile)
-     */
+    /** @see org.geowebcache.layer.TileLayer#getNoncachedTile(org.geowebcache.conveyor.ConveyorTile) */
     @Override
     public ConveyorTile getNoncachedTile(ConveyorTile tile) throws GeoWebCacheException {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * @see org.geowebcache.layer.TileLayer#seedTile(org.geowebcache.conveyor.ConveyorTile, boolean)
-     */
+    /** @see org.geowebcache.layer.TileLayer#seedTile(org.geowebcache.conveyor.ConveyorTile, boolean) */
     @Override
-    public void seedTile(ConveyorTile tile, boolean tryCache)
-            throws GeoWebCacheException, IOException {
+    public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoWebCacheException, IOException {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * @see
-     *     org.geowebcache.layer.TileLayer#doNonMetatilingRequest(org.geowebcache.conveyor.ConveyorTile)
-     */
+    /** @see org.geowebcache.layer.TileLayer#doNonMetatilingRequest(org.geowebcache.conveyor.ConveyorTile) */
     @Override
     public ConveyorTile doNonMetatilingRequest(ConveyorTile tile) throws GeoWebCacheException {
         throw new UnsupportedOperationException();
@@ -485,11 +464,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         return null;
     }
 
-    /**
-     * @see
-     *     org.geowebcache.layer.TileLayer#setExpirationHeader(javax.servlet.http.HttpServletResponse,
-     *     int)
-     */
+    /** @see org.geowebcache.layer.TileLayer#setExpirationHeader(javax.servlet.http.HttpServletResponse, int) */
     @Override
     public void setExpirationHeader(HttpServletResponse response, int zoomLevel) {
         /*

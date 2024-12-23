@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan (OpenGeo) 2010
  */
@@ -60,15 +59,13 @@ public class ConfigLoaderTest {
     public void setUp() throws Exception {
         cacheDir = new File("target" + File.separator + getClass().getSimpleName());
         if (!cacheDir.getParentFile().exists()) {
-            throw new IllegalStateException(
-                    cacheDir.getParentFile().getAbsolutePath() + " does not exist");
+            throw new IllegalStateException(cacheDir.getParentFile().getAbsolutePath() + " does not exist");
         }
         FileUtils.rmFileCacheDir(cacheDir, null);
         cacheDir.mkdirs();
         // copy configuration file to cache directory
         try (InputStream in = getClass().getResourceAsStream("/geowebcache-diskquota.xml");
-                FileOutputStream out =
-                        new FileOutputStream(new File(cacheDir, "geowebcache-diskquota.xml"))) {
+                FileOutputStream out = new FileOutputStream(new File(cacheDir, "geowebcache-diskquota.xml"))) {
             int c;
             while ((c = in.read()) != -1) {
                 out.write(c);
@@ -82,11 +79,15 @@ public class ConfigLoaderTest {
 
         ServletContext mockServletCtx = EasyMock.createMock(ServletContext.class);
         String tmpPath = System.getProperty("java.io.tmpdir");
-        EasyMock.expect(mockServletCtx.getRealPath(EasyMock.eq(""))).andReturn(tmpPath).anyTimes();
+        EasyMock.expect(mockServletCtx.getRealPath(EasyMock.eq("")))
+                .andReturn(tmpPath)
+                .anyTimes();
         EasyMock.replay(mockServletCtx);
 
         WebApplicationContext appContext = EasyMock.createMock(WebApplicationContext.class);
-        EasyMock.expect(appContext.getServletContext()).andReturn(mockServletCtx).anyTimes();
+        EasyMock.expect(appContext.getServletContext())
+                .andReturn(mockServletCtx)
+                .anyTimes();
         EasyMock.replay(appContext);
 
         contextProvider = new ApplicationContextProvider();
@@ -139,7 +140,8 @@ public class ConfigLoaderTest {
 
         Assert.assertNotNull(config.getGlobalQuota());
         Assert.assertEquals(
-                GiB.convertTo(200, B).longValue(), config.getGlobalQuota().getBytes().longValue());
+                GiB.convertTo(200, B).longValue(),
+                config.getGlobalQuota().getBytes().longValue());
 
         Assert.assertNotNull(config.getLayerQuotas());
         Assert.assertEquals(2, config.getLayerQuotas().size());

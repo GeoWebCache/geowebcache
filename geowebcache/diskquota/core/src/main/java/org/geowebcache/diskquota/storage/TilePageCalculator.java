@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan (OpenGeo) 2010
  */
@@ -36,9 +35,7 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileRange;
 import org.springframework.util.Assert;
 
-/**
- * Supports the organization of tiles into groups (tile pages) for disk quota accounting purposes
- */
+/** Supports the organization of tiles into groups (tile pages) for disk quota accounting purposes */
 public class TilePageCalculator {
 
     private static final Logger log = Logging.getLogger(TilePageCalculator.class.getName());
@@ -62,8 +59,7 @@ public class TilePageCalculator {
         return new TilePage(tileSetId, pageX, pageY, zoomLevel);
     }
 
-    public int[] pageIndexForTile(
-            final TileSet tileSet, final long[] tileIndex, int[] pageIndexTarget) {
+    public int[] pageIndexForTile(final TileSet tileSet, final long[] tileIndex, int[] pageIndexTarget) {
 
         Assert.notNull(tileSet, "TileSet must be non null");
         Assert.notNull(tileIndex, "TileIndex must be non null");
@@ -72,8 +68,7 @@ public class TilePageCalculator {
                 "PageIndexTarget must be non null and have at least a size of 2");
 
         PagePyramid pagePyramid = getPagePyramid(tileSet);
-        pagePyramid.pageIndexForTile(
-                tileIndex[0], tileIndex[1], (int) tileIndex[2], pageIndexTarget);
+        pagePyramid.pageIndexForTile(tileIndex[0], tileIndex[1], (int) tileIndex[2], pageIndexTarget);
         return pageIndexTarget;
     }
 
@@ -112,12 +107,9 @@ public class TilePageCalculator {
     }
 
     public Set<TileSet> getTileSetsFor(
-            final String layerName,
-            final Collection<GridSubset> gridSubSets,
-            final List<MimeType> mimeTypes) {
+            final String layerName, final Collection<GridSubset> gridSubSets, final List<MimeType> mimeTypes) {
 
-        return getTileSetsFor(
-                layerName, Optional.of(gridSubSets), Optional.of(mimeTypes), Optional.empty());
+        return getTileSetsFor(layerName, Optional.of(gridSubSets), Optional.of(mimeTypes), Optional.empty());
     }
 
     @SuppressWarnings("unchecked")
@@ -141,10 +133,8 @@ public class TilePageCalculator {
 
         Collection<String> gridsetNames =
                 getGridSubsetNames((Optional<Collection<GridSubset>>) optGridSubsets, tileLayer);
-        Collection<String> formatNames =
-                getFormatNames((Optional<Collection<MimeType>>) optMimeTypes, tileLayer);
-        Collection<String> parameterIds =
-                getParameterIds(layerName, (Optional<Collection<String>>) optParameterIds);
+        Collection<String> formatNames = getFormatNames((Optional<Collection<MimeType>>) optMimeTypes, tileLayer);
+        Collection<String> parameterIds = getParameterIds(layerName, (Optional<Collection<String>>) optParameterIds);
 
         // keeping as loop (was a nested flatmap stream), to avoid too deep nesting
         Set<TileSet> set = new HashSet<>();
@@ -159,8 +149,7 @@ public class TilePageCalculator {
         return set;
     }
 
-    private Collection<String> getGridSubsetNames(
-            Optional<Collection<GridSubset>> gridSubsets, TileLayer tileLayer) {
+    private Collection<String> getGridSubsetNames(Optional<Collection<GridSubset>> gridSubsets, TileLayer tileLayer) {
         return gridSubsets
                 .map(Collection::stream)
                 .map(stream -> stream.map(GridSubset::getName))
@@ -168,8 +157,7 @@ public class TilePageCalculator {
                 .orElseGet(() -> tileLayer.getGridSubsets());
     }
 
-    private Collection<String> getFormatNames(
-            Optional<Collection<MimeType>> mimeTypes, TileLayer tileLayer) {
+    private Collection<String> getFormatNames(Optional<Collection<MimeType>> mimeTypes, TileLayer tileLayer) {
         return mimeTypes
                 .map(Collection::stream)
                 .orElseGet(() -> tileLayer.getMimeTypes().stream())
@@ -177,21 +165,15 @@ public class TilePageCalculator {
                 .collect(Collectors.toList());
     }
 
-    private Collection<String> getParameterIds(
-            String layerName, Optional<Collection<String>> parameterIds) {
-        return parameterIds.orElseGet(
-                () -> {
-                    try {
-                        return sb.getCachedParameterIds(layerName);
-                    } catch (StorageException e) {
-                        log.log(
-                                Level.SEVERE,
-                                "Error while retreiving cached parameter IDs for layer "
-                                        + layerName,
-                                e);
-                        return Collections.emptySet();
-                    }
-                });
+    private Collection<String> getParameterIds(String layerName, Optional<Collection<String>> parameterIds) {
+        return parameterIds.orElseGet(() -> {
+            try {
+                return sb.getCachedParameterIds(layerName);
+            } catch (StorageException e) {
+                log.log(Level.SEVERE, "Error while retreiving cached parameter IDs for layer " + layerName, e);
+                return Collections.emptySet();
+            }
+        });
     }
 
     private PagePyramid newPagePyramid(final TileSet tileSet) {

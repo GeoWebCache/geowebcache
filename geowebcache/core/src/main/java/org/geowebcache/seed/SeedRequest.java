@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Marius Suta / The Open Planning Project 2008
  * @author Arne Kepp / The Open Planning Project 2009
@@ -42,8 +41,7 @@ public class SeedRequest {
 
     private String format = null;
 
-    private String type =
-            null; //  TODO: This appears to do nothing as it is never changed from being null
+    private String type = null; //  TODO: This appears to do nothing as it is never changed from being null
 
     private TYPE enumType = null;
 
@@ -210,8 +208,7 @@ public class SeedRequest {
     }
 
     /**
-     * Number of retries to build a tile before giving up on it. -1 disables also the wait and total
-     * failures counters.
+     * Number of retries to build a tile before giving up on it. -1 disables also the wait and total failures counters.
      */
     public int getTileFailureRetryCount() {
         return tileFailureRetryCount;
@@ -231,8 +228,7 @@ public class SeedRequest {
     }
 
     /**
-     * Total amount of failures before stopping the seeding process, computed across all threads in
-     * the seed request.
+     * Total amount of failures before stopping the seeding process, computed across all threads in the seed request.
      */
     public long getTotalFailuresBeforeAborting() {
         return totalFailuresBeforeAborting;

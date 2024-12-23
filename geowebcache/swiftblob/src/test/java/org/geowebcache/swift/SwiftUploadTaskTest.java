@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Dana Lambert, Catalyst IT Ltd NZ, Copyright 2020
  */
@@ -35,8 +34,7 @@ public class SwiftUploadTaskTest extends SwiftTileTest {
 
     @Test
     public void testRunWithEmptyListeners() {
-        SwiftUploadTask swiftUploadTask =
-                new SwiftUploadTask(testKey, swiftTile, testListeners, testObjectApi);
+        SwiftUploadTask swiftUploadTask = new SwiftUploadTask(testKey, swiftTile, testListeners, testObjectApi);
         swiftUploadTask.run();
 
         // Testing that the function checkExisted returns early
@@ -49,8 +47,7 @@ public class SwiftUploadTaskTest extends SwiftTileTest {
         when(testObjectApi.getWithoutBody(testKey)).thenReturn(null);
         addListener();
 
-        SwiftUploadTask swiftUploadTask =
-                new SwiftUploadTask(testKey, swiftTile, testListeners, testObjectApi);
+        SwiftUploadTask swiftUploadTask = new SwiftUploadTask(testKey, swiftTile, testListeners, testObjectApi);
         swiftUploadTask.run();
 
         // Testing that the function checkExisted returns early
@@ -70,8 +67,7 @@ public class SwiftUploadTaskTest extends SwiftTileTest {
         when(testObjectApi.getWithoutBody(testKey)).thenReturn(testSwiftObject);
         addListener();
 
-        SwiftUploadTask swiftUploadTask =
-                new SwiftUploadTask(testKey, swiftTile, testListeners, testObjectApi);
+        SwiftUploadTask swiftUploadTask = new SwiftUploadTask(testKey, swiftTile, testListeners, testObjectApi);
 
         swiftUploadTask.run();
 

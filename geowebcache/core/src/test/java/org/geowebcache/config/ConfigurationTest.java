@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2018
  */
@@ -144,8 +143,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
 
     @Test
     public void testRemoveNotExists() throws Exception {
-        assertThrows(
-                NoSuchElementException.class, () -> removeInfo(config, "GridSetThatDoesntExist"));
+        assertThrows(NoSuchElementException.class, () -> removeInfo(config, "GridSetThatDoesntExist"));
     }
 
     @Test
@@ -245,11 +243,9 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     @Test
     public void testModifyCallRequiredToChangeInfoFromGetInfos() throws Exception {
         testAdd();
-        I goodGridSet =
-                requirePresent(
-                        getInfos(config).stream()
-                                .filter(i -> i.getName().equals("test"))
-                                .findAny());
+        I goodGridSet = requirePresent(getInfos(config).stream()
+                .filter(i -> i.getName().equals("test"))
+                .findAny());
         doModifyInfo(goodGridSet, 2);
 
         Optional<I> retrieved = getInfo(config, "test");
@@ -270,9 +266,8 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     @Test
     public void testModifyCallRequiredToChangeExistingInfoFromGetInfos() throws Exception {
         String name = getExistingInfo();
-        I goodGridSet =
-                requirePresent(
-                        getInfos(config).stream().filter(i -> i.getName().equals(name)).findAny());
+        I goodGridSet = requirePresent(
+                getInfos(config).stream().filter(i -> i.getName().equals(name)).findAny());
         doModifyInfo(goodGridSet, 2);
 
         Optional<I> retrieved = getInfo(config, name);
@@ -329,8 +324,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         // get a thread pool
         @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService pool =
-                Executors.newFixedThreadPool(
-                        16, (Runnable r) -> new Thread(r, "Info Concurrency Test for ADD"));
+                Executors.newFixedThreadPool(16, (Runnable r) -> new Thread(r, "Info Concurrency Test for ADD"));
         // create a bunch of concurrent adds
         ArrayList<Future<I>> futures = new ArrayList<>(100);
         for (int i = 0; i < 100; ++i) {
@@ -338,12 +332,10 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
             int id = 100 + i;
             I info = getGoodInfo(Integer.toString(id), id);
             // schedule the add
-            Future<I> future =
-                    pool.submit(
-                            () -> {
-                                addInfo(config, info);
-                                return info;
-                            });
+            Future<I> future = pool.submit(() -> {
+                addInfo(config, info);
+                return info;
+            });
             futures.add(future);
         }
         // get the results
@@ -374,19 +366,16 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         // get a thread pool
         @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService pool =
-                Executors.newFixedThreadPool(
-                        16, (Runnable r) -> new Thread(r, "Info Concurrency Test for DELETE"));
+                Executors.newFixedThreadPool(16, (Runnable r) -> new Thread(r, "Info Concurrency Test for DELETE"));
         // create a bunch of concurrent deletes
         ArrayList<Future<String>> futures = new ArrayList<>(100);
         for (int i = 0; i < 100; ++i) {
             // schedule the delete
             final String name = Integer.toString(i);
-            Future<String> future =
-                    pool.submit(
-                            () -> {
-                                removeInfo(config, name);
-                                return name;
-                            });
+            Future<String> future = pool.submit(() -> {
+                removeInfo(config, name);
+                return name;
+            });
             futures.add(future);
         }
         // get the results
@@ -417,8 +406,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         // get a thread pool
         @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService pool =
-                Executors.newFixedThreadPool(
-                        16, (Runnable r) -> new Thread(r, "Info Concurrency Test for MODIFY"));
+                Executors.newFixedThreadPool(16, (Runnable r) -> new Thread(r, "Info Concurrency Test for MODIFY"));
         // create a bunch of concurrent modifies
         ArrayList<Future<I>> futures = new ArrayList<>(100);
         for (int i = 0; i < 100; ++i) {
@@ -427,12 +415,10 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
             int modifiedId = 200 + i;
             I modifiedInfo = getGoodInfo(Integer.toString(originalId), modifiedId);
             // schedule the add
-            Future<I> future =
-                    pool.submit(
-                            () -> {
-                                modifyInfo(config, modifiedInfo);
-                                return modifiedInfo;
-                            });
+            Future<I> future = pool.submit(() -> {
+                modifyInfo(config, modifiedInfo);
+                return modifiedInfo;
+            });
             futures.add(future);
         }
         // get the results
@@ -447,8 +433,8 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     }
 
     /**
-     * Create a GridSet that should be saveable in the configuration being tested. Throw
-     * AssumptionViolatedException if this is a read only GridSetConfiguration.
+     * Create a GridSet that should be saveable in the configuration being tested. Throw AssumptionViolatedException if
+     * this is a read only GridSetConfiguration.
      *
      * @param id ID for the GridSet
      * @param rand GridSets created with different values should not be equal to one another.
@@ -456,8 +442,8 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     protected abstract I getGoodInfo(String id, int rand) throws Exception;
 
     /**
-     * Create a GridSet that should not be saveable in the configuration being tested. Throw
-     * AssumptionViolatedException if this is a read only GridSetConfiguration.
+     * Create a GridSet that should not be saveable in the configuration being tested. Throw AssumptionViolatedException
+     * if this is a read only GridSetConfiguration.
      *
      * @param id ID for the GridSet
      * @param rand GridSets created with different values should not be equal to one another.
@@ -465,22 +451,22 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
     protected abstract I getBadInfo(String id, int rand) throws Exception;
 
     /**
-     * Get an ID for a pre-existing GridSet. Throw AssumptionViolatedException if this this
-     * configuration does not have existing GridSets.
+     * Get an ID for a pre-existing GridSet. Throw AssumptionViolatedException if this this configuration does not have
+     * existing GridSets.
      */
     protected abstract String getExistingInfo();
 
     /** Create a GridSetConfiguration to test. */
     protected abstract C getConfig() throws Exception;
     /**
-     * Create a second config from the same persistence source or throw AssumptionViolatedException
-     * if this is a non-persistent configuration.
+     * Create a second config from the same persistence source or throw AssumptionViolatedException if this is a
+     * non-persistent configuration.
      */
     protected abstract C getSecondConfig() throws Exception;
 
     /**
-     * Check that two GridSets created by calls to getGoodGridSet, which may have been persisted and
-     * depersisted, are equal if and only if they had the same rand value.
+     * Check that two GridSets created by calls to getGoodGridSet, which may have been persisted and depersisted, are
+     * equal if and only if they had the same rand value.
      */
     protected abstract Matcher<I> infoEquals(final I expected);
 

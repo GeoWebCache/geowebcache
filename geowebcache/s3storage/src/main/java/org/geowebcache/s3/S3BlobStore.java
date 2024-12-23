@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan, Boundless Spatial Inc, Copyright 2015
  */
@@ -90,8 +89,7 @@ public class S3BlobStore implements BlobStore {
 
     private CannedAccessControlList acl;
 
-    public S3BlobStore(
-            S3BlobStoreInfo config, TileLayerDispatcher layers, LockProvider lockProvider)
+    public S3BlobStore(S3BlobStoreInfo config, TileLayerDispatcher layers, LockProvider lockProvider)
             throws StorageException {
         checkNotNull(config);
         checkNotNull(layers);
@@ -115,13 +113,11 @@ public class S3BlobStore implements BlobStore {
     }
 
     /**
-     * Validates the client connection by running some {@link S3ClientChecker}, returns the valiated
-     * client on success, otherwise throws an exception
+     * Validates the client connection by running some {@link S3ClientChecker}, returns the valiated client on success,
+     * otherwise throws an exception
      */
-    protected AmazonS3Client validateClient(AmazonS3Client client, String bucketName)
-            throws StorageException {
-        List<S3ClientChecker> connectionCheckers =
-                Arrays.asList(this::checkBucketPolicy, this::checkAccessControlList);
+    protected AmazonS3Client validateClient(AmazonS3Client client, String bucketName) throws StorageException {
+        List<S3ClientChecker> connectionCheckers = Arrays.asList(this::checkBucketPolicy, this::checkAccessControlList);
         List<Exception> exceptions = new ArrayList<>();
         for (S3ClientChecker checker : connectionCheckers) {
             try {
@@ -132,11 +128,9 @@ public class S3BlobStore implements BlobStore {
             }
         }
         if (exceptions.size() == connectionCheckers.size()) {
-            String messages =
-                    exceptions.stream().map(e -> e.getMessage()).collect(Collectors.joining("\n"));
+            String messages = exceptions.stream().map(e -> e.getMessage()).collect(Collectors.joining("\n"));
             throw new StorageException(
-                    "Could not validate the connection to S3, exceptions gathered during checks:\n "
-                            + messages);
+                    "Could not validate the connection to S3, exceptions gathered during checks:\n " + messages);
         }
 
         return client;
@@ -148,8 +142,8 @@ public class S3BlobStore implements BlobStore {
     }
 
     /**
-     * Checks a {@link com.amazonaws.services.s3.AmazonS3Client} by getting the ACL out of the
-     * bucket, as implemented by S3, Cohesity, but not, for example, by Minio.
+     * Checks a {@link com.amazonaws.services.s3.AmazonS3Client} by getting the ACL out of the bucket, as implemented by
+     * S3, Cohesity, but not, for example, by Minio.
      */
     private void checkAccessControlList(AmazonS3Client client, String bucketName) throws Exception {
         try {
@@ -163,8 +157,8 @@ public class S3BlobStore implements BlobStore {
     }
 
     /**
-     * Checks a {@link com.amazonaws.services.s3.AmazonS3Client} by getting the policy out of the
-     * bucket, as implemented by S3, Minio, but not, for example, by Cohesity.
+     * Checks a {@link com.amazonaws.services.s3.AmazonS3Client} by getting the policy out of the bucket, as implemented
+     * by S3, Minio, but not, for example, by Cohesity.
      */
     private void checkBucketPolicy(AmazonS3Client client, String bucketName) throws Exception {
         try {
@@ -172,8 +166,7 @@ public class S3BlobStore implements BlobStore {
             BucketPolicy bucketPol = client.getBucketPolicy(bucketName);
             log.fine("Bucket " + bucketName + " policy: " + bucketPol.getPolicyText());
         } catch (AmazonServiceException se) {
-            throw new StorageException(
-                    "Server error getting bucket policy: " + se.getMessage(), se);
+            throw new StorageException("Server error getting bucket policy: " + se.getMessage(), se);
         }
     }
 
@@ -316,19 +309,17 @@ public class S3BlobStore implements BlobStore {
             return false;
         }
 
-        final Iterator<long[]> tileLocations =
-                new AbstractIterator<>() {
+        final Iterator<long[]> tileLocations = new AbstractIterator<>() {
 
-                    // TileRange iterator with 1x1 meta tiling factor
-                    private TileRangeIterator trIter =
-                            new TileRangeIterator(tileRange, new int[] {1, 1});
+            // TileRange iterator with 1x1 meta tiling factor
+            private TileRangeIterator trIter = new TileRangeIterator(tileRange, new int[] {1, 1});
 
-                    @Override
-                    protected long[] computeNext() {
-                        long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
-                        return gridLoc == null ? endOfData() : gridLoc;
-                    }
-                };
+            @Override
+            protected long[] computeNext() {
+                long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
+                return gridLoc == null ? endOfData() : gridLoc;
+            }
+        };
 
         if (listeners.isEmpty()) {
             // if there are no listeners, don't bother requesting every tile
@@ -355,9 +346,7 @@ public class S3BlobStore implements BlobStore {
 
             while (tileLocations.hasNext()) {
                 xyz = tileLocations.next();
-                TileObject tile =
-                        TileObject.createQueryTileObject(
-                                layerName, xyz, gridSetId, format, parameters);
+                TileObject tile = TileObject.createQueryTileObject(layerName, xyz, gridSetId, format, parameters);
                 tile.setParametersId(tileRange.getParametersId());
                 delete(tile);
             }
@@ -388,8 +377,7 @@ public class S3BlobStore implements BlobStore {
     }
 
     @Override
-    public boolean deleteByGridsetId(final String layerName, final String gridSetId)
-            throws StorageException {
+    public boolean deleteByGridsetId(final String layerName, final String gridSetId) throws StorageException {
 
         checkNotNull(layerName, "layerName");
         checkNotNull(gridSetId, "gridSetId");
@@ -468,8 +456,7 @@ public class S3BlobStore implements BlobStore {
         return s3Ops.getProperties(key);
     }
 
-    private void putParametersMetadata(
-            String layerName, String parametersId, Map<String, String> parameters) {
+    private void putParametersMetadata(String layerName, String parametersId, Map<String, String> parameters) {
         assert (isNull(parametersId) == isNull(parameters));
         if (isNull(parametersId)) {
             return;
@@ -492,24 +479,21 @@ public class S3BlobStore implements BlobStore {
     }
 
     @Override
-    public boolean deleteByParametersId(String layerName, String parametersId)
-            throws StorageException {
+    public boolean deleteByParametersId(String layerName, String parametersId) throws StorageException {
         checkNotNull(layerName, "layerName");
         checkNotNull(parametersId, "parametersId");
 
-        boolean prefixExists =
-                keyBuilder.forParameters(layerName, parametersId).stream()
-                        .map(
-                                prefix -> {
-                                    try {
-                                        return s3Ops.scheduleAsyncDelete(prefix);
-                                    } catch (RuntimeException | GeoWebCacheException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                })
-                        .reduce(Boolean::logicalOr) // Don't use Stream.anyMatch as it would short
-                        // circuit
-                        .orElse(false);
+        boolean prefixExists = keyBuilder.forParameters(layerName, parametersId).stream()
+                .map(prefix -> {
+                    try {
+                        return s3Ops.scheduleAsyncDelete(prefix);
+                    } catch (RuntimeException | GeoWebCacheException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .reduce(Boolean::logicalOr) // Don't use Stream.anyMatch as it would short
+                // circuit
+                .orElse(false);
         if (prefixExists) {
             listeners.sendParametersDeleted(layerName, parametersId);
         }
