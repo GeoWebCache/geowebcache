@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan (OpenGeo) 2010
  */
@@ -77,8 +76,7 @@ class StaxGeoRSSReader implements GeoRSSReader {
 
     private final GML31ParsingUtils gmlParser;
 
-    public StaxGeoRSSReader(final Reader feed)
-            throws XMLStreamException, FactoryConfigurationError {
+    public StaxGeoRSSReader(final Reader feed) throws XMLStreamException, FactoryConfigurationError {
         XMLInputFactory factory = XMLInputFactory.newInstance();
         reader = factory.createXMLStreamReader(feed);
 
@@ -87,8 +85,7 @@ class StaxGeoRSSReader implements GeoRSSReader {
         QName name = reader.getName();
 
         if (!(ATOM.NSURI.equals(name.getNamespaceURI()) || "feed".equals(name.getLocalPart()))) {
-            throw new IllegalArgumentException(
-                    "Document is not a GeoRSS feed. Root element: " + name);
+            throw new IllegalArgumentException("Document is not a GeoRSS feed. Root element: " + name);
         }
         findFirstEntry();
         gmlParser = new GML31ParsingUtils();
@@ -160,8 +157,7 @@ class StaxGeoRSSReader implements GeoRSSReader {
         return entry;
     }
 
-    private void parseEntryMember(
-            final XMLStreamReader reader, final QName memberName, final Entry entry)
+    private void parseEntryMember(final XMLStreamReader reader, final QName memberName, final Entry entry)
             throws XMLStreamException {
 
         reader.require(START_ELEMENT, memberName.getNamespaceURI(), memberName.getLocalPart());

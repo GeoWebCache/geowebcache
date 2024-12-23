@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Andrea Aime, GeoSolutions, Copyright 2019
  */
@@ -93,11 +92,10 @@ public class AzureClient {
         AzureNamedKeyCredential creds = getCredentials(configuration);
         ClientOptions clientOpts = new ClientOptions();
         HttpClient httpClient = createHttpClient(configuration);
-        BlobServiceClientBuilder builder =
-                new BlobServiceClientBuilder()
-                        .endpoint(serviceURL)
-                        .clientOptions(clientOpts)
-                        .httpClient(httpClient);
+        BlobServiceClientBuilder builder = new BlobServiceClientBuilder()
+                .endpoint(serviceURL)
+                .clientOptions(clientOpts)
+                .httpClient(httpClient);
         if (null != creds) {
             builder = builder.credential(creds);
         }
@@ -193,9 +191,7 @@ public class AzureClient {
         byte[] bytes = getBytes(key);
         if (bytes != null) {
             try {
-                properties.load(
-                        new InputStreamReader(
-                                new ByteArrayInputStream(bytes), StandardCharsets.UTF_8));
+                properties.load(new InputStreamReader(new ByteArrayInputStream(bytes), StandardCharsets.UTF_8));
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
@@ -211,13 +207,11 @@ public class AzureClient {
         try {
             upload(resourceKey, data, contentType);
         } catch (StorageException e) {
-            throw new StorageException(
-                    "Failed to update e property file at " + resourceKey, e.getCause());
+            throw new StorageException("Failed to update e property file at " + resourceKey, e.getCause());
         }
     }
 
-    public void upload(String resourceKey, BinaryData data, String contentType)
-            throws StorageException {
+    public void upload(String resourceKey, BinaryData data, String contentType) throws StorageException {
 
         BlockBlobSimpleUploadOptions upload = new BlockBlobSimpleUploadOptions(data);
         upload.setHeaders(new BlobHttpHeaders().setContentType(contentType));
@@ -233,8 +227,7 @@ public class AzureClient {
         }
         int status = response.getStatusCode();
         if (!HttpStatus.valueOf(status).is2xxSuccessful()) {
-            throw new StorageException(
-                    "Upload request failed with status " + status + " on resource " + resourceKey);
+            throw new StorageException("Upload request failed with status " + status + " on resource " + resourceKey);
         }
     }
 
@@ -258,8 +251,8 @@ public class AzureClient {
 
     /**
      * @param prefix
-     * @return an internally paged Stream, with the default items-per-page setting of {@link
-     *     ListBlobsOptions#getMaxResultsPerPage() 5000}
+     * @return an internally paged Stream, with the default items-per-page setting of
+     *     {@link ListBlobsOptions#getMaxResultsPerPage() 5000}
      */
     public Stream<BlobItem> listBlobs(String prefix) {
         return listBlobs(prefix, 5_000);
@@ -267,8 +260,8 @@ public class AzureClient {
 
     /**
      * @param prefix
-     * @param maxResultsPerPage used to control how many items Azure will return per page. It's not
-     *     the max results to return entirely, so use it with caution.
+     * @param maxResultsPerPage used to control how many items Azure will return per page. It's not the max results to
+     *     return entirely, so use it with caution.
      * @return an internally paged (as per {@code maxResultsPerPage}) Stream.
      */
     public Stream<BlobItem> listBlobs(String prefix, int maxResultsPerPage) {

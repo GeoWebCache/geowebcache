@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2018
  */
@@ -29,7 +28,8 @@ import org.junit.rules.TemporaryFolder;
 
 public class XMLConfigurationGridsetConformanceTest extends GridSetConfigurationTest {
 
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
 
     protected File configDir;
     protected File configFile;
@@ -59,17 +59,14 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
             configDir = temp.getRoot();
             configFile = temp.newFile("geowebcache.xml");
 
-            URL source =
-                    XMLConfiguration.class.getResource(
-                            XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
+            URL source = XMLConfiguration.class.getResource(XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
             FileUtils.copyURLToFile(source, configFile);
         }
     }
 
     @Override
     protected Matcher<GridSet> infoEquals(GridSet expected) {
-        return new CustomMatcher<>(
-                "GridSet matching " + expected.getName() + " with " + expected.getDescription()) {
+        return new CustomMatcher<>("GridSet matching " + expected.getName() + " with " + expected.getDescription()) {
 
             @Override
             public boolean matches(Object item) {
@@ -87,8 +84,7 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
             @Override
             public boolean matches(Object item) {
                 return item instanceof GridSet
-                        && (Objects.equals(
-                                ((GridSet) item).getDescription(), Integer.toString(expected)));
+                        && (Objects.equals(((GridSet) item).getDescription(), Integer.toString(expected)));
             }
         };
     }
@@ -109,8 +105,7 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
     }
 
     @Override
-    protected void renameInfo(GridSetConfiguration config, String name1, String name2)
-            throws Exception {
+    protected void renameInfo(GridSetConfiguration config, String name1, String name2) throws Exception {
         Assume.assumeFalse(true);
     }
 }

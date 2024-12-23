@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Jody Garnett - GeoCat 2022
  */
@@ -146,9 +145,8 @@ public class LoggingContextListener implements ServletContextListener {
     /**
      * Looks up property from system property, context parameter, or value variable.
      *
-     * <p>This is a light-weight search following the same precedence as {@link
-     * GWCVars#findEnvVar(ApplicationContext, String)} variable lookup: system properties, servlet
-     * init parameters, environmental variables.
+     * <p>This is a light-weight search following the same precedence as {@link GWCVars#findEnvVar(ApplicationContext,
+     * String)} variable lookup: system properties, servlet init parameters, environmental variables.
      *
      * @param context Web context
      * @param name Property name
@@ -161,9 +159,8 @@ public class LoggingContextListener implements ServletContextListener {
     /**
      * Looks up property from system property, context parameter, or value variable.
      *
-     * <p>This is a light-weight search following the same precedence as {@link
-     * GWCVars#findEnvVar(ApplicationContext, String)} variable lookup: system properties, servlet
-     * init parameters, environmental variables.
+     * <p>This is a light-weight search following the same precedence as {@link GWCVars#findEnvVar(ApplicationContext,
+     * String)} variable lookup: system properties, servlet init parameters, environmental variables.
      *
      * @param context Web context
      * @param name Property name
@@ -196,8 +193,7 @@ public class LoggingContextListener implements ServletContextListener {
     }
 
     /**
-     * Mirror workflow of {@code LoggingManager.readConfiguration()} to determine java util logging
-     * configuration.
+     * Mirror workflow of {@code LoggingManager.readConfiguration()} to determine java util logging configuration.
      *
      * @return java util logging configuration
      */

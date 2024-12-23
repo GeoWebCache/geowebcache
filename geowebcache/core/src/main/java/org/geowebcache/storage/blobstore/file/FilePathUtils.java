@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2008
  */
@@ -32,10 +31,7 @@ public class FilePathUtils {
         return sb.toString();
     }
 
-    /**
-     * Silly way to pad numbers with leading zeros, since I don't know a fast way of doing this in
-     * Java.
-     */
+    /** Silly way to pad numbers with leading zeros, since I don't know a fast way of doing this in Java. */
     public static void zeroPadder(long number, int order, StringBuilder padding) {
         int numberOrder = 1;
 
@@ -92,8 +88,7 @@ public class FilePathUtils {
         try {
             return Integer.parseInt(zlevel);
         } catch (NumberFormatException e) {
-            throw new RuntimeException(
-                    String.format("unable to find zoom level in '%s'", gridsetPrefix), e);
+            throw new RuntimeException(String.format("unable to find zoom level in '%s'", gridsetPrefix), e);
         }
     }
 
@@ -120,9 +115,8 @@ public class FilePathUtils {
     }
 
     /**
-     * Returns a path built from a root and a list of components. The components are appended to the
-     * root with a {@link File#separatorChar} in between. The root is trusted not to need escaping,
-     * all other bits are filtered.
+     * Returns a path built from a root and a list of components. The components are appended to the root with a
+     * {@link File#separatorChar} in between. The root is trusted not to need escaping, all other bits are filtered.
      */
     public static String buildPath(String root, String... components) {
         StringBuilder path = new StringBuilder(256);

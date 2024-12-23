@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, OpenGeo, Copyright 2009
  */
@@ -30,20 +29,16 @@ public class SRS implements Comparable<SRS>, Serializable {
     private static final SRS EPSG4326 = new SRS(4326);
 
     /**
-     * The EPSG says EPSG:3857 is the identifier for web mercator. ArcGIS 10 says either of
-     * EPSG:102113 or EPSG:102100 identifies web mercator. The "community" first defined it as
-     * EPSG:900913.
+     * The EPSG says EPSG:3857 is the identifier for web mercator. ArcGIS 10 says either of EPSG:102113 or EPSG:102100
+     * identifies web mercator. The "community" first defined it as EPSG:900913.
      */
-    private static final SRS EPSG3857 =
-            new SRS(3857, new ArrayList<>(asList(900913, 102113, 102100)));
+    private static final SRS EPSG3857 = new SRS(3857, new ArrayList<>(asList(900913, 102113, 102100)));
 
     /**
-     * The EPSG says EPSG:3857 is the identifier for web mercator. ArcGIS 10 says either of
-     * EPSG:102113 or EPSG:102100 identifies web mercator. The "community" first defined it as
-     * EPSG:900913.
+     * The EPSG says EPSG:3857 is the identifier for web mercator. ArcGIS 10 says either of EPSG:102113 or EPSG:102100
+     * identifies web mercator. The "community" first defined it as EPSG:900913.
      */
-    private static final SRS EPSG900913 =
-            new SRS(900913, new ArrayList<>(asList(3857, 102113, 102100)));
+    private static final SRS EPSG900913 = new SRS(900913, new ArrayList<>(asList(3857, 102113, 102100)));
 
     private int number;
 
@@ -74,10 +69,9 @@ public class SRS implements Comparable<SRS>, Serializable {
     /**
      * Returns an SRS object for the given epsg code.
      *
-     * <p>If an SRS for this code already exists, it's returned. Otherwise a registered SRS is
-     * looked up that has an alias defined for the given code, and if found the alias is returned.
-     * If no SRS is registered nor an alias is found, a new SRS for this code is registered and
-     * returned.
+     * <p>If an SRS for this code already exists, it's returned. Otherwise a registered SRS is looked up that has an
+     * alias defined for the given code, and if found the alias is returned. If no SRS is registered nor an alias is
+     * found, a new SRS for this code is registered and returned.
      */
     public static SRS getSRS(final int epsgCode) {
         final Integer code = Integer.valueOf(epsgCode);

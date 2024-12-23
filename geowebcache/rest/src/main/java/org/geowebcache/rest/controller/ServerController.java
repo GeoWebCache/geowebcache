@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Torben Barsballe (Boundless), 2018
  */
@@ -34,7 +33,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "${gwc.context.suffix:}/rest/global")
 public class ServerController {
-    @Autowired ServerConfiguration serverConfiguration;
+    @Autowired
+    ServerConfiguration serverConfiguration;
 
     // TODO: Can this be consolidated across controllers?
     @ExceptionHandler(RestException.class)
@@ -50,30 +50,20 @@ public class ServerController {
     }
 
     @RequestMapping(method = RequestMethod.PUT)
-    public void serverPut(@RequestBody ServerConfigurationPOJO serverConfiguration)
-            throws IOException {
+    public void serverPut(@RequestBody ServerConfigurationPOJO serverConfiguration) throws IOException {
 
         // Throw an exception if a read-only value is modified
         if (serverConfiguration.getIdentifier() != null
-                && !this.serverConfiguration
-                        .getIdentifier()
-                        .equals(serverConfiguration.getIdentifier())) {
-            throw new RestException(
-                    "Cannot modify read-only property \"identifier\"", HttpStatus.BAD_REQUEST);
+                && !this.serverConfiguration.getIdentifier().equals(serverConfiguration.getIdentifier())) {
+            throw new RestException("Cannot modify read-only property \"identifier\"", HttpStatus.BAD_REQUEST);
         }
         if (serverConfiguration.getLocation() != null
-                && !this.serverConfiguration
-                        .getLocation()
-                        .equals(serverConfiguration.getLocation())) {
-            throw new RestException(
-                    "Cannot modify read-only property \"location\"", HttpStatus.BAD_REQUEST);
+                && !this.serverConfiguration.getLocation().equals(serverConfiguration.getLocation())) {
+            throw new RestException("Cannot modify read-only property \"location\"", HttpStatus.BAD_REQUEST);
         }
         if (serverConfiguration.getVersion() != null
-                && !this.serverConfiguration
-                        .getVersion()
-                        .equals(serverConfiguration.getVersion())) {
-            throw new RestException(
-                    "Cannot modify read-only property \"version\"", HttpStatus.BAD_REQUEST);
+                && !this.serverConfiguration.getVersion().equals(serverConfiguration.getVersion())) {
+            throw new RestException("Cannot modify read-only property \"version\"", HttpStatus.BAD_REQUEST);
         }
 
         serverConfiguration.apply(this.serverConfiguration);

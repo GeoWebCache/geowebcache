@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan (OpenGeo) 2010
  */
@@ -51,22 +50,21 @@ public class GeometryRasterMaskBuilder {
 
     private static final double ENVELOPE_BUFFER_RATIO = 1;
 
-    private static final Logger LOGGER =
-            Logging.getLogger(GeometryRasterMaskBuilder.class.getName());
+    private static final Logger LOGGER = Logging.getLogger(GeometryRasterMaskBuilder.class.getName());
 
     private static final AffineTransform IDENTITY = new AffineTransform();
 
     /**
-     * By zoom level bitmasked images where every pixel represents a tile in the level's {@link
-     * GridSubset#getCoverages() grid coverage}
+     * By zoom level bitmasked images where every pixel represents a tile in the level's
+     * {@link GridSubset#getCoverages() grid coverage}
      */
     private final BufferedImage[] byLevelMasks;
 
     private Graphics2D[] graphics;
 
     /**
-     * Aggregated bounds of all the geometries sent to {@link #setMasksForGeometry}, in grid
-     * subset's CRS.Used to calculate maskBounds
+     * Aggregated bounds of all the geometries sent to {@link #setMasksForGeometry}, in grid subset's CRS.Used to
+     * calculate maskBounds
      */
     private Envelope aggregatedGeomBounds;
 
@@ -101,22 +99,17 @@ public class GeometryRasterMaskBuilder {
                 final long tilesY = (levelBounds[3] + 1) - levelBounds[1];
                 final long numTiles = tilesX * tilesY;
 
-                if (tilesX >= Integer.MAX_VALUE
-                        || tilesY >= Integer.MAX_VALUE
-                        || numTiles >= Integer.MAX_VALUE) {
+                if (tilesX >= Integer.MAX_VALUE || tilesY >= Integer.MAX_VALUE || numTiles >= Integer.MAX_VALUE) {
                     // this is so because the image's sample model can't cope up with more than
                     // Integer.MAX_VALUE pixels
-                    throw new IllegalStateException(
-                            "Masking level "
-                                    + level
-                                    + " would produce a backing image of too many tiles!"
-                                    + " Consider setting a lower maxMaskLevel ");
+                    throw new IllegalStateException("Masking level "
+                            + level
+                            + " would produce a backing image of too many tiles!"
+                            + " Consider setting a lower maxMaskLevel ");
                 }
 
                 // BufferedImage with 1-bit per pixel sample model
-                BufferedImage mask =
-                        new BufferedImage(
-                                (int) tilesX, (int) tilesY, BufferedImage.TYPE_BYTE_BINARY);
+                BufferedImage mask = new BufferedImage((int) tilesX, (int) tilesY, BufferedImage.TYPE_BYTE_BINARY);
                 byLevelMasks[level] = mask;
             }
         }
@@ -140,8 +133,7 @@ public class GeometryRasterMaskBuilder {
     }
 
     /**
-     * @param geom a geometry to mask the affected tiles for, in this matrix's gridSubSet coordinate
-     *     reference system
+     * @param geom a geometry to mask the affected tiles for, in this matrix's gridSubSet coordinate reference system
      */
     public void setMasksForGeometry(final Geometry geom) {
         if (geom == null || geom.isEmpty()) {
@@ -186,8 +178,7 @@ public class GeometryRasterMaskBuilder {
              * Disable antialiasing explicitly, otherwise the rendering will pick the platform's
              * default potentially producing missing pixels
              */
-            graphics.setRenderingHint(
-                    RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
             graphics.setColor(Color.WHITE);
             graphics.fill(shape);
         }
@@ -214,8 +205,7 @@ public class GeometryRasterMaskBuilder {
         return geomInGridCrs;
     }
 
-    private MathTransform getWorldToGridTransform(
-            final BoundingBox coverageBounds, final long[] coverage) {
+    private MathTransform getWorldToGridTransform(final BoundingBox coverageBounds, final long[] coverage) {
 
         // //
         //
@@ -331,17 +321,15 @@ public class GeometryRasterMaskBuilder {
             Envelope coveredLevelEnvelope;
             coveredLevelEnvelope = JTS.transform(aggregatedGeomBounds, worldToGrid);
             Geometry bufferedEnvelopeInGridCrs;
-            bufferedEnvelopeInGridCrs =
-                    JTS.toGeometry(coveredLevelEnvelope).buffer(ENVELOPE_BUFFER_RATIO);
+            bufferedEnvelopeInGridCrs = JTS.toGeometry(coveredLevelEnvelope).buffer(ENVELOPE_BUFFER_RATIO);
             coveredLevelEnvelope = bufferedEnvelopeInGridCrs.getEnvelopeInternal();
             MathTransform gridToWorld = worldToGrid.inverse();
             Envelope bufferedEnvelope = JTS.transform(coveredLevelEnvelope, gridToWorld);
-            expandedBounds =
-                    new BoundingBox(
-                            bufferedEnvelope.getMinX(),
-                            bufferedEnvelope.getMinY(),
-                            bufferedEnvelope.getMaxX(),
-                            bufferedEnvelope.getMaxY());
+            expandedBounds = new BoundingBox(
+                    bufferedEnvelope.getMinX(),
+                    bufferedEnvelope.getMinY(),
+                    bufferedEnvelope.getMaxX(),
+                    bufferedEnvelope.getMaxY());
         } catch (TransformException e) {
             throw new RuntimeException(e);
         }

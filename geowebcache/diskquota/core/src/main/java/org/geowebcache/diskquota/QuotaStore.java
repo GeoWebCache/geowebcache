@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2019
  */
@@ -42,20 +41,17 @@ public interface QuotaStore {
      *
      * @return A Quota object (never null)
      */
-    public abstract Quota getUsedQuotaByTileSetId(final String tileSetId)
-            throws InterruptedException;
+    public abstract Quota getUsedQuotaByTileSetId(final String tileSetId) throws InterruptedException;
 
     public abstract void deleteLayer(final String layerName);
 
-    public abstract void renameLayer(String oldLayerName, String newLayerName)
-            throws InterruptedException;
+    public abstract void renameLayer(String oldLayerName, String newLayerName) throws InterruptedException;
 
     /**
-     * @return the used quota for the given layer, may need to create a new one before returning if
-     *     no quota usage information for that layer already exists
+     * @return the used quota for the given layer, may need to create a new one before returning if no quota usage
+     *     information for that layer already exists
      */
-    public abstract Quota getUsedQuotaByLayerName(final String layerName)
-            throws InterruptedException;
+    public abstract Quota getUsedQuotaByLayerName(final String layerName) throws InterruptedException;
 
     public abstract long[][] getTilesForPage(TilePage page) throws InterruptedException;
 
@@ -67,33 +63,24 @@ public interface QuotaStore {
 
     public abstract TilePageCalculator getTilePageCalculator();
 
-    /**
-     * Adds the {@link TilePage#getNumPresentTilesInPage() number of tiles} present in each of the
-     * argument pages
-     */
+    /** Adds the {@link TilePage#getNumPresentTilesInPage() number of tiles} present in each of the argument pages */
     public abstract void addToQuotaAndTileCounts(
-            final TileSet tileSet,
-            final Quota quotaDiff,
-            final Collection<PageStatsPayload> tileCountDiffs)
+            final TileSet tileSet, final Quota quotaDiff, final Collection<PageStatsPayload> tileCountDiffs)
             throws InterruptedException;
 
     /**
-     * Asynchronously updates (or set if not exists) the {@link
-     * PageStats#getFrequencyOfUsePerMinute()} and {@link PageStats#getLastAccessTimeMinutes()}
-     * values for the stored versions of the page statistics using {@link
-     * PageStats#addHitsAndAccessTime(long, int, int)}; these values are influenced by the {@code
-     * PageStats}' {@link PageStats#getFillFactor() fillFactor}.
+     * Asynchronously updates (or set if not exists) the {@link PageStats#getFrequencyOfUsePerMinute()} and
+     * {@link PageStats#getLastAccessTimeMinutes()} values for the stored versions of the page statistics using
+     * {@link PageStats#addHitsAndAccessTime(long, int, int)}; these values are influenced by the {@code PageStats}'
+     * {@link PageStats#getFillFactor() fillFactor}.
      */
-    public abstract Future<List<PageStats>> addHitsAndSetAccesTime(
-            final Collection<PageStatsPayload> statsUpdates);
+    public abstract Future<List<PageStats>> addHitsAndSetAccesTime(final Collection<PageStatsPayload> statsUpdates);
 
     /** */
-    public abstract TilePage getLeastFrequentlyUsedPage(final Set<String> layerNames)
-            throws InterruptedException;
+    public abstract TilePage getLeastFrequentlyUsedPage(final Set<String> layerNames) throws InterruptedException;
 
     /** */
-    public abstract TilePage getLeastRecentlyUsedPage(final Set<String> layerNames)
-            throws InterruptedException;
+    public abstract TilePage getLeastRecentlyUsedPage(final Set<String> layerNames) throws InterruptedException;
 
     public abstract PageStats setTruncated(final TilePage tilePage) throws InterruptedException;
 

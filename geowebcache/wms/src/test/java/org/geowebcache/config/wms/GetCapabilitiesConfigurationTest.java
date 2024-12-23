@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2018
  */
@@ -77,9 +76,7 @@ public class GetCapabilitiesConfigurationTest {
         expect(cap.getRequest()).andStubReturn(req);
         expect(req.getGetCapabilities()).andStubReturn(gcOpType);
         expect(gcOpType.getGet())
-                .andStubReturn(
-                        URLs.of(
-                                "http://test/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities"));
+                .andStubReturn(URLs.of("http://test/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities"));
         expect(cap.getVersion()).andStubReturn("1.1.1");
     }
 
@@ -93,8 +90,7 @@ public class GetCapabilitiesConfigurationTest {
         expect(cap.getLayerList()).andReturn(layers);
 
         GetCapabilitiesConfiguration config =
-                new GetCapabilitiesConfiguration(
-                        broker, "http://test/wms", "image/png", "3x3", "", null, "false") {
+                new GetCapabilitiesConfiguration(broker, "http://test/wms", "image/png", "3x3", "", null, "false") {
 
                     @Override
                     WebMapServer getWMS() {
@@ -110,9 +106,7 @@ public class GetCapabilitiesConfigurationTest {
         WMSLayer wmsLayer = (WMSLayer) config.getLayers().iterator().next();
         List<ParameterFilter> outputParameterFilters = wmsLayer.getParameterFilters();
 
-        assertThat(
-                outputParameterFilters,
-                Matchers.contains(hasProperty("key", equalToIgnoringCase("styles"))));
+        assertThat(outputParameterFilters, Matchers.contains(hasProperty("key", equalToIgnoringCase("styles"))));
     }
 
     @Test
@@ -126,13 +120,7 @@ public class GetCapabilitiesConfigurationTest {
 
         GetCapabilitiesConfiguration config =
                 new GetCapabilitiesConfiguration(
-                        broker,
-                        "http://test/wms",
-                        "image/png",
-                        "3x3",
-                        "",
-                        new HashMap<>(),
-                        "false") {
+                        broker, "http://test/wms", "image/png", "3x3", "", new HashMap<>(), "false") {
 
                     @Override
                     WebMapServer getWMS() {
@@ -147,9 +135,7 @@ public class GetCapabilitiesConfigurationTest {
         WMSLayer wmsLayer = (WMSLayer) config.getLayers().iterator().next();
         List<ParameterFilter> outputParameterFilters = wmsLayer.getParameterFilters();
 
-        assertThat(
-                outputParameterFilters,
-                Matchers.contains(hasProperty("key", equalToIgnoringCase("styles"))));
+        assertThat(outputParameterFilters, Matchers.contains(hasProperty("key", equalToIgnoringCase("styles"))));
     }
 
     @Test
@@ -181,16 +167,13 @@ public class GetCapabilitiesConfigurationTest {
         WMSLayer wmsLayer = (WMSLayer) config.getLayers().iterator().next();
         List<ParameterFilter> outputParameterFilters = wmsLayer.getParameterFilters();
 
-        assertThat(
-                outputParameterFilters,
-                Matchers.contains(hasProperty("key", equalToIgnoringCase("styles"))));
+        assertThat(outputParameterFilters, Matchers.contains(hasProperty("key", equalToIgnoringCase("styles"))));
     }
 
     @Test
     @SuppressWarnings("unchecked") // to be removed once we upgrade to Hamcrest 2, @SafeVarArgs
     public void testDelegateInitializingLayers() throws Exception {
-        GridSetBroker broker =
-                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
+        GridSetBroker broker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
         String url = "http://test/wms";
         String mimeTypes = "image/png";
         String vendorParameters = "map=/osgeo/mapserver/msautotest/world/world.map";
@@ -214,9 +197,7 @@ public class GetCapabilitiesConfigurationTest {
         expect(cap.getRequest()).andStubReturn(req);
         expect(req.getGetCapabilities()).andStubReturn(gcOpType);
         expect(gcOpType.getGet())
-                .andStubReturn(
-                        URLs.of(
-                                "http://test/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities"));
+                .andStubReturn(URLs.of("http://test/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=getcapabilities"));
 
         expect(cap.getVersion()).andStubReturn("1.1.1");
 
@@ -249,8 +230,7 @@ public class GetCapabilitiesConfigurationTest {
 
         // Check that the XMLConfiguration's setDefaultValues method has been called on each of the
         // layers returened.
-        assertThat(
-                Sets.newHashSet(config.getLayers()), is(Sets.newHashSet(layerCapture.getValues())));
+        assertThat(Sets.newHashSet(config.getLayers()), is(Sets.newHashSet(layerCapture.getValues())));
 
         verify(server, cap, req, gcOpType, globalConfig);
 

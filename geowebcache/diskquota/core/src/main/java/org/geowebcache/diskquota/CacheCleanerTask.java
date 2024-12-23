@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan (OpenGeo) 2010
  */
@@ -36,15 +35,12 @@ class CacheCleanerTask implements Runnable {
     static final Logger LOG = Logging.getLogger(CacheCleanerTask.class.getName());
 
     /**
-     * Maintains a set of per layer enforcement tasks, so that no enforcement task is spawn for a
-     * layer when one is still running.
+     * Maintains a set of per layer enforcement tasks, so that no enforcement task is spawn for a layer when one is
+     * still running.
      */
     private final Map<String, Future<?>> perLayerRunningCleanUps;
 
-    /**
-     * Caches the currently running {@link LayerQuotaEnforcementTask} so that not two are launched
-     * at the same time
-     */
+    /** Caches the currently running {@link LayerQuotaEnforcementTask} so that not two are launched at the same time */
     private Future<?> globalCleanUpTask;
 
     private ExecutorService cleanUpExecutorService;
@@ -59,15 +55,13 @@ class CacheCleanerTask implements Runnable {
     }
 
     /**
-     * Runs the cache enforcement tasks asynchronously using the {@link ExecutorService} provided in
-     * the constructor.
+     * Runs the cache enforcement tasks asynchronously using the {@link ExecutorService} provided in the constructor.
      *
-     * <p>Exceptions are catched and logged, not propagated, in order to allow this runnable to be
-     * used as a timer so even if one run fails the next runs are still called
+     * <p>Exceptions are catched and logged, not propagated, in order to allow this runnable to be used as a timer so
+     * even if one run fails the next runs are still called
      *
-     * <p>The process submits one cache cleanup execution task per layer that exceeds it's
-     * configured quota, and a single global cache enforcement task for the layers that have no
-     * explicitly configured quota limit.
+     * <p>The process submits one cache cleanup execution task per layer that exceeds it's configured quota, and a
+     * single global cache enforcement task for the layers that have no explicitly configured quota limit.
      *
      * @see java.lang.Runnable#run()
      */
@@ -104,10 +98,9 @@ class CacheCleanerTask implements Runnable {
 
             if (monitor.isCacheInfoBuilderRunning(layerName)) {
                 if (LOG.isLoggable(Level.INFO)) {
-                    LOG.info(
-                            "Cache information is still being gathered for layer '"
-                                    + layerName
-                                    + "'. Skipping quota enforcement task for this layer.");
+                    LOG.info("Cache information is still being gathered for layer '"
+                            + layerName
+                            + "'. Skipping quota enforcement task for this layer.");
                 }
                 continue;
             }
@@ -115,10 +108,9 @@ class CacheCleanerTask implements Runnable {
             Future<?> runningCleanup = perLayerRunningCleanUps.get(layerName);
             if (runningCleanup != null && !runningCleanup.isDone()) {
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine(
-                            "Cache clean up task still running for layer '"
-                                    + layerName
-                                    + "'. Ignoring it for this run.");
+                    LOG.fine("Cache clean up task still running for layer '"
+                            + layerName
+                            + "'. Ignoring it for this run.");
                 }
                 continue;
             }
@@ -131,24 +123,22 @@ class CacheCleanerTask implements Runnable {
             Quota excedent = usedQuota.difference(quota);
             if (excedent.getBytes().compareTo(BigInteger.ZERO) > 0) {
                 if (LOG.isLoggable(Level.INFO)) {
-                    LOG.info(
-                            "Layer '"
-                                    + layerName
-                                    + "' exceeds its quota of "
-                                    + quota.toNiceString()
-                                    + " by "
-                                    + excedent.toNiceString()
-                                    + ". Currently used: "
-                                    + usedQuota.toNiceString()
-                                    + ". Clean up task will be performed using expiration policy "
-                                    + policy);
+                    LOG.info("Layer '"
+                            + layerName
+                            + "' exceeds its quota of "
+                            + quota.toNiceString()
+                            + " by "
+                            + excedent.toNiceString()
+                            + ". Currently used: "
+                            + usedQuota.toNiceString()
+                            + ". Clean up task will be performed using expiration policy "
+                            + policy);
                 }
 
                 Set<String> layerNames = Collections.singleton(layerName);
                 QuotaResolver quotaResolver = monitor.newLayerQuotaResolver(layerName);
 
-                LayerQuotaEnforcementTask task =
-                        new LayerQuotaEnforcementTask(layerNames, quotaResolver, monitor);
+                LayerQuotaEnforcementTask task = new LayerQuotaEnforcementTask(layerNames, quotaResolver, monitor);
                 Future<Object> future = this.cleanUpExecutorService.submit(task);
                 perLayerRunningCleanUps.put(layerName, future);
             }
@@ -161,16 +151,14 @@ class CacheCleanerTask implements Runnable {
             }
             final Quota globalQuota = quotaConfig.getGlobalQuota();
             if (globalQuota == null) {
-                LOG.info(
-                        "There's not a global disk quota configured. The following layers "
-                                + "will not be checked for excess of disk usage: "
-                                + globallyManagedLayerNames);
+                LOG.info("There's not a global disk quota configured. The following layers "
+                        + "will not be checked for excess of disk usage: "
+                        + globallyManagedLayerNames);
                 return;
             }
 
             if (globalCleanUpTask != null && !globalCleanUpTask.isDone()) {
-                LOG.fine(
-                        "Global cache quota enforcement task still running, avoiding issueing a new one...");
+                LOG.fine("Global cache quota enforcement task still running, avoiding issueing a new one...");
                 return;
             }
 
@@ -182,17 +170,15 @@ class CacheCleanerTask implements Runnable {
                 LOG.fine("Submitting global cache quota enforcement task");
                 QuotaResolver quotaResolver = monitor.newGlobalQuotaResolver();
                 LayerQuotaEnforcementTask task =
-                        new LayerQuotaEnforcementTask(
-                                globallyManagedLayerNames, quotaResolver, monitor);
+                        new LayerQuotaEnforcementTask(globallyManagedLayerNames, quotaResolver, monitor);
                 this.globalCleanUpTask = this.cleanUpExecutorService.submit(task);
             } else {
                 if (LOG.isLoggable(Level.FINER)) {
-                    LOG.finer(
-                            "Won't launch global quota enforcement task, "
-                                    + globalUsedQuota.toNiceString()
-                                    + " used out of "
-                                    + globalQuota.toNiceString()
-                                    + " configured for the whole cache size.");
+                    LOG.finer("Won't launch global quota enforcement task, "
+                            + globalUsedQuota.toNiceString()
+                            + " used out of "
+                            + globalQuota.toNiceString()
+                            + " configured for the whole cache size.");
                 }
             }
         }
@@ -208,9 +194,7 @@ class CacheCleanerTask implements Runnable {
         private final DiskQuotaMonitor monitor;
 
         public LayerQuotaEnforcementTask(
-                final Set<String> layerNames,
-                final QuotaResolver quotaResolver,
-                final DiskQuotaMonitor monitor) {
+                final Set<String> layerNames, final QuotaResolver quotaResolver, final DiskQuotaMonitor monitor) {
             this.layerNames = layerNames;
             this.quotaResolver = quotaResolver;
             this.monitor = monitor;

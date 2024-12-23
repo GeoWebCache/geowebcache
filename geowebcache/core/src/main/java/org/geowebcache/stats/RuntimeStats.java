@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, The OpenGeo, Copyright 2009
  */
@@ -68,8 +67,8 @@ public class RuntimeStats {
 
     /**
      * @param pollInterval seconds between recording aggregate values
-     * @param intervals the intervals for which to report, in seconds, ascending. Each interval must
-     *     be a multiple of the pollInterval
+     * @param intervals the intervals for which to report, in seconds, ascending. Each interval must be a multiple of
+     *     the pollInterval
      * @param intervalDescs the description for each of the previously defined intervals
      */
     public RuntimeStats(int pollInterval, List<Integer> intervals, List<String> intervalDescs) {
@@ -77,13 +76,12 @@ public class RuntimeStats {
     }
     /**
      * @param pollInterval seconds between recording aggregate values
-     * @param intervals the intervals for which to report, in seconds, ascending. Each interval must
-     *     be a multiple of the pollInterval
+     * @param intervals the intervals for which to report, in seconds, ascending. Each interval must be a multiple of
+     *     the pollInterval
      * @param intervalDescs the description for each of the previously defined intervals
      * @param clock the clock to use to keep track of the time
      */
-    public RuntimeStats(
-            int pollInterval, List<Integer> intervals, List<String> intervalDescs, Clock clock) {
+    public RuntimeStats(int pollInterval, List<Integer> intervals, List<String> intervalDescs, Clock clock) {
         this.clock = clock;
         this.startTime = this.clock.millis();
 
@@ -103,10 +101,7 @@ public class RuntimeStats {
             if (curVal % pollInterval != 0) {
                 log.log(
                         Level.SEVERE,
-                        "The interval ("
-                                + curVal
-                                + ") must be a multiple of the poll interval "
-                                + pollInterval);
+                        "The interval (" + curVal + ") must be a multiple of the poll interval " + pollInterval);
                 curVal = curVal - (curVal % pollInterval);
             }
             this.intervals[i] = curVal;
@@ -177,16 +172,11 @@ public class RuntimeStats {
             if (runningTime > 0) {
                 str.append("<tbody>");
                 str.append("<tr><th colspan=\"2\" scope=\"row\">Started:</th><td colspan=\"3\">");
-                str.append(
-                        ServletUtils.formatTimestamp(this.startTime)
-                                + " ("
-                                + formatTimeDiff(runningTime)
-                                + ") ");
+                str.append(ServletUtils.formatTimestamp(this.startTime) + " (" + formatTimeDiff(runningTime) + ") ");
                 str.append("</td></tr>\n");
 
-                str.append(
-                        "<tr><th colspan=\"2\" scope=\"row\">Total number of requests:</th><td colspan=\"3\">"
-                                + totalRequests);
+                str.append("<tr><th colspan=\"2\" scope=\"row\">Total number of requests:</th><td colspan=\"3\">"
+                        + totalRequests);
                 str.append(" (" + totalRequests / (runningTime) + "/s ) ");
                 str.append("</td></tr>\n");
 
@@ -196,9 +186,8 @@ public class RuntimeStats {
                 str.append(" (" + totalWMS / (runningTime) + "/s ) ");
                 str.append("</td></tr>\n");
 
-                str.append(
-                        "<tr><th colspan=\"2\" scope=\"row\">Total number of bytes:</th><td colspan=\"3\">"
-                                + totalBytes);
+                str.append("<tr><th colspan=\"2\" scope=\"row\">Total number of bytes:</th><td colspan=\"3\">"
+                        + totalBytes);
                 str.append(" (" + formatBits((totalBytes * 8.0) / (runningTime)) + ") ");
                 str.append("</td></tr>\n");
 
@@ -211,8 +200,7 @@ public class RuntimeStats {
                 str.append("<tbody>");
             }
 
-            str.append(
-                    "<tr><th colspan=\"2\" scope=\"row\">Cache hit ratio:</th><td colspan=\"3\">");
+            str.append("<tr><th colspan=\"2\" scope=\"row\">Cache hit ratio:</th><td colspan=\"3\">");
             if (totalHits + totalMisses > 0) {
                 double hitPercentage = (totalHits * 100.0) / (totalHits + totalMisses);
                 int rounded = (int) Math.round(hitPercentage * 100.0);
@@ -225,18 +213,13 @@ public class RuntimeStats {
 
             str.append("</td></tr>\n");
 
-            str.append(
-                    "<tr><th colspan=\"2\" scope=\"row\">Blank/KML/HTML:</th><td colspan=\"3\">");
+            str.append("<tr><th colspan=\"2\" scope=\"row\">Blank/KML/HTML:</th><td colspan=\"3\">");
             if (totalRequests > 0) {
                 if (totalHits + totalMisses == 0) {
                     str.append("100.0% of requests");
                 } else {
-                    int rounded =
-                            (int)
-                                    Math.round(
-                                            ((totalRequests - totalHits - totalMisses - totalWMS)
-                                                            * 100.0)
-                                                    / totalRequests);
+                    int rounded = (int)
+                            Math.round(((totalRequests - totalHits - totalMisses - totalWMS) * 100.0) / totalRequests);
                     int percents = rounded / 100;
                     int decimals = rounded - percents * 100;
                     str.append(percents + "." + decimals + "% of requests");
@@ -249,8 +232,7 @@ public class RuntimeStats {
             str.append("</tbody>");
             str.append("<tbody>");
 
-            str.append(
-                    "<tr><th colspan=\"2\" scope=\"row\">Peak request rate:</th><td colspan=\"3\">");
+            str.append("<tr><th colspan=\"2\" scope=\"row\">Peak request rate:</th><td colspan=\"3\">");
             if (totalRequests > 0) {
                 str.append(formatRequests((peakRequests * 1.0) / pollInterval));
                 str.append(" (" + ServletUtils.formatTimestamp(peakRequestsTime) + ") ");
@@ -259,8 +241,7 @@ public class RuntimeStats {
             }
             str.append("</td></tr>\n");
 
-            str.append(
-                    "<tr><th colspan=\"2\" scope=\"row\">Peak bandwidth:</th><td colspan=\"3\">");
+            str.append("<tr><th colspan=\"2\" scope=\"row\">Peak bandwidth:</th><td colspan=\"3\">");
             if (totalRequests > 0) {
                 str.append(formatBits((peakBytes * 8.0) / pollInterval));
                 str.append(" (" + ServletUtils.formatTimestamp(peakRequestsTime) + ") ");
@@ -284,31 +265,28 @@ public class RuntimeStats {
 
                 String[] bits = calculateBits(intervals[i]);
 
-                str.append(
-                        "<tr><td>"
-                                + intervalDescs[i]
-                                + "</td><td>"
-                                + requests[0]
-                                + "</td><td>"
-                                + requests[1]
-                                + "</td><td>"
-                                + bits[0]
-                                + "</td><td>"
-                                + bits[1]
-                                + "</td><td>"
-                                + "</tr>\n");
+                str.append("<tr><td>"
+                        + intervalDescs[i]
+                        + "</td><td>"
+                        + requests[0]
+                        + "</td><td>"
+                        + requests[1]
+                        + "</td><td>"
+                        + bits[0]
+                        + "</td><td>"
+                        + bits[1]
+                        + "</td><td>"
+                        + "</tr>\n");
             }
 
             str.append("</tbody>");
             str.append("<tbody>");
 
-            str.append(
-                    "<tr><td colspan=\"5\">All figures are "
-                            + pollInterval
-                            + " second(s) delayed and do not include HTTP overhead</td></tr>");
+            str.append("<tr><td colspan=\"5\">All figures are "
+                    + pollInterval
+                    + " second(s) delayed and do not include HTTP overhead</td></tr>");
 
-            str.append(
-                    "<tr><td colspan=\"5\">The cache hit ratio does not account for metatiling</td></tr>");
+            str.append("<tr><td colspan=\"5\">The cache hit ratio does not account for metatiling</td></tr>");
 
             str.append("</tbody>");
         }

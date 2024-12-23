@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan, Boundless Spatial Inc, Copyright 2015
  */
@@ -107,8 +106,7 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
     }
 
     /**
-     * Returns the base prefix, which is a prefix path to use as the root to store tiles under the
-     * bucket.
+     * Returns the base prefix, which is a prefix path to use as the root to store tiles under the bucket.
      *
      * @return optional string for a "base prefix"
      */
@@ -181,8 +179,8 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
     }
 
     /**
-     * Returns the optional Windows workstation name for configuring NTLM proxy support. If you
-     * aren't using a Windows NTLM proxy, you do not need to set this field.
+     * Returns the optional Windows workstation name for configuring NTLM proxy support. If you aren't using a Windows
+     * NTLM proxy, you do not need to set this field.
      *
      * @return The optional Windows workstation name for configuring NTLM proxy support.
      */
@@ -192,11 +190,10 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
     }
 
     /**
-     * Sets the optional Windows workstation name for configuring NTLM proxy support. If you aren't
-     * using a Windows NTLM proxy, you do not need to set this field.
+     * Sets the optional Windows workstation name for configuring NTLM proxy support. If you aren't using a Windows NTLM
+     * proxy, you do not need to set this field.
      *
-     * @param proxyWorkstation The optional Windows workstation name for configuring NTLM proxy
-     *     support.
+     * @param proxyWorkstation The optional Windows workstation name for configuring NTLM proxy support.
      */
     public void setProxyWorkstation(String proxyWorkstation) {
         this.proxyWorkstation = proxyWorkstation;
@@ -242,8 +239,7 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
     /**
      * Returns the optional proxy user name to use if connecting through a proxy.
      *
-     * @return The optional proxy user name the configured client will use if connecting through a
-     *     proxy.
+     * @return The optional proxy user name the configured client will use if connecting through a proxy.
      */
     @Nullable
     public String getProxyUsername() {
@@ -330,21 +326,16 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
     }
 
     @Override
-    public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider)
-            throws StorageException {
+    public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider) throws StorageException {
 
         checkNotNull(layers);
         checkState(getName() != null);
-        checkState(
-                isEnabled(),
-                "Can't call S3BlobStoreConfig.createInstance() is blob store is not enabled");
-        final GeoWebCacheEnvironment gwcEnvironment =
-                GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
+        checkState(isEnabled(), "Can't call S3BlobStoreConfig.createInstance() is blob store is not enabled");
+        final GeoWebCacheEnvironment gwcEnvironment = GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
         return new S3BlobStore(this.clone(gwcEnvironment, true), layers, lockProvider);
     }
 
-    public S3BlobStoreInfo clone(
-            GeoWebCacheEnvironment gwcEnvironment, Boolean allowEnvParametrization) {
+    public S3BlobStoreInfo clone(GeoWebCacheEnvironment gwcEnvironment, Boolean allowEnvParametrization) {
         S3BlobStoreInfo blobStore = SerializationUtils.clone(this);
 
         if (allowEnvParametrization && gwcEnvironment != null) {
@@ -361,8 +352,7 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
             blobStore.setAwsAccessKey(nullSafeResolveString(getAwsAccessKey(), gwcEnvironment));
             blobStore.setAwsSecretKey(nullSafeResolveString(getAwsSecretKey(), gwcEnvironment));
             blobStore.setProxyDomain(nullSafeResolveString(getProxyDomain(), gwcEnvironment));
-            blobStore.setProxyWorkstation(
-                    nullSafeResolveString(getProxyWorkstation(), gwcEnvironment));
+            blobStore.setProxyWorkstation(nullSafeResolveString(getProxyWorkstation(), gwcEnvironment));
             blobStore.setProxyHost(nullSafeResolveString(getProxyHost(), gwcEnvironment));
             blobStore.setProxyUsername(nullSafeResolveString(getProxyUsername(), gwcEnvironment));
             blobStore.setProxyPassword(nullSafeResolveString(getProxyPassword(), gwcEnvironment));

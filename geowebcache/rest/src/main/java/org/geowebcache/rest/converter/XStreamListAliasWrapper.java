@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Torben Barsballe (Boundless), 2018
  */
@@ -29,8 +28,7 @@ import org.springframework.web.util.UriComponents;
 /**
  * Utility class for construction list responses
  *
- * <p>Wraps a collection of strings representing object names, with additional metadata used to
- * construct a response
+ * <p>Wraps a collection of strings representing object names, with additional metadata used to construct a response
  */
 public class XStreamListAliasWrapper {
 
@@ -43,8 +41,8 @@ public class XStreamListAliasWrapper {
      * @param object Collection of names of GWC info objects
      * @param alias Alias for the XML list entry of each object
      * @param collectionClass Class of the collection (for aliasing)
-     * @param controllerClass Class of the controller that contains the correct "${alias}Get" method
-     *     that the list should link to.
+     * @param controllerClass Class of the controller that contains the correct "${alias}Get" method that the list
+     *     should link to.
      */
     public XStreamListAliasWrapper(
             Collection<String> object,
@@ -64,9 +62,7 @@ public class XStreamListAliasWrapper {
      */
     public Converter createConverter() {
         return new Converter() {
-            /**
-             * @see com.thoughtworks.xstream.converters.ConverterMatcher#canConvert(java.lang.Class)
-             */
+            /** @see com.thoughtworks.xstream.converters.ConverterMatcher#canConvert(java.lang.Class) */
             @Override
             public boolean canConvert(Class type) {
                 return collectionClass.isAssignableFrom(type);
@@ -78,8 +74,7 @@ public class XStreamListAliasWrapper {
              *     com.thoughtworks.xstream.converters.MarshallingContext)
              */
             @Override
-            public void marshal(
-                    Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+            public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
 
                 @SuppressWarnings("unchecked")
                 Collection<String> entries = (Collection<String>) source;
@@ -95,15 +90,14 @@ public class XStreamListAliasWrapper {
                     writer.startNode("atom:link");
                     writer.addAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
                     writer.addAttribute("rel", "alternate");
-                    UriComponents uriComponents =
-                            MvcUriComponentsBuilder.fromMethodName(
-                                            controllerClass, alias + "Get", name)
-                                    .buildAndExpand("");
+                    UriComponents uriComponents = MvcUriComponentsBuilder.fromMethodName(
+                                    controllerClass, alias + "Get", name)
+                            .buildAndExpand("");
                     // build URI with URI.normalize() to remove double slashes
-                    String normalizedLayerUri =
-                            URI.create(uriComponents.encode().toUriString().replace("$", ""))
-                                    .normalize()
-                                    .toASCIIString();
+                    String normalizedLayerUri = URI.create(
+                                    uriComponents.encode().toUriString().replace("$", ""))
+                            .normalize()
+                            .toASCIIString();
                     writer.addAttribute("href", normalizedLayerUri + ".xml");
                     writer.addAttribute("type", MediaType.TEXT_XML.toString());
 

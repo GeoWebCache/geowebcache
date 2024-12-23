@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Kevin Smith, Boundless, 2017
  */
@@ -70,23 +69,18 @@ public class ParametersUtilsTest {
         Map<String, String> result = ParametersUtils.getMap("test1=blah1&test2=blah2");
         assertThat(
                 result,
-                hasEntries(
-                        entry(equalTo("test1"), equalTo("blah1")),
-                        entry(equalTo("test2"), equalTo("blah2"))));
+                hasEntries(entry(equalTo("test1"), equalTo("blah1")), entry(equalTo("test2"), equalTo("blah2"))));
     }
 
     @Test
     public void testTwoToKVPSorting() {
         Map<String, String> parameters =
-                new TreeMap<>(
-                        (s1, s2) -> -s1.compareTo(s2)); // Intentionally make the tree use reverse
+                new TreeMap<>((s1, s2) -> -s1.compareTo(s2)); // Intentionally make the tree use reverse
         // alphabetical order
         parameters.put("test1", "blah1");
         parameters.put("test2", "blah2");
         String result = ParametersUtils.getKvp(parameters);
-        assertThat(
-                result,
-                Matchers.equalTo("test1=blah1&test2=blah2")); // Should be normal alphabetical order
+        assertThat(result, Matchers.equalTo("test1=blah1&test2=blah2")); // Should be normal alphabetical order
     }
 
     @Test
@@ -96,14 +90,12 @@ public class ParametersUtilsTest {
         parameters.put("te=st2", "bl=ah2");
         parameters.put("test3=", "blah3=");
         String result = ParametersUtils.getKvp(parameters);
-        assertThat(
-                result, Matchers.equalTo("%3Dtest1=%3Dblah1&te%3Dst2=bl%3Dah2&test3%3D=blah3%3D"));
+        assertThat(result, Matchers.equalTo("%3Dtest1=%3Dblah1&te%3Dst2=bl%3Dah2&test3%3D=blah3%3D"));
     }
 
     @Test
     public void testEqualsToMap() {
-        Map<String, String> result =
-                ParametersUtils.getMap("%3Dtest1=%3Dblah1&te%3Dst2=bl%3Dah2&test3%3D=blah3%3D");
+        Map<String, String> result = ParametersUtils.getMap("%3Dtest1=%3Dblah1&te%3Dst2=bl%3Dah2&test3%3D=blah3%3D");
         assertThat(
                 result,
                 hasEntries(
@@ -119,14 +111,12 @@ public class ParametersUtilsTest {
         parameters.put("te&st2", "bl&ah2");
         parameters.put("test3&", "blah3&");
         String result = ParametersUtils.getKvp(parameters);
-        assertThat(
-                result, Matchers.equalTo("%26test1=%26blah1&te%26st2=bl%26ah2&test3%26=blah3%26"));
+        assertThat(result, Matchers.equalTo("%26test1=%26blah1&te%26st2=bl%26ah2&test3%26=blah3%26"));
     }
 
     @Test
     public void testAmpToMap() {
-        Map<String, String> result =
-                ParametersUtils.getMap("%26test1=%26blah1&te%26st2=bl%26ah2&test3%26=blah3%26");
+        Map<String, String> result = ParametersUtils.getMap("%26test1=%26blah1&te%26st2=bl%26ah2&test3%26=blah3%26");
         assertThat(
                 result,
                 hasEntries(
@@ -137,8 +127,7 @@ public class ParametersUtilsTest {
 
     @SafeVarargs
     static <K, V> Matcher<Map<K, V>> hasEntries(Matcher<Entry<K, V>>... entryMatchers) {
-        final Matcher<? super Set<Entry<K, V>>> entrySetMatcher =
-                Matchers.containsInAnyOrder(entryMatchers);
+        final Matcher<? super Set<Entry<K, V>>> entrySetMatcher = Matchers.containsInAnyOrder(entryMatchers);
         return new BaseMatcher<>() {
 
             @Override

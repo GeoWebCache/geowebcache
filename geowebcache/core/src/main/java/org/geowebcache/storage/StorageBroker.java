@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2019
  */
@@ -29,9 +28,9 @@ public interface StorageBroker {
     boolean delete(String layerName) throws StorageException;
 
     /**
-     * Completely deletes the cache for a layer/gridset combination; differs from truncate that the
-     * layer doesn't need to have a gridSubset associated for the given gridset at runtime (in order
-     * to handle the deletion of a layer's gridsubset)
+     * Completely deletes the cache for a layer/gridset combination; differs from truncate that the layer doesn't need
+     * to have a gridSubset associated for the given gridset at runtime (in order to handle the deletion of a layer's
+     * gridsubset)
      */
     boolean deleteByGridSetId(String layerName, String gridSetId) throws StorageException;
 
@@ -39,8 +38,7 @@ public interface StorageBroker {
     boolean deleteByParametersId(String layerName, String parametersId) throws StorageException;
 
     /** Completely deletes the cache for a layer/parameters combination */
-    boolean deleteByParameters(String layerName, Map<String, String> parameters)
-            throws StorageException;
+    boolean deleteByParameters(String layerName, Map<String, String> parameters) throws StorageException;
 
     boolean rename(String oldLayerName, String newLayerName) throws StorageException;
 
@@ -74,15 +72,14 @@ public interface StorageBroker {
     Set<String> getCachedParameterIds(String layerName) throws StorageException;
 
     /**
-     * Get the set of map cached for the given layer, for those parameterizations that have reverse
-     * mappings (Created by GWC 1.12 or later)
+     * Get the set of map cached for the given layer, for those parameterizations that have reverse mappings (Created by
+     * GWC 1.12 or later)
      */
     Set<Map<String, String>> getCachedParameters(String layerName) throws StorageException;
 
     /**
-     * Purge parameter caches from the layer if they are unreachable by its current parameter
-     * filters. The store may purge gridsets and formats as well. These additional purges may be
-     * guaranteed in future.
+     * Purge parameter caches from the layer if they are unreachable by its current parameter filters. The store may
+     * purge gridsets and formats as well. These additional purges may be guaranteed in future.
      */
     boolean purgeOrphans(final TileLayer layer) throws StorageException;
 }

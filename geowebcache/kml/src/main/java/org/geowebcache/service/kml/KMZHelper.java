@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
@@ -48,8 +47,8 @@ public class KMZHelper {
     /**
      * Filters the given gridlocation
      *
-     * <p>Note that this does an actual request to the WMS backend and then throws the result way.
-     * Some may consider this a bit wasteful ;)
+     * <p>Note that this does an actual request to the WMS backend and then throws the result way. Some may consider
+     * this a bit wasteful ;)
      *
      * @param sb The storage broker
      * @param secDisp The security dispatcher
@@ -72,15 +71,7 @@ public class KMZHelper {
             if (linkGridLock[2] > 0) {
 
                 ConveyorTile tile =
-                        new ConveyorTile(
-                                sb,
-                                tileLayer.getName(),
-                                gridSetId,
-                                linkGridLock,
-                                mime,
-                                null,
-                                null,
-                                null);
+                        new ConveyorTile(sb, tileLayer.getName(), gridSetId, linkGridLock, mime, null, null, null);
 
                 tile.setTileLayer(tileLayer);
 
@@ -112,8 +103,7 @@ public class KMZHelper {
                     if (tile.getStatus() == 204) {
                         linkGridLock[2] = -1;
                     } else if (tile.getStatus() != 200) {
-                        throw new GeoWebCacheException(
-                                "Unexpected response code from server " + tile.getStatus());
+                        throw new GeoWebCacheException("Unexpected response code from server " + tile.getStatus());
                     }
                 }
             }
@@ -123,8 +113,7 @@ public class KMZHelper {
     }
 
     /** */
-    protected static byte[] createZippedKML(
-            String namePfx, String formatExtension, byte[] overlayXml, Resource dataXml)
+    protected static byte[] createZippedKML(String namePfx, String formatExtension, byte[] overlayXml, Resource dataXml)
             throws ServiceException {
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
