@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Torben Barsballe (Boundless), 2018
  */
@@ -22,10 +21,7 @@ import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.MemoryLockProvider;
 
-/**
- * POJO implementation of {@link org.geowebcache.config.ServerConfiguration}, for serialization via
- * XStream.
- */
+/** POJO implementation of {@link org.geowebcache.config.ServerConfiguration}, for serialization via XStream. */
 public class ServerConfigurationPOJO implements ServerConfiguration {
 
     private ServiceInformation serviceInformation;
@@ -61,8 +57,8 @@ public class ServerConfigurationPOJO implements ServerConfiguration {
     }
 
     /**
-     * Applies the values of this POJO to the provided ServerConfiguration Note: Does not set
-     * version, identifier, or location, as those are read-only.
+     * Applies the values of this POJO to the provided ServerConfiguration Note: Does not set version, identifier, or
+     * location, as those are read-only.
      *
      * @param config The configuration to set the values on.
      */
@@ -111,17 +107,14 @@ public class ServerConfigurationPOJO implements ServerConfiguration {
     }
 
     /**
-     * Retrieves the configured {@link LockProvider} bean based on the lock provider bean name
-     * ({@link #lockProvider}).
+     * Retrieves the configured {@link LockProvider} bean based on the lock provider bean name ({@link #lockProvider}).
      *
-     * @return The LockProvider bean, or a new {@link MemoryLockProvider} if no bean of the given
-     *     name was found
+     * @return The LockProvider bean, or a new {@link MemoryLockProvider} if no bean of the given name was found
      */
     @Override
     public LockProvider getLockProvider() {
         if (this.lockProvider != null) {
-            LockProvider lockProviderBean =
-                    (LockProvider) GeoWebCacheExtensions.bean(this.lockProvider);
+            LockProvider lockProviderBean = (LockProvider) GeoWebCacheExtensions.bean(this.lockProvider);
             if (lockProviderBean != null) {
                 return lockProviderBean;
             }
@@ -130,8 +123,8 @@ public class ServerConfigurationPOJO implements ServerConfiguration {
     }
 
     /**
-     * Sets the lock provider bean name ({@link #lockProvider}) based on the provided {@link
-     * LockProvider} bean. If the passed lockProvider is not a bean, sets the bean name to null.
+     * Sets the lock provider bean name ({@link #lockProvider}) based on the provided {@link LockProvider} bean. If the
+     * passed lockProvider is not a bean, sets the bean name to null.
      *
      * @param lockProvider The lock provider bean
      */
@@ -141,8 +134,7 @@ public class ServerConfigurationPOJO implements ServerConfiguration {
         this.lockProvider = null;
 
         if (lockProvider != null) {
-            String[] lockProviderNames =
-                    GeoWebCacheExtensions.getBeansNamesOrderedByPriority(LockProvider.class);
+            String[] lockProviderNames = GeoWebCacheExtensions.getBeansNamesOrderedByPriority(LockProvider.class);
 
             for (String beanName : lockProviderNames) {
                 if (lockProvider.equals(GeoWebCacheExtensions.bean(beanName))) {
@@ -209,19 +201,16 @@ public class ServerConfigurationPOJO implements ServerConfiguration {
 
     @Override
     public void reinitialize() throws GeoWebCacheException {
-        throw new UnsupportedOperationException(
-                "reinitialize() not supported for ServerConfigurationPOJO");
+        throw new UnsupportedOperationException("reinitialize() not supported for ServerConfigurationPOJO");
     }
 
     @Override
     public void deinitialize() throws Exception {
-        throw new UnsupportedOperationException(
-                "deinitialize() not supported for ServerConfigurationPOJO");
+        throw new UnsupportedOperationException("deinitialize() not supported for ServerConfigurationPOJO");
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        throw new UnsupportedOperationException(
-                "afterPropertiesSet() not supported for ServerConfigurationPOJO");
+        throw new UnsupportedOperationException("afterPropertiesSet() not supported for ServerConfigurationPOJO");
     }
 }

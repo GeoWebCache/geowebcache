@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, Marius Suta, The Open Planning Project, Copyright 2008
  */
@@ -102,10 +101,9 @@ import org.xml.sax.SAXException;
 /**
  * XMLConfiguration class responsible for reading/writing layer configurations to and from XML file
  *
- * <p>NOTE {@link #setGridSetBroker(GridSetBroker)} MUST have been called before any other method is
- * used, otherwise this configuration is in an inconsistent and unpredictable state, and will throw
- * an {@link IllegalStateException}. This is set automatically by Spring through the use of {@link
- * Autowired}
+ * <p>NOTE {@link #setGridSetBroker(GridSetBroker)} MUST have been called before any other method is used, otherwise
+ * this configuration is in an inconsistent and unpredictable state, and will throw an {@link IllegalStateException}.
+ * This is set automatically by Spring through the use of {@link Autowired}
  */
 public class XMLConfiguration
         implements TileLayerConfiguration,
@@ -132,16 +130,14 @@ public class XMLConfiguration
 
     private GridSetBroker gridSetBroker;
 
-    private ListenerCollection<BlobStoreConfigurationListener> blobStoreListeners =
-            new ListenerCollection<>();
+    private ListenerCollection<BlobStoreConfigurationListener> blobStoreListeners = new ListenerCollection<>();
 
     /**
      * Base Constructor with custom {@link ConfigurationResourceProvider}.
      *
      * @param appCtx use to lookup {@link XMLConfigurationProvider} extensions, may be {@code null}
      */
-    public XMLConfiguration(
-            final ApplicationContextProvider appCtx, final ConfigurationResourceProvider inFac) {
+    public XMLConfiguration(final ApplicationContextProvider appCtx, final ConfigurationResourceProvider inFac) {
         this.context = appCtx == null ? null : appCtx.getApplicationContext();
         this.resourceProvider = inFac;
     }
@@ -159,34 +155,23 @@ public class XMLConfiguration
         this(
                 appCtx,
                 new XMLFileResourceProvider(
-                        DEFAULT_CONFIGURATION_FILE_NAME,
-                        appCtx,
-                        configFileDirectory,
-                        storageDirFinder));
+                        DEFAULT_CONFIGURATION_FILE_NAME, appCtx, configFileDirectory, storageDirFinder));
         resourceProvider.setTemplate("/" + DEFAULT_CONFIGURATION_FILE_NAME);
     }
 
     /**
-     * Constructor that will look for {@code geowebcache.xml} at the directory defined by {@code
-     * storageDirFinder}
+     * Constructor that will look for {@code geowebcache.xml} at the directory defined by {@code storageDirFinder}
      *
      * @param appCtx use to lookup {@link XMLConfigurationProvider} extenions, may be {@code null}
      */
-    public XMLConfiguration(
-            final ApplicationContextProvider appCtx, final DefaultStorageFinder storageDirFinder)
+    public XMLConfiguration(final ApplicationContextProvider appCtx, final DefaultStorageFinder storageDirFinder)
             throws ConfigurationException {
-        this(
-                appCtx,
-                new XMLFileResourceProvider(
-                        DEFAULT_CONFIGURATION_FILE_NAME, appCtx, storageDirFinder));
+        this(appCtx, new XMLFileResourceProvider(DEFAULT_CONFIGURATION_FILE_NAME, appCtx, storageDirFinder));
         resourceProvider.setTemplate("/" + DEFAULT_CONFIGURATION_FILE_NAME);
     }
 
-    /**
-     * Constructor that will accept an absolute or relative path for finding {@code geowebcache.xml}
-     */
-    public XMLConfiguration(
-            final ApplicationContextProvider appCtx, final String configFileDirectory)
+    /** Constructor that will accept an absolute or relative path for finding {@code geowebcache.xml} */
+    public XMLConfiguration(final ApplicationContextProvider appCtx, final String configFileDirectory)
             throws ConfigurationException {
         this(appCtx, configFileDirectory, null);
     }
@@ -276,29 +261,22 @@ public class XMLConfiguration
             } catch (MalformedURLException e) {
                 log.log(
                         Level.SEVERE,
-                        "could not parse proxy URL "
-                                + wl.getProxyUrl()
-                                + " ! continuing WITHOUT proxy!",
+                        "could not parse proxy URL " + wl.getProxyUrl() + " ! continuing WITHOUT proxy!",
                         e);
             }
 
             final WMSHttpHelper sourceHelper;
 
             if (wl.getHttpUsername() != null) {
-                sourceHelper =
-                        new WMSHttpHelper(wl.getHttpUsername(), wl.getHttpPassword(), proxyUrl);
-                log.fine(
-                        "Using per-layer HTTP credentials for "
-                                + wl.getName()
-                                + ", "
-                                + "username "
-                                + wl.getHttpUsername());
+                sourceHelper = new WMSHttpHelper(wl.getHttpUsername(), wl.getHttpPassword(), proxyUrl);
+                log.fine("Using per-layer HTTP credentials for "
+                        + wl.getName()
+                        + ", "
+                        + "username "
+                        + wl.getHttpUsername());
             } else if (getGwcConfig().getHttpUsername() != null) {
-                sourceHelper =
-                        new WMSHttpHelper(
-                                getGwcConfig().getHttpUsername(),
-                                getGwcConfig().getHttpPassword(),
-                                proxyUrl);
+                sourceHelper = new WMSHttpHelper(
+                        getGwcConfig().getHttpUsername(), getGwcConfig().getHttpPassword(), proxyUrl);
                 log.fine("Using global HTTP credentials for " + wl.getName());
             } else {
                 sourceHelper = new WMSHttpHelper(null, null, proxyUrl);
@@ -317,18 +295,15 @@ public class XMLConfiguration
                 return loadConfiguration(in);
             }
         } catch (IOException e) {
-            throw new ConfigurationException(
-                    "Error parsing config file " + resourceProvider.getId(), e);
+            throw new ConfigurationException("Error parsing config file " + resourceProvider.getId(), e);
         }
     }
 
-    private GeoWebCacheConfiguration loadConfiguration(InputStream xmlFile)
-            throws IOException, ConfigurationException {
+    private GeoWebCacheConfiguration loadConfiguration(InputStream xmlFile) throws IOException, ConfigurationException {
         Node rootNode = loadDocument(xmlFile);
         XStream xs = getConfiguredXStreamWithContext(new GeoWebCacheXStream(), Context.PERSIST);
 
-        GeoWebCacheConfiguration config =
-                (GeoWebCacheConfiguration) xs.unmarshal(new DomReader((Element) rootNode));
+        GeoWebCacheConfiguration config = (GeoWebCacheConfiguration) xs.unmarshal(new DomReader((Element) rootNode));
         return config;
     }
 
@@ -340,10 +315,7 @@ public class XMLConfiguration
         try {
             resourceProvider.backup();
         } catch (Exception e) {
-            log.log(
-                    Level.WARNING,
-                    "Error creating back up of configuration file " + resourceProvider.getId(),
-                    e);
+            log.log(Level.WARNING, "Error creating back up of configuration file " + resourceProvider.getId(), e);
         }
 
         persistToFile();
@@ -363,9 +335,7 @@ public class XMLConfiguration
     }
 
     public static XStream getConfiguredXStreamWithContext(
-            XStream xs,
-            WebApplicationContext context,
-            ContextualConfigurationProvider.Context providerContext) {
+            XStream xs, WebApplicationContext context, ContextualConfigurationProvider.Context providerContext) {
 
         {
             // Allow any implementation of these extension points
@@ -460,8 +430,7 @@ public class XMLConfiguration
                         &&
                         // Check if the context is applicable for the provider
                         (providerContext == null
-                                || !((ContextualConfigurationProvider) extension)
-                                        .appliesTo(providerContext))) {
+                                || !((ContextualConfigurationProvider) extension).appliesTo(providerContext))) {
                     // If so, try the next one
                     continue;
                 }
@@ -494,13 +463,8 @@ public class XMLConfiguration
         } catch (FileNotFoundException fnfe) {
             throw fnfe;
         } catch (IOException e) {
-            throw (IOException)
-                    new IOException(
-                                    "Error writing to "
-                                            + resourceProvider.getId()
-                                            + ": "
-                                            + e.getMessage())
-                            .initCause(e);
+            throw (IOException) new IOException("Error writing to " + resourceProvider.getId() + ": " + e.getMessage())
+                    .initCause(e);
         }
 
         log.info("Wrote configuration to " + resourceProvider.getId());
@@ -522,8 +486,7 @@ public class XMLConfiguration
         if (tl instanceof WMSLayer) {
             return true;
         }
-        return GeoWebCacheExtensions.extensions(XMLConfigurationProvider.class, this.context)
-                .stream()
+        return GeoWebCacheExtensions.extensions(XMLConfigurationProvider.class, this.context).stream()
                 .anyMatch(provider -> provider.canSave(tl));
     }
 
@@ -590,19 +553,14 @@ public class XMLConfiguration
     }
 
     protected TileLayer findLayer(String layerName) throws NoSuchElementException {
-        TileLayer layer =
-                getLayer(layerName)
-                        .orElseThrow(
-                                () ->
-                                        new NoSuchElementException(
-                                                "Layer " + layerName + " does not exist"));
+        TileLayer layer = getLayer(layerName)
+                .orElseThrow(() -> new NoSuchElementException("Layer " + layerName + " does not exist"));
         return layer;
     }
 
     /** @see TileLayerConfiguration#renameLayer(String, String) */
     @Override
-    public void renameLayer(String oldName, String newName)
-            throws NoSuchElementException, IllegalArgumentException {
+    public void renameLayer(String oldName, String newName) throws NoSuchElementException, IllegalArgumentException {
         throw new UnsupportedOperationException(
                 "renameLayer is not supported by " + getClass().getSimpleName());
     }
@@ -634,8 +592,7 @@ public class XMLConfiguration
     }
 
     /** */
-    private synchronized void addOrReplaceGridSet(final XMLGridSet gridSet)
-            throws IllegalArgumentException {
+    private synchronized void addOrReplaceGridSet(final XMLGridSet gridSet) throws IllegalArgumentException {
         final String gridsetName = gridSet.getName();
 
         List<XMLGridSet> xmlGridSets = getGwcConfig().getGridSets();
@@ -758,9 +715,7 @@ public class XMLConfiguration
 
         // Check again after transform
         if (!rootNode.getNodeName().equals("gwcConfiguration")) {
-            log.log(
-                    Level.SEVERE,
-                    "Unable to parse file, expected gwcConfiguration at root after transform.");
+            log.log(Level.SEVERE, "Unable to parse file, expected gwcConfiguration at root after transform.");
             throw new ConfigurationException("Unable to parse after transform.");
         } else {
             // Parsing the schema file
@@ -869,29 +824,24 @@ public class XMLConfiguration
 
     private void loadGridSets() {
         if (getGwcConfig().getGridSets() != null) {
-            this.gridSets =
-                    getGwcConfig().getGridSets().stream()
-                            .map(
-                                    (xmlGridSet) -> {
-                                        if (log.isLoggable(Level.FINE)) {
-                                            log.fine("Reading " + xmlGridSet.getName());
-                                        }
+            this.gridSets = getGwcConfig().getGridSets().stream()
+                    .map((xmlGridSet) -> {
+                        if (log.isLoggable(Level.FINE)) {
+                            log.fine("Reading " + xmlGridSet.getName());
+                        }
 
-                                        GridSet gridSet = xmlGridSet.makeGridSet();
+                        GridSet gridSet = xmlGridSet.makeGridSet();
 
-                                        log.info("Read GridSet " + gridSet.getName());
-                                        return gridSet;
-                                    })
-                            .collect(
-                                    Collectors.toMap(
-                                            GridSet::getName,
-                                            Function.identity(),
-                                            (GridSet x, GridSet y) -> {
-                                                throw new IllegalStateException(
-                                                        "Gridsets with duplicate name "
-                                                                + x.getName());
-                                            },
-                                            HashMap::new));
+                        log.info("Read GridSet " + gridSet.getName());
+                        return gridSet;
+                    })
+                    .collect(Collectors.toMap(
+                            GridSet::getName,
+                            Function.identity(),
+                            (GridSet x, GridSet y) -> {
+                                throw new IllegalStateException("Gridsets with duplicate name " + x.getName());
+                            },
+                            HashMap::new));
         }
     }
 
@@ -989,28 +939,23 @@ public class XMLConfiguration
     @Override
     public List<BlobStoreInfo> getBlobStores() {
         // need to return an unmodifiable list of unmodifiable BlobStoreInfos
-        return Collections.unmodifiableList(
-                getGwcConfig().getBlobStores().stream()
-                        .map(
-                                (info) -> {
-                                    return (BlobStoreInfo) info.clone();
-                                })
-                        .collect(Collectors.toList()));
+        return Collections.unmodifiableList(getGwcConfig().getBlobStores().stream()
+                .map((info) -> {
+                    return (BlobStoreInfo) info.clone();
+                })
+                .collect(Collectors.toList()));
     }
 
     /** @see BlobStoreConfiguration#addBlobStore(org.geowebcache.config.BlobStoreInfo) */
     @Override
     public synchronized void addBlobStore(BlobStoreInfo info) {
         if (info.getName() == null) {
-            throw new IllegalArgumentException(
-                    "Failed to add BlobStoreInfo. A BlobStoreInfo name cannot be null");
+            throw new IllegalArgumentException("Failed to add BlobStoreInfo. A BlobStoreInfo name cannot be null");
         }
         // ensure there isn't a BlobStoreInfo with the same name already
         if (getBlobStoreNames().contains(info.getName())) {
-            throw new IllegalArgumentException(
-                    String.format(
-                            "Failed to add BlobStoreInfo. A BlobStoreInfo with name \"%s\" already exists",
-                            info.getName()));
+            throw new IllegalArgumentException(String.format(
+                    "Failed to add BlobStoreInfo. A BlobStoreInfo with name \"%s\" already exists", info.getName()));
         }
         // add the BlobStoreInfo
         final List<BlobStoreInfo> blobStores = getGwcConfig().getBlobStores();
@@ -1021,14 +966,12 @@ public class XMLConfiguration
         } catch (IOException ioe) {
             // save failed, roll back the add
             blobStores.remove(info);
-            throw new ConfigurationPersistenceException(
-                    String.format("Unable to add BlobStoreInfo \"%s\"", info), ioe);
+            throw new ConfigurationPersistenceException(String.format("Unable to add BlobStoreInfo \"%s\"", info), ioe);
         }
         try {
-            blobStoreListeners.safeForEach(
-                    listener -> {
-                        listener.handleAddBlobStore(info);
-                    });
+            blobStoreListeners.safeForEach(listener -> {
+                listener.handleAddBlobStore(info);
+            });
         } catch (IOException | GeoWebCacheException e) {
             if (ExceptionUtils.isOrSuppresses(e, UnsuitableStorageException.class)) {
                 // Can't store here, roll back
@@ -1044,14 +987,9 @@ public class XMLConfiguration
     @Override
     public synchronized void removeBlobStore(String name) {
         // ensure there is a BlobStoreInfo with the name
-        final BlobStoreInfo infoToRemove =
-                getBlobStore(name)
-                        .orElseThrow(
-                                () ->
-                                        new NoSuchElementException(
-                                                String.format(
-                                                        "Failed to remove BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.",
-                                                        name)));
+        final BlobStoreInfo infoToRemove = getBlobStore(name)
+                .orElseThrow(() -> new NoSuchElementException(String.format(
+                        "Failed to remove BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.", name)));
         // remove the BlobStoreInfo
         final List<BlobStoreInfo> blobStores = getGwcConfig().getBlobStores();
         blobStores.remove(infoToRemove);
@@ -1065,10 +1003,9 @@ public class XMLConfiguration
                     String.format("Unable to remove BlobStoreInfo \"%s\"", name), ioe);
         }
         try {
-            blobStoreListeners.safeForEach(
-                    listener -> {
-                        listener.handleRemoveBlobStore(infoToRemove);
-                    });
+            blobStoreListeners.safeForEach(listener -> {
+                listener.handleRemoveBlobStore(infoToRemove);
+            });
         } catch (IOException | GeoWebCacheException e) {
             throw new ConfigurationPersistenceException(e);
         }
@@ -1083,10 +1020,9 @@ public class XMLConfiguration
         // ensure there is a BlobStoreInfo with the name
         final Optional<BlobStoreInfo> optionalInfo = getBlobStore(info.getName());
         if (!optionalInfo.isPresent()) {
-            throw new NoSuchElementException(
-                    String.format(
-                            "Failed to modify BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.",
-                            info.getName()));
+            throw new NoSuchElementException(String.format(
+                    "Failed to modify BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.",
+                    info.getName()));
         }
         // remove existing and add the new one
         final List<BlobStoreInfo> blobStores = getGwcConfig().getBlobStores();
@@ -1104,10 +1040,9 @@ public class XMLConfiguration
                     String.format("Unable to modify BlobStoreInfo \"%s\"", info.getName()), ioe);
         }
         try {
-            blobStoreListeners.safeForEach(
-                    listener -> {
-                        listener.handleModifyBlobStore(info);
-                    });
+            blobStoreListeners.safeForEach(listener -> {
+                listener.handleModifyBlobStore(info);
+            });
         } catch (IOException | GeoWebCacheException e) {
             if (ExceptionUtils.isOrSuppresses(e, UnsuitableStorageException.class)) {
                 // Can't store here, roll back
@@ -1130,10 +1065,9 @@ public class XMLConfiguration
     @Override
     public Set<String> getBlobStoreNames() {
         return getGwcConfig().getBlobStores().stream()
-                .map(
-                        (info) -> {
-                            return info.getName();
-                        })
+                .map((info) -> {
+                    return info.getName();
+                })
                 .collect(Collectors.toSet());
     }
 
@@ -1165,9 +1099,7 @@ public class XMLConfiguration
         final Optional<BlobStoreInfo> newInfo = getBlobStore(newName);
         if (newInfo.isPresent()) {
             throw new IllegalArgumentException(
-                    "BlobStoreInfo rename unsuccessful. A BlobStoreInfo with name \""
-                            + newName
-                            + "\" already exists.");
+                    "BlobStoreInfo rename unsuccessful. A BlobStoreInfo with name \"" + newName + "\" already exists.");
         }
         // get the list of BlobStoreInfos
         final List<BlobStoreInfo> blobStoreInfos = getGwcConfig().getBlobStores();
@@ -1190,9 +1122,7 @@ public class XMLConfiguration
         // if we didn't remove one, it wasn't in there to be removed
         if (blobStoreInfoToRename == null) {
             throw new NoSuchElementException(
-                    "BlobStoreInfo rename unsuccessful. No BlobStoreInfo with name \""
-                            + oldName
-                            + "\" exists.");
+                    "BlobStoreInfo rename unsuccessful. No BlobStoreInfo with name \"" + oldName + "\" exists.");
         }
         // rename it and add it back to the list
         // for BlobStoreInfo instances, "name" and "id" are the same thing.
@@ -1203,10 +1133,7 @@ public class XMLConfiguration
             save();
 
             if (log.isLoggable(Level.FINER)) {
-                log.finer(
-                        String.format(
-                                "BlobStoreInfo rename from \"%s\" to \"%s\" successful.",
-                                oldName, newName));
+                log.finer(String.format("BlobStoreInfo rename from \"%s\" to \"%s\" successful.", oldName, newName));
             }
         } catch (IOException ioe) {
             // save didn't work, need to roll things back
@@ -1223,25 +1150,20 @@ public class XMLConfiguration
             if (blobStoreInfoToRevert == null) {
                 // we're really messed up now as we couldn't find the BlobStoreInfo that was just
                 // renamed.
-                throw new ConfigurationPersistenceException(
-                        String.format(
-                                "Error reverting BlobStoreInfo modification. Could not revert rename from \"%s\" to \"%s\"",
-                                oldName, newName));
+                throw new ConfigurationPersistenceException(String.format(
+                        "Error reverting BlobStoreInfo modification. Could not revert rename from \"%s\" to \"%s\"",
+                        oldName, newName));
             }
             // revert the name and add it back to the list
             blobStoreInfoToRevert.setName(oldName);
             blobStoreInfos.add(blobStoreInfoToRevert);
             throw new ConfigurationPersistenceException(
-                    String.format(
-                            "Unable to rename BlobStoreInfo from \"%s\" to \"%s\"",
-                            oldName, newName),
-                    ioe);
+                    String.format("Unable to rename BlobStoreInfo from \"%s\" to \"%s\"", oldName, newName), ioe);
         }
         try {
-            blobStoreListeners.safeForEach(
-                    listener -> {
-                        listener.handleRenameBlobStore(oldName, blobStoreInfoToRename);
-                    });
+            blobStoreListeners.safeForEach(listener -> {
+                listener.handleRenameBlobStore(oldName, blobStoreInfoToRename);
+            });
         } catch (IOException | GeoWebCacheException e) {
             throw new ConfigurationPersistenceException(
                     String.format(
@@ -1294,10 +1216,7 @@ public class XMLConfiguration
             }
         } catch (ConfigurationException e) {
             throw new IllegalStateException(
-                    "Configuration "
-                            + getIdentifier()
-                            + " is not fully initialized and lazy initialization failed",
-                    e);
+                    "Configuration " + getIdentifier() + " is not fully initialized and lazy initialization failed", e);
         }
         return gwcConfig;
     }
@@ -1318,11 +1237,9 @@ public class XMLConfiguration
     }
 
     /**
-     * Can be used to force WMTS service implementation to be strictly compliant with the
-     * correspondent CITE tests.
+     * Can be used to force WMTS service implementation to be strictly compliant with the correspondent CITE tests.
      *
-     * @param wmtsCiteStrictCompliant TRUE or FALSE, activating or deactivation CITE strict
-     *     compliance mode for WMTS
+     * @param wmtsCiteStrictCompliant TRUE or FALSE, activating or deactivation CITE strict compliance mode for WMTS
      */
     @Override
     public void setWmtsCiteCompliant(Boolean wmtsCiteStrictCompliant) throws IOException {
@@ -1420,8 +1337,7 @@ public class XMLConfiguration
         assert Objects.isNull(gsRemoved) == Objects.isNull(xgsRemoved);
 
         if (Objects.isNull(gsRemoved)) {
-            throw new NoSuchElementException(
-                    "Could not remeove GridSet " + gridSetName + " as it does not exist");
+            throw new NoSuchElementException("Could not remeove GridSet " + gridSetName + " as it does not exist");
         }
 
         try {
@@ -1429,8 +1345,7 @@ public class XMLConfiguration
         } catch (IOException ex) {
             getGridSetsInternal().put(gridSetName, gsRemoved);
             getGwcConfig().getGridSets().add(xgsRemoved);
-            throw new ConfigurationPersistenceException(
-                    "Could not persist removal of Gridset " + gridSetName, ex);
+            throw new ConfigurationPersistenceException("Could not persist removal of Gridset " + gridSetName, ex);
         }
     }
 
@@ -1453,9 +1368,7 @@ public class XMLConfiguration
 
     @Override
     public Collection<GridSet> getGridSets() {
-        return getGridSetsInternal().values().stream()
-                .map(GridSet::new)
-                .collect(Collectors.toList());
+        return getGridSetsInternal().values().stream().map(GridSet::new).collect(Collectors.toList());
     }
 
     @Override

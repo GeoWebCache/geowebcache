@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Nuno Oliveira, GeoSolutions S.A.S., Copyright 2016
  */
@@ -36,8 +35,8 @@ import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 
 /**
- * Class responsible to map GWC concepts (layer, tile, tile range, etc ...) to a filesystem file.
- * The mapping is defined by a template that can use the information associated with a tile.
+ * Class responsible to map GWC concepts (layer, tile, tile range, etc ...) to a filesystem file. The mapping is defined
+ * by a template that can use the information associated with a tile.
  *
  * <p>
  *
@@ -79,9 +78,9 @@ import org.geowebcache.storage.TileRange;
  *
  * <p>
  *
- * <p>Is possible to map all tiles to a single file by defining a static template (no terms).
- * Although, if a term is used it cannot be NULL otherwise an exception will be throw. If a
- * referenced parameter doesn't exists the string 'null' will be used.
+ * <p>Is possible to map all tiles to a single file by defining a static template (no terms). Although, if a term is
+ * used it cannot be NULL otherwise an exception will be throw. If a referenced parameter doesn't exists the string
+ * 'null' will be used.
  */
 final class FileManager {
 
@@ -111,14 +110,12 @@ final class FileManager {
     // parameters used in the path template
     private final Set<Tuple<String, Integer>> replaceParameters;
 
-    FileManager(
-            File rootDirectory, String pathTemplate, long rowRangeCount, long columnRangeCount) {
+    FileManager(File rootDirectory, String pathTemplate, long rowRangeCount, long columnRangeCount) {
         if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info(
-                    String.format(
-                            "Initiating file manager: [rootDirectory='%s', pathTemplate='%s', "
-                                    + "rowRangeCount='%d', columnRangeCount='%d'].",
-                            rootDirectory, pathTemplate, rowRangeCount, columnRangeCount));
+            LOGGER.info(String.format(
+                    "Initiating file manager: [rootDirectory='%s', pathTemplate='%s', "
+                            + "rowRangeCount='%d', columnRangeCount='%d'].",
+                    rootDirectory, pathTemplate, rowRangeCount, columnRangeCount));
         }
         this.rootPath = rootDirectory;
         this.rowRangeCount = rowRangeCount;
@@ -170,12 +167,10 @@ final class FileManager {
             pathBuilderCopy[replaceZoom.second] = String.valueOf(getLongValue(xyz, 2));
         }
         if (replaceRow.first) {
-            pathBuilderCopy[replaceRow.second] =
-                    String.valueOf(computeColumnRange(getLongValue(xyz, 0)));
+            pathBuilderCopy[replaceRow.second] = String.valueOf(computeColumnRange(getLongValue(xyz, 0)));
         }
         if (replaceColumn.first) {
-            pathBuilderCopy[replaceColumn.second] =
-                    String.valueOf(computeRowRange(getLongValue(xyz, 1)));
+            pathBuilderCopy[replaceColumn.second] = String.valueOf(computeRowRange(getLongValue(xyz, 1)));
         }
         if (replaceLayerName.first) {
             pathBuilderCopy[replaceLayerName.second] = normalizeAttributeValue("layer", layerName);
@@ -207,10 +202,7 @@ final class FileManager {
         return getFiles(pathBuilderCopy);
     }
 
-    /**
-     * Return the files present in the root directory that correspond to a certain layer and certain
-     * grid set.
-     */
+    /** Return the files present in the root directory that correspond to a certain layer and certain grid set. */
     List<File> getFiles(String layerName, String gridSetId) {
         // init the thread local path builder
         String[] pathBuilderCopy = getPathBuilderCopy();
@@ -220,10 +212,7 @@ final class FileManager {
         return getFiles(pathBuilderCopy);
     }
 
-    /**
-     * Return the files present in the root directory that correspond to a certain layer and certain
-     * grid set.
-     */
+    /** Return the files present in the root directory that correspond to a certain layer and certain grid set. */
     List<File> getParametersFiles(String layerName, String parametersId) {
         // init the thread local path builder
         String[] pathBuilderCopy = getPathBuilderCopy();
@@ -233,10 +222,7 @@ final class FileManager {
         return getFiles(pathBuilderCopy);
     }
 
-    /**
-     * Build the paths correspondent to a tile range. For each file we return the associated tiles
-     * range by zoom.
-     */
+    /** Build the paths correspondent to a tile range. For each file we return the associated tiles range by zoom. */
     Map<File, List<long[]>> getFiles(TileRange tileRange) {
         Map<File, List<long[]>> files = new HashMap<>();
         // let's iterate of all the available zoom levels
@@ -260,16 +246,14 @@ final class FileManager {
         return files;
     }
 
-    /**
-     * This method will substitute any char that cannot be used in a file path with an underscore.
-     */
+    /** This method will substitute any char that cannot be used in a file path with an underscore. */
     public static String normalizePathValue(String value) {
         return value.replaceAll("\\\\|/|:|(?:\\s+)", "_");
     }
 
     /**
-     * Helper method that for a specific zoom level and a range of tiles will build all the files
-     * paths need to contains those tiles.
+     * Helper method that for a specific zoom level and a range of tiles will build all the files paths need to contains
+     * those tiles.
      */
     private void getFiles(
             Map<File, List<long[]>> files,
@@ -302,10 +286,7 @@ final class FileManager {
         }
     }
 
-    /**
-     * If the provided parameters id is null a new one will be build based on the provided
-     * parameters.
-     */
+    /** If the provided parameters id is null a new one will be build based on the provided parameters. */
     private static String handleParametersId(String parametersId, Map<String, String> parameters) {
         if (parametersId != null) {
             // the provided parameters id is ok
@@ -327,15 +308,11 @@ final class FileManager {
 
     private static long getLongValue(long[] xyz, int index) {
         Utils.check(xyz != null, "Path template attribute 'xyz' is NULL.");
-        Utils.check(
-                xyz.length == 3, "Path template attribute 'xyz' doesn't have the correct length.");
+        Utils.check(xyz.length == 3, "Path template attribute 'xyz' doesn't have the correct length.");
         return xyz[index];
     }
 
-    /**
-     * Helper method that will find in the root directory the files that match the provided path
-     * builder.
-     */
+    /** Helper method that will find in the root directory the files that match the provided path builder. */
     private List<File> getFiles(String[] pathBuilderCopy) {
         // build the concrete path with the embedded regex values (.*?)
         String pathRegex = concatStringArray(pathBuilderCopy, 1);
@@ -345,19 +322,14 @@ final class FileManager {
         return walkFileTreeWithRegex(rootPath, 0, pathRegexParts);
     }
 
-    /**
-     * Helper method that will walk recursively the directory hierarchy based on the provided path
-     * parts.
-     */
+    /** Helper method that will walk recursively the directory hierarchy based on the provided path parts. */
     private static List<File> walkFileTreeWithRegex(File path, int level, String[] pathParts) {
         // filter the current directory files that match the current path part
-        File[] files =
-                path.listFiles(
-                        (directory, name) -> {
-                            String pathPart = pathParts[level];
-                            // if need the current path will be interpreted as a regex (.*?)
-                            return pathPart.equals(name) || name.matches(pathPart);
-                        });
+        File[] files = path.listFiles((directory, name) -> {
+            String pathPart = pathParts[level];
+            // if need the current path will be interpreted as a regex (.*?)
+            return pathPart.equals(name) || name.matches(pathPart);
+        });
         if (Objects.isNull(files)) {
             return Collections.emptyList();
         }
@@ -387,14 +359,12 @@ final class FileManager {
         return pathBuilderCopy;
     }
 
-    private static Tuple<Boolean, Integer> findAndRemove(
-            Set<Tuple<String, Integer>> attributes, String attribute) {
+    private static Tuple<Boolean, Integer> findAndRemove(Set<Tuple<String, Integer>> attributes, String attribute) {
         Tuple<String, Integer> found = null;
         for (Tuple<String, Integer> candidateAttribute : attributes) {
             if (candidateAttribute.first.equals(attribute)) {
                 if (found != null) {
-                    throw Utils.exception(
-                            "Term '%s' appears multiple times in the path template.", attribute);
+                    throw Utils.exception("Term '%s' appears multiple times in the path template.", attribute);
                 }
                 found = candidateAttribute;
             }
@@ -407,8 +377,8 @@ final class FileManager {
     }
 
     /**
-     * Helper method that will parse a path template and return a path builder and the found terms
-     * and the used parameters.
+     * Helper method that will parse a path template and return a path builder and the found terms and the used
+     * parameters.
      */
     private static Tuple<String[], Set<Tuple<String, Integer>>> parsePathTemplate(
             String rootPath, String pathTemplate) {

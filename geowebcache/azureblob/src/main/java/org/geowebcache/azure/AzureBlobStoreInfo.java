@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Andrea Aime, GeoSolutions, Copyright 2019
  */
@@ -34,9 +33,8 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
     private static final long serialVersionUID = -8068069256598987874L;
 
     /**
-     * Max number of connections used inside the Netty HTTP client. Might seem a lot, but when
-     * deleting we have to issue a delete on each single tile, so we need a large parallelism to
-     * make that feasible
+     * Max number of connections used inside the Netty HTTP client. Might seem a lot, but when deleting we have to issue
+     * a delete on each single tile, so we need a large parallelism to make that feasible
      */
     public static final int DEFAULT_CONNECTIONS = 100;
 
@@ -107,8 +105,7 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
     }
 
     /**
-     * Returns the base prefix, which is a prefix path to use as the root to store tiles under the
-     * container.
+     * Returns the base prefix, which is a prefix path to use as the root to store tiles under the container.
      *
      * @return optional string for a "base prefix"
      */
@@ -131,9 +128,7 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
         this.maxConnections = maxConnections;
     }
 
-    /**
-     * @return whether to use HTTPS (true) or HTTP (false) when talking to Azure (defaults to true)
-     */
+    /** @return whether to use HTTPS (true) or HTTP (false) when talking to Azure (defaults to true) */
     public Boolean isUseHTTPS() {
         return useHTTPS;
     }
@@ -183,8 +178,7 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
     /**
      * Returns the optional proxy user name to use if connecting through a proxy.
      *
-     * @return The optional proxy user name the configured client will use if connecting through a
-     *     proxy.
+     * @return The optional proxy user name the configured client will use if connecting through a proxy.
      */
     @Nullable
     public String getProxyUsername() {
@@ -220,18 +214,13 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
     }
 
     @Override
-    public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider)
-            throws StorageException {
+    public BlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider) throws StorageException {
         checkNotNull(layers);
         checkState(getName() != null);
-        checkState(
-                isEnabled(),
-                "Can't call AzureBlobStoreConfig.createInstance() is blob store is not enabled");
-        if (log.isLoggable(Level.FINE))
-            log.fine("Creating Azure Blob Store instance [name=" + getName() + "]");
+        checkState(isEnabled(), "Can't call AzureBlobStoreConfig.createInstance() is blob store is not enabled");
+        if (log.isLoggable(Level.FINE)) log.fine("Creating Azure Blob Store instance [name=" + getName() + "]");
         final AzureBlobStoreData storeData =
-                new AzureBlobStoreData(
-                        this, GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class));
+                new AzureBlobStoreData(this, GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class));
         return new AzureBlobStore(storeData, layers, lockProvider);
     }
 

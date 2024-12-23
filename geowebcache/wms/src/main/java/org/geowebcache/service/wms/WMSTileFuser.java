@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, OpenGeo, Copyright 2009
  */
@@ -122,14 +121,16 @@ public class WMSTileFuser {
         double bottom;
         double left;
         double right;
-    };
+    }
+    ;
 
     static class PixelOffsets {
         int top;
         int bottom;
         int left;
         int right;
-    };
+    }
+    ;
 
     /** These are values before scaling */
     PixelOffsets canvOfs = new PixelOffsets();
@@ -165,108 +166,54 @@ public class WMSTileFuser {
             switch (numHint) {
                     // QUALITY HINTS
                 case 0:
-                    hints =
-                            new RenderingHints(
-                                    RenderingHints.KEY_COLOR_RENDERING,
-                                    RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_ANTIALIASING,
-                                    RenderingHints.VALUE_ANTIALIAS_ON));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_FRACTIONALMETRICS,
-                                    RenderingHints.VALUE_FRACTIONALMETRICS_ON));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_ALPHA_INTERPOLATION,
-                                    RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_INTERPOLATION,
-                                    RenderingHints.VALUE_INTERPOLATION_BICUBIC));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_RENDERING,
-                                    RenderingHints.VALUE_RENDER_QUALITY));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_TEXT_ANTIALIASING,
-                                    RenderingHints.VALUE_TEXT_ANTIALIAS_ON));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_STROKE_CONTROL,
-                                    RenderingHints.VALUE_STROKE_NORMALIZE));
+                    hints = new RenderingHints(
+                            RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+                    hints.add(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+                    hints.add(new RenderingHints(
+                            RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON));
+                    hints.add(new RenderingHints(
+                            RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY));
+                    hints.add(new RenderingHints(
+                            RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC));
+                    hints.add(new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY));
+                    hints.add(new RenderingHints(
+                            RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON));
+                    hints.add(new RenderingHints(
+                            RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE));
                     break;
                     // DEFAULT HINTS
                 case 1:
-                    hints =
-                            new RenderingHints(
-                                    RenderingHints.KEY_COLOR_RENDERING,
-                                    RenderingHints.VALUE_COLOR_RENDER_DEFAULT);
+                    hints = new RenderingHints(
+                            RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_DEFAULT);
+                    hints.add(new RenderingHints(
+                            RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT));
+                    hints.add(new RenderingHints(
+                            RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_DEFAULT));
+                    hints.add(new RenderingHints(
+                            RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_DEFAULT));
+                    hints.add(new RenderingHints(
+                            RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR));
+                    hints.add(new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_DEFAULT));
+                    hints.add(new RenderingHints(
+                            RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT));
                     hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_ANTIALIASING,
-                                    RenderingHints.VALUE_ANTIALIAS_DEFAULT));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_FRACTIONALMETRICS,
-                                    RenderingHints.VALUE_FRACTIONALMETRICS_DEFAULT));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_ALPHA_INTERPOLATION,
-                                    RenderingHints.VALUE_ALPHA_INTERPOLATION_DEFAULT));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_INTERPOLATION,
-                                    RenderingHints.VALUE_INTERPOLATION_BILINEAR));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_RENDERING,
-                                    RenderingHints.VALUE_RENDER_DEFAULT));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_TEXT_ANTIALIASING,
-                                    RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_STROKE_CONTROL,
-                                    RenderingHints.VALUE_STROKE_DEFAULT));
+                            new RenderingHints(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_DEFAULT));
                     break;
                     // SPEED HINTS
                 case 2:
-                    hints =
-                            new RenderingHints(
-                                    RenderingHints.KEY_COLOR_RENDERING,
-                                    RenderingHints.VALUE_COLOR_RENDER_SPEED);
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_ANTIALIASING,
-                                    RenderingHints.VALUE_ANTIALIAS_OFF));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_FRACTIONALMETRICS,
-                                    RenderingHints.VALUE_FRACTIONALMETRICS_OFF));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_ALPHA_INTERPOLATION,
-                                    RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_INTERPOLATION,
-                                    RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_RENDERING,
-                                    RenderingHints.VALUE_RENDER_SPEED));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_TEXT_ANTIALIASING,
-                                    RenderingHints.VALUE_TEXT_ANTIALIAS_OFF));
-                    hints.add(
-                            new RenderingHints(
-                                    RenderingHints.KEY_STROKE_CONTROL,
-                                    RenderingHints.VALUE_STROKE_PURE));
+                    hints = new RenderingHints(
+                            RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+                    hints.add(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF));
+                    hints.add(new RenderingHints(
+                            RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_OFF));
+                    hints.add(new RenderingHints(
+                            RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED));
+                    hints.add(new RenderingHints(
+                            RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR));
+                    hints.add(new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED));
+                    hints.add(new RenderingHints(
+                            RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF));
+                    hints.add(new RenderingHints(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE));
                     break;
             }
         }
@@ -299,13 +246,10 @@ public class WMSTileFuser {
             throws GeoWebCacheException {
         this.sb = sb;
 
-        String[] keys = {
-            "layers", "format", "srs", "bbox", "width", "height", "transparent", "bgcolor", "hints"
-        };
+        String[] keys = {"layers", "format", "srs", "bbox", "width", "height", "transparent", "bgcolor", "hints"};
 
         Map<String, String> values =
-                ServletUtils.selectedStringsFromMap(
-                        servReq.getParameterMap(), servReq.getCharacterEncoding(), keys);
+                ServletUtils.selectedStringsFromMap(servReq.getParameterMap(), servReq.getCharacterEncoding(), keys);
 
         // TODO Parameter filters?
 
@@ -348,22 +292,19 @@ public class WMSTileFuser {
 
         reqHeight = Integer.valueOf(values.get("height"));
 
-        fullParameters =
-                layer.getModifiableParameters(
-                        servReq.getParameterMap(), servReq.getCharacterEncoding());
+        fullParameters = layer.getModifiableParameters(servReq.getParameterMap(), servReq.getCharacterEncoding());
         if (values.get("hints") != null) {
             hints = HintsLevel.getHintsForMode(values.get("hints")).getRenderingHints();
         }
     }
 
     /**
-     * This was used for unit tests and should not have been used elsewhere. It will likely cause
-     * NullPointerExceptions if used in production. Use WMSTileFuser(TileLayerDispatcher tld,
-     * StorageBroker sb, HttpServletRequest servReq) instead. It will be removed in future.
+     * This was used for unit tests and should not have been used elsewhere. It will likely cause NullPointerExceptions
+     * if used in production. Use WMSTileFuser(TileLayerDispatcher tld, StorageBroker sb, HttpServletRequest servReq)
+     * instead. It will be removed in future.
      */
     @Deprecated
-    protected WMSTileFuser(
-            TileLayer layer, GridSubset gridSubset, BoundingBox bounds, int width, int height) {
+    protected WMSTileFuser(TileLayer layer, GridSubset gridSubset, BoundingBox bounds, int width, int height) {
         this.sb = null;
         this.outputFormat = ImageMime.png;
         this.layer = layer;
@@ -406,13 +347,7 @@ public class WMSTileFuser {
             tmpResolution = xResolution;
         }
 
-        log.fine(
-                "x res: "
-                        + xResolution
-                        + " y res: "
-                        + yResolution
-                        + " tmpResolution: "
-                        + tmpResolution);
+        log.fine("x res: " + xResolution + " y res: " + yResolution + " tmpResolution: " + tmpResolution);
 
         // Cut ourselves 0.5% slack
         double compResolution = 1.005 * tmpResolution;
@@ -472,22 +407,18 @@ public class WMSTileFuser {
         canvOfs.bottom = naiveOfs.bottom;
 
         canvOfs.right = (canvasSize[0] - canvOfs.left) % tileWidth; // Find nearby tile boundary
-        canvOfs.right =
-                (Integer.signum(naiveOfs.right) * tileWidth + canvOfs.right)
-                        % tileWidth; // Ensure same sign as naive calculation
-        canvOfs.right =
-                canvOfs.right
-                        - (naiveOfs.right % tileWidth)
-                        + naiveOfs.right; // Find adjustment from naive and apply to naive
+        canvOfs.right = (Integer.signum(naiveOfs.right) * tileWidth + canvOfs.right)
+                % tileWidth; // Ensure same sign as naive calculation
+        canvOfs.right = canvOfs.right
+                - (naiveOfs.right % tileWidth)
+                + naiveOfs.right; // Find adjustment from naive and apply to naive
         // calculation
         canvOfs.top = (canvasSize[1] - canvOfs.bottom) % tileHeight; // Find nearby tile boundary
-        canvOfs.top =
-                (Integer.signum(naiveOfs.top) * tileHeight + canvOfs.top)
-                        % tileHeight; // Ensure same sign as naive calculation
-        canvOfs.top =
-                canvOfs.top
-                        - (naiveOfs.top % tileHeight)
-                        + naiveOfs.top; // Find adjustment from naive and apply to naive calculation
+        canvOfs.top = (Integer.signum(naiveOfs.top) * tileHeight + canvOfs.top)
+                % tileHeight; // Ensure same sign as naive calculation
+        canvOfs.top = canvOfs.top
+                - (naiveOfs.top % tileHeight)
+                + naiveOfs.top; // Find adjustment from naive and apply to naive calculation
 
         // postconditions
         assert Math.abs(canvOfs.left - naiveOfs.left) <= 1;
@@ -498,26 +429,11 @@ public class WMSTileFuser {
         if (log.isLoggable(Level.FINE)) {
             log.fine("intersection rectangle: " + Arrays.toString(srcRectangle));
             log.fine("intersection bounds: " + srcBounds + " (" + reqBounds + ")");
-            log.fine(
-                    "Bound offsets: "
-                            + Arrays.toString(
-                                    new double[] {
-                                        boundOfs.left, boundOfs.bottom, boundOfs.right, boundOfs.top
-                                    }));
-            log.fine(
-                    "Canvas size: "
-                            + Arrays.toString(canvasSize)
-                            + "("
-                            + reqWidth
-                            + ","
-                            + reqHeight
-                            + ")");
-            log.fine(
-                    "Canvas offsets: "
-                            + Arrays.toString(
-                                    new int[] {
-                                        canvOfs.left, canvOfs.bottom, canvOfs.right, canvOfs.top
-                                    }));
+            log.fine("Bound offsets: "
+                    + Arrays.toString(new double[] {boundOfs.left, boundOfs.bottom, boundOfs.right, boundOfs.top}));
+            log.fine("Canvas size: " + Arrays.toString(canvasSize) + "(" + reqWidth + "," + reqHeight + ")");
+            log.fine("Canvas offsets: "
+                    + Arrays.toString(new int[] {canvOfs.left, canvOfs.bottom, canvOfs.right, canvOfs.top}));
         }
     }
 
@@ -554,8 +470,7 @@ public class WMSTileFuser {
         bufferedImageWrapper = new BufferedImageWrapper(canvasSize, canvasType, bgColor, hints);
     }
 
-    protected void renderCanvas()
-            throws OutsideCoverageException, GeoWebCacheException, IOException, Exception {
+    protected void renderCanvas() throws OutsideCoverageException, GeoWebCacheException, IOException, Exception {
 
         // Now we loop over all the relevant tiles and write them to the canvas,
         // Starting at the bottom, moving to the right and up
@@ -597,16 +512,8 @@ public class WMSTileFuser {
 
                 long[] gridLoc = {gridx, gridy, srcIdx};
 
-                ConveyorTile tile =
-                        new ConveyorTile(
-                                sb,
-                                layer.getName(),
-                                gridSubset.getName(),
-                                gridLoc,
-                                srcFormat,
-                                fullParameters,
-                                null,
-                                null);
+                ConveyorTile tile = new ConveyorTile(
+                        sb, layer.getName(), gridSubset.getName(), gridLoc, srcFormat, fullParameters, null, null);
 
                 tile.setTileLayer(layer);
 
@@ -625,12 +532,8 @@ public class WMSTileFuser {
                 Resource blob = tile.getBlob();
                 // Extraction of the image associated with the defined MimeType
                 String formatName = srcFormat.getMimeType();
-                BufferedImage tileImg =
-                        decoderMap.decode(
-                                formatName,
-                                blob,
-                                decoderMap.isAggressiveInputStreamSupported(formatName),
-                                null);
+                BufferedImage tileImg = decoderMap.decode(
+                        formatName, blob, decoderMap.isAggressiveInputStreamSupported(formatName), null);
 
                 int tilex = 0;
                 int canvasx = (int) (gridx - startx) * gridSubset.getTileWidth();
@@ -665,29 +568,13 @@ public class WMSTileFuser {
                 }
 
                 // Cut down the tile to the part we want
-                if (tileWidth != gridSubset.getTileWidth()
-                        || tileHeight != gridSubset.getTileHeight()) {
-                    log.fine(
-                            "tileImg.getSubimage("
-                                    + tilex
-                                    + ","
-                                    + tiley
-                                    + ","
-                                    + tileWidth
-                                    + ","
-                                    + tileHeight
-                                    + ")");
+                if (tileWidth != gridSubset.getTileWidth() || tileHeight != gridSubset.getTileHeight()) {
+                    log.fine("tileImg.getSubimage(" + tilex + "," + tiley + "," + tileWidth + "," + tileHeight + ")");
                     tileImg = tileImg.getSubimage(tilex, tiley, tileWidth, tileHeight);
                 }
 
                 // Render the tile on the big canvas
-                log.fine(
-                        "drawImage(subtile,"
-                                + canvasx
-                                + ","
-                                + canvasy
-                                + ",null) "
-                                + Arrays.toString(gridLoc));
+                log.fine("drawImage(subtile," + canvasx + "," + canvasy + ",null) " + Arrays.toString(gridLoc));
 
                 bufferedImageWrapper.drawImage(tileImg, canvasx, canvasy);
             }
@@ -698,24 +585,20 @@ public class WMSTileFuser {
     }
 
     protected void scaleRaster() {
-        if (bufferedImageWrapper != null && canvasSize[0] != reqWidth
-                || canvasSize[1] != reqHeight) {
+        if (bufferedImageWrapper != null && canvasSize[0] != reqWidth || canvasSize[1] != reqHeight) {
             BufferedImage preTransform = bufferedImageWrapper.getCanvas();
 
             BufferedImage rescaled = new BufferedImage(reqWidth, reqHeight, preTransform.getType());
 
             Graphics2D gfx = rescaled.createGraphics();
 
-            AffineTransform affineTrans =
-                    AffineTransform.getScaleInstance(
-                            ((double) reqWidth) / preTransform.getWidth(),
-                            ((double) reqHeight) / preTransform.getHeight());
+            AffineTransform affineTrans = AffineTransform.getScaleInstance(
+                    ((double) reqWidth) / preTransform.getWidth(), ((double) reqHeight) / preTransform.getHeight());
 
-            log.fine(
-                    "AffineTransform: "
-                            + (((double) reqWidth) / preTransform.getWidth())
-                            + ","
-                            + +(((double) reqHeight) / preTransform.getHeight()));
+            log.fine("AffineTransform: "
+                    + (((double) reqWidth) / preTransform.getWidth())
+                    + ","
+                    + +(((double) reqHeight) / preTransform.getHeight()));
             // Hints settings
             RenderingHints hintsTemp = HintsLevel.DEFAULT.getRenderingHints();
 
@@ -764,10 +647,7 @@ public class WMSTileFuser {
             log.fine("WMS response size: " + aos.getCount() + "bytes.");
             stats.log(aos.getCount(), CacheResult.WMS);
         } catch (Exception e) {
-            log.log(
-                    Level.FINE,
-                    "IOException writing untiled response to client: " + e.getMessage(),
-                    e);
+            log.log(Level.FINE, "IOException writing untiled response to client: " + e.getMessage(), e);
 
             // closing the stream
             if (aos != null) {

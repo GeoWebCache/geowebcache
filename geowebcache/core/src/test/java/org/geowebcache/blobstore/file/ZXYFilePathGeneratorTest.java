@@ -35,7 +35,9 @@ public class ZXYFilePathGeneratorTest {
 
     FilePathGenerator generator;
     File testRoot;
-    @Parameterized.Parameter public Convention convention;
+
+    @Parameterized.Parameter
+    public Convention convention;
 
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Object[]> data() {
@@ -57,10 +59,8 @@ public class ZXYFilePathGeneratorTest {
         expect(mock.getName()).andStubReturn(name);
         expect(mock.getId()).andStubReturn(name);
         GridSet wgs84Grid = new DefaultGridsets(false, false).worldEpsg4326();
-        expect(mock.getGridSubset("EPSG:4326"))
-                .andStubReturn(GridSubsetFactory.createGridSubSet(wgs84Grid));
-        expect(mock.getMimeTypes())
-                .andStubReturn(Arrays.asList(org.geowebcache.mime.ImageMime.png));
+        expect(mock.getGridSubset("EPSG:4326")).andStubReturn(GridSubsetFactory.createGridSubSet(wgs84Grid));
+        expect(mock.getMimeTypes()).andStubReturn(Arrays.asList(org.geowebcache.mime.ImageMime.png));
         expect(layers.getTileLayer(eq(name))).andStubReturn(mock);
         replay(layers, mock);
 
@@ -70,8 +70,7 @@ public class ZXYFilePathGeneratorTest {
     @Test
     public void testPathNoParams() throws Exception {
         TileObject tile =
-                TileObject.createCompleteTileObject(
-                        "states", new long[] {0, 0, 0}, "EPSG:4326", "png", null, null);
+                TileObject.createCompleteTileObject("states", new long[] {0, 0, 0}, "EPSG:4326", "png", null, null);
         File path = generator.tilePath(tile, ImageMime.png);
 
         File expected = new File(testRoot, "states/EPSG_4326/0/0/0.png");
@@ -83,8 +82,7 @@ public class ZXYFilePathGeneratorTest {
         Map<String, String> params = new HashMap<>();
         params.put("style", "population");
         TileObject tile =
-                TileObject.createCompleteTileObject(
-                        "states", new long[] {0, 0, 0}, "EPSG:4326", "png", params, null);
+                TileObject.createCompleteTileObject("states", new long[] {0, 0, 0}, "EPSG:4326", "png", params, null);
         String sha1 = DigestUtils.sha1Hex("?style=population");
 
         // first time, this will also create the path on disk
@@ -96,17 +94,13 @@ public class ZXYFilePathGeneratorTest {
         testParameterId(path, sha1, "?style=population");
 
         // this time with a separate tile, but same params
-        tile =
-                TileObject.createCompleteTileObject(
-                        "states", new long[] {0, 0, 0}, "EPSG:4326", "png", params, null);
+        tile = TileObject.createCompleteTileObject("states", new long[] {0, 0, 0}, "EPSG:4326", "png", params, null);
         path = generator.tilePath(tile, ImageMime.png);
         testParameterId(path, sha1, "?style=population");
 
         // and now a separate tile, but different params
         params.put("style", "polygon");
-        tile =
-                TileObject.createCompleteTileObject(
-                        "states", new long[] {0, 0, 0}, "EPSG:4326", "png", params, null);
+        tile = TileObject.createCompleteTileObject("states", new long[] {0, 0, 0}, "EPSG:4326", "png", params, null);
         path = generator.tilePath(tile, ImageMime.png);
         sha1 = DigestUtils.sha1Hex("?style=polygon");
         testParameterId(path, sha1, "?style=polygon");
@@ -117,8 +111,7 @@ public class ZXYFilePathGeneratorTest {
         Assume.assumeTrue(convention == Convention.TMS);
 
         TileObject tile =
-                TileObject.createCompleteTileObject(
-                        "states", new long[] {0, 0, 2}, "EPSG:4326", "png", null, null);
+                TileObject.createCompleteTileObject("states", new long[] {0, 0, 2}, "EPSG:4326", "png", null, null);
         File path = generator.tilePath(tile, ImageMime.png);
 
         File expected = new File(testRoot, "states/EPSG_4326/2/0/0.png");
@@ -130,16 +123,14 @@ public class ZXYFilePathGeneratorTest {
         Assume.assumeTrue(convention == Convention.XYZ);
 
         TileObject tile =
-                TileObject.createCompleteTileObject(
-                        "states", new long[] {0, 0, 2}, "EPSG:4326", "png", null, null);
+                TileObject.createCompleteTileObject("states", new long[] {0, 0, 2}, "EPSG:4326", "png", null, null);
         File path = generator.tilePath(tile, ImageMime.png);
 
         File expected = new File(testRoot, "states/EPSG_4326/2/0/3.png");
         assertEquals(expected, path);
     }
 
-    private void testParameterId(File path, String parameterId, String parameterKvp)
-            throws IOException {
+    private void testParameterId(File path, String parameterId, String parameterKvp) throws IOException {
         File expected = new File(testRoot, "states/EPSG_4326_" + parameterId + "/0/0/0.png");
         assertEquals(expected.getPath(), path.getPath());
     }

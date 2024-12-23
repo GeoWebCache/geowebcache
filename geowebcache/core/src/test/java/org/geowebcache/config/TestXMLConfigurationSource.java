@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2018
  */
@@ -31,8 +30,7 @@ public class TestXMLConfigurationSource {
     protected boolean failNextRead;
     protected boolean failNextWrite;
 
-    public XMLConfiguration create(MockWepAppContextRule extensions, File configDir)
-            throws Exception {
+    public XMLConfiguration create(MockWepAppContextRule extensions, File configDir) throws Exception {
         GridSetBroker gridSetBroker = new GridSetBroker();
         gridSetBroker.setApplicationContext(extensions.getMockContext());
         DefaultGridsets defaultGridsets = new DefaultGridsets(true, true);
@@ -68,8 +66,7 @@ public class TestXMLConfigurationSource {
                         return super.out();
                     }
                 };
-        XMLConfiguration config =
-                new XMLConfiguration(extensions.getContextProvider(), configProvider);
+        XMLConfiguration config = new XMLConfiguration(extensions.getContextProvider(), configProvider);
         extensions.addBean("XMLConfiguration", config, XMLConfiguration.class.getInterfaces());
         config.setGridSetBroker(gridSetBroker);
         config.afterPropertiesSet();

@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Andrea Aime, GeoSolutions, Copyright 2019
  */
@@ -77,9 +76,7 @@ public final class TMSKeyBuilder {
         } catch (GeoWebCacheException e) {
             throw new RuntimeException(e);
         }
-        return layer.getMimeTypes().stream()
-                .map(MimeType::getFileExtension)
-                .collect(Collectors.toSet());
+        return layer.getMimeTypes().stream().map(MimeType::getFileExtension).collect(Collectors.toSet());
     }
 
     public String forTile(TileObject obj) {
@@ -117,17 +114,7 @@ public final class TMSKeyBuilder {
         // Key format, comprised of
         // {@code <prefix>/<layer name>/<gridset id>/<format id>/<parameters
         // hash>/<z>/<x>/<y>.<extension>}
-        String key =
-                join(
-                        false,
-                        prefix,
-                        layer,
-                        gridset,
-                        shortFormat,
-                        parametersId,
-                        z,
-                        x,
-                        y + "." + extension);
+        String key = join(false, prefix, layer, gridset, shortFormat, parametersId, z, x, y + "." + extension);
         return key;
     }
 
@@ -181,9 +168,7 @@ public final class TMSKeyBuilder {
                 false,
                 prefix,
                 layerId,
-                PARAMETERS_METADATA_OBJECT_PREFIX
-                        + parametersId
-                        + PARAMETERS_METADATA_OBJECT_SUFFIX);
+                PARAMETERS_METADATA_OBJECT_PREFIX + parametersId + PARAMETERS_METADATA_OBJECT_SUFFIX);
     }
 
     public String parametersMetadataPrefix(final String layerName) {
@@ -192,8 +177,7 @@ public final class TMSKeyBuilder {
     }
 
     /**
-     * @return the key prefix up to the coordinates (i.e. {@code
-     *     "<prefix>/<layer>/<gridset>/<format>/<parametersId>"})
+     * @return the key prefix up to the coordinates (i.e. {@code "<prefix>/<layer>/<gridset>/<format>/<parametersId>"})
      */
     public String coordinatesPrefix(TileRange obj, boolean endWithSlash) {
         checkNotNull(obj.getLayerName());

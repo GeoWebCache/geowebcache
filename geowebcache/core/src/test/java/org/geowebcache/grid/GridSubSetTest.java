@@ -13,10 +13,7 @@ import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.util.MockLockProvider;
 import org.junit.Test;
 
-/**
- * Simple Test class for testing the behavior of a {@link GridSubset} with a non-zero zoomStart
- * parameter.
- */
+/** Simple Test class for testing the behavior of a {@link GridSubset} with a non-zero zoomStart parameter. */
 public class GridSubSetTest {
 
     @Test
@@ -40,18 +37,11 @@ public class GridSubSetTest {
         // Subsets table
         Map<String, GridSubset> grids = new HashMap<>();
         // GridSetBroker to use for creating a GridSubSet to add to the table
-        GridSetBroker gridSetBroker =
-                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
+        GridSetBroker gridSetBroker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
         // Creation of a GridSubSet with a non-zero zoomStart parameter
-        GridSubset grid =
-                GridSubsetFactory.createGridSubSet(
-                        gridSetBroker.getWorldEpsg4326(),
-                        new BoundingBox(-30.0, 15.0, 45.0, 30),
-                        5,
-                        10,
-                        null,
-                        null);
+        GridSubset grid = GridSubsetFactory.createGridSubSet(
+                gridSetBroker.getWorldEpsg4326(), new BoundingBox(-30.0, 15.0, 45.0, 30), 5, 10, null, null);
 
         grids.put(grid.getName(), grid);
 
@@ -60,19 +50,18 @@ public class GridSubSetTest {
         List<String> formatList = Collections.singletonList("image/png");
         int[] metaWidthHeight = {3, 3};
         // WMS layer creation
-        WMSLayer layer =
-                new WMSLayer(
-                        "test:layer",
-                        urls,
-                        "aStyle",
-                        "test:layer",
-                        formatList,
-                        grids,
-                        null,
-                        metaWidthHeight,
-                        "vendorparam=true",
-                        false,
-                        null);
+        WMSLayer layer = new WMSLayer(
+                "test:layer",
+                urls,
+                "aStyle",
+                "test:layer",
+                formatList,
+                grids,
+                null,
+                metaWidthHeight,
+                "vendorparam=true",
+                false,
+                null);
         // Layer initialization
         layer.initialize(gridSetBroker);
         layer.setLockProvider(new MockLockProvider());

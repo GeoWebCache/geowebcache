@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2018
  */
@@ -39,41 +38,37 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 /**
- * Tests integration between {@link CompositeBlobStore}, {@link
- * org.geowebcache.storage.BlobStoreAggregator}, and {@link
- * org.geowebcache.config.BlobStoreConfigurationListener} events.
+ * Tests integration between {@link CompositeBlobStore}, {@link org.geowebcache.storage.BlobStoreAggregator}, and
+ * {@link org.geowebcache.config.BlobStoreConfigurationListener} events.
  *
- * <p>Specifically, tests that CompositeBlobStore and BlobStoreAggregator remain in sync across
- * configuration changes.
+ * <p>Specifically, tests that CompositeBlobStore and BlobStoreAggregator remain in sync across configuration changes.
  */
 public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigIntegrationTest {
 
     CompositeBlobStore compositeBlobStore;
 
-    @Rule public TemporaryFolder tmpFolder = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder tmpFolder = new TemporaryFolder();
 
-    @Rule public MockWepAppContextRule context = new MockWepAppContextRule();
+    @Rule
+    public MockWepAppContextRule context = new MockWepAppContextRule();
 
-    @Rule public ExpectedException exception = ExpectedException.none();
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     @Override
     @Before
     public void setUpTest() throws Exception {
         super.setUpTest();
-        compositeBlobStore =
-                new CompositeBlobStore(
-                        tileLayerDispatcher,
-                        new DefaultStorageFinder(context.getContextProvider()),
-                        testSupport.getServerConfiguration(),
-                        blobStoreAggregator);
+        compositeBlobStore = new CompositeBlobStore(
+                tileLayerDispatcher,
+                new DefaultStorageFinder(context.getContextProvider()),
+                testSupport.getServerConfiguration(),
+                blobStoreAggregator);
     }
 
     private FileBlobStoreInfo createInfo(
-            String id,
-            boolean isDefault,
-            boolean isEnabled,
-            String baseDirectory,
-            int fileSystemBlockSize) {
+            String id, boolean isDefault, boolean isEnabled, String baseDirectory, int fileSystemBlockSize) {
         FileBlobStoreInfo c = new FileBlobStoreInfo(id);
         c.setDefault(isDefault);
         c.setEnabled(isEnabled);
@@ -86,13 +81,8 @@ public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigInt
     public void testAdd() throws IOException {
         assertFalse(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
 
-        BlobStoreInfo info =
-                createInfo(
-                        "newFileBlobStore",
-                        false,
-                        true,
-                        tmpFolder.newFolder().getAbsolutePath(),
-                        1024);
+        BlobStoreInfo info = createInfo(
+                "newFileBlobStore", false, true, tmpFolder.newFolder().getAbsolutePath(), 1024);
         blobStoreAggregator.addBlobStore(info);
 
         assertTrue(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
@@ -103,12 +93,7 @@ public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigInt
         assertFalse(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
 
         BlobStoreInfo info =
-                createInfo(
-                        "newFileBlobStore",
-                        true,
-                        true,
-                        tmpFolder.newFolder().getAbsolutePath(),
-                        1024);
+                createInfo("newFileBlobStore", true, true, tmpFolder.newFolder().getAbsolutePath(), 1024);
         blobStoreAggregator.addBlobStore(info);
 
         assertTrue(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
@@ -121,36 +106,28 @@ public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigInt
     public void testModify() throws IOException, GeoWebCacheException {
         testAdd();
 
-        BlobStore oldLiveInstance =
-                compositeBlobStore.blobStores.get("newFileBlobStore").liveInstance;
+        BlobStore oldLiveInstance = compositeBlobStore.blobStores.get("newFileBlobStore").liveInstance;
 
-        FileBlobStoreInfo info =
-                (FileBlobStoreInfo) blobStoreAggregator.getBlobStore("newFileBlobStore");
+        FileBlobStoreInfo info = (FileBlobStoreInfo) blobStoreAggregator.getBlobStore("newFileBlobStore");
         info.setFileSystemBlockSize(2048);
 
         blobStoreAggregator.modifyBlobStore(info);
         assertTrue(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
-        assertNotEquals(
-                oldLiveInstance,
-                compositeBlobStore.blobStores.get("newFileBlobStore").liveInstance);
+        assertNotEquals(oldLiveInstance, compositeBlobStore.blobStores.get("newFileBlobStore").liveInstance);
     }
 
     @Test
     public void testModifyDefault() throws IOException, GeoWebCacheException {
         testAddDefault();
 
-        BlobStore oldLiveInstance =
-                compositeBlobStore.blobStores.get("newFileBlobStore").liveInstance;
+        BlobStore oldLiveInstance = compositeBlobStore.blobStores.get("newFileBlobStore").liveInstance;
 
-        FileBlobStoreInfo info =
-                (FileBlobStoreInfo) blobStoreAggregator.getBlobStore("newFileBlobStore");
+        FileBlobStoreInfo info = (FileBlobStoreInfo) blobStoreAggregator.getBlobStore("newFileBlobStore");
         info.setFileSystemBlockSize(2048);
 
         blobStoreAggregator.modifyBlobStore(info);
         assertTrue(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));
-        assertNotEquals(
-                oldLiveInstance,
-                compositeBlobStore.blobStores.get("newFileBlobStore").liveInstance);
+        assertNotEquals(oldLiveInstance, compositeBlobStore.blobStores.get("newFileBlobStore").liveInstance);
         assertEquals(
                 compositeBlobStore.blobStores.get("newFileBlobStore"),
                 compositeBlobStore.blobStores.get(CompositeBlobStore.DEFAULT_STORE_DEFAULT_ID));
@@ -160,8 +137,7 @@ public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigInt
     public void testModifySetDefault() throws IOException, GeoWebCacheException {
         testAdd();
 
-        FileBlobStoreInfo info =
-                (FileBlobStoreInfo) blobStoreAggregator.getBlobStore("newFileBlobStore");
+        FileBlobStoreInfo info = (FileBlobStoreInfo) blobStoreAggregator.getBlobStore("newFileBlobStore");
         info.setDefault(true);
 
         blobStoreAggregator.modifyBlobStore(info);
@@ -208,12 +184,9 @@ public class CompositeBlobStoreConfigurationIntegrationTest extends GWCConfigInt
 
         try {
             exception.expect(ConfigurationPersistenceException.class);
-            exception.expectCause(
-                    allOf(
-                            instanceOf(ConfigurationException.class),
-                            hasProperty(
-                                    "message",
-                                    containsString("default blob store can't be removed"))));
+            exception.expectCause(allOf(
+                    instanceOf(ConfigurationException.class),
+                    hasProperty("message", containsString("default blob store can't be removed"))));
             blobStoreAggregator.removeBlobStore("newFileBlobStore");
         } finally {
             assertTrue(compositeBlobStore.blobStores.containsKey("newFileBlobStore"));

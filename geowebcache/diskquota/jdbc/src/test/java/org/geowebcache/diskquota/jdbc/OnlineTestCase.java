@@ -123,7 +123,8 @@ public abstract class OnlineTestCase {
         }
     }
 
-    @Rule public OnlineTestRule fixtureRule = new CompatibilityRule(getFixtureId());
+    @Rule
+    public OnlineTestRule fixtureRule = new CompatibilityRule(getFixtureId());
 
     protected Properties fixture;
 
@@ -136,8 +137,7 @@ public abstract class OnlineTestCase {
     /**
      * Tests if external resources needed to run the tests are online.
      *
-     * <p>This method can return false to indicate the online resources are not up, or can simply
-     * throw an exception.
+     * <p>This method can return false to indicate the online resources are not up, or can simply throw an exception.
      *
      * @return True if external resources are online, otherwise false.
      * @throws Exception Any errors that occur determining if online resources are available.
@@ -149,8 +149,8 @@ public abstract class OnlineTestCase {
     /**
      * Connection method, called from {@link #setUp()}.
      *
-     * <p>Subclasses should do all initialization / connection here. In the event of a connection
-     * not being available, this method should throw an exception to abort the test case.
+     * <p>Subclasses should do all initialization / connection here. In the event of a connection not being available,
+     * this method should throw an exception to abort the test case.
      *
      * @throws Exception if the connection failed.
      */
@@ -166,12 +166,12 @@ public abstract class OnlineTestCase {
     protected void disconnect() throws Exception {}
 
     /**
-     * Allows tests to create an offline fixture in cases where the user has not specified an
-     * explicit fixture for the test.
+     * Allows tests to create an offline fixture in cases where the user has not specified an explicit fixture for the
+     * test.
      *
-     * <p>Note, that this should method should on be implemented if the test case is created of
-     * creating a fixture which relies soley on embedded or offline resources. It should not
-     * reference any external or online resources as it prevents the user from running offline.
+     * <p>Note, that this should method should on be implemented if the test case is created of creating a fixture which
+     * relies soley on embedded or offline resources. It should not reference any external or online resources as it
+     * prevents the user from running offline.
      */
     protected Properties createOfflineFixture() {
         return null;
@@ -180,8 +180,8 @@ public abstract class OnlineTestCase {
     /**
      * Allows test to create a sample fixture for users.
      *
-     * <p>If this method returns a value the first time a fixture is looked up and not found this
-     * method will be called to create a fixture file with teh same id, but suffixed with .template.
+     * <p>If this method returns a value the first time a fixture is looked up and not found this method will be called
+     * to create a fixture file with teh same id, but suffixed with .template.
      */
     protected Properties createExampleFixture() {
         return null;
@@ -190,8 +190,7 @@ public abstract class OnlineTestCase {
     /**
      * The fixture id for the test case.
      *
-     * <p>This name is hierarchical, similar to a java package name. Example: {@code
-     * "postgis.demo_bc"}.
+     * <p>This name is hierarchical, similar to a java package name. Example: {@code "postgis.demo_bc"}.
      *
      * @return The fixture id.
      */

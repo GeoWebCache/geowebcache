@@ -33,8 +33,7 @@ public class JDBCConfigurationTest {
         GeoWebCacheEnvironment genv = new GeoWebCacheEnvironment();
         gse.setApplicationContext(appContext);
 
-        expect(appContext.getBeanNamesForType(GeoWebCacheEnvironment.class))
-                .andReturn(new String[] {"environment"});
+        expect(appContext.getBeanNamesForType(GeoWebCacheEnvironment.class)).andReturn(new String[] {"environment"});
         expect(appContext.getBean("environment")).andReturn(genv);
         Map<String, GeoWebCacheEnvironment> genvMap = new HashMap<>();
         genvMap.put("environment", genv);

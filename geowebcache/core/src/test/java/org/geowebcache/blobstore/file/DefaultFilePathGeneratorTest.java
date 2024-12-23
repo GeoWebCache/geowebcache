@@ -46,8 +46,7 @@ public class DefaultFilePathGeneratorTest {
     @Test
     public void testPathNoParams() throws Exception {
         TileObject tile =
-                TileObject.createCompleteTileObject(
-                        "states", new long[] {0, 0, 0}, "EPSG:2163", "png", null, null);
+                TileObject.createCompleteTileObject("states", new long[] {0, 0, 0}, "EPSG:2163", "png", null, null);
         File path = generator.tilePath(tile, ImageMime.png);
 
         File expected = new File(testRoot, "states/EPSG_2163_00/0_0/00_00.png");
@@ -59,8 +58,7 @@ public class DefaultFilePathGeneratorTest {
         Map<String, String> params = new HashMap<>();
         params.put("style", "population");
         TileObject tile =
-                TileObject.createCompleteTileObject(
-                        "states", new long[] {0, 0, 0}, "EPSG:2163", "png", params, null);
+                TileObject.createCompleteTileObject("states", new long[] {0, 0, 0}, "EPSG:2163", "png", params, null);
         String sha1 = DigestUtils.sha1Hex("?style=population");
 
         // first time, this will also create the path on disk
@@ -72,24 +70,19 @@ public class DefaultFilePathGeneratorTest {
         testParameterId(path, sha1, "?style=population");
 
         // this time with a separate tile, but same params
-        tile =
-                TileObject.createCompleteTileObject(
-                        "states", new long[] {0, 0, 0}, "EPSG:2163", "png", params, null);
+        tile = TileObject.createCompleteTileObject("states", new long[] {0, 0, 0}, "EPSG:2163", "png", params, null);
         path = generator.tilePath(tile, ImageMime.png);
         testParameterId(path, sha1, "?style=population");
 
         // and now a separate tile, but different params
         params.put("style", "polygon");
-        tile =
-                TileObject.createCompleteTileObject(
-                        "states", new long[] {0, 0, 0}, "EPSG:2163", "png", params, null);
+        tile = TileObject.createCompleteTileObject("states", new long[] {0, 0, 0}, "EPSG:2163", "png", params, null);
         path = generator.tilePath(tile, ImageMime.png);
         sha1 = DigestUtils.sha1Hex("?style=polygon");
         testParameterId(path, sha1, "?style=polygon");
     }
 
-    private void testParameterId(File path, String parameterId, String parameterKvp)
-            throws IOException {
+    private void testParameterId(File path, String parameterId, String parameterKvp) throws IOException {
         File expected = new File(testRoot, "states/EPSG_2163_00_" + parameterId + "/0_0/00_00.png");
         Assert.assertEquals(expected.getPath(), path.getPath());
     }
@@ -106,45 +99,28 @@ public class DefaultFilePathGeneratorTest {
         assertPathGeneratorFilterConsistency(gridSet3857);
     }
 
-    public void assertPathGeneratorFilterConsistency(GridSet gridSet4326)
-            throws GeoWebCacheException, IOException {
+    public void assertPathGeneratorFilterConsistency(GridSet gridSet4326) throws GeoWebCacheException, IOException {
         // scan a few zoom levels, odd and even
         for (int z = 0; z < 5; z++) {
             Grid grid = gridSet4326.getGrid(z);
             for (int y = 0; y < grid.getNumTilesHigh(); y++) {
                 for (int x = 0; x < grid.getNumTilesWide(); x++) {
-                    TileObject tile =
-                            TileObject.createCompleteTileObject(
-                                    "states",
-                                    new long[] {x, y, z},
-                                    gridSet4326.getName(),
-                                    "png",
-                                    null,
-                                    null);
+                    TileObject tile = TileObject.createCompleteTileObject(
+                            "states", new long[] {x, y, z}, gridSet4326.getName(), "png", null, null);
                     File file = generator.tilePath(tile, ImageMime.png);
                     // create the file
                     if (!file.getParentFile().exists()) {
                         Assert.assertTrue(file.getParentFile().mkdirs());
                     }
                     Assert.assertTrue(file.createNewFile());
-                    TileRange tr =
-                            new TileRange(
-                                    "states",
-                                    gridSet4326.getName(),
-                                    z,
-                                    z,
-                                    new long[][] {{x, y, x, y, z}},
-                                    ImageMime.png,
-                                    null);
+                    TileRange tr = new TileRange(
+                            "states", gridSet4326.getName(), z, z, new long[][] {{x, y, x, y, z}}, ImageMime.png, null);
                     DefaultFilePathFilter filter = new DefaultFilePathFilter(tr);
                     // assert the file and its parents are accepted
                     File gridsetFolder = file.getParentFile().getParentFile();
-                    Assert.assertTrue(
-                            filter.accept(gridsetFolder.getParentFile(), gridsetFolder.getName()));
+                    Assert.assertTrue(filter.accept(gridsetFolder.getParentFile(), gridsetFolder.getName()));
                     File intermediateFolder = file.getParentFile();
-                    Assert.assertTrue(
-                            filter.accept(
-                                    intermediateFolder.getParentFile(), gridsetFolder.getName()));
+                    Assert.assertTrue(filter.accept(intermediateFolder.getParentFile(), gridsetFolder.getName()));
                     Assert.assertTrue(filter.accept(file.getParentFile(), file.getName()));
                 }
             }

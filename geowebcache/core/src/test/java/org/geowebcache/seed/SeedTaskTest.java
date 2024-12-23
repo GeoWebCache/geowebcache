@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan, OpenGeo, Copyright 2010
  */
@@ -73,10 +72,7 @@ public class SeedTaskTest {
     @After
     public void tearDown() throws Exception {}
 
-    /**
-     * For a metatiled seed request over a given zoom level, make sure the correct wms calls are
-     * issued
-     */
+    /** For a metatiled seed request over a given zoom level, make sure the correct wms calls are issued */
     @Test
     @SuppressWarnings("serial")
     public void testSeedWMSRequests() throws Exception {
@@ -92,23 +88,20 @@ public class SeedTaskTest {
         Capture<WMSMetaTile> wmsRequestsCapturer = EasyMock.newCapture();
         Capture<Resource> resourceCapturer = EasyMock.newCapture();
 
-        IAnswer<Void> answer =
-                new IAnswer<Void>() {
-                    @Override
-                    public Void answer() throws Throwable {
-                        wmsRequestsCounter.incrementAndGet();
-                        try {
-                            resourceCapturer
-                                    .getValue()
-                                    .transferFrom(
-                                            Channels.newChannel(
-                                                    new ByteArrayInputStream(fakeWMSResponse)));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                        return null;
-                    }
-                };
+        IAnswer<Void> answer = new IAnswer<Void>() {
+            @Override
+            public Void answer() throws Throwable {
+                wmsRequestsCounter.incrementAndGet();
+                try {
+                    resourceCapturer
+                            .getValue()
+                            .transferFrom(Channels.newChannel(new ByteArrayInputStream(fakeWMSResponse)));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                return null;
+            }
+        };
         mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
         expectLastCall().andAnswer(answer).anyTimes();
         mockSourceHelper.makeRequest(capture(wmsRequestsCapturer), capture(resourceCapturer));
@@ -158,10 +151,7 @@ public class SeedTaskTest {
         verify(sleeper);
     }
 
-    /**
-     * For a metatiled seed request over a given zoom level, make sure the correct wms calls are
-     * issued
-     */
+    /** For a metatiled seed request over a given zoom level, make sure the correct wms calls are issued */
     @Test
     public void testSeedRetries() throws Exception {
         WMSLayer tl = createWMSLayer("image/png");
@@ -172,39 +162,36 @@ public class SeedTaskTest {
         // WMSSourceHelper that on makeRequest() returns always the saqme fake image
         // WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper();///
         // EasyMock.createMock(WMSSourceHelper.class);
-        WMSSourceHelper mockSourceHelper =
-                new MockWMSSourceHelper() {
-                    private int numCalls;
+        WMSSourceHelper mockSourceHelper = new MockWMSSourceHelper() {
+            private int numCalls;
 
-                    @Override
-                    protected void makeRequest(
-                            TileResponseReceiver tileRespRecv,
-                            WMSLayer layer,
-                            Map<String, String> wmsParams,
-                            MimeType expectedMimeType,
-                            Resource target)
-                            throws GeoWebCacheException {
-                        numCalls++;
-                        switch (numCalls) {
-                            case 1:
-                                throw new GeoWebCacheException("test exception");
-                            case 2:
-                                throw new RuntimeException("test unexpected exception");
-                            case 3:
-                                throw new GeoWebCacheException("second test exception");
-                            case 4:
-                                throw new RuntimeException("second test unexpected exception");
-                            default:
-                                try {
-                                    target.transferFrom(
-                                            Channels.newChannel(
-                                                    new ByteArrayInputStream(fakeWMSResponse)));
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
+            @Override
+            protected void makeRequest(
+                    TileResponseReceiver tileRespRecv,
+                    WMSLayer layer,
+                    Map<String, String> wmsParams,
+                    MimeType expectedMimeType,
+                    Resource target)
+                    throws GeoWebCacheException {
+                numCalls++;
+                switch (numCalls) {
+                    case 1:
+                        throw new GeoWebCacheException("test exception");
+                    case 2:
+                        throw new RuntimeException("test unexpected exception");
+                    case 3:
+                        throw new GeoWebCacheException("second test exception");
+                    case 4:
+                        throw new RuntimeException("second test unexpected exception");
+                    default:
+                        try {
+                            target.transferFrom(Channels.newChannel(new ByteArrayInputStream(fakeWMSResponse)));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
-                    }
-                };
+                }
+            }
+        };
 
         tl.setSourceHelper(mockSourceHelper);
 
@@ -240,10 +227,7 @@ public class SeedTaskTest {
 
         AtomicLong sharedFailureCounter = new AtomicLong();
         seedTask.setFailurePolicy(
-                tileFailureRetryCount,
-                tileFailureRetryWaitTime,
-                totalFailuresBeforeAborting,
-                sharedFailureCounter);
+                tileFailureRetryCount, tileFailureRetryWaitTime, totalFailuresBeforeAborting, sharedFailureCounter);
         /*
          * HACK: avoid SeedTask.getCurrentThreadArrayIndex failure.
          */
@@ -257,10 +241,7 @@ public class SeedTaskTest {
         verify(sleeper);
     }
 
-    /**
-     * Make sure when seeding a given zoom level, the correct tiles are sent to the {@link
-     * StorageBroker}
-     */
+    /** Make sure when seeding a given zoom level, the correct tiles are sent to the {@link StorageBroker} */
     @Test
     @SuppressWarnings("serial")
     public void testSeedStoredTiles() throws Exception {
@@ -322,8 +303,7 @@ public class SeedTaskTest {
         long starty = coveredGridLevels[1];
         long startx = coveredGridLevels[0];
 
-        final long expectedSavedTileCount =
-                (coveredGridLevels[2] - startx + 1) * (coveredGridLevels[3] - starty + 1);
+        final long expectedSavedTileCount = (coveredGridLevels[2] - startx + 1) * (coveredGridLevels[3] - starty + 1);
 
         List<TileObject> storedTiles = storedObjects.getValues();
         final int seededTileCount = storedTiles.size();

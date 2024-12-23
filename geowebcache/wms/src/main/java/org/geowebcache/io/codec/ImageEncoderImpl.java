@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Nicola Lagomarsini, GeoSolutions S.A.S., Copyright 2014
  */
@@ -42,8 +41,8 @@ import org.geowebcache.mime.ImageMime;
 import org.geowebcache.mime.MimeType;
 
 /**
- * Class implementing the ImageEncoder interface, the user should only create a new bean for
- * instantiating a new encoder object.
+ * Class implementing the ImageEncoder interface, the user should only create a new bean for instantiating a new encoder
+ * object.
  */
 public class ImageEncoderImpl implements ImageEncoder {
 
@@ -78,10 +77,7 @@ public class ImageEncoderImpl implements ImageEncoder {
                 "image/png;%20mode=24bit") {
             @Override
             public ImageWriteParam prepareParameters(
-                    ImageWriter writer,
-                    String compression,
-                    boolean compressUsed,
-                    float compressionRate) {
+                    ImageWriter writer, String compression, boolean compressUsed, float compressionRate) {
                 ImageWriteParam params = null;
 
                 if (writer instanceof CLibImageWriter) {
@@ -118,10 +114,7 @@ public class ImageEncoderImpl implements ImageEncoder {
         JPEG("image/jpeg") {
             @Override
             protected ImageWriteParam prepareParameters(
-                    ImageWriter writer,
-                    String compression,
-                    boolean compressUsed,
-                    float compressionRate) {
+                    ImageWriter writer, String compression, boolean compressUsed, float compressionRate) {
                 ImageWriteParam params = writer.getDefaultWriteParam();
                 params.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                 if (compressUsed) {
@@ -168,9 +161,7 @@ public class ImageEncoderImpl implements ImageEncoder {
             String compression = inputParams.get("COMPRESSION");
             // Boolean indicating if compression is present
             boolean compressUsed =
-                    compression != null
-                            && !compression.isEmpty()
-                            && !compression.equalsIgnoreCase("null");
+                    compression != null && !compression.isEmpty() && !compression.equalsIgnoreCase("null");
             // Selection of the compression rate
             String compressionRateValue = inputParams.get("COMPRESSION_RATE");
             // Initial value for the compression rate
@@ -184,17 +175,13 @@ public class ImageEncoderImpl implements ImageEncoder {
                 }
             }
             // Creation of the ImageWriteParams
-            ImageWriteParam params =
-                    prepareParameters(writer, compression, compressUsed, compressionRate);
+            ImageWriteParam params = prepareParameters(writer, compression, compressUsed, compressionRate);
 
             return params;
         }
 
         protected ImageWriteParam prepareParameters(
-                ImageWriter writer,
-                String compression,
-                boolean compressUsed,
-                float compressionRate) {
+                ImageWriter writer, String compression, boolean compressUsed, float compressionRate) {
             // Parameters creation
             ImageWriteParam params = writer.getDefaultWriteParam();
             params.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
@@ -243,13 +230,12 @@ public class ImageEncoderImpl implements ImageEncoder {
     }
 
     /**
-     * Encodes the selected image with the defined output object. The user can set the aggressive
-     * outputStream if supported.
+     * Encodes the selected image with the defined output object. The user can set the aggressive outputStream if
+     * supported.
      *
      * @param image Image to write.
      * @param destination Destination object where the image is written.
-     * @param aggressiveOutputStreamOptimization Parameter used if aggressive outputStream
-     *     optimization must be used.
+     * @param aggressiveOutputStreamOptimization Parameter used if aggressive outputStream optimization must be used.
      */
     @Override
     public void encode(
@@ -335,8 +321,8 @@ public class ImageEncoderImpl implements ImageEncoder {
     /**
      * Indicates if optimization on OutputStream can be used
      *
-     * @return isAggressiveOutputStreamSupported Boolean indicating if the selected encoder supports
-     *     an aggressive output stream optimization
+     * @return isAggressiveOutputStreamSupported Boolean indicating if the selected encoder supports an aggressive
+     *     output stream optimization
      */
     @Override
     public boolean isAggressiveOutputStreamSupported() {
@@ -344,8 +330,8 @@ public class ImageEncoderImpl implements ImageEncoder {
     }
 
     /**
-     * Creates a new Instance of ImageEncoder supporting or not OutputStream optimization, with the
-     * defined MimeTypes and Spi classes.
+     * Creates a new Instance of ImageEncoder supporting or not OutputStream optimization, with the defined MimeTypes
+     * and Spi classes.
      */
     public ImageEncoderImpl(
             boolean aggressiveOutputStreamOptimization,
@@ -363,8 +349,7 @@ public class ImageEncoderImpl implements ImageEncoder {
             try {
 
                 Class<?> clazz = Class.forName(spi);
-                ImageWriterSpi writer =
-                        (ImageWriterSpi) theRegistry.getServiceProviderByClass(clazz);
+                ImageWriterSpi writer = (ImageWriterSpi) theRegistry.getServiceProviderByClass(clazz);
                 if (writer != null) {
                     this.spi = writer;
                     break;

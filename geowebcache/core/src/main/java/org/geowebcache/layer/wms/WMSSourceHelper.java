@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
@@ -27,9 +26,8 @@ import org.geowebcache.mime.XMLMime;
 import org.geowebcache.util.ServletUtils;
 
 /**
- * Builds WMS requests to gather a certain tile or meta tile. The actual communication with the
- * server is delegated to subclasses (might be a real HTTP request, but also an in process one in
- * the case of GeoServer)
+ * Builds WMS requests to gather a certain tile or meta tile. The actual communication with the server is delegated to
+ * subclasses (might be a real HTTP request, but also an in process one in the case of GeoServer)
  */
 public abstract class WMSSourceHelper {
 
@@ -58,8 +56,7 @@ public abstract class WMSSourceHelper {
 
         GridSubset gridSubset = layer.getGridSubset(tile.getGridSetId());
 
-        Map<String, String> wmsParams =
-                layer.getWMSRequestTemplate(tile.getMimeType(), WMSLayer.RequestType.MAP);
+        Map<String, String> wmsParams = layer.getWMSRequestTemplate(tile.getMimeType(), WMSLayer.RequestType.MAP);
 
         wmsParams.put("FORMAT", tile.getMimeType().getFormat());
         wmsParams.put("SRS", layer.backendSRSOverride(gridSubset.getSRS()));
@@ -88,8 +85,7 @@ public abstract class WMSSourceHelper {
         makeRequest(tile, layer, wmsParams, mimeType, target);
     }
 
-    public Resource makeFeatureInfoRequest(
-            ConveyorTile tile, BoundingBox bbox, int height, int width, int x, int y)
+    public Resource makeFeatureInfoRequest(ConveyorTile tile, BoundingBox bbox, int height, int width, int x, int y)
             throws GeoWebCacheException {
         WMSLayer layer = (WMSLayer) tile.getLayer();
 
@@ -117,11 +113,8 @@ public abstract class WMSSourceHelper {
 
         String featureCount;
         {
-            Map<String, String> values =
-                    ServletUtils.selectedStringsFromMap(
-                            tile.servletReq.getParameterMap(),
-                            tile.servletReq.getCharacterEncoding(),
-                            "feature_count");
+            Map<String, String> values = ServletUtils.selectedStringsFromMap(
+                    tile.servletReq.getParameterMap(), tile.servletReq.getCharacterEncoding(), "feature_count");
             featureCount = values.get("feature_count");
         }
         if (featureCount != null) {

@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Andrea Aime - GeoSolutions Copyright 2012
  */
@@ -86,13 +85,10 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
     }
 
     @Override
-    public QuotaStore getQuotaStore(ApplicationContext ctx, String quotaStoreName)
-            throws ConfigurationException {
+    public QuotaStore getQuotaStore(ApplicationContext ctx, String quotaStoreName) throws ConfigurationException {
         // lookup dependencies in the classpath
-        DefaultStorageFinder cacheDirFinder =
-                (DefaultStorageFinder) ctx.getBean("gwcDefaultStorageFinder");
-        TilePageCalculator tilePageCalculator =
-                (TilePageCalculator) ctx.getBean("gwcTilePageCalculator");
+        DefaultStorageFinder cacheDirFinder = (DefaultStorageFinder) ctx.getBean("gwcDefaultStorageFinder");
+        TilePageCalculator tilePageCalculator = (TilePageCalculator) ctx.getBean("gwcTilePageCalculator");
 
         if (H2_STORE.equals(quotaStoreName)) {
             return initializeH2Store(cacheDirFinder, tilePageCalculator);
@@ -105,54 +101,44 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         return null;
     }
 
-    private ConfigurationResourceProvider createResourceProvider(
-            DefaultStorageFinder cacheDirFinder) throws ConfigurationException {
+    private ConfigurationResourceProvider createResourceProvider(DefaultStorageFinder cacheDirFinder)
+            throws ConfigurationException {
         return new XMLFileResourceProvider(
                 CONFIGURATION_FILE_NAME,
                 (org.springframework.web.context.WebApplicationContext) appContext,
                 cacheDirFinder);
     }
 
-    private QuotaStore getJDBCStore(
-            DefaultStorageFinder cacheDirFinder, TilePageCalculator tilePageCalculator)
+    private QuotaStore getJDBCStore(DefaultStorageFinder cacheDirFinder, TilePageCalculator tilePageCalculator)
             throws ConfigurationException {
         JDBCConfiguration config = null;
 
         ConfigurationResourceProvider resourceProvider =
-                defaultResourceProvider == null
-                        ? createResourceProvider(cacheDirFinder)
-                        : defaultResourceProvider;
+                defaultResourceProvider == null ? createResourceProvider(cacheDirFinder) : defaultResourceProvider;
 
         try {
             if (!resourceProvider.hasInput()) {
                 throw new IllegalArgumentException(
-                        "Unable to read JDBC configuration file: "
-                                + resourceProvider.getLocation());
+                        "Unable to read JDBC configuration file: " + resourceProvider.getLocation());
             }
             config = JDBCConfiguration.load(resourceProvider.in());
         } catch (IOException e) {
-            throw new IllegalArgumentException(
-                    "Failed to read JDBC configuration file at " + resourceProvider.getId());
+            throw new IllegalArgumentException("Failed to read JDBC configuration file at " + resourceProvider.getId());
         }
 
         return getJDBCStore(cacheDirFinder, tilePageCalculator, config);
     }
 
-    public QuotaStore getJDBCStore(ApplicationContext ctx, JDBCConfiguration config)
-            throws ConfigurationException {
+    public QuotaStore getJDBCStore(ApplicationContext ctx, JDBCConfiguration config) throws ConfigurationException {
         // lookup dependencies in the classpath
-        DefaultStorageFinder cacheDirFinder =
-                (DefaultStorageFinder) ctx.getBean("gwcDefaultStorageFinder");
-        TilePageCalculator tilePageCalculator =
-                (TilePageCalculator) ctx.getBean("gwcTilePageCalculator");
+        DefaultStorageFinder cacheDirFinder = (DefaultStorageFinder) ctx.getBean("gwcDefaultStorageFinder");
+        TilePageCalculator tilePageCalculator = (TilePageCalculator) ctx.getBean("gwcTilePageCalculator");
 
         return getJDBCStore(cacheDirFinder, tilePageCalculator, config);
     }
 
     private QuotaStore getJDBCStore(
-            DefaultStorageFinder cacheDirFinder,
-            TilePageCalculator tilePageCalculator,
-            JDBCConfiguration config)
+            DefaultStorageFinder cacheDirFinder, TilePageCalculator tilePageCalculator, JDBCConfiguration config)
             throws ConfigurationException {
         JDBCConfiguration expandedConfig = config.clone(true);
         DataSource ds = getDataSource(expandedConfig);
@@ -163,21 +149,19 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         Object bean = appContext.getBean(dialectBeanName);
 
         if (bean == null) {
-            throw new ConfigurationException(
-                    "Could not locate bean "
-                            + dialectBeanName
-                            + " for dialect "
-                            + dialectName
-                            + " in the Spring application context");
+            throw new ConfigurationException("Could not locate bean "
+                    + dialectBeanName
+                    + " for dialect "
+                    + dialectName
+                    + " in the Spring application context");
         } else if (!(bean instanceof SQLDialect)) {
-            throw new ConfigurationException(
-                    "Bean "
-                            + dialectBeanName
-                            + " for dialect "
-                            + dialectName
-                            + " was found in the Spring application "
-                            + "context, but it's not a SQLDialect object, instead it's a "
-                            + bean.getClass().getName());
+            throw new ConfigurationException("Bean "
+                    + dialectBeanName
+                    + " for dialect "
+                    + dialectName
+                    + " was found in the Spring application "
+                    + "context, but it's not a SQLDialect object, instead it's a "
+                    + bean.getClass().getName());
         }
 
         SQLDialect dialect = (SQLDialect) bean;
@@ -201,8 +185,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
             if (config.getJNDISource() != null) {
                 ds = (DataSource) GeoTools.jndiLookup(config.getJNDISource());
                 if (ds == null)
-                    throw new ConfigurationException(
-                            "Failed to get a datasource from: " + config.getJNDISource());
+                    throw new ConfigurationException("Failed to get a datasource from: " + config.getJNDISource());
             } else if (config.getConnectionPool() != null) {
                 ConnectionPoolConfiguration cp = config.getConnectionPool();
 
@@ -220,8 +203,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
 
                 ds = bds;
             } else {
-                throw new IllegalArgumentException(
-                        "JDBC configuration misses both JNDI source and connection pool");
+                throw new IllegalArgumentException("JDBC configuration misses both JNDI source and connection pool");
             }
 
             // verify the datasource works
@@ -229,8 +211,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
             try { // NOPMD try-with-resources would just lead to an unused variable violation
                 c = ds.getConnection();
             } catch (SQLException e) {
-                throw new ConfigurationException(
-                        "Failed to get a database connection: " + e.getMessage(), e);
+                throw new ConfigurationException("Failed to get a database connection: " + e.getMessage(), e);
             } finally {
                 if (c != null) {
                     try {
@@ -239,8 +220,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
                         // nothing we can do about it, but at least let the admin know
                         log.log(
                                 Level.FINE,
-                                "An error occurred while closing the test JDBC connection: "
-                                        + e.getMessage(),
+                                "An error occurred while closing the test JDBC connection: " + e.getMessage(),
                                 e);
                     }
                 }
@@ -252,8 +232,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         }
     }
 
-    private QuotaStore initializeH2Store(
-            DefaultStorageFinder cacheDirFinder, TilePageCalculator tilePageCalculator)
+    private QuotaStore initializeH2Store(DefaultStorageFinder cacheDirFinder, TilePageCalculator tilePageCalculator)
             throws ConfigurationException {
         // get a default data source located in the cache directory
         DataSource ds = getH2DataSource(cacheDirFinder);
@@ -269,8 +248,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         return store;
     }
 
-    private QuotaStore initializeHSQLStore(
-            DefaultStorageFinder cacheDirFinder, TilePageCalculator tilePageCalculator)
+    private QuotaStore initializeHSQLStore(DefaultStorageFinder cacheDirFinder, TilePageCalculator tilePageCalculator)
             throws ConfigurationException {
         // get a default data source located in the cache directory
         DataSource ds = getHSQLDataSource(cacheDirFinder);
@@ -287,8 +265,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
     }
 
     /** Prepares a simple data source for the embedded H2 */
-    private DataSource getH2DataSource(DefaultStorageFinder cacheDirFinder)
-            throws ConfigurationException {
+    private DataSource getH2DataSource(DefaultStorageFinder cacheDirFinder) throws ConfigurationException {
         File storeDirectory = new File(cacheDirFinder.getDefaultPath(), "diskquota_page_store_h2");
         storeDirectory.mkdirs();
 
@@ -307,20 +284,15 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
     }
 
     /** Prepares a simple data source for the embedded HSQL */
-    private DataSource getHSQLDataSource(DefaultStorageFinder cacheDirFinder)
-            throws ConfigurationException {
-        File storeDirectory =
-                new File(cacheDirFinder.getDefaultPath(), "diskquota_page_store_hsql");
+    private DataSource getHSQLDataSource(DefaultStorageFinder cacheDirFinder) throws ConfigurationException {
+        File storeDirectory = new File(cacheDirFinder.getDefaultPath(), "diskquota_page_store_hsql");
         storeDirectory.mkdirs();
 
         BasicDataSource dataSource = new BasicDataSource();
 
         dataSource.setDriverClassName("org.hsqldb.jdbcDriver");
         String database = new File(storeDirectory, "diskquota").getAbsolutePath();
-        dataSource.setUrl(
-                "jdbc:hsqldb:file:"
-                        + database
-                        + (ENABLE_HSQL_AUTO_SHUTDOWN ? ";shutdown=true" : ""));
+        dataSource.setUrl("jdbc:hsqldb:file:" + database + (ENABLE_HSQL_AUTO_SHUTDOWN ? ";shutdown=true" : ""));
         dataSource.setUsername("sa");
         dataSource.setPoolPreparedStatements(true);
         dataSource.setAccessToUnderlyingConnectionAllowed(true);

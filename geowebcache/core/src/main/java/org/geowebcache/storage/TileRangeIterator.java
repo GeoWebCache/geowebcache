@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne OpenGeo 2010
  */
@@ -32,10 +31,7 @@ public class TileRangeIterator {
 
     private volatile long[] lastGridLoc;
 
-    /**
-     * Note that the bounds of the tile range must already be expanded to the meta tile factors for
-     * this to work.
-     */
+    /** Note that the bounds of the tile range must already be expanded to the meta tile factors for this to work. */
     public TileRangeIterator(TileRange tr, int[] metaTilingFactors) {
         this.tr = tr;
         this.metaX = metaTilingFactors[0];
@@ -54,17 +50,15 @@ public class TileRangeIterator {
     }
 
     /**
-     * This loops over all the possible metatile locations and returns a tile location within each
-     * metatile.
+     * This loops over all the possible metatile locations and returns a tile location within each metatile.
      *
-     * <p>If the TileRange object provided is a DiscontinuousTileRange implementation, each location
-     * is checked against the filter of that class.
+     * <p>If the TileRange object provided is a DiscontinuousTileRange implementation, each location is checked against
+     * the filter of that class.
      *
-     * @param gridLoc as an optimization, re-use the previous gridLoc. It will be changed and used
-     *     as the return value. The values passed in will not impact the result. For the first call,
-     *     use a new 3 element array.
-     * @return {@code null} if there're no more tiles to return, the next grid location in the
-     *     iterator otherwise. The array has three elements: {x,y,z}
+     * @param gridLoc as an optimization, re-use the previous gridLoc. It will be changed and used as the return value.
+     *     The values passed in will not impact the result. For the first call, use a new 3 element array.
+     * @return {@code null} if there're no more tiles to return, the next grid location in the iterator otherwise. The
+     *     array has three elements: {x,y,z}
      */
     public synchronized long[] nextMetaGridLocation(final long[] gridLoc) {
         long[] levelBounds;
@@ -123,8 +117,7 @@ public class TileRangeIterator {
     private int tilesForLocation(long x, long y, long[] levelBounds) {
         long boundsMaxX = levelBounds[2];
         long boundsMaxY = levelBounds[3];
-        return (int) Math.min(metaX, 1 + (boundsMaxX - x))
-                * (int) Math.min(metaY, 1 + (boundsMaxY - y));
+        return (int) Math.min(metaX, 1 + (boundsMaxX - x)) * (int) Math.min(metaY, 1 + (boundsMaxY - y));
     }
 
     private int tilesForLocation(long[] gridLoc, long[] levelBounds) {
@@ -132,8 +125,8 @@ public class TileRangeIterator {
     }
 
     /**
-     * Checks whether this grid location, or any on the same meta tile, should be included according
-     * to the DiscontinuousTileRange
+     * Checks whether this grid location, or any on the same meta tile, should be included according to the
+     * DiscontinuousTileRange
      */
     private boolean checkGridLocation(long[] gridLoc) {
         if (dtr == null) {

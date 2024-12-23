@@ -13,42 +13,26 @@ import org.junit.Test;
  *
  * <p>10.0 - 10.2 cache
  *
- * <p>zoom level | min row | max row | min col | max col | | | | 5 | 10 | 13 | 4 | 10 | | | | 6 | 22
- * | 28 | 10 | 21
+ * <p>zoom level | min row | max row | min col | max col | | | | 5 | 10 | 13 | 4 | 10 | | | | 6 | 22 | 28 | 10 | 21
  *
- * <p>- image format is JPEG - tile size for (5,12,7) is 6342 bytes - tile size for (6,25,17) is
- * 6308 bytes
+ * <p>- image format is JPEG - tile size for (5,12,7) is 6342 bytes - tile size for (6,25,17) is 6308 bytes
  *
  * <p>10.3 cache
  *
- * <p>zoom level | min row | max row | min col | max col | | | | 4 | 5 | 6 | 2 | 5 | | | | 5 | 10 |
- * 13 | 4 | 10
+ * <p>zoom level | min row | max row | min col | max col | | | | 4 | 5 | 6 | 2 | 5 | | | | 5 | 10 | 13 | 4 | 10
  *
- * <p>- image format is JPEG - tile size for (4,5,4) is 7288 bytes - tile size for (5,11,5) is 6055
- * bytes
+ * <p>- image format is JPEG - tile size for (4,5,4) is 7288 bytes - tile size for (5,11,5) is 6055 bytes
  *
  * <p>Not verifiable with this unit test because the supplied test cache is too small:
  *
- * <p>- zoom levels can contain more than one .bundle/.bundlx file - row and column numbers have at
- * least 4 digits in bundle file name, but with really big caches row and column numbers can have
- * more than 4 digits
+ * <p>- zoom levels can contain more than one .bundle/.bundlx file - row and column numbers have at least 4 digits in
+ * bundle file name, but with really big caches row and column numbers can have more than 4 digits
  *
  * @author Bjoern Saxe
  */
 public class ArcGISCompactCacheTest {
     private static final byte[] JFIFHeader = {
-        (byte) 0xFF,
-        (byte) 0xD8,
-        (byte) 0xFF,
-        (byte) 0xE0,
-        0x00,
-        0x10,
-        0x4A,
-        0x46,
-        0x49,
-        0x46,
-        0x00,
-        0x01
+        (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01
     };
 
     @Test

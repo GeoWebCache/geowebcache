@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan (OpenGeo) 2010
  */
@@ -40,12 +39,10 @@ public class PagePyramidTest {
     static final Logger LOG = Logging.getLogger(PagePyramidTest.class.getName());
 
     GridSet world_EPSG3857 =
-            new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, false)))
-                    .getWorldEpsg3857();
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, false))).getWorldEpsg3857();
 
     GridSet world_EPSG4326 =
-            new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, false)))
-                    .getWorldEpsg4326();
+            new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, false))).getWorldEpsg4326();
 
     private long[][] coverages;
 
@@ -53,13 +50,12 @@ public class PagePyramidTest {
 
     @Before
     public void setUp() {
-        coverages =
-                new long[][] { //
-                    {0, 0, 1, 1, 0}, // 2x2 tiles
-                    {3, 3, 10, 10, 1}, // 11x11 tiles
-                    {0, 0, 101, 101, 2}, // 102x102 tiles
-                    {1000, 1000, 3000, 3000, 3} // 2001x2001 tiles
-                };
+        coverages = new long[][] { //
+            {0, 0, 1, 1, 0}, // 2x2 tiles
+            {3, 3, 10, 10, 1}, // 11x11 tiles
+            {0, 0, 101, 101, 2}, // 102x102 tiles
+            {1000, 1000, 3000, 3000, 3} // 2001x2001 tiles
+        };
         pyramid = new PagePyramid(coverages, 0, 3);
     }
 
@@ -90,15 +86,14 @@ public class PagePyramidTest {
             totalPages += levelPages;
             totalTiles = totalTiles.add(tilesPerPage.multiply(BigInteger.valueOf(levelPages)));
 
-            LOG.info(
-                    FilePathUtils.zeroPadder(z, 2)
-                            + ": (total pages ="
-                            + nf.format(totalPages)
-                            + ") "
-                            + pageInfo.toString()
-                            + "(level tiles = "
-                            + nf.format(tilesPerPage.multiply(BigInteger.valueOf(levelPages)))
-                            + ") ");
+            LOG.info(FilePathUtils.zeroPadder(z, 2)
+                    + ": (total pages ="
+                    + nf.format(totalPages)
+                    + ") "
+                    + pageInfo.toString()
+                    + "(level tiles = "
+                    + nf.format(tilesPerPage.multiply(BigInteger.valueOf(levelPages)))
+                    + ") ");
         }
         LOG.info("Total pages: " + totalPages);
     }

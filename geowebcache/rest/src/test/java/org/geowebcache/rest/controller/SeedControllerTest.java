@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Fernando Mino (Geosolutions), 2019
  */
@@ -55,13 +54,20 @@ import org.springframework.web.context.WebApplicationContext;
 })
 public class SeedControllerTest {
 
-    @Autowired private WebApplicationContext wac;
+    @Autowired
+    private WebApplicationContext wac;
 
-    @Mock @Autowired private SeedService seedService;
+    @Mock
+    @Autowired
+    private SeedService seedService;
 
-    @InjectMocks @Autowired SeedController controller;
+    @InjectMocks
+    @Autowired
+    SeedController controller;
 
-    @Spy @Autowired FormService formService;
+    @Spy
+    @Autowired
+    FormService formService;
 
     private MockMvc mockMvc;
 
@@ -83,10 +89,9 @@ public class SeedControllerTest {
     /** Checks correct media type for RestException response handling. POST method. */
     @Test
     public void testSeedPostContentType() throws Exception {
-        mockMvc.perform(
-                        post("/rest/seed/{layer}", "xxxp4z85")
-                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                                .accept(MediaType.TEXT_HTML))
+        mockMvc.perform(post("/rest/seed/{layer}", "xxxp4z85")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .accept(MediaType.TEXT_HTML))
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(status().is4xxClientError());
     }
@@ -105,59 +110,45 @@ public class SeedControllerTest {
     private void testPost(String layerName) throws Exception {
         doReturn(ResponseEntity.ok(null)).when(formService).handleFormPost(anyString(), anyMap());
 
-        mockMvc.perform(
-                        post("/rest/seed/{layer}", layerName)
-                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                                .accept(MediaType.TEXT_XML))
+        mockMvc.perform(post("/rest/seed/{layer}", layerName)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .accept(MediaType.TEXT_XML))
                 .andExpect(status().isOk());
         verify(formService).handleFormPost(eq(layerName), anyMap());
     }
 
     private void testGet(String layerName) throws Exception {
-        doReturn(ResponseEntity.ok(null))
-                .when(formService)
-                .handleGet(any(HttpServletRequest.class), anyString());
+        doReturn(ResponseEntity.ok(null)).when(formService).handleGet(any(HttpServletRequest.class), anyString());
 
-        mockMvc.perform(
-                        get("/rest/seed/{layer}", layerName)
-                                .contentType(MediaType.TEXT_PLAIN)
-                                .accept(MediaType.TEXT_HTML))
+        mockMvc.perform(get("/rest/seed/{layer}", layerName)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .accept(MediaType.TEXT_HTML))
                 .andExpect(status().isOk());
 
         verify(formService).handleGet(any(HttpServletRequest.class), eq(layerName));
     }
 
     private void testGetJson(String layerName) throws Exception {
-        doReturn(ResponseEntity.ok(null))
-                .when(formService)
-                .handleGet(any(HttpServletRequest.class), anyString());
+        doReturn(ResponseEntity.ok(null)).when(formService).handleGet(any(HttpServletRequest.class), anyString());
 
-        doReturn(ResponseEntity.ok(null))
-                .when(seedService)
-                .getRunningLayerTasksXml(endsWith(".json"));
+        doReturn(ResponseEntity.ok(null)).when(seedService).getRunningLayerTasksXml(endsWith(".json"));
 
-        mockMvc.perform(
-                        get("/rest/seed/{layer}.json", layerName)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/rest/seed/{layer}.json", layerName)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
         verify(controller.seedService).getRunningLayerTasks(eq(layerName));
     }
 
     private void testGetXml(String layerName) throws Exception {
-        doReturn(ResponseEntity.ok(null))
-                .when(formService)
-                .handleGet(any(HttpServletRequest.class), anyString());
+        doReturn(ResponseEntity.ok(null)).when(formService).handleGet(any(HttpServletRequest.class), anyString());
 
-        doReturn(ResponseEntity.ok(null))
-                .when(seedService)
-                .getRunningLayerTasksXml(endsWith(".xml"));
+        doReturn(ResponseEntity.ok(null)).when(seedService).getRunningLayerTasksXml(endsWith(".xml"));
 
-        mockMvc.perform(
-                        get("/rest/seed/{layer}.xml", layerName)
-                                .contentType(MediaType.APPLICATION_XML)
-                                .accept(MediaType.APPLICATION_XML))
+        mockMvc.perform(get("/rest/seed/{layer}.xml", layerName)
+                        .contentType(MediaType.APPLICATION_XML)
+                        .accept(MediaType.APPLICATION_XML))
                 .andExpect(status().isOk());
 
         verify(controller.seedService).getRunningLayerTasks(eq(layerName));

@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2019
  */
@@ -42,11 +41,10 @@ import org.springframework.web.context.WebApplicationContext;
  *         <pre>
  *         &lt;bean id="gwowebCacheExtensions" class="org.geowebcache.GeoWebCacheExtensions"/&gt;
  *         </pre>
- * </code> It must be a singleton, and must not be loaded lazily. Furthermore, this bean must be
- * loaded before any beans that use it.
+ * </code> It must be a singleton, and must not be loaded lazily. Furthermore, this bean must be loaded before any beans
+ * that use it.
  *
- * <p>Priority will be respected for extensions that implement {@link GeoWebCacheExtensionPriority}
- * interface.
+ * <p>Priority will be respected for extensions that implement {@link GeoWebCacheExtensionPriority} interface.
  *
  * @author Gabriel Roldan based on GeoServer's {@code GeoServerExtensions}
  */
@@ -56,9 +54,8 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
     private static Logger LOGGER = Logging.getLogger(GeoWebCacheExtensions.class.getName());
 
     /**
-     * Caches the names of the beans for a particular type, so that the lookup (expensive) wont' be
-     * needed. We cache names instead of beans because doing the latter we would break the
-     * "singleton=false" directive of some beans
+     * Caches the names of the beans for a particular type, so that the lookup (expensive) wont' be needed. We cache
+     * names instead of beans because doing the latter we would break the "singleton=false" directive of some beans
      */
     static WeakHashMap<Class<?>, String[]> extensionsCache = new WeakHashMap<>(40);
 
@@ -68,8 +65,8 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
     /**
      * Sets the web application context to be used for looking up extensions.
      *
-     * <p>This method is called by the spring container, and should never be called by client code.
-     * If client needs to supply a particular context, methods which take a context are available.
+     * <p>This method is called by the spring container, and should never be called by client code. If client needs to
+     * supply a particular context, methods which take a context are available.
      *
      * <p>This is the context that is used for methods which dont supply their own context.
      */
@@ -88,8 +85,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
      * @return A collection of the extensions, or an empty collection.
      */
     @SuppressWarnings("unchecked")
-    public static final <T> List<T> extensions(
-            Class<T> extensionPoint, ApplicationContext context) {
+    public static final <T> List<T> extensions(Class<T> extensionPoint, ApplicationContext context) {
         String[] names;
         if (GeoWebCacheExtensions.context == context) {
             names = extensionsCache.get(extensionPoint);
@@ -128,12 +124,11 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
     }
 
     /**
-     * Return all bean names that correspond to the provided extension type. If the provided
-     * extensions type implements the {@link GeoWebCacheExtensionPriority} interface, they are
-     * returned sorted by priority
+     * Return all bean names that correspond to the provided extension type. If the provided extensions type implements
+     * the {@link GeoWebCacheExtensionPriority} interface, they are returned sorted by priority
      *
-     * <p>We return the bean names and not the beans themselves because we cache the beans by name
-     * rather than the bean itself to avoid breaking the singleton directive.
+     * <p>We return the bean names and not the beans themselves because we cache the beans by name rather than the bean
+     * itself to avoid breaking the singleton directive.
      *
      * @param extensionType type of beans to return
      * @return Array of sorted bean names
@@ -143,16 +138,14 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
     }
 
     /**
-     * We lookup all the beans names that correspond to the provided extension type. If the provided
-     * extensions type implements the {@link GeoWebCacheExtensionPriority} interface we sort the
-     * beans names by their priority.
+     * We lookup all the beans names that correspond to the provided extension type. If the provided extensions type
+     * implements the {@link GeoWebCacheExtensionPriority} interface we sort the beans names by their priority.
      *
-     * <p>We return the bean names and not the beans themselves because we cache the beans by name
-     * rather than the bean itself to avoid breaking the singleton directive.
+     * <p>We return the bean names and not the beans themselves because we cache the beans by name rather than the bean
+     * itself to avoid breaking the singleton directive.
      */
     @SuppressWarnings("unchecked")
-    private static <T> String[] getBeansNamesOrderedByPriority(
-            Class<T> extensionType, ApplicationContext context) {
+    private static <T> String[] getBeansNamesOrderedByPriority(Class<T> extensionType, ApplicationContext context) {
         // asking spring for a map that will contains all beans that match the extensions type
         // indexed by their name
         Map<String, T> beans = context.getBeansOfType(extensionType);
@@ -163,22 +156,16 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
         // this extension type is priority aware
         List<Map.Entry<String, T>> beansEntries = new ArrayList<>(beans.entrySet());
         // sorting beans by their priority
-        Collections.sort(
-                beansEntries,
-                (extensionA, extensionB) -> {
-                    GeoWebCacheExtensionPriority extensionPriorityA =
-                            ((Map.Entry<String, GeoWebCacheExtensionPriority>) extensionA)
-                                    .getValue();
-                    GeoWebCacheExtensionPriority extensionPriorityB =
-                            ((Map.Entry<String, GeoWebCacheExtensionPriority>) extensionB)
-                                    .getValue();
-                    if (extensionPriorityA.getPriority() < extensionPriorityB.getPriority()) {
-                        return -1;
-                    }
-                    return extensionPriorityA.getPriority() == extensionPriorityB.getPriority()
-                            ? 0
-                            : 1;
-                });
+        Collections.sort(beansEntries, (extensionA, extensionB) -> {
+            GeoWebCacheExtensionPriority extensionPriorityA =
+                    ((Map.Entry<String, GeoWebCacheExtensionPriority>) extensionA).getValue();
+            GeoWebCacheExtensionPriority extensionPriorityB =
+                    ((Map.Entry<String, GeoWebCacheExtensionPriority>) extensionB).getValue();
+            if (extensionPriorityA.getPriority() < extensionPriorityB.getPriority()) {
+                return -1;
+            }
+            return extensionPriorityA.getPriority() == extensionPriorityB.getPriority() ? 0 : 1;
+        });
         // returning only the beans names
         return beansEntries.stream().map(Map.Entry::getKey).toArray(String[]::new);
     }
@@ -186,8 +173,8 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
     /**
      * Loads all extensions implementing or extending <code>extensionPoint</code>.
      *
-     * <p>This method uses the "default" application context to perform the lookup. See {@link
-     * #setApplicationContext(ApplicationContext)}.
+     * <p>This method uses the "default" application context to perform the lookup. See
+     * {@link #setApplicationContext(ApplicationContext)}.
      *
      * @param extensionPoint The class or interface of the extensions.
      * @return A collection of the extensions, or an empty collection.
@@ -204,11 +191,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
     public static <T extends BaseConfiguration> List<T> configurations(
             Class<T> extensionPoint, ApplicationContext context) {
         return extensions(extensionPoint, context).stream()
-                .sorted(
-                        (x, y) ->
-                                Integer.signum(
-                                        x.getPriority(extensionPoint)
-                                                - y.getPriority(extensionPoint)))
+                .sorted((x, y) -> Integer.signum(x.getPriority(extensionPoint) - y.getPriority(extensionPoint)))
                 .collect(Collectors.toList());
     }
 
@@ -237,10 +220,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
                                     + ((BaseConfiguration) bean).getLocation(),
                             e);
                 } else {
-                    LOGGER.log(
-                            Level.SEVERE,
-                            "Error while preparing bean to reinitialize " + bean.toString(),
-                            e);
+                    LOGGER.log(Level.SEVERE, "Error while preparing bean to reinitialize " + bean.toString(), e);
                 }
             }
         }
@@ -257,8 +237,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
                                     + ((BaseConfiguration) bean).getLocation(),
                             e);
                 } else {
-                    LOGGER.log(
-                            Level.SEVERE, "Error while reinitializing bean " + bean.toString(), e);
+                    LOGGER.log(Level.SEVERE, "Error while reinitializing bean " + bean.toString(), e);
                 }
             }
         }
@@ -278,12 +257,11 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
     /**
      * Loads a single bean by its type.
      *
-     * <p>This method returns null if there is no such bean. An exception is thrown if multiple
-     * beans of the specified type exist.
+     * <p>This method returns null if there is no such bean. An exception is thrown if multiple beans of the specified
+     * type exist.
      *
      * @param type THe type of the bean to lookup.
-     * @throws IllegalArgumentException If there are multiple beans of the specified type in the
-     *     context.
+     * @throws IllegalArgumentException If there are multiple beans of the specified type in the context.
      */
     public static final <T> T bean(Class<T> type) throws IllegalArgumentException {
         checkContext(context);
@@ -293,16 +271,14 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
     /**
      * Loads a single bean by its type from the specified application context.
      *
-     * <p>This method returns null if there is no such bean. An exception is thrown if multiple
-     * beans of the specified type exist.
+     * <p>This method returns null if there is no such bean. An exception is thrown if multiple beans of the specified
+     * type exist.
      *
      * @param type THe type of the bean to lookup.
      * @param context The application context
-     * @throws IllegalArgumentException If there are multiple beans of the specified type in the
-     *     context.
+     * @throws IllegalArgumentException If there are multiple beans of the specified type in the context.
      */
-    public static final <T> T bean(Class<T> type, ApplicationContext context)
-            throws IllegalArgumentException {
+    public static final <T> T bean(Class<T> type, ApplicationContext context) throws IllegalArgumentException {
         List<T> beans = extensions(type, context);
         if (beans.isEmpty()) {
             return null;
@@ -328,11 +304,11 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
     }
 
     /**
-     * Looks up for a named string property in the order defined by {@link #getProperty(String,
-     * ApplicationContext)} using the internally cached spring application context.
+     * Looks up for a named string property in the order defined by {@link #getProperty(String, ApplicationContext)}
+     * using the internally cached spring application context.
      *
-     * <p>Care should be taken when using this method. It should not be called during startup or
-     * from tests cases as the internal context will not have been set.
+     * <p>Care should be taken when using this method. It should not be called during startup or from tests cases as the
+     * internal context will not have been set.
      *
      * @param propertyName The property name to lookup.
      * @return The property value, or null if not found
@@ -387,9 +363,7 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
         // than strictly necessary
 
         final String[] typeStrs = {
-            "Java environment variable ",
-            "Servlet context parameter ",
-            "System environment variable "
+            "Java environment variable ", "Servlet context parameter ", "System environment variable "
         };
 
         String result = null;

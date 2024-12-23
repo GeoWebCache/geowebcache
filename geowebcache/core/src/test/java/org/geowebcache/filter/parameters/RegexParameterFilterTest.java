@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Kevin Smith, Boundless, Copyright 2015
  */
@@ -56,9 +55,7 @@ public class RegexParameterFilterTest {
     public void testBasic() throws Exception {
         assertThat(
                 filter.getNormalize(),
-                allOf(
-                        hasProperty("case", equalTo(Case.NONE)),
-                        hasProperty("locale", equalTo(Locale.getDefault()))));
+                allOf(hasProperty("case", equalTo(Case.NONE)), hasProperty("locale", equalTo(Locale.getDefault()))));
 
         assertThat(filter.getLegalValues(), nullValue());
 
@@ -154,14 +151,11 @@ public class RegexParameterFilterTest {
             assertThat(filter.applies(test), is(true));
             assertThat(filter.apply(test), equalTo(test.toLowerCase(Locale.forLanguageTag("tr"))));
         }
-        for (String test :
-                Arrays.asList(
-                        "F\u0131o", "FIO", "B\u0131R", "b\u0131r", "BIR", "BIz", "b\u0131z")) {
+        for (String test : Arrays.asList("F\u0131o", "FIO", "B\u0131R", "b\u0131r", "BIR", "BIz", "b\u0131z")) {
             assertThat(filter.applies(test), is(true));
             assertThat(filter.apply(test), equalTo(test.toLowerCase(Locale.forLanguageTag("tr"))));
         }
-        for (String test :
-                Arrays.asList("f\u0131oo", "f\u0131", "B\u0131", "BB\u0131rr", "BI", "BBIZ")) {
+        for (String test : Arrays.asList("f\u0131oo", "f\u0131", "B\u0131", "BB\u0131rr", "BI", "BBIZ")) {
             assertThat(filter.applies(test), is(false));
             try {
                 filter.apply(test);
@@ -231,17 +225,15 @@ public class RegexParameterFilterTest {
 
     @Test
     public void testFromXMLUpperCanadianEnglish() throws Exception {
-        Object o =
-                xs.fromXML(
-                        "<regexParameterFilter>\n"
-                                + "  <key>TEST</key>\n"
-                                + "  <defaultValue>Default</defaultValue>\n"
-                                + "  <normalize>\n"
-                                + "    <case>UPPER</case>\n"
-                                + "    <locale>en_CA</locale>\n"
-                                + "  </normalize>\n"
-                                + "  <regex>foo|Bar|BAZ</regex>\n"
-                                + "</regexParameterFilter>");
+        Object o = xs.fromXML("<regexParameterFilter>\n"
+                + "  <key>TEST</key>\n"
+                + "  <defaultValue>Default</defaultValue>\n"
+                + "  <normalize>\n"
+                + "    <case>UPPER</case>\n"
+                + "    <locale>en_CA</locale>\n"
+                + "  </normalize>\n"
+                + "  <regex>foo|Bar|BAZ</regex>\n"
+                + "</regexParameterFilter>");
 
         assertThat(o, instanceOf(RegexParameterFilter.class));
         assertThat(o, hasProperty("key", equalTo("TEST")));
@@ -259,17 +251,15 @@ public class RegexParameterFilterTest {
 
     @Test
     public void testFromXMLIdentifiersCaseInsensitive() throws Exception {
-        Object o =
-                xs.fromXML(
-                        "<regexParameterFilter>\n"
-                                + "  <key>TEST</key>\n"
-                                + "  <defaultValue>Default</defaultValue>\n"
-                                + "  <normalize>\n"
-                                + "    <case>uPPer</case>\n"
-                                + "    <locale>EN_ca</locale>\n"
-                                + "  </normalize>\n"
-                                + "  <regex>foo|Bar|BAZ</regex>\n"
-                                + "</regexParameterFilter>");
+        Object o = xs.fromXML("<regexParameterFilter>\n"
+                + "  <key>TEST</key>\n"
+                + "  <defaultValue>Default</defaultValue>\n"
+                + "  <normalize>\n"
+                + "    <case>uPPer</case>\n"
+                + "    <locale>EN_ca</locale>\n"
+                + "  </normalize>\n"
+                + "  <regex>foo|Bar|BAZ</regex>\n"
+                + "</regexParameterFilter>");
 
         assertThat(o, instanceOf(RegexParameterFilter.class));
         assertThat(o, hasProperty("key", equalTo("TEST")));
@@ -288,24 +278,18 @@ public class RegexParameterFilterTest {
     @Test
     public void testFromXMLDefaultNormalize() throws Exception {
         // important for backward compatibility with older config files
-        Object o =
-                xs.fromXML(
-                        "<regexParameterFilter>\n"
-                                + "  <key>TEST</key>\n"
-                                + "  <defaultValue>Default</defaultValue>\n"
-                                + "  <regex>foo|Bar|BAZ</regex>\n"
-                                + "</regexParameterFilter>");
+        Object o = xs.fromXML("<regexParameterFilter>\n"
+                + "  <key>TEST</key>\n"
+                + "  <defaultValue>Default</defaultValue>\n"
+                + "  <regex>foo|Bar|BAZ</regex>\n"
+                + "</regexParameterFilter>");
 
         assertThat(o, instanceOf(RegexParameterFilter.class));
         assertThat(o, hasProperty("key", equalTo("TEST")));
         assertThat(o, hasProperty("defaultValue", equalTo("Default")));
         assertThat(
                 o,
-                hasProperty(
-                        "normalize",
-                        allOf(
-                                instanceOf(CaseNormalizer.class),
-                                hasProperty("case", is(Case.NONE)))));
+                hasProperty("normalize", allOf(instanceOf(CaseNormalizer.class), hasProperty("case", is(Case.NONE)))));
         assertThat(o, hasProperty("regex", equalTo("foo|Bar|BAZ")));
     }
 
@@ -323,9 +307,7 @@ public class RegexParameterFilterTest {
         assertThat(clone.getRegex(), equalTo(filter.getRegex()));
         assertNotSame(filter.normalize, clone.normalize);
         assertThat(clone.normalize, equalTo(filter.normalize));
-        assertThat(
-                clone.normalize.getConfiguredLocale(),
-                equalTo(filter.normalize.getConfiguredLocale()));
+        assertThat(clone.normalize.getConfiguredLocale(), equalTo(filter.normalize.getConfiguredLocale()));
         assertThat(clone.normalize.getCase(), equalTo(filter.normalize.getCase()));
         // actual regex application test
         assertTrue(filter.applies("Bar"));

@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, OpenGeo, Copyright 2009
  */
@@ -28,14 +27,13 @@ import org.geowebcache.grid.OutsideCoverageException;
 import org.geowebcache.layer.TileLayer;
 
 /**
- * A raster filter allows to optimize data loading by avoiding the generation of requests and the
- * caching of empty tiles for tiles that are inside the definition area of the layer but that are
- * known (via external information) to contain no data
+ * A raster filter allows to optimize data loading by avoiding the generation of requests and the caching of empty tiles
+ * for tiles that are inside the definition area of the layer but that are known (via external information) to contain
+ * no data
  *
  * <p>To conserve memory, the layer bounds are used.
  *
- * <p>The raster must match the dimensions of the zoomlevel and use 0x000000 for tiles that are
- * valid.
+ * <p>The raster must match the dimensions of the zoomlevel and use 0x000000 for tiles that are valid.
  */
 public abstract class RasterFilter extends RequestFilter {
 
@@ -149,9 +147,7 @@ public abstract class RasterFilter extends RequestFilter {
             idx[2] = zoomStop;
         }
 
-        if (matrices == null
-                || matrices.get(gridSetId) == null
-                || matrices.get(gridSetId)[(int) idx[2]] == null) {
+        if (matrices == null || matrices.get(gridSetId) == null || matrices.get(gridSetId)[(int) idx[2]] == null) {
             try {
                 setMatrix(convTile.getLayer(), gridSetId, (int) idx[2], false);
             } catch (Exception e) {
@@ -166,11 +162,7 @@ public abstract class RasterFilter extends RequestFilter {
                                 + " : "
                                 + e.getMessage());
                 throw new RequestFilterException(
-                        this,
-                        500,
-                        "Failed while trying to load filter for "
-                                + idx[2]
-                                + ", please check the logs");
+                        this, 500, "Failed while trying to load filter for " + idx[2] + ", please check the logs");
             }
         }
 
@@ -242,8 +234,8 @@ public abstract class RasterFilter extends RequestFilter {
     }
 
     /**
-     * Performs a lookup against an internal raster. The sampling is actually done against 4 pixels,
-     * idx should already have been modified to use one level higher than strictly necessary.
+     * Performs a lookup against an internal raster. The sampling is actually done against 4 pixels, idx should already
+     * have been modified to use one level higher than strictly necessary.
      */
     private boolean lookupQuad(GridSubset grid, long[] idx) {
         BufferedImage mat = matrices.get(grid.getName())[(int) idx[2]];
@@ -281,17 +273,7 @@ public abstract class RasterFilter extends RequestFilter {
                     }
                 }
             } catch (ArrayIndexOutOfBoundsException aioob) {
-                log.log(
-                        Level.SEVERE,
-                        "x:"
-                                + x
-                                + "  y:"
-                                + y
-                                + " ("
-                                + mat.getWidth()
-                                + " "
-                                + mat.getHeight()
-                                + ")");
+                log.log(Level.SEVERE, "x:" + x + "  y:" + y + " (" + mat.getWidth() + " " + mat.getHeight() + ")");
             }
         }
 
@@ -350,17 +332,7 @@ public abstract class RasterFilter extends RequestFilter {
                     y = startY;
                 }
             } catch (ArrayIndexOutOfBoundsException aioob) {
-                log.log(
-                        Level.SEVERE,
-                        "x:"
-                                + x
-                                + "  y:"
-                                + y
-                                + " ("
-                                + mat.getWidth()
-                                + " "
-                                + mat.getHeight()
-                                + ")");
+                log.log(Level.SEVERE, "x:" + x + "  y:" + y + " (" + mat.getWidth() + " " + mat.getHeight() + ")");
             }
         }
 

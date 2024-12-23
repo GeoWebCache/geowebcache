@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Lennart Juette, PTV AG (http://www.ptvag.com) 2010
  */
@@ -36,8 +35,7 @@ public class HttpClientBuilder {
     private AuthScope authscope = null;
 
     private Integer backendTimeoutMillis = null;
-    private static final HttpClientConnectionManager connectionManager =
-            new PoolingHttpClientConnectionManager();
+    private static final HttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
 
     private boolean doAuthentication = false;
 
@@ -52,31 +50,24 @@ public class HttpClientBuilder {
     /**
      * Instantiates a new http client builder
      *
-     * @param url The server url, or null if no authentication is required or if the client is going
-     *     to be used against a single server only
+     * @param url The server url, or null if no authentication is required or if the client is going to be used against
+     *     a single server only
      */
     public HttpClientBuilder(
-            URL url,
-            Integer backendTimeout,
-            String httpUsername,
-            String httpPassword,
-            URL proxyUrl,
-            int concurrency) {
+            URL url, Integer backendTimeout, String httpUsername, String httpPassword, URL proxyUrl, int concurrency) {
         if (url != null) {
-            this.setHttpCredentials(
-                    httpUsername, httpPassword, new AuthScope(url.getHost(), url.getPort()));
+            this.setHttpCredentials(httpUsername, httpPassword, new AuthScope(url.getHost(), url.getPort()));
         } else {
             this.setHttpCredentials(httpUsername, httpPassword, AuthScope.ANY);
         }
         this.setBackendTimeout(backendTimeout);
-        setConnectionConfig(
-                RequestConfig.custom()
-                        .setCookieSpec(CookieSpecs.DEFAULT)
-                        .setExpectContinueEnabled(true)
-                        .setSocketTimeout(backendTimeoutMillis)
-                        .setConnectTimeout(backendTimeoutMillis)
-                        .setRedirectsEnabled(true)
-                        .build());
+        setConnectionConfig(RequestConfig.custom()
+                .setCookieSpec(CookieSpecs.DEFAULT)
+                .setExpectContinueEnabled(true)
+                .setSocketTimeout(backendTimeoutMillis)
+                .setConnectTimeout(backendTimeoutMillis)
+                .setRedirectsEnabled(true)
+                .build());
 
         clientBuilder = org.apache.http.impl.client.HttpClientBuilder.create();
         clientBuilder.useSystemProperties();
@@ -128,10 +119,7 @@ public class HttpClientBuilder {
         return httpClient;
     }
 
-    /**
-     * returns true if this builder was configured to pass HTTP credentials to the generated
-     * HttpClient.
-     */
+    /** returns true if this builder was configured to pass HTTP credentials to the generated HttpClient. */
     public boolean isDoAuthentication() {
         return doAuthentication;
     }

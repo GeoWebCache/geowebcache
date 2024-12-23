@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, The Open Planning Project, Copyright 2009
  */
@@ -91,8 +90,7 @@ public class GeoWebCacheConfiguration {
 
         xmlns = "http://geowebcache.org/schema/" + getVersion();
 
-        xsi_schemaLocation =
-                xmlns + " http://geowebcache.org/schema/" + getVersion() + "/geowebcache.xsd";
+        xsi_schemaLocation = xmlns + " http://geowebcache.org/schema/" + getVersion() + "/geowebcache.xsd";
 
         if (layers == null) {
             layers = new ArrayList<>();
@@ -117,8 +115,7 @@ public class GeoWebCacheConfiguration {
     public void setVersion(String version) {
         this.version = version;
         xmlns = "http://geowebcache.org/schema/" + version;
-        xsi_schemaLocation =
-                xmlns + " http://geowebcache.org/schema/" + version + "/geowebcache.xsd";
+        xsi_schemaLocation = xmlns + " http://geowebcache.org/schema/" + version + "/geowebcache.xsd";
     }
 
     /** @see ServerConfiguration#getBackendTimeout() */
@@ -186,10 +183,7 @@ public class GeoWebCacheConfiguration {
         return serviceInformation;
     }
 
-    /**
-     * @see ServerConfiguration#setServiceInformation(ServiceInformation) the serviceInformation to
-     *     set
-     */
+    /** @see ServerConfiguration#setServiceInformation(ServiceInformation) the serviceInformation to set */
     public void setServiceInformation(ServiceInformation serviceInformation) {
         this.serviceInformation = serviceInformation;
     }
@@ -231,14 +225,11 @@ public class GeoWebCacheConfiguration {
                 Object provider = GeoWebCacheExtensions.bean(lockProvider);
                 if (provider == null) {
                     throw new RuntimeException(
-                            "Could not find lock provider "
-                                    + lockProvider
-                                    + " in the spring application context");
+                            "Could not find lock provider " + lockProvider + " in the spring application context");
                 } else if (!(provider instanceof LockProvider)) {
-                    throw new RuntimeException(
-                            "Found bean "
-                                    + lockProvider
-                                    + " in the spring application context, but it was not a LockProvider");
+                    throw new RuntimeException("Found bean "
+                            + lockProvider
+                            + " in the spring application context, but it was not a LockProvider");
                 } else {
                     lockProviderInstance = (LockProvider) provider;
                 }
@@ -279,8 +270,7 @@ public class GeoWebCacheConfiguration {
     }
 
     /**
-     * If this method returns NULL CITE strict compliance mode should not be considered for WMTS
-     * service implementation.
+     * If this method returns NULL CITE strict compliance mode should not be considered for WMTS service implementation.
      *
      * @return may return TRUE, FALSE or NULL
      */
@@ -289,11 +279,9 @@ public class GeoWebCacheConfiguration {
     }
 
     /**
-     * Can be used to force WMTS service implementation to be strictly compliant with the
-     * correspondent CITE tests.
+     * Can be used to force WMTS service implementation to be strictly compliant with the correspondent CITE tests.
      *
-     * @param wmtsCiteCompliant TRUE or FALSE, activating or deactivation CITE strict compliance
-     *     mode for WMTS
+     * @param wmtsCiteCompliant TRUE or FALSE, activating or deactivation CITE strict compliance mode for WMTS
      */
     public void setWmtsCiteCompliant(boolean wmtsCiteCompliant) {
         this.wmtsCiteCompliant = wmtsCiteCompliant;

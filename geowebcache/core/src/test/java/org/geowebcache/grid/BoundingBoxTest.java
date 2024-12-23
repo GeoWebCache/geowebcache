@@ -12,8 +12,7 @@ public class BoundingBoxTest {
     public void setUp() throws Exception {}
 
     /**
-     * Verifies that this functions output remains as expected, since we communicate a lot using
-     * strings.
+     * Verifies that this functions output remains as expected, since we communicate a lot using strings.
      *
      * <p>Ff not you should figure out where it is used.
      */
