@@ -1,23 +1,19 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Nuno Oliveira, GeoSolutions S.A.S., Copyright 2017
  */
 package org.geowebcache.config.legends;
 
-/**
- * Contains the raw information about a style legend as it may appear in the XML configuration for
- * example.
- */
+/** Contains the raw information about a style legend as it may appear in the XML configuration for example. */
 public class LegendRawInfo {
 
     private String style;
@@ -93,16 +89,9 @@ public class LegendRawInfo {
         this.maxScale = maxScale;
     }
 
-    /**
-     * Build the concrete legend information using the provided layer information and defaults
-     * values.
-     */
+    /** Build the concrete legend information using the provided layer information and defaults values. */
     public LegendInfo getLegendInfo(
-            String layerName,
-            String layerUrl,
-            Integer defaultWidth,
-            Integer defaultHeight,
-            String defaultFormat) {
+            String layerName, String layerUrl, Integer defaultWidth, Integer defaultHeight, String defaultFormat) {
         return new LegendInfoBuilder()
                 .withLayerName(layerName)
                 .withLayerUrl(layerUrl)
@@ -130,10 +119,8 @@ public class LegendRawInfo {
         if (height != null ? !height.equals(that.height) : that.height != null) return false;
         if (format != null ? !format.equals(that.format) : that.format != null) return false;
         if (url != null ? !url.equals(that.url) : that.url != null) return false;
-        if (completeUrl != null ? !completeUrl.equals(that.completeUrl) : that.completeUrl != null)
-            return false;
-        if (minScale != null ? !minScale.equals(that.minScale) : that.minScale != null)
-            return false;
+        if (completeUrl != null ? !completeUrl.equals(that.completeUrl) : that.completeUrl != null) return false;
+        if (minScale != null ? !minScale.equals(that.minScale) : that.minScale != null) return false;
         return maxScale != null ? maxScale.equals(that.maxScale) : that.maxScale == null;
     }
 

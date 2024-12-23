@@ -47,23 +47,11 @@ public class DemoTest {
         // Creating an advertised Layer and an unadvertised one
         HashMap<String, GridSubset> subSets = new HashMap<>();
         TileLayer advertisedLayer =
-                new WMSLayer(
-                        "testAdv", null, null, null, null, subSets, null, null, null, false, null);
+                new WMSLayer("testAdv", null, null, null, null, subSets, null, null, null, false, null);
         advertisedLayer.setEnabled(true);
         advertisedLayer.setAdvertised(true);
         TileLayer unAdvertisedLayer =
-                new WMSLayer(
-                        "testNotAdv",
-                        null,
-                        null,
-                        null,
-                        null,
-                        subSets,
-                        null,
-                        null,
-                        null,
-                        false,
-                        null);
+                new WMSLayer("testNotAdv", null, null, null, null, subSets, null, null, null, false, null);
         unAdvertisedLayer.setEnabled(true);
         unAdvertisedLayer.setAdvertised(false);
 
@@ -115,8 +103,7 @@ public class DemoTest {
         when(layer.getGridSubsets()).thenReturn(gridSubsets);
         when(layer.getGridSubset(epsg4326)).thenReturn(subSet2);
         when(layer.getGridSubset(unescapedSubset)).thenReturn(subSet1);
-        when(layer.getMimeTypes())
-                .thenReturn(Collections.singletonList(MimeType.createFromFormat("image/png")));
+        when(layer.getMimeTypes()).thenReturn(Collections.singletonList(MimeType.createFromFormat("image/png")));
 
         TileLayerDispatcher tld = mock(TileLayerDispatcher.class);
         when(tld.getLayerNames()).thenReturn(Collections.singleton(unescapedLayer));
@@ -217,8 +204,7 @@ public class DemoTest {
         Demo.makeMap(tld, null, "layer", new MockHttpServletRequest(), response);
         String result = response.getContentAsString();
 
-        assertThat(
-                result, containsString("<script src=\"../rest/web/openlayers3/ol.js\"></script>"));
+        assertThat(result, containsString("<script src=\"../rest/web/openlayers3/ol.js\"></script>"));
         assertThat(result, containsString("<script src=\"../rest/web/demo.js\"></script>"));
         assertThat(result, not(containsString("<script>")));
         assertThat(result, not(containsString(" onchange=")));

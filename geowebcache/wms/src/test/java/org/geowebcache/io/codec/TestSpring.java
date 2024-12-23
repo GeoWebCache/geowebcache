@@ -15,8 +15,7 @@ public class TestSpring {
     @Test
     public void testBeanSelection() {
         // Selection of the Test Application Context
-        try (ClassPathXmlApplicationContext context =
-                new ClassPathXmlApplicationContext("appContextTest2.xml")) {
+        try (ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("appContextTest2.xml")) {
             // Check that the initializer is present
             Object obj = context.getBean("ioInitializer");
             Assert.assertNotNull(obj);

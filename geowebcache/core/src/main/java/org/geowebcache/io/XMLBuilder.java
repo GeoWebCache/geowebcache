@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Kevin Smith, Boundless, Copyright 2014
  */
@@ -123,8 +122,7 @@ public class XMLBuilder {
     /**
      * End an XML element
      *
-     * @param name if not null and assertions are enabled, will check that the element being closed
-     *     has this name.
+     * @param name if not null and assertions are enabled, will check that the element being closed has this name.
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
     public XMLBuilder endElement(@Nullable String name) throws IOException {
@@ -152,8 +150,7 @@ public class XMLBuilder {
      *
      * @throws IOException thrown if the underlying Appendable throws IOException
      */
-    public XMLBuilder simpleElement(String name, @Nullable String text, boolean indent)
-            throws IOException {
+    public XMLBuilder simpleElement(String name, @Nullable String text, boolean indent) throws IOException {
         return startElement(name, indent).text(text).endElement();
     }
 
@@ -232,8 +229,7 @@ public class XMLBuilder {
     }
 
     /** Add a BoundingBox element */
-    public <T> XMLBuilder boundingBox(@Nullable String srs, T minx, T miny, T maxx, T maxy)
-            throws IOException {
+    public <T> XMLBuilder boundingBox(@Nullable String srs, T minx, T miny, T maxx, T maxy) throws IOException {
         indentElement("BoundingBox");
         if (srs != null) attribute("SRS", srs);
         bboxAttributes(minx, miny, maxx, maxy);

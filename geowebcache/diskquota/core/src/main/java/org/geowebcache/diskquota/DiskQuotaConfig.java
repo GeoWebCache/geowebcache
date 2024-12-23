@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan (OpenGeo) 2010
  */
@@ -28,8 +27,8 @@ import org.geowebcache.diskquota.storage.StorageUnit;
 import org.springframework.util.Assert;
 
 /**
- * Holds the quota configuration for all the registered layers as well as the instance wide settings
- * such as cache disk block size, maximum number of concurrent cache clean ups, etc.
+ * Holds the quota configuration for all the registered layers as well as the instance wide settings such as cache disk
+ * block size, maximum number of concurrent cache clean ups, etc.
  *
  * @author groldan
  */
@@ -37,7 +36,8 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
 
     private static final long serialVersionUID = 4376471696761297546L;
 
-    @Deprecated static final int DEFAULT_DISK_BLOCK_SIZE = 4096;
+    @Deprecated
+    static final int DEFAULT_DISK_BLOCK_SIZE = 4096;
 
     static final int DEFAULT_CLEANUP_FREQUENCY = 10;
 
@@ -146,10 +146,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
         this.layerQuotas.add(quota);
     }
 
-    /**
-     * @return The layer quota for the given layer or {@code null} if no quota is being tracked for
-     *     that layer
-     */
+    /** @return The layer quota for the given layer or {@code null} if no quota is being tracked for that layer */
     public LayerQuota layerQuota(final String layerName) {
         if (layerQuotas != null) {
             for (LayerQuota lq : layerQuotas) {
@@ -191,8 +188,7 @@ public class DiskQuotaConfig implements Cloneable, Serializable {
 
     public void setMaxConcurrentCleanUps(int nThreads) {
         if (nThreads <= 0) {
-            throw new IllegalArgumentException(
-                    "maxConcurrentCleanUps shall be a positive integer: " + nThreads);
+            throw new IllegalArgumentException("maxConcurrentCleanUps shall be a positive integer: " + nThreads);
         }
         this.maxConcurrentCleanUps = nThreads;
     }

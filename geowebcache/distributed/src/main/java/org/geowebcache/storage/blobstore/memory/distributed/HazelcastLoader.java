@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2019
  */
@@ -33,12 +32,11 @@ import org.geotools.xml.XMLUtils;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * This class is used for handling configuration of the Hazelcast cluster. User can directly inject
- * an Hazelcast instance or can setup a file called hazelcast.xml and define its directory with the
- * hazelcast.config.dir Java property. Note that the configuration must contain a map with name
- * "CacheProviderMap" with a specific size in MB, an eviction policy equal to LRU or LFU. Also if
- * NearCache is enabled, user must be careful that the max size is not bigger or equal to
- * Integer.MAX_VALUE
+ * This class is used for handling configuration of the Hazelcast cluster. User can directly inject an Hazelcast
+ * instance or can setup a file called hazelcast.xml and define its directory with the hazelcast.config.dir Java
+ * property. Note that the configuration must contain a map with name "CacheProviderMap" with a specific size in MB, an
+ * eviction policy equal to LRU or LFU. Also if NearCache is enabled, user must be careful that the max size is not
+ * bigger or equal to Integer.MAX_VALUE
  *
  * @author Nicola Lagomarsini Geosolutions
  */
@@ -129,11 +127,10 @@ public class HazelcastLoader implements InitializingBean {
     }
 
     /**
-     * Validation for an input {@link Config} object provided. This method ensures that the input
-     * configuration contains a map with name "CacheProviderMap", contains a size configuration in
-     * Mb and related to the used Heap size and has an eviction policy equal to LRU or LFU. If a
-     * NearCache object is defined it cannot have max size greater or equal to {@link
-     * Integer}.MAX_VALUE
+     * Validation for an input {@link Config} object provided. This method ensures that the input configuration contains
+     * a map with name "CacheProviderMap", contains a size configuration in Mb and related to the used Heap size and has
+     * an eviction policy equal to LRU or LFU. If a NearCache object is defined it cannot have max size greater or equal
+     * to {@link Integer}.MAX_VALUE
      */
     private boolean configAccepted(Config config) {
         boolean configAccepted = false;
@@ -142,18 +139,13 @@ public class HazelcastLoader implements InitializingBean {
                 LOGGER.fine("Checking configuration");
             }
             // Check if the cache map is present
-            if (config.getMapConfigs()
-                    .containsKey(HazelcastCacheProvider.HAZELCAST_MAP_DEFINITION)) {
-                MapConfig mapConfig =
-                        config.getMapConfig(HazelcastCacheProvider.HAZELCAST_MAP_DEFINITION);
+            if (config.getMapConfigs().containsKey(HazelcastCacheProvider.HAZELCAST_MAP_DEFINITION)) {
+                MapConfig mapConfig = config.getMapConfig(HazelcastCacheProvider.HAZELCAST_MAP_DEFINITION);
                 // Check size policy
                 boolean sizeDefined = mapConfig.getEvictionConfig().getSize() > 0;
                 boolean policyExists =
-                        mapConfig.getEvictionConfig().getEvictionPolicy()
-                                != MapConfig.DEFAULT_EVICTION_POLICY;
-                boolean sizeFromHeap =
-                        mapConfig.getEvictionConfig().getMaxSizePolicy()
-                                == MaxSizePolicy.USED_HEAP_SIZE;
+                        mapConfig.getEvictionConfig().getEvictionPolicy() != MapConfig.DEFAULT_EVICTION_POLICY;
+                boolean sizeFromHeap = mapConfig.getEvictionConfig().getMaxSizePolicy() == MaxSizePolicy.USED_HEAP_SIZE;
 
                 // Check Near Cache size
                 boolean nearCacheAccepted = true;

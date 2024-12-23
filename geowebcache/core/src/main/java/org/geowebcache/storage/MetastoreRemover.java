@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2019
  */
@@ -111,155 +110,133 @@ public class MetastoreRemover {
                         + "     join parameters on parameters.id = tiles.parameters_id\n"
                         + "group by layer, gridset, z, parameters, parameters_id";
 
-        final long total =
-                Optional.ofNullable(
-                                template.queryForObject(
-                                        "select count(*) from (" + query + ")", Long.class))
-                        .orElse(0l);
+        final long total = Optional.ofNullable(
+                        template.queryForObject("select count(*) from (" + query + ")", Long.class))
+                .orElse(0l);
         log.info("Migrating " + total + " parameters from the metastore to the file system");
-        template.query(
-                query,
-                new RowCallbackHandler() {
+        template.query(query, new RowCallbackHandler() {
 
-                    long count = 0;
+            long count = 0;
 
-                    @Override
-                    public void processRow(ResultSet rs) throws SQLException {
-                        String layer = rs.getString(1);
-                        String gridset = rs.getString(2);
-                        int z = rs.getInt(3);
-                        String paramsKvp = rs.getString(4);
-                        String paramsId = rs.getString(5);
+            @Override
+            public void processRow(ResultSet rs) throws SQLException {
+                String layer = rs.getString(1);
+                String gridset = rs.getString(2);
+                int z = rs.getInt(3);
+                String paramsKvp = rs.getString(4);
+                String paramsId = rs.getString(5);
 
-                        String sha = getParamsSha1(paramsKvp);
+                String sha = getParamsSha1(paramsKvp);
 
-                        // move the folders containing params
-                        File origin = new File(buildFolderPath(root, layer, gridset, z, paramsId));
-                        File destination = new File(buildFolderPath(root, layer, gridset, z, sha));
-                        org.geowebcache.util.FileUtils.renameFile(origin, destination);
+                // move the folders containing params
+                File origin = new File(buildFolderPath(root, layer, gridset, z, paramsId));
+                File destination = new File(buildFolderPath(root, layer, gridset, z, sha));
+                org.geowebcache.util.FileUtils.renameFile(origin, destination);
 
-                        count++;
-                        if (count % 1000 == 0 || count >= total) {
-                            log.info(
-                                    "Migrated "
-                                            + count
-                                            + "/"
-                                            + total
-                                            + " parameters from the metastore to the file system");
-                        }
+                count++;
+                if (count % 1000 == 0 || count >= total) {
+                    log.info("Migrated " + count + "/" + total + " parameters from the metastore to the file system");
+                }
+            }
+
+            private String buildFolderPath(final File root, String layer, String gridset, int z, String paramsId) {
+                // build the old path
+                StringBuilder path = new StringBuilder();
+                path.append(root.getPath());
+                path.append(File.separatorChar);
+                appendFiltered(layer, path);
+                path.append(File.separatorChar);
+                FilePathUtils.appendGridsetZoomLevelDir(gridset, z, path);
+                path.append('_');
+                path.append(paramsId);
+                path.append(File.separatorChar);
+
+                return path.toString();
+            }
+
+            private String getParamsSha1(String paramsKvp) {
+                Map<String, String> params = toMap(paramsKvp);
+                return ParametersUtils.getId(params);
+            }
+
+            /**
+             * Parses the param list stored in the db to a parameter list (since this is coming from the database the
+             * assumption is that the contents are sane)
+             */
+            private Map<String, String> toMap(String paramsKvp) {
+                // TODO: wondering, shall we URL decode the values??
+                Map<String, String> result = new HashMap<>();
+                String[] kvps = paramsKvp.split("&");
+                for (String kvp : kvps) {
+                    if (kvp != null && !"".equals(kvp)) {
+                        String[] kv = kvp.split("=");
+                        result.put(kv[0], kv[1]);
                     }
+                }
 
-                    private String buildFolderPath(
-                            final File root, String layer, String gridset, int z, String paramsId) {
-                        // build the old path
-                        StringBuilder path = new StringBuilder();
-                        path.append(root.getPath());
-                        path.append(File.separatorChar);
-                        appendFiltered(layer, path);
-                        path.append(File.separatorChar);
-                        FilePathUtils.appendGridsetZoomLevelDir(gridset, z, path);
-                        path.append('_');
-                        path.append(paramsId);
-                        path.append(File.separatorChar);
-
-                        return path.toString();
-                    }
-
-                    private String getParamsSha1(String paramsKvp) {
-                        Map<String, String> params = toMap(paramsKvp);
-                        return ParametersUtils.getId(params);
-                    }
-
-                    /**
-                     * Parses the param list stored in the db to a parameter list (since this is
-                     * coming from the database the assumption is that the contents are sane)
-                     */
-                    private Map<String, String> toMap(String paramsKvp) {
-                        // TODO: wondering, shall we URL decode the values??
-                        Map<String, String> result = new HashMap<>();
-                        String[] kvps = paramsKvp.split("&");
-                        for (String kvp : kvps) {
-                            if (kvp != null && !"".equals(kvp)) {
-                                String[] kv = kvp.split("=");
-                                result.put(kv[0], kv[1]);
-                            }
-                        }
-
-                        return result;
-                    }
-                });
+                return result;
+            }
+        });
     }
 
     private void migrateTileDates(JdbcTemplate template, final FilePathGenerator generator) {
-        String query =
-                "select layers.value as layer, gridsets.value as gridset, "
-                        + "tiles.parameters_id, tiles.z, tiles.x, tiles.y, created, formats.value as format \n"
-                        + "from tiles join layers on layers.id = tiles.layer_id \n"
-                        + "join gridsets on gridsets.id = tiles.gridset_id \n"
-                        + "join formats on formats.id = tiles.format_id \n"
-                        + "order by layer_id, parameters_id, gridset, z, x, y";
+        String query = "select layers.value as layer, gridsets.value as gridset, "
+                + "tiles.parameters_id, tiles.z, tiles.x, tiles.y, created, formats.value as format \n"
+                + "from tiles join layers on layers.id = tiles.layer_id \n"
+                + "join gridsets on gridsets.id = tiles.gridset_id \n"
+                + "join formats on formats.id = tiles.format_id \n"
+                + "order by layer_id, parameters_id, gridset, z, x, y";
 
-        final long total =
-                Optional.ofNullable(
-                                template.queryForObject(
-                                        "select count(*) from (" + query + ")", Long.class))
-                        .orElse(0l);
-        log.info(
-                "Migrating "
-                        + total
-                        + " tile creation dates from the metastore to the file system");
+        final long total = Optional.ofNullable(
+                        template.queryForObject("select count(*) from (" + query + ")", Long.class))
+                .orElse(0l);
+        log.info("Migrating " + total + " tile creation dates from the metastore to the file system");
 
-        template.query(
-                query,
-                new RowCallbackHandler() {
+        template.query(query, new RowCallbackHandler() {
 
-                    int count = 0;
+            int count = 0;
 
-                    @Override
-                    public void processRow(ResultSet rs) throws SQLException {
-                        // read the result set
-                        String layer = rs.getString(1);
-                        String gridset = rs.getString(2);
-                        String paramsId = rs.getString(3);
-                        long z = rs.getLong(4);
-                        long x = rs.getLong(5);
-                        long y = rs.getLong(6);
-                        long created = rs.getLong(7);
-                        String format = rs.getString(8);
+            @Override
+            public void processRow(ResultSet rs) throws SQLException {
+                // read the result set
+                String layer = rs.getString(1);
+                String gridset = rs.getString(2);
+                String paramsId = rs.getString(3);
+                long z = rs.getLong(4);
+                long x = rs.getLong(5);
+                long y = rs.getLong(6);
+                long created = rs.getLong(7);
+                String format = rs.getString(8);
 
-                        // create the tile and thus the tile path
-                        TileObject tile =
-                                TileObject.createCompleteTileObject(
-                                        layer, new long[] {x, y, z}, gridset, format, null, null);
-                        tile.setParametersId(paramsId);
-                        try {
-                            File file = generator.tilePath(tile, MimeType.createFromFormat(format));
+                // create the tile and thus the tile path
+                TileObject tile =
+                        TileObject.createCompleteTileObject(layer, new long[] {x, y, z}, gridset, format, null, null);
+                tile.setParametersId(paramsId);
+                try {
+                    File file = generator.tilePath(tile, MimeType.createFromFormat(format));
 
-                            // update the last modified according to the date
-                            if (file.exists()) {
-                                file.setLastModified(created);
-                            }
-                        } catch (MimeException e) {
-                            log.log(
-                                    Level.SEVERE,
-                                    "Failed to locate mime type for format '"
-                                            + format
-                                            + "', this should never happen!");
-                        } catch (GeoWebCacheException e) {
-                            log.log(Level.SEVERE, "Failed to compute tile path", e);
-                        }
-
-                        count++;
-                        if (count % 10000 == 0 || count >= total) {
-                            log.info(
-                                    "Migrated "
-                                            + count
-                                            + "/"
-                                            + total
-                                            + " tile creation dates from the metastore to the file system");
-                        }
+                    // update the last modified according to the date
+                    if (file.exists()) {
+                        file.setLastModified(created);
                     }
-                });
+                } catch (MimeException e) {
+                    log.log(
+                            Level.SEVERE,
+                            "Failed to locate mime type for format '" + format + "', this should never happen!");
+                } catch (GeoWebCacheException e) {
+                    log.log(Level.SEVERE, "Failed to compute tile path", e);
+                }
+
+                count++;
+                if (count % 10000 == 0 || count >= total) {
+                    log.info("Migrated "
+                            + count
+                            + "/"
+                            + total
+                            + " tile creation dates from the metastore to the file system");
+                }
+            }
+        });
     }
 
     private String getVariable(String variable, String defaultValue) {
@@ -271,16 +248,13 @@ public class MetastoreRemover {
         }
     }
 
-    private Connection getMetaStoreConnection(File root)
-            throws ClassNotFoundException, SQLException {
+    private Connection getMetaStoreConnection(File root) throws ClassNotFoundException, SQLException {
         try {
             String username = getVariable(DefaultStorageFinder.GWC_METASTORE_USERNAME, "sa");
             String password = getVariable(DefaultStorageFinder.GWC_METASTORE_PASSWORD, "");
             String defaultJDBCURL = getDefaultJDBCURL(root);
-            String jdbcString =
-                    getVariable(DefaultStorageFinder.GWC_METASTORE_JDBC_URL, defaultJDBCURL);
-            String driver =
-                    getVariable(DefaultStorageFinder.GWC_METASTORE_DRIVER_CLASS, "org.h2.Driver");
+            String jdbcString = getVariable(DefaultStorageFinder.GWC_METASTORE_JDBC_URL, defaultJDBCURL);
+            String driver = getVariable(DefaultStorageFinder.GWC_METASTORE_DRIVER_CLASS, "org.h2.Driver");
 
             if (defaultJDBCURL.equals(jdbcString)) {
                 defaultLocation = true;
@@ -303,15 +277,11 @@ public class MetastoreRemover {
             return DriverManager.getConnection(jdbcString, username, password);
         } catch (ClassNotFoundException e) {
             Level logLevel = Level.WARNING;
-            if (getVariable(DefaultStorageFinder.GWC_METASTORE_DRIVER_CLASS, null) == null)
-                logLevel = Level.FINE;
+            if (getVariable(DefaultStorageFinder.GWC_METASTORE_DRIVER_CLASS, null) == null) logLevel = Level.FINE;
             log.log(logLevel, "Could not find the metastore driver, skipping migration", e);
             return null;
         } catch (SQLException e) {
-            log.log(
-                    Level.WARNING,
-                    "Failed to connect to the legacy metastore, skipping migration",
-                    e);
+            log.log(Level.WARNING, "Failed to connect to the legacy metastore, skipping migration", e);
             return null;
         }
     }
@@ -324,8 +294,7 @@ public class MetastoreRemover {
 
     private String getDefaultJDBCURL(File root) {
         String path = root.getPath() + File.separator + "meta_jdbc_h2";
-        String jdbcString =
-                "jdbc:h2:file:" + path + File.separator + "gwc_metastore" + ";TRACE_LEVEL_FILE=0";
+        String jdbcString = "jdbc:h2:file:" + path + File.separator + "gwc_metastore" + ";TRACE_LEVEL_FILE=0";
         return jdbcString;
     }
 }

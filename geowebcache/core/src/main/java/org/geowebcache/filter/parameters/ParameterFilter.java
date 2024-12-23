@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, The Open Planning Project, Copyright 2009
  */
@@ -73,12 +72,11 @@ public abstract class ParameterFilter implements Serializable, Cloneable {
     /**
      * Checks whether a given parameter value applies to this filter.
      *
-     * <p>Calls {@link #apply(String)} and checks for {@link ParameterException}. Subclasses should
-     * override if a more efficient check is available.
+     * <p>Calls {@link #apply(String)} and checks for {@link ParameterException}. Subclasses should override if a more
+     * efficient check is available.
      *
      * @param parameterValue the value to check if applies to this parameter filter
-     * @return {@code true} if {@code parameterValue} is valid according to this filter, {@code
-     *     false} otherwise
+     * @return {@code true} if {@code parameterValue} is valid according to this filter, {@code false} otherwise
      */
     public boolean applies(@Nullable String parameterValue) {
         try {
@@ -92,11 +90,9 @@ public abstract class ParameterFilter implements Serializable, Cloneable {
     /**
      * Apply the filter to the specified parameter value.
      *
-     * @param str the value of the parameter to filter. {@literal null} if the parameter was
-     *     unspecified.
+     * @param str the value of the parameter to filter. {@literal null} if the parameter was unspecified.
      * @return one of the legal values
-     * @throws ParameterException if the parameter value could not be reduced to one of the legal
-     *     values.
+     * @throws ParameterException if the parameter value could not be reduced to one of the legal values.
      */
     public abstract String apply(@Nullable String str) throws ParameterException;
 
@@ -111,8 +107,7 @@ public abstract class ParameterFilter implements Serializable, Cloneable {
     public void setKey(String key) {
         Preconditions.checkNotNull(key);
         Preconditions.checkArgument(!key.isEmpty(), "ParameterFilter key must be non-empty");
-        Preconditions.checkState(
-                this.key == null, "The key for this ParameterFilter has already been set");
+        Preconditions.checkState(this.key == null, "The key for this ParameterFilter has already been set");
         this.key = key;
     }
 

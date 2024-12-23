@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, OpenGeo, Copyright 2009
  * @author David Vick, Boundless 2017
@@ -32,8 +31,7 @@ public class FileRasterFilterUpdate extends XmlFilterUpdate {
     public void runUpdate(RequestFilter filter, TileLayer tl) throws IOException, RestException {
         if (!(filter instanceof WMSRasterFilter)) {
             throw new RestException(
-                    "The filter " + filter.getName() + " is not a WMSRasterFilter.",
-                    HttpStatus.BAD_REQUEST);
+                    "The filter " + filter.getName() + " is not a WMSRasterFilter.", HttpStatus.BAD_REQUEST);
         }
 
         WMSRasterFilter wmsFilter = (WMSRasterFilter) filter;
@@ -55,8 +53,7 @@ public class FileRasterFilterUpdate extends XmlFilterUpdate {
             }
         } catch (GeoWebCacheException e) {
             throw new RestException(
-                    "Error updating " + wmsFilter.getName() + ": " + e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+                    "Error updating " + wmsFilter.getName() + ": " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Torben Barsballe (Boundless), 2018
  */
@@ -54,24 +53,17 @@ import org.springframework.web.context.WebApplicationContext;
 /**
  * Spring MVC Converter for GeoWebCache
  *
- * <p>Supports conversion of {@link BlobStoreInfo}, {@link GridSet}, {@link TileLayer}, {@link
- * ServerConfigurationPOJO}, and {@link XStreamListAliasWrapper} containing lists of those classes
- * to and from JSON and XML via XStream
+ * <p>Supports conversion of {@link BlobStoreInfo}, {@link GridSet}, {@link TileLayer}, {@link ServerConfigurationPOJO},
+ * and {@link XStreamListAliasWrapper} containing lists of those classes to and from JSON and XML via XStream
  *
  * @param <T>
  */
-public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
-        implements HttpMessageConverter<T> {
+public class GWCConverter<T> extends AbstractHttpMessageConverter<T> implements HttpMessageConverter<T> {
 
     private final WebApplicationContext context;
 
-    public final List<Class> supportedClasses =
-            Collections.unmodifiableList(
-                    Arrays.asList(
-                            BlobStoreInfo.class,
-                            GridSet.class,
-                            TileLayer.class,
-                            ServerConfigurationPOJO.class));
+    public final List<Class> supportedClasses = Collections.unmodifiableList(
+            Arrays.asList(BlobStoreInfo.class, GridSet.class, TileLayer.class, ServerConfigurationPOJO.class));
 
     public GWCConverter(ApplicationContextProvider appCtx) {
         super(MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML);
@@ -105,12 +97,8 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
             throws IOException, HttpMessageNotReadableException {
         MediaType contentType = httpInputMessage.getHeaders().getContentType();
 
-        XStream xs =
-                configureXStream(
-                        XMLConfiguration.getConfiguredXStreamWithContext(
-                                new GeoWebCacheXStream(new DomDriver()),
-                                context,
-                                ContextualConfigurationProvider.Context.REST));
+        XStream xs = configureXStream(XMLConfiguration.getConfiguredXStreamWithContext(
+                new GeoWebCacheXStream(new DomDriver()), context, ContextualConfigurationProvider.Context.REST));
 
         T object;
         try {
@@ -126,8 +114,7 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
                 writer.close();
                 object = (T) xs.fromXML(writer.toString());
             } else {
-                throw new RestException(
-                        "Unknown or missing format", HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+                throw new RestException("Unknown or missing format", HttpStatus.UNSUPPORTED_MEDIA_TYPE);
             }
             if (object instanceof XMLGridSet) {
                 return (T) ((XMLGridSet) object).makeGridSet();
@@ -142,8 +129,7 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
                 throw (RuntimeException) cause;
             }
             if (cause != null) {
-                throw new RestException(
-                        cause.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, cause);
+                throw new RestException(cause.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, cause);
             } else {
                 throw new RestException(
                         xstreamExceptionWrapper.getMessage(),
@@ -158,8 +144,7 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
             throws IOException, HttpMessageNotWritableException {
         MediaType contentType = httpOutputMessage.getHeaders().getContentType();
 
-        try (OutputStreamWriter outputWriter =
-                new OutputStreamWriter(httpOutputMessage.getBody())) {
+        try (OutputStreamWriter outputWriter = new OutputStreamWriter(httpOutputMessage.getBody())) {
             if (MediaType.APPLICATION_XML.isCompatibleWith(contentType)
                     || MediaType.TEXT_XML.isCompatibleWith(contentType)) {
                 XStream xs = new GeoWebCacheXStream();
@@ -174,21 +159,16 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
                     xsObject = new XMLGridSet((GridSet) object);
                 }
 
-                xs =
-                        configureXStream(
-                                XMLConfiguration.getConfiguredXStreamWithContext(
-                                        xs, context, ContextualConfigurationProvider.Context.REST));
-                String xmlText =
-                        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + xs.toXML(xsObject);
+                xs = configureXStream(XMLConfiguration.getConfiguredXStreamWithContext(
+                        xs, context, ContextualConfigurationProvider.Context.REST));
+                String xmlText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + xs.toXML(xsObject);
 
                 outputWriter.write(xmlText);
             } else if (MediaType.APPLICATION_JSON.isCompatibleWith(contentType)) {
-                XStream xs =
-                        configureXStream(
-                                XMLConfiguration.getConfiguredXStreamWithContext(
-                                        new GeoWebCacheXStream(new JsonHierarchicalStreamDriver()),
-                                        context,
-                                        ContextualConfigurationProvider.Context.REST));
+                XStream xs = configureXStream(XMLConfiguration.getConfiguredXStreamWithContext(
+                        new GeoWebCacheXStream(new JsonHierarchicalStreamDriver()),
+                        context,
+                        ContextualConfigurationProvider.Context.REST));
                 Object jsonObject;
                 if (object instanceof XStreamListAliasWrapper) {
                     jsonObject = new JSONArray(((XStreamListAliasWrapper) object).object);
@@ -200,8 +180,7 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T>
 
                 outputWriter.write(jsonObject.toString());
             } else {
-                throw new RestException(
-                        "Unknown or missing format", HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+                throw new RestException("Unknown or missing format", HttpStatus.UNSUPPORTED_MEDIA_TYPE);
             }
         } catch (JSONException e) {
             throw new IOException(e);

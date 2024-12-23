@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Marius Suta / The Open Planning Project 2008
  * @author Arne Kepp / The Open Planning Project 2009
@@ -56,8 +55,7 @@ public abstract class GWCSeedingController extends GWCController {
     public abstract ResponseEntity<?> doGet(HttpServletRequest request) throws RestException;
 
     /** Handle a POST request */
-    public void doPost(HttpServletRequest req, HttpServletResponse resp)
-            throws RestException, IOException {
+    public void doPost(HttpServletRequest req, HttpServletResponse resp) throws RestException, IOException {
         String formatExtension = req.getParameter("extension");
 
         XStream xs = configXStream(new GeoWebCacheXStream(new DomDriver()));
@@ -70,28 +68,25 @@ public abstract class GWCSeedingController extends GWCController {
             obj = xs.fromXML(convertJson(req.getInputStream().toString()));
         } else {
             throw new RestException(
-                    "Format extension unknown or not specified: " + formatExtension,
-                    HttpStatus.BAD_REQUEST);
+                    "Format extension unknown or not specified: " + formatExtension, HttpStatus.BAD_REQUEST);
         }
 
         handleRequest(req, resp, obj);
     }
 
-    protected abstract void handleRequest(
-            HttpServletRequest req, HttpServletResponse resp, Object obj);
+    protected abstract void handleRequest(HttpServletRequest req, HttpServletResponse resp, Object obj);
 
     /**
      * Deserializing a json string is more complicated.
      *
-     * <p>XStream does not natively support it. Rather, it uses a JettisonMappedXmlDriver to convert
-     * to intermediate xml and then deserializes that into the desired object. At this time, there
-     * is a known issue with the Jettison driver involving elements that come after an array in the
-     * json string.
+     * <p>XStream does not natively support it. Rather, it uses a JettisonMappedXmlDriver to convert to intermediate xml
+     * and then deserializes that into the desired object. At this time, there is a known issue with the Jettison driver
+     * involving elements that come after an array in the json string.
      *
      * <p>http://jira.codehaus.org/browse/JETTISON-48
      *
-     * <p>The code below is a hack: it treats the json string as text, then converts it to the
-     * intermediate xml and then deserializes that into the SeedRequest object.
+     * <p>The code below is a hack: it treats the json string as text, then converts it to the intermediate xml and then
+     * deserializes that into the SeedRequest object.
      */
     protected String convertJson(String entityText) throws IOException {
         HierarchicalStreamDriver driver = new JettisonMappedXmlDriver();

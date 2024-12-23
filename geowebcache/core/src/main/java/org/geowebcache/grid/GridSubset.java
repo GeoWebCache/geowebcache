@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, OpenGeo, Copyright 2009
  */
@@ -41,10 +40,7 @@ public class GridSubset {
     private final Integer maxCachedZoom;
 
     protected GridSubset(
-            GridSet gridSet,
-            Map<Integer, GridCoverage> coverages,
-            BoundingBox originalExtent,
-            boolean fullCoverage) {
+            GridSet gridSet, Map<Integer, GridCoverage> coverages, BoundingBox originalExtent, boolean fullCoverage) {
         this(gridSet, coverages, originalExtent, fullCoverage, null, null);
     }
 
@@ -99,8 +95,7 @@ public class GridSubset {
      * Indicates whether this gridsubset coverage contains the given tile
      *
      * @param index the tile index to check for coverage inclusion
-     * @return {@code true} if {@code index} is inside this grid subset's coverage, {@code false}
-     *     otherwise
+     * @return {@code true} if {@code index} is inside this grid subset's coverage, {@code false} otherwise
      */
     public boolean covers(long[] index) {
         final int level = (int) index[2];
@@ -109,10 +104,7 @@ public class GridSubset {
             return false;
         }
 
-        if (index[0] >= coverage[0]
-                && index[0] <= coverage[2]
-                && index[1] >= coverage[1]
-                && index[1] <= coverage[3]) {
+        if (index[0] >= coverage[0] && index[0] <= coverage[2] && index[1] >= coverage[1] && index[1] <= coverage[3]) {
             return true;
         }
 
@@ -135,8 +127,7 @@ public class GridSubset {
     public void checkTileDimensions(int width, int height) throws TileDimensionsMismatchException {
 
         if (width != gridSet.getTileWidth() || height != gridSet.getTileHeight()) {
-            throw new TileDimensionsMismatchException(
-                    width, height, gridSet.getTileWidth(), gridSet.getTileWidth());
+            throw new TileDimensionsMismatchException(width, height, gridSet.getTileWidth(), gridSet.getTileWidth());
         }
     }
 
@@ -332,14 +323,12 @@ public class GridSubset {
 
         if ((idx - firstLevel + 1) <= zoomStop) {
             // Check whether this grid is doubling
-            double resolutionCheck =
-                    gridSet.getGrid(idx).getResolution() / 2
-                            - gridSet.getGrid(idx + 1).getResolution();
+            double resolutionCheck = gridSet.getGrid(idx).getResolution() / 2
+                    - gridSet.getGrid(idx + 1).getResolution();
 
             if (Math.abs(resolutionCheck) > gridSet.getGrid(idx + 1).getResolution() * 0.025) {
                 throw new GeoWebCacheException(
-                        "The resolution is not decreasing by a factor of two for "
-                                + this.getName());
+                        "The resolution is not decreasing by a factor of two for " + this.getName());
             } else {
                 long[] coverage = getCoverage(idx + 1);
 
@@ -385,8 +374,8 @@ public class GridSubset {
     }
 
     /**
-     * WMTS is indexed from top left hand corner. We will still return {minx,miny,maxx,maxy}, but
-     * note that the y positions have been reversed
+     * WMTS is indexed from top left hand corner. We will still return {minx,miny,maxx,maxy}, but note that the y
+     * positions have been reversed
      */
     // TODO: this is specific to WMTS, move it somewhere on the wmts module
     // TODO: Does this need to be public?

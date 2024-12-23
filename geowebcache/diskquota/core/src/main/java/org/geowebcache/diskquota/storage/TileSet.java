@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan (OpenGeo) 2010
  */
@@ -45,8 +44,8 @@ public class TileSet implements Comparable<TileSet> {
      * @param layerName layer name, non null
      * @param gridsetId gridset id, non null
      * @param blobFormat blob format, non null
-     * @param parametersId extra tileset scope identifier, may be null, indicating the default
-     *     tileset for the given layer/gridset/format
+     * @param parametersId extra tileset scope identifier, may be null, indicating the default tileset for the given
+     *     layer/gridset/format
      */
     public TileSet(String layerName, String gridsetId, String blobFormat, String parametersId) {
         this.layerName = layerName;
@@ -59,27 +58,19 @@ public class TileSet implements Comparable<TileSet> {
     }
 
     public static void computeId(
-            String layerName,
-            String gridsetId,
-            String blobFormat,
-            String parametersId,
-            StringBuilder idTarget) {
+            String layerName, String gridsetId, String blobFormat, String parametersId, StringBuilder idTarget) {
         idTarget.append(layerName).append('#').append(gridsetId).append('#').append(blobFormat);
         if (parametersId != null) {
             idTarget.append('#').append(parametersId);
         }
     }
 
-    /**
-     * Initializes the other fields of the tileset from an id with the
-     * layer#gridset#format[#paramId] structure
-     */
+    /** Initializes the other fields of the tileset from an id with the layer#gridset#format[#paramId] structure */
     public void initFromId() {
         String[] splitted = key.split("#");
         if (splitted.length < 3 || splitted.length > 4) {
             throw new IllegalArgumentException(
-                    "Invalid key for standard tile set, "
-                            + "it should have the layer#gridset#format[#paramId]");
+                    "Invalid key for standard tile set, " + "it should have the layer#gridset#format[#paramId]");
         }
 
         this.layerName = splitted[0];

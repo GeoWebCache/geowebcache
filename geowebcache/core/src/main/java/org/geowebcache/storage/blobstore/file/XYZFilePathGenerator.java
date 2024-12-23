@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Andrea Aime, GeoSolutions, Copyright 2019
  */
@@ -55,8 +54,7 @@ public class XYZFilePathGenerator implements FilePathGenerator {
     protected final String cacheRoot;
     private final Convention convention;
 
-    public XYZFilePathGenerator(
-            String cacheRoot, TileLayerDispatcher layers, Convention convention) {
+    public XYZFilePathGenerator(String cacheRoot, TileLayerDispatcher layers, Convention convention) {
         this.cacheRoot = cacheRoot;
         this.layers = layers;
         this.convention = convention;
@@ -110,12 +108,11 @@ public class XYZFilePathGenerator implements FilePathGenerator {
     }
 
     /**
-     * This method abstract going from internal tile grid (TMS) to storage tile grid (could be
-     * slippy). One method is all it needs only because the TMS vs Slippy conventions have
-     * symmetrical map, e.g., the same extact operation goes both directions
+     * This method abstract going from internal tile grid (TMS) to storage tile grid (could be slippy). One method is
+     * all it needs only because the TMS vs Slippy conventions have symmetrical map, e.g., the same extact operation
+     * goes both directions
      */
-    protected long getY(String layerName, String gridSetId, long x, long y, int z)
-            throws GeoWebCacheException {
+    protected long getY(String layerName, String gridSetId, long x, long y, int z) throws GeoWebCacheException {
         if (convention == Convention.TMS) {
             return y;
         } else {
@@ -128,8 +125,7 @@ public class XYZFilePathGenerator implements FilePathGenerator {
     }
 
     @Override
-    public void visitRange(File layerDirectory, TileRange range, TileFileVisitor visitor)
-            throws StorageException {
+    public void visitRange(File layerDirectory, TileRange range, TileFileVisitor visitor) throws StorageException {
         final FilenameFilter tileFinder = new XYZFilePathFilter(range, this);
         // list directories with gridset and param identifiers
         for (File gridsetParamDir : listFilesNullSafe(layerDirectory, tileFinder)) {

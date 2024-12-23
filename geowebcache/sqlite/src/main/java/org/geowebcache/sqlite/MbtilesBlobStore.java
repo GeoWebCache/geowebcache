@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Nuno Oliveira, GeoSolutions S.A.S., Copyright 2016
  */
@@ -65,8 +64,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
     private static Logger LOGGER = Logging.getLogger(MbtilesBlobStore.class.getName());
 
     // pattern for matching the name of a file that contains mbtiles metadata (layerName.properties)
-    private static final Pattern MBTILES_METADATA_FILE_NAME_PATTERN =
-            Pattern.compile("(.*?)\\.properties");
+    private static final Pattern MBTILES_METADATA_FILE_NAME_PATTERN = Pattern.compile("(.*?)\\.properties");
 
     // sqlite database that will contain layers metadata
     private final File metadataFile;
@@ -92,8 +90,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         // caution this constructor will create a new connection pool
         this(
                 configuration,
-                new SqliteConnectionManager(
-                        configuration.getPoolSize(), configuration.getPoolReaperIntervalMs()));
+                new SqliteConnectionManager(configuration.getPoolSize(), configuration.getPoolReaperIntervalMs()));
     }
 
     public MbtilesBlobStore(MbtilesInfo configuration, SqliteConnectionManager connectionManager)
@@ -105,8 +102,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         boolean empty = true;
 
         if (configuration.getRootDirectoryFile().exists()) {
-            try (DirectoryStream<Path> ds =
-                    Files.newDirectoryStream(configuration.getRootDirectoryFile().toPath())) {
+            try (DirectoryStream<Path> ds = Files.newDirectoryStream(
+                    configuration.getRootDirectoryFile().toPath())) {
                 for (@SuppressWarnings("unused") Path p : ds) {
                     LOGGER.severe("Found file: " + p);
                     empty = false;
@@ -116,14 +113,10 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                 throw e;
             } catch (IOException e) {
                 throw new StorageException(
-                        "Error while checking that "
-                                + configuration.getRootDirectory()
-                                + " is empty",
-                        e);
+                        "Error while checking that " + configuration.getRootDirectory() + " is empty", e);
             }
         } else {
-            throw new StorageException(
-                    "Root directory file does not exist: " + configuration.getRootDirectoryFile());
+            throw new StorageException("Root directory file does not exist: " + configuration.getRootDirectoryFile());
         }
 
         CompositeBlobStore.checkSuitability(configuration.getRootDirectory(), exists, empty);
@@ -136,10 +129,9 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
 
         initMbtilesLayersMetadata(configuration.getMbtilesMetadataDirectory());
         if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info(
-                    String.format(
-                            "MBTiles blob store initiated: [eagerDelete='%b', useCreateTime='%b'.",
-                            eagerDelete, useCreateTime));
+            LOGGER.info(String.format(
+                    "MBTiles blob store initiated: [eagerDelete='%b', useCreateTime='%b'.",
+                    eagerDelete, useCreateTime));
         }
     }
 
@@ -155,70 +147,61 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         }
         initDatabaseFileIfNeeded(file, tile.getLayerName(), tile.getBlobFormat());
         // do work in write mode
-        connectionManager.doWork(
-                file,
-                false,
-                connection -> {
-                    // instantiating geotools needed objects
-                    MBTilesFile mbtiles = GeoToolsMbtilesUtils.getMBTilesFile(connection, file);
-                    MBTilesTile gtTile =
-                            new MBTilesTile(tile.getXYZ()[2], tile.getXYZ()[0], tile.getXYZ()[1]);
-                    try {
-                        final boolean gzipped = tileIsGzipped(tile);
+        connectionManager.doWork(file, false, connection -> {
+            // instantiating geotools needed objects
+            MBTilesFile mbtiles = GeoToolsMbtilesUtils.getMBTilesFile(connection, file);
+            MBTilesTile gtTile = new MBTilesTile(tile.getXYZ()[2], tile.getXYZ()[0], tile.getXYZ()[1]);
+            try {
+                final boolean gzipped = tileIsGzipped(tile);
 
-                        byte[] bytes;
-                        if (gzipped) {
-                            try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-                                    GZIPOutputStream gzOut = new GZIPOutputStream(byteStream)) {
-                                gzOut.write(Utils.resourceToByteArray(tile.getBlob()));
-                                gzOut.flush();
-                                bytes = byteStream.toByteArray();
-                            }
-                        } else {
-                            bytes = Utils.resourceToByteArray(tile.getBlob());
-                        }
-                        gtTile.setData(bytes);
-
-                        // if necessary getting old data size for listeners
-                        byte[] olData = null;
-                        if (!listeners.isEmpty()) {
-                            olData =
-                                    mbtiles.loadTile(
-                                                    tile.getXYZ()[2],
-                                                    tile.getXYZ()[0],
-                                                    tile.getXYZ()[1])
-                                            .getData();
-                        }
-                        // saving the tile
-                        mbtiles.saveTile(gtTile);
-                        if (useCreateTime) {
-                            // we need to store this tile create time
-                            putTileCreateTime(
-                                    connection,
-                                    tile.getXYZ()[2],
-                                    tile.getXYZ()[0],
-                                    tile.getXYZ()[1],
-                                    System.currentTimeMillis());
-                        }
-                        if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine(String.format("Tile '%s' saved in file '%s'.", tile, file));
-                        }
-                        if (listeners.isEmpty()) {
-                            // no listeners to update we are done
-                            return;
-                        }
-                        if (olData == null) {
-                            // this was new tile
-                            listeners.sendTileStored(tile);
-                        } else {
-                            // this an update
-                            listeners.sendTileUpdated(tile, olData.length);
-                        }
-                    } catch (Exception exception) {
-                        throw Utils.exception(
-                                exception, "Error saving tile '%s' in file '%s'.", tile, file);
+                byte[] bytes;
+                if (gzipped) {
+                    try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+                            GZIPOutputStream gzOut = new GZIPOutputStream(byteStream)) {
+                        gzOut.write(Utils.resourceToByteArray(tile.getBlob()));
+                        gzOut.flush();
+                        bytes = byteStream.toByteArray();
                     }
-                });
+                } else {
+                    bytes = Utils.resourceToByteArray(tile.getBlob());
+                }
+                gtTile.setData(bytes);
+
+                // if necessary getting old data size for listeners
+                byte[] olData = null;
+                if (!listeners.isEmpty()) {
+                    olData = mbtiles.loadTile(tile.getXYZ()[2], tile.getXYZ()[0], tile.getXYZ()[1])
+                            .getData();
+                }
+                // saving the tile
+                mbtiles.saveTile(gtTile);
+                if (useCreateTime) {
+                    // we need to store this tile create time
+                    putTileCreateTime(
+                            connection,
+                            tile.getXYZ()[2],
+                            tile.getXYZ()[0],
+                            tile.getXYZ()[1],
+                            System.currentTimeMillis());
+                }
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine(String.format("Tile '%s' saved in file '%s'.", tile, file));
+                }
+                if (listeners.isEmpty()) {
+                    // no listeners to update we are done
+                    return;
+                }
+                if (olData == null) {
+                    // this was new tile
+                    listeners.sendTileStored(tile);
+                } else {
+                    // this an update
+                    listeners.sendTileUpdated(tile, olData.length);
+                }
+            } catch (Exception exception) {
+                throw Utils.exception(exception, "Error saving tile '%s' in file '%s'.", tile, file);
+            }
+        });
 
         persistParameterMap(tile);
     }
@@ -231,73 +214,50 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         }
         initDatabaseFileIfNeeded(file, tile.getLayerName(), tile.getBlobFormat());
         // do work in readonly mode
-        boolean exists =
-                connectionManager.doWork(
-                        file,
-                        true,
-                        connection -> {
-                            // instantiating geotools mbtiles reader
-                            try (MBTilesFile mbtiles =
-                                    GeoToolsMbtilesUtils.getMBTilesFile(connection, file)) {
+        boolean exists = connectionManager.doWork(file, true, connection -> {
+            // instantiating geotools mbtiles reader
+            try (MBTilesFile mbtiles = GeoToolsMbtilesUtils.getMBTilesFile(connection, file)) {
 
-                                final boolean gzipped = tileIsGzipped(tile);
+                final boolean gzipped = tileIsGzipped(tile);
 
-                                // loading the tile using geotools reader
-                                MBTilesTile gtTile =
-                                        mbtiles.loadTile(
-                                                tile.getXYZ()[2],
-                                                tile.getXYZ()[0],
-                                                tile.getXYZ()[1]);
+                // loading the tile using geotools reader
+                MBTilesTile gtTile = mbtiles.loadTile(tile.getXYZ()[2], tile.getXYZ()[0], tile.getXYZ()[1]);
 
-                                byte[] bytes = gtTile.getData();
-                                if (gtTile.getData() != null) {
-                                    if (gzipped) {
-                                        try (ByteArrayOutputStream byteOut =
-                                                        new ByteArrayOutputStream();
-                                                ByteArrayInputStream byteIn =
-                                                        new ByteArrayInputStream(gtTile.getData());
-                                                GZIPInputStream gzIn =
-                                                        new GZIPInputStream(byteIn)) {
-                                            IOUtils.copy(gzIn, byteOut);
-                                            bytes = byteOut.toByteArray();
-                                        }
-                                    } else {
-                                        bytes = gtTile.getData();
-                                    }
-                                    tile.setBlob(Utils.byteArrayToResource(bytes));
+                byte[] bytes = gtTile.getData();
+                if (gtTile.getData() != null) {
+                    if (gzipped) {
+                        try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+                                ByteArrayInputStream byteIn = new ByteArrayInputStream(gtTile.getData());
+                                GZIPInputStream gzIn = new GZIPInputStream(byteIn)) {
+                            IOUtils.copy(gzIn, byteOut);
+                            bytes = byteOut.toByteArray();
+                        }
+                    } else {
+                        bytes = gtTile.getData();
+                    }
+                    tile.setBlob(Utils.byteArrayToResource(bytes));
 
-                                    if (LOGGER.isLoggable(Level.FINE)) {
-                                        LOGGER.fine(
-                                                String.format(
-                                                        "Tile '%s' found on file '%s'.",
-                                                        tile, file));
-                                    }
-                                    return true;
-                                }
-                            } catch (Exception exception) {
-                                throw Utils.exception(
-                                        exception,
-                                        "Error loading tile '%s' from MBTiles file '%s'.",
-                                        tile,
-                                        file);
-                            }
-                            if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.fine(
-                                        String.format(
-                                                "Tile '%s' not found on file '%s'.", tile, file));
-                            }
-                            return false;
-                        });
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format("Tile '%s' found on file '%s'.", tile, file));
+                    }
+                    return true;
+                }
+            } catch (Exception exception) {
+                throw Utils.exception(exception, "Error loading tile '%s' from MBTiles file '%s'.", tile, file);
+            }
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format("Tile '%s' not found on file '%s'.", tile, file));
+            }
+            return false;
+        });
         if (exists && useCreateTime) {
             // the tile exists and we need to set the create time in the tile object
-            Long createdTime =
-                    getTileCreateTime(file, tile.getXYZ()[2], tile.getXYZ()[0], tile.getXYZ()[1]);
+            Long createdTime = getTileCreateTime(file, tile.getXYZ()[2], tile.getXYZ()[0], tile.getXYZ()[1]);
             if (createdTime == null) {
                 // no create time associated with this tile let's assume the last modified time
                 createdTime = file.lastModified();
                 // update the create time
-                putTileCreateTime(
-                        file, tile.getXYZ()[2], tile.getXYZ()[0], tile.getXYZ()[1], createdTime);
+                putTileCreateTime(file, tile.getXYZ()[2], tile.getXYZ()[0], tile.getXYZ()[1], createdTime);
             }
             tile.setCreated(createdTime);
         } else if (exists) {
@@ -316,63 +276,43 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         if (!file.exists()) {
             // database file doesn't exists so nothing to do
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(
-                        String.format(
-                                "Containing file '%s' for tile '%s' doesn't exists.", file, tile));
+                LOGGER.fine(String.format("Containing file '%s' for tile '%s' doesn't exists.", file, tile));
             }
             return false;
         }
         // do work on write mode
-        return connectionManager.doWork(
-                file,
-                false,
-                connection -> {
-                    // instantiating geotools objects without setting the tile data (this way
-                    // geotools will try to remove the tile)
-                    MBTilesFile mbtiles = GeoToolsMbtilesUtils.getMBTilesFile(connection, file);
-                    MBTilesTile gtTile =
-                            new MBTilesTile(tile.getXYZ()[2], tile.getXYZ()[0], tile.getXYZ()[1]);
-                    try {
-                        // getting tile old data and checking if the tile exists
-                        byte[] olData =
-                                mbtiles.loadTile(
-                                                tile.getXYZ()[2],
-                                                tile.getXYZ()[0],
-                                                tile.getXYZ()[1])
-                                        .getData();
-                        if (olData != null) {
-                            // tile exists so let's remove the tile
-                            tile.setBlobSize(olData.length);
-                            mbtiles.saveTile(gtTile);
-                            // updating the listener if any
-                            listeners.sendTileDeleted(tile);
-                            if (useCreateTime) {
-                                // we care about the create time so let's remove it
-                                deleteTileCreateTime(
-                                        connection,
-                                        tile.getXYZ()[2],
-                                        tile.getXYZ()[0],
-                                        tile.getXYZ()[1]);
-                            }
-                            if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.fine(
-                                        String.format(
-                                                "Tile '%s' deleted from file '%s'.", tile, file));
-                            }
-                            return true;
-                        }
-                    } catch (Exception exception) {
-                        throw Utils.exception(
-                                exception,
-                                "Error deleting tile '%s' from MBTiles file '%s'.",
-                                tile,
-                                file);
+        return connectionManager.doWork(file, false, connection -> {
+            // instantiating geotools objects without setting the tile data (this way
+            // geotools will try to remove the tile)
+            MBTilesFile mbtiles = GeoToolsMbtilesUtils.getMBTilesFile(connection, file);
+            MBTilesTile gtTile = new MBTilesTile(tile.getXYZ()[2], tile.getXYZ()[0], tile.getXYZ()[1]);
+            try {
+                // getting tile old data and checking if the tile exists
+                byte[] olData = mbtiles.loadTile(tile.getXYZ()[2], tile.getXYZ()[0], tile.getXYZ()[1])
+                        .getData();
+                if (olData != null) {
+                    // tile exists so let's remove the tile
+                    tile.setBlobSize(olData.length);
+                    mbtiles.saveTile(gtTile);
+                    // updating the listener if any
+                    listeners.sendTileDeleted(tile);
+                    if (useCreateTime) {
+                        // we care about the create time so let's remove it
+                        deleteTileCreateTime(connection, tile.getXYZ()[2], tile.getXYZ()[0], tile.getXYZ()[1]);
                     }
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("Tile '%s' not found on file '%s'.", tile, file));
+                        LOGGER.fine(String.format("Tile '%s' deleted from file '%s'.", tile, file));
                     }
-                    return false;
-                });
+                    return true;
+                }
+            } catch (Exception exception) {
+                throw Utils.exception(exception, "Error deleting tile '%s' from MBTiles file '%s'.", tile, file);
+            }
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format("Tile '%s' not found on file '%s'.", tile, file));
+            }
+            return false;
+        });
     }
 
     @Override
@@ -382,16 +322,11 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                 metadataFile,
                 "CREATE TABLE IF NOT EXISTS metadata (layerName text, key text, value text, PRIMARY KEY(layerName, key));");
         connectionManager.executeSql(
-                metadataFile,
-                "INSERT OR REPLACE INTO metadata VALUES (?, ?, ?);",
-                layerName,
-                key,
-                value);
+                metadataFile, "INSERT OR REPLACE INTO metadata VALUES (?, ?, ?);", layerName, key, value);
         if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info(
-                    String.format(
-                            "Metadata for layer '%s' for key '%s' inserted or updated on file '%s'.",
-                            layerName, key, metadataFile));
+            LOGGER.info(String.format(
+                    "Metadata for layer '%s' for key '%s' inserted or updated on file '%s'.",
+                    layerName, key, metadataFile));
         }
     }
 
@@ -406,19 +341,16 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                                 // metadata value is available
                                 String value = resultSet.getString(1);
                                 if (LOGGER.isLoggable(Level.FINE)) {
-                                    LOGGER.fine(
-                                            String.format(
-                                                    "Metadata for layer '%s' with key '%s' found '%s'.",
-                                                    layerName, key, value));
+                                    LOGGER.fine(String.format(
+                                            "Metadata for layer '%s' with key '%s' found '%s'.",
+                                            layerName, key, value));
                                 }
                                 return value;
                             }
                             // metadata value not found
                             if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.fine(
-                                        String.format(
-                                                "Metadata for layer '%s' with key '%s' not found.",
-                                                layerName, key));
+                                LOGGER.fine(String.format(
+                                        "Metadata for layer '%s' with key '%s' not found.", layerName, key));
                             }
                             return null;
                         } catch (Exception exception) {
@@ -432,9 +364,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
             // probably because the metadata table doesn't exists
             if (LOGGER.isLoggable(Level.SEVERE)) {
                 LOGGER.log(
-                        Level.SEVERE,
-                        String.format("Error getting metadata from file '%s'.", metadataFile),
-                        exception);
+                        Level.SEVERE, String.format("Error getting metadata from file '%s'.", metadataFile), exception);
             }
             return null;
         }
@@ -461,8 +391,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
     }
 
     @Override
-    public boolean deleteByParametersId(String layerName, String parametersId)
-            throws StorageException {
+    public boolean deleteByParametersId(String layerName, String parametersId) throws StorageException {
         boolean deleted = deleteFiles(fileManager.getParametersFiles(layerName, parametersId));
         listeners.sendParametersDeleted(layerName, parametersId);
         return deleted;
@@ -480,8 +409,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
             return false;
         }
         // let's delete the tiles
-        CompletionService<Boolean> completionService =
-                new ExecutorCompletionService<>(executorService);
+        CompletionService<Boolean> completionService = new ExecutorCompletionService<>(executorService);
         int tasks = 0;
         for (Map.Entry<File, List<long[]>> entry : files.entrySet()) {
             // FIXME: should we tell something to the listeners ?
@@ -498,21 +426,19 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                 // current file
                 for (long[] range : entry.getValue()) {
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(
-                                String.format(
-                                        "Deleting tiles range [minx=%d, miny=%d, maxx=%d, maxxy=%d, zoom=%d] in file '%s'.",
-                                        range[0], range[1], range[2], range[3], range[4], file));
+                        LOGGER.fine(String.format(
+                                "Deleting tiles range [minx=%d, miny=%d, maxx=%d, maxxy=%d, zoom=%d] in file '%s'.",
+                                range[0], range[1], range[2], range[3], range[4], file));
                     }
                     completionService.submit(
-                            () ->
-                                    connectionManager.executeSql(
-                                            file,
-                                            "DELETE FROM tiles WHERE zoom_level = ? AND tile_column BETWEEN ? AND ? AND tile_row BETWEEN ? AND ?;",
-                                            range[4],
-                                            range[0],
-                                            range[2],
-                                            range[1],
-                                            range[3]),
+                            () -> connectionManager.executeSql(
+                                    file,
+                                    "DELETE FROM tiles WHERE zoom_level = ? AND tile_column BETWEEN ? AND ? AND tile_row BETWEEN ? AND ?;",
+                                    range[4],
+                                    range[0],
+                                    range[2],
+                                    range[1],
+                                    range[3]),
                             true);
                 }
             }
@@ -537,8 +463,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         }
         for (File currentFile : files) {
             String normalizedLayerName = FileManager.normalizePathValue(newLayerName);
-            File newFile =
-                    new File(currentFile.getPath().replace(oldLayerName, normalizedLayerName));
+            File newFile = new File(currentFile.getPath().replace(oldLayerName, normalizedLayerName));
             connectionManager.rename(currentFile, newFile);
         }
         listeners.sendLayerRenamed(oldLayerName, newLayerName);
@@ -569,8 +494,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
             executorService.awaitTermination(5, TimeUnit.SECONDS);
         } catch (Exception exception) {
             if (LOGGER.isLoggable(Level.SEVERE)) {
-                LOGGER.log(
-                        Level.SEVERE, "Error when waiting for executor task to finish.", exception);
+                LOGGER.log(Level.SEVERE, "Error when waiting for executor task to finish.", exception);
             }
         }
     }
@@ -584,8 +508,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
             return false;
         }
         // asking the connection manager to remove the database files
-        CompletionService<Boolean> completionService =
-                new ExecutorCompletionService<>(executorService);
+        CompletionService<Boolean> completionService = new ExecutorCompletionService<>(executorService);
         int tasks = 0;
         for (File file : files) {
             completionService.submit(() -> connectionManager.delete(file), true);
@@ -606,13 +529,11 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
     }
 
     /** Helper method that deletes the create time of a tile. */
-    private void deleteTileCreateTime(Connection connection, long z, long x, long y)
-            throws StorageException {
+    private void deleteTileCreateTime(Connection connection, long z, long x, long y) throws StorageException {
         try {
             connectionManager.executeSql(
                     connection,
-                    "DELETE FROM tiles_metadata "
-                            + "WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?",
+                    "DELETE FROM tiles_metadata " + "WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?",
                     z,
                     x,
                     y);
@@ -621,9 +542,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
             if (LOGGER.isLoggable(Level.SEVERE)) {
                 LOGGER.log(
                         Level.SEVERE,
-                        String.format(
-                                "Something bad happen when deleting create time for tile '%d-%d-%d'.",
-                                x, y, z),
+                        String.format("Something bad happen when deleting create time for tile '%d-%d-%d'.", x, y, z),
                         exception);
             }
         }
@@ -632,8 +551,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
     /** Helper method that retrieves the create time of a tile. */
     private Long getTileCreateTime(File file, long z, long x, long y) throws StorageException {
         String query =
-                "SELECT create_time FROM tiles_metadata WHERE zoom_level = ? "
-                        + "AND tile_column = ? AND tile_row = ?";
+                "SELECT create_time FROM tiles_metadata WHERE zoom_level = ? " + "AND tile_column = ? AND tile_row = ?";
         try {
             return connectionManager.executeQuery(
                     file,
@@ -652,9 +570,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
             if (LOGGER.isLoggable(Level.SEVERE)) {
                 LOGGER.log(
                         Level.SEVERE,
-                        String.format(
-                                "Something bad happen when querying create time for tile '%d-%d-%d'.",
-                                x, y, z),
+                        String.format("Something bad happen when querying create time for tile '%d-%d-%d'.", x, y, z),
                         exception);
             }
         }
@@ -663,24 +579,16 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
 
     /** Helper method that puts the create time of a tile opening a connection for it. */
     private void putTileCreateTime(File file, long z, long x, long y, long createTime) {
-        connectionManager.doWork(
-                file,
-                false,
-                connection -> {
-                    putTileCreateTime(connection, z, x, y, createTime);
-                });
+        connectionManager.doWork(file, false, connection -> {
+            putTileCreateTime(connection, z, x, y, createTime);
+        });
     }
 
     /** Helper method that puts the create time of a tile using the provided connection. */
     private void putTileCreateTime(Connection connection, long z, long x, long y, long createTime) {
         createTilesMetadataTable(connection);
         connectionManager.executeSql(
-                connection,
-                "INSERT OR REPLACE INTO tiles_metadata VALUES (?, ?, ?, ?);",
-                z,
-                x,
-                y,
-                createTime);
+                connection, "INSERT OR REPLACE INTO tiles_metadata VALUES (?, ?, ?, ?);", z, x, y, createTime);
     }
 
     private void createTilesMetadataTable(Connection connection) {
@@ -698,29 +606,22 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
             return;
         }
         // initiating the database file
-        connectionManager.doWork(
-                file,
-                false,
-                (connection) -> {
-                    try {
-                        // creating mbtiles tables
-                        SqlUtil.runScript(
-                                getClass().getResourceAsStream("/org/geotools/mbtiles/mbtiles.sql"),
-                                connection);
-                        // create tiles metadata table for storing the create time if needed
-                        createTilesMetadataTable(connection);
-                        // insert mbtiles metadata for this layer
-                        insertMbtilesLayerMetadata(file, connection, layerName, format);
-                    } catch (Exception exception) {
-                        throw Utils.exception(
-                                exception, "Error running geotools mbtiles sql script.");
-                    }
-                });
+        connectionManager.doWork(file, false, (connection) -> {
+            try {
+                // creating mbtiles tables
+                SqlUtil.runScript(getClass().getResourceAsStream("/org/geotools/mbtiles/mbtiles.sql"), connection);
+                // create tiles metadata table for storing the create time if needed
+                createTilesMetadataTable(connection);
+                // insert mbtiles metadata for this layer
+                insertMbtilesLayerMetadata(file, connection, layerName, format);
+            } catch (Exception exception) {
+                throw Utils.exception(exception, "Error running geotools mbtiles sql script.");
+            }
+        });
     }
 
     /** Store the mbtiles metadata associated with a file. */
-    private void insertMbtilesLayerMetadata(
-            File file, Connection connection, String layerName, String format) {
+    private void insertMbtilesLayerMetadata(File file, Connection connection, String layerName, String format) {
         MBTilesMetadata gtMetadata = new MBTilesMetadata();
         gtMetadata.setName(layerName);
         // checking if we have a mbtiles supported format, otherwise we don't insert anything
@@ -731,8 +632,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         } else if (format.contains("protobuf")) {
             gtMetadata.setFormat(MBTilesMetadata.t_format.PBF);
         }
-        MBTilesMetadata existingMetadata =
-                layersMetadata.get(FileManager.normalizePathValue(layerName));
+        MBTilesMetadata existingMetadata = layersMetadata.get(FileManager.normalizePathValue(layerName));
         if (existingMetadata != null) {
             // we have some user provided metadata let's use it
             gtMetadata.setName(layerName);
@@ -755,28 +655,25 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
     private void initMbtilesLayersMetadata(String mbtilesMetadataDirectoryPath) {
         if (mbtilesMetadataDirectoryPath == null) {
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.info(
-                        "Mbtiles metadata directory path is NULL, no mbtiles metadata will be parsed.");
+                LOGGER.info("Mbtiles metadata directory path is NULL, no mbtiles metadata will be parsed.");
             }
             return;
         }
         File mbtilesMetadataDirectory = new File(mbtilesMetadataDirectoryPath);
         if (!mbtilesMetadataDirectory.exists()) {
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.info(
-                        String.format(
-                                "Mbtiles metadata directory '%s' doesn't exists, no mbtiles metadata will be parsed.",
-                                mbtilesMetadataDirectoryPath));
+                LOGGER.info(String.format(
+                        "Mbtiles metadata directory '%s' doesn't exists, no mbtiles metadata will be parsed.",
+                        mbtilesMetadataDirectoryPath));
             }
             return;
         }
         File[] files = mbtilesMetadataDirectory.listFiles();
         if (files == null) {
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.info(
-                        String.format(
-                                "No files present in mbtiles metadata directory '%s', no mbtiles metadata will be parsed.",
-                                mbtilesMetadataDirectoryPath));
+                LOGGER.info(String.format(
+                        "No files present in mbtiles metadata directory '%s', no mbtiles metadata will be parsed.",
+                        mbtilesMetadataDirectoryPath));
             }
             return;
         }
@@ -790,8 +687,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                 try (InputStream input = new FileInputStream(file)) {
                     metadata.load(input);
                 } catch (Exception exception) {
-                    throw Utils.exception(
-                            exception, "Error reading mbtiles metadata file '%s'.", file);
+                    throw Utils.exception(exception, "Error reading mbtiles metadata file '%s'.", file);
                 }
                 // creating geotools mbtiles metadata file
                 MBTilesMetadata gtMetadata = new MBTilesMetadata();
@@ -805,8 +701,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                 // index the parsed mbtiles metadata
                 layersMetadata.put(layerName, gtMetadata);
                 if (LOGGER.isLoggable(Level.INFO)) {
-                    LOGGER.info(
-                            String.format("Parsed mbtiles metadata for layer '%s'.", layerName));
+                    LOGGER.info(String.format("Parsed mbtiles metadata for layer '%s'.", layerName));
                 }
             }
         }
@@ -821,8 +716,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                         try {
                             Map<String, Optional<Map<String, String>>> result = new HashMap<>();
                             while (resultSet.next()) {
-                                Map<String, String> params =
-                                        ParametersUtils.getMap(resultSet.getString(1));
+                                Map<String, String> params = ParametersUtils.getMap(resultSet.getString(1));
                                 result.put(ParametersUtils.getId(params), Optional.of(params));
                             }
                             return result;
@@ -836,9 +730,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
             // probably because the metadata table doesn't exists
             if (LOGGER.isLoggable(Level.SEVERE)) {
                 LOGGER.log(
-                        Level.SEVERE,
-                        String.format("Error getting metadata from file '%s'.", metadataFile),
-                        exception);
+                        Level.SEVERE, String.format("Error getting metadata from file '%s'.", metadataFile), exception);
             }
             return Collections.emptyMap();
         }
