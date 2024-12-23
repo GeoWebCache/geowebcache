@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Kevin Smith, Boundless, 2017
  */
@@ -31,10 +30,10 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
-public class CompositeBlobStoreWithFilesComformanceTest
-        extends AbstractBlobStoreTest<CompositeBlobStore> {
+public class CompositeBlobStoreWithFilesComformanceTest extends AbstractBlobStoreTest<CompositeBlobStore> {
 
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
 
     private TileLayerDispatcher tld;
     private BlobStoreAggregator bsa;
@@ -68,22 +67,10 @@ public class CompositeBlobStoreWithFilesComformanceTest
         expect(tld.getTileLayer(eq(DEFAULT_LAYER))).andStubReturn(defaultLayer);
         expect(tld.getTileLayer(eq(DEFAULT_LAYER1))).andStubReturn(defaultLayer1);
         expect(tld.getTileLayer(eq(DEFAULT_LAYER2))).andStubReturn(defaultLayer2);
-        expect(
-                        tld.getTileLayer(
-                                not(
-                                        or(
-                                                eq(DEFAULT_LAYER),
-                                                or(eq(DEFAULT_LAYER1), eq(DEFAULT_LAYER2))))))
+        expect(tld.getTileLayer(not(or(eq(DEFAULT_LAYER), or(eq(DEFAULT_LAYER1), eq(DEFAULT_LAYER2))))))
                 .andStubThrow(new GeoWebCacheException("layer not found"));
 
-        EasyMock.replay(
-                tld,
-                bsa,
-                defaultStorageFinder,
-                configuration,
-                defaultLayer,
-                defaultLayer1,
-                defaultLayer2);
+        EasyMock.replay(tld, bsa, defaultStorageFinder, configuration, defaultLayer, defaultLayer1, defaultLayer2);
         store = new CompositeBlobStore(tld, defaultStorageFinder, configuration, bsa);
     }
 

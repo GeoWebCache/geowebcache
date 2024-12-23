@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Andrea Aime, GeoSolutions, Copyright 2019
  */
@@ -60,17 +59,14 @@ class AzureClient implements Closeable {
         this.configuration = configuration;
         try {
             SharedKeyCredentials creds =
-                    new SharedKeyCredentials(
-                            configuration.getAccountName(), configuration.getAccountKey());
+                    new SharedKeyCredentials(configuration.getAccountName(), configuration.getAccountKey());
 
             // setup the HTTPClient, keep the factory on the side to close it down on destroy
-            factory =
-                    new NettyClient.Factory(
-                            new Bootstrap(),
-                            0,
-                            new SharedChannelPoolOptions()
-                                    .withPoolSize(configuration.getMaxConnections()),
-                            null);
+            factory = new NettyClient.Factory(
+                    new Bootstrap(),
+                    0,
+                    new SharedChannelPoolOptions().withPoolSize(configuration.getMaxConnections()),
+                    null);
             final HttpClient client;
             Proxy proxy = configuration.getProxy();
             // not clear how to use credentials for proxy,
@@ -85,9 +81,7 @@ class AzureClient implements Closeable {
             // build the container access
             PipelineOptions options = new PipelineOptions().withClient(client);
             ServiceURL serviceURL =
-                    new ServiceURL(
-                            URLs.of(getServiceURL(configuration)),
-                            StorageURL.createPipeline(creds, options));
+                    new ServiceURL(URLs.of(getServiceURL(configuration)), StorageURL.createPipeline(creds, options));
 
             String containerName = configuration.getContainer();
             this.container = serviceURL.createContainerURL(containerName);
@@ -101,14 +95,13 @@ class AzureClient implements Closeable {
             }
             try {
                 if (status == HttpStatus.NOT_FOUND.value()) {
-                    status = this.container.create(null, null, null).blockingGet().statusCode();
-                    if (!HttpStatus.valueOf(status).is2xxSuccessful()
-                            && status != HttpStatus.CONFLICT.value()) {
+                    status = this.container
+                            .create(null, null, null)
+                            .blockingGet()
+                            .statusCode();
+                    if (!HttpStatus.valueOf(status).is2xxSuccessful() && status != HttpStatus.CONFLICT.value()) {
                         throw new StorageException(
-                                "Failed to create container "
-                                        + containerName
-                                        + ", REST API returned a "
-                                        + status);
+                                "Failed to create container " + containerName + ", REST API returned a " + status);
                     }
                 }
             } catch (RestException e) {
@@ -125,11 +118,10 @@ class AzureClient implements Closeable {
         String serviceURL = configuration.getServiceURL();
         if (serviceURL == null) {
             // default to account name based location
-            serviceURL =
-                    (configuration.isUseHTTPS() ? "https" : "http")
-                            + "://"
-                            + configuration.getAccountName()
-                            + ".blob.core.windows.net";
+            serviceURL = (configuration.isUseHTTPS() ? "https" : "http")
+                    + "://"
+                    + configuration.getAccountName()
+                    + ".blob.core.windows.net";
         }
         return serviceURL;
     }
@@ -166,9 +158,7 @@ class AzureClient implements Closeable {
         byte[] bytes = getBytes(key);
         if (bytes != null) {
             try {
-                properties.load(
-                        new InputStreamReader(
-                                new ByteArrayInputStream(bytes), StandardCharsets.UTF_8));
+                properties.load(new InputStreamReader(new ByteArrayInputStream(bytes), StandardCharsets.UTF_8));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -192,16 +182,12 @@ class AzureClient implements Closeable {
             BlobHTTPHeaders headers = new BlobHTTPHeaders();
             headers.withBlobContentType("text/plain");
 
-            int status =
-                    blob.upload(Flowable.just(buffer), bytes.length, headers, null, null, null)
-                            .blockingGet()
-                            .statusCode();
+            int status = blob.upload(Flowable.just(buffer), bytes.length, headers, null, null, null)
+                    .blockingGet()
+                    .statusCode();
             if (!HttpStatus.valueOf(status).is2xxSuccessful()) {
                 throw new StorageException(
-                        "Upload request failed with status "
-                                + status
-                                + " on resource "
-                                + resourceKey);
+                        "Upload request failed with status " + status + " on resource " + resourceKey);
             }
         } catch (RestException e) {
             throw new StorageException("Failed to update e property file at " + resourceKey, e);
@@ -209,14 +195,10 @@ class AzureClient implements Closeable {
     }
 
     public List<BlobItem> listBlobs(String prefix, Integer maxResults) {
-        ContainerListBlobFlatSegmentResponse response =
-                container
-                        .listBlobsFlatSegment(
-                                null,
-                                new ListBlobsOptions()
-                                        .withPrefix(prefix)
-                                        .withMaxResults(maxResults))
-                        .blockingGet();
+        ContainerListBlobFlatSegmentResponse response = container
+                .listBlobsFlatSegment(
+                        null, new ListBlobsOptions().withPrefix(prefix).withMaxResults(maxResults))
+                .blockingGet();
 
         BlobFlatListSegment segment = response.body().segment();
         List<BlobItem> items = new ArrayList<>();

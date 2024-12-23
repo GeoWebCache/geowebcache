@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan (OpenGeo) 2010
  */
@@ -27,9 +26,9 @@ import org.springframework.util.Assert;
 /**
  * Monitors {@link DefaultStorageBroker} activity to keep track of the disk usage.
  *
- * <p>This class only cares about receiving {@link BlobStoreListener} events and submitting {@link
- * QuotaUpdate}s to the provided {@link BlockingQueue}. Another thread is responsible of taking the
- * {@link QuotaUpdate} off the queue and updating the quota store as appropriate.
+ * <p>This class only cares about receiving {@link BlobStoreListener} events and submitting {@link QuotaUpdate}s to the
+ * provided {@link BlockingQueue}. Another thread is responsible of taking the {@link QuotaUpdate} off the queue and
+ * updating the quota store as appropriate.
  *
  * @author groldan
  * @see DiskQuotaMonitor
@@ -48,11 +47,10 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
     int updateOfferTimeoutSeconds;
 
     /**
-     * @param queuedUpdates queue that this monitor will fill with updates at each tile event. There
-     *     should be a separate thread that takes care of them.
+     * @param queuedUpdates queue that this monitor will fill with updates at each tile event. There should be a
+     *     separate thread that takes care of them.
      */
-    public QueuedQuotaUpdatesProducer(
-            final BlockingQueue<QuotaUpdate> queuedUpdates, QuotaStore quotaStore) {
+    public QueuedQuotaUpdatesProducer(final BlockingQueue<QuotaUpdate> queuedUpdates, QuotaStore quotaStore) {
         Assert.notNull(queuedUpdates, "queuedUpdates can't be null");
 
         this.queuedUpdates = queuedUpdates;
@@ -101,13 +99,7 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
 
         long actualSizeFreed = -1 * blobSize;
 
-        quotaUpdate(
-                layerName,
-                gridSetId,
-                blobFormat,
-                parametersId,
-                actualSizeFreed,
-                new long[] {x, y, z});
+        quotaUpdate(layerName, gridSetId, blobFormat, parametersId, actualSizeFreed, new long[] {x, y, z});
     }
 
     /** @see org.geowebcache.storage.BlobStoreListener#tileUpdated */
@@ -157,68 +149,54 @@ class QueuedQuotaUpdatesProducer implements BlobStoreListener {
         try {
             quotaStore.renameLayer(oldLayerName, newLayerName);
         } catch (InterruptedException e) {
-            log.log(
-                    Level.SEVERE,
-                    "Can't rename " + oldLayerName + " to " + newLayerName + " in quota store",
-                    e);
+            log.log(Level.SEVERE, "Can't rename " + oldLayerName + " to " + newLayerName + " in quota store", e);
             Thread.currentThread().interrupt();
         }
     }
 
     /**
-     * Defers executing the update of the quota usage for the given tile set by adding a {@link
-     * QuotaUpdate} payload to {@link #queuedUpdates} so that the consumer thread performs the
-     * update without blocking the calling thread.
+     * Defers executing the update of the quota usage for the given tile set by adding a {@link QuotaUpdate} payload to
+     * {@link #queuedUpdates} so that the consumer thread performs the update without blocking the calling thread.
      *
      * @param amount positive to signal a quota increase, negative to signal a quota decrease
      * @param tileIndex tile index
      */
     private void quotaUpdate(
-            String layerName,
-            String gridSetId,
-            String blobFormat,
-            String parametersId,
-            long amount,
-            long[] tileIndex) {
+            String layerName, String gridSetId, String blobFormat, String parametersId, long amount, long[] tileIndex) {
 
         if (cancelled(layerName)) {
             return;
         }
-        QuotaUpdate payload =
-                new QuotaUpdate(layerName, gridSetId, blobFormat, parametersId, amount, tileIndex);
+        QuotaUpdate payload = new QuotaUpdate(layerName, gridSetId, blobFormat, parametersId, amount, tileIndex);
         try {
             if (updateOfferTimeoutSeconds <= 0) {
                 this.queuedUpdates.put(payload);
             } else {
-                if (!this.queuedUpdates.offer(
-                        payload, updateOfferTimeoutSeconds, TimeUnit.SECONDS)) {
-                    throw new RuntimeException(
-                            "Failed to offer the quota diff to the updates queue "
-                                    + "within the configured timeout of "
-                                    + updateOfferTimeoutSeconds
-                                    + " seconds");
+                if (!this.queuedUpdates.offer(payload, updateOfferTimeoutSeconds, TimeUnit.SECONDS)) {
+                    throw new RuntimeException("Failed to offer the quota diff to the updates queue "
+                            + "within the configured timeout of "
+                            + updateOfferTimeoutSeconds
+                            + " seconds");
                 }
             }
         } catch (InterruptedException e) {
             if (cancelled(layerName)) {
                 return;
             }
-            log.info(
-                    "Quota updates on "
-                            + layerName
-                            + " abruptly interrupted on thread "
-                            + Thread.currentThread().getName()
-                            + ".");
+            log.info("Quota updates on "
+                    + layerName
+                    + " abruptly interrupted on thread "
+                    + Thread.currentThread().getName()
+                    + ".");
             Thread.currentThread().interrupt();
         }
     }
 
     private boolean cancelled(String layerName) {
         if (cancelled) {
-            log.fine(
-                    "Quota updates listener cancelled. Avoiding adding update for layer "
-                            + layerName
-                            + " to quota information queue");
+            log.fine("Quota updates listener cancelled. Avoiding adding update for layer "
+                    + layerName
+                    + " to quota information queue");
         }
         return cancelled;
     }

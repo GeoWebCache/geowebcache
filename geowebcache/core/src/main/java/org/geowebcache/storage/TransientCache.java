@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2019
  */
@@ -46,22 +45,21 @@ public class TransientCache {
     private Ticker ticker = Ticker.systemTicker();
 
     /**
-     * A path generator that uses the key set as its key to build keys suitable for usage in the in
-     * memory transient cache
+     * A path generator that uses the key set as its key to build keys suitable for usage in the in memory transient
+     * cache
      */
     private static FilePathGenerator keyGenerator = new DefaultFilePathGenerator("");
 
-    private Map<String, CachedResource> cache =
-            new LinkedHashMap<String, CachedResource>() {
+    private Map<String, CachedResource> cache = new LinkedHashMap<String, CachedResource>() {
 
-                /** serialVersionUID */
-                private static final long serialVersionUID = -4106644240603796847L;
+        /** serialVersionUID */
+        private static final long serialVersionUID = -4106644240603796847L;
 
-                @Override
-                protected boolean removeEldestEntry(Entry<String, CachedResource> eldest) {
-                    return removeEntries(eldest);
-                }
-            };
+        @Override
+        protected boolean removeEldestEntry(Entry<String, CachedResource> eldest) {
+            return removeEntries(eldest);
+        }
+    };
 
     /**
      * @param maxTiles Maximum number of tiles in cache

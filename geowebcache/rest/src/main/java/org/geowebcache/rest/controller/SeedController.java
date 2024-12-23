@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Marius Suta / The Open Planning Project 2008
  * @author Arne Kepp / The Open Planning Project 2009
@@ -49,13 +48,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "${gwc.context.suffix:}/rest")
 public class SeedController {
 
-    @Autowired TileBreeder seeder;
+    @Autowired
+    TileBreeder seeder;
 
-    @Autowired SeedService seedService;
+    @Autowired
+    SeedService seedService;
 
-    @Autowired FormService formService;
+    @Autowired
+    FormService formService;
 
-    @Autowired protected DefaultingConfiguration xmlConfig;
+    @Autowired
+    protected DefaultingConfiguration xmlConfig;
 
     /** GET method for querying running GWC tasks */
     @RequestMapping(
@@ -126,16 +129,13 @@ public class SeedController {
         } catch (UnsupportedEncodingException e) {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.TEXT_PLAIN);
-            return new ResponseEntity<Object>(
-                    "Unable to parse form result.", headers, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<Object>("Unable to parse form result.", headers, HttpStatus.BAD_REQUEST);
         }
     }
 
     @RequestMapping(value = "/seed/{layer}.json", method = RequestMethod.POST)
     public ResponseEntity<?> seedOrTruncateWithJsonPayload(
-            HttpServletRequest request,
-            InputStream inputStream,
-            @PathVariable(name = "layer") String layerName) {
+            HttpServletRequest request, InputStream inputStream, @PathVariable(name = "layer") String layerName) {
 
         String body = readBody(inputStream);
         String extension = "json";
@@ -144,9 +144,7 @@ public class SeedController {
 
     @RequestMapping(value = "/seed/{layer}.xml", method = RequestMethod.POST)
     public ResponseEntity<?> seedOrTruncateWithXmlPayload(
-            HttpServletRequest request,
-            InputStream inputStream,
-            @PathVariable(name = "layer") String layerName) {
+            HttpServletRequest request, InputStream inputStream, @PathVariable(name = "layer") String layerName) {
 
         String body = readBody(inputStream);
         String extension = "xml";
@@ -154,9 +152,7 @@ public class SeedController {
     }
 
     private String readBody(InputStream inputStream) {
-        return new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
+        return new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.joining("\n"));
     }
 
     private ResponseEntity<?> handleFormPostInternal(String layer, Map<String, String> params) {

@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package org.geowebcache.blobstore.memory.distributed;
 
@@ -118,16 +117,14 @@ public class HazelcastCacheProviderTest {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("a", "x");
         parameters.put("b", "ø");
-        TileObject to =
-                TileObject.createCompleteTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
+        TileObject to = TileObject.createCompleteTileObject(
+                "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
 
         mem1.put(to);
 
         // Try to get the same TileObject
         TileObject to2 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         assertTrue(mem2.get(to2));
 
         // Checks on the format
@@ -175,16 +172,14 @@ public class HazelcastCacheProviderTest {
         // Put a TileObject
         Resource bytes = new ByteArrayResource("1 2 3 4 5 6 test".getBytes());
         long[] xyz = {5L, 6L, 7L};
-        TileObject to =
-                TileObject.createCompleteTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
+        TileObject to = TileObject.createCompleteTileObject(
+                "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters, bytes);
 
         mem1.put(to);
 
         // Try to get the same TileObject
         TileObject to2 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         assertTrue(mem2.get(to2));
 
         // Checks if the resources are equals
@@ -195,14 +190,12 @@ public class HazelcastCacheProviderTest {
 
         // Delete TileObject
         TileObject to3 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         mem1.delete(to3);
 
         // Checks if the resource is not present
         TileObject to4 =
-                TileObject.createQueryTileObject(
-                        "test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
+                TileObject.createQueryTileObject("test:123123 112", xyz, "EPSG:4326", "image/jpeg", parameters);
         assertFalse(mem1.get(to4));
         assertFalse(mem2.get(to4));
 
@@ -227,9 +220,7 @@ public class HazelcastCacheProviderTest {
         Hazelcast.shutdownAll();
     }
 
-    /**
-     * Checks if the streams are equals, note that this method also closes the {@link InputStream}
-     */
+    /** Checks if the streams are equals, note that this method also closes the {@link InputStream} */
     @SuppressWarnings("PMD.UseTryWithResources") // resources not created here
     private void checkInputStreams(InputStream is, InputStream is2) throws IOException {
         try {

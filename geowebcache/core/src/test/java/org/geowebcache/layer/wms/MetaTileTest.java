@@ -26,8 +26,7 @@ import org.junit.Test;
 
 public class MetaTileTest {
 
-    GridSetBroker gridSetBroker =
-            new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
+    GridSetBroker gridSetBroker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
     @Before
     public void setUp() throws Exception {}
@@ -38,22 +37,20 @@ public class MetaTileTest {
         int metaHeight = 1;
         int metaWidth = 1;
 
-        GridSubset grid =
-                GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0, 30);
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0, 30);
 
         long[] gridPos = {0, 0, 0};
 
         // int[] gridBounds, int[] tileGridPosition, int metaX, int metaY
-        WMSMetaTile mt =
-                new WMSMetaTile(
-                        null,
-                        grid,
-                        ImageMime.png,
-                        null,
-                        gridPos,
-                        metaWidth,
-                        metaHeight,
-                        Collections.singletonMap("test", "test1"));
+        WMSMetaTile mt = new WMSMetaTile(
+                null,
+                grid,
+                ImageMime.png,
+                null,
+                gridPos,
+                metaWidth,
+                metaHeight,
+                Collections.singletonMap("test", "test1"));
 
         Assert.assertArrayEquals(new long[] {0, 0, 0, 0, 0}, mt.getMetaTileGridBounds());
     }
@@ -64,20 +61,18 @@ public class MetaTileTest {
         int metaHeight = 3;
         int metaWidth = 3;
 
-        GridSubset grid =
-                GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0, 30);
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0, 30);
 
         long[] gridPos = {127, 63, 6};
-        WMSMetaTile mt =
-                new WMSMetaTile(
-                        null,
-                        grid,
-                        ImageMime.png,
-                        null,
-                        gridPos,
-                        metaWidth,
-                        metaHeight,
-                        Collections.singletonMap("test", "test1"));
+        WMSMetaTile mt = new WMSMetaTile(
+                null,
+                grid,
+                ImageMime.png,
+                null,
+                gridPos,
+                metaWidth,
+                metaHeight,
+                Collections.singletonMap("test", "test1"));
 
         long[] solution = {126, 63, 127, 63, 6};
         Assert.assertArrayEquals(mt.getMetaTileGridBounds(), solution);
@@ -89,20 +84,18 @@ public class MetaTileTest {
         int metaHeight = 1;
         int metaWidth = 1;
 
-        GridSubset grid =
-                GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg3857(), bbox, 0, 30);
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg3857(), bbox, 0, 30);
 
         long[] gridPos = {0, 0, 0};
-        WMSMetaTile mt =
-                new WMSMetaTile(
-                        null,
-                        grid,
-                        ImageMime.png,
-                        null,
-                        gridPos,
-                        metaWidth,
-                        metaHeight,
-                        Collections.singletonMap("test", "test1"));
+        WMSMetaTile mt = new WMSMetaTile(
+                null,
+                grid,
+                ImageMime.png,
+                null,
+                gridPos,
+                metaWidth,
+                metaHeight,
+                Collections.singletonMap("test", "test1"));
 
         long[] solution = {0, 0, 0, 0, 0};
         Assert.assertArrayEquals(mt.getMetaTileGridBounds(), solution);
@@ -115,20 +108,18 @@ public class MetaTileTest {
         int metaHeight = 3;
         int metaWidth = 3;
 
-        GridSubset grid =
-                GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg3857(), bbox, 0, 30);
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg3857(), bbox, 0, 30);
 
         long[] gridPos = {70, 70, 6};
-        WMSMetaTile mt =
-                new WMSMetaTile(
-                        null,
-                        grid,
-                        ImageMime.png,
-                        null,
-                        gridPos,
-                        metaWidth,
-                        metaHeight,
-                        Collections.singletonMap("test", "test1"));
+        WMSMetaTile mt = new WMSMetaTile(
+                null,
+                grid,
+                ImageMime.png,
+                null,
+                gridPos,
+                metaWidth,
+                metaHeight,
+                Collections.singletonMap("test", "test1"));
 
         long[] solution = {69, 69, 63, 63, 6};
         Assert.assertArrayEquals(mt.getMetaTileGridBounds(), solution);
@@ -141,24 +132,22 @@ public class MetaTileTest {
 
         WMSLayer layer = createWMSLayer(bbox);
 
-        GridSubset grid =
-                GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0, 30);
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0, 30);
 
         // Set the gutter
         layer.gutter = 50;
 
         // Lets make a tile close to the edge, this should only have a gutter to west / south
         long[] gridPos = {127, 63, 6};
-        WMSMetaTile mt =
-                new WMSMetaTile(
-                        layer,
-                        grid,
-                        ImageMime.png,
-                        null,
-                        gridPos,
-                        layer.getMetaTilingFactors()[0],
-                        layer.getMetaTilingFactors()[1],
-                        Collections.singletonMap("test", "test1"));
+        WMSMetaTile mt = new WMSMetaTile(
+                layer,
+                grid,
+                ImageMime.png,
+                null,
+                gridPos,
+                layer.getMetaTilingFactors()[0],
+                layer.getMetaTilingFactors()[1],
+                Collections.singletonMap("test", "test1"));
 
         // The actual gutter is calculated right at construction time
         Map<String, String> wmsParams = mt.getWMSParams();
@@ -172,16 +161,15 @@ public class MetaTileTest {
         Assert.assertEquals(height, 256 + 50);
 
         long[] midGridPos = {83, 45, 6};
-        mt =
-                new WMSMetaTile(
-                        layer,
-                        grid,
-                        ImageMime.png,
-                        null,
-                        midGridPos,
-                        layer.getMetaTilingFactors()[0],
-                        layer.getMetaTilingFactors()[1],
-                        Collections.singletonMap("test", "test1"));
+        mt = new WMSMetaTile(
+                layer,
+                grid,
+                ImageMime.png,
+                null,
+                midGridPos,
+                layer.getMetaTilingFactors()[0],
+                layer.getMetaTilingFactors()[1],
+                Collections.singletonMap("test", "test1"));
 
         // The actual gutter is calculated right at construction time
         wmsParams = mt.getWMSParams();
@@ -208,24 +196,22 @@ public class MetaTileTest {
 
         WMSLayer layer = createWMSLayer(bbox);
 
-        GridSubset grid =
-                GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0, 30);
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0, 30);
 
         // Set the gutter
         layer.gutter = 50;
 
         // Lets make a tile close to the edge, this should only have a gutter to west / south
         long[] gridPos = {127, 63, 6};
-        WMSMetaTile mt =
-                new WMSMetaTile(
-                        layer,
-                        grid,
-                        ApplicationMime.topojson,
-                        null,
-                        gridPos,
-                        layer.getMetaTilingFactors()[0],
-                        layer.getMetaTilingFactors()[1],
-                        Collections.singletonMap("test", "test1"));
+        WMSMetaTile mt = new WMSMetaTile(
+                layer,
+                grid,
+                ApplicationMime.topojson,
+                null,
+                gridPos,
+                layer.getMetaTilingFactors()[0],
+                layer.getMetaTilingFactors()[1],
+                Collections.singletonMap("test", "test1"));
 
         // The actual gutter is calculated right at construction time
         Map<String, String> wmsParams = mt.getWMSParams();
@@ -251,19 +237,18 @@ public class MetaTileTest {
         grids.put(grid.getName(), grid);
         int[] metaWidthHeight = {3, 3};
 
-        WMSLayer layer =
-                new WMSLayer(
-                        "test:layer",
-                        urls,
-                        "aStyle",
-                        "test:layer",
-                        formatList,
-                        grids,
-                        null,
-                        metaWidthHeight,
-                        "vendorparam=true",
-                        false,
-                        null);
+        WMSLayer layer = new WMSLayer(
+                "test:layer",
+                urls,
+                "aStyle",
+                "test:layer",
+                formatList,
+                grids,
+                null,
+                metaWidthHeight,
+                "vendorparam=true",
+                false,
+                null);
 
         layer.initialize(gridSetBroker);
 
@@ -292,18 +277,14 @@ public class MetaTileTest {
 
     // Helper class that given a meta tile image will extract the tiles and check that extracted
     // tiles are correct
-    private void commonCreateTileFromMetaTileTest(Color[][] colors, RenderedImage metaTileImage)
-            throws Exception {
+    private void commonCreateTileFromMetaTileTest(Color[][] colors, RenderedImage metaTileImage) throws Exception {
         // creating the meta tile
         BoundingBox boundingBox = new BoundingBox(0, 0, 180, 90);
         int metaHeight = 2;
         int metaWidth = 2;
-        GridSubset grid =
-                GridSubsetFactory.createGridSubSet(
-                        gridSetBroker.getWorldEpsg4326(), boundingBox, 0, 21);
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), boundingBox, 0, 21);
         long[] gridPos = {0, 0, 0};
-        MetaTile metaTile =
-                new MetaTile(grid, ImageMime.png, null, gridPos, metaWidth, metaHeight, null);
+        MetaTile metaTile = new MetaTile(grid, ImageMime.png, null, gridPos, metaWidth, metaHeight, null);
         metaTile.setImage(metaTileImage);
         // extracting the tiles using the create tile method
         int width = metaTile.getMetaTileWidth();
@@ -342,16 +323,13 @@ public class MetaTileTest {
     }
 
     // Helper method that creates a random image with random colors
-    private BufferedImage createBufferImageMetaTile(
-            int rows, int columns, int height, int width, Color[][] colors) {
+    private BufferedImage createBufferImageMetaTile(int rows, int columns, int height, int width, Color[][] colors) {
         Random random = new Random();
-        BufferedImage image =
-                new BufferedImage(columns * width, rows * height, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage image = new BufferedImage(columns * width, rows * height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = image.createGraphics();
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
-                Color color =
-                        new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
+                Color color = new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
                 colors[i][j] = color;
                 graphics.setColor(color);
                 int x = j * width;

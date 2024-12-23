@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2019
  */
@@ -19,9 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.StorageBroker;
 
-/**
- * Represents a request against a tile service and carries the information needed to complete it.
- */
+/** Represents a request against a tile service and carries the information needed to complete it. */
 public abstract class Conveyor {
 
     /** Should the request represented by this conveyor be handled by the service or the layer */
@@ -66,8 +63,7 @@ public abstract class Conveyor {
 
     protected CacheResult cacheResult;
 
-    protected Conveyor(
-            String layerId, StorageBroker sb, HttpServletRequest srq, HttpServletResponse srp) {
+    protected Conveyor(String layerId, StorageBroker sb, HttpServletRequest srq, HttpServletResponse srp) {
         this.layerId = layerId;
         storageBroker = sb;
         servletReq = srq;

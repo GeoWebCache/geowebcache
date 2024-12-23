@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
@@ -64,9 +63,8 @@ public class KMLSiteMap {
         @SuppressWarnings("PMD.CloseResource") // managed by servlet container
         OutputStream os = tile.servletResp.getOutputStream();
 
-        String header =
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                        + "<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
+        String header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
         os.write(header.getBytes());
 
         writeSiteMapIndexLoop();
@@ -93,11 +91,7 @@ public class KMLSiteMap {
                     && grids.contains(gridSetBroker.getWorldEpsg4326().getName())
                     && mimeTypes != null
                     && mimeTypes.contains(XMLMime.kml)) {
-                String smStr =
-                        "<sitemap><loc>"
-                                + urlPrefix
-                                + tl.getName()
-                                + "/sitemap.xml</loc></sitemap>";
+                String smStr = "<sitemap><loc>" + urlPrefix + tl.getName() + "/sitemap.xml</loc></sitemap>";
                 os.write(smStr.getBytes());
             }
         }
@@ -106,7 +100,8 @@ public class KMLSiteMap {
     private void writeSiteMap() throws GeoWebCacheException, IOException {
         TileLayer layer = tile.getLayer();
 
-        GridSubset gridSubset = layer.getGridSubset(gridSetBroker.getWorldEpsg4326().getName());
+        GridSubset gridSubset =
+                layer.getGridSubset(gridSetBroker.getWorldEpsg4326().getName());
 
         writeSiteMapHeader();
 
@@ -114,11 +109,10 @@ public class KMLSiteMap {
 
         // Check whether we need two tiles for world bounds or not
         if (gridRect[4] > 0 && (gridRect[2] != gridRect[0] || gridRect[3] != gridRect[1])) {
-            throw new GeoWebCacheException(
-                    layer.getName()
-                            + " is too big for the sub grid set for "
-                            + gridSubset.getName()
-                            + ", allow for smaller zoom levels.");
+            throw new GeoWebCacheException(layer.getName()
+                    + " is too big for the sub grid set for "
+                    + gridSubset.getName()
+                    + ", allow for smaller zoom levels.");
         } else if (gridRect[0] != gridRect[2]) {
             long[] gridLocWest = {0, 0, 0};
             long[] gridLocEast = {1, 0, 0};
@@ -135,9 +129,8 @@ public class KMLSiteMap {
     }
 
     private void writeSiteMapHeader() throws IOException {
-        String header =
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                        + "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\" xmlns:geo=\"http://www.google.com/geo/schemas/sitemap/1.0\">\n";
+        String header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\" xmlns:geo=\"http://www.google.com/geo/schemas/sitemap/1.0\">\n";
         tile.servletResp.getOutputStream().write(header.getBytes());
     }
 
@@ -153,10 +146,9 @@ public class KMLSiteMap {
         String urlPrefix = tile.getUrlPrefix();
 
         // Add a link to the super overlay first
-        String superOverlayLoc =
-                "<url><loc>"
-                        + urlPrefix.substring(0, urlPrefix.length() - 1)
-                        + ".kml.kml</loc><geo:geo><geo:format>kml</geo:format></geo:geo></url>\n";
+        String superOverlayLoc = "<url><loc>"
+                + urlPrefix.substring(0, urlPrefix.length() - 1)
+                + ".kml.kml</loc><geo:geo><geo:format>kml</geo:format></geo:geo></url>\n";
         os.write(superOverlayLoc.getBytes());
 
         LinkedList<long[]> subTileList = new LinkedList<>();
@@ -167,14 +159,8 @@ public class KMLSiteMap {
             String gridSetId = gridSetBroker.getWorldEpsg4326().getName();
             long[] curLoc = subTileList.removeFirst();
             long[][] linkGridLocs = tileLayer.getGridSubset(gridSetId).getSubGrid(curLoc);
-            linkGridLocs =
-                    KMZHelper.filterGridLocs(
-                            storageBroker,
-                            secDispatcher,
-                            tileLayer,
-                            gridSetId,
-                            XMLMime.kml,
-                            linkGridLocs);
+            linkGridLocs = KMZHelper.filterGridLocs(
+                    storageBroker, secDispatcher, tileLayer, gridSetId, XMLMime.kml, linkGridLocs);
 
             // Save the links we still need to follow for later
             for (long[] subTile : linkGridLocs) {
@@ -184,12 +170,11 @@ public class KMLSiteMap {
             }
 
             // We need to link to the data tiles only, for now
-            String tmp =
-                    "<url><loc>"
-                            + urlPrefix
-                            + KMLService.gridLocString(curLoc)
-                            + ".kml"
-                            + "</loc><geo:geo><geo:format>kml</geo:format></geo:geo></url>\n";
+            String tmp = "<url><loc>"
+                    + urlPrefix
+                    + KMLService.gridLocString(curLoc)
+                    + ".kml"
+                    + "</loc><geo:geo><geo:format>kml</geo:format></geo:geo></url>\n";
             os.write(tmp.getBytes());
 
             // Could add priority as 1 / (zoomlevel + 1)

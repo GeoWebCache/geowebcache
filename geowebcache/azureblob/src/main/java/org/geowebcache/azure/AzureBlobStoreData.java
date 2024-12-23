@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Fernando Mino, GeoSolutions, Copyright 2019
  */
@@ -18,10 +17,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import org.geowebcache.GeoWebCacheEnvironment;
 
-/**
- * Azure Blobstore type-resolved data from a {@link AzureBlobStoreInfo} using enviroment variables
- * if enabled.
- */
+/** Azure Blobstore type-resolved data from a {@link AzureBlobStoreInfo} using enviroment variables if enabled. */
 class AzureBlobStoreData {
 
     private String container;
@@ -38,14 +34,11 @@ class AzureBlobStoreData {
 
     AzureBlobStoreData() {}
 
-    public AzureBlobStoreData(
-            final AzureBlobStoreInfo storeInfo, final GeoWebCacheEnvironment environment) {
+    public AzureBlobStoreData(final AzureBlobStoreInfo storeInfo, final GeoWebCacheEnvironment environment) {
         environment
                 .resolveValueIfEnabled(storeInfo.getContainer(), String.class)
                 .ifPresent(x -> this.container = x);
-        environment
-                .resolveValueIfEnabled(storeInfo.getPrefix(), String.class)
-                .ifPresent(x -> this.prefix = x);
+        environment.resolveValueIfEnabled(storeInfo.getPrefix(), String.class).ifPresent(x -> this.prefix = x);
         environment
                 .resolveValueIfEnabled(storeInfo.getAccountName(), String.class)
                 .ifPresent(x -> this.accountName = x);
@@ -173,9 +166,7 @@ class AzureBlobStoreData {
 
     Proxy getProxy() {
         if (proxyHost != null) {
-            return new Proxy(
-                    Proxy.Type.HTTP,
-                    new InetSocketAddress(proxyHost, proxyPort != null ? proxyPort : 8888));
+            return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort != null ? proxyPort : 8888));
         }
         return null;
     }

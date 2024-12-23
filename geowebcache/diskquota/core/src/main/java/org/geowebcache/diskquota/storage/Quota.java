@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan (OpenGeo) 2010
  */
@@ -20,8 +19,8 @@ import java.math.BigInteger;
 import java.text.NumberFormat;
 
 /**
- * A <b>Mutable</b> representation of the disk usage of a given cache tile set, given by a value and
- * a {@link StorageUnit storage unit}.
+ * A <b>Mutable</b> representation of the disk usage of a given cache tile set, given by a value and a
+ * {@link StorageUnit storage unit}.
  *
  * <p>Instances of this class are <b>not</b> thread safe.
  *
@@ -149,9 +148,7 @@ public class Quota implements Cloneable, Comparable<Quota>, Serializable {
         return new Quota(difference);
     }
 
-    /**
-     * Returns a more user friendly string representation of this quota, like in 1.1GB, 0.75MB, etc.
-     */
+    /** Returns a more user friendly string representation of this quota, like in 1.1GB, 0.75MB, etc. */
     public String toNiceString() {
         StorageUnit bestFit = StorageUnit.bestFit(bytes);
         BigDecimal value = StorageUnit.B.convertTo(new BigDecimal(bytes), bestFit);

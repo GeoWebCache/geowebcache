@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan (OpenGeo) 2010
  */
@@ -124,18 +123,15 @@ public class CacheCleaner implements DisposableBean {
     }
 
     /**
-     * This method is thread safe and will throw interrupted exception if the thread has been
-     * interrupted or the {@link #destroy() shutdown hook} has been called to signal the calling
-     * code of premature termination.
+     * This method is thread safe and will throw interrupted exception if the thread has been interrupted or the
+     * {@link #destroy() shutdown hook} has been called to signal the calling code of premature termination.
      *
      * @param layerNames the layers to expire tile pages from
      * @param quotaResolver live limit and used quota to monitor until it reaches its limit
      * @see {@link org.geowebcache.diskquota.ExpirationPolicy#expireByLayerNames}
      */
     public void expireByLayerNames(
-            final Set<String> layerNames,
-            final QuotaResolver quotaResolver,
-            final QuotaStore pageStore)
+            final Set<String> layerNames, final QuotaResolver quotaResolver, final QuotaStore pageStore)
             throws InterruptedException {
 
         Quota limit;
@@ -151,21 +147,19 @@ public class CacheCleaner implements DisposableBean {
             used = quotaResolver.getUsed();
             excess = used.difference(limit);
             if (excess.getBytes().compareTo(BigInteger.ZERO) <= 0) {
-                log.info(
-                        "Reached back Quota: "
-                                + limit.toNiceString()
-                                + " ("
-                                + used.toNiceString()
-                                + ") for layers "
-                                + layerNames);
+                log.info("Reached back Quota: "
+                        + limit.toNiceString()
+                        + " ("
+                        + used.toNiceString()
+                        + ") for layers "
+                        + layerNames);
                 return;
             }
             // same thing, check it every time
             ExpirationPolicy expirationPolicy = quotaResolver.getExpirationPolicy();
             if (null == expirationPolicy) {
                 log.warning(
-                        "Aborting disk quota enforcement task, no expiration policy defined for layers "
-                                + layerNames);
+                        "Aborting disk quota enforcement task, no expiration policy defined for layers " + layerNames);
                 return;
             }
 
@@ -175,30 +169,27 @@ public class CacheCleaner implements DisposableBean {
             } else if (ExpirationPolicy.LRU.equals(expirationPolicy)) {
                 tilePage = pageStore.getLeastRecentlyUsedPage(layerNames);
             } else {
-                throw new IllegalStateException(
-                        "Unrecognized expiration policy: " + expirationPolicy);
+                throw new IllegalStateException("Unrecognized expiration policy: " + expirationPolicy);
             }
 
             if (tilePage == null) {
                 limit = quotaResolver.getLimit();
                 Quota usedQuota = quotaResolver.getUsed();
                 if (excess.getBytes().compareTo(BigInteger.ZERO) > 0) {
-                    log.warning(
-                            "No more pages to expire, check if youd disk quota"
-                                    + " database is out of date with your blob store. Quota: "
-                                    + limit.toNiceString()
-                                    + " used: "
-                                    + usedQuota.toNiceString());
+                    log.warning("No more pages to expire, check if youd disk quota"
+                            + " database is out of date with your blob store. Quota: "
+                            + limit.toNiceString()
+                            + " used: "
+                            + usedQuota.toNiceString());
                 }
                 return;
             }
             if (log.isLoggable(Level.FINE)) {
-                log.fine(
-                        "Expiring tile page "
-                                + tilePage
-                                + " based on the global "
-                                + expirationPolicy
-                                + " expiration policy");
+                log.fine("Expiring tile page "
+                        + tilePage
+                        + " based on the global "
+                        + expirationPolicy
+                        + " expiration policy");
             }
             if (shutDown || Thread.currentThread().isInterrupted()) {
                 throw new InterruptedException();
@@ -226,20 +217,13 @@ public class CacheCleaner implements DisposableBean {
         }
         if (log.isLoggable(Level.FINER)) {
             if (parametersId != null) {
-                log.finer(
-                        "Expiring page "
-                                + tilePage
-                                + "/"
-                                + mimeType.getFormat()
-                                + "/"
-                                + parametersId);
+                log.finer("Expiring page " + tilePage + "/" + mimeType.getFormat() + "/" + parametersId);
             } else {
                 log.finer("Expiring page " + tilePage + "/" + mimeType.getFormat());
             }
         }
         GWCTask truncateTask =
-                createTruncateTaskForPage(
-                        layerName, gridSetId, zoomLevel, pageGridCoverage, mimeType, parametersId);
+                createTruncateTaskForPage(layerName, gridSetId, zoomLevel, pageGridCoverage, mimeType, parametersId);
 
         // truncate synchronously. We're already inside the interested thread
         try {
@@ -268,23 +252,14 @@ public class CacheCleaner implements DisposableBean {
             int zoomStop = zoomLevel;
 
             // We only need the parametersId here.
-            tileRange =
-                    new TileRange(
-                            layerName,
-                            gridSetId,
-                            zoomStart,
-                            zoomStop,
-                            pageGridCoverage,
-                            mimeType,
-                            null,
-                            parametersId);
+            tileRange = new TileRange(
+                    layerName, gridSetId, zoomStart, zoomStop, pageGridCoverage, mimeType, null, parametersId);
         }
 
         boolean filterUpdate = false;
         GWCTask[] truncateTasks;
         try {
-            truncateTasks =
-                    this.tileBreeder.createTasks(tileRange, GWCTask.TYPE.TRUNCATE, 1, filterUpdate);
+            truncateTasks = this.tileBreeder.createTasks(tileRange, GWCTask.TYPE.TRUNCATE, 1, filterUpdate);
         } catch (GeoWebCacheException e) {
             throw new RuntimeException(e);
         }

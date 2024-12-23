@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp / The Open Planning Project 2008
  * @author David Vick / Boundless 2017
@@ -52,7 +51,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReloadController implements ApplicationContextAware {
     private static Logger log = Logging.getLogger(ReloadController.class.getName());
 
-    @Autowired TileLayerDispatcher layerDispatcher;
+    @Autowired
+    TileLayerDispatcher layerDispatcher;
+
     private ApplicationContext applicationContext;
 
     @ExceptionHandler(RestException.class)
@@ -62,15 +63,11 @@ public class ReloadController implements ApplicationContextAware {
 
     @RequestMapping(value = "/reload", method = RequestMethod.POST)
     public @ResponseBody ResponseEntity<?> doPost(
-            HttpServletRequest request,
-            InputStream inputStream,
-            @RequestParam Map<String, String> params)
+            HttpServletRequest request, InputStream inputStream, @RequestParam Map<String, String> params)
             throws GeoWebCacheException, RestException, IOException {
 
         String body =
-                new BufferedReader(new InputStreamReader(inputStream))
-                        .lines()
-                        .collect(Collectors.joining("\n"));
+                new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.joining("\n"));
 
         // If Content-Type is not application/x-www-urlencoded, the form contents will still
         // be in the body.
@@ -90,35 +87,31 @@ public class ReloadController implements ApplicationContextAware {
 
         StringBuilder doc = new StringBuilder();
 
-        doc.append(
-                "<html>\n"
-                        + ServletUtils.gwcHtmlHeader("../", "GWC Reload")
-                        + "<body>\n"
-                        + ServletUtils.gwcHtmlLogoLink("../"));
+        doc.append("<html>\n"
+                + ServletUtils.gwcHtmlHeader("../", "GWC Reload")
+                + "<body>\n"
+                + ServletUtils.gwcHtmlLogoLink("../"));
 
         try {
             GeoWebCacheExtensions.reinitialize(applicationContext);
-            String info =
-                    "TileLayerConfiguration reloaded. Read "
-                            + layerDispatcher.getLayerCount()
-                            + " layers from configuration resources.";
+            String info = "TileLayerConfiguration reloaded. Read "
+                    + layerDispatcher.getLayerCount()
+                    + " layers from configuration resources.";
 
             log.info(info);
             doc.append("<p>" + info + "</p>");
 
-            doc.append(
-                    "<p>Note that this functionality has not been rigorously tested,"
-                            + " please reload the servlet if you run into any problems."
-                            + " Also note that you must truncate the tiles of any layers that have changed.</p>");
+            doc.append("<p>Note that this functionality has not been rigorously tested,"
+                    + " please reload the servlet if you run into any problems."
+                    + " Also note that you must truncate the tiles of any layers that have changed.</p>");
 
         } catch (Exception e) {
-            doc.append(
-                    "<p>There was a problem reloading the configuration:<br>\n"
-                            + e.getMessage()
-                            + "\n<br>"
-                            + " If you believe this is a bug, please submit a ticket at "
-                            + "<a href=\"http://geowebcache.org\">GeoWebCache.org</a>"
-                            + "</p>");
+            doc.append("<p>There was a problem reloading the configuration:<br>\n"
+                    + e.getMessage()
+                    + "\n<br>"
+                    + " If you believe this is a bug, please submit a ticket at "
+                    + "<a href=\"http://geowebcache.org\">GeoWebCache.org</a>"
+                    + "</p>");
         }
 
         doc.append("<p><a href=\"../demo\">Go back</a></p>\n");

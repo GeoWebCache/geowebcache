@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Kevin Smith, Boundless, 2017
  */
@@ -30,7 +29,8 @@ import org.junit.runners.model.Statement;
 
 public class MockExtensionRuleTest {
 
-    @Rule public ExpectedException exception = ExpectedException.none();
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testRestoresPreviousState() throws Throwable {
@@ -133,9 +133,7 @@ public class MockExtensionRuleTest {
                                 String bean = "THISISTHEBEAN";
                                 rule.addBean("foo", bean, String.class);
 
-                                assertThat(
-                                        GeoWebCacheExtensions.bean(String.class),
-                                        sameInstance(bean));
+                                assertThat(GeoWebCacheExtensions.bean(String.class), sameInstance(bean));
                             }
                         },
                         Description.createSuiteDescription("MOCK"))
@@ -159,8 +157,7 @@ public class MockExtensionRuleTest {
                                 rule.addBean("foo", bean, String.class);
 
                                 assertThat(
-                                        GeoWebCacheExtensions.extensions(String.class),
-                                        contains(sameInstance(bean)));
+                                        GeoWebCacheExtensions.extensions(String.class), contains(sameInstance(bean)));
                             }
                         },
                         Description.createSuiteDescription("MOCK"))
@@ -190,8 +187,7 @@ public class MockExtensionRuleTest {
 
                                 assertThat(
                                         GeoWebCacheExtensions.extensions(String.class),
-                                        containsInAnyOrder(
-                                                sameInstance(bean1), sameInstance(bean2)));
+                                        containsInAnyOrder(sameInstance(bean1), sameInstance(bean2)));
                             }
                         },
                         Description.createSuiteDescription("MOCK"))
@@ -222,16 +218,14 @@ public class MockExtensionRuleTest {
                                             public void evaluate() throws Throwable {
                                                 rule2.addBean("foo", bean2, String.class);
                                                 assertThat(
-                                                        GeoWebCacheExtensions.extensions(
-                                                                String.class),
+                                                        GeoWebCacheExtensions.extensions(String.class),
                                                         contains(sameInstance(bean2)));
                                             }
                                         },
                                         Description.createSuiteDescription("MOCK"));
 
                                 assertThat(
-                                        GeoWebCacheExtensions.extensions(String.class),
-                                        contains(sameInstance(bean1)));
+                                        GeoWebCacheExtensions.extensions(String.class), contains(sameInstance(bean1)));
                             }
                         },
                         Description.createSuiteDescription("MOCK"))

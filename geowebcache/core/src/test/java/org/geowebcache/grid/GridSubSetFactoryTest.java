@@ -9,15 +9,13 @@ import org.junit.Test;
 
 public class GridSubSetFactoryTest {
 
-    GridSetBroker gridSetBroker =
-            new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
+    GridSetBroker gridSetBroker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
 
     @Test
     public void testCoverageBounds() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
 
-        GridSubset grid =
-                GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0, 0);
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0, 0);
 
         long[] ret = grid.getCoverage(0);
         long[] correct = {1, 0, 1, 0, 0};
@@ -29,8 +27,7 @@ public class GridSubSetFactoryTest {
     public void testCoverageBounds2() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
 
-        GridSubset grid =
-                GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0, 1);
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 0, 1);
 
         long[] ret = grid.getCoverage(1);
         long[] correct = {2, 1, 3, 1, 1};
@@ -45,8 +42,7 @@ public class GridSubSetFactoryTest {
         int zoomStart = 3;
         int zoomStop = 9;
         GridSubset grid =
-                GridSubsetFactory.createGridSubSet(
-                        gridSetBroker.getWorldEpsg4326(), bbox, zoomStart, zoomStop);
+                GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, zoomStart, zoomStop);
 
         String[] gridNames = grid.getGridNames();
         final int nlevels = 1 + (grid.getZoomStop() - grid.getZoomStart());
@@ -60,8 +56,7 @@ public class GridSubSetFactoryTest {
     public void testWMTSCoverage() throws Exception {
         BoundingBox bbox = new BoundingBox(0, 0, 180, 90);
 
-        GridSubset grid =
-                GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 1, 3);
+        GridSubset grid = GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, 1, 3);
 
         long[][] coverages = grid.getWMTSCoverages();
         Assert.assertEquals(3, coverages.length);
@@ -77,8 +72,7 @@ public class GridSubSetFactoryTest {
         int zoomStart = 3;
         int zoomStop = 9;
         GridSubset grid =
-                GridSubsetFactory.createGridSubSet(
-                        gridSetBroker.getWorldEpsg4326(), bbox, zoomStart, zoomStop);
+                GridSubsetFactory.createGridSubSet(gridSetBroker.getWorldEpsg4326(), bbox, zoomStart, zoomStop);
 
         String[] gridNames = grid.getGridNames();
         for (int i = 0, z = zoomStart; i < gridNames.length; i++, z++) {

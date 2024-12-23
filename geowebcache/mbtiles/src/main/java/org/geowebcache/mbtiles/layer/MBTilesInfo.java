@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2021
  */
@@ -101,8 +100,7 @@ public class MBTilesInfo {
         if (env != null) {
             try {
                 wgs84Bounds = getBBoxFromEnvelope(env);
-                envelope =
-                        ReferencedEnvelope.create(env, WGS_84).transform(SPHERICAL_MERCATOR, true);
+                envelope = ReferencedEnvelope.create(env, WGS_84).transform(SPHERICAL_MERCATOR, true);
             } catch (TransformException | FactoryException e) {
                 throw new IllegalArgumentException(
                         "Exception occurred while transforming the bound of: "
@@ -111,10 +109,9 @@ public class MBTilesInfo {
             }
         } else {
             if (log.isLoggable(Level.WARNING)) {
-                log.warning(
-                        "Provided MBTile has a Null Envelope: "
-                                + file.getFile().getAbsolutePath()
-                                + ". Using full GridSet extent ");
+                log.warning("Provided MBTile has a Null Envelope: "
+                        + file.getFile().getAbsolutePath()
+                        + ". Using full GridSet extent ");
             }
             envelope = WORLD_ENVELOPE;
             wgs84Bounds = WORLD_MERCATOR_WGS_84_BOUNDS;
@@ -125,12 +122,8 @@ public class MBTilesInfo {
     private BoundingBox getBBoxFromEnvelope(Bounds envelope) {
         BoundingBox bbox = null;
         if (envelope != null) {
-            bbox =
-                    new BoundingBox(
-                            envelope.getMinimum(0),
-                            envelope.getMinimum(1),
-                            envelope.getMaximum(0),
-                            envelope.getMaximum(1));
+            bbox = new BoundingBox(
+                    envelope.getMinimum(0), envelope.getMinimum(1), envelope.getMaximum(0), envelope.getMaximum(1));
         }
         return bbox;
     }
@@ -139,11 +132,7 @@ public class MBTilesInfo {
         tileJSON.setMinZoom(minZoom);
         tileJSON.setMaxZoom(maxZoom);
         tileJSON.setBounds(
-                new double[] {
-                    wgs84Bounds.getMinX(),
-                    wgs84Bounds.getMinY(),
-                    wgs84Bounds.getMaxX(),
-                    wgs84Bounds.getMaxY()
+                new double[] {wgs84Bounds.getMinX(), wgs84Bounds.getMinY(), wgs84Bounds.getMaxX(), wgs84Bounds.getMaxY()
                 });
         if (metadata != null) {
             String description = metadata.getDescription();
@@ -161,12 +150,9 @@ public class MBTilesInfo {
                 ObjectMapper mapper = new ObjectMapper();
                 List<VectorLayerMetadata> layers = null;
                 try {
-                    layers =
-                            mapper.readValue(
-                                    json, new TypeReference<List<VectorLayerMetadata>>() {});
+                    layers = mapper.readValue(json, new TypeReference<List<VectorLayerMetadata>>() {});
                 } catch (JsonProcessingException e) {
-                    throw new IllegalArgumentException(
-                            "Exception occurred while parsing the layers metadata. " + e);
+                    throw new IllegalArgumentException("Exception occurred while parsing the layers metadata. " + e);
                 }
                 tileJSON.setLayers(layers);
             }

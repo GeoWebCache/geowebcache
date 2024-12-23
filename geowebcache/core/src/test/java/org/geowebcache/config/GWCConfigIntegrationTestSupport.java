@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2018
  */
@@ -21,20 +20,18 @@ import org.geowebcache.grid.GridSetBroker;
 /**
  * Provides access to an (initially empty) GWC configuration.
  *
- * <p>Seperate implementations exist for each of the different GWC Configurations. See: * {@link
- * GWCXMLConfigIntegrationTestSupport}
+ * <p>Seperate implementations exist for each of the different GWC Configurations. See: *
+ * {@link GWCXMLConfigIntegrationTestSupport}
  */
 public abstract class GWCConfigIntegrationTestSupport {
 
-    GridSetBroker broker =
-            new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
+    GridSetBroker broker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
 
     /** Resets to an empty configuration; */
     public abstract void resetConfiguration() throws Exception;
 
     /**
-     * @return The list of {@link TileLayerConfiguration}s for this GWC configuration (usually just
-     *     a singleton list)
+     * @return The list of {@link TileLayerConfiguration}s for this GWC configuration (usually just a singleton list)
      */
     public abstract List<TileLayerConfiguration> getTileLayerConfigurations();
 

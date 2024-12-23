@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Marius Suta / The Open Planning Project 2008 (original code from SeedRestlet)
  * @author Arne Kepp / The Open Planning Project 2009 (original code from SeedRestlet)
@@ -57,26 +56,24 @@ import org.springframework.context.ApplicationContextAware;
 /**
  * Class in charge of dispatching seed/truncate tasks.
  *
- * <p>As of version 1.2.4a+, it is possible to control how GWC behaves in the event that a backend
- * (WMS for example) request fails during seeding, using the following environment variables:
+ * <p>As of version 1.2.4a+, it is possible to control how GWC behaves in the event that a backend (WMS for example)
+ * request fails during seeding, using the following environment variables:
  *
  * <ul>
- *   <li>{@code GWC_SEED_RETRY_COUNT}: specifies how many times to retry a failed request for each
- *       tile being seeded. Use {@code 0} for no retries, or any higher number. Defaults to {@code
- *       0} retry meaning no retries are performed. It also means that the defaults to the other two
- *       variables do not apply at least you specify a higher value for GWC_SEED_RETRY_COUNT;
- *   <li>{@code GWC_SEED_RETRY_WAIT}: specifies how much to wait before each retry upon a failure to
- *       seed a tile, in milliseconds. Defaults to {@code 100ms};
- *   <li>{@code GWC_SEED_ABORT_LIMIT}: specifies the aggregated number of failures that a group of
- *       seeding threads should reach before aborting the seeding operation as a whole. This value
- *       is shared by all the threads launched as a single thread group; so if the value is {@code
- *       10} and you launch a seed task with four threads, when {@code 10} failures are reached by
- *       all or any of those four threads the four threads will abort the seeding task. The default
- *       is {@code 1000}.
+ *   <li>{@code GWC_SEED_RETRY_COUNT}: specifies how many times to retry a failed request for each tile being seeded.
+ *       Use {@code 0} for no retries, or any higher number. Defaults to {@code 0} retry meaning no retries are
+ *       performed. It also means that the defaults to the other two variables do not apply at least you specify a
+ *       higher value for GWC_SEED_RETRY_COUNT;
+ *   <li>{@code GWC_SEED_RETRY_WAIT}: specifies how much to wait before each retry upon a failure to seed a tile, in
+ *       milliseconds. Defaults to {@code 100ms};
+ *   <li>{@code GWC_SEED_ABORT_LIMIT}: specifies the aggregated number of failures that a group of seeding threads
+ *       should reach before aborting the seeding operation as a whole. This value is shared by all the threads launched
+ *       as a single thread group; so if the value is {@code 10} and you launch a seed task with four threads, when
+ *       {@code 10} failures are reached by all or any of those four threads the four threads will abort the seeding
+ *       task. The default is {@code 1000}.
  * </ul>
  *
- * These environment variables can be established by any of the following ways, in order of
- * precedence:
+ * These environment variables can be established by any of the following ways, in order of precedence:
  *
  * <ol>
  *   <li>As a Java environment variable: for example {@code java -DGWC_SEED_RETRY_COUNT=5 ...};
@@ -91,8 +88,8 @@ import org.springframework.context.ApplicationContextAware;
  * </code>
  * </pre>
  *       In the web application's {@code WEB-INF/web.xml} configuration file;
- *   <li>As a System environment variable: {@code export GWC_SEED_ABORT_LIMIT=2000; <your usual
- *       command to run GWC here>}
+ *   <li>As a System environment variable: {@code export GWC_SEED_ABORT_LIMIT=2000; <your usual command to run GWC
+ *       here>}
  * </ol>
  *
  * @author Gabriel Roldan, based on Marius Suta's and Arne Kepp's SeedRestlet
@@ -112,18 +109,15 @@ public class TileBreeder implements ApplicationContextAware {
 
     private StorageBroker storageBroker;
 
-    /**
-     * How many retries per failed tile. -1: disable checks, 0 = don't retry, 1 = retry once if
-     * failed, etc
-     */
+    /** How many retries per failed tile. -1: disable checks, 0 = don't retry, 1 = retry once if failed, etc */
     public static int TILE_FAILURE_RETRY_COUNT_DEFAULT = 0;
 
     /** How much (in milliseconds) to wait before trying again a failed tile */
     public static long TILE_FAILURE_RETRY_WAIT_TIME_DEFAULT = 100;
 
     /**
-     * How many failures to tolerate before aborting the seed task. Value is shared between all the
-     * threads of the same run.
+     * How many failures to tolerate before aborting the seed task. Value is shared between all the threads of the same
+     * run.
      */
     public static long TOTAL_FAILURES_BEFORE_ABORTING_DEFAULT = 1000;
 
@@ -149,8 +143,8 @@ public class TileBreeder implements ApplicationContextAware {
     }
 
     /**
-     * Initializes the seed task failure control variables either with the provided environment
-     * variable values or their defaults.
+     * Initializes the seed task failure control variables either with the provided environment variable values or their
+     * defaults.
      *
      * @see {@link TileBreeder class' javadocs} for more information
      * @see
@@ -173,10 +167,9 @@ public class TileBreeder implements ApplicationContextAware {
     @SuppressWarnings("serial")
     private void checkPositive(long value, String variable) {
         if (value < 0) {
-            throw new BeanInitializationException(
-                    "Invalid configuration value for environment variable "
-                            + variable
-                            + ". It should be a positive integer.") {};
+            throw new BeanInitializationException("Invalid configuration value for environment variable "
+                    + variable
+                    + ". It should be a positive integer.") {};
         }
     }
 
@@ -187,13 +180,12 @@ public class TileBreeder implements ApplicationContextAware {
         try {
             return Long.valueOf(paramVal);
         } catch (NumberFormatException e) {
-            log.warning(
-                    "Invalid environment parameter for "
-                            + varName
-                            + ": '"
-                            + paramVal
-                            + "'. Using default value: "
-                            + defaultVal);
+            log.warning("Invalid environment parameter for "
+                    + varName
+                    + ": '"
+                    + paramVal
+                    + "'. Using default value: "
+                    + defaultVal);
         }
         return defaultVal;
     }
@@ -207,15 +199,13 @@ public class TileBreeder implements ApplicationContextAware {
 
         TileRange tr = createTileRange(sr, tl);
 
-        GWCTask[] tasks =
-                createTasks(tr, tl, sr.getType(), sr.getThreadCount(), sr.getFilterUpdate());
+        GWCTask[] tasks = createTasks(tr, tl, sr.getType(), sr.getThreadCount(), sr.getFilterUpdate());
 
         dispatchTasks(tasks);
     }
 
     /**
-     * Create tasks to manipulate the cache (Seed, truncate, etc) They will still need to be
-     * dispatched.
+     * Create tasks to manipulate the cache (Seed, truncate, etc) They will still need to be dispatched.
      *
      * @param tr The range of tiles to work on.
      * @param type The type of task(s) to create
@@ -223,8 +213,7 @@ public class TileBreeder implements ApplicationContextAware {
      * @param filterUpdate // TODO: What does this do?
      * @return Array of tasks. Will have length threadCount or 1.
      */
-    public GWCTask[] createTasks(
-            TileRange tr, GWCTask.TYPE type, int threadCount, boolean filterUpdate)
+    public GWCTask[] createTasks(TileRange tr, GWCTask.TYPE type, int threadCount, boolean filterUpdate)
             throws GeoWebCacheException {
 
         String layerName = tr.getLayerName();
@@ -232,8 +221,7 @@ public class TileBreeder implements ApplicationContextAware {
         return createTasks(tr, tileLayer, type, threadCount, filterUpdate);
     }
 
-    public GWCTask[] createTasks(
-            TileRange tr, TileLayer tl, GWCTask.TYPE type, int threadCount, boolean filterUpdate)
+    public GWCTask[] createTasks(TileRange tr, TileLayer tl, GWCTask.TYPE type, int threadCount, boolean filterUpdate)
             throws GeoWebCacheException {
         return createTasks(
                 tr,
@@ -247,8 +235,7 @@ public class TileBreeder implements ApplicationContextAware {
     }
 
     /**
-     * Create tasks to manipulate the cache (Seed, truncate, etc). They will still need to be
-     * dispatched.
+     * Create tasks to manipulate the cache (Seed, truncate, etc). They will still need to be dispatched.
      *
      * @param tr The range of tiles to work on.
      * @param tl The layer to work on. Overrides any layer specified on tr.
@@ -257,8 +244,7 @@ public class TileBreeder implements ApplicationContextAware {
      * @param filterUpdate // TODO: What does this do?
      * @param tileFailureRetryCount Number of retries for a single tile
      * @param tileFailureRetryWaitTime Time to wait between retries
-     * @param totalFailuresBeforeAborting Total number of failures, across all threads, before
-     *     aborting seeding
+     * @param totalFailuresBeforeAborting Total number of failures, across all threads, before aborting seeding
      * @return Array of tasks. Will have length threadCount or 1.
      */
     public GWCTask[] createTasks(
@@ -289,10 +275,7 @@ public class TileBreeder implements ApplicationContextAware {
             } else {
                 SeedTask task = (SeedTask) createSeedTask(type, trIter, tl, filterUpdate);
                 task.setFailurePolicy(
-                        tileFailureRetryCount,
-                        tileFailureRetryWaitTime,
-                        totalFailuresBeforeAborting,
-                        failureCounter);
+                        tileFailureRetryCount, tileFailureRetryWaitTime, totalFailuresBeforeAborting, failureCounter);
                 tasks[i] = task;
             }
             tasks[i].setThreadInfo(sharedThreadCount, i);
@@ -323,8 +306,7 @@ public class TileBreeder implements ApplicationContextAware {
     }
 
     /** Find the tile range for a Seed Request. */
-    public static TileRange createTileRange(SeedRequest req, TileLayer tl)
-            throws GeoWebCacheException {
+    public static TileRange createTileRange(SeedRequest req, TileLayer tl) throws GeoWebCacheException {
         int zoomStart = req.getZoomStart().intValue();
         int zoomStop = req.getZoomStop().intValue();
 
@@ -349,10 +331,9 @@ public class TileBreeder implements ApplicationContextAware {
                 if (crsMatches.size() == 1) {
                     gridSetId = crsMatches.get(0).getName();
                 } else {
-                    throw new IllegalArgumentException(
-                            "More than one GridSubet matches the requested SRS "
-                                    + srs
-                                    + ". gridSetId must be specified");
+                    throw new IllegalArgumentException("More than one GridSubet matches the requested SRS "
+                            + srs
+                            + ". gridSetId must be specified");
                 }
             }
         }
@@ -381,8 +362,7 @@ public class TileBreeder implements ApplicationContextAware {
 
         String layerName = tl.getName();
         Map<String, String> parameters = req.getParameters();
-        return new TileRange(
-                layerName, gridSetId, zoomStart, zoomStop, coveredGridLevels, mimeType, parameters);
+        return new TileRange(layerName, gridSetId, zoomStart, zoomStop, coveredGridLevels, mimeType, parameters);
     }
 
     /**
@@ -392,8 +372,7 @@ public class TileBreeder implements ApplicationContextAware {
      * @param trIter a collection of tile ranges
      * @param tl the layer
      */
-    private GWCTask createSeedTask(
-            TYPE type, TileRangeIterator trIter, TileLayer tl, boolean doFilterUpdate)
+    private GWCTask createSeedTask(TYPE type, TileRangeIterator trIter, TileLayer tl, boolean doFilterUpdate)
             throws IllegalArgumentException {
 
         switch (type) {
@@ -406,31 +385,27 @@ public class TileBreeder implements ApplicationContextAware {
         }
     }
 
-    private GWCTask createTruncateTask(
-            TileRangeIterator trIter, TileLayer tl, boolean doFilterUpdate) {
+    private GWCTask createTruncateTask(TileRangeIterator trIter, TileLayer tl, boolean doFilterUpdate) {
 
         return new TruncateTask(storageBroker, trIter.getTileRange(), tl, doFilterUpdate);
     }
 
     /**
-     * Method returns List of Strings representing the status of the currently running and scheduled
-     * threads
+     * Method returns List of Strings representing the status of the currently running and scheduled threads
      *
-     * @return array of {@code [[tilesDone, tilesTotal, timeRemaining, taskID, taskStatus],...]}
-     *     where {@code taskStatus} is one of: {@code 0 = PENDING, 1 = RUNNING, 2 = DONE, -1 =
-     *     ABORTED}
+     * @return array of {@code [[tilesDone, tilesTotal, timeRemaining, taskID, taskStatus],...]} where
+     *     {@code taskStatus} is one of: {@code 0 = PENDING, 1 = RUNNING, 2 = DONE, -1 = ABORTED}
      */
     public long[][] getStatusList() {
         return getStatusList(null);
     }
 
     /**
-     * Method returns List of Strings representing the status of the currently running and scheduled
-     * threads for a specific layer.
+     * Method returns List of Strings representing the status of the currently running and scheduled threads for a
+     * specific layer.
      *
-     * @return array of {@code [[tilesDone, tilesTotal, timeRemaining, taskID, taskStatus],...]}
-     *     where {@code taskStatus} is one of: {@code 0 = PENDING, 1 = RUNNING, 2 = DONE, -1 =
-     *     ABORTED}
+     * @return array of {@code [[tilesDone, tilesTotal, timeRemaining, taskID, taskStatus],...]} where
+     *     {@code taskStatus} is one of: {@code 0 = PENDING, 1 = RUNNING, 2 = DONE, -1 = ABORTED}
      * @param layerName the name of the layer. null for all layers.
      */
     public long[][] getStatusList(final String layerName) {
@@ -484,7 +459,8 @@ public class TileBreeder implements ApplicationContextAware {
         try {
             dispatchesWithoutDrain = 0;
             threadPool.purge();
-            for (Iterator<Entry<Long, SubmittedTask>> it = this.currentPool.entrySet().iterator();
+            for (Iterator<Entry<Long, SubmittedTask>> it =
+                            this.currentPool.entrySet().iterator();
                     it.hasNext(); ) {
                 if (it.next().getValue().future.isDone()) {
                     it.remove();

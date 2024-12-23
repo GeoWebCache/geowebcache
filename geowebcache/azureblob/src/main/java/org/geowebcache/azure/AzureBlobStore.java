@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Andrea Aime, GeoSolutions, Copyright 2019
  */
@@ -71,8 +70,7 @@ public class AzureBlobStore implements BlobStore {
 
     private volatile boolean shutDown = false;
 
-    public AzureBlobStore(
-            AzureBlobStoreData configuration, TileLayerDispatcher layers, LockProvider lockProvider)
+    public AzureBlobStore(AzureBlobStoreData configuration, TileLayerDispatcher layers, LockProvider lockProvider)
             throws StorageException {
         this.client = new AzureClient(configuration);
 
@@ -81,17 +79,15 @@ public class AzureBlobStore implements BlobStore {
 
         // check target is suitable for a cache
         boolean emptyFolder = client.listBlobs(prefix, 1).isEmpty();
-        boolean existingMetadata = !client.listBlobs(keyBuilder.storeMetadata(), 1).isEmpty();
-        CompositeBlobStore.checkSuitability(
-                configuration.getLocation(), existingMetadata, emptyFolder);
+        boolean existingMetadata =
+                !client.listBlobs(keyBuilder.storeMetadata(), 1).isEmpty();
+        CompositeBlobStore.checkSuitability(configuration.getLocation(), existingMetadata, emptyFolder);
 
         // Just a marker to indicate this is a GWC cache.
         client.putProperties(keyBuilder.storeMetadata(), new Properties());
 
         // deletes are a complicated beast, we have a dedicated class to run them
-        deleteManager =
-                new DeleteManager(
-                        client, lockProvider, keyBuilder, configuration.getMaxConnections());
+        deleteManager = new DeleteManager(client, lockProvider, keyBuilder, configuration.getMaxConnections());
         deleteManager.issuePendingBulkDeletes();
     }
 
@@ -121,24 +117,21 @@ public class AzureBlobStore implements BlobStore {
     }
 
     @Override
-    public boolean deleteByParametersId(String layerName, String parametersId)
-            throws StorageException {
+    public boolean deleteByParametersId(String layerName, String parametersId) throws StorageException {
         checkNotNull(layerName, "layerName");
         checkNotNull(parametersId, "parametersId");
 
-        boolean prefixExists =
-                keyBuilder.forParameters(layerName, parametersId).stream()
-                        .map(
-                                prefix -> {
-                                    try {
-                                        return deleteManager.scheduleAsyncDelete(prefix);
-                                    } catch (StorageException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                })
-                        .reduce(Boolean::logicalOr) // Don't use Stream.anyMatch as it would short
-                        // circuit
-                        .orElse(false);
+        boolean prefixExists = keyBuilder.forParameters(layerName, parametersId).stream()
+                .map(prefix -> {
+                    try {
+                        return deleteManager.scheduleAsyncDelete(prefix);
+                    } catch (StorageException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .reduce(Boolean::logicalOr) // Don't use Stream.anyMatch as it would short
+                // circuit
+                .orElse(false);
         if (prefixExists) {
             listeners.sendParametersDeleted(layerName, parametersId);
         }
@@ -146,8 +139,7 @@ public class AzureBlobStore implements BlobStore {
     }
 
     @Override
-    public boolean deleteByGridsetId(final String layerName, final String gridSetId)
-            throws StorageException {
+    public boolean deleteByGridsetId(final String layerName, final String gridSetId) throws StorageException {
 
         checkNotNull(layerName, "layerName");
         checkNotNull(gridSetId, "gridSetId");
@@ -206,33 +198,26 @@ public class AzureBlobStore implements BlobStore {
         }
 
         // open an iterator oer tile locations, to avoid memory accumulation
-        final Iterator<long[]> tileLocations =
-                new AbstractIterator<long[]>() {
+        final Iterator<long[]> tileLocations = new AbstractIterator<long[]>() {
 
-                    // TileRange iterator with 1x1 meta tiling factor
-                    private TileRangeIterator trIter =
-                            new TileRangeIterator(tileRange, new int[] {1, 1});
+            // TileRange iterator with 1x1 meta tiling factor
+            private TileRangeIterator trIter = new TileRangeIterator(tileRange, new int[] {1, 1});
 
-                    @Override
-                    protected long[] computeNext() {
-                        long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
-                        return gridLoc == null ? endOfData() : gridLoc;
-                    }
-                };
+            @Override
+            protected long[] computeNext() {
+                long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
+                return gridLoc == null ? endOfData() : gridLoc;
+            }
+        };
 
         // if no listeners, we don't need to gather extra tile info, use a dedicated fast path
         if (listeners.isEmpty()) {
             // if there are no listeners, don't bother requesting every tile
             // metadata to notify the listeners
-            Iterator<String> keysIterator =
-                    Iterators.transform(
-                            tileLocations,
-                            tl ->
-                                    keyBuilder.forLocation(
-                                            coordsPrefix, tl, tileRange.getMimeType()));
+            Iterator<String> keysIterator = Iterators.transform(
+                    tileLocations, tl -> keyBuilder.forLocation(coordsPrefix, tl, tileRange.getMimeType()));
             // split the iteration in parts to avoid memory accumulation
-            Iterator<List<String>> partition =
-                    Iterators.partition(keysIterator, DeleteManager.PAGE_SIZE);
+            Iterator<List<String>> partition = Iterators.partition(keysIterator, DeleteManager.PAGE_SIZE);
 
             while (partition.hasNext() && !shutDown) {
                 List<String> locations = partition.next();
@@ -248,18 +233,12 @@ public class AzureBlobStore implements BlobStore {
             String format = tileRange.getMimeType().getFormat();
             Map<String, String> parameters = tileRange.getParameters();
 
-            Iterator<Callable<?>> tilesIterator =
-                    Iterators.transform(
-                            tileLocations,
-                            xyz -> {
-                                TileObject tile =
-                                        TileObject.createQueryTileObject(
-                                                layerName, xyz, gridSetId, format, parameters);
-                                tile.setParametersId(tileRange.getParametersId());
-                                return (Callable<Object>) () -> delete(tile);
-                            });
-            Iterator<List<Callable<?>>> partition =
-                    Iterators.partition(tilesIterator, DeleteManager.PAGE_SIZE);
+            Iterator<Callable<?>> tilesIterator = Iterators.transform(tileLocations, xyz -> {
+                TileObject tile = TileObject.createQueryTileObject(layerName, xyz, gridSetId, format, parameters);
+                tile.setParametersId(tileRange.getParametersId());
+                return (Callable<Object>) () -> delete(tile);
+            });
+            Iterator<List<Callable<?>>> partition = Iterators.partition(tilesIterator, DeleteManager.PAGE_SIZE);
 
             // once a page of callables is ready, run them in parallel on the delete manager
             while (partition.hasNext() && !shutDown) {
@@ -324,26 +303,20 @@ public class AzureBlobStore implements BlobStore {
             ByteBuffer buffer = ByteBuffer.wrap(bytes);
             String mimeType = MimeType.createFromFormat(obj.getBlobFormat()).getMimeType();
             BlobHTTPHeaders headers = new BlobHTTPHeaders().withBlobContentType(mimeType);
-            int status =
-                    blobURL.upload(Flowable.just(buffer), bytes.length, headers, null, null, null)
-                            .blockingGet()
-                            .statusCode();
+            int status = blobURL.upload(Flowable.just(buffer), bytes.length, headers, null, null, null)
+                    .blockingGet()
+                    .statusCode();
             if (!HttpStatus.valueOf(status).is2xxSuccessful()) {
-                throw new StorageException(
-                        "Failed to upload tile to Azure on container "
-                                + client.getContainerName()
-                                + " and key "
-                                + key
-                                + " got HTTP  status "
-                                + status);
+                throw new StorageException("Failed to upload tile to Azure on container "
+                        + client.getContainerName()
+                        + " and key "
+                        + key
+                        + " got HTTP  status "
+                        + status);
             }
         } catch (RestException | IOException | MimeException e) {
             throw new StorageException(
-                    "Failed to upload tile to Azure on container "
-                            + client.getContainerName()
-                            + " and key "
-                            + key,
-                    e);
+                    "Failed to upload tile to Azure on container " + client.getContainerName() + " and key " + key, e);
         }
         // along with the metadata
         putParametersMetadata(obj.getLayerName(), obj.getParametersId(), obj.getParameters());
@@ -358,8 +331,7 @@ public class AzureBlobStore implements BlobStore {
         }
     }
 
-    private void putParametersMetadata(
-            String layerName, String parametersId, Map<String, String> parameters) {
+    private void putParametersMetadata(String layerName, String parametersId, Map<String, String> parameters) {
         assert (isNull(parametersId) == isNull(parameters));
         if (isNull(parametersId)) {
             return;
@@ -449,18 +421,13 @@ public class AzureBlobStore implements BlobStore {
     @Override
     public Map<String, Optional<Map<String, String>>> getParametersMapping(String layerName) {
         // going big, with MAX_VALUE, since at the end everything must be held in memory anyways
-        List<BlobItem> items =
-                client.listBlobs(keyBuilder.parametersMetadataPrefix(layerName), Integer.MAX_VALUE);
+        List<BlobItem> items = client.listBlobs(keyBuilder.parametersMetadataPrefix(layerName), Integer.MAX_VALUE);
         Map<String, Optional<Map<String, String>>> result = new HashMap<>();
         try {
             for (BlobItem item : items) {
 
-                Map<String, String> properties =
-                        client.getProperties(item.name()).entrySet().stream()
-                                .collect(
-                                        Collectors.toMap(
-                                                e -> (String) e.getKey(),
-                                                e -> (String) e.getValue()));
+                Map<String, String> properties = client.getProperties(item.name()).entrySet().stream()
+                        .collect(Collectors.toMap(e -> (String) e.getKey(), e -> (String) e.getValue()));
                 result.put(ParametersUtils.getId(properties), Optional.of(properties));
             }
             return result;

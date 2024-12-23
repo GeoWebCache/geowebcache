@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Marius Suta / The Open Planning Project 2008
  * @author Arne Kepp / The Open Planning Project 2009
@@ -63,10 +62,10 @@ import org.springframework.util.Assert;
 @Service
 public class FormService {
 
-    @Autowired TileBreeder seeder;
+    @Autowired
+    TileBreeder seeder;
 
-    public ResponseEntity<?> handleKillAllThreadsPost(Map<String, String> form, TileLayer tl)
-            throws RestException {
+    public ResponseEntity<?> handleKillAllThreadsPost(Map<String, String> form, TileLayer tl) throws RestException {
 
         final boolean allLayers = tl == null;
 
@@ -82,9 +81,7 @@ public class FormService {
             tasks = seeder.getRunningAndPendingTasks();
         } else {
             throw new RestException(
-                    "Unknown kill_all code: '"
-                            + killCode
-                            + "'. One of all|running|pending is expected.",
+                    "Unknown kill_all code: '" + killCode + "'. One of all|running|pending is expected.",
                     HttpStatus.BAD_REQUEST);
         }
 
@@ -133,10 +130,9 @@ public class FormService {
         if (seeder.terminateGWCTask(Long.parseLong(id))) {
             doc.append("<ul><li>Requested to terminate task " + id + ".</li></ul>");
         } else {
-            doc.append(
-                    "<ul><li>Sorry, either task "
-                            + id
-                            + " has not started yet, or it is a truncate task that cannot be interrutped.</li></ul>");
+            doc.append("<ul><li>Sorry, either task "
+                    + id
+                    + " has not started yet, or it is a truncate task that cannot be interrutped.</li></ul>");
         }
 
         if (tl != null) {
@@ -189,12 +185,11 @@ public class FormService {
         BoundingBox bounds = null;
 
         if (form.get("minX") != null && !form.get("minX").equalsIgnoreCase("")) {
-            bounds =
-                    new BoundingBox(
-                            parseDouble(form, "minX"),
-                            parseDouble(form, "minY"),
-                            parseDouble(form, "maxX"),
-                            parseDouble(form, "maxY"));
+            bounds = new BoundingBox(
+                    parseDouble(form, "minX"),
+                    parseDouble(form, "minY"),
+                    parseDouble(form, "maxX"),
+                    parseDouble(form, "maxY"));
         } else {
             // Use default values for tile layer
             GridSubset subset = tl.getGridSubset(gridSetId);
@@ -223,36 +218,25 @@ public class FormService {
         GWCTask.TYPE type = GWCTask.TYPE.valueOf(form.get("type").toUpperCase());
 
         final String layerName = tl.getName();
-        SeedRequest sr =
-                new SeedRequest(
-                        layerName,
-                        bounds,
-                        gridSetId,
-                        threadCount,
-                        zoomStart,
-                        zoomStop,
-                        format,
-                        type,
-                        fullParameters);
+        SeedRequest sr = new SeedRequest(
+                layerName, bounds, gridSetId, threadCount, zoomStart, zoomStop, format, type, fullParameters);
 
         int tileFailureRetryCount = (int) getOptionalLongParam(form, "tileFailureRetryCount", 0);
         long tileFailureRetryWaitTime = getOptionalLongParam(form, "tileFailureRetryWaitTime", 0);
-        long totalFailuresBeforeAborting =
-                getOptionalLongParam(form, "totalFailuresBeforeAborting", 0);
+        long totalFailuresBeforeAborting = getOptionalLongParam(form, "totalFailuresBeforeAborting", 0);
         TileRange tr = createTileRange(sr, tl);
 
         GWCTask[] tasks;
         try {
-            tasks =
-                    seeder.createTasks(
-                            tr,
-                            tl,
-                            sr.getType(),
-                            sr.getThreadCount(),
-                            sr.getFilterUpdate(),
-                            tileFailureRetryCount,
-                            tileFailureRetryWaitTime,
-                            totalFailuresBeforeAborting);
+            tasks = seeder.createTasks(
+                    tr,
+                    tl,
+                    sr.getType(),
+                    sr.getThreadCount(),
+                    sr.getFilterUpdate(),
+                    tileFailureRetryCount,
+                    tileFailureRetryWaitTime,
+                    totalFailuresBeforeAborting);
         } catch (GeoWebCacheException e) {
             throw new RestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -283,8 +267,7 @@ public class FormService {
         try {
             return Double.parseDouble(value);
         } catch (NumberFormatException nfe) {
-            throw new RestException(
-                    "Value for " + key + " is not a double", HttpStatus.BAD_REQUEST);
+            throw new RestException("Value for " + key + " is not a double", HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -413,8 +396,7 @@ public class FormService {
 
         doc.append("<h3>Task submitted</h3>\n");
 
-        doc.append(
-                "<p>Below you can find a list of currently executing tasks, take the numbers with a grain of salt");
+        doc.append("<p>Below you can find a list of currently executing tasks, take the numbers with a grain of salt");
         doc.append(" until the task has had a chance to run for a few minutes. ");
 
         makeTaskList(doc, tl, false);
@@ -457,31 +439,21 @@ public class FormService {
         makeTextInput(doc, "minY", 6);
         makeTextInput(doc, "maxX", 6);
         makeTextInput(doc, "maxY", 6);
-        doc.append(
-                "</br><span style=\"font-size:80%\">These are optional, approximate values are fine.</span>");
+        doc.append("</br><span style=\"font-size:80%\">These are optional, approximate values are fine.</span>");
         doc.append("</td></tr>\n");
     }
 
     private void makeFailureHandlingPolicies(StringBuilder doc) {
         doc.append("<tr><td valign=\"top\">Tile failure retries:</td><td>");
-        makeTextInput(
-                doc, "tileFailureRetryCount", 6, String.valueOf(TILE_FAILURE_RETRY_COUNT_DEFAULT));
+        makeTextInput(doc, "tileFailureRetryCount", 6, String.valueOf(TILE_FAILURE_RETRY_COUNT_DEFAULT));
         doc.append(
                 "</br><span style=\"font-size:80%\">Set to -1 to disable retries and stop seed thread on the first failure.</span>");
         doc.append("</td></tr>");
         doc.append("<tr><td valign=\"top\">Pause before retry (ms):</td><td>");
-        makeTextInput(
-                doc,
-                "tileFailureRetryWaitTime",
-                6,
-                String.valueOf(TILE_FAILURE_RETRY_WAIT_TIME_DEFAULT));
+        makeTextInput(doc, "tileFailureRetryWaitTime", 6, String.valueOf(TILE_FAILURE_RETRY_WAIT_TIME_DEFAULT));
         doc.append("</td></tr>");
         doc.append("<tr><td valign=\"top\">Total failures before aborting:</td><td>");
-        makeTextInput(
-                doc,
-                "totalFailuresBeforeAborting",
-                6,
-                String.valueOf(TOTAL_FAILURES_BEFORE_ABORTING_DEFAULT));
+        makeTextInput(doc, "totalFailuresBeforeAborting", 6, String.valueOf(TOTAL_FAILURES_BEFORE_ABORTING_DEFAULT));
         doc.append("</td></tr>");
     }
 
@@ -489,12 +461,11 @@ public class FormService {
 
         for (String gridSetId : tl.getGridSubsets()) {
             GridSubset subset = tl.getGridSubset(gridSetId);
-            doc.append(
-                    "<li>"
-                            + escapeHtml4(gridSetId)
-                            + ":   "
-                            + subset.getOriginalExtent().toString()
-                            + "</li>\n");
+            doc.append("<li>"
+                    + escapeHtml4(gridSetId)
+                    + ":   "
+                    + subset.getOriginalExtent().toString()
+                    + "</li>\n");
         }
     }
 
@@ -503,14 +474,13 @@ public class FormService {
     }
 
     private void makeTextInput(StringBuilder doc, String id, int size, String defaultValue) {
-        doc.append(
-                "<input name=\""
-                        + escapeHtml4(id)
-                        + "\" type=\"text\" size=\""
-                        + size
-                        + "\" value=\""
-                        + escapeHtml4(defaultValue)
-                        + "\"/>");
+        doc.append("<input name=\""
+                + escapeHtml4(id)
+                + "\" type=\"text\" size=\""
+                + size
+                + "\" value=\""
+                + escapeHtml4(defaultValue)
+                + "\"/>");
     }
 
     private void makeSubmit(StringBuilder doc) {
@@ -605,8 +575,7 @@ public class FormService {
         doc.append("</td></tr>\n");
     }
 
-    private void makePullDown(
-            StringBuilder doc, String id, Map<String, String> keysValues, String defaultKey) {
+    private void makePullDown(StringBuilder doc, String id, Map<String, String> keysValues, String defaultKey) {
         doc.append("<select name=\"" + escapeHtml4(id) + "\">\n");
 
         Iterator<Map.Entry<String, String>> iter = keysValues.entrySet().iterator();
@@ -614,19 +583,17 @@ public class FormService {
         while (iter.hasNext()) {
             Map.Entry<String, String> entry = iter.next();
             if (entry.getKey().equals(defaultKey)) {
-                doc.append(
-                        "<option value=\""
-                                + escapeHtml4(entry.getValue())
-                                + "\" selected=\"selected\">"
-                                + escapeHtml4(entry.getKey())
-                                + "</option>\n");
+                doc.append("<option value=\""
+                        + escapeHtml4(entry.getValue())
+                        + "\" selected=\"selected\">"
+                        + escapeHtml4(entry.getKey())
+                        + "</option>\n");
             } else {
-                doc.append(
-                        "<option value=\""
-                                + escapeHtml4(entry.getValue())
-                                + "\">"
-                                + escapeHtml4(entry.getKey())
-                                + "</option>\n");
+                doc.append("<option value=\""
+                        + escapeHtml4(entry.getValue())
+                        + "\">"
+                        + escapeHtml4(entry.getKey())
+                        + "</option>\n");
             }
         }
 
@@ -635,10 +602,7 @@ public class FormService {
 
     private void makeFormHeader(StringBuilder doc, TileLayer tl) {
         doc.append("<h4>Create a new task:</h4>\n");
-        doc.append(
-                "<form id=\"seed\" action=\"./"
-                        + escapeHtml4(tl.getName())
-                        + "\" method=\"post\">\n");
+        doc.append("<form id=\"seed\" action=\"./" + escapeHtml4(tl.getName()) + "\" method=\"post\">\n");
         doc.append("<table border=\"0\" cellspacing=\"10\">\n");
     }
 
@@ -648,21 +612,19 @@ public class FormService {
     }
 
     private void makeHeader(StringBuilder doc) {
-        doc.append(
-                "<html>\n"
-                        + ServletUtils.gwcHtmlHeader("../../", "GWC Seed Form")
-                        + "<body>\n"
-                        + ServletUtils.gwcHtmlLogoLink("../../"));
+        doc.append("<html>\n"
+                + ServletUtils.gwcHtmlHeader("../../", "GWC Seed Form")
+                + "<body>\n"
+                + ServletUtils.gwcHtmlLogoLink("../../"));
     }
 
     private void makeWarningsAndHints(StringBuilder doc, TileLayer tl) {
-        doc.append(
-                "<h4>Please note:</h4><ul>\n"
-                        + "<li>This minimalistic interface does not check for correctness.</li>\n"
-                        + "<li>Seeding past zoomlevel 20 is usually not recommended.</li>\n"
-                        + "<li>Truncating KML will also truncate all KMZ archives.</li>\n"
-                        + "<li>Please check the logs of the container to look for error messages and progress indicators.</li>\n"
-                        + "</ul>\n");
+        doc.append("<h4>Please note:</h4><ul>\n"
+                + "<li>This minimalistic interface does not check for correctness.</li>\n"
+                + "<li>Seeding past zoomlevel 20 is usually not recommended.</li>\n"
+                + "<li>Truncating KML will also truncate all KMZ archives.</li>\n"
+                + "<li>Please check the logs of the container to look for error messages and progress indicators.</li>\n"
+                + "</ul>\n");
 
         doc.append("Here are the max bounds, if you do not specify bounds these will be used.\n");
         doc.append("<ul>\n");
@@ -714,20 +676,23 @@ public class FormService {
             final String tilesDoneStr = nf.format(task.getTilesDone());
             final GWCTask.STATE state = task.getState();
 
-            final String status =
-                    GWCTask.STATE.UNSET.equals(state) || GWCTask.STATE.READY.equals(state)
-                            ? "PENDING"
-                            : state.toString();
+            final String status = GWCTask.STATE.UNSET.equals(state) || GWCTask.STATE.READY.equals(state)
+                    ? "PENDING"
+                    : state.toString();
 
             String timeSpent = toTimeString(spent, tilesDone, tilesTotal);
             String timeRemaining = toTimeString(remining, tilesDone, tilesTotal);
 
             String bgColor = ++row % 2 == 0 ? "#FFFFFF" : "#DDDDDD";
             doc.append("<tr style=\"background-color:" + bgColor + ";\">");
-            doc.append("<td style=\"text-align:right\">").append(task.getTaskId()).append("</td>");
+            doc.append("<td style=\"text-align:right\">")
+                    .append(task.getTaskId())
+                    .append("</td>");
             doc.append("<td>");
             if (!layerName.equals(task.getLayerName())) {
-                doc.append("<a href=\"./").append(escapeHtml4(task.getLayerName())).append("\">");
+                doc.append("<a href=\"./")
+                        .append(escapeHtml4(task.getLayerName()))
+                        .append("\">");
             }
             doc.append(escapeHtml4(task.getLayerName()));
             if (!layerName.equals(task.getLayerName())) {
@@ -791,16 +756,15 @@ public class FormService {
     }
 
     private String makeThreadKillForm(Long key, TileLayer tl) {
-        String ret =
-                "<form form id=\"kill\" action=\"./"
-                        + escapeHtml4(tl.getName())
-                        + "\" method=\"post\">"
-                        + "<input type=\"hidden\" name=\"kill_thread\"  value=\"1\" />"
-                        + "<input type=\"hidden\" name=\"thread_id\"  value=\""
-                        + key
-                        + "\" />"
-                        + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;\"type=\"submit\" value=\"Kill Task\"></span>"
-                        + "</form>";
+        String ret = "<form form id=\"kill\" action=\"./"
+                + escapeHtml4(tl.getName())
+                + "\" method=\"post\">"
+                + "<input type=\"hidden\" name=\"kill_thread\"  value=\"1\" />"
+                + "<input type=\"hidden\" name=\"thread_id\"  value=\""
+                + key
+                + "\" />"
+                + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;\"type=\"submit\" value=\"Kill Task\"></span>"
+                + "</form>";
 
         return ret;
     }
@@ -825,12 +789,8 @@ public class FormService {
                 .append("\" method=\"post\">\n");
         doc.append("List ");
         doc.append("<select name=\"list\" onchange=\"this.form.submit();\">\n");
-        doc.append("<option value=\"layer\"")
-                .append(listAll ? "" : " selected")
-                .append(">this Layer tasks</option>\n");
-        doc.append("<option value=\"all\"")
-                .append(listAll ? " selected" : "")
-                .append(">all Layers tasks</option>\n");
+        doc.append("<option value=\"layer\"").append(listAll ? "" : " selected").append(">this Layer tasks</option>\n");
+        doc.append("<option value=\"all\"").append(listAll ? " selected" : "").append(">all Layers tasks</option>\n");
         doc.append("</select>\n");
         if (!listAll) {
             doc.append(" (there are ");

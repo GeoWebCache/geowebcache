@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Nuno Oliveira, GeoSolutions S.A.S., Copyright 2017
  */
@@ -123,13 +122,11 @@ public class LegendInfoBuilder {
         String finalStyleName = styleName == null ? "" : styleName;
         // building the legend url
         String finalUrl = buildFinalUrl(finalStyleName, finalWidth, finalHeight, finalFormat);
-        return new LegendInfo(
-                finalStyleName, finalWidth, finalHeight, finalFormat, finalUrl, minScale, maxScale);
+        return new LegendInfo(finalStyleName, finalWidth, finalHeight, finalFormat, finalUrl, minScale, maxScale);
     }
 
     /** Helper method that builds the legend get url using the available info. */
-    private String buildFinalUrl(
-            String finalStyleName, Integer finalWidth, Integer finalHeight, String finalFormat) {
+    private String buildFinalUrl(String finalStyleName, Integer finalWidth, Integer finalHeight, String finalFormat) {
         if (completeUrl != null) {
             // we have a complete url so let's just return it
             return completeUrl;
@@ -156,8 +153,8 @@ public class LegendInfoBuilder {
     }
 
     /**
-     * Helper method check's if a quote separating the base url from the query parameters needs to
-     * be added to the url or not.
+     * Helper method check's if a quote separating the base url from the query parameters needs to be added to the url
+     * or not.
      */
     private String addQuoteMark(String finalUrl) {
         if (finalUrl.indexOf("?") == finalUrl.length() - 1) {

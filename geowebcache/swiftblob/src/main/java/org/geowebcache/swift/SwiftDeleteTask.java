@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Matthew Northcott, Catalyst IT Ltd NZ, Copyright 2020
  */
@@ -32,10 +31,7 @@ class SwiftDeleteTask implements Runnable {
     private final IBlobStoreListenerNotifier notifier;
 
     SwiftDeleteTask(
-            RegionScopedSwiftBlobStore blobStore,
-            String path,
-            String container,
-            IBlobStoreListenerNotifier notifier) {
+            RegionScopedSwiftBlobStore blobStore, String path, String container, IBlobStoreListenerNotifier notifier) {
         this.blobStore = blobStore;
         this.path = path;
         this.container = container;
@@ -44,7 +40,8 @@ class SwiftDeleteTask implements Runnable {
 
     @Override
     public void run() {
-        final ListContainerOptions options = new ListContainerOptions().prefix(path).recursive();
+        final ListContainerOptions options =
+                new ListContainerOptions().prefix(path).recursive();
 
         int delayMs = 1000;
         boolean deleted = false;
@@ -76,8 +73,7 @@ class SwiftDeleteTask implements Runnable {
             log.log(
                     Level.SEVERE,
                     String.format(
-                            "Failed to delete Swift tile cache at %s/%s after %d retries.",
-                            container, path, RETRIES));
+                            "Failed to delete Swift tile cache at %s/%s after %d retries.", container, path, RETRIES));
         }
     }
 }

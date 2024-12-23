@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2019
  */
@@ -37,14 +36,12 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
 
     private static final long serialVersionUID = -625181087112272266L;
 
-    /**
-     * Default number of milliseconds before cached/aggregated quota update is saved to the store
-     */
+    /** Default number of milliseconds before cached/aggregated quota update is saved to the store */
     private static final long DEFAULT_SYNC_TIMEOUT = 100;
 
     /**
-     * Default number of per TileSet aggregated quota updates before ensuring they're synchronized
-     * back to the store, regardless of whether the timeout expired for the TileSet
+     * Default number of per TileSet aggregated quota updates before ensuring they're synchronized back to the store,
+     * regardless of whether the timeout expired for the TileSet
      */
     private static final int MAX_AGGREGATES_BEFORE_COMMIT = 3000;
 
@@ -95,15 +92,13 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
     public Long call() {
         while (true) {
             if (Thread.interrupted()) {
-                log.fine(
-                        "Job "
-                                + getClass().getSimpleName()
-                                + " finished due to interrupted thread.");
+                log.fine("Job " + getClass().getSimpleName() + " finished due to interrupted thread.");
                 break;
             }
 
             if (terminate) {
-                log.fine("Exiting on explicit termination request: " + getClass().getSimpleName());
+                log.fine(
+                        "Exiting on explicit termination request: " + getClass().getSimpleName());
                 break;
             }
 
@@ -111,8 +106,7 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
                 /*
                  * do not wait for more than 5 seconds for data to become available on the queue
                  */
-                UsageStats requestedTile =
-                        usageStatsQueue.poll(DEFAULT_SYNC_TIMEOUT, TimeUnit.MILLISECONDS);
+                UsageStats requestedTile = usageStatsQueue.poll(DEFAULT_SYNC_TIMEOUT, TimeUnit.MILLISECONDS);
                 if (requestedTile == null) {
                     /*
                      * poll timed out, nothing new, check there are no pending aggregated updates
@@ -151,11 +145,10 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
     private boolean terminate = false;
 
     /**
-     * @param requestedTile represents a single tile that was requested and for which its tile page
-     *     needs to be looked up and updated
+     * @param requestedTile represents a single tile that was requested and for which its tile page needs to be looked
+     *     up and updated
      */
-    private void performAggregatedUpdate(final UsageStats requestedTile)
-            throws InterruptedException {
+    private void performAggregatedUpdate(final UsageStats requestedTile) throws InterruptedException {
 
         final TileSet tileSet = requestedTile.getTileSet();
         final String tileSetId = tileSet.getId();
@@ -193,9 +186,9 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
     }
 
     /**
-     * Makes sure the given cached updates are held for too long before synchronizing with the
-     * store, either because it's been held for too long, or because too many updates have happened
-     * on it since the last time it was saved to the store.
+     * Makes sure the given cached updates are held for too long before synchronizing with the store, either because
+     * it's been held for too long, or because too many updates have happened on it since the last time it was saved to
+     * the store.
      */
     private void checkAggregatedTimeout() {
 
@@ -209,21 +202,17 @@ public class QueuedUsageStatsConsumer implements Callable<Long> {
 
         if (timeout || tooManyPendingCommits) {
             if (log.isLoggable(Level.FINER)) {
-                log.finer(
-                        "Committing "
-                                + numAggregations
-                                + " aggregated usage stats to quota store due to "
-                                + (tooManyPendingCommits
-                                        ? "too many pending commits"
-                                        : "max wait time reached"));
+                log.finer("Committing "
+                        + numAggregations
+                        + " aggregated usage stats to quota store due to "
+                        + (tooManyPendingCommits ? "too many pending commits" : "max wait time reached"));
             }
             commit();
         }
     }
 
     private void commit() {
-        Collection<PageStatsPayload> pendingCommits =
-                new ArrayList<>(aggregatedPendingUpdates.pages.values());
+        Collection<PageStatsPayload> pendingCommits = new ArrayList<>(aggregatedPendingUpdates.pages.values());
         quotaStore.addHitsAndSetAccesTime(pendingCommits);
         aggregatedPendingUpdates.lastCommitTime = System.currentTimeMillis();
         aggregatedPendingUpdates.numAggregations = 0;

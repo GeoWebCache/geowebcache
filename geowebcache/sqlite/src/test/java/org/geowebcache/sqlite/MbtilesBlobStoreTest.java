@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Nuno Oliveira, GeoSolutions S.A.S., Copyright 2016
  */
@@ -47,20 +46,13 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
         addStoresToClean(store);
         // create the tile that will be stored
-        TileObject putTile =
-                TileObject.createCompleteTileObject(
-                        "africa",
-                        new long[] {10, 50, 5},
-                        "EPSG:4326",
-                        "image/png",
-                        null,
-                        stringToResource("IMAGE-10-50-5"));
+        TileObject putTile = TileObject.createCompleteTileObject(
+                "africa", new long[] {10, 50, 5}, "EPSG:4326", "image/png", null, stringToResource("IMAGE-10-50-5"));
         // storing the tile
         store.put(putTile);
         // create a query tile to get the previous stored tile
         TileObject getTile =
-                TileObject.createQueryTileObject(
-                        "africa", new long[] {10, 50, 5}, "EPSG:4326", "image/png", null);
+                TileObject.createQueryTileObject("africa", new long[] {10, 50, 5}, "EPSG:4326", "image/png", null);
         // checking if the tile was retrieved
         assertThat(store.get(getTile), is(true));
         // checking if the blob data was updated
@@ -71,9 +63,7 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         // delete and check if the tile was deleted
         assertThat(store.delete(putTile), is(true));
         // query the deleted tile
-        getTile =
-                TileObject.createQueryTileObject(
-                        "africa", new long[] {10, 50, 5}, "EPSG:4326", "image/png", null);
+        getTile = TileObject.createQueryTileObject("africa", new long[] {10, 50, 5}, "EPSG:4326", "image/png", null);
         // check that the tile was deleted
         assertThat(store.get(getTile), is(false));
         assertThat(getTile.getBlob(), nullValue());
@@ -120,35 +110,17 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
         addStoresToClean(store);
         // created database files for different layers
-        File asia1 =
-                createFileInRootDir(
-                        Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-500.sqlite"));
-        File asia2 =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "grid2", "asia", "image_png", "11", "tiles-100-500.sqlite"));
-        File asia3 =
-                createFileInRootDir(
-                        Utils.buildPath("grid3", "asia", "image_png", "10", "tiles-0-500.sqlite"));
-        File asia4 =
-                createFileInRootDir(
-                        Utils.buildPath("grid3", "asia", "image_jpeg", "10", "tiles-0-500.sqlite"));
-        File africa1 =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "grid1", "africa", "image_png", "10", "tiles-0-500.sqlite"));
+        File asia1 = createFileInRootDir(Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-500.sqlite"));
+        File asia2 = createFileInRootDir(Utils.buildPath("grid2", "asia", "image_png", "11", "tiles-100-500.sqlite"));
+        File asia3 = createFileInRootDir(Utils.buildPath("grid3", "asia", "image_png", "10", "tiles-0-500.sqlite"));
+        File asia4 = createFileInRootDir(Utils.buildPath("grid3", "asia", "image_jpeg", "10", "tiles-0-500.sqlite"));
+        File africa1 = createFileInRootDir(Utils.buildPath("grid1", "africa", "image_png", "10", "tiles-0-500.sqlite"));
         File america1 =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "grid1", "america", "image_png", "10", "tiles-0-500.sqlite"));
+                createFileInRootDir(Utils.buildPath("grid1", "america", "image_png", "10", "tiles-0-500.sqlite"));
         File america2 =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "grid2", "america", "image_jpeg", "10", "tiles-0-500.sqlite"));
+                createFileInRootDir(Utils.buildPath("grid2", "america", "image_jpeg", "10", "tiles-0-500.sqlite"));
         File europe1 =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "grid1", "europe", "image_gif", "15", "tiles-4000-500.sqlite"));
+                createFileInRootDir(Utils.buildPath("grid1", "europe", "image_gif", "15", "tiles-4000-500.sqlite"));
         // deleting layer asia and europe
         store.delete("asia");
         store.delete("europe");
@@ -169,35 +141,17 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
         addStoresToClean(store);
         // created database files for different layers
-        File asia1 =
-                createFileInRootDir(
-                        Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-500.sqlite"));
-        File asia2 =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "grid2", "asia", "image_png", "11", "tiles-100-500.sqlite"));
-        File asia3 =
-                createFileInRootDir(
-                        Utils.buildPath("grid3", "asia", "image_png", "10", "tiles-0-500.sqlite"));
-        File asia4 =
-                createFileInRootDir(
-                        Utils.buildPath("grid3", "asia", "image_jpeg", "10", "tiles-0-500.sqlite"));
-        File africa1 =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "grid1", "africa", "image_png", "10", "tiles-0-500.sqlite"));
+        File asia1 = createFileInRootDir(Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-500.sqlite"));
+        File asia2 = createFileInRootDir(Utils.buildPath("grid2", "asia", "image_png", "11", "tiles-100-500.sqlite"));
+        File asia3 = createFileInRootDir(Utils.buildPath("grid3", "asia", "image_png", "10", "tiles-0-500.sqlite"));
+        File asia4 = createFileInRootDir(Utils.buildPath("grid3", "asia", "image_jpeg", "10", "tiles-0-500.sqlite"));
+        File africa1 = createFileInRootDir(Utils.buildPath("grid1", "africa", "image_png", "10", "tiles-0-500.sqlite"));
         File america1 =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "grid1", "america", "image_png", "10", "tiles-0-500.sqlite"));
+                createFileInRootDir(Utils.buildPath("grid1", "america", "image_png", "10", "tiles-0-500.sqlite"));
         File america2 =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "grid2", "america", "image_jpeg", "10", "tiles-0-500.sqlite"));
+                createFileInRootDir(Utils.buildPath("grid2", "america", "image_jpeg", "10", "tiles-0-500.sqlite"));
         File europe1 =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "grid1", "europe", "image_gif", "15", "tiles-4000-500.sqlite"));
+                createFileInRootDir(Utils.buildPath("grid1", "europe", "image_gif", "15", "tiles-4000-500.sqlite"));
         // deleting layer asia grid set grid3 and america grid set grid2
         store.deleteByGridsetId("asia", "grid3");
         store.deleteByGridsetId("america", "grid2");
@@ -224,33 +178,14 @@ public final class MbtilesBlobStoreTest extends TestSupport {
             {0, 490, 10, 500, 10},
             {800, 950, 1005, 1020, 11}
         };
-        TileRange tileRange =
-                new TileRange(
-                        "asia",
-                        "grid1",
-                        10,
-                        11,
-                        rangeBounds,
-                        MimeType.createFromExtension("png"),
-                        Collections.emptyMap());
+        TileRange tileRange = new TileRange(
+                "asia", "grid1", 10, 11, rangeBounds, MimeType.createFromExtension("png"), Collections.emptyMap());
         // created layer database files
-        File asia1 =
-                createFileInRootDir(
-                        Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-0.sqlite"));
-        File asia2 =
-                createFileInRootDir(
-                        Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-500.sqlite"));
-        File asia3 =
-                createFileInRootDir(
-                        Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-500-0.sqlite"));
-        File asia4 =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "grid1", "asia", "image_png", "10", "tiles-500-500.sqlite"));
-        File asia5 =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "grid1", "asia", "image_png", "11", "tiles-1000-1000.sqlite"));
+        File asia1 = createFileInRootDir(Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-0.sqlite"));
+        File asia2 = createFileInRootDir(Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-500.sqlite"));
+        File asia3 = createFileInRootDir(Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-500-0.sqlite"));
+        File asia4 = createFileInRootDir(Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-500-500.sqlite"));
+        File asia5 = createFileInRootDir(Utils.buildPath("grid1", "asia", "image_png", "11", "tiles-1000-1000.sqlite"));
         // deleting tiles range
         store.delete(tileRange);
         assertThat(asia1.exists(), is(false));
@@ -271,40 +206,16 @@ public final class MbtilesBlobStoreTest extends TestSupport {
             {0, 10, 5, 15, 10},
             {980, 950, 1005, 1020, 11}
         };
-        TileRange tileRange =
-                new TileRange(
-                        "asia",
-                        "grid1",
-                        10,
-                        11,
-                        rangeBounds,
-                        MimeType.createFromExtension("png"),
-                        Collections.emptyMap());
+        TileRange tileRange = new TileRange(
+                "asia", "grid1", 10, 11, rangeBounds, MimeType.createFromExtension("png"), Collections.emptyMap());
         // created layer database files
-        File asia1 =
-                buildRootFile(
-                        Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-0.sqlite"));
-        File asia2 =
-                buildRootFile(
-                        Utils.buildPath(
-                                "grid1", "asia", "image_png", "10", "tiles-500-500.sqlite"));
+        File asia1 = buildRootFile(Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-0.sqlite"));
+        File asia2 = buildRootFile(Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-500-500.sqlite"));
         // create some tiles
-        store.put(
-                TileObject.createCompleteTileObject(
-                        "asia",
-                        new long[] {3, 12, 10},
-                        "grid1",
-                        "image/png",
-                        null,
-                        stringToResource("IMAGE-10-50-10")));
-        store.put(
-                TileObject.createCompleteTileObject(
-                        "asia",
-                        new long[] {510, 550, 10},
-                        "grid1",
-                        "image/png",
-                        null,
-                        stringToResource("IMAGE-510-550-10")));
+        store.put(TileObject.createCompleteTileObject(
+                "asia", new long[] {3, 12, 10}, "grid1", "image/png", null, stringToResource("IMAGE-10-50-10")));
+        store.put(TileObject.createCompleteTileObject(
+                "asia", new long[] {510, 550, 10}, "grid1", "image/png", null, stringToResource("IMAGE-510-550-10")));
         // deleting tiles range
         store.delete(tileRange);
         assertThat(asia1.exists(), is(true));
@@ -312,13 +223,11 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         // check that the correct tiles were deleted
         assertThat(
                 store.get(
-                        TileObject.createQueryTileObject(
-                                "asia", new long[] {10, 50, 10}, "grid1", "image/png", null)),
+                        TileObject.createQueryTileObject("asia", new long[] {10, 50, 10}, "grid1", "image/png", null)),
                 is(false));
         assertThat(
-                store.get(
-                        TileObject.createQueryTileObject(
-                                "asia", new long[] {510, 550, 10}, "grid1", "image/png", null)),
+                store.get(TileObject.createQueryTileObject(
+                        "asia", new long[] {510, 550, 10}, "grid1", "image/png", null)),
                 is(true));
     }
 
@@ -329,8 +238,7 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
         addStoresToClean(store);
         // created layer database file
-        createFileInRootDir(
-                Utils.buildPath("grid1", "europe", "image_png", "10", "tiles-0-0.sqlite"));
+        createFileInRootDir(Utils.buildPath("grid1", "europe", "image_png", "10", "tiles-0-0.sqlite"));
         // checking if layer exists
         assertThat(store.layerExists("europe"), is(true));
         assertThat(store.layerExists("asia"), is(false));
@@ -343,23 +251,17 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         MbtilesBlobStore store = new MbtilesBlobStore(configuration);
         addStoresToClean(store);
         // create layers database files
-        File asia1 =
-                createFileInRootDir(
-                        Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-0.sqlite"));
-        File asia2 =
-                createFileInRootDir(
-                        Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-500.sqlite"));
-        File europe1 =
-                createFileInRootDir(
-                        Utils.buildPath(
-                                "grid1", "europe", "image_png", "10", "tiles-500-0.sqlite"));
+        File asia1 = createFileInRootDir(Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-0.sqlite"));
+        File asia2 = createFileInRootDir(Utils.buildPath("grid1", "asia", "image_png", "10", "tiles-0-500.sqlite"));
+        File europe1 = createFileInRootDir(Utils.buildPath("grid1", "europe", "image_png", "10", "tiles-500-0.sqlite"));
         // rename asia layers
         store.rename("asia", "australia");
         assertThat(asia1.exists(), is(false));
         assertThat(asia2.exists(), is(false));
         assertThat(europe1.exists(), is(true));
         assertThat(
-                buildRootFile("grid1", "australia", "image_png", "10", "tiles-0-0.sqlite").exists(),
+                buildRootFile("grid1", "australia", "image_png", "10", "tiles-0-0.sqlite")
+                        .exists(),
                 is(true));
         assertThat(
                 buildRootFile("grid1", "australia", "image_png", "10", "tiles-0-500.sqlite")
@@ -373,21 +275,20 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         // create and instantiate mbtiles metadata
         File mbtilesMetadataDirectory = buildRootFile("mbtiles-metadata");
         File mbtilesMetadataFile = new File(mbtilesMetadataDirectory, "europe_asia.properties");
-        String mbtilesMetadata =
-                "attribution=some attribution"
-                        + System.lineSeparator()
-                        + "bounds=-180,-90,180,90"
-                        + System.lineSeparator()
-                        + "description=some description"
-                        + System.lineSeparator()
-                        + "maxZoom=10"
-                        + System.lineSeparator()
-                        + "minZoom=0"
-                        + System.lineSeparator()
-                        + "type=base_layer"
-                        + System.lineSeparator()
-                        + "version=1.0"
-                        + System.lineSeparator();
+        String mbtilesMetadata = "attribution=some attribution"
+                + System.lineSeparator()
+                + "bounds=-180,-90,180,90"
+                + System.lineSeparator()
+                + "description=some description"
+                + System.lineSeparator()
+                + "maxZoom=10"
+                + System.lineSeparator()
+                + "minZoom=0"
+                + System.lineSeparator()
+                + "type=base_layer"
+                + System.lineSeparator()
+                + "version=1.0"
+                + System.lineSeparator();
         writeToFile(mbtilesMetadataFile, mbtilesMetadata);
         // instantiating the store
         MbtilesInfo configuration = getDefaultConfiguration();
@@ -396,14 +297,8 @@ public final class MbtilesBlobStoreTest extends TestSupport {
         MbtilesBlobStore store = new MbtilesBlobStore(configuration, connectionManager);
         addStoresToClean(store);
         // create the tile that will be stored
-        TileObject putTile =
-                TileObject.createCompleteTileObject(
-                        "europe:asia",
-                        new long[] {5, 5, 5},
-                        "EPSG:4326",
-                        "image/png",
-                        null,
-                        stringToResource("IMAGE-5-5-5"));
+        TileObject putTile = TileObject.createCompleteTileObject(
+                "europe:asia", new long[] {5, 5, 5}, "EPSG:4326", "image/png", null, stringToResource("IMAGE-5-5-5"));
         // storing the tile
         store.put(putTile);
         // checking if the file exists

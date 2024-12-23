@@ -68,8 +68,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 public class WMSServiceTest {
 
     @Rule
-    public PropertyRule whitelistProperty =
-            PropertyRule.system(WMSService.GEOWEBCACHE_WMS_PROXY_REQUEST_WHITELIST);
+    public PropertyRule whitelistProperty = PropertyRule.system(WMSService.GEOWEBCACHE_WMS_PROXY_REQUEST_WHITELIST);
 
     private WMSService service;
 
@@ -83,16 +82,14 @@ public class WMSServiceTest {
     public void setUp() throws Exception {
         sb = mock(StorageBroker.class);
         tld = mock(TileLayerDispatcher.class);
-        gridsetBroker =
-                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
+        gridsetBroker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
     }
 
     @After
     public void tearDown() throws Exception {}
 
     /**
-     * Layer may be configured with mutliple GridSets for the same CRS, and should chose the best
-     * fit for the request
+     * Layer may be configured with mutliple GridSets for the same CRS, and should chose the best fit for the request
      */
     @Test
     public void testGetConveyorMultipleCrsMatchingGridSubsets() throws Exception {
@@ -101,16 +98,14 @@ public class WMSServiceTest {
         testMultipleCrsMatchingGridSubsets("EPSG:4326", "EPSG:4326", new long[] {10, 10, 10});
 
         testMultipleCrsMatchingGridSubsets("EPSG:4326", "GlobalCRS84Scale", new long[] {1, 1, 1});
-        testMultipleCrsMatchingGridSubsets(
-                "EPSG:4326", "GlobalCRS84Scale", new long[] {10, 10, 10});
+        testMultipleCrsMatchingGridSubsets("EPSG:4326", "GlobalCRS84Scale", new long[] {10, 10, 10});
 
         testMultipleCrsMatchingGridSubsets("EPSG:4326", "GlobalCRS84Scale", new long[] {1, 1, 1});
-        testMultipleCrsMatchingGridSubsets(
-                "EPSG:4326", "GlobalCRS84Scale", new long[] {10, 10, 10});
+        testMultipleCrsMatchingGridSubsets("EPSG:4326", "GlobalCRS84Scale", new long[] {10, 10, 10});
     }
 
-    protected void testMultipleCrsMatchingGridSubsets(
-            final String srs, final String expectedGridset, long[] tileIndex) throws Exception {
+    protected void testMultipleCrsMatchingGridSubsets(final String srs, final String expectedGridset, long[] tileIndex)
+            throws Exception {
 
         GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
         when(gwcd.getServletPrefix()).thenReturn(null);
@@ -127,8 +122,7 @@ public class WMSServiceTest {
         kvp.put("tiled", new String[] {"true"});
         kvp.put("request", new String[] {"GetMap"});
 
-        List<String> gridSetNames =
-                Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
+        List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
         TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames);
 
         // make the request match a tile in the expected gridset
@@ -148,10 +142,7 @@ public class WMSServiceTest {
         assertEquals(expectedGridset, tileRequest.getGridSetId());
         assertEquals("image/png", tileRequest.getMimeType().getMimeType());
         assertArrayEquals(
-                "Expected "
-                        + Arrays.toString(tileIndex)
-                        + " got "
-                        + Arrays.toString(tileRequest.getTileIndex()),
+                "Expected " + Arrays.toString(tileIndex) + " got " + Arrays.toString(tileRequest.getTileIndex()),
                 tileIndex,
                 tileRequest.getTileIndex());
     }
@@ -224,8 +215,7 @@ public class WMSServiceTest {
         when(req.getCharacterEncoding()).thenReturn("UTF-8");
         when(req.getParameterMap()).thenReturn(kvp);
 
-        List<String> gridSetNames =
-                Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
+        List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
         TileLayer tileLayer = mockTileLayer("mockLayer", gridSetNames);
         when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
         when(tld.getLayerListFiltered()).thenReturn(Arrays.asList(tileLayer));
@@ -237,17 +227,11 @@ public class WMSServiceTest {
         assertNull(layerName);
 
         assertEquals(Conveyor.RequestHandler.SERVICE, conv.reqHandler);
-        WMSGetCapabilities wmsCap =
-                new WMSGetCapabilities(
-                        tld,
-                        conv.servletReq,
-                        "http://localhost:8080",
-                        "/service/wms",
-                        new NullURLMangler());
+        WMSGetCapabilities wmsCap = new WMSGetCapabilities(
+                tld, conv.servletReq, "http://localhost:8080", "/service/wms", new NullURLMangler());
         wmsCap.writeResponse(conv.servletResp);
         assertTrue(resp.containsHeader("content-disposition"));
-        assertEquals(
-                "inline;filename=wms-getcapabilities.xml", resp.getHeader("content-disposition"));
+        assertEquals("inline;filename=wms-getcapabilities.xml", resp.getHeader("content-disposition"));
     }
 
     @Test
@@ -268,8 +252,7 @@ public class WMSServiceTest {
         when(req.getCharacterEncoding()).thenReturn("UTF-8");
         when(req.getParameterMap()).thenReturn(kvp);
 
-        List<String> gridSetNames =
-                Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
+        List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
         TileLayer tileLayer = mockTileLayer("möcklāyer😎", gridSetNames);
         when(tld.getLayerList()).thenReturn(Arrays.asList(tileLayer));
         when(tld.getLayerListFiltered()).thenReturn(Arrays.asList(tileLayer));
@@ -278,13 +261,8 @@ public class WMSServiceTest {
         assertNotNull(conv);
 
         assertEquals(Conveyor.RequestHandler.SERVICE, conv.reqHandler);
-        WMSGetCapabilities wmsCap =
-                new WMSGetCapabilities(
-                        tld,
-                        conv.servletReq,
-                        "http://localhost:8080",
-                        "/service/wms",
-                        new NullURLMangler());
+        WMSGetCapabilities wmsCap = new WMSGetCapabilities(
+                tld, conv.servletReq, "http://localhost:8080", "/service/wms", new NullURLMangler());
         wmsCap.writeResponse(conv.servletResp);
 
         String capAsString = new String(resp.getContentAsByteArray(), StandardCharsets.UTF_8);
@@ -317,19 +295,8 @@ public class WMSServiceTest {
         filter.setKey("time");
         filter.setRegex("\\d{2}:\\d{2}");
         parameterFilters.add(filter);
-        TileLayer tileLayer =
-                new WMSLayer(
-                        layerName,
-                        null,
-                        null,
-                        layerName,
-                        mimeFormats,
-                        null,
-                        parameterFilters,
-                        null,
-                        null,
-                        true,
-                        null);
+        TileLayer tileLayer = new WMSLayer(
+                layerName, null, null, layerName, mimeFormats, null, parameterFilters, null, null, true, null);
         when(tld.getTileLayer(layerName)).thenReturn(tileLayer);
 
         HttpServletRequest req = mock(HttpServletRequest.class);
@@ -508,8 +475,7 @@ public class WMSServiceTest {
         req.addParameter("service", new String[] {"WMS"});
         req.addParameter("version", new String[] {"1.1.1"});
         req.addParameter("request", new String[] {"GetCapabilities"});
-        req.setRequestURI(
-                "/geowebcache/service/wms?service=WMS&version=1.1.1&request=" + "GetCapabilities");
+        req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request=" + "GetCapabilities");
 
         ConveyorTile conv = service.getConveyor(req, resp);
 
@@ -542,8 +508,7 @@ public class WMSServiceTest {
         req.addParameter("service", new String[] {"WMS"});
         req.addParameter("version", new String[] {"1.1.1"});
         req.addParameter("request", new String[] {"GetCapabilities"});
-        req.setRequestURI(
-                "/geowebcache/service/wms?service=WMS&version=1.1.1&request=" + "GetCapabilities");
+        req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request=" + "GetCapabilities");
 
         ConveyorTile conv = service.getConveyor(req, resp);
 
@@ -563,15 +528,13 @@ public class WMSServiceTest {
 
         WMSTileFuser fuser = mock(WMSTileFuser.class);
 
-        service =
-                new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd) {
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd) {
 
-                    @Override
-                    protected WMSTileFuser getFuser(HttpServletRequest servletReq)
-                            throws GeoWebCacheException {
-                        return fuser;
-                    }
-                };
+            @Override
+            protected WMSTileFuser getFuser(HttpServletRequest servletReq) throws GeoWebCacheException {
+                return fuser;
+            }
+        };
         service.setSecurityDispatcher(secDisp);
         service.setFullWMS("true");
 
@@ -583,8 +546,7 @@ public class WMSServiceTest {
         when(tld.getLayerList()).thenReturn(Collections.singleton(tileLayer));
         when(tld.getLayerListFiltered()).thenReturn(Collections.singleton(tileLayer));
 
-        when(tileLayer.getGridSubsetsForSRS(SRS.getEPSG4326()))
-                .thenReturn(Collections.singletonList(subset));
+        when(tileLayer.getGridSubsetsForSRS(SRS.getEPSG4326())).thenReturn(Collections.singletonList(subset));
 
         MockHttpServletRequest req = new MockHttpServletRequest();
         MockHttpServletResponse resp = new MockHttpServletResponse();
@@ -598,12 +560,11 @@ public class WMSServiceTest {
         req.addParameter("bbox", "0,0,40,60");
         req.addParameter("width", "40");
         req.addParameter("height", "60");
-        req.setRequestURI(
-                "/geowebcache/service/wms?service=WMS&version=1.1.1&request=GetMap&layers="
-                        + layerName
-                        + "&format=image/png&srs="
-                        + SRS.getEPSG4326().toString()
-                        + "&bbox=0,0,40,60&width=40&height=60");
+        req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request=GetMap&layers="
+                + layerName
+                + "&format=image/png&srs="
+                + SRS.getEPSG4326().toString()
+                + "&bbox=0,0,40,60&width=40&height=60");
 
         ConveyorTile conv = service.getConveyor(req, resp);
 
@@ -626,15 +587,13 @@ public class WMSServiceTest {
 
         WMSTileFuser fuser = mock(WMSTileFuser.class);
 
-        service =
-                new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd) {
+        service = new WMSService(sb, tld, mock(RuntimeStats.class), new NullURLMangler(), gwcd) {
 
-                    @Override
-                    protected WMSTileFuser getFuser(HttpServletRequest servletReq)
-                            throws GeoWebCacheException {
-                        return fuser;
-                    }
-                };
+            @Override
+            protected WMSTileFuser getFuser(HttpServletRequest servletReq) throws GeoWebCacheException {
+                return fuser;
+            }
+        };
         service.setSecurityDispatcher(secDisp);
         service.setFullWMS("true");
 
@@ -646,8 +605,7 @@ public class WMSServiceTest {
         when(tld.getLayerList()).thenReturn(Collections.singleton(tileLayer));
         when(tld.getLayerListFiltered()).thenReturn(Collections.singleton(tileLayer));
 
-        when(tileLayer.getGridSubsetsForSRS(SRS.getEPSG4326()))
-                .thenReturn(Collections.singletonList(subset));
+        when(tileLayer.getGridSubsetsForSRS(SRS.getEPSG4326())).thenReturn(Collections.singletonList(subset));
 
         doThrow(new SecurityException()).when(secDisp).checkSecurity(Mockito.any());
 
@@ -663,12 +621,11 @@ public class WMSServiceTest {
         req.addParameter("bbox", "0,0,40,60");
         req.addParameter("width", "40");
         req.addParameter("height", "60");
-        req.setRequestURI(
-                "/geowebcache/service/wms?service=WMS&version=1.1.1&request=GetMap&layers="
-                        + layerName
-                        + "&format=image/png&srs="
-                        + SRS.getEPSG4326().toString()
-                        + "&bbox=0,0,40,60&width=40&height=60");
+        req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request=GetMap&layers="
+                + layerName
+                + "&format=image/png&srs="
+                + SRS.getEPSG4326().toString()
+                + "&bbox=0,0,40,60&width=40&height=60");
 
         ConveyorTile conv = service.getConveyor(req, resp);
 
@@ -702,8 +659,7 @@ public class WMSServiceTest {
         when(tld.getLayerList()).thenReturn(Collections.singleton(tileLayer));
         when(tld.getLayerListFiltered()).thenReturn(Collections.singleton(tileLayer));
 
-        when(tileLayer.getGridSubsetsForSRS(SRS.getEPSG4326()))
-                .thenReturn(Collections.singletonList(subset));
+        when(tileLayer.getGridSubsetsForSRS(SRS.getEPSG4326())).thenReturn(Collections.singletonList(subset));
         when(tileLayer.getInfoMimeTypes()).thenReturn(Collections.singletonList(XMLMime.gml));
         // doThrow(new SecurityException()).when(secDisp).checkSecurity(Mockito.any());
 
@@ -722,12 +678,11 @@ public class WMSServiceTest {
         req.addParameter("x", "2");
         req.addParameter("y", "3");
         req.addParameter("info_format", XMLMime.gml.getMimeType());
-        req.setRequestURI(
-                "/geowebcache/service/wms?service=WMS&version=1.1.1&request=GetFeatureInfo&layers="
-                        + layerName
-                        + "&format=image/png&srs="
-                        + SRS.getEPSG4326().toString()
-                        + "&bbox=0,0,40,60&width=40&height=60&x=3&y=3");
+        req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request=GetFeatureInfo&layers="
+                + layerName
+                + "&format=image/png&srs="
+                + SRS.getEPSG4326().toString()
+                + "&bbox=0,0,40,60&width=40&height=60&x=3&y=3");
 
         ConveyorTile conv = service.getConveyor(req, resp);
 
@@ -768,8 +723,7 @@ public class WMSServiceTest {
         when(tld.getLayerList()).thenReturn(Collections.singleton(tileLayer));
         when(tld.getLayerListFiltered()).thenReturn(Collections.singleton(tileLayer));
 
-        when(tileLayer.getGridSubsetsForSRS(SRS.getEPSG4326()))
-                .thenReturn(Collections.singletonList(subset));
+        when(tileLayer.getGridSubsetsForSRS(SRS.getEPSG4326())).thenReturn(Collections.singletonList(subset));
         when(tileLayer.getInfoMimeTypes()).thenReturn(Collections.singletonList(XMLMime.gml));
         doThrow(new SecurityException()).when(secDisp).checkSecurity(Mockito.any());
 
@@ -788,12 +742,11 @@ public class WMSServiceTest {
         req.addParameter("x", "2");
         req.addParameter("y", "3");
         req.addParameter("info_format", XMLMime.gml.getMimeType());
-        req.setRequestURI(
-                "/geowebcache/service/wms?service=WMS&version=1.1.1&request=GetFeatureInfo&layers="
-                        + layerName
-                        + "&format=image/png&srs="
-                        + SRS.getEPSG4326().toString()
-                        + "&bbox=0,0,40,60&width=40&height=60&x=3&y=3");
+        req.setRequestURI("/geowebcache/service/wms?service=WMS&version=1.1.1&request=GetFeatureInfo&layers="
+                + layerName
+                + "&format=image/png&srs="
+                + SRS.getEPSG4326().toString()
+                + "&bbox=0,0,40,60&width=40&height=60&x=3&y=3");
 
         ConveyorTile conv = service.getConveyor(req, resp);
 
@@ -818,10 +771,7 @@ public class WMSServiceTest {
     }
 
     protected void testProxyRequestPrevented(
-            SecurityDispatcher mockSecDisp,
-            String layerName,
-            TestLayer mockTileLayer,
-            String requestName)
+            SecurityDispatcher mockSecDisp, String layerName, TestLayer mockTileLayer, String requestName)
             throws GeoWebCacheException {
         MockHttpServletRequest req = new MockHttpServletRequest();
         MockHttpServletResponse resp = new MockHttpServletResponse();
@@ -831,10 +781,7 @@ public class WMSServiceTest {
         req.addParameter("request", new String[] {requestName});
         req.addParameter("layers", new String[] {layerName});
         req.setRequestURI(
-                "/geowebcache/service/wms?service=WMS&version=1.1.1&request="
-                        + requestName
-                        + "&layers="
-                        + layerName);
+                "/geowebcache/service/wms?service=WMS&version=1.1.1&request=" + requestName + "&layers=" + layerName);
 
         ConveyorTile conv = service.getConveyor(req, resp);
 
@@ -849,10 +796,7 @@ public class WMSServiceTest {
     }
 
     protected void testProxyRequestAllowed(
-            SecurityDispatcher mockSecDisp,
-            String layerName,
-            TestLayer mockTileLayer,
-            String requestName)
+            SecurityDispatcher mockSecDisp, String layerName, TestLayer mockTileLayer, String requestName)
             throws GeoWebCacheException {
         MockHttpServletRequest req = new MockHttpServletRequest();
         MockHttpServletResponse resp = new MockHttpServletResponse();
@@ -862,10 +806,7 @@ public class WMSServiceTest {
         req.addParameter("request", new String[] {requestName});
         req.addParameter("layers", new String[] {layerName});
         req.setRequestURI(
-                "/geowebcache/service/wms?service=WMS&version=1.1.1&request="
-                        + requestName
-                        + "&layers="
-                        + layerName);
+                "/geowebcache/service/wms?service=WMS&version=1.1.1&request=" + requestName + "&layers=" + layerName);
 
         ConveyorTile conv = service.getConveyor(req, resp);
 

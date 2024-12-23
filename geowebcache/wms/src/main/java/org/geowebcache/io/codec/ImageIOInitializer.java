@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2019
  */
@@ -25,13 +24,12 @@ import javax.imageio.spi.ImageReaderWriterSpi;
 import javax.imageio.spi.ImageWriterSpi;
 
 /**
- * This class is used for handling the registration of the various {@link ImageReaderWriterSpi}
- * instances inside GWC. This class must be instantiated before the creation of the various {@link
- * ImageDecoder} and {@link ImageDecoder} implementations in order to check if the installed plugins
- * are registered. If they are not already registered, it scans for all the plugins and register
- * each of them. Optionally, after the registration the {@link ImageIOInitializer} is able to
- * deregister the reader/writer plugins as defined by the user inside the application context
- * contained in the file geowebcache-wmsservice-context.xml .
+ * This class is used for handling the registration of the various {@link ImageReaderWriterSpi} instances inside GWC.
+ * This class must be instantiated before the creation of the various {@link ImageDecoder} and {@link ImageDecoder}
+ * implementations in order to check if the installed plugins are registered. If they are not already registered, it
+ * scans for all the plugins and register each of them. Optionally, after the registration the
+ * {@link ImageIOInitializer} is able to deregister the reader/writer plugins as defined by the user inside the
+ * application context contained in the file geowebcache-wmsservice-context.xml .
  *
  * @author Nicola Lagomarsini geosolutions
  */
@@ -42,10 +40,7 @@ public class ImageIOInitializer {
     /** {@link IIORegistry} instance used for registering/deregistering ImageIO plugins */
     private IIORegistry registry;
 
-    /**
-     * List of the Service Provider Interfaces (SPIs) objects associated to the plugin
-     * readers/writers
-     */
+    /** List of the Service Provider Interfaces (SPIs) objects associated to the plugin readers/writers */
     private List<String> excludedSpis;
 
     /** SIngleton instance of the {@link ImageIOInitializer} class */

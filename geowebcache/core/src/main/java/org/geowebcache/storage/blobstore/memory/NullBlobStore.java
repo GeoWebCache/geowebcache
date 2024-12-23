@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2019
  */
@@ -33,10 +32,9 @@ import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 
 /**
- * This class is an implementation of the {@link BlobStore} interface which does not store anything
- * on the file system and can be used for doing a pure in memory caching of the {@link TileObject}s.
- * This class simply stores the layer metadata in a {@link Map} object. The other operations are not
- * executed.
+ * This class is an implementation of the {@link BlobStore} interface which does not store anything on the file system
+ * and can be used for doing a pure in memory caching of the {@link TileObject}s. This class simply stores the layer
+ * metadata in a {@link Map} object. The other operations are not executed.
  *
  * @author Nicola Lagomarsini Geosolutions
  */
@@ -146,8 +144,7 @@ public class NullBlobStore implements BlobStore {
     }
 
     @Override
-    public boolean deleteByParametersId(String layerName, String parametersId)
-            throws StorageException {
+    public boolean deleteByParametersId(String layerName, String parametersId) throws StorageException {
         return true;
     }
 
