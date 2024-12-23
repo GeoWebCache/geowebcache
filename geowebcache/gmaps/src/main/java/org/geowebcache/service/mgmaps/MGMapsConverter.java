@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
@@ -53,8 +52,7 @@ public class MGMapsConverter extends Service {
     }
 
     @Override
-    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response)
-            throws ServiceException {
+    public ConveyorTile getConveyor(HttpServletRequest request, HttpServletResponse response) throws ServiceException {
         String layerId = super.getLayersParameter(request);
 
         String encoding = request.getCharacterEncoding();
@@ -68,8 +66,7 @@ public class MGMapsConverter extends Service {
         String strMetaTiled = ServletUtils.stringFromMap(params, encoding, "metatiled");
 
         long[] gridLoc =
-                MGMapsConverter.convert(
-                        Integer.parseInt(strZoom), Integer.parseInt(strX), Integer.parseInt(strY));
+                MGMapsConverter.convert(Integer.parseInt(strZoom), Integer.parseInt(strX), Integer.parseInt(strY));
 
         MimeType mimeType = null;
         try {
@@ -81,16 +78,8 @@ public class MGMapsConverter extends Service {
             throw new ServiceException("Unable to determine requested format, " + strFormat);
         }
 
-        ConveyorTile ret =
-                new ConveyorTile(
-                        sb,
-                        layerId,
-                        gsb.getWorldEpsg3857().getName(),
-                        gridLoc,
-                        mimeType,
-                        null,
-                        request,
-                        response);
+        ConveyorTile ret = new ConveyorTile(
+                sb, layerId, gsb.getWorldEpsg3857().getName(), gridLoc, mimeType, null, request, response);
 
         if (strCached != null && !Boolean.parseBoolean(strCached)) {
             ret.setRequestHandler(ConveyorTile.RequestHandler.SERVICE);
@@ -121,9 +110,7 @@ public class MGMapsConverter extends Service {
 
             if (!tl.isCacheBypassAllowed().booleanValue()) {
                 throw new GeoWebCacheException(
-                        "Layer "
-                                + tile.getLayerId()
-                                + " is not configured to allow bypassing the cache.");
+                        "Layer " + tile.getLayerId() + " is not configured to allow bypassing the cache.");
             }
 
             tile.setTileLayer(tl);

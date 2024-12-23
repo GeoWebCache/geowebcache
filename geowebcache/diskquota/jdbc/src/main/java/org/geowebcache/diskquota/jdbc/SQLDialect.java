@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Andrea Aime - GeoSolutions Copyright 2012
  */
@@ -25,8 +24,8 @@ import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.MetaDataAccessException;
 
 /**
- * Base class for quota store JDBC dialects, provides functionality based on SQL standards,
- * subclasses may override to take advantage of specific database features
+ * Base class for quota store JDBC dialects, provides functionality based on SQL standards, subclasses may override to
+ * take advantage of specific database features
  *
  * @author Andrea Aime - GeoSolutions
  */
@@ -51,80 +50,79 @@ public class SQLDialect {
 
     // in this case we need a mutable, order preserving map, so keeping the double brace init
     @SuppressWarnings({"serial", "DoubleBraceInitialization"})
-    protected final Map<String, List<String>> TABLE_CREATION_MAP =
-            new LinkedHashMap<>() {
-                {
-                    put(
-                            "TILESET",
-                            Arrays.asList( //
-                                    "CREATE TABLE ${schema}TILESET (\n"
-                                            + //
-                                            "  KEY VARCHAR("
-                                            + TILESET_KEY_SIZE
-                                            + ") PRIMARY KEY,\n"
-                                            + //
-                                            "  LAYER_NAME VARCHAR("
-                                            + LAYER_NAME_SIZE
-                                            + "),\n"
-                                            + //
-                                            "  GRIDSET_ID VARCHAR("
-                                            + GRIDSET_ID_SIZE
-                                            + "),\n"
-                                            + //
-                                            "  BLOB_FORMAT VARCHAR("
-                                            + BLOB_FORMAT_SIZE
-                                            + "),\n"
-                                            + //
-                                            "  PARAMETERS_ID VARCHAR("
-                                            + PARAMETERS_ID_SIZE
-                                            + "),\n"
-                                            + //
-                                            "  BYTES NUMERIC("
-                                            + BYTES_SIZE
-                                            + ") NOT NULL DEFAULT 0\n"
-                                            + //
-                                            ")", //
-                                    "CREATE INDEX TILESET_LAYER ON ${schema}TILESET(LAYER_NAME)" //
-                                    ));
+    protected final Map<String, List<String>> TABLE_CREATION_MAP = new LinkedHashMap<>() {
+        {
+            put(
+                    "TILESET",
+                    Arrays.asList( //
+                            "CREATE TABLE ${schema}TILESET (\n"
+                                    + //
+                                    "  KEY VARCHAR("
+                                    + TILESET_KEY_SIZE
+                                    + ") PRIMARY KEY,\n"
+                                    + //
+                                    "  LAYER_NAME VARCHAR("
+                                    + LAYER_NAME_SIZE
+                                    + "),\n"
+                                    + //
+                                    "  GRIDSET_ID VARCHAR("
+                                    + GRIDSET_ID_SIZE
+                                    + "),\n"
+                                    + //
+                                    "  BLOB_FORMAT VARCHAR("
+                                    + BLOB_FORMAT_SIZE
+                                    + "),\n"
+                                    + //
+                                    "  PARAMETERS_ID VARCHAR("
+                                    + PARAMETERS_ID_SIZE
+                                    + "),\n"
+                                    + //
+                                    "  BYTES NUMERIC("
+                                    + BYTES_SIZE
+                                    + ") NOT NULL DEFAULT 0\n"
+                                    + //
+                                    ")", //
+                            "CREATE INDEX TILESET_LAYER ON ${schema}TILESET(LAYER_NAME)" //
+                            ));
 
-                    // this one embeds both tile page and page stats, since they are linked 1-1
-                    put(
-                            "TILEPAGE",
-                            Arrays.asList(
-                                    "CREATE TABLE ${schema}TILEPAGE (\n"
-                                            + //
-                                            " KEY VARCHAR("
-                                            + TILEPAGE_KEY_SIZE
-                                            + ") PRIMARY KEY,\n"
-                                            + //
-                                            " TILESET_ID VARCHAR("
-                                            + TILESET_KEY_SIZE
-                                            + ") REFERENCES ${schema}TILESET(KEY) ON DELETE CASCADE,\n"
-                                            + //
-                                            " PAGE_Z SMALLINT,\n"
-                                            + //
-                                            " PAGE_X INTEGER,\n"
-                                            + //
-                                            " PAGE_Y INTEGER,\n"
-                                            + //
-                                            " CREATION_TIME_MINUTES INTEGER,\n"
-                                            + //
-                                            " FREQUENCY_OF_USE FLOAT,\n"
-                                            + //
-                                            " LAST_ACCESS_TIME_MINUTES INTEGER,\n"
-                                            + //
-                                            " FILL_FACTOR FLOAT,\n"
-                                            + //
-                                            " NUM_HITS NUMERIC("
-                                            + NUM_HITS_SIZE
-                                            + ")\n"
-                                            + //
-                                            ")", //
-                                    "CREATE INDEX TILEPAGE_TILESET ON ${schema}TILEPAGE(TILESET_ID, FILL_FACTOR)",
-                                    "CREATE INDEX TILEPAGE_FREQUENCY ON ${schema}TILEPAGE(FREQUENCY_OF_USE DESC)",
-                                    "CREATE INDEX TILEPAGE_LAST_ACCESS ON ${schema}TILEPAGE(LAST_ACCESS_TIME_MINUTES DESC)"));
-                }
-            };
+            // this one embeds both tile page and page stats, since they are linked 1-1
+            put(
+                    "TILEPAGE",
+                    Arrays.asList(
+                            "CREATE TABLE ${schema}TILEPAGE (\n"
+                                    + //
+                                    " KEY VARCHAR("
+                                    + TILEPAGE_KEY_SIZE
+                                    + ") PRIMARY KEY,\n"
+                                    + //
+                                    " TILESET_ID VARCHAR("
+                                    + TILESET_KEY_SIZE
+                                    + ") REFERENCES ${schema}TILESET(KEY) ON DELETE CASCADE,\n"
+                                    + //
+                                    " PAGE_Z SMALLINT,\n"
+                                    + //
+                                    " PAGE_X INTEGER,\n"
+                                    + //
+                                    " PAGE_Y INTEGER,\n"
+                                    + //
+                                    " CREATION_TIME_MINUTES INTEGER,\n"
+                                    + //
+                                    " FREQUENCY_OF_USE FLOAT,\n"
+                                    + //
+                                    " LAST_ACCESS_TIME_MINUTES INTEGER,\n"
+                                    + //
+                                    " FILL_FACTOR FLOAT,\n"
+                                    + //
+                                    " NUM_HITS NUMERIC("
+                                    + NUM_HITS_SIZE
+                                    + ")\n"
+                                    + //
+                                    ")", //
+                            "CREATE INDEX TILEPAGE_TILESET ON ${schema}TILEPAGE(TILESET_ID, FILL_FACTOR)",
+                            "CREATE INDEX TILEPAGE_FREQUENCY ON ${schema}TILEPAGE(FREQUENCY_OF_USE DESC)",
+                            "CREATE INDEX TILEPAGE_LAST_ACCESS ON ${schema}TILEPAGE(LAST_ACCESS_TIME_MINUTES DESC)"));
+        }
+    };
 
     /** Checks if the database schema is present, if missing it generates it */
     public void initializeTables(String schema, SimpleJdbcTemplate template) {
@@ -145,26 +143,22 @@ public class SQLDialect {
     }
 
     /** Checks if the specified table exists */
-    private boolean tableExists(
-            SimpleJdbcTemplate template, final String schema, final String tableName) {
+    private boolean tableExists(SimpleJdbcTemplate template, final String schema, final String tableName) {
         try {
             DataSource ds = ((JdbcAccessor) template.getJdbcOperations()).getDataSource();
             if (ds == null) return false;
-            return JdbcUtils.extractDatabaseMetaData(
-                    ds,
-                    dbmd -> {
-                        try (ResultSet rs =
-                                dbmd.getTables(null, schema, tableName.toLowerCase(), null)) {
-                            boolean exists = rs.next();
-                            rs.close();
-                            if (exists) {
-                                return true;
-                            }
-                        }
-                        try (ResultSet rs = dbmd.getTables(null, schema, tableName, null)) {
-                            return rs.next();
-                        }
-                    });
+            return JdbcUtils.extractDatabaseMetaData(ds, dbmd -> {
+                try (ResultSet rs = dbmd.getTables(null, schema, tableName.toLowerCase(), null)) {
+                    boolean exists = rs.next();
+                    rs.close();
+                    if (exists) {
+                        return true;
+                    }
+                }
+                try (ResultSet rs = dbmd.getTables(null, schema, tableName, null)) {
+                    return rs.next();
+                }
+            });
         } catch (MetaDataAccessException e) {
             return false;
         }
@@ -190,8 +184,7 @@ public class SQLDialect {
         return sb.toString();
     }
 
-    public String getLayerGridDeletionStatement(
-            String schema, String layerNameParam, String gridsetIdParam) {
+    public String getLayerGridDeletionStatement(String schema, String layerNameParam, String gridsetIdParam) {
         StringBuilder sb = new StringBuilder("DELETE FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
@@ -202,8 +195,7 @@ public class SQLDialect {
         return sb.toString();
     }
 
-    public String getLayerParametersDeletionStatement(
-            String schema, String layerNameParam, String parametersIdParam) {
+    public String getLayerParametersDeletionStatement(String schema, String layerNameParam, String parametersIdParam) {
         StringBuilder sb = new StringBuilder("DELETE FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
@@ -215,9 +207,7 @@ public class SQLDialect {
     }
 
     public String getTileSetsQuery(String schema) {
-        StringBuilder sb =
-                new StringBuilder(
-                        "SELECT KEY, LAYER_NAME, GRIDSET_ID, BLOB_FORMAT, PARAMETERS_ID FROM ");
+        StringBuilder sb = new StringBuilder("SELECT KEY, LAYER_NAME, GRIDSET_ID, BLOB_FORMAT, PARAMETERS_ID FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
         }
@@ -227,9 +217,7 @@ public class SQLDialect {
     }
 
     public String getTileSetQuery(String schema, String keyParam) {
-        StringBuilder sb =
-                new StringBuilder(
-                        "SELECT KEY, LAYER_NAME, GRIDSET_ID, BLOB_FORMAT, PARAMETERS_ID FROM ");
+        StringBuilder sb = new StringBuilder("SELECT KEY, LAYER_NAME, GRIDSET_ID, BLOB_FORMAT, PARAMETERS_ID FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
         }
@@ -269,8 +257,8 @@ public class SQLDialect {
     }
 
     /**
-     * Whatever source table to use when there is not a real table to use as the source, e.g.,
-     * "select 1" vs "select 1 from dual". For most databases not adding anything is just fine.
+     * Whatever source table to use when there is not a real table to use as the source, e.g., "select 1" vs "select 1
+     * from dual". For most databases not adding anything is just fine.
      */
     protected void addEmtpyTableReference(StringBuilder sb) {
         // nothing to do
@@ -312,8 +300,7 @@ public class SQLDialect {
         return sb.toString();
     }
 
-    public String getUsedQuotaByLayerGridset(
-            String schema, String layerNameParam, String gridSetParam) {
+    public String getUsedQuotaByLayerGridset(String schema, String layerNameParam, String gridSetParam) {
         StringBuilder sb = new StringBuilder("SELECT SUM(BYTES) FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
@@ -349,8 +336,7 @@ public class SQLDialect {
 
     public String getPageStats(String schema, String keyParam) {
         StringBuilder sb =
-                new StringBuilder(
-                        "SELECT FREQUENCY_OF_USE, LAST_ACCESS_TIME_MINUTES, FILL_FACTOR, NUM_HITS FROM ");
+                new StringBuilder("SELECT FREQUENCY_OF_USE, LAST_ACCESS_TIME_MINUTES, FILL_FACTOR, NUM_HITS FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
         }
@@ -397,8 +383,8 @@ public class SQLDialect {
     }
 
     /**
-     * Updates the fill factor in a page provided the old fill factor is still the one we read from
-     * the db, otherwise updates nothing
+     * Updates the fill factor in a page provided the old fill factor is still the one we read from the db, otherwise
+     * updates nothing
      */
     public String conditionalUpdatePageStatsFillFactor(
             String schema, String keyParam, String newfillFactorParam, String oldFillFactorParam) {
@@ -415,8 +401,7 @@ public class SQLDialect {
     }
 
     /** Forces the fill factor in a page to the desired value */
-    public String updatePageStatsFillFactor(
-            String schema, String keyParam, String newfillFactorParam) {
+    public String updatePageStatsFillFactor(String schema, String keyParam, String newfillFactorParam) {
         StringBuilder sb = new StringBuilder("UPDATE ");
         if (schema != null) {
             sb.append(schema).append(".");
@@ -428,8 +413,8 @@ public class SQLDialect {
     }
 
     /**
-     * Updates the fill factor in a page provided the old fill factor is still the one we read from
-     * the db, otherwise updates nothing
+     * Updates the fill factor in a page provided the old fill factor is still the one we read from the db, otherwise
+     * updates nothing
      */
     public String updatePageStats(
             String schema,
@@ -457,9 +442,7 @@ public class SQLDialect {
     }
 
     public String getLeastFrequentlyUsedPage(String schema, List<String> layerParamNames) {
-        StringBuilder sb =
-                new StringBuilder(
-                        "SELECT TILESET_ID, PAGE_X, PAGE_Y, PAGE_Z, CREATION_TIME_MINUTES FROM ");
+        StringBuilder sb = new StringBuilder("SELECT TILESET_ID, PAGE_X, PAGE_Y, PAGE_Z, CREATION_TIME_MINUTES FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
         }
@@ -483,9 +466,7 @@ public class SQLDialect {
     }
 
     public String getLeastRecentlyUsedPage(String schema, List<String> layerParamNames) {
-        StringBuilder sb =
-                new StringBuilder(
-                        "SELECT TILESET_ID, PAGE_X, PAGE_Y, PAGE_Z, CREATION_TIME_MINUTES FROM ");
+        StringBuilder sb = new StringBuilder("SELECT TILESET_ID, PAGE_X, PAGE_Y, PAGE_Z, CREATION_TIME_MINUTES FROM ");
         if (schema != null) {
             sb.append(schema).append(".");
         }

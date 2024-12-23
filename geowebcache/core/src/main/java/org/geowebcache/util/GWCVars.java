@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2019
  */
@@ -41,8 +40,8 @@ public class GWCVars {
     public static final int CACHE_USE_WMS_BACKEND_VALUE = -4;
 
     /**
-     * enum containing and describing the possible sources of lookup for "environment variables", in
-     * order of precedence.
+     * enum containing and describing the possible sources of lookup for "environment variables", in order of
+     * precedence.
      */
     public static enum VariableType {
         ENV("Java system property") {
@@ -53,8 +52,7 @@ public class GWCVars {
         SERVLET("servlet context parameter") {
             protected @Override String apply(ApplicationContext context, String varName) {
                 if (context instanceof WebApplicationContext) {
-                    ServletContext servletContext =
-                            ((WebApplicationContext) context).getServletContext();
+                    ServletContext servletContext = ((WebApplicationContext) context).getServletContext();
                     return servletContext == null ? null : servletContext.getInitParameter(varName);
                 }
                 return null;
@@ -79,8 +77,8 @@ public class GWCVars {
         protected abstract String apply(ApplicationContext context, String varName);
 
         /**
-         * @return a non-null {@literal Variable} with the evaluated value for the given variable
-         *     name, possibly {@literal null}.
+         * @return a non-null {@literal Variable} with the evaluated value for the given variable name, possibly
+         *     {@literal null}.
          */
         Variable get(ApplicationContext context, String varName) {
             return Variable.ofNullable(this, varName, this.apply(context, varName));
@@ -122,9 +120,8 @@ public class GWCVars {
     }
 
     /**
-     * The first non-null value for the given variable name in the order of lookup precedence
-     * defined by {@link VariableType} (that is, Java system property -> servlet context parameter
-     * -> system environment variable)
+     * The first non-null value for the given variable name in the order of lookup precedence defined by
+     * {@link VariableType} (that is, Java system property -> servlet context parameter -> system environment variable)
      */
     public static String findEnvVar(ApplicationContext context, String varStr) {
         return lookup(context, varStr)
@@ -136,8 +133,8 @@ public class GWCVars {
     }
 
     /**
-     * @return all the results of a given variable look up in order of precedence, without filtering
-     *     for null (i.e. not set) values
+     * @return all the results of a given variable look up in order of precedence, without filtering for null (i.e. not
+     *     set) values
      */
     public static List<Variable> findVariable(ApplicationContext context, String varName) {
         return lookup(context, varName).collect(Collectors.toList());

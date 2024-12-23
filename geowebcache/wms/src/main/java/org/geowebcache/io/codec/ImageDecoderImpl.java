@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Nicola Lagomarsini, GeoSolutions S.A.S., Copyright 2014
  */
@@ -34,8 +33,8 @@ import org.geowebcache.io.FileResource;
 import org.geowebcache.io.Resource;
 
 /**
- * Class implementing the ImageDecoder interface, the user should only create a new bean for
- * instantiating a new decoder object.
+ * Class implementing the ImageDecoder interface, the user should only create a new bean for instantiating a new decoder
+ * object.
  */
 public class ImageDecoderImpl implements ImageDecoder {
     /** Logger used */
@@ -52,8 +51,8 @@ public class ImageDecoderImpl implements ImageDecoder {
     private ImageReaderSpi spi;
 
     /**
-     * Creates a new Instance of ImageEncoder supporting or not OutputStream optimization, with the
-     * defined MimeTypes and Spi classes.
+     * Creates a new Instance of ImageEncoder supporting or not OutputStream optimization, with the defined MimeTypes
+     * and Spi classes.
      */
     public ImageDecoderImpl(
             boolean aggressiveInputStreamOptimization,
@@ -69,8 +68,7 @@ public class ImageDecoderImpl implements ImageDecoder {
         for (String spi : readerSpi) {
             try {
                 Class<?> clazz = Class.forName(spi);
-                ImageReaderSpi reader =
-                        (ImageReaderSpi) theRegistry.getServiceProviderByClass(clazz);
+                ImageReaderSpi reader = (ImageReaderSpi) theRegistry.getServiceProviderByClass(clazz);
                 if (reader != null) {
                     this.spi = reader;
                     break;
@@ -82,16 +80,14 @@ public class ImageDecoderImpl implements ImageDecoder {
     }
 
     /**
-     * Decodes the selected image with the defined output object. The user can set the aggressive
-     * outputStream if supported.
+     * Decodes the selected image with the defined output object. The user can set the aggressive outputStream if
+     * supported.
      *
      * @param source Source object to read
-     * @param aggressiveInputStreamOptimization Parameter used if aggressive outputStream
-     *     optimization must be used.
+     * @param aggressiveInputStreamOptimization Parameter used if aggressive outputStream optimization must be used.
      */
     @Override
-    public BufferedImage decode(
-            Object source, boolean aggressiveInputStreamOptimization, Map<String, Object> map)
+    public BufferedImage decode(Object source, boolean aggressiveInputStreamOptimization, Map<String, Object> map)
             throws Exception {
 
         if (!isAggressiveInputStreamSupported() && aggressiveInputStreamOptimization) {
@@ -174,8 +170,8 @@ public class ImageDecoderImpl implements ImageDecoder {
     /**
      * Indicates if optimization on InputStream can be used
      *
-     * @return isAggressiveInputStreamSupported Boolean indicating if the selected decoder supports
-     *     an aggressive input stream optimization
+     * @return isAggressiveInputStreamSupported Boolean indicating if the selected decoder supports an aggressive input
+     *     stream optimization
      */
     @Override
     public boolean isAggressiveInputStreamSupported() {

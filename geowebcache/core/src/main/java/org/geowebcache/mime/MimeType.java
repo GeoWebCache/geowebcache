@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
@@ -33,11 +32,7 @@ public class MimeType {
     private static Logger log = Logging.getLogger(MimeType.class.getName());
 
     protected MimeType(
-            String mimeType,
-            String fileExtension,
-            String internalName,
-            String format,
-            boolean supportsTiling) {
+            String mimeType, String fileExtension, String internalName, String format, boolean supportsTiling) {
         this.mimeType = mimeType;
         this.fileExtension = fileExtension;
         this.internalName = internalName;
@@ -105,11 +100,11 @@ public class MimeType {
     }
 
     /**
-     * Indicates whether this is a vector format rather than a raster format. Output in vector
-     * formats should have no guttering.
+     * Indicates whether this is a vector format rather than a raster format. Output in vector formats should have no
+     * guttering.
      *
-     * @return {@code true} if represents a vector or other kind of non raster format where applying
-     *     a gutter to the request originating the tile would lead to an incorrect result.
+     * @return {@code true} if represents a vector or other kind of non raster format where applying a gutter to the
+     *     request originating the tile would lead to an incorrect result.
      */
     public boolean isVector() {
         return false;
@@ -186,16 +181,15 @@ public class MimeType {
     }
 
     /**
-     * Determine whether otherMimeType is compatible with this MimeType. They're compatible if
-     * they're identical, or presumably if otherMimeType has this mime type as a prefix.
+     * Determine whether otherMimeType is compatible with this MimeType. They're compatible if they're identical, or
+     * presumably if otherMimeType has this mime type as a prefix.
      *
      * @param otherMimeType the mime type to check for compatibility
      * @return whether otherMimeType is "compatible" with this mime type
      */
     public boolean isCompatible(String otherMimeType) {
         return mimeType.equalsIgnoreCase(otherMimeType)
-                || (otherMimeType != null
-                        && otherMimeType.toLowerCase().startsWith(mimeType.toLowerCase()));
+                || (otherMimeType != null && otherMimeType.toLowerCase().startsWith(mimeType.toLowerCase()));
     }
 
     @Override

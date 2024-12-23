@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp and Gabriel Roldan (OpenGeo) 2010
  */
@@ -43,19 +42,18 @@ import org.geowebcache.util.URLs;
  * A task to run a GeoRSS feed poll and launch the seeding process
  *
  * <p>If a poll {@link GeoRSSFeedDefinition#getFeedUrl() URL} is configured with the <code>
- * ${lastUpdate}</code> then the formatted date and time for the last updated entry will be passed
- * on to the URL.
+ * ${lastUpdate}</code> then the formatted date and time for the last updated entry will be passed on to the URL.
  *
  * <p>For example, if the URL is configured as <code>
- * http://some.server.org/georss/gwcupdates?updateSequence=${lastUpdate}</code> and a previous poll
- * for this resource determined that the most recent <code>updated</code> property of a GeoRSS entry
- * was <code>2010-01-17T01:05:32Z</code>, the the resulting feed URL will be <code>
- * http://some.server.org/georss/gwcupdates?updateSequence=2010-01-17T01:05:32Z</code> (or its
- * equivalent in the server's time zone).
+ * http://some.server.org/georss/gwcupdates?updateSequence=${lastUpdate}</code> and a previous poll for this resource
+ * determined that the most recent <code>updated</code> property of a GeoRSS entry was <code>2010-01-17T01:05:32Z</code>
+ * , the the resulting feed URL will be <code>
+ * http://some.server.org/georss/gwcupdates?updateSequence=2010-01-17T01:05:32Z</code> (or its equivalent in the
+ * server's time zone).
  *
- * <p>By the other hand, if <code>${lastUpdate}</code> parameter is configured but this task is
- * going to perform the first poll (hence there's no last update history), the parameter will be
- * replaced by the empty string, resulting in something like <code>
+ * <p>By the other hand, if <code>${lastUpdate}</code> parameter is configured but this task is going to perform the
+ * first poll (hence there's no last update history), the parameter will be replaced by the empty string, resulting in
+ * something like <code>
  * http://some.server.org/georss/gwcupdates?updateSequence=</code>
  */
 class GeoRSSPollTask implements Runnable {
@@ -84,8 +82,7 @@ class GeoRSSPollTask implements Runnable {
     }
 
     /**
-     * Called by the thread executor when the poll def's interval has elapsed (or as soon as
-     * possible after it elapsed).
+     * Called by the thread executor when the poll def's interval has elapsed (or as soon as possible after it elapsed).
      */
     @Override
     public void run() {
@@ -144,23 +141,20 @@ class GeoRSSPollTask implements Runnable {
             return;
         }
 
-        LOGGER.fine(
-                "Got reader for "
-                        + pollDef.getFeedUrl()
-                        + ". Creating geometry filter matrix for gridset "
-                        + gridSetId
-                        + " on layer "
-                        + layerName);
+        LOGGER.fine("Got reader for "
+                + pollDef.getFeedUrl()
+                + ". Creating geometry filter matrix for gridset "
+                + gridSetId
+                + " on layer "
+                + layerName);
 
         final int maxMaskLevel = pollDef.getMaxMaskLevel();
-        final GeoRSSTileRangeBuilder matrixBuilder =
-                new GeoRSSTileRangeBuilder(layer, gridSetId, maxMaskLevel);
+        final GeoRSSTileRangeBuilder matrixBuilder = new GeoRSSTileRangeBuilder(layer, gridSetId, maxMaskLevel);
 
-        LOGGER.fine(
-                "Creating tile range mask based on GeoRSS feed's geometries from "
-                        + feedUrl.toExternalForm()
-                        + " for "
-                        + layerName);
+        LOGGER.fine("Creating tile range mask based on GeoRSS feed's geometries from "
+                + feedUrl.toExternalForm()
+                + " for "
+                + layerName);
 
         final GeometryRasterMaskBuilder tileRangeMask =
                 matrixBuilder.buildTileRangeMask(geoRSSReader, previousUpdatedEntry);
@@ -174,29 +168,25 @@ class GeoRSSPollTask implements Runnable {
         final String lastUpdatedEntry = matrixBuilder.getLastEntryUpdate();
         storageBroker.putLayerMetadata(layerName, LAST_UPDATED, lastUpdatedEntry);
 
-        LOGGER.fine(
-                "Created tile range mask based on GeoRSS geometry feed from "
-                        + pollDef
-                        + " for "
-                        + layerName
-                        + ". Calculating number of affected tiles...");
+        LOGGER.fine("Created tile range mask based on GeoRSS geometry feed from "
+                + pollDef
+                + " for "
+                + layerName
+                + ". Calculating number of affected tiles...");
         _logImagesToDisk(tileRangeMask);
 
         final boolean tilesAffected = tileRangeMask.hasTilesSet();
         if (tilesAffected) {
             LOGGER.info("Launching reseed process " + pollDef + " for " + layerName);
         } else {
-            LOGGER.info(
-                    pollDef + " for " + layerName + " did not affect any tile. No need to reseed.");
+            LOGGER.info(pollDef + " for " + layerName + " did not affect any tile. No need to reseed.");
             return;
         }
 
         launchSeeding(layer, pollDef, gridSetId, tileRangeMask);
 
         LOGGER.info(
-                "Seeding process for tiles affected by feed "
-                        + feedUrl.toExternalForm()
-                        + " successfully launched.");
+                "Seeding process for tiles affected by feed " + feedUrl.toExternalForm() + " successfully launched.");
     }
 
     private String templateFeedUrl(final String feedUrl, final String lastUpdatedEntry) {
@@ -214,8 +204,8 @@ class GeoRSSPollTask implements Runnable {
     }
 
     /**
-     * For debug purposes only, writes down the bitmask images to the directory specified by the
-     * System property (ej, {@code -Dorg.geowebcache.georss.debugToDisk=target/})
+     * For debug purposes only, writes down the bitmask images to the directory specified by the System property (ej,
+     * {@code -Dorg.geowebcache.georss.debugToDisk=target/})
      */
     private void _logImagesToDisk(final GeometryRasterMaskBuilder matrix) {
         if (null == System.getProperty("org.geowebcache.georss.debugToDisk")) {
@@ -224,14 +214,11 @@ class GeoRSSPollTask implements Runnable {
         File target = new File(System.getProperty("org.geowebcache.georss.debugToDisk"));
         if (!target.isDirectory() || !target.canWrite()) {
             throw new IllegalStateException(
-                    "Can't access debug directory for "
-                            + "dumping mask images: "
-                            + target.getAbsolutePath());
+                    "Can't access debug directory for " + "dumping mask images: " + target.getAbsolutePath());
         }
 
-        LOGGER.warning(
-                "\n!!!!!!!!!!!\n REMEMBER NOT TO SET THE org.geowebcache.georss.debugToDisk"
-                        + " SYSTEM PROPERTY ON A PRODUCTION ENVIRONMENT \n!!!!!!!!!!!");
+        LOGGER.warning("\n!!!!!!!!!!!\n REMEMBER NOT TO SET THE org.geowebcache.georss.debugToDisk"
+                + " SYSTEM PROPERTY ON A PRODUCTION ENVIRONMENT \n!!!!!!!!!!!");
         BufferedImage[] byLevelMasks = matrix.getByLevelMasks();
 
         for (int i = 0; i < byLevelMasks.length; i++) {
@@ -284,15 +271,14 @@ class GeoRSSPollTask implements Runnable {
 
         // We do the truncate synchronously to get rid of stale data as quickly as we can
         while (mimeIter.hasNext()) {
-            DiscontinuousTileRange dtr =
-                    new DiscontinuousTileRange(
-                            layer.getName(),
-                            gridSetId,
-                            gridSub.getZoomStart(),
-                            gridSub.getZoomStop(),
-                            rasterMask,
-                            mimeIter.next(),
-                            null);
+            DiscontinuousTileRange dtr = new DiscontinuousTileRange(
+                    layer.getName(),
+                    gridSetId,
+                    gridSub.getZoomStart(),
+                    gridSub.getZoomStop(),
+                    rasterMask,
+                    mimeIter.next(),
+                    null);
             try {
                 GWCTask[] tasks = seeder.createTasks(dtr, layer, GWCTask.TYPE.TRUNCATE, 1, false);
                 tasks[0].doAction();
@@ -314,15 +300,14 @@ class GeoRSSPollTask implements Runnable {
         // ... else we seed
         mimeIter = mimeList.iterator();
         while (mimeIter.hasNext()) {
-            DiscontinuousTileRange dtr =
-                    new DiscontinuousTileRange(
-                            layer.getName(),
-                            gridSetId,
-                            gridSub.getZoomStart(),
-                            gridSub.getZoomStop(),
-                            rasterMask,
-                            mimeIter.next(),
-                            null);
+            DiscontinuousTileRange dtr = new DiscontinuousTileRange(
+                    layer.getName(),
+                    gridSetId,
+                    gridSub.getZoomStart(),
+                    gridSub.getZoomStop(),
+                    rasterMask,
+                    mimeIter.next(),
+                    null);
 
             final int seedingThreads = pollDef.getSeedingThreads();
             GWCTask[] tasks;
@@ -363,10 +348,7 @@ class GeoRSSPollTask implements Runnable {
             }
 
             try {
-                LOGGER.fine(
-                        "Found "
-                                + liveCount
-                                + " running seed threads. Waiting 3s for them to terminate.");
+                LOGGER.fine("Found " + liveCount + " running seed threads. Waiting 3s for them to terminate.");
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
                 LOGGER.log(Level.FINE, e.getMessage(), e);
@@ -384,9 +366,7 @@ class GeoRSSPollTask implements Runnable {
                 }
             }
             if (liveCount > 0) {
-                LOGGER.info(
-                        liveCount
-                                + " seed jobs are still waiting to terminate, proceeding anyway.");
+                LOGGER.info(liveCount + " seed jobs are still waiting to terminate, proceeding anyway.");
             }
 
         } else {

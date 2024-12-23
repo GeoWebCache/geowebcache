@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp / The Open Planning Project 2008
  */
@@ -40,8 +39,8 @@ public abstract class GWCTask {
     }
 
     /**
-     * Value shared between all the threads in the group, is incremented each time a task starts
-     * working and decremented each time one task finishes (either normally or abnormally)
+     * Value shared between all the threads in the group, is incremented each time a task starts working and decremented
+     * each time one task finishes (either normally or abnormally)
      */
     protected AtomicInteger sharedThreadCount = new AtomicInteger();
 
@@ -80,14 +79,8 @@ public abstract class GWCTask {
             dispose();
             int membersRemaining = this.sharedThreadCount.decrementAndGet();
             if (0 == membersRemaining) {
-                double groupTotalTimeSecs =
-                        (System.currentTimeMillis() - (double) groupStartTime) / 1000;
-                log.info(
-                        "Thread group finished "
-                                + parsedType
-                                + " task after "
-                                + groupTotalTimeSecs
-                                + " seconds");
+                double groupTotalTimeSecs = (System.currentTimeMillis() - (double) groupStartTime) / 1000;
+                log.info("Thread group finished " + parsedType + " task after " + groupTotalTimeSecs + " seconds");
             }
         }
     }
@@ -98,8 +91,8 @@ public abstract class GWCTask {
     protected abstract void doActionInternal() throws GeoWebCacheException, InterruptedException;
 
     /**
-     * @param sharedThreadCount a counter of number of active tasks in the task group, incremented
-     *     when this task starts working and decremented when it stops
+     * @param sharedThreadCount a counter of number of active tasks in the task group, incremented when this task starts
+     *     working and decremented when it stops
      * @param threadOffset REVISIT: may not be needed anymore. Just check if sharedThreadCount == 1?
      */
     public void setThreadInfo(AtomicInteger sharedThreadCount, int threadOffset) {

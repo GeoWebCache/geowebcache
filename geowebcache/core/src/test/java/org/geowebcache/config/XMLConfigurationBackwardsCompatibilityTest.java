@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2018
  */
@@ -162,11 +161,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         assertNotNull(serviceInfo.getServiceProvider().getProviderName());
         assertNotNull(serviceInfo.getServiceProvider().getProviderSite());
         assertNotNull(serviceInfo.getServiceProvider().getServiceContact());
-        assertNotNull(
-                serviceInfo
-                        .getServiceProvider()
-                        .getServiceContact()
-                        .getAddressAdministrativeArea());
+        assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getAddressAdministrativeArea());
         assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getAddressCity());
         assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getAddressCountry());
         assertNotNull(serviceInfo.getServiceProvider().getServiceContact().getAddressEmail());
@@ -186,8 +181,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         assertTrue(layer.getGridSubsets().contains("EPSG:2163"));
     }
 
-    private TileLayer findLayer(Iterable<TileLayer> layers, String layerName)
-            throws GeoWebCacheException {
+    private TileLayer findLayer(Iterable<TileLayer> layers, String layerName) throws GeoWebCacheException {
         Iterator<TileLayer> iter = layers.iterator();
 
         int i = 0;
@@ -199,8 +193,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
             i++;
         }
 
-        throw new GeoWebCacheException(
-                "Layer " + layerName + " not found, set has " + i + " layers.");
+        throw new GeoWebCacheException("Layer " + layerName + " not found, set has " + i + " layers.");
     }
 
     private Iterable<TileLayer> loadResource(String fileName) throws Exception {
@@ -214,14 +207,11 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         //     print(root.getOwnerDocument());
         // }
 
-        XMLConfiguration xmlConfig =
-                new XMLConfiguration(
-                        null,
-                        new MockConfigurationResourceProvider(
-                                () -> XMLConfiguration.class.getResourceAsStream(fileName)));
+        XMLConfiguration xmlConfig = new XMLConfiguration(
+                null,
+                new MockConfigurationResourceProvider(() -> XMLConfiguration.class.getResourceAsStream(fileName)));
 
-        GridSetBroker gsb =
-                new GridSetBroker(Arrays.asList(new DefaultGridsets(true, true), xmlConfig));
+        GridSetBroker gsb = new GridSetBroker(Arrays.asList(new DefaultGridsets(true, true), xmlConfig));
         xmlConfig.setGridSetBroker(gsb);
         xmlConfig.afterPropertiesSet();
 
@@ -239,8 +229,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
     protected void print(Document dom) throws Exception {
         TransformerFactory txFactory = TransformerFactory.newInstance();
         try {
-            txFactory.setAttribute(
-                    "{http://xml.apache.org/xalan}indent-number", Integer.valueOf(2));
+            txFactory.setAttribute("{http://xml.apache.org/xalan}indent-number", Integer.valueOf(2));
         } catch (Exception e) {
             // some
         }
@@ -249,7 +238,6 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         tx.setOutputProperty(OutputKeys.METHOD, "xml");
         tx.setOutputProperty(OutputKeys.INDENT, "yes");
 
-        tx.transform(
-                new DOMSource(dom), new StreamResult(new OutputStreamWriter(System.out, UTF_8)));
+        tx.transform(new DOMSource(dom), new StreamResult(new OutputStreamWriter(System.out, UTF_8)));
     }
 }

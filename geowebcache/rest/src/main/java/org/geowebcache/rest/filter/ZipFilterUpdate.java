@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, OpenGeo, Copyright 2009
  * @author David Vick, Boundless, 2017
@@ -43,17 +42,10 @@ public class ZipFilterUpdate {
             ZipEntry ze = zis.getNextEntry();
 
             while (ze != null) {
-                log.info(
-                        "Reading "
-                                + ze.getName()
-                                + " ("
-                                + ze.getSize()
-                                + " bytes ) for "
-                                + filter.getName());
+                log.info("Reading " + ze.getName() + " (" + ze.getSize() + " bytes ) for " + filter.getName());
 
                 if (ze.isDirectory()) {
-                    throw new RestException(
-                            "Zip file cannot contain directories.", HttpStatus.BAD_REQUEST);
+                    throw new RestException("Zip file cannot contain directories.", HttpStatus.BAD_REQUEST);
                 }
 
                 String[] parsedName = parseName(ze.getName());
@@ -73,8 +65,7 @@ public class ZipFilterUpdate {
             }
 
         } catch (IOException ioe) {
-            throw new RestException(
-                    "IOException while reading zip, " + ioe.getMessage(), HttpStatus.BAD_REQUEST);
+            throw new RestException("IOException while reading zip, " + ioe.getMessage(), HttpStatus.BAD_REQUEST);
         } finally {
             try {
                 is.close();

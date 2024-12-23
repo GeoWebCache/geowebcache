@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Andrea Aime, GeoSolutions, Copyright 2019
  */
@@ -285,8 +284,7 @@ public abstract class AzureBlobStoreIntegrationTest {
         // check the tiles are gone too, give it up to 100 seconds
         long start = System.currentTimeMillis();
         boolean t20Deleted = false, t21Deleted = false, t22Deleted = false;
-        while (System.currentTimeMillis() - start < 100000
-                && (!t20Deleted || !t21Deleted || !t22Deleted)) {
+        while (System.currentTimeMillis() - start < 100000 && (!t20Deleted || !t21Deleted || !t22Deleted)) {
 
             if (!t20Deleted) {
                 tile.getXYZ()[0] = 20;
@@ -325,34 +323,21 @@ public abstract class AzureBlobStoreIntegrationTest {
         // deletion by gridset is asynch, so we might have to wait a bit
         boolean t4326PngDeleted = false, t4326JpegDeleted = false;
         long start = System.currentTimeMillis();
-        while (System.currentTimeMillis() - start < 100000
-                && (!t4326PngDeleted || !t4326JpegDeleted)) {
+        while (System.currentTimeMillis() - start < 100000 && (!t4326PngDeleted || !t4326JpegDeleted)) {
 
             if (!t4326PngDeleted) {
-                t4326PngDeleted =
-                        !blobStore.get(queryTile(DEFAULT_LAYER, "EPSG:4326", "png", 0, 0, 0));
+                t4326PngDeleted = !blobStore.get(queryTile(DEFAULT_LAYER, "EPSG:4326", "png", 0, 0, 0));
             }
             if (!t4326JpegDeleted) {
                 t4326JpegDeleted =
-                        !blobStore.get(
-                                queryTile(
-                                        DEFAULT_LAYER,
-                                        "EPSG:4326",
-                                        "jpeg",
-                                        0,
-                                        0,
-                                        0,
-                                        "param",
-                                        "value"));
+                        !blobStore.get(queryTile(DEFAULT_LAYER, "EPSG:4326", "jpeg", 0, 0, 0, "param", "value"));
             }
         }
         assertTrue(t4326PngDeleted);
         assertTrue(t4326JpegDeleted);
         // these two should not have been touched
         assertTrue(blobStore.get(queryTile(DEFAULT_LAYER, "EPSG:3857", "png", 0, 0, 0)));
-        assertTrue(
-                blobStore.get(
-                        queryTile(DEFAULT_LAYER, "EPSG:3857", "jpeg", 0, 0, 0, "param", "value")));
+        assertTrue(blobStore.get(queryTile(DEFAULT_LAYER, "EPSG:3857", "jpeg", 0, 0, 0, "param", "value")));
     }
 
     @Test
@@ -366,8 +351,7 @@ public abstract class AzureBlobStoreIntegrationTest {
     }
 
     @Test
-    public void testTruncateShortCutsIfNoTilesInParametersPrefix()
-            throws StorageException, MimeException {
+    public void testTruncateShortCutsIfNoTilesInParametersPrefix() throws StorageException, MimeException {
         final int zoomStart = 0;
         final int zoomStop = 1;
         seed(zoomStart, zoomStop);
@@ -375,8 +359,7 @@ public abstract class AzureBlobStoreIntegrationTest {
         blobStore.addListener(listener);
 
         GridSet gridset =
-                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)))
-                        .getWorldEpsg4326();
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false))).getWorldEpsg4326();
         GridSubset gridSubSet = GridSubsetFactory.createGridSubSet(gridset);
 
         long[][] rangeBounds = { //
@@ -388,14 +371,7 @@ public abstract class AzureBlobStoreIntegrationTest {
         // use a parameters map for which there're no tiles
         Map<String, String> parameters = ImmutableMap.of("someparam", "somevalue");
         TileRange tileRange =
-                tileRange(
-                        DEFAULT_LAYER,
-                        DEFAULT_GRIDSET,
-                        zoomStart,
-                        zoomStop,
-                        rangeBounds,
-                        mimeType,
-                        parameters);
+                tileRange(DEFAULT_LAYER, DEFAULT_GRIDSET, zoomStart, zoomStop, rangeBounds, mimeType, parameters);
 
         assertFalse(blobStore.delete(tileRange));
         verify(listener, times(0))
@@ -411,8 +387,7 @@ public abstract class AzureBlobStoreIntegrationTest {
     }
 
     @Test
-    public void testTruncateShortCutsIfNoTilesInGridsetPrefix()
-            throws StorageException, MimeException {
+    public void testTruncateShortCutsIfNoTilesInGridsetPrefix() throws StorageException, MimeException {
 
         final int zoomStart = 0;
         final int zoomStop = 1;
@@ -422,8 +397,7 @@ public abstract class AzureBlobStoreIntegrationTest {
 
         // use a gridset for which there're no tiles
         GridSet gridset =
-                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, true)))
-                        .getWorldEpsg3857();
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, true))).getWorldEpsg3857();
         GridSubset gridSubSet = GridSubsetFactory.createGridSubSet(gridset);
 
         long[][] rangeBounds = { //
@@ -435,26 +409,12 @@ public abstract class AzureBlobStoreIntegrationTest {
 
         Map<String, String> parameters = null;
         TileRange tileRange =
-                tileRange(
-                        DEFAULT_LAYER,
-                        gridset.getName(),
-                        zoomStart,
-                        zoomStop,
-                        rangeBounds,
-                        mimeType,
-                        parameters);
+                tileRange(DEFAULT_LAYER, gridset.getName(), zoomStart, zoomStop, rangeBounds, mimeType, parameters);
 
         assertFalse(blobStore.delete(tileRange));
         verify(listener, times(0))
                 .tileDeleted(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        anyLong(),
-                        anyLong(),
-                        anyInt(),
-                        anyLong());
+                        anyString(), anyString(), anyString(), anyString(), anyLong(), anyLong(), anyInt(), anyLong());
     }
 
     /** Seed levels 0 to 2, truncate levels 0 and 1, check level 2 didn't get deleted */
@@ -466,8 +426,7 @@ public abstract class AzureBlobStoreIntegrationTest {
 
         // use a gridset for which there're no tiles
         GridSet gridset =
-                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, true)))
-                        .getWorldEpsg3857();
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, true))).getWorldEpsg3857();
         GridSubset gridSubSet = GridSubsetFactory.createGridSubSet(gridset);
 
         long[][] rangeBounds = gridSubSet.getCoverages();
@@ -483,15 +442,8 @@ public abstract class AzureBlobStoreIntegrationTest {
 
         final int truncateStart = 0, truncateStop = 1;
 
-        TileRange tileRange =
-                tileRange(
-                        DEFAULT_LAYER,
-                        gridset.getName(),
-                        truncateStart,
-                        truncateStop,
-                        rangeBounds,
-                        mimeType,
-                        parameters);
+        TileRange tileRange = tileRange(
+                DEFAULT_LAYER, gridset.getName(), truncateStart, truncateStop, rangeBounds, mimeType, parameters);
 
         assertTrue(blobStore.delete(tileRange));
 
@@ -513,10 +465,7 @@ public abstract class AzureBlobStoreIntegrationTest {
         return or(isNull(), anyString());
     }
 
-    /**
-     * If there are not {@link BlobStoreListener}s, use an optimized code path (not calling delete()
-     * for each tile)
-     */
+    /** If there are not {@link BlobStoreListener}s, use an optimized code path (not calling delete() for each tile) */
     @Test
     @SuppressWarnings("unchecked")
     public void testTruncateOptimizationIfNoListeners() throws StorageException, MimeException {
@@ -538,15 +487,8 @@ public abstract class AzureBlobStoreIntegrationTest {
 
         final int truncateStart = 0, truncateStop = 1;
 
-        TileRange tileRange =
-                tileRange(
-                        DEFAULT_LAYER,
-                        DEFAULT_GRIDSET,
-                        truncateStart,
-                        truncateStop,
-                        rangeBounds,
-                        mimeType,
-                        parameters);
+        TileRange tileRange = tileRange(
+                DEFAULT_LAYER, DEFAULT_GRIDSET, truncateStart, truncateStop, rangeBounds, mimeType, parameters);
 
         @SuppressWarnings("PMD.CloseResource") // closed by the store
         DeleteManager deleteManager = Mockito.spy(blobStore.deleteManager);
@@ -580,14 +522,7 @@ public abstract class AzureBlobStoreIntegrationTest {
             Map<String, String> parameters) {
 
         TileRange tileRange =
-                new TileRange(
-                        layerName,
-                        gridSetId,
-                        zoomStart,
-                        zoomStop,
-                        rangeBounds,
-                        mimeType,
-                        parameters);
+                new TileRange(layerName, gridSetId, zoomStart, zoomStop, rangeBounds, mimeType, parameters);
         return tileRange;
     }
 
@@ -596,15 +531,10 @@ public abstract class AzureBlobStoreIntegrationTest {
     }
 
     private void seed(
-            int zoomStart,
-            int zoomStop,
-            String gridset,
-            String formatExtension,
-            Map<String, String> parameters)
+            int zoomStart, int zoomStop, String gridset, String formatExtension, Map<String, String> parameters)
             throws StorageException {
 
-        Preconditions.checkArgument(
-                zoomStop < 5, "don't use high zoom levels for integration testing");
+        Preconditions.checkArgument(zoomStop < 5, "don't use high zoom levels for integration testing");
         for (int z = zoomStart; z <= zoomStop; z++) {
             int max = (int) Math.pow(2, z);
             for (int x = 0; x < max; x++) {
@@ -617,12 +547,7 @@ public abstract class AzureBlobStoreIntegrationTest {
     }
 
     private TileObject put(
-            long x,
-            long y,
-            int z,
-            String gridset,
-            String formatExtension,
-            Map<String, String> parameters)
+            long x, long y, int z, String gridset, String formatExtension, Map<String, String> parameters)
             throws StorageException {
         return put(x, y, z, DEFAULT_LAYER, gridset, formatExtension, parameters);
     }
@@ -648,19 +573,12 @@ public abstract class AzureBlobStoreIntegrationTest {
         return queryTile(DEFAULT_LAYER, DEFAULT_GRIDSET, DEFAULT_FORMAT, x, y, z);
     }
 
-    private TileObject queryTile(
-            String layer, String gridset, String extension, long x, long y, int z) {
+    private TileObject queryTile(String layer, String gridset, String extension, long x, long y, int z) {
         return queryTile(layer, gridset, extension, x, y, z, (Map<String, String>) null);
     }
 
     private TileObject queryTile(
-            String layer,
-            String gridset,
-            String extension,
-            long x,
-            long y,
-            int z,
-            String... parameters) {
+            String layer, String gridset, String extension, long x, long y, int z, String... parameters) {
 
         Map<String, String> parametersMap = null;
         if (parameters != null) {
@@ -673,13 +591,7 @@ public abstract class AzureBlobStoreIntegrationTest {
     }
 
     private TileObject queryTile(
-            String layer,
-            String gridset,
-            String extension,
-            long x,
-            long y,
-            int z,
-            Map<String, String> parameters) {
+            String layer, String gridset, String extension, long x, long y, int z, Map<String, String> parameters) {
 
         String format;
         try {
@@ -688,9 +600,7 @@ public abstract class AzureBlobStoreIntegrationTest {
             throw new RuntimeException(e);
         }
 
-        TileObject tile =
-                TileObject.createQueryTileObject(
-                        layer, new long[] {x, y, z}, gridset, format, parameters);
+        TileObject tile = TileObject.createQueryTileObject(layer, new long[] {x, y, z}, gridset, format, parameters);
         return tile;
     }
 }

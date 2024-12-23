@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, OpenGeo, Copyright 2009
  */
@@ -68,8 +67,8 @@ public class AccountingOutputStream extends ServletOutputStream {
     /**
      * This method can be used to determine if data can be written without blocking.
      *
-     * @return <code>true</code> if a write to this <code>ServletOutputStream</code> will succeed,
-     *     otherwise returns <code>false</code>.
+     * @return <code>true</code> if a write to this <code>ServletOutputStream</code> will succeed, otherwise returns
+     *     <code>false</code>.
      * @since Servlet 3.1
      */
     @Override
@@ -78,11 +77,10 @@ public class AccountingOutputStream extends ServletOutputStream {
     }
 
     /**
-     * Instructs the <code>ServletOutputStream</code> to invoke the provided {@link WriteListener}
-     * when it is possible to write
+     * Instructs the <code>ServletOutputStream</code> to invoke the provided {@link WriteListener} when it is possible
+     * to write
      *
-     * @param writeListener the {@link WriteListener} that should be notified when it's possible to
-     *     write
+     * @param writeListener the {@link WriteListener} that should be notified when it's possible to write
      * @throws IllegalStateException if one of the following conditions is true
      *     <ul>
      *       <li>the associated request is neither upgraded nor the async started

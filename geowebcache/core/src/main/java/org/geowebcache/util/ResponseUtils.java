@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Sandro Salari, GeoSolutions S.A.S., Copyright 2017
  */
@@ -51,8 +50,8 @@ import org.geowebcache.storage.DefaultStorageFinder;
 import org.springframework.http.MediaType;
 
 /**
- * Utility methods that can be used to write a string as http response</br> The response can be a
- * valid one or contains an error status code</br> The HTTP response can be rendered as HTML or XML
+ * Utility methods that can be used to write a string as http response</br> The response can be a valid one or contains
+ * an error status code</br> The HTTP response can be rendered as HTML or XML
  *
  * @author sandr
  */
@@ -63,9 +62,8 @@ public final class ResponseUtils {
     private ResponseUtils() {}
 
     /**
-     * Helper method that will get a tile from the target service that correspond to the conveyor
-     * data. Security permissions will be checked and the tile will be directly wrote to the output
-     * stream.
+     * Helper method that will get a tile from the target service that correspond to the conveyor data. Security
+     * permissions will be checked and the tile will be directly wrote to the output stream.
      *
      * @param secDispatcher security dispatcher
      * @param conv tile request information
@@ -176,8 +174,7 @@ public final class ResponseUtils {
         }
 
         int contentLength = (int) (blob == null ? -1 : blob.getSize());
-        writeFixedResponse(
-                servletResp, httpCode, mimeType, blob, cacheResult, contentLength, runtimeStats);
+        writeFixedResponse(servletResp, httpCode, mimeType, blob, cacheResult, contentLength, runtimeStats);
     }
 
     private static void writeEmpty(
@@ -206,24 +203,12 @@ public final class ResponseUtils {
         // handle no-content in case we have to return no result at all (e.g., expected for pbf)
         int status = emptyTileContents == null ? 204 : 200;
 
-        writeFixedResponse(
-                tile.servletResp,
-                status,
-                mimeType,
-                emptyTileContents,
-                CacheResult.OTHER,
-                runtimeStats);
+        writeFixedResponse(tile.servletResp, status, mimeType, emptyTileContents, CacheResult.OTHER, runtimeStats);
     }
 
-    /**
-     * Writes a transparent, 8 bit PNG to avoid having clients like OpenLayers showing lots of pink
-     * tiles
-     */
+    /** Writes a transparent, 8 bit PNG to avoid having clients like OpenLayers showing lots of pink tiles */
     private static void writeEmpty(
-            DefaultStorageFinder defaultStorageFinder,
-            ConveyorTile tile,
-            String message,
-            RuntimeStats runtimeStats) {
+            DefaultStorageFinder defaultStorageFinder, ConveyorTile tile, String message, RuntimeStats runtimeStats) {
         writeEmpty(
                 defaultStorageFinder,
                 tile,
@@ -252,13 +237,11 @@ public final class ResponseUtils {
             RuntimeStats runtimeStats) {
 
         int contentLength = (int) (resource == null ? -1 : resource.getSize());
-        writeFixedResponse(
-                response, httpCode, contentType, resource, cacheRes, contentLength, runtimeStats);
+        writeFixedResponse(response, httpCode, contentType, resource, cacheRes, contentLength, runtimeStats);
     }
 
     /**
-     * Helper method that writes an HTTP response setting the provided HTTP code. Using the provided
-     * content length.
+     * Helper method that writes an HTTP response setting the provided HTTP code. Using the provided content length.
      *
      * @param response HTTP response
      * @param httpCode HTTP status code
@@ -295,8 +278,7 @@ public final class ResponseUtils {
 
     private static ByteArrayResource loadBlankTile(DefaultStorageFinder defaultStorageFinder) {
         ByteArrayResource blankTile = null;
-        String blankTilePath =
-                defaultStorageFinder.findEnvVar(DefaultStorageFinder.GWC_BLANK_TILE_PATH);
+        String blankTilePath = defaultStorageFinder.findEnvVar(DefaultStorageFinder.GWC_BLANK_TILE_PATH);
 
         if (blankTilePath != null) {
             File fh = new File(blankTilePath);
@@ -353,28 +335,24 @@ public final class ResponseUtils {
      * @param errorMsg the actual error message, human readable
      */
     public static void writeErrorPage(
-            HttpServletResponse response,
-            int httpCode,
-            String errorMsg,
-            RuntimeStats runtimeStats) {
+            HttpServletResponse response, int httpCode, String errorMsg, RuntimeStats runtimeStats) {
         log.fine(errorMsg);
-        errorMsg =
-                "<html>\n"
-                        + ServletUtils.gwcHtmlHeader("../", "GWC Error")
-                        + "<body>\n"
-                        + ServletUtils.gwcHtmlLogoLink("../")
-                        + "<h4>"
-                        + httpCode
-                        + ": "
-                        + ServletUtils.disableHTMLTags(errorMsg)
-                        + "</h4>"
-                        + "</body></html>\n";
+        errorMsg = "<html>\n"
+                + ServletUtils.gwcHtmlHeader("../", "GWC Error")
+                + "<body>\n"
+                + ServletUtils.gwcHtmlLogoLink("../")
+                + "<h4>"
+                + httpCode
+                + ": "
+                + ServletUtils.disableHTMLTags(errorMsg)
+                + "</h4>"
+                + "</body></html>\n";
         writePage(response, httpCode, errorMsg, runtimeStats, MediaType.TEXT_HTML_VALUE);
     }
 
     /**
-     * Writes an HTTP response setting as it content the provided exception message encoded in XML.
-     * The original error is also logged.
+     * Writes an HTTP response setting as it content the provided exception message encoded in XML. The original error
+     * is also logged.
      *
      * @param response HTTP response
      * @param httpCode HTTP status code
@@ -382,17 +360,13 @@ public final class ResponseUtils {
      * @param runtimeStats runtime statistics
      */
     public static void writeErrorAsXML(
-            HttpServletResponse response,
-            int httpCode,
-            String errorMsg,
-            RuntimeStats runtimeStats) {
+            HttpServletResponse response, int httpCode, String errorMsg, RuntimeStats runtimeStats) {
         log.fine(errorMsg);
         writePage(response, httpCode, errorMsg, runtimeStats, MediaType.APPLICATION_XML_VALUE);
     }
 
     /**
-     * Writes an HTTP response setting as it content the provided message and using the provided
-     * content type.
+     * Writes an HTTP response setting as it content the provided message and using the provided content type.
      *
      * @param response HTTP response
      * @param httpCode HTTP status code
@@ -401,16 +375,11 @@ public final class ResponseUtils {
      * @param contentType HTTP response content type
      */
     public static void writePage(
-            HttpServletResponse response,
-            int httpCode,
-            String message,
-            RuntimeStats runtimeStats,
-            String contentType) {
+            HttpServletResponse response, int httpCode, String message, RuntimeStats runtimeStats, String contentType) {
         Resource res = null;
         if (message != null) {
             res = new ByteArrayResource(message.getBytes());
         }
-        ResponseUtils.writeFixedResponse(
-                response, httpCode, contentType, res, CacheResult.OTHER, runtimeStats);
+        ResponseUtils.writeFixedResponse(response, httpCode, contentType, res, CacheResult.OTHER, runtimeStats);
     }
 }

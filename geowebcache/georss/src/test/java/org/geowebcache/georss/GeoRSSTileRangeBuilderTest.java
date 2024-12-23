@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan (OpenGeo) 2010
  */
@@ -37,8 +36,8 @@ import org.junit.Test;
 public class GeoRSSTileRangeBuilderTest {
 
     /**
-     * Use the System property {@code org.geowebcache.debugToDisk} in order for the mask images
-     * produces to be logged to the target directory
+     * Use the System property {@code org.geowebcache.debugToDisk} in order for the mask images produces to be logged to
+     * the target directory
      */
     private static final boolean debugToDisk = Boolean.getBoolean("org.geowebcache.debugToDisk");
 
@@ -49,14 +48,12 @@ public class GeoRSSTileRangeBuilderTest {
     @Before
     public void setUp() {
         RasterMaskTestUtils.debugToDisk = debugToDisk;
-        layer =
-                TestUtils.createWMSLayer(
-                        "image/png",
-                        new GridSetBroker(
-                                Collections.singletonList(new DefaultGridsets(false, false))),
-                        3,
-                        3,
-                        new BoundingBox(-180, -90, 180, 90));
+        layer = TestUtils.createWMSLayer(
+                "image/png",
+                new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false))),
+                3,
+                3,
+                new BoundingBox(-180, -90, 180, 90));
         gridsetId = layer.getGridSubsets().iterator().next();
     }
 
@@ -68,8 +65,7 @@ public class GeoRSSTileRangeBuilderTest {
         Assert.assertNotNull(tileRangeMask);
         Assert.assertEquals(0, tileRangeMask.getStartLevel());
         Assert.assertEquals(11, tileRangeMask.getNumLevels());
-        Assert.assertEquals(
-                layer.getGridSubset(gridsetId).getCoverages().length, tileRangeMask.getNumLevels());
+        Assert.assertEquals(layer.getGridSubset(gridsetId).getCoverages().length, tileRangeMask.getNumLevels());
     }
 
     /** Test for {@link GeometryRasterMaskBuilder#getCoveredBounds(int)} */
@@ -102,15 +98,12 @@ public class GeoRSSTileRangeBuilderTest {
         TestUtils.assertEquals(new long[] {31, 0, 127, 48, 6}, tileRangeMask.getCoveredBounds(6));
         TestUtils.assertEquals(new long[] {63, 0, 255, 96, 7}, tileRangeMask.getCoveredBounds(7));
         TestUtils.assertEquals(new long[] {127, 0, 511, 192, 8}, tileRangeMask.getCoveredBounds(8));
-        TestUtils.assertEquals(
-                new long[] {255, 0, 1023, 384, 9}, tileRangeMask.getCoveredBounds(9));
-        TestUtils.assertEquals(
-                new long[] {511, 0, 2047, 768, 10}, tileRangeMask.getCoveredBounds(10));
+        TestUtils.assertEquals(new long[] {255, 0, 1023, 384, 9}, tileRangeMask.getCoveredBounds(9));
+        TestUtils.assertEquals(new long[] {511, 0, 2047, 768, 10}, tileRangeMask.getCoveredBounds(10));
     }
 
     @Test
-    public void testLatestUpdate()
-            throws IOException, XMLStreamException, FactoryConfigurationError {
+    public void testLatestUpdate() throws IOException, XMLStreamException, FactoryConfigurationError {
         assertLatestUpdate("2005-08-17T07:02:34Z", "point_feed.xml");
         assertLatestUpdate("2010-08-17T07:02:32Z", "mixedgeometries_feed.xml");
     }

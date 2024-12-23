@@ -101,23 +101,11 @@ public class GMapsConverterTest {
         filters.add(parameterFilter);
 
         WMSLayer wmsLayer =
-                new WMSLayer(
-                        TEST_LAYER_NAME,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        filters,
-                        null,
-                        null,
-                        true,
-                        null);
+                new WMSLayer(TEST_LAYER_NAME, null, null, null, null, null, filters, null, null, true, null);
 
         TileLayerDispatcher tld = new TileLayerDispatcherMock(wmsLayer);
 
-        GridSetBroker gsb =
-                new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
+        GridSetBroker gsb = new GridSetBroker(Collections.singletonList(new DefaultGridsets(true, true)));
 
         wmsLayer.initialize(gsb);
 
@@ -138,8 +126,7 @@ public class GMapsConverterTest {
             Assert.assertNotNull(parameters);
             // assertTrue(parameters.contains(URLEncoder.encode(CQL_FILTER_PARAMETER_VALUE,"UTF8")));
             Assert.assertEquals(
-                    CQL_FILTER_PARAMETER_VALUE,
-                    URLDecoder.decode(parameters.get(CQL_FILTER_PARAMETER_NAME), "UTF8"));
+                    CQL_FILTER_PARAMETER_VALUE, URLDecoder.decode(parameters.get(CQL_FILTER_PARAMETER_NAME), "UTF8"));
         } catch (UnsupportedEncodingException | GeoWebCacheException e) {
             Assert.fail();
         }

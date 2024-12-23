@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, The Open Planning Project, Copyright 2008
  */
@@ -26,8 +25,7 @@ import org.geowebcache.layer.TileLayerDispatcher;
 /**
  * A layer provider for {@link TileLayerDispatcher}.
  *
- * <p>Implementations must be singletons discoverable through {@link GeoWebCacheExtensions} (i.e.
- * spring beans)
+ * <p>Implementations must be singletons discoverable through {@link GeoWebCacheExtensions} (i.e. spring beans)
  */
 public interface TileLayerConfiguration extends BaseConfiguration {
 
@@ -39,12 +37,10 @@ public interface TileLayerConfiguration extends BaseConfiguration {
     Collection<? extends TileLayer> getLayers();
 
     /**
-     * Gets a single {@link TileLayer} from the configuration, using the layer's unique name as a
-     * key.
+     * Gets a single {@link TileLayer} from the configuration, using the layer's unique name as a key.
      *
      * @param layerName the layer name
-     * @return the layer named {@code layerIdent} or {@code null} if no such layer exists in this
-     *     configuration
+     * @return the layer named {@code layerIdent} or {@code null} if no such layer exists in this configuration
      */
     Optional<TileLayer> getLayer(String layerName);
 
@@ -73,8 +69,7 @@ public interface TileLayerConfiguration extends BaseConfiguration {
     /**
      * Replaces an existing tile layer of the same name with this tile layer.
      *
-     * @param tl the modified tile layer. Its name must be the same as a tile layer that already
-     *     exists.
+     * @param tl the modified tile layer. Its name must be the same as a tile layer that already exists.
      * @throws NoSuchElementException If no tile layer with a matching name exists.
      */
     void modifyLayer(TileLayer tl) throws NoSuchElementException;
@@ -87,17 +82,15 @@ public interface TileLayerConfiguration extends BaseConfiguration {
      * @throws NoSuchElementException If no tile layer with a matching name exists.
      * @throws IllegalArgumentException If a tile layer with the new name already exists
      */
-    void renameLayer(String oldName, String newName)
-            throws NoSuchElementException, IllegalArgumentException;
+    void renameLayer(String oldName, String newName) throws NoSuchElementException, IllegalArgumentException;
 
     /**
-     * Adds the given tile layer to this configuration, provided {@link #canSave(TileLayer)
-     * canSave(tl) == true}.
+     * Adds the given tile layer to this configuration, provided {@link #canSave(TileLayer) canSave(tl) == true}.
      *
      * @param tl the tile layer to add to the configuration
-     * @throws IllegalArgumentException if this configuration is not able of saving the specific
-     *     type of layer given, or if any required piece of information is missing or invalid in the
-     *     layer (for example, a missing or duplicated name or id, etc).
+     * @throws IllegalArgumentException if this configuration is not able of saving the specific type of layer given, or
+     *     if any required piece of information is missing or invalid in the layer (for example, a missing or duplicated
+     *     name or id, etc).
      */
     void addLayer(TileLayer tl) throws IllegalArgumentException;
 
@@ -113,9 +106,9 @@ public interface TileLayerConfiguration extends BaseConfiguration {
      * Whether the configuration is capable of saving the provided tile layer.
      *
      * @param tl a tile layer to be added or saved
-     * @return {@code true} if this configuration is capable of saving the given tile layer, {@code
-     *     false} otherwise (usually this check is based on an instanceof check, as different
-     *     configurations may be specialized on different kinds of layers).
+     * @return {@code true} if this configuration is capable of saving the given tile layer, {@code false} otherwise
+     *     (usually this check is based on an instanceof check, as different configurations may be specialized on
+     *     different kinds of layers).
      */
     boolean canSave(TileLayer tl);
 

@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Kevin Smith, Boundless, 2017
  */
@@ -37,7 +36,8 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
 
     static final Logger LOGGER = Logging.getLogger(FileBlobStoreComformanceTest.class);
 
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
 
     @Override
     public void createTestUnit() throws Exception {
@@ -47,52 +47,46 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
         this.store = new FileBlobStore(temp.getRoot().getAbsolutePath());
     }
 
-    private void putLayerMetadataConcurrently(
-            final int srcStoreKey, final FileBlobStore srcStore, int numberOfThreads)
+    private void putLayerMetadataConcurrently(final int srcStoreKey, final FileBlobStore srcStore, int numberOfThreads)
             throws InterruptedException {
         @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService service = Executors.newFixedThreadPool(numberOfThreads);
         CountDownLatch latch = new CountDownLatch(numberOfThreads);
         for (int i = 0; i < numberOfThreads; i++) {
             final int key = i;
-            service.submit(
-                    () -> {
-                        try {
-                            String threadStoreKey =
-                                    "store." + srcStoreKey + ".testKey" + String.valueOf(key);
-                            String value = "testValue" + String.valueOf(key);
-                            // System.err.printf("Setting %s=%s%n", threadKey, value);
-                            srcStore.putLayerMetadata("testLayer", threadStoreKey, value);
-                        } catch (RuntimeException eh) {
-                            LOGGER.log(Level.SEVERE, eh.getMessage(), eh);
-                            throw eh;
-                        } finally {
-                            latch.countDown();
-                        }
-                    });
+            service.submit(() -> {
+                try {
+                    String threadStoreKey = "store." + srcStoreKey + ".testKey" + String.valueOf(key);
+                    String value = "testValue" + String.valueOf(key);
+                    // System.err.printf("Setting %s=%s%n", threadKey, value);
+                    srcStore.putLayerMetadata("testLayer", threadStoreKey, value);
+                } catch (RuntimeException eh) {
+                    LOGGER.log(Level.SEVERE, eh.getMessage(), eh);
+                    throw eh;
+                } finally {
+                    latch.countDown();
+                }
+            });
         }
         latch.await();
     }
 
-    private void executeStoresConcurrently(int numberOfStores, int numberOfThreads)
-            throws InterruptedException {
+    private void executeStoresConcurrently(int numberOfStores, int numberOfThreads) throws InterruptedException {
         @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService service = Executors.newFixedThreadPool(numberOfStores);
         CountDownLatch latch = new CountDownLatch(numberOfStores);
         for (int i = 0; i < numberOfStores; i++) {
             final int key = i;
-            service.submit(
-                    () -> {
-                        try {
-                            FileBlobStore nStore =
-                                    new FileBlobStore(temp.getRoot().getAbsolutePath());
-                            putLayerMetadataConcurrently(key, nStore, numberOfThreads);
-                        } catch (InterruptedException | StorageException eh) {
-                            LOGGER.log(Level.SEVERE, eh.getMessage(), eh);
-                        } finally {
-                            latch.countDown();
-                        }
-                    });
+            service.submit(() -> {
+                try {
+                    FileBlobStore nStore = new FileBlobStore(temp.getRoot().getAbsolutePath());
+                    putLayerMetadataConcurrently(key, nStore, numberOfThreads);
+                } catch (InterruptedException | StorageException eh) {
+                    LOGGER.log(Level.SEVERE, eh.getMessage(), eh);
+                } finally {
+                    latch.countDown();
+                }
+            });
         }
         latch.await();
     }
@@ -113,12 +107,10 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
         CountDownLatch latch = new CountDownLatch(numberOfThreads);
         for (int i = 0; i < numberOfThreads; i++) {
             final int key = i;
-            service.submit(
-                    () -> {
-                        store.putLayerMetadata(
-                                "testLayer", "test.Key." + String.valueOf(key), "testValue");
-                        latch.countDown();
-                    });
+            service.submit(() -> {
+                store.putLayerMetadata("testLayer", "test.Key." + String.valueOf(key), "testValue");
+                latch.countDown();
+            });
         }
         latch.await();
         assertThat(store.getLayerMetadata("testLayer", "test.Key.1"), equalTo("testValue"));
@@ -143,8 +135,7 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
 
     @Ignore // useful for optimistic lock testing (ignored since it could fail)
     @Test
-    public void testConcurrentMetadataWithTwoStoresCPUThreads()
-            throws InterruptedException, StorageException {
+    public void testConcurrentMetadataWithTwoStoresCPUThreads() throws InterruptedException, StorageException {
         // use store attribute as validator
         assertThat(store.getLayerMetadata("testLayer", "testKey"), nullValue());
 
@@ -160,8 +151,7 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
             for (int j = 0; j < numberOfThreads; j++) {
                 String storeKey = "store." + i;
                 assertThat(
-                        store.getLayerMetadata(
-                                "testLayer", storeKey + ".testKey" + String.valueOf(j)),
+                        store.getLayerMetadata("testLayer", storeKey + ".testKey" + String.valueOf(j)),
                         equalTo("testValue" + String.valueOf(j)));
             }
         }
@@ -169,8 +159,7 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
 
     @Ignore // useful for optimistic lock testing (ignored since it could fail)
     @Test
-    public void testConcurrentMetadataWithTwoStoresOneThread()
-            throws InterruptedException, StorageException {
+    public void testConcurrentMetadataWithTwoStoresOneThread() throws InterruptedException, StorageException {
         // use store attribute as validator
         assertThat(store.getLayerMetadata("testLayer", "testKey"), nullValue());
 
@@ -184,8 +173,7 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
             for (int j = 0; j < numberOfThreads; j++) {
                 String storeKey = "store." + i;
                 assertThat(
-                        store.getLayerMetadata(
-                                "testLayer", storeKey + ".testKey" + String.valueOf(j)),
+                        store.getLayerMetadata("testLayer", storeKey + ".testKey" + String.valueOf(j)),
                         equalTo("testValue" + String.valueOf(j)));
             }
         }

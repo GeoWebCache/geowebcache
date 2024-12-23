@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author John Schulz (Boundless), 2018
  */
@@ -35,36 +34,26 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "${gwc.context.suffix:}/rest/gridsets")
 public class GridSetController extends GWCController {
 
-    @Autowired GridSetBroker broker;
+    @Autowired
+    GridSetBroker broker;
 
     @RequestMapping(
             method = RequestMethod.GET,
-            produces = {
-                MediaType.APPLICATION_XML_VALUE,
-                MediaType.APPLICATION_JSON_VALUE,
-                MediaType.TEXT_XML_VALUE
-            })
+            produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_XML_VALUE})
     public XStreamListAliasWrapper gridSetsGet() {
-        return new XStreamListAliasWrapper(
-                broker.getGridSetNames(), "gridSet", Set.class, this.getClass());
+        return new XStreamListAliasWrapper(broker.getGridSetNames(), "gridSet", Set.class, this.getClass());
     }
 
     @RequestMapping(
             path = "/{gridSetName}",
             method = RequestMethod.GET,
-            produces = {
-                MediaType.APPLICATION_XML_VALUE,
-                MediaType.APPLICATION_JSON_VALUE,
-                MediaType.TEXT_XML_VALUE
-            })
+            produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_XML_VALUE})
     public GridSet gridSetGet(@PathVariable String gridSetName) {
         if (broker.get(gridSetName) != null) {
             return broker.get(gridSetName);
         } else {
             throw new RestException(
-                    String.format(
-                            "Failed to get GridSet. A GridSet with name \"%s\" does not exist.",
-                            gridSetName),
+                    String.format("Failed to get GridSet. A GridSet with name \"%s\" does not exist.", gridSetName),
                     HttpStatus.NOT_FOUND);
         }
     }
@@ -72,13 +61,8 @@ public class GridSetController extends GWCController {
     @RequestMapping(
             path = "/{gridSetName}",
             method = RequestMethod.PUT,
-            consumes = {
-                MediaType.APPLICATION_XML_VALUE,
-                MediaType.APPLICATION_JSON_VALUE,
-                MediaType.TEXT_XML_VALUE
-            })
-    public ResponseEntity<?> gridSetPut(
-            @PathVariable String gridSetName, @RequestBody GridSet gridSet) {
+            consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_XML_VALUE})
+    public ResponseEntity<?> gridSetPut(@PathVariable String gridSetName, @RequestBody GridSet gridSet) {
 
         if (broker.get(gridSetName) != null) {
             broker.put(gridSet);
@@ -95,9 +79,7 @@ public class GridSetController extends GWCController {
             broker.removeGridSet(gridSetName);
         } else {
             throw new RestException(
-                    String.format(
-                            "Failed to remove GridSet. A GridSet with name \"%s\" does not exist.",
-                            gridSetName),
+                    String.format("Failed to remove GridSet. A GridSet with name \"%s\" does not exist.", gridSetName),
                     HttpStatus.NOT_FOUND);
         }
     }

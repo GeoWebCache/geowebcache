@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2019
  */
@@ -35,15 +34,14 @@ import org.geowebcache.storage.blobstore.memory.guava.GuavaCacheProvider;
 import org.springframework.beans.factory.DisposableBean;
 
 /**
- * This class is an implementation of the {@link CacheProvider} interface for a distributed
- * configuration using Hazelcast. This class requires a configuration at the GWC startup. The
- * Hazelcast instance used is returned by the {@link HazelcastLoader} object which internally
- * handles the configuration for the cache. Note that this cache does not provide access to all the
- * local statistics parameters so some of them will return -1 as result. There could happen that the
- * number cache HITS is bigger than the number of total operations. This is caused by the fact that
- * HITS number indicates the number of hits on the local entries considering also the requests made
- * by other cluster instances while the total operation count indicates only the number of GET
- * operations requested on the local cluster instance.
+ * This class is an implementation of the {@link CacheProvider} interface for a distributed configuration using
+ * Hazelcast. This class requires a configuration at the GWC startup. The Hazelcast instance used is returned by the
+ * {@link HazelcastLoader} object which internally handles the configuration for the cache. Note that this cache does
+ * not provide access to all the local statistics parameters so some of them will return -1 as result. There could
+ * happen that the number cache HITS is bigger than the number of total operations. This is caused by the fact that HITS
+ * number indicates the number of hits on the local entries considering also the requests made by other cluster
+ * instances while the total operation count indicates only the number of GET operations requested on the local cluster
+ * instance.
  *
  * @author Nicola Lagomarsini Geosolutions
  */
@@ -76,13 +74,12 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
         // cacheProvider parameters are defined
         if (configured) {
             map = loader.getInstance().getMap(HAZELCAST_MAP_DEFINITION);
-            totalSize =
-                    loader.getInstance()
-                                    .getConfig()
-                                    .getMapConfig(HAZELCAST_MAP_DEFINITION)
-                                    .getEvictionConfig()
-                                    .getSize()
-                            * MB_TO_BYTES;
+            totalSize = loader.getInstance()
+                            .getConfig()
+                            .getMapConfig(HAZELCAST_MAP_DEFINITION)
+                            .getEvictionConfig()
+                            .getSize()
+                    * MB_TO_BYTES;
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Configured Hazelcast Cache");
             }
@@ -291,8 +288,7 @@ public class HazelcastCacheProvider implements CacheProvider, DisposableBean {
             long actualSize = localMapStats.getOwnedEntryMemoryCost();
             setActualSize(actualSize);
             // Calculation of the memory occupation
-            int currentMemoryOccupation =
-                    (int) (100L - (1L) * (100 * ((1.0d) * (totalSize - actualSize)) / totalSize));
+            int currentMemoryOccupation = (int) (100L - (1L) * (100 * ((1.0d) * (totalSize - actualSize)) / totalSize));
             if (currentMemoryOccupation < 0) {
                 currentMemoryOccupation = 0;
             }

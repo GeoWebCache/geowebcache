@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Gabriel Roldan, Boundless Spatial Inc, Copyright 2015
  */
@@ -71,8 +70,7 @@ class S3Ops {
 
     private Map<String, Long> pendingDeletesKeyTime = new ConcurrentHashMap<>();
 
-    public S3Ops(
-            AmazonS3Client conn, String bucketName, TMSKeyBuilder keyBuilder, LockProvider locks)
+    public S3Ops(AmazonS3Client conn, String bucketName, TMSKeyBuilder keyBuilder, LockProvider locks)
             throws StorageException {
         this.conn = conn;
         this.bucketName = bucketName;
@@ -83,13 +81,11 @@ class S3Ops {
     }
 
     private ExecutorService createDeleteExecutorService() {
-        ThreadFactory tf =
-                new ThreadFactoryBuilder()
-                        .setDaemon(true)
-                        .setNameFormat(
-                                "GWC S3BlobStore bulk delete thread-%d. Bucket: " + bucketName)
-                        .setPriority(Thread.MIN_PRIORITY)
-                        .build();
+        ThreadFactory tf = new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("GWC S3BlobStore bulk delete thread-%d. Bucket: " + bucketName)
+                .setPriority(Thread.MIN_PRIORITY)
+                .build();
         return Executors.newCachedThreadPool(tf);
     }
 
@@ -112,9 +108,7 @@ class S3Ops {
                 final String prefix = e.getKey().toString();
                 final long timestamp = Long.parseLong(e.getValue().toString());
                 S3BlobStore.log.info(
-                        String.format(
-                                "Restarting pending bulk delete on '%s/%s':%d",
-                                bucketName, prefix, timestamp));
+                        String.format("Restarting pending bulk delete on '%s/%s':%d", bucketName, prefix, timestamp));
                 asyncDelete(prefix, timestamp);
             }
         } finally {
@@ -126,8 +120,7 @@ class S3Ops {
         }
     }
 
-    private void clearPendingBulkDelete(final String prefix, final long timestamp)
-            throws GeoWebCacheException {
+    private void clearPendingBulkDelete(final String prefix, final long timestamp) throws GeoWebCacheException {
         Long taskTime = pendingDeletesKeyTime.get(prefix);
         if (taskTime == null) {
             return; // someone else cleared it up for us. A task that run after this one but
@@ -146,10 +139,8 @@ class S3Ops {
             if (timestamp >= storedTimestamp) {
                 putProperties(pendingDeletesKey, deletes);
             } else {
-                S3BlobStore.log.info(
-                        String.format(
-                                "bulk delete finished but there's a newer one ongoing for bucket '%s/%s'",
-                                bucketName, prefix));
+                S3BlobStore.log.info(String.format(
+                        "bulk delete finished but there's a newer one ongoing for bucket '%s/%s'", bucketName, prefix));
             }
         } catch (StorageException e) {
             throw new RuntimeException(e);
@@ -160,10 +151,8 @@ class S3Ops {
 
     public boolean scheduleAsyncDelete(final String prefix) throws GeoWebCacheException {
         final long timestamp = currentTimeSeconds();
-        String msg =
-                String.format(
-                        "Issuing bulk delete on '%s/%s' for objects older than %d",
-                        bucketName, prefix, timestamp);
+        String msg = String.format(
+                "Issuing bulk delete on '%s/%s' for objects older than %d", bucketName, prefix, timestamp);
         S3BlobStore.log.info(msg);
 
         Lock lock = locks.getLock(prefix);
@@ -214,8 +203,7 @@ class S3Ops {
             obj = conn.getObjectMetadata(bucketName, key);
         } catch (AmazonS3Exception e) {
             if (404 != e.getStatusCode()) { // 404 == not found
-                throw new StorageException(
-                        "Error checking existence of " + key + ": " + e.getMessage(), e);
+                throw new StorageException("Error checking existence of " + key + ": " + e.getMessage(), e);
             }
         }
         return obj;
@@ -251,8 +239,7 @@ class S3Ops {
         try {
             object.close();
         } catch (IOException e) {
-            throw new StorageException(
-                    "Error closing connection to " + object.getKey() + ": " + e.getMessage(), e);
+            throw new StorageException("Error closing connection to " + object.getKey() + ": " + e.getMessage(), e);
         }
     }
 
@@ -298,11 +285,10 @@ class S3Ops {
 
     /** Simply checks if there are objects starting with {@code prefix} */
     public boolean prefixExists(String prefix) {
-        boolean hasNext =
-                S3Objects.withPrefix(conn, bucketName, prefix)
-                        .withBatchSize(1)
-                        .iterator()
-                        .hasNext();
+        boolean hasNext = S3Objects.withPrefix(conn, bucketName, prefix)
+                .withBatchSize(1)
+                .iterator()
+                .hasNext();
         return hasNext;
     }
 
@@ -316,9 +302,7 @@ class S3Ops {
         }
         if (bytes != null) {
             try {
-                properties.load(
-                        new InputStreamReader(
-                                new ByteArrayInputStream(bytes), StandardCharsets.UTF_8));
+                properties.load(new InputStreamReader(new ByteArrayInputStream(bytes), StandardCharsets.UTF_8));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -360,11 +344,7 @@ class S3Ops {
 
         private final String bucketName;
 
-        public BulkDelete(
-                final AmazonS3 conn,
-                final String bucketName,
-                final String prefix,
-                final long timestamp) {
+        public BulkDelete(final AmazonS3 conn, final String bucketName, final String prefix, final long timestamp) {
             this.conn = conn;
             this.bucketName = bucketName;
             this.prefix = prefix;
@@ -376,17 +356,13 @@ class S3Ops {
             long count = 0L;
             try {
                 checkInterrupted();
-                S3BlobStore.log.info(
-                        String.format(
-                                "Running bulk delete on '%s/%s':%d",
-                                bucketName, prefix, timestamp));
+                S3BlobStore.log.info(String.format("Running bulk delete on '%s/%s':%d", bucketName, prefix, timestamp));
                 Predicate<S3ObjectSummary> filter = new TimeStampFilter(timestamp);
                 AtomicInteger n = new AtomicInteger(0);
-                Iterable<List<S3ObjectSummary>> partitions =
-                        objectStream(prefix)
-                                .filter(filter)
-                                .collect(Collectors.groupingBy((x) -> n.getAndIncrement() % 1000))
-                                .values();
+                Iterable<List<S3ObjectSummary>> partitions = objectStream(prefix)
+                        .filter(filter)
+                        .collect(Collectors.groupingBy((x) -> n.getAndIncrement() % 1000))
+                        .values();
 
                 for (List<S3ObjectSummary> partition : partitions) {
 
@@ -412,25 +388,19 @@ class S3Ops {
                     }
                 }
             } catch (InterruptedException | IllegalStateException e) {
-                S3BlobStore.log.info(
-                        String.format(
-                                "S3 bulk delete aborted for '%s/%s'. Will resume on next startup.",
-                                bucketName, prefix));
+                S3BlobStore.log.info(String.format(
+                        "S3 bulk delete aborted for '%s/%s'. Will resume on next startup.", bucketName, prefix));
                 throw e;
             } catch (Exception e) {
                 S3BlobStore.log.log(
                         Level.WARNING,
-                        String.format(
-                                "Unknown error performing bulk S3 delete of '%s/%s'",
-                                bucketName, prefix),
+                        String.format("Unknown error performing bulk S3 delete of '%s/%s'", bucketName, prefix),
                         e);
                 throw e;
             }
 
-            S3BlobStore.log.info(
-                    String.format(
-                            "Finished bulk delete on '%s/%s':%d. %d objects deleted",
-                            bucketName, prefix, timestamp, count));
+            S3BlobStore.log.info(String.format(
+                    "Finished bulk delete on '%s/%s':%d. %d objects deleted", bucketName, prefix, timestamp, count));
 
             S3Ops.this.clearPendingBulkDelete(prefix, timestamp);
             return count;

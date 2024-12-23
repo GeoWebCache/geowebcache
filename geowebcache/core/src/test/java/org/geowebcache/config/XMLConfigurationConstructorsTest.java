@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2018
  */
@@ -45,11 +44,11 @@ public class XMLConfigurationConstructorsTest {
     public static final String MARKED_CONFIG_FILE_NAME = "geowebcache-test-correct-config.xml";
     public static final String MARKED_LAYER = "LOADED_CORRECT_CONFIG_FILE";
 
-    @Rule public TemporaryFolder temp = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
 
     @Rule
-    public PropertyRule gwcConfigDirProp =
-            PropertyRule.system(XMLFileResourceProvider.GWC_CONFIG_DIR_VAR);
+    public PropertyRule gwcConfigDirProp = PropertyRule.system(XMLFileResourceProvider.GWC_CONFIG_DIR_VAR);
 
     File configDir;
     File cacheDir;
@@ -100,9 +99,8 @@ public class XMLConfigurationConstructorsTest {
 
     public void shouldNotLoadFrom(File dir) throws IOException {
         File configFile = configFile(dir);
-        URL source =
-                XMLConfigurationConstructorsTest.class.getResource(
-                        XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
+        URL source = XMLConfigurationConstructorsTest.class.getResource(
+                XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME);
         FileUtils.copyURLToFile(source, configFile);
     }
 

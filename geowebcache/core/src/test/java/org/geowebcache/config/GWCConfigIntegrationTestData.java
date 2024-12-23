@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * <p>Copyright 2018
  */
@@ -55,24 +54,19 @@ public class GWCConfigIntegrationTestData {
         // TODO: Update to use the new api
         GridSetConfiguration gridSetConfiguration = testSupport.getWritableGridSetConfiguration();
 
-        GridSet epsg2163 =
-                GridSetFactory.createGridSet(
-                        GRIDSET_EPSG2163,
-                        SRS.getSRS(GRIDSET_EPSG2163),
-                        new BoundingBox(
-                                -2495667.977678598,
-                                -2223677.196231552,
-                                3291070.6104286816,
-                                959189.3312465074),
-                        false,
-                        null,
-                        new double[] {25000000, 1000000, 100000, 25000},
-                        null,
-                        GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
-                        null,
-                        200,
-                        200,
-                        false);
+        GridSet epsg2163 = GridSetFactory.createGridSet(
+                GRIDSET_EPSG2163,
+                SRS.getSRS(GRIDSET_EPSG2163),
+                new BoundingBox(-2495667.977678598, -2223677.196231552, 3291070.6104286816, 959189.3312465074),
+                false,
+                null,
+                new double[] {25000000, 1000000, 100000, 25000},
+                null,
+                GridSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                null,
+                200,
+                200,
+                false);
 
         gridSetConfiguration.addGridSet(epsg2163);
 
@@ -106,19 +100,18 @@ public class GWCConfigIntegrationTestData {
         parameterFilter.setDefaultValue("population");
         parameterFilter.setValues(Arrays.asList("population", "polygon", "pophatch"));
 
-        WMSLayer wmsLayer =
-                new WMSLayer(
-                        LAYER_TOPP_STATES,
-                        new String[] {"http://demo.opengeo.org/geoserver/topp/wms"},
-                        null,
-                        null,
-                        Arrays.asList("image/gif", "image/jpeg", "image/png", "image/png8"),
-                        subSets,
-                        Collections.singletonList(parameterFilter),
-                        null,
-                        null,
-                        true,
-                        null);
+        WMSLayer wmsLayer = new WMSLayer(
+                LAYER_TOPP_STATES,
+                new String[] {"http://demo.opengeo.org/geoserver/topp/wms"},
+                null,
+                null,
+                Arrays.asList("image/gif", "image/jpeg", "image/png", "image/png8"),
+                subSets,
+                Collections.singletonList(parameterFilter),
+                null,
+                null,
+                true,
+                null);
         wmsLayer.setBlobStoreId(blobStore.getName());
         tileLayerConfiguration.addLayer(wmsLayer);
     }

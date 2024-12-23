@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp, OpenGeo, Copyright 2009
  */
@@ -32,15 +31,10 @@ public class GridSet implements Info {
 
     private int tileHeight;
 
-    /**
-     * Whether the y-coordinate of {@link #tileOrigin()} is at the top (true) or at the bottom
-     * (false)
-     */
+    /** Whether the y-coordinate of {@link #tileOrigin()} is at the top (true) or at the bottom (false) */
     protected boolean yBaseToggle = false;
 
-    /**
-     * By default the coordinates are {x,y}, this flag reverses the output for WMTS getcapabilities
-     */
+    /** By default the coordinates are {x,y}, this flag reverses the output for WMTS getcapabilities */
     private boolean yCoordinateFirst = false;
 
     private boolean scaleWarning = false;
@@ -56,8 +50,8 @@ public class GridSet implements Info {
     private String description;
 
     /**
-     * {@code true} if the resolutions are preserved and the scaleDenominators calculated, {@code
-     * false} if the resolutions are calculated based on the sacale denominators.
+     * {@code true} if the resolutions are preserved and the scaleDenominators calculated, {@code false} if the
+     * resolutions are calculated based on the sacale denominators.
      */
     private boolean resolutionsPreserved;
 
@@ -93,17 +87,16 @@ public class GridSet implements Info {
     }
 
     /**
-     * @return {@code true} if the resolutions are preserved and the scaleDenominators calculated,
-     *     {@code false} if the resolutions are calculated based on the sacale denominators.
+     * @return {@code true} if the resolutions are preserved and the scaleDenominators calculated, {@code false} if the
+     *     resolutions are calculated based on the sacale denominators.
      */
     public boolean isResolutionsPreserved() {
         return resolutionsPreserved;
     }
 
     /**
-     * @param resolutionsPreserved {@code true} if the resolutions are preserved and the
-     *     scaleDenominators calculated, {@code false} if the resolutions are calculated based on
-     *     the sacale denominators.
+     * @param resolutionsPreserved {@code true} if the resolutions are preserved and the scaleDenominators calculated,
+     *     {@code false} if the resolutions are calculated based on the sacale denominators.
      */
     void setResolutionsPreserved(boolean resolutionsPreserved) {
         this.resolutionsPreserved = resolutionsPreserved;
@@ -125,12 +118,11 @@ public class GridSet implements Info {
         double height = grid.getResolution() * getTileHeight();
 
         final double[] tileOrigin = tileOrigin();
-        BoundingBox tileBounds =
-                new BoundingBox(
-                        tileOrigin[0] + width * tileX,
-                        tileOrigin[1] + height * (tileY),
-                        tileOrigin[0] + width * (tileX + 1),
-                        tileOrigin[1] + height * (tileY + 1));
+        BoundingBox tileBounds = new BoundingBox(
+                tileOrigin[0] + width * tileX,
+                tileOrigin[1] + height * (tileY),
+                tileOrigin[0] + width * (tileX + 1),
+                tileOrigin[1] + height * (tileY + 1));
         return tileBounds;
     }
 
@@ -192,8 +184,7 @@ public class GridSet implements Info {
         return closestIndex(bestLevel, tileBounds);
     }
 
-    protected long[] closestIndex(int level, BoundingBox tileBounds)
-            throws GridAlignmentMismatchException {
+    protected long[] closestIndex(int level, BoundingBox tileBounds) throws GridAlignmentMismatchException {
         Grid grid = getGrid(level);
 
         double width = grid.getResolution() * getTileWidth();
@@ -234,8 +225,7 @@ public class GridSet implements Info {
             double countX = rectWidth / (grid.getResolution() * getTileWidth());
             double countY = rectHeight / (grid.getResolution() * getTileHeight());
 
-            double error =
-                    Math.abs(countX - Math.round(countX)) + Math.abs(countY - Math.round(countY));
+            double error = Math.abs(countX - Math.round(countX)) + Math.abs(countY - Math.round(countY));
 
             if (error < bestError) {
                 bestError = error;
@@ -253,8 +243,7 @@ public class GridSet implements Info {
      *
      * @param level integer zoom level to consider tiles at
      * @param rectangeBounds rectangle to match
-     * @return Array of long, the rectangle of tiles in tile coordinates: {minx, miny, maxx, maxy,
-     *     level}
+     * @return Array of long, the rectangle of tiles in tile coordinates: {minx, miny, maxx, maxy, level}
      */
     protected long[] closestRectangle(int level, BoundingBox rectangeBounds) {
         Grid grid = getGrid(level);
@@ -286,16 +275,15 @@ public class GridSet implements Info {
 
         if (this == other) return true;
 
-        boolean equals =
-                Objects.equals(getSrs(), other.getSrs())
-                        && Objects.equals(getName(), other.getName())
-                        && Objects.equals(getDescription(), other.getDescription())
-                        && Objects.equals(getTileWidth(), other.getTileWidth())
-                        && Objects.equals(getTileHeight(), other.getTileHeight())
-                        && Objects.equals(isTopLeftAligned(), other.isTopLeftAligned())
-                        && Objects.equals(isyCoordinateFirst(), other.isyCoordinateFirst())
-                        && Objects.equals(getOriginalExtent(), other.getOriginalExtent())
-                        && Arrays.equals(gridLevels, other.gridLevels);
+        boolean equals = Objects.equals(getSrs(), other.getSrs())
+                && Objects.equals(getName(), other.getName())
+                && Objects.equals(getDescription(), other.getDescription())
+                && Objects.equals(getTileWidth(), other.getTileWidth())
+                && Objects.equals(getTileHeight(), other.getTileHeight())
+                && Objects.equals(isTopLeftAligned(), other.isTopLeftAligned())
+                && Objects.equals(isyCoordinateFirst(), other.isyCoordinateFirst())
+                && Objects.equals(getOriginalExtent(), other.getOriginalExtent())
+                && Arrays.equals(gridLevels, other.gridLevels);
 
         return equals;
     }
@@ -327,8 +315,7 @@ public class GridSet implements Info {
     }
 
     /**
-     * Returns the top left corner of the grid in the order used by the coordinate system. (Bad
-     * idea)
+     * Returns the top left corner of the grid in the order used by the coordinate system. (Bad idea)
      *
      * <p>Used for WMTS GetCapabilities
      */
@@ -412,11 +399,10 @@ public class GridSet implements Info {
     }
 
     /**
-     * The base cordinates in x/y order, used to map tile indexes to coordinate bounding boxes.
-     * These can either be top left or bottom left, so must be kept private.
+     * The base cordinates in x/y order, used to map tile indexes to coordinate bounding boxes. These can either be top
+     * left or bottom left, so must be kept private.
      *
-     * <p>This is a derived property of {@link #getOriginalExtent()} and {@link
-     * #isTopLeftAligned()}.
+     * <p>This is a derived property of {@link #getOriginalExtent()} and {@link #isTopLeftAligned()}.
      */
     public double[] tileOrigin() {
         BoundingBox extent = getOriginalExtent();
@@ -514,15 +500,13 @@ public class GridSet implements Info {
     }
 
     /**
-     * Evaluates wheter this GridSet is different enough from {@code another} so that if this
-     * GridSet were replaced by {@code another} all layers referencing this GridSet should be
-     * truncated.
+     * Evaluates wheter this GridSet is different enough from {@code another} so that if this GridSet were replaced by
+     * {@code another} all layers referencing this GridSet should be truncated.
      *
-     * <p>The rule is, if any of the following properties differ: {@link #getBounds()}, {@link
-     * #isTopLeftAligned()}, {@link #getTileHeight()}, {@link #getTileWidth()}, {@link #getSrs()},
-     * OR none of the previously mentiond properties differ and the grid levels are different,
-     * except if both the grids of {@code another} are a superset of the grids of this gridset (i.e.
-     * they are all the same but {@code another} just has more zoom levels}.
+     * <p>The rule is, if any of the following properties differ: {@link #getBounds()}, {@link #isTopLeftAligned()},
+     * {@link #getTileHeight()}, {@link #getTileWidth()}, {@link #getSrs()}, OR none of the previously mentiond
+     * properties differ and the grid levels are different, except if both the grids of {@code another} are a superset
+     * of the grids of this gridset (i.e. they are all the same but {@code another} just has more zoom levels}.
      *
      * @return {@code true} if
      */

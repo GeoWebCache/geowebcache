@@ -1,14 +1,13 @@
 /**
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation, either version 3
- * of the License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * <p>You should have received a copy of the GNU Lesser General Public License along with this
- * program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  *
  * @author Arne Kepp / OpenGeo, Copyright 2009
  */
@@ -30,8 +29,8 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.URLMangler;
 
 /**
- * Basic implementation of the TMS documents. Not all of GWCs more advanced features can easily be
- * accomodated by this service.
+ * Basic implementation of the TMS documents. Not all of GWCs more advanced features can easily be accomodated by this
+ * service.
  *
  * <p>The commented out sections are optional parts of the OSGeo standard
  */
@@ -54,11 +53,7 @@ public class TMSDocumentFactory {
     public static final String SERVICE_PATH = "service/" + TILEMAPSERVICE_LEADINGPATH;
 
     protected TMSDocumentFactory(
-            TileLayerDispatcher tld,
-            GridSetBroker gsb,
-            URLMangler urlMangler,
-            String serviceName,
-            Charset encoding) {
+            TileLayerDispatcher tld, GridSetBroker gsb, URLMangler urlMangler, String serviceName, Charset encoding) {
         this.tld = tld;
         this.gsb = gsb;
         this.urlMangler = urlMangler;
@@ -66,11 +61,7 @@ public class TMSDocumentFactory {
     }
 
     protected TMSDocumentFactory(
-            TileLayerDispatcher tld,
-            GridSetBroker gsb,
-            String baseUrl,
-            String contextPath,
-            URLMangler urlMangler) {
+            TileLayerDispatcher tld, GridSetBroker gsb, String baseUrl, String contextPath, URLMangler urlMangler) {
         this(tld, gsb, baseUrl, contextPath, urlMangler, StandardCharsets.UTF_8);
     }
 
@@ -89,8 +80,7 @@ public class TMSDocumentFactory {
         this.encoding = encoding;
     }
 
-    protected TMSDocumentFactory(
-            TileLayerDispatcher tld, GridSetBroker gsb, URLMangler urlMangler) {
+    protected TMSDocumentFactory(TileLayerDispatcher tld, GridSetBroker gsb, URLMangler urlMangler) {
         this(tld, gsb, null, null, urlMangler);
     }
 
@@ -150,8 +140,7 @@ public class TMSDocumentFactory {
         }
     }
 
-    protected void tileMapsForLayer(
-            XMLBuilder xml, TileLayer layer, String baseUrl, String contextPath)
+    protected void tileMapsForLayer(XMLBuilder xml, TileLayer layer, String baseUrl, String contextPath)
             throws IOException {
         for (String gridSetId : layer.getGridSubsets()) {
             GridSubset gridSub = layer.getGridSubset(gridSetId);
@@ -161,24 +150,18 @@ public class TMSDocumentFactory {
                         .attribute("title", tileMapTitle(layer))
                         .attribute("srs", gridSub.getSRS().toString())
                         .attribute("profile", profileForGridSet(gridSub.getGridSet()))
-                        .attribute(
-                                "href", tileMapUrl(layer, gridSub, mimeType, baseUrl, contextPath))
+                        .attribute("href", tileMapUrl(layer, gridSub, mimeType, baseUrl, contextPath))
                         .endElement();
             }
         }
     }
 
-    protected String getTileMapDoc(
-            TileLayer layer, GridSubset gridSub, GridSetBroker gsb, MimeType mimeType) {
+    protected String getTileMapDoc(TileLayer layer, GridSubset gridSub, GridSetBroker gsb, MimeType mimeType) {
         return getTileMapDoc(layer, gridSub, gsb, mimeType, defaultBaseUrl, defaultContextPath);
     }
 
     protected String getTileMapDoc(
-            TileLayer layer,
-            GridSubset gridSub,
-            MimeType mimeType,
-            String baseUrl,
-            String contextPath) {
+            TileLayer layer, GridSubset gridSub, MimeType mimeType, String baseUrl, String contextPath) {
         return getTileMapDoc(layer, gridSub, gsb, mimeType, baseUrl, contextPath);
     }
 
@@ -195,9 +178,7 @@ public class TMSDocumentFactory {
             xml.header("1.0", encoding);
             xml.indentElement("TileMap")
                     .attribute("version", "1.0.0")
-                    .attribute(
-                            "tilemapservice",
-                            urlMangler.buildURL(baseUrl, contextPath, SERVICE_PATH));
+                    .attribute("tilemapservice", urlMangler.buildURL(baseUrl, contextPath, SERVICE_PATH));
             xml.simpleElement("Title", tileMapTitle(layer), true);
             xml.simpleElement("Abstract", tileMapDescription(layer), true);
 
@@ -227,15 +208,13 @@ public class TMSDocumentFactory {
                     .attribute("mime-type", mimeType.getMimeType())
                     .attribute("extension", mimeType.getFileExtension())
                     .endElement();
-            xml.indentElement("TileSets")
-                    .attribute("profile", profileForGridSet(gridSub.getGridSet()));
+            xml.indentElement("TileSets").attribute("profile", profileForGridSet(gridSub.getGridSet()));
             double[] resolutions = gridSub.getResolutions();
             int resIdx = 0;
 
             for (int zoom = gridSub.getZoomStart(); zoom <= gridSub.getZoomStop(); zoom++) {
                 xml.indentElement("TileSet");
-                xml.attribute(
-                        "href", tileMapUrl(layer, gridSub, mimeType, zoom, baseUrl, contextPath));
+                xml.attribute("href", tileMapUrl(layer, gridSub, mimeType, zoom, baseUrl, contextPath));
                 xml.attribute("units-per-pixel", Double.toString(resolutions[resIdx]));
                 xml.attribute("order", Integer.toString(resIdx));
                 xml.endElement();
@@ -263,22 +242,12 @@ public class TMSDocumentFactory {
     }
 
     protected String tileMapUrl(
-            TileLayer tl,
-            GridSubset gridSub,
-            MimeType mimeType,
-            String baseUrl,
-            String contextPath) {
-        return urlMangler.buildURL(
-                baseUrl, contextPath, SERVICE_PATH + "/" + tileMapName(tl, gridSub, mimeType));
+            TileLayer tl, GridSubset gridSub, MimeType mimeType, String baseUrl, String contextPath) {
+        return urlMangler.buildURL(baseUrl, contextPath, SERVICE_PATH + "/" + tileMapName(tl, gridSub, mimeType));
     }
 
     protected String tileMapUrl(
-            TileLayer tl,
-            GridSubset gridSub,
-            MimeType mimeType,
-            int z,
-            String baseUrl,
-            String contextPath) {
+            TileLayer tl, GridSubset gridSub, MimeType mimeType, int z, String baseUrl, String contextPath) {
         return tileMapUrl(tl, gridSub, mimeType, baseUrl, contextPath) + "/" + z;
     }
 
