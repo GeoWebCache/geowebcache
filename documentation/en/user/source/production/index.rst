@@ -109,7 +109,7 @@ These environment variables can be established by any of the following ways, in 
 Resource Allocation
 -------------------
 
-Also see http://geowebcache.org/trac/wiki/resources for tools that can be used to estimate how much storage you need and how long seeding will take
+Also see <del>http://geowebcache.org/trac/wiki/resources</del> for tools that can be used to estimate how much storage you need and how long seeding will take
 
 
 Clustering

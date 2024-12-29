@@ -13,7 +13,7 @@
   <artifactId>gwc-diskquota-jdbc</artifactId>
   <packaging>jar</packaging>
   <name>Disk Quota management module - JDBC backends</name>
-  <url>http://geowebcache.org</url>
+  <url>https://geowebcache.osgeo.org</url>
 
   <dependencies>
     <dependency>

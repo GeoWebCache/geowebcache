@@ -41,7 +41,7 @@ public class ArcGISCacheLayerTest {
         // PLEASE DO NOT update the ArcGISCacheLayer GridSetBroker mocking below without first
         // confirming any new ArcGISCacheLayer GridSet configuration logic is build tested to work
         // with an actual ArcGISCacheLayer configuration test using the GWC tiling scheme steps:
-        // https://www.geowebcache.org/docs/latest/configuration/layers/arcgistilingschemes.html
+        // https://geowebcache.osgeo.org/docs/current/configuration/layers/arcgistilingschemes.html
 
         final File configDir = temp.getRoot();
         ArcGISCacheLayer layer = new ArcGISCacheLayer("fakeLayerId");

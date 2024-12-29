@@ -12,7 +12,7 @@
   <artifactId>gwc-diskquota</artifactId>
   <packaging>pom</packaging>
   <name>Disk Quota management module</name>
-  <url>http://geowebcache.org</url>
+  <url>https://geowebcache.osgeo.org</url>
 
   <modules>
     <module>core</module>

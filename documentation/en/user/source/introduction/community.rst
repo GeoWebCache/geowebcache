@@ -8,7 +8,7 @@ GeoWebCache is an open source project and thus it relies on its community of use
 Homepage
 --------
 
-The GeoWebCache homepage is `<http://geowebcache.org>`_.  This page has the latest information about GeoWebCache, as well as links to documentation, downloads, developer information, issue tracking, and other up-to-the-minute information.
+The GeoWebCache homepage is `<https://geowebcache.osgeo.org>`_.  This page has the latest information about GeoWebCache, as well as links to documentation, downloads, developer information, issue tracking, and other up-to-the-minute information.
 
 .. _mailinglists:
 

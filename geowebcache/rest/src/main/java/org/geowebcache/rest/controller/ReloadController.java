@@ -110,7 +110,7 @@ public class ReloadController implements ApplicationContextAware {
                     + e.getMessage()
                     + "\n<br>"
                     + " If you believe this is a bug, please submit a ticket at "
-                    + "<a href=\"http://geowebcache.org\">GeoWebCache.org</a>"
+                    + "<a href=\"https://geowebcache.osgeo.org\">GeoWebCache.osgeo.org</a>"
                     + "</p>");
         }
 

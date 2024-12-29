@@ -8,7 +8,7 @@
   <packaging>pom</packaging>
   <!-- GWC VERSION -->
   <name>geowebcache</name>
-  <url>http://geowebcache.org</url>
+  <url>https://geowebcache.osgeo.org</url>
 
   <modules>
     <module>core</module>
