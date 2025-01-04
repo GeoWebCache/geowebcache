@@ -297,7 +297,10 @@ public class WMTSGetCapabilities {
             appendTag(xml, "ows:Title", servInfo.getTitle(), "Web Map Tile Service - GeoWebCache");
             appendTag(xml, "ows:Abstract", servInfo.getDescription(), null);
 
-            if (servInfo != null && servInfo.getKeywords() != null) {
+            // a keywords element cannot be empty
+            if (servInfo != null
+                    && servInfo.getKeywords() != null
+                    && !servInfo.getKeywords().isEmpty()) {
                 xml.indentElement("ows:Keywords");
                 Iterator<String> keywordIter = servInfo.getKeywords().iterator();
                 while (keywordIter.hasNext()) {
@@ -453,17 +456,17 @@ public class WMTSGetCapabilities {
 
         appendTag(xml, "ows:Identifier", layer.getName(), null);
 
+        // WMTS 1.0 Layer is a ows:DatasetDescriptionSummary, which in turn can hold a ows:Metadata,
+        // which finally
+        // has the xlink:simpleAttrs attribute group, see https://www.w3.org/1999/xlink.xsd.
+        // Unfortunately those links do not have a format attribute, so we can't use them for
+        // metadata links.
         if (layer.getMetadataURLs() != null) {
             for (MetadataURL metadataURL : layer.getMetadataURLs()) {
-                xml.indentElement("MetadataURL");
-                xml.attribute("type", metadataURL.getType());
-                xml.simpleElement("Format", metadataURL.getFormat(), true);
-                xml.indentElement("OnlineResource")
-                        .attribute("xmlns:xlink", "http://www.w3.org/1999/xlink")
+                xml.indentElement("ows:Metadata")
                         .attribute("xlink:type", "simple")
                         .attribute("xlink:href", metadataURL.getUrl().toString())
                         .endElement();
-                xml.endElement();
             }
         }
 

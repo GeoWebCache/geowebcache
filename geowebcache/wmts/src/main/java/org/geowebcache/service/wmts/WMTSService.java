@@ -50,6 +50,7 @@ import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
 import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLMangler;
+import org.springframework.http.MediaType;
 
 public class WMTSService extends Service {
 
@@ -248,6 +249,21 @@ public class WMTSService extends Service {
 
     public Conveyor getRestConveyor(HttpServletRequest request, HttpServletResponse response)
             throws GeoWebCacheException, OWSException {
+        // CITE compliance, if the representation is not available a 406 should be returned
+        // This is also the behavior mandated by the HTTP standard
+        String accept = request.getHeader("Accept");
+        if (accept != null) {
+            List<MediaType> mediaTypes = MediaType.parseMediaTypes(accept);
+            boolean representationAvailable = false;
+            for (MediaType mediaType : mediaTypes) {
+                if (mediaType.includes(MediaType.APPLICATION_XML)) {
+                    representationAvailable = true;
+                    break;
+                }
+            }
+            if (!representationAvailable) throw new HttpErrorCodeException(406, "Representation not available");
+        }
+
         final String path = request.getPathInfo();
 
         // special simpler case for GetCapabilities
@@ -302,14 +318,13 @@ public class WMTSService extends Service {
             // if provided handle accepted versions parameter
             if (acceptedVersions != null) {
                 // we only support version 1.0.0, so make sure that's one of the accepted versions
-                String[] versions = acceptedVersions.split("\\s*,\\s*");
-                int foundIndex = Arrays.binarySearch(versions, "1.0.0");
-                if (foundIndex < 0) {
+                List<String> versions = Arrays.asList(acceptedVersions.split("\\s*,\\s*"));
+                if (!versions.contains("1.0.0")) {
                     // no supported version is accepted
                     throw new OWSException(
                             400,
                             "VersionNegotiationFailed",
-                            null,
+                            "null",
                             "List of versions in AcceptVersions parameter value, in GetCapabilities "
                                     + "operation request, did not include any version supported by this server.");
                 }
@@ -409,6 +424,8 @@ public class WMTSService extends Service {
         }
 
         MimeType mimeType = null;
+        // the format should be present and valid also for GetFeatureInfo, while in CITE compliance
+        // mode
         if (reqType == RequestType.TILE) {
             String format = values.get("format");
             if (format == null) {
@@ -436,6 +453,14 @@ public class WMTSService extends Service {
                         "InvalidParameterValue",
                         "INFOFORMAT",
                         "Unable to determine requested INFOFORMAT, " + infoFormat);
+            }
+
+            if (isCiteCompliant() && !isRestRequest(request)) {
+                String format = values.get("format");
+                if (format == null) {
+                    throw new OWSException(
+                            400, "MissingParameterValue", "FORMAT", "Unable to determine requested FORMAT, " + format);
+                }
             }
         }
 
@@ -485,7 +510,7 @@ public class WMTSService extends Service {
             throw new OWSException(
                     400,
                     "TileOutOfRange",
-                    "TILECOLUMN",
+                    "TILECOL",
                     "Column " + x + " is out of range, min: " + gridCov[0] + " max:" + gridCov[2]);
         }
 
@@ -621,7 +646,7 @@ public class WMTSService extends Service {
      *
      * @return TRUE if GWC main configuration or at least one of the WMTS extensions forces CITE compliance
      */
-    private boolean isCiteCompliant() {
+    protected boolean isCiteCompliant() {
         // let's see if main GWC configuration forces WMTS implementation to be CITE compliant
         if (mainConfiguration != null && mainConfiguration.isWmtsCiteCompliant()) {
             return true;

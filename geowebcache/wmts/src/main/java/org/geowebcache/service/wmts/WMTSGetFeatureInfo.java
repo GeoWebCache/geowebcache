@@ -67,12 +67,12 @@ public class WMTSGetFeatureInfo {
         TileLayer layer = convTile.getLayer();
 
         GridSet gridSet = convTile.getGridSubset().getGridSet();
-        if (gridSet.getTileHeight() < j || j < 0) {
+        if (gridSet.getTileHeight() <= j || j < 0) {
             throw new OWSException(
                     400, "PointIJOutOfRange", "J", "J was " + j + ", must be between 0 and " + gridSet.getTileHeight());
         }
 
-        if (gridSet.getTileWidth() < i || i < 0) {
+        if (gridSet.getTileWidth() <= i || i < 0) {
             throw new OWSException(
                     400, "PointIJOutOfRange", "I", "I was " + i + ", must be between 0 and " + gridSet.getTileWidth());
         }

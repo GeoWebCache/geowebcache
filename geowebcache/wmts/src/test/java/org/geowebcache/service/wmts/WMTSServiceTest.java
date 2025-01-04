@@ -15,6 +15,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -374,13 +375,11 @@ public class WMTSServiceTest {
         // validator.assertIsValid();
 
         Document doc = XMLUnit.buildTestDocument(result);
-        Map<String, String> namespaces = new HashMap<>();
-        namespaces.put("xlink", "http://www.w3.org/1999/xlink");
-        namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        namespaces.put("ows", "http://www.opengis.net/ows/1.1");
-        namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
-        XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
-        XpathEngine xp = XMLUnit.newXpathEngine();
+        XpathEngine xp = buildWMTSXPath();
+
+        // check that with no keywords, there is no container ows:Keywords element (can be missing,
+        // cannot be empty)
+        assertEquals("0", xp.evaluate("count(//ows:Keywords)", doc));
 
         assertEquals("1", xp.evaluate("count(//wmts:Contents/wmts:Layer)", doc));
         assertEquals("1", xp.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer'])", doc));
@@ -405,13 +404,7 @@ public class WMTSServiceTest {
         assertEquals(
                 "1",
                 xp.evaluate(
-                        "count(//wmts:Contents/wmts:Layer/wmts:MetadataURL[@type='some-type'][wmts:Format='some-format'])",
-                        doc));
-        assertEquals(
-                "1",
-                xp.evaluate(
-                        "count(//wmts:Contents/wmts:Layer/wmts:MetadataURL[@type='some-type']"
-                                + "/wmts:OnlineResource[@xlink:href='http://localhost:8080/some-url'])",
+                        "count(//wmts:Contents/wmts:Layer/ows:Metadata[@xlink:href='http://localhost:8080/some-url'])",
                         doc));
         // checking that the layer has an associated tile resource URL, for each
         // supported image
@@ -594,13 +587,7 @@ public class WMTSServiceTest {
         assertTrue(result.contains("name-space schema-location"));
         // instantiate the xpath engine
         Document doc = XMLUnit.buildTestDocument(result);
-        Map<String, String> namespaces = new HashMap<>();
-        namespaces.put("xlink", "http://www.w3.org/1999/xlink");
-        namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        namespaces.put("ows", "http://www.opengis.net/ows/1.1");
-        namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
-        XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
-        XpathEngine xpath = XMLUnit.newXpathEngine();
+        XpathEngine xpath = buildWMTSXPath();
         // checking that we have the service extra information
         assertEquals("1", xpath.evaluate("count(//wmts:custom-metadata)", doc));
         assertEquals("1", xpath.evaluate("count(//ows:ServiceIdentification[ows:Title='custom-service'])", doc));
@@ -691,13 +678,7 @@ public class WMTSServiceTest {
         // validator.assertIsValid();
 
         Document doc = XMLUnit.buildTestDocument(result);
-        Map<String, String> namespaces = new HashMap<>();
-        namespaces.put("xlink", "http://www.w3.org/1999/xlink");
-        namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        namespaces.put("ows", "http://www.opengis.net/ows/1.1");
-        namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
-        XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
-        XpathEngine xpath = XMLUnit.newXpathEngine();
+        XpathEngine xpath = buildWMTSXPath();
         assertEquals("John Smith", xpath.evaluate("//ows:IndividualName", doc));
     }
 
@@ -764,13 +745,7 @@ public class WMTSServiceTest {
         // validator.assertIsValid();
 
         Document doc = XMLUnit.buildTestDocument(result);
-        Map<String, String> namespaces = new HashMap<>();
-        namespaces.put("xlink", "http://www.w3.org/1999/xlink");
-        namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        namespaces.put("ows", "http://www.opengis.net/ows/1.1");
-        namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
-        XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
-        XpathEngine xpath = XMLUnit.newXpathEngine();
+        XpathEngine xpath = buildWMTSXPath();
 
         assertEquals("1", xpath.evaluate("count(//ows:WGS84BoundingBox)", doc));
     }
@@ -829,13 +804,7 @@ public class WMTSServiceTest {
         // validator.assertIsValid();
 
         Document doc = XMLUnit.buildTestDocument(result);
-        Map<String, String> namespaces = new HashMap<>();
-        namespaces.put("xlink", "http://www.w3.org/1999/xlink");
-        namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        namespaces.put("ows", "http://www.opengis.net/ows/1.1");
-        namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
-        XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
-        XpathEngine xpath = XMLUnit.newXpathEngine();
+        XpathEngine xpath = buildWMTSXPath();
 
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer)", doc));
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer'])", doc));
@@ -897,13 +866,7 @@ public class WMTSServiceTest {
         validator.assertIsValid();
 
         Document doc = XMLUnit.buildTestDocument(result);
-        Map<String, String> namespaces = new HashMap<>();
-        namespaces.put("xlink", "http://www.w3.org/1999/xlink");
-        namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        namespaces.put("ows", "http://www.opengis.net/ows/1.1");
-        namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
-        XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
-        XpathEngine xpath = XMLUnit.newXpathEngine();
+        XpathEngine xpath = buildWMTSXPath();
 
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer)", doc));
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer'])", doc));
@@ -965,13 +928,7 @@ public class WMTSServiceTest {
         // validator.assertIsValid();
 
         Document doc = XMLUnit.buildTestDocument(result);
-        Map<String, String> namespaces = new HashMap<>();
-        namespaces.put("xlink", "http://www.w3.org/1999/xlink");
-        namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        namespaces.put("ows", "http://www.opengis.net/ows/1.1");
-        namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
-        XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
-        XpathEngine xpath = XMLUnit.newXpathEngine();
+        XpathEngine xpath = buildWMTSXPath();
 
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer)", doc));
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer'])", doc));
@@ -1004,6 +961,17 @@ public class WMTSServiceTest {
                 xpath.evaluate(
                         "count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer']/wmts:Style/ows:Identifier[text()='Baz'])",
                         doc));
+    }
+
+    private static XpathEngine buildWMTSXPath() {
+        Map<String, String> namespaces = new HashMap<>();
+        namespaces.put("xlink", "http://www.w3.org/1999/xlink");
+        namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+        namespaces.put("ows", "http://www.opengis.net/ows/1.1");
+        namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
+        XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
+        XpathEngine xpath = XMLUnit.newXpathEngine();
+        return xpath;
     }
 
     /**
@@ -1070,13 +1038,7 @@ public class WMTSServiceTest {
         String result = resp.getContentAsString();
 
         Document doc = XMLUnit.buildTestDocument(result);
-        Map<String, String> namespaces = new HashMap<>();
-        namespaces.put("xlink", "http://www.w3.org/1999/xlink");
-        namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        namespaces.put("ows", "http://www.opengis.net/ows/1.1");
-        namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
-        XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
-        XpathEngine xpath = XMLUnit.newXpathEngine();
+        XpathEngine xpath = buildWMTSXPath();
 
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer)", doc));
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer'])", doc));
@@ -1208,7 +1170,51 @@ public class WMTSServiceTest {
     }
 
     @Test
-    public void testGetFeature() throws Exception {
+    public void testGetFeatureInfo() throws Exception {
+        Conveyor conveyor =
+                runGetFeatureInfo("50", "50", "TEST FEATURE INFO", "image/png", XMLMime.gml.getMimeType(), false);
+
+        service.handleRequest(conveyor);
+        // fail("Expected SecurityException");
+
+        MockHttpServletResponse resp = (MockHttpServletResponse) conveyor.servletResp;
+        assertThat(resp.getContentAsString(), equalTo("TEST FEATURE INFO"));
+    }
+
+    @Test
+    public void testFeatureInfoInvalidColumn() throws Exception {
+        // one off, 255 is the actual max
+        checkFeatureInfoInvalidIJ("256", "50", "I");
+    }
+
+    @Test
+    public void testFeatureInfoInvalidRow() throws Exception {
+        // one off, 255 is the actual max
+        checkFeatureInfoInvalidIJ("50", "256", "J");
+    }
+
+    private void checkFeatureInfoInvalidIJ(String i, String j, String locator)
+            throws GeoWebCacheException, OWSException {
+        Conveyor conv = runGetFeatureInfo(i, j, "TEST RESPONSE", "image/png", XMLMime.gml.getMimeType(), false);
+
+        OWSException exception = assertThrows(OWSException.class, () -> service.handleRequest(conv));
+        assertEquals(locator, exception.getLocator());
+        assertEquals("PointIJOutOfRange", exception.getExceptionCode());
+    }
+
+    @Test
+    public void testFeatureInfoMissingFormat() throws Exception {
+        OWSException exception = assertThrows(
+                OWSException.class,
+                () -> runGetFeatureInfo("20", "50", "TEST RESPONSE", null, XMLMime.gml.getMimeType(), true));
+
+        assertEquals("FORMAT", exception.getLocator());
+        assertEquals("MissingParameterValue", exception.getExceptionCode());
+    }
+
+    private Conveyor runGetFeatureInfo(
+            String i, String j, String response, String tileFormat, String infoFormat, boolean citeCompliant)
+            throws GeoWebCacheException, OWSException {
         SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
         when(secDisp.isSecurityEnabled()).thenReturn(false);
 
@@ -1217,7 +1223,12 @@ public class WMTSServiceTest {
 
         GridSetBroker gsb = mock(GridSetBroker.class);
 
-        service = new WMTSService(sb, tld, gsb, mock(RuntimeStats.class), new NullURLMangler(), gwcd);
+        service = new WMTSService(sb, tld, gsb, mock(RuntimeStats.class), new NullURLMangler(), gwcd) {
+            @Override
+            protected boolean isCiteCompliant() {
+                return citeCompliant;
+            }
+        };
         service.setSecurityDispatcher(secDisp);
 
         GridSubset subset = mock(GridSubset.class);
@@ -1246,20 +1257,21 @@ public class WMTSServiceTest {
         req.addParameter("version", "1.0.0");
         req.addParameter("request", "GetFeatureInfo");
         req.addParameter("layer", layerName);
-        req.addParameter("format", "image/png");
+        if (tileFormat != null) req.addParameter("format", tileFormat);
         req.addParameter("tilematrixset", "testGridset");
         req.addParameter("tilematrix", "testGridset:2");
         req.addParameter("tilerow", "3");
         req.addParameter("tilecol", "4");
-        req.addParameter("infoformat", XMLMime.gml.getMimeType());
-        req.addParameter("i", "20");
-        req.addParameter("j", "50");
+        if (infoFormat != null) req.addParameter("infoformat", infoFormat);
+        req.addParameter("i", i);
+        req.addParameter("j", j);
         req.setRequestURI("/geowebcache/service/wmts?service=WMTS&version=1.0.0&request=GetFeatureInfo"
                 + "&layer="
                 + layerName
                 + "&format=image/png&tilematrixset=testGridset"
                 + "&tilematrix=testGridset:2&tilerow=3&tilecol=4&infoformat="
-                + XMLMime.gml.getMimeType());
+                + infoFormat);
+        req.setPathInfo("service/wmts");
 
         when(subset.getNumTilesHigh(2)).thenReturn(7L);
         when(subset.getGridIndex("testGridset:2")).thenReturn(2L);
@@ -1276,19 +1288,15 @@ public class WMTSServiceTest {
                         Mockito.anyInt(),
                         Mockito.anyInt(),
                         Mockito.anyInt()))
-                .thenReturn(new ByteArrayResource("TEST FEATURE INFO".getBytes()));
+                .thenReturn(new ByteArrayResource(response.getBytes()));
 
         assertThat(conv, hasProperty("hint", equalTo("GetFeatureInfo".toLowerCase())));
         assertThat(conv, hasProperty("requestHandler", equalTo(RequestHandler.SERVICE)));
-
-        service.handleRequest(conv);
-        // fail("Expected SecurityException");
-
-        assertThat(resp.getContentAsString(), equalTo("TEST FEATURE INFO"));
+        return conv;
     }
 
     @Test
-    public void testGetFeatureSecure() throws Exception {
+    public void testGetFeatureInfoSecure() throws Exception {
         SecurityDispatcher secDisp = mock(SecurityDispatcher.class);
         when(secDisp.isSecurityEnabled()).thenReturn(true);
 
@@ -1409,13 +1417,7 @@ public class WMTSServiceTest {
         assertTrue(result.contains("mockLayer"));
 
         Document doc = XMLUnit.buildTestDocument(result);
-        Map<String, String> namespaces = new HashMap<>();
-        namespaces.put("xlink", "http://www.w3.org/1999/xlink");
-        namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        namespaces.put("ows", "http://www.opengis.net/ows/1.1");
-        namespaces.put("wmts", "http://www.opengis.net/wmts/1.0");
-        XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
-        XpathEngine xpath = XMLUnit.newXpathEngine();
+        XpathEngine xpath = buildWMTSXPath();
 
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer)", doc));
         assertEquals("1", xpath.evaluate("count(//wmts:Contents/wmts:Layer[ows:Identifier='mockLayer'])", doc));
