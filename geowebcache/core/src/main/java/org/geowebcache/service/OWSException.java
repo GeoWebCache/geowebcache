@@ -55,11 +55,26 @@ public class OWSException extends Exception {
         str.append("  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
         str.append(
                 "  xsi:schemaLocation=\"http://www.opengis.net/ows/1.1 http://geowebcache.org/schema/ows/1.1.0/owsExceptionReport.xsd\">\n");
-        str.append("  <Exception exceptionCode=\"" + exceptionCode + "\" locator=\"" + locator + "\">\n");
+        if (locator != null) {
+            str.append("  <Exception exceptionCode=\"" + exceptionCode + "\" locator=\"" + locator + "\">\n");
+        } else {
+            str.append("  <Exception exceptionCode=\"" + exceptionCode + "\">\n");
+        }
+
         str.append("    <ExceptionText>" + exceptionText + "</ExceptionText>\n");
         str.append("  </Exception>\n");
         str.append("</ExceptionReport>\n");
 
         return str.toString();
+    }
+
+    /** Returns the OWS exception <code>code</code> attribute */
+    public String getExceptionCode() {
+        return exceptionCode;
+    }
+
+    /** Returns the OWS exception <code>locator</code> attribute */
+    public String getLocator() {
+        return locator;
     }
 }

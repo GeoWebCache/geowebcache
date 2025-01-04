@@ -18,6 +18,7 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -64,6 +65,7 @@ import org.geowebcache.layer.meta.TileJSON;
 import org.geowebcache.layer.meta.VectorLayerMetadata;
 import org.geowebcache.mime.ApplicationMime;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.service.HttpErrorCodeException;
 import org.geowebcache.service.OWSException;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
@@ -140,6 +142,15 @@ public class WMTSRestTest {
         assertXpathExists(
                 "//wmts:ServiceMetadataURL[@xlink:href='http://localhost/service/wmts/rest" + "/WMTSCapabilities.xml']",
                 doc);
+    }
+
+    @Test
+    public void testGetCapInvalidFormat() throws Exception {
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        req.setPathInfo("geowebcache/service/wmts/rest/WMTSCapabilities.xml");
+        req.addHeader("Accept", "invalid/format");
+        HttpErrorCodeException exception = assertThrows(HttpErrorCodeException.class, () -> dispatch(req));
+        assertEquals(406, exception.getErrorCode());
     }
 
     @Test
