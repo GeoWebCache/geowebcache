@@ -109,7 +109,7 @@ These environment variables can be established by any of the following ways, in 
 Resource Allocation
 -------------------
 
-Also see https://github.com/GeoWebCache/geowebcache/wiki/Estimating-the-number-of-tiles-and-size-on-disk for tools that can be used to estimate how much storage you need and how long seeding will take
+Also see https://github.com/GeoWebCache/geowebcache/wiki/Estimating-the-number-of-tiles-and-size-on-disk for table that can be used to estimate how much storage you need and how long seeding will take
 
 
 Clustering
