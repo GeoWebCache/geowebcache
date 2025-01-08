@@ -1,4 +1,4 @@
-GeoWebCache 1.27.0(2025-03-18)
+GeoWebCache 1.27.0 (2025-03-18)
 ------------------------------
 
 Stable release
@@ -1297,13 +1297,13 @@ This release comes with a number of bug fixes and improvements (check the full l
 - Added an "enabled" property to the layer configuration XML schema, so that it's possible to keep a layer from being listed in the capabilities document or accessed through any of the provided service interfaces, but still being able of seeding it either through the web or the REST interfaces.
 - New embedded, high performance storage mechanism for Disk Quota statistics based on the Berkeley DB JE no-SQL database engine.
 - Possibility to define a GWC_DISKQUOTA_DISABLED=true environment variable to disable the usage of the disk quota module. Useful for load balanced deployments for the same reasons you need to disable the meta-store. This is a work around until "clustering" is supported for the disk quota storage.
-- Improved DiskQuota documentation <http://geowebcache.org/docs/current/configuration/diskquotas.html>
-- REST API to configure the global disk quota settings <http://geowebcache.org/docs/current/rest/diskquota.html>
+- Improved DiskQuota documentation <https://geowebcache.osgeo.org/docs/current/configuration/diskquotas.html>
+- REST API to configure the global disk quota settings <https://geowebcache.osgeo.org/docs/current/rest/diskquota.html>
 - Implemented a CQL_FILTER parameter extension for the Google Maps service interface
 - Fixed the computation of estimated and remaining seeding time and number of tiles to process reported by the web interface
 - Improved the stability of the system by avoiding the unnecessary load of existing tiles into memory when re-seeding
 - Seeding and truncating with parameter filters (i.e. for multiple styles or other WMS parameters)
-- Failure tolerance control for seeding:  <http://geowebcache.org/docs/current/production/index.html#seeding-and-truncating-the-cache>
+- Failure tolerance control for seeding:  <https://geowebcache.osgeo.org/docs/current/production/index.html#seeding-and-truncating-the-cache>
 
 
 GeoWebCache 1.2.4 (2011-01-24)
@@ -1324,4 +1324,4 @@ In this release, besides numerous bug fixes, you'll find three new exciting feat
 
 
 [1] <https://github.com/GeoWebCache/geowebcache>
-[2] <http://geowebcache.org/docs/current>
+[2] <https://geowebcache.osgeo.org/docs/current>

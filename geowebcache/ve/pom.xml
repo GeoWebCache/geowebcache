@@ -12,7 +12,7 @@
   <artifactId>gwc-ve</artifactId>
   <packaging>jar</packaging>
   <name>gwc-ve</name>
-  <url>http://geowebcache.org</url>
+  <url>https://geowebcache.osgeo.org</url>
 
   <dependencies>
     <dependency>

@@ -12,7 +12,7 @@
   <artifactId>gwc-arcgiscache</artifactId>
   <packaging>jar</packaging>
   <name>ArcGIS Server tile cache support</name>
-  <url>http://geowebcache.org</url>
+  <url>https://geowebcache.osgeo.org</url>
 
   <dependencies>
     <dependency>

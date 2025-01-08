@@ -5,7 +5,7 @@ Installing GeoWebCache
 
 Once the :ref:`Java Servlet environment <prerequisites>` is in place, installing GeoWebCache is simple. 
 
-The latest Web ARchive (WAR) file can be downloaded from `geowebcache.org <http://geowebcache.org>`_.  
+The latest Web ARchive (WAR) file can be downloaded from `GeoWebCache.osgeo.org <https://geowebcache.osgeo.org>`_.  
 
 Unpack the zip file and make sure to read the software :ref:`license`.
 

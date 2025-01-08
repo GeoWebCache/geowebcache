@@ -14,7 +14,7 @@
   <artifactId>gwc-swift</artifactId>
   <packaging>jar</packaging>
   <name>Swift Storage</name>
-  <url>http://geowebcache.org</url>
+  <url>https://geowebcache.osgeo.org</url>
 
   <dependencies>
     <dependency>

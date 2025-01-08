@@ -12,7 +12,7 @@
   <artifactId>gwc-web</artifactId>
   <packaging>jar</packaging>
   <name>Web module</name>
-  <url>http://geowebcache.org</url>
+  <url>https://geowebcache.osgeo.org</url>
 
   <dependencies>
     <dependency>
