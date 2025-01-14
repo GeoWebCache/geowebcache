@@ -452,21 +452,24 @@ public class GeoWebCacheDispatcher extends AbstractController {
         }
 
         StringBuilder str = new StringBuilder();
-
-        String version = GeoWebCache.getVersion();
-        String commitId = GeoWebCache.getBuildRevision();
-        if (version == null) {
-            version = "{NO VERSION INFO IN MANIFEST}";
-        }
-        if (commitId == null) {
-            commitId = "{NO BUILD INFO IN MANIFEST}";
-        }
-
         str.append("<html>\n"
                 + ServletUtils.gwcHtmlHeader(baseUrl, "GWC Home")
                 + "<body>\n"
                 + ServletUtils.gwcHtmlLogoLink(baseUrl));
-        str.append("<h3>Welcome to GeoWebCache version " + version + ", build " + commitId + "</h3>\n");
+        str.append("<h3>Welcome to GeoWebCache");
+        boolean isAdmin = this.securityDispatcher.isAdmin();
+        if (isAdmin) {
+            String version = GeoWebCache.getVersion();
+            String commitId = GeoWebCache.getBuildRevision();
+            if (version == null) {
+                version = "{NO VERSION INFO IN MANIFEST}";
+            }
+            if (commitId == null) {
+                commitId = "{NO BUILD INFO IN MANIFEST}";
+            }
+            str.append(" version ").append(version).append(", build ").append(commitId);
+        }
+        str.append("</h3>\n");
         str.append(
                 "<p><a href=\"https://geowebcache.osgeo.org\">GeoWebCache</a> is an advanced tile cache for WMS servers. ");
         str.append(
@@ -486,17 +489,18 @@ public class GeoWebCacheDispatcher extends AbstractController {
         str.append("<li>Note that the latter (WMS) will only work with clients that are ");
         str.append("<a href=\"http://wiki.osgeo.org/wiki/WMS_Tiling_Client_Recommendation\">WMS-C capable</a>.</li>\n");
         str.append("<li>Omitting tiled=true from the URL will omit the TileSet elements.</li></ul>\n");
-        if (runtimeStats != null) {
-            str.append("<h3>Runtime Statistics</h3>\n");
-            str.append(runtimeStats.getHTMLStats());
-            str.append("</table>\n");
-        }
-        if (!Boolean.parseBoolean(GeoWebCacheExtensions.getProperty("GEOWEBCACHE_HIDE_STORAGE_LOCATIONS"))) {
-            appendStorageLocations(str);
-        }
-
-        if (storageBroker != null) {
-            appendInternalCacheStats(str);
+        if (isAdmin) {
+            if (runtimeStats != null) {
+                str.append("<h3>Runtime Statistics</h3>\n");
+                str.append(runtimeStats.getHTMLStats());
+                str.append("</table>\n");
+            }
+            if (!Boolean.parseBoolean(GeoWebCacheExtensions.getProperty("GEOWEBCACHE_HIDE_STORAGE_LOCATIONS"))) {
+                appendStorageLocations(str);
+            }
+            if (storageBroker != null) {
+                appendInternalCacheStats(str);
+            }
         }
         str.append("</body></html>\n");
 
