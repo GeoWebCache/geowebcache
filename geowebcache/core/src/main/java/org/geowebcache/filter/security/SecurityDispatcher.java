@@ -73,6 +73,14 @@ public class SecurityDispatcher implements ApplicationContextAware {
         }
     }
 
+    /**
+     * Checks if the current user is authenticated and is the administrator. Will return true if there are no active
+     * security filters.
+     */
+    public boolean isAdmin() {
+        return getFilters().stream().allMatch(SecurityFilter::isAdmin);
+    }
+
     @Override
     public void setApplicationContext(final ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
