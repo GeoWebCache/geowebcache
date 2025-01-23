@@ -28,4 +28,9 @@ public interface SecurityFilter {
      */
     public void checkSecurity(TileLayer layer, @Nullable BoundingBox extent, @Nullable SRS srs)
             throws SecurityException, GeoWebCacheException;
+
+    /** Checks if the current user is authenticated and is the administrator. */
+    default boolean isAdmin() {
+        return false;
+    }
 }
