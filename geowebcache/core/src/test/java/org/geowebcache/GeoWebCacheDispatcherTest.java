@@ -14,7 +14,9 @@
 package org.geowebcache;
 
 import static org.geowebcache.TestHelpers.hasStatus;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 
 import java.util.Collections;
 import javax.servlet.http.HttpServletResponse;
@@ -48,7 +50,28 @@ public class GeoWebCacheDispatcherTest {
     public MockExtensionRule extensions = new MockExtensionRule();
 
     @Test
-    public void testHomePage() throws Exception {
+    public void testHomePageUser() throws Exception {
+        String html = doTestHomePage(false);
+        assertThat(html, containsString("GWC Home"));
+        assertThat(html, containsString("Welcome to GeoWebCache"));
+        assertThat(html, not(containsString(" version ")));
+        assertThat(html, not(containsString(" build ")));
+        assertThat(html, not(containsString("Runtime Statistics")));
+        assertThat(html, not(containsString("Storage Locations")));
+    }
+
+    @Test
+    public void testHomePageAdmin() throws Exception {
+        String html = doTestHomePage(true);
+        assertThat(html, containsString("GWC Home"));
+        assertThat(html, containsString("Welcome to GeoWebCache"));
+        assertThat(html, containsString(" version "));
+        assertThat(html, containsString(" build "));
+        assertThat(html, containsString("Runtime Statistics"));
+        assertThat(html, containsString("Storage Locations"));
+    }
+
+    private String doTestHomePage(boolean isAdmin) throws Exception {
         IMocksControl stubs = EasyMock.createControl(MockType.NICE);
         TileLayerDispatcher tld = stubs.createMock("tld", TileLayerDispatcher.class);
         GridSetBroker gsb = stubs.createMock("gsb", GridSetBroker.class);
@@ -59,6 +82,7 @@ public class GeoWebCacheDispatcherTest {
         DefaultStorageFinder dfs = stubs.createMock("dfs", DefaultStorageFinder.class);
         SecurityDispatcher secDisp = stubs.createMock("secDisp", SecurityDispatcher.class);
 
+        EasyMock.expect(secDisp.isAdmin()).andReturn(isAdmin);
         EasyMock.expect(config.isRuntimeStatsEnabled()).andStubReturn(false);
 
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/geowebcache/home");
@@ -79,6 +103,7 @@ public class GeoWebCacheDispatcherTest {
         assertThat(response, hasStatus(HttpStatus.OK));
 
         stubs.verify();
+        return response.getContentAsString();
     }
 
     @Test
