@@ -1,16 +1,20 @@
 GeoWebCache 1.26.2 (2025-01-26)
 -------------------------------
 
-<Release Description>
-
-Improvements:
-+++++++++++++
-- <New feature>
+Stable release of 1.26.x series.
 
 Fixes:
 ++++++
-- <Bug fix>
+- [GWC-1344] Hide version info on embedded GWC home page
 
+Updates:
+++++++++
+- Update to GeoTools 32.2
+- Upgrading ImageIO-Ext to 1.4.14
+
+Internals:
+++++++++++
+- Upgrading spotless and switching to Palantir
 
 GeoWebCache 1.26.1 (2024-11-18)
 -------------------------------
@@ -25,8 +29,6 @@ Fixes:
 
 GeoWebCache 1.26.0 (2024-09-18)
 -------------------------------
-
-<Release Description>
 
 Improvements:
 +++++++++++++
