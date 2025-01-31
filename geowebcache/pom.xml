@@ -53,7 +53,7 @@
   <properties>
     <gt.version>31-SNAPSHOT</gt.version>
     <jts.version>1.19.0</jts.version>
-    <jaiext.version>1.1.25</jaiext.version>
+    <jaiext.version>1.1.28</jaiext.version>
     <spring.version>5.3.32</spring.version>
     <spring.security.version>5.7.11</spring.security.version>
     <xstream.version>1.4.20</xstream.version>
