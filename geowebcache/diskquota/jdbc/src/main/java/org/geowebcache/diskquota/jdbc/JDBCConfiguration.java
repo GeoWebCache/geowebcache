@@ -397,21 +397,18 @@ public class JDBCConfiguration implements Serializable {
 
         final GeoWebCacheEnvironment gwcEnvironment = GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
 
-        if (allowEnvParametrization && gwcEnvironment != null && GeoWebCacheEnvironment.ALLOW_ENV_PARAMETRIZATION) {
-            conf.setDialect((String) gwcEnvironment.resolveValue(getDialect()));
-            conf.setJNDISource((String) gwcEnvironment.resolveValue(getJNDISource()));
+        if (allowEnvParametrization && gwcEnvironment != null && gwcEnvironment.isAllowEnvParametrization()) {
+            conf.setDialect(gwcEnvironment.resolveValue(getDialect()));
+            conf.setJNDISource(gwcEnvironment.resolveValue(getJNDISource()));
             ConnectionPoolConfiguration connectionPoolConfig = getConnectionPool();
             if (connectionPoolConfig != null) {
                 ConnectionPoolConfiguration expConnectionPoolConfig = SerializationUtils.clone(connectionPoolConfig);
-                expConnectionPoolConfig.setDriver(
-                        (String) gwcEnvironment.resolveValue(connectionPoolConfig.getDriver()));
-                expConnectionPoolConfig.setUrl((String) gwcEnvironment.resolveValue(connectionPoolConfig.getUrl()));
-                expConnectionPoolConfig.setUsername(
-                        (String) gwcEnvironment.resolveValue(connectionPoolConfig.getUsername()));
-                expConnectionPoolConfig.setPassword(
-                        (String) gwcEnvironment.resolveValue(connectionPoolConfig.getPassword()));
+                expConnectionPoolConfig.setDriver(gwcEnvironment.resolveValue(connectionPoolConfig.getDriver()));
+                expConnectionPoolConfig.setUrl(gwcEnvironment.resolveValue(connectionPoolConfig.getUrl()));
+                expConnectionPoolConfig.setUsername(gwcEnvironment.resolveValue(connectionPoolConfig.getUsername()));
+                expConnectionPoolConfig.setPassword(gwcEnvironment.resolveValue(connectionPoolConfig.getPassword()));
                 expConnectionPoolConfig.setValidationQuery(
-                        (String) gwcEnvironment.resolveValue(connectionPoolConfig.getValidationQuery()));
+                        gwcEnvironment.resolveValue(connectionPoolConfig.getValidationQuery()));
 
                 conf.setConnectionPool(expConnectionPoolConfig);
             }
