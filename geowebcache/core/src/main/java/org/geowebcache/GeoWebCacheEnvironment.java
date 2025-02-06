@@ -23,7 +23,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.PlaceholderConfigurerSupport;
 import org.springframework.core.Constants;
 import org.springframework.util.PropertyPlaceholderHelper;
-import org.springframework.util.PropertyPlaceholderHelper.PlaceholderResolver;
 
 /**
  * Utility class uses to process GeoWebCache configuration workflow through external environment variables.
@@ -46,7 +45,7 @@ import org.springframework.util.PropertyPlaceholderHelper.PlaceholderResolver;
 public class GeoWebCacheEnvironment {
 
     /** logger */
-    public static Logger LOGGER = Logging.getLogger(GeoWebCacheEnvironment.class.getName());
+    public static final Logger LOGGER = Logging.getLogger(GeoWebCacheEnvironment.class.getName());
 
     private static final Constants constants = new Constants(PlaceholderConfigurerSupport.class);
 
@@ -55,9 +54,13 @@ public class GeoWebCacheEnvironment {
      * placeholders translation.
      *
      * <p>Default to FALSE
+     *
+     * @deprecated a static final variable does prevents change during runtime and hinders testing. Use
+     *     {@link #isAllowEnvParametrization()} instead.
      */
+    @Deprecated(forRemoval = true)
     public static final boolean ALLOW_ENV_PARAMETRIZATION =
-            Boolean.valueOf(GeoWebCacheExtensions.getProperty("ALLOW_ENV_PARAMETRIZATION"));
+            Boolean.parseBoolean(GeoWebCacheExtensions.getProperty("ALLOW_ENV_PARAMETRIZATION"));
 
     private static final String nullValue = "null";
 
@@ -67,9 +70,16 @@ public class GeoWebCacheEnvironment {
             constants.asString("DEFAULT_VALUE_SEPARATOR"),
             true);
 
-    private final PlaceholderResolver resolver = placeholderName -> resolvePlaceholder(placeholderName);
-
     private Properties props;
+
+    /**
+     * Determines if the {@code ALLOW_ENV_PARAMETRIZATION} environment variable is set to {@code true} and hence
+     * variable variable substitution of configuration parameters using <code>${}</code> place holders can be performed
+     * through {@link #resolveValue(Object)}.
+     */
+    public boolean isAllowEnvParametrization() {
+        return Boolean.parseBoolean(GeoWebCacheExtensions.getProperty("ALLOW_ENV_PARAMETRIZATION"));
+    }
 
     /**
      * Internal "props" getter method.
@@ -107,7 +117,7 @@ public class GeoWebCacheEnvironment {
                 value = System.getenv(key);
             }
             return value;
-        } catch (Throwable ex) {
+        } catch (RuntimeException ex) {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Could not access system property '" + key + "': " + ex);
             }
@@ -116,7 +126,7 @@ public class GeoWebCacheEnvironment {
     }
 
     protected String resolveStringValue(String strVal) throws BeansException {
-        String resolved = this.helper.replacePlaceholders(strVal, this.resolver);
+        String resolved = this.helper.replacePlaceholders(strVal, this::resolvePlaceholder);
 
         return (resolved.equals(nullValue) ? null : resolved);
     }
@@ -127,19 +137,17 @@ public class GeoWebCacheEnvironment {
      * <p>The method first looks for System variables which take precedence on local ones, then into internal props
      * injected through the applicationContext.
      */
-    public Object resolveValue(Object value) {
-        if (value != null) {
-            if (value instanceof String) {
-                return resolveStringValue((String) value);
-            }
+    @SuppressWarnings("unchecked")
+    public <T> T resolveValue(T value) {
+        if (value instanceof String) {
+            return (T) resolveStringValue((String) value);
         }
 
         return value;
     }
 
     private String resolveValueIfEnabled(String value) {
-        if (ALLOW_ENV_PARAMETRIZATION) return (String) resolveValue(value);
-        else return value;
+        return isAllowEnvParametrization() ? resolveValue(value) : value;
     }
 
     private boolean validateBoolean(String value) {
