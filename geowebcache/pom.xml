@@ -63,7 +63,7 @@
     <commons-codec.version>1.17.1</commons-codec.version>
     <commons-text.version>1.12.0</commons-text.version>
     <commons-fileupload.version>1.5</commons-fileupload.version>
-    <guava.version>33.2.1-jre</guava.version>
+    <guava.version>33.4.0-jre</guava.version>
     <hamcrest.version>3.0</hamcrest.version>
     <jsr305.version>3.0.1</jsr305.version>
     <log4j.version>2.24.3</log4j.version>
