@@ -58,7 +58,7 @@ public class GeoWebCacheEnvironmentTest {
         Assert.assertEquals(1, extensions.size());
         Assert.assertTrue(extensions.contains(genv));
 
-        Assert.assertTrue(GeoWebCacheEnvironment.ALLOW_ENV_PARAMETRIZATION);
+        Assert.assertTrue(genv.isAllowEnvParametrization());
     }
 
     @Test

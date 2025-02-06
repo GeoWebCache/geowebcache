@@ -266,8 +266,8 @@ public class ConfigLoader {
 
         final GeoWebCacheEnvironment gwcEnvironment = GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
 
-        if (gwcEnvironment != null && GeoWebCacheEnvironment.ALLOW_ENV_PARAMETRIZATION) {
-            fromXML.setQuotaStore((String) gwcEnvironment.resolveValue(fromXML.getQuotaStore()));
+        if (gwcEnvironment != null && gwcEnvironment.isAllowEnvParametrization()) {
+            fromXML.setQuotaStore(gwcEnvironment.resolveValue(fromXML.getQuotaStore()));
         }
 
         return fromXML;

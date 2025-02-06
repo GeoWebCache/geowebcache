@@ -53,6 +53,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 import org.geotools.util.logging.Logging;
+import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.ContextualConfigurationProvider.Context;
@@ -282,6 +283,8 @@ public class XMLConfiguration
                 sourceHelper = new WMSHttpHelper(null, null, proxyUrl);
                 log.fine("Not using HTTP credentials for " + wl.getName());
             }
+            GeoWebCacheEnvironment gwcEnv = GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
+            sourceHelper.setGeoWebCacheEnvironment(gwcEnv);
 
             wl.setSourceHelper(sourceHelper);
             wl.setLockProvider(getGwcConfig().getLockProvider());
