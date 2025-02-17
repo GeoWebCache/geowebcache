@@ -44,6 +44,8 @@ public class ApplicationMimeTest {
             result = MimeType.createFromExtension(mimeType.getFileExtension());
             // Ensure it is the same instance
             assertEquals(mimeType, result);
+            // check inline or not
+            assertEquals(result.getMimeType().contains("json"), result.isInlinePreferred());
         }
     }
 
