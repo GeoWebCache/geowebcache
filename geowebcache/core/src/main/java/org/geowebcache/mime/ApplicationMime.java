@@ -93,4 +93,9 @@ public class ApplicationMime extends MimeType {
     protected boolean isBinary() {
         return BINARY_FORMATS.contains(this.getMimeType());
     }
+
+    @Override
+    public boolean isInlinePreferred() {
+        return getMimeType().contains("json");
+    }
 }
