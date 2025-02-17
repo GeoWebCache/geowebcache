@@ -3,6 +3,7 @@ package org.geowebcache.mime;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
@@ -134,5 +135,14 @@ public class XMLMimeTest {
     @Test(expected = MimeException.class)
     public void testUnknownFormat() throws MimeException {
         MimeType.createFromFormat("xxx/xxx");
+    }
+
+    @Test
+    public void testIsInlinePreferred() {
+        assertTrue(XMLMime.ogcxml.isInlinePreferred());
+        assertTrue(XMLMime.kml.isInlinePreferred());
+        assertTrue(XMLMime.kmz.isInlinePreferred());
+        assertTrue(XMLMime.gml.isInlinePreferred());
+        assertTrue(XMLMime.gml3.isInlinePreferred());
     }
 }
