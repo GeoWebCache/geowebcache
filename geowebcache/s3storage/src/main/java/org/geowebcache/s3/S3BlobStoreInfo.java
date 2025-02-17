@@ -365,7 +365,7 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
         if (value == null) {
             return null;
         }
-        return gwcEnvironment.resolveValue(value).toString();
+        return gwcEnvironment.resolveValue(value);
     }
 
     private Integer toInteger(String value) {

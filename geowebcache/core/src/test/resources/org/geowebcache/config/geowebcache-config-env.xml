@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns="http://geowebcache.org/schema/1.25.0"
+                  xsi:schemaLocation="http://geowebcache.org/schema/1.25.0 https://raw.githubusercontent.com/GeoWebCache/geowebcache/refs/heads/main/geowebcache/core/src/main/resources/org/geowebcache/config/geowebcache_1250.xsd">
+<!-- 
+Sample configuration with environmant variable placeholders
+for the global and per-layer http username and password 
+ -->
+  <version>1.8.0</version>
+  <httpUsername>${DEFAULT_USER}</httpUsername>
+  <httpPassword>${DEFAULT_SECRET}</httpPassword>
+
+  <layers>
+    <wmsLayer>
+      <name>default_credentials</name>
+      <metaInformation>
+        <title>Layer with default http user and pwd</title>
+      </metaInformation>
+      <wmsUrl>
+        <string>https://example.com/geoserver/wms</string>
+      </wmsUrl>
+    </wmsLayer>
+
+    <wmsLayer>
+      <name>custom_credentials</name>
+      <metaInformation>
+        <title>Layer with non-parameterized custom http user and pwd</title>
+      </metaInformation>
+      <wmsUrl>
+        <string>https://example.com/geoserver/wms</string>
+      </wmsUrl>
+      <httpUsername>testuser</httpUsername>
+      <httpPassword>testpass</httpPassword>
+    </wmsLayer>
+
+    <wmsLayer>
+      <name>env_var_credentials</name>
+      <metaInformation>
+        <title>Layer with parameterized custom http user and pwd</title>
+      </metaInformation>
+      <wmsUrl>
+        <string>https://example.com/geoserver/wms</string>
+      </wmsUrl>
+	  <httpUsername>${CUSTOM_USER}</httpUsername>
+	  <httpPassword>${CUSTOM_SECRET}</httpPassword>
+    </wmsLayer>
+    
+    <wmsLayer>
+      <name>custom_credentials_with_env_prefix</name>
+      <metaInformation>
+        <title>Layer with non-parameterized http user and pwd that contain the ${ placeholder prefix</title>
+      </metaInformation>
+      <wmsUrl>
+        <string>https://example.com/geoserver/wms</string>
+      </wmsUrl>
+      <httpUsername>${user</httpUsername>
+      <httpPassword>pass${word</httpPassword>
+    </wmsLayer>
+  </layers>
+
+</gwcConfiguration>

@@ -13,6 +13,7 @@
  */
 package org.geowebcache.layer.wms;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -29,6 +30,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -36,7 +38,9 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
 import org.geotools.util.logging.Logging;
+import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.io.Resource;
 import org.geowebcache.layer.TileResponseReceiver;
 import org.geowebcache.mime.ErrorMime;
@@ -48,17 +52,39 @@ import org.geowebcache.util.ServletUtils;
 import org.geowebcache.util.URLs;
 import org.springframework.util.Assert;
 
-/** This class is a wrapper for HTTP interaction with WMS backend */
+/**
+ * Helper class for HTTP interactions of {@link WMSLayer} with a WMS backend.
+ *
+ * <p>HTTP Basic Auth username and password supplied to the constructor support environment parametrization.
+ *
+ * @see GeoWebCacheEnvironment#isAllowEnvParametrization()
+ * @see GeoWebCacheEnvironment#resolveValue(Object)
+ */
 public class WMSHttpHelper extends WMSSourceHelper {
     private static final Logger log = Logging.getLogger(WMSHttpHelper.class.getName());
 
+    /**
+     * Used by {@link #getResolvedHttpUsername()} and {@link #getResolvedHttpPassword()} to
+     * {@link GeoWebCacheEnvironment#resolveValue resolve} the actual values against environment variables when
+     * {@link GeoWebCacheEnvironment#isAllowEnvParametrization() ALLOW_ENV_PARAMETRIZATION} is enabled.
+     */
+    protected GeoWebCacheEnvironment gwcEnv;
+
     private final URL proxyUrl;
 
+    /**
+     * HTTP Basic Auth username, might be de-referenced using environment variable substitution. Always access it
+     * through {@link #getResolvedHttpUsername()}
+     */
     private final String httpUsername;
 
+    /**
+     * HTTP Basic Auth password, might be de-referenced using environment variable substitution. Always access it
+     * through {@link #getResolvedHttpUsername()}
+     */
     private final String httpPassword;
 
-    protected volatile HttpClient client;
+    protected HttpClient client;
 
     public WMSHttpHelper() {
         this(null, null, null);
@@ -71,21 +97,73 @@ public class WMSHttpHelper extends WMSSourceHelper {
         this.proxyUrl = proxyUrl;
     }
 
-    HttpClient getHttpClient() {
-        if (client == null) {
-            synchronized (this) {
-                if (client != null) {
-                    return client;
-                }
+    /**
+     * Used by {@link #executeRequest}
+     *
+     * @return the actual http username to use when executing requests
+     */
+    public String getResolvedHttpUsername() {
+        return resolvePlaceHolders(httpUsername);
+    }
 
-                HttpClientBuilder builder = new HttpClientBuilder(
-                        null, getBackendTimeout(), httpUsername, httpPassword, proxyUrl, getConcurrency());
+    /**
+     * Used by {@link #executeRequest}
+     *
+     * @return the actual http password to use when executing requests
+     */
+    public String getResolvedHttpPassword() {
+        return resolvePlaceHolders(httpPassword);
+    }
 
-                client = builder.buildClient();
-            }
+    /**
+     * Assigns the environment variable {@link GeoWebCacheEnvironment#resolveValue resolver} to perform variable
+     * substitution against the configured http username and password during {@link #executeRequest}
+     *
+     * <p>When unset, a bean of this type will be looked up through {@link GeoWebCacheExtensions#bean(Class)}
+     */
+    public void setGeoWebCacheEnvironment(GeoWebCacheEnvironment gwcEnv) {
+        this.gwcEnv = gwcEnv;
+    }
+
+    private String resolvePlaceHolders(String value) {
+        GeoWebCacheEnvironment env = getEnvironment();
+        return env != null && env.isAllowEnvParametrization() ? env.resolveValue(value) : value;
+    }
+
+    private GeoWebCacheEnvironment getEnvironment() {
+        GeoWebCacheEnvironment env = this.gwcEnv;
+        if (env == null) {
+            env = GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
+            this.gwcEnv = env;
         }
+        return env;
+    }
 
+    /**
+     * Note: synchronizing the entire method avoids double-checked locking altogether. Modern JVMs optimize this and
+     * reduce the overhead of synchronization. Otherwise PMD complains with a `Double checked locking is not thread safe
+     * in Java.` error.
+     */
+    synchronized HttpClient getHttpClient() {
+        if (client == null) {
+            int backendTimeout = getBackendTimeout();
+            String user = getResolvedHttpUsername();
+            String password = getResolvedHttpPassword();
+            URL proxy = proxyUrl;
+            int concurrency = getConcurrency();
+            client = buildHttpClient(backendTimeout, user, password, proxy, concurrency);
+        }
         return client;
+    }
+
+    @VisibleForTesting
+    HttpClient buildHttpClient(int backendTimeout, String username, String password, URL proxy, int concurrency) {
+
+        URL serverUrl = null;
+        HttpClientBuilder builder =
+                new HttpClientBuilder(serverUrl, backendTimeout, username, password, proxy, concurrency);
+
+        return builder.buildClient();
     }
 
     /** Loops over the different backends, tries the request */
@@ -319,7 +397,13 @@ public class WMSHttpHelper extends WMSSourceHelper {
         if (log.isLoggable(Level.FINER)) {
             log.finer(method.toString());
         }
-        return getHttpClient().execute(method);
+        HttpClient httpClient = getHttpClient();
+        return execute(httpClient, method);
+    }
+
+    @VisibleForTesting
+    HttpResponse execute(HttpClient httpClient, HttpRequestBase method) throws IOException, ClientProtocolException {
+        return httpClient.execute(method);
     }
 
     private String processRequestParameters(Map<String, String> parameters) throws UnsupportedEncodingException {

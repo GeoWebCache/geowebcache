@@ -205,6 +205,12 @@
       <artifactId>awaitility</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <!-- used for tests that require environment variables -->
+      <groupId>com.github.stefanbirkner</groupId>
+      <artifactId>system-rules</artifactId>
+      <scope>test</scope>
+    </dependency>
 
     <!-- Thijs Brentjens: for security fixes, OWASP library-->
     <dependency>

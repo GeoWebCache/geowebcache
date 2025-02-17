@@ -60,12 +60,12 @@ public class SwiftBlobStoreConfigProvider implements XMLConfigurationProvider {
         if (gwcEnvironment == null) {
             gwcEnvironment = GeoWebCacheExtensions.bean(GeoWebCacheEnvironment.class);
         }
-        if (gwcEnvironment != null && str != null && GeoWebCacheEnvironment.ALLOW_ENV_PARAMETRIZATION) {
-            Object result = gwcEnvironment.resolveValue(str);
+        if (gwcEnvironment != null && str != null && gwcEnvironment.isAllowEnvParametrization()) {
+            String result = gwcEnvironment.resolveValue(str);
             if (result == null) {
                 return null;
             }
-            return result.toString();
+            return result;
         }
         return str;
     }
