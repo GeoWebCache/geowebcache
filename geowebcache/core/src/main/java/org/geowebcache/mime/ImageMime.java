@@ -113,7 +113,13 @@ public class ImageMime extends MimeType {
     public static final ImageMime png_24 =
             new ImageMime("image/png; mode=24bit", "png_24", "png", "image/png;%20mode=24bit", true, true, true);
 
-    public static final ImageMime dds = new ImageMime("image/dds", "dds", "dds", "image/dds", false, false, false);
+    public static final ImageMime dds = new ImageMime("image/dds", "dds", "dds", "image/dds", false, false, false) {
+
+        @Override
+        public boolean isInlinePreferred() {
+            return false;
+        }
+    };
 
     public static final ImageMime jpegPng =
             new JpegPngMime("image/vnd.jpeg-png", "jpeg-png", "jpeg-png", "image/vnd.jpeg-png", jpeg, png);

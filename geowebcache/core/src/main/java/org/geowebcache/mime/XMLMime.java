@@ -63,4 +63,9 @@ public class XMLMime extends MimeType {
 
         return null;
     }
+
+    @Override
+    public boolean isInlinePreferred() {
+        return true;
+    }
 }
