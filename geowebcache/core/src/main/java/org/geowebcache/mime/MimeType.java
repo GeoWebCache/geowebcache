@@ -196,4 +196,15 @@ public class MimeType {
     public String toString() {
         return mimeType;
     }
+
+    /**
+     * Returns true if the format is preferred for inline display in a browser. By default, it will return true if the
+     * mime type starts with "text/*" or "image/*".
+     *
+     * @return
+     */
+    public boolean isInlinePreferred() {
+        String mime = getMimeType();
+        return mime.startsWith("text/") || mime.startsWith("image/");
+    }
 }

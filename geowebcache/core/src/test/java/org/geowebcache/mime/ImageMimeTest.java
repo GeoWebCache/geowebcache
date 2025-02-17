@@ -17,6 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -128,5 +129,18 @@ public class ImageMimeTest {
                 "Writer for this image should not be the native version.",
                 writer.getClass().getName(),
                 ImageMime.NATIVE_PNG_WRITER_CLASS_NAME);
+    }
+
+    @Test
+    public void testInline() throws Exception {
+        // actual images
+        assertTrue(ImageMime.jpeg.isInlinePreferred());
+        assertTrue(ImageMime.png.isInlinePreferred());
+        assertTrue(ImageMime.png24.isInlinePreferred());
+        assertTrue(ImageMime.png8.isInlinePreferred());
+        assertTrue(ImageMime.jpegPng.isInlinePreferred());
+        assertTrue(ImageMime.gif.isInlinePreferred());
+        // this is a binary dump
+        assertFalse(ImageMime.dds.isInlinePreferred());
     }
 }
