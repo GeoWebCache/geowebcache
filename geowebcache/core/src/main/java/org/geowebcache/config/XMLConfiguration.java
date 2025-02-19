@@ -788,14 +788,15 @@ public class XMLConfiguration
 
     @Override
     public void afterPropertiesSet() throws GeoWebCacheException {
-
+        if (!resourceProvider.hasInput()) {
+            throw new ConfigurationException(
+                    String.format("The configuration resource provider is unable to provide a configuration file"));
+        }
         if (gridSetBroker == null) {
             throw new IllegalStateException("GridSetBroker has not been set");
         }
 
-        if (resourceProvider.hasInput()) {
-            this.setGwcConfig(loadConfiguration());
-        }
+        this.setGwcConfig(loadConfiguration());
 
         log.config("Initializing GridSets from " + getIdentifier());
 
