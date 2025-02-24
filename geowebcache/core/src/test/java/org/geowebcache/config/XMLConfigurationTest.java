@@ -18,6 +18,7 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertArrayEquals;
@@ -27,6 +28,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -34,6 +36,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.geotools.util.logging.Logging;
+import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.MockWepAppContextRule;
 import org.geowebcache.config.legends.LegendRawInfo;
@@ -64,6 +68,7 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.util.TestUtils;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -556,5 +561,35 @@ public class XMLConfigurationTest {
         config.getLayerCount();
         // CITE strict compliance should be activated for WMTS
         assertThat(config.isWmtsCiteCompliant(), is(true));
+    }
+
+    @Test
+    public void loadFromReadOnlyDirectory() throws GeoWebCacheException {
+        Assume.assumeTrue(
+                "Ignore if setWritable(false) does not succeed, may happen on Windows", configDir.setWritable(false));
+        assertThat(configFile.exists(), is(true));
+        try {
+            config = new XMLConfiguration(null, configDir.getAbsolutePath());
+            config.setGridSetBroker(gridSetBroker);
+            config.afterPropertiesSet();
+            assertThat(config.getLayerCount(), is(greaterThan(0)));
+        } finally {
+            configDir.setWritable(true);
+        }
+    }
+
+    @Test
+    public void loadFromEmptyReadOnlyDirectoryFails() throws GeoWebCacheException, IOException {
+        File roEmptyDir = this.temp.newFolder();
+        Assume.assumeTrue(
+                "Ignore if setWritable(false) does not succeed, may happen on Windows", roEmptyDir.setWritable(false));
+        try {
+            config = new XMLConfiguration(null, roEmptyDir.getAbsolutePath());
+            config.setGridSetBroker(gridSetBroker);
+
+            assertThrows(ConfigurationException.class, () -> config.afterPropertiesSet());
+        } finally {
+            roEmptyDir.setWritable(true);
+        }
     }
 }
