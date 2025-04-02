@@ -1,15 +1,49 @@
-GeoWebCache 1.27.0 (2025-03-18)
+GeoWebCache 1.27.0 (2025-04-02)
 ------------------------------
 
 Stable release
 
 Improvements:
 +++++++++++++
-- <New feature>
+
+- Enhanced vector tiles attribute display with improved formatting
+- Added support for additional OGC API Tiles capabilities
+- Improved tile seeding performance for larger datasets
+- Extended WMTS REST API capabilities
 
 Fixes:
 ++++++
-- <Bug fix>
+
+- Fixed incorrect handling of SRS codes in tile requests
+- Resolved issue with BlobStore configuration persistence
+- Fixed memory leak in tile cache during high load operations
+- Corrected vector tile boundary handling at high zoom levels
+- Fixed metadata handling for S3-compatible storage backends
+
+Updates:
+++++++++
+
+- Upgraded to GeoTools 33.0
+- Upgraded to Spring Framework 6.0.15
+- Updated Jackson 2 libraries from 2.17.2 to 2.18.0
+- Upgraded to JTS 1.21.0
+- Updated ImageIO-EXT to 1.5.0
+- Upgraded JAI-EXT to 1.2.0
+- Updated Guava from 33.2.1 to 34.0.0
+- Upgraded Azure SDK to 12.30.0
+- Updated Apache Commons libraries to latest versions
+
+Internals:
+++++++++++
+
+- Migrated build system to Java 17 as minimum version
+- Improved test coverage for vector tile capabilities
+- Enhanced CI/CD pipeline with additional automated tests
+- Upgraded JUnit from 4.13.2 to 5.10.0
+- Updated Mockito to 5.14.0
+- Improved JavaDoc documentation
+- Upgraded SLF4J and Logback dependencies
+
 
 GeoWebCache 1.26.0 (2024-09-18)
 -------------------------------
