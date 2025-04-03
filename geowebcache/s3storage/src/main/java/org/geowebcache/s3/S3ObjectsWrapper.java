@@ -1,13 +1,11 @@
 package org.geowebcache.s3;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-
 import java.util.Iterator;
-import java.util.function.Consumer;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class S3ObjectsWrapper {
     private S3Objects s3Objects;
@@ -24,5 +22,4 @@ public class S3ObjectsWrapper {
     public Iterator<S3ObjectSummary> iterator() {
         return s3Objects.iterator();
     }
-
 }

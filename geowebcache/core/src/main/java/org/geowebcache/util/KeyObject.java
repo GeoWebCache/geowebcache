@@ -1,11 +1,10 @@
 package org.geowebcache.util;
 
-import com.google.common.base.Preconditions;
+import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.base.Preconditions;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class KeyObject {
     public static final Pattern keyRegex = Pattern.compile("(.*)/(.*)/(.*)/(.*)/(.*)/(\\d+)/(\\d+)/(\\d+)\\..*");
@@ -29,7 +28,16 @@ public class KeyObject {
     final long z;
     final Long version;
 
-    private KeyObject(String prefix, String layerId, String gridSetId, String format, String parametersSha, long x, long y, long z, Long version) {
+    private KeyObject(
+            String prefix,
+            String layerId,
+            String gridSetId,
+            String format,
+            String parametersSha,
+            long x,
+            long y,
+            long z,
+            Long version) {
         this.prefix = prefix;
         this.layerId = layerId;
         this.gridSetId = gridSetId;
@@ -42,13 +50,14 @@ public class KeyObject {
     }
 
     public long[] XYZ() {
-        return new long[]{ x, y, z };
+        return new long[] {x, y, z};
     }
 
     // Key format, comprised of
     // {@code <prefix>/<layer name>/<gridset id>/<format id>/<parametershash>/<z>/<x>/<y>.<extension>}
     public String objectPath() {
-        return String.format("%s/%s/%s/%s/%s/%d/%d/%d.%s", prefix, layerId, gridSetId, format, parametersSha,z,x,y,format);
+        return String.format(
+                "%s/%s/%s/%s/%s/%d/%d/%d.%s", prefix, layerId, gridSetId, format, parametersSha, z, x, y, format);
     }
 
     public static KeyObject fromObjectPath(String objectKey) {
@@ -64,9 +73,9 @@ public class KeyObject {
                 Long.parseLong(matcher.group(X_GROUP_POS)),
                 Long.parseLong(matcher.group(Y_GROUP_POS)),
                 Long.parseLong(matcher.group(Z_GROUP_POS)),
-                null
-        );
+                null);
     }
+
     public static KeyObject fromVersionedObjectPath(String objectKey, Long version) {
         Matcher matcher = keyRegex.matcher(objectKey);
         Preconditions.checkArgument(matcher.matches());
@@ -80,8 +89,7 @@ public class KeyObject {
                 Long.parseLong(matcher.group(X_GROUP_POS)),
                 Long.parseLong(matcher.group(Y_GROUP_POS)),
                 Long.parseLong(matcher.group(Z_GROUP_POS)),
-                version
-        );
+                version);
     }
 
     public static Builder newBuilder() {
@@ -154,17 +162,7 @@ public class KeyObject {
             checkNotNull(y, "Y cannot be null");
             checkNotNull(z, "Z cannot be null");
 
-            return new KeyObject(
-                    prefix,
-                    layerId,
-                    gridSetId,
-                    format,
-                    parametersSha,
-                    x,
-                    y,
-                    z,
-                    version
-            );
+            return new KeyObject(prefix, layerId, gridSetId, format, parametersSha, x, y, z, version);
         }
 
         public Builder withoutVersion() {
@@ -173,4 +171,3 @@ public class KeyObject {
         }
     }
 }
-

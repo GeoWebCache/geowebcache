@@ -1,21 +1,20 @@
 package org.geowebcache.s3;
 
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 import org.geowebcache.s3.S3ObjectPathsForPrefixSupplier.Builder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class S3ObjectPathsForPrefixSupplierTest {
@@ -27,13 +26,11 @@ public class S3ObjectPathsForPrefixSupplierTest {
     private static final S3ObjectSummary SUMMARY_2 = new S3ObjectSummary();
     private static final S3ObjectSummary SUMMARY_3 = new S3ObjectSummary();
 
-
     static {
         SUMMARY_1.setKey("key");
         S_3_OBJECT_SUMMARY_LIST.add(SUMMARY_1);
         S_3_OBJECT_SUMMARY_LIST.add(SUMMARY_2);
         S_3_OBJECT_SUMMARY_LIST.add(SUMMARY_3);
-
     }
 
     @Mock
@@ -66,28 +63,25 @@ public class S3ObjectPathsForPrefixSupplierTest {
     public void testGet_CanCountAllElements() {
         var supplier = builder.build();
         var stream = Stream.generate(supplier);
-        var count = stream
-                .takeWhile(Objects::nonNull)
-                .count();
+        var count = stream.takeWhile(Objects::nonNull).count();
         assertEquals("Expected count", S_3_OBJECT_SUMMARY_LIST.size(), count);
     }
 
     @Test
     public void testPrefix_CannotBuildIfNullPrefix() {
         builder.withPrefix(null);
-        assertThrows(NullPointerException.class, ()-> builder.build());
+        assertThrows(NullPointerException.class, () -> builder.build());
     }
 
     @Test
     public void testPrefix_CannotBuildIfNullBucket() {
         builder.withBucket(null);
-        assertThrows(NullPointerException.class, ()-> builder.build());
+        assertThrows(NullPointerException.class, () -> builder.build());
     }
 
     @Test
     public void testPrefix_CannotBuildIfNullConn() {
         builder.withWrapper(null);
-        assertThrows(NullPointerException.class, ()-> builder.build());
+        assertThrows(NullPointerException.class, () -> builder.build());
     }
-
 }

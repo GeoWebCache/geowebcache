@@ -1,9 +1,8 @@
 package org.geowebcache.s3;
 
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import org.geowebcache.util.KeyObject;
-
 import java.util.function.Function;
+import org.geowebcache.util.KeyObject;
 
 public class MapS3ObjectSummaryToKeyObject implements Function<S3ObjectSummary, KeyObject> {
     @Override

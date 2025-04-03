@@ -35,7 +35,6 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -54,7 +53,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.ParametersUtils;
@@ -139,9 +137,7 @@ public class S3BlobStore implements BlobStore {
         return client;
     }
 
-    /**
-     * Implemented by lambdas testing an {@link AmazonS3Client}
-     */
+    /** Implemented by lambdas testing an {@link AmazonS3Client} */
     interface S3ClientChecker {
         void validate(AmazonS3Client client, String bucketName) throws Exception;
     }
@@ -317,7 +313,7 @@ public class S3BlobStore implements BlobStore {
         final Iterator<long[]> tileLocations = new AbstractIterator<>() {
 
             // TileRange iterator with 1x1 meta tiling factor
-            private TileRangeIterator trIter = new TileRangeIterator(tileRange, new int[]{1, 1});
+            private TileRangeIterator trIter = new TileRangeIterator(tileRange, new int[] {1, 1});
 
             @Override
             protected long[] computeNext() {
@@ -376,13 +372,8 @@ public class S3BlobStore implements BlobStore {
                 .withLayerName(layerName)
                 .build();
 
-        var lockingDecorator =
-                new S3Ops.LockingDecorator(
-                        new NotifyListenDecorator(
-                                new BulkDeleteTask.LoggingCallback(),
-                                listeners,
-                                deleteLayer)
-                );
+        var lockingDecorator = new S3Ops.LockingDecorator(
+                new NotifyListenDecorator(new BulkDeleteTask.LoggingCallback(), listeners, deleteLayer));
 
         boolean layerExists;
         try {
@@ -407,13 +398,8 @@ public class S3BlobStore implements BlobStore {
                 .withLayerName(layerName)
                 .build();
 
-        var lockingDecorator =
-                new S3Ops.LockingDecorator(
-                        new NotifyListenDecorator(
-                                new BulkDeleteTask.LoggingCallback(),
-                                listeners,
-                                deleteTileGridSet)
-                );
+        var lockingDecorator = new S3Ops.LockingDecorator(
+                new NotifyListenDecorator(new BulkDeleteTask.LoggingCallback(), listeners, deleteTileGridSet));
 
         boolean prefixExists;
         try {
@@ -515,8 +501,8 @@ public class S3BlobStore implements BlobStore {
         var layerId = keyBuilder.layerId(layerName);
         var gridSetIds = keyBuilder.layerGridsets(layerName);
 
-        var deleteParameterIdRanges = gridSetIds.stream().
-                map(gridSetId -> DeleteTileParameterId.newBuilder()
+        var deleteParameterIdRanges = gridSetIds.stream()
+                .map(gridSetId -> DeleteTileParameterId.newBuilder()
                         .withBucket(bucketName)
                         .withLayer(layerId)
                         .withLayerName(layerName)
@@ -527,13 +513,11 @@ public class S3BlobStore implements BlobStore {
 
         boolean prefixExists = false;
         for (DeleteTileParameterId deleteTileRange : deleteParameterIdRanges) {
-            var lockingCallback = new S3Ops.LockingDecorator(
-                    new NotifyListenDecorator(
-                            new BulkDeleteTask.LoggingCallback(),
-                            listeners,
-                            deleteTileRange
-                    )
-            ); // TODO Hack need to wrap this in a single DeleteTileRange, this will call the notifcations multiple times
+            var lockingCallback = new S3Ops.LockingDecorator(new NotifyListenDecorator(
+                    new BulkDeleteTask.LoggingCallback(),
+                    listeners,
+                    deleteTileRange)); // TODO Hack need to wrap this in a single DeleteTileRange, this will call the
+            // notifcations multiple times
 
             try {
                 prefixExists = s3Ops.scheduleAsyncDelete(deleteTileRange, lockingCallback) || prefixExists;
@@ -569,7 +553,8 @@ public class S3BlobStore implements BlobStore {
         private final BlobStoreListenerList listeners;
         private final DeleteTileRange deleteTileRange;
 
-        public NotifyListenDecorator(BulkDeleteTask.Callback delegate, BlobStoreListenerList listeners, DeleteTileRange deleteTileRange) {
+        public NotifyListenDecorator(
+                BulkDeleteTask.Callback delegate, BlobStoreListenerList listeners, DeleteTileRange deleteTileRange) {
             Preconditions.checkNotNull(delegate, "decorator cannot be null");
             this.delegate = delegate;
             this.listeners = listeners;
@@ -580,7 +565,6 @@ public class S3BlobStore implements BlobStore {
         public void results(BulkDeleteTask.Statistics statistics) {
             delegate.results(statistics);
 
-
             if (deleteTileRange instanceof DeleteTileLayer) {
                 notifyLayerDeleted(statistics, (DeleteTileLayer) deleteTileRange);
             }
@@ -589,13 +573,13 @@ public class S3BlobStore implements BlobStore {
                 notifyGridSetDeleted(statistics, (DeleteTileGridSet) deleteTileRange);
             }
 
-            if (deleteTileRange instanceof DeleteTileParameterId){
-                notifyWhenParameterd(statistics, (DeleteTileParameterId)deleteTileRange);
+            if (deleteTileRange instanceof DeleteTileParameterId) {
+                notifyWhenParameterd(statistics, (DeleteTileParameterId) deleteTileRange);
             }
         }
 
         private void notifyGridSetDeleted(BulkDeleteTask.Statistics statistics, DeleteTileGridSet deleteTileRange) {
-            if(statistics.completed()) {
+            if (statistics.completed()) {
                 for (BlobStoreListener listener : listeners.getListeners()) {
                     listeners.sendGridSubsetDeleted(deleteTileRange.getLayerName(), deleteTileRange.getGridSetId());
                 }

@@ -33,19 +33,18 @@ public class KeyObjectTest extends TestCase {
         PARAMETERS.put(PARAMETER_1_KEY, PARAMETER_1_VALUE);
     }
 
-    private KeyObject.Builder builder = KeyObject.newBuilder().
-            withPrefix(PREFIX).
-            withLayerId(LAYER_ID).
-            withGridSetId(GRID_SET_ID).
-            withFormat(FORMAT_IN_KEY).
-            withParametersId(PARAMETER_SHA).
-            withX(X).
-            withY(Y).
-            withZ(Z);
+    private KeyObject.Builder builder = KeyObject.newBuilder()
+            .withPrefix(PREFIX)
+            .withLayerId(LAYER_ID)
+            .withGridSetId(GRID_SET_ID)
+            .withFormat(FORMAT_IN_KEY)
+            .withParametersId(PARAMETER_SHA)
+            .withX(X)
+            .withY(Y)
+            .withZ(Z);
 
     @Before
-    public void setup() throws Exception {
-    }
+    public void setup() throws Exception {}
 
     @Test
     public void test_checkLayerIDInKey() {
@@ -103,13 +102,17 @@ public class KeyObjectTest extends TestCase {
 
     @Test
     public void test_checkFromS3ObjectKey() {
-        var testData = Arrays.asList(
-                new KeyObjectTest.TestHelper(
-                        "Valid case",
-                        "Store/layer_id/grid_set_id/png/75595e9159afae9c4669aee57366de8c196a57e1/1/1/1.png",
-                        PREFIX, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETER_SHA, X, Y, Z
-                )
-        );
+        var testData = Arrays.asList(new KeyObjectTest.TestHelper(
+                "Valid case",
+                "Store/layer_id/grid_set_id/png/75595e9159afae9c4669aee57366de8c196a57e1/1/1/1.png",
+                PREFIX,
+                LAYER_ID,
+                GRID_SET_ID,
+                FORMAT_IN_KEY,
+                PARAMETER_SHA,
+                X,
+                Y,
+                Z));
 
         testData.forEach(data -> {
             if (!Objects.nonNull(data.err)) {

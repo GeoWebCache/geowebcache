@@ -1,19 +1,14 @@
 package org.geowebcache.s3;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.function.Supplier;
-
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.amazonaws.services.s3.model.S3ObjectSummary;
+import java.util.Iterator;
+import java.util.function.Supplier;
+
 /**
- * S3ObjectPathsForPrefixSupplier
- * This class will interact with the AmazonS3 connection to retrieve all the objects
- * with prefix and bucket provided
- * <br/>
+ * S3ObjectPathsForPrefixSupplier This class will interact with the AmazonS3 connection to retrieve all the objects with
+ * prefix and bucket provided <br>
  * It will return these lazily one by one as the get methods is called
  */
 public class S3ObjectPathsForPrefixSupplier implements Supplier<S3ObjectSummary> {
@@ -23,12 +18,12 @@ public class S3ObjectPathsForPrefixSupplier implements Supplier<S3ObjectSummary>
     private long count = 0;
 
     private Iterator<S3ObjectSummary> iterator;
-    private S3ObjectPathsForPrefixSupplier(String prefix, String bucket, S3ObjectsWrapper wrapper){
+
+    private S3ObjectPathsForPrefixSupplier(String prefix, String bucket, S3ObjectsWrapper wrapper) {
         this.prefix = prefix;
         this.bucket = bucket;
         this.wrapper = wrapper;
     }
-
 
     @Override
     public S3ObjectSummary get() {
@@ -37,19 +32,21 @@ public class S3ObjectPathsForPrefixSupplier implements Supplier<S3ObjectSummary>
 
     private synchronized S3ObjectSummary next() {
         if (iterator == null) {
-            S3BlobStore.log.info(String.format("Creating an iterator for objects in bucket: %s with prefix: %s", bucket, prefix));
+            S3BlobStore.log.info(
+                    String.format("Creating an iterator for objects in bucket: %s with prefix: %s", bucket, prefix));
             iterator = wrapper.iterator();
         }
         if (iterator.hasNext()) {
             count++;
             return iterator.next();
         } else {
-            S3BlobStore.log.info(String.format("No more objects in bucket: %s with prefix: %s supplied %d", bucket, prefix, count));
+            S3BlobStore.log.info(
+                    String.format("No more objects in bucket: %s with prefix: %s supplied %d", bucket, prefix, count));
             return null;
         }
     }
 
-    static Builder newBuilder(){
+    static Builder newBuilder() {
         return new Builder();
     }
 
@@ -62,10 +59,12 @@ public class S3ObjectPathsForPrefixSupplier implements Supplier<S3ObjectSummary>
             this.prefix = prefix;
             return this;
         }
+
         public Builder withBucket(String bucket) {
             this.bucket = bucket;
             return this;
         }
+
         public Builder withWrapper(S3ObjectsWrapper wrapper) {
             this.s3ObjectsWrapper = wrapper;
             return this;

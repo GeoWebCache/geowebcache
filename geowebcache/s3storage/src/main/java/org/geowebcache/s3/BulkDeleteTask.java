@@ -1,16 +1,15 @@
 package org.geowebcache.s3;
 
-import org.geowebcache.s3.BulkDeleteTask.Statistics.SubStats;
-import org.geowebcache.util.KeyObject;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
+import static org.geowebcache.s3.BulkDeleteTask.ObjectPathStrategy.*;
 
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
-import static org.geowebcache.s3.BulkDeleteTask.ObjectPathStrategy.*;
+import org.geowebcache.s3.BulkDeleteTask.Statistics.SubStats;
+import org.geowebcache.util.KeyObject;
 
 class BulkDeleteTask implements Callable<Long> {
     private final AmazonS3Wrapper amazonS3Wrapper;
@@ -25,9 +24,14 @@ class BulkDeleteTask implements Callable<Long> {
     private final MapS3ObjectSummaryToKeyObject mapS3ObjectSummaryToKeyObject = new MapS3ObjectSummaryToKeyObject();
     private final MapKeyObjectsToDeleteObjectRequest mapKeyObjectsToDeleteObjectRequest;
 
-
     // Only build with builder
-    private BulkDeleteTask(AmazonS3Wrapper amazonS3Wrapper, S3ObjectsWrapper s3ObjectsWrapper, String bucketName, DeleteTileRange deleteTileRange, Callback callback, int batch) {
+    private BulkDeleteTask(
+            AmazonS3Wrapper amazonS3Wrapper,
+            S3ObjectsWrapper s3ObjectsWrapper,
+            String bucketName,
+            DeleteTileRange deleteTileRange,
+            Callback callback,
+            int batch) {
         this.amazonS3Wrapper = amazonS3Wrapper;
         this.s3ObjectsWrapper = s3ObjectsWrapper;
         this.bucketName = bucketName;
@@ -39,7 +43,7 @@ class BulkDeleteTask implements Callable<Long> {
 
     @Override
     public Long call() throws Exception {
-        switch (chooseStrategy()){
+        switch (chooseStrategy()) {
             case NoDeletionsRequired:
                 break;
             case S3ObjectPathsForPrefix:
@@ -92,17 +96,20 @@ class BulkDeleteTask implements Callable<Long> {
         statistics.addSubStats(deleteTileRange.prefix(), S3ObjectPathsForPrefix, new SubStats());
         var performDeleteObjects = new PerformDeleteObjects(amazonS3Wrapper);
 
-        S3BlobStore.log.info(format("Using strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s", bucketName, deleteTileRange.prefix()));
+        S3BlobStore.log.info(format(
+                "Using strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s",
+                bucketName, deleteTileRange.prefix()));
 
-        var count =  BatchingIterator
-                .batchedStreamOf( generateStreamOfKeyObjects(createS3ObjectPathsForPrefixSupplier(deleteTileRange.prefix())), batch)
+        var count = BatchingIterator.batchedStreamOf(
+                        generateStreamOfKeyObjects(createS3ObjectPathsForPrefixSupplier(deleteTileRange.prefix())),
+                        batch)
                 .map(mapKeyObjectsToDeleteObjectRequest)
                 .map(performDeleteObjects)
-                .mapToLong(r -> (long)r.getDeletedObjects().size())
+                .mapToLong(r -> (long) r.getDeletedObjects().size())
                 .sum();
 
         performDeleteObjects.getIssues().forEach(issue -> {
-            switch(issue.getErrorType()) {
+            switch (issue.getErrorType()) {
                 case Client:
                     statistics.nonrecoverableIssues.add(issue);
                     break;
@@ -115,15 +122,15 @@ class BulkDeleteTask implements Callable<Long> {
             }
         });
 
-        S3BlobStore.log.info(format("Finished applying strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s deleted: %d", bucketName, deleteTileRange.prefix(), count));
+        S3BlobStore.log.info(format(
+                "Finished applying strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s deleted: %d",
+                bucketName, deleteTileRange.prefix(), count));
 
         return count;
     }
 
     private Stream<KeyObject> generateStreamOfKeyObjects(S3ObjectPathsForPrefixSupplier supplier) {
-        return Stream.generate(supplier)
-                .takeWhile(Objects::nonNull)
-                .map(mapS3ObjectSummaryToKeyObject);
+        return Stream.generate(supplier).takeWhile(Objects::nonNull).map(mapS3ObjectSummaryToKeyObject);
     }
 
     private S3ObjectPathsForPrefixSupplier createS3ObjectPathsForPrefixSupplier(String prefix) {
@@ -163,10 +170,9 @@ class BulkDeleteTask implements Callable<Long> {
                     statistics.deleted,
                     statistics.recoverableIssues.size(),
                     statistics.unknownIssues.size(),
-                    statistics.nonrecoverableIssues.size()
-            ));
+                    statistics.nonrecoverableIssues.size()));
 
-            for (var entry: statistics.statsPerStrategy.entrySet()) {
+            for (var entry : statistics.statsPerStrategy.entrySet()) {
                 var strategy = entry.getKey();
                 var stats = entry.getValue();
                 LOG.info(format(
@@ -177,11 +183,10 @@ class BulkDeleteTask implements Callable<Long> {
                         stats.deleted,
                         stats.recoverableIssues.size(),
                         stats.unknownIssues.size(),
-                        stats.nonrecoverableIssues.size()
-                ));
+                        stats.nonrecoverableIssues.size()));
             }
 
-            for (var entry: statistics.statsPerPrefix.entrySet()) {
+            for (var entry : statistics.statsPerPrefix.entrySet()) {
                 var prefix = entry.getKey();
                 var stats = entry.getValue();
                 LOG.info(format(
@@ -192,13 +197,12 @@ class BulkDeleteTask implements Callable<Long> {
                         stats.deleted,
                         stats.recoverableIssues.size(),
                         stats.unknownIssues.size(),
-                        stats.nonrecoverableIssues.size()
-                ));
+                        stats.nonrecoverableIssues.size()));
             }
         }
     }
 
-    static Builder newBuilder(){
+    static Builder newBuilder() {
         return new Builder();
     }
 
@@ -208,8 +212,8 @@ class BulkDeleteTask implements Callable<Long> {
         final List<Exception> recoverableIssues = new ArrayList<>();
         final List<Exception> nonrecoverableIssues = new ArrayList<>();
         final List<Exception> unknownIssues = new ArrayList<>();
-        final Map<String, SubStats>  statsPerPrefix = new HashMap<>();
-        final Map<ObjectPathStrategy, SubStats>  statsPerStrategy= new HashMap<>();
+        final Map<String, SubStats> statsPerPrefix = new HashMap<>();
+        final Map<ObjectPathStrategy, SubStats> statsPerStrategy = new HashMap<>();
 
         boolean completed() {
             return recoverableIssues.isEmpty() && nonrecoverableIssues.isEmpty() && unknownIssues.isEmpty();
@@ -227,7 +231,7 @@ class BulkDeleteTask implements Callable<Long> {
                 statsPerPrefix.put(prefix, stats);
             }
 
-            if(statsPerStrategy.containsKey(strategy)) {
+            if (statsPerStrategy.containsKey(strategy)) {
                 var old = statsPerStrategy.get(strategy);
                 old.merge(stats);
             } else {
@@ -239,7 +243,6 @@ class BulkDeleteTask implements Callable<Long> {
             this.recoverableIssues.addAll(stats.recoverableIssues);
             this.nonrecoverableIssues.addAll(stats.nonrecoverableIssues);
             this.unknownIssues.addAll(stats.unknownIssues);
-
         }
 
         public static class SubStats {
@@ -250,7 +253,7 @@ class BulkDeleteTask implements Callable<Long> {
             final List<Exception> nonrecoverableIssues = new ArrayList<>();
             final List<Exception> unknownIssues = new ArrayList<>();
 
-            public void merge(SubStats stats){
+            public void merge(SubStats stats) {
                 this.count += stats.count;
                 this.deleted += stats.deleted;
                 this.processed += stats.processed;
@@ -304,8 +307,8 @@ class BulkDeleteTask implements Callable<Long> {
             checkNotNull(amazonS3Wrapper, "Missing AmazonS3Wrapper");
             checkNotNull(s3ObjectsWrapper, "Missing S3ObjectsWrapper");
             checkNotNull(bucketName, "Missing bucket");
-            checkNotNull(deleteTileRange,"Missing DeleteRange");
-            checkNotNull(batch,"Missing Batch");
+            checkNotNull(deleteTileRange, "Missing DeleteRange");
+            checkNotNull(batch, "Missing Batch");
             checkNotNull(callback, "Missing Callback");
 
             return new BulkDeleteTask(amazonS3Wrapper, s3ObjectsWrapper, bucketName, deleteTileRange, callback, batch);

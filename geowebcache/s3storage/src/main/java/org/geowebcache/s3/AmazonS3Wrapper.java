@@ -13,7 +13,8 @@ public class AmazonS3Wrapper {
         this.conn = conn;
     }
 
-    public DeleteObjectsResult deleteObjects(DeleteObjectsRequest deleteObjectsRequest) throws SdkClientException, AmazonServiceException {
+    public DeleteObjectsResult deleteObjects(DeleteObjectsRequest deleteObjectsRequest)
+            throws SdkClientException, AmazonServiceException {
         return conn.deleteObjects(deleteObjectsRequest);
     }
 }

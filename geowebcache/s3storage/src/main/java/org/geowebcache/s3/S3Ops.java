@@ -13,6 +13,8 @@
  */
 package org.geowebcache.s3;
 
+import static java.lang.String.format;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.iterable.S3Objects;
@@ -56,11 +58,8 @@ import org.geowebcache.locks.NoOpLockProvider;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.TMSKeyBuilder;
 
-import static java.lang.String.format;
-
 class S3Ops {
 
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(S3Ops.class);
     private final AmazonS3Client conn;
 
     private final String bucketName;
@@ -152,11 +151,12 @@ class S3Ops {
         }
     }
 
-
-    public boolean scheduleAsyncDelete(DeleteTileRange deleteTileRange, LockingDecorator callback) throws GeoWebCacheException {
+    public boolean scheduleAsyncDelete(DeleteTileRange deleteTileRange, LockingDecorator callback)
+            throws GeoWebCacheException {
         final long timestamp = currentTimeSeconds();
         String msg = format(
-                "Issuing bulk delete on '%s/%s' for objects older than %d", bucketName, deleteTileRange.prefix(), timestamp);
+                "Issuing bulk delete on '%s/%s' for objects older than %d",
+                bucketName, deleteTileRange.prefix(), timestamp);
         S3BlobStore.log.info(msg);
 
         Lock lock = locks.getLock(deleteTileRange.prefix());
@@ -233,7 +233,11 @@ class S3Ops {
         return true;
     }
 
-    private synchronized boolean asyncBulkDelete(final String prefix, final DeleteTileRange deleteTileRange, final long timestamp, final BulkDeleteTask.Callback callback) {
+    private synchronized boolean asyncBulkDelete(
+            final String prefix,
+            final DeleteTileRange deleteTileRange,
+            final long timestamp,
+            final BulkDeleteTask.Callback callback) {
 
         if (!prefixExists(prefix)) {
             return false;
@@ -452,8 +456,8 @@ class S3Ops {
                     }
                 }
             } catch (InterruptedException | IllegalStateException e) {
-                S3BlobStore.log.info(format(
-                        "S3 bulk delete aborted for '%s/%s'. Will resume on next startup.", bucketName, prefix));
+                S3BlobStore.log.info(
+                        format("S3 bulk delete aborted for '%s/%s'. Will resume on next startup.", bucketName, prefix));
                 throw e;
             } catch (Exception e) {
                 S3BlobStore.log.log(

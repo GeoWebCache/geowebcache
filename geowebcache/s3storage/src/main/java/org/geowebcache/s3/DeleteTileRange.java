@@ -1,7 +1,5 @@
 package org.geowebcache.s3;
 
-import com.google.common.base.Preconditions;
-
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
@@ -40,7 +38,7 @@ class DeleteTileLayer implements DeleteTileRange {
         return new Builder();
     }
 
-    static class Builder{
+    static class Builder {
         private String bucket;
         private String layerId;
         private String layerName;
@@ -107,8 +105,7 @@ class DeleteTileGridSet implements DeleteTileRange {
         return new Builder();
     }
 
-
-    static class Builder{
+    static class Builder {
         private String bucket;
         private String layerId;
         private String gridSetId;
@@ -152,7 +149,8 @@ class DeleteTileParameterId implements DeleteTileRange {
     private final String parameterId;
     private final String layerName;
 
-    public DeleteTileParameterId(String bucket, String layerId, String gridSetId, String parameterId, String layerName) {
+    public DeleteTileParameterId(
+            String bucket, String layerId, String gridSetId, String parameterId, String layerName) {
         this.bucket = bucket;
         this.layerId = layerId;
         this.gridSetId = gridSetId;
@@ -188,7 +186,7 @@ class DeleteTileParameterId implements DeleteTileRange {
         return new Builder();
     }
 
-    static class Builder{
+    static class Builder {
         private String bucket;
         private String layerId;
         private String gridSetId;
@@ -225,4 +223,3 @@ class DeleteTileParameterId implements DeleteTileRange {
         }
     }
 }
-
