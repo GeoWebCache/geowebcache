@@ -111,11 +111,19 @@ public final class TMSKeyBuilder {
             throw new RuntimeException(e);
         }
 
-        // Key format, comprised of
-        // {@code <prefix>/<layer name>/<gridset id>/<format id>/<parameters
-        // hash>/<z>/<x>/<y>.<extension>}
-        String key = join(false, prefix, layer, gridset, shortFormat, parametersId, z, x, y + "." + extension);
-        return key;
+        KeyObject keyObject = KeyObject.newBuilder()
+                .withPrefix(prefix)
+                .withLayerId(layer)
+                .withGridSetId(gridset)
+                .withFormat(shortFormat)
+                .withParametersId(parametersId)
+                .withX(x)
+                .withY(y)
+                .withZ(z)
+                .withoutVersion()
+                .build();
+
+        return keyObject.objectPath();
     }
 
     public String forLocation(String prefix, long[] loc, MimeType mime) {
@@ -223,3 +231,4 @@ public final class TMSKeyBuilder {
         return joiner.toString();
     }
 }
+

@@ -114,6 +114,18 @@ public class TileObject extends StorageObject implements Serializable {
         return xyz;
     }
 
+    public long getX() {
+        return xyz[0];
+    }
+
+    public long getY() {
+        return xyz[1];
+    }
+
+    public long getZ() {
+        return xyz[2];
+    }
+
     // public int getSrs() {
     // return srs;
     // }

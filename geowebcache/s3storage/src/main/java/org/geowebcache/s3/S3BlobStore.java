@@ -30,10 +30,12 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -52,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.ParametersUtils;
@@ -136,7 +139,9 @@ public class S3BlobStore implements BlobStore {
         return client;
     }
 
-    /** Implemented by lambdas testing an {@link AmazonS3Client} */
+    /**
+     * Implemented by lambdas testing an {@link AmazonS3Client}
+     */
     interface S3ClientChecker {
         void validate(AmazonS3Client client, String bucketName) throws Exception;
     }
@@ -312,7 +317,7 @@ public class S3BlobStore implements BlobStore {
         final Iterator<long[]> tileLocations = new AbstractIterator<>() {
 
             // TileRange iterator with 1x1 meta tiling factor
-            private TileRangeIterator trIter = new TileRangeIterator(tileRange, new int[] {1, 1});
+            private TileRangeIterator trIter = new TileRangeIterator(tileRange, new int[]{1, 1});
 
             @Override
             protected long[] computeNext() {
@@ -361,17 +366,29 @@ public class S3BlobStore implements BlobStore {
 
         final String metadataKey = keyBuilder.layerMetadata(layerName);
         final String layerPrefix = keyBuilder.forLayer(layerName);
+        final String layerId = keyBuilder.layerId(layerName);
 
         s3Ops.deleteObject(metadataKey);
 
+        var deleteLayer = DeleteTileLayer.newBuilder()
+                .withLayerId(layerId)
+                .withBucket(bucketName)
+                .withLayerName(layerName)
+                .build();
+
+        var lockingDecorator =
+                new S3Ops.LockingDecorator(
+                        new NotifyListenDecorator(
+                                new BulkDeleteTask.LoggingCallback(),
+                                listeners,
+                                deleteLayer)
+                );
+
         boolean layerExists;
         try {
-            layerExists = s3Ops.scheduleAsyncDelete(layerPrefix);
+            layerExists = s3Ops.scheduleAsyncDelete(deleteLayer, lockingDecorator);
         } catch (GeoWebCacheException e) {
             throw new RuntimeException(e);
-        }
-        if (layerExists) {
-            listeners.sendLayerDeleted(layerName);
         }
         return layerExists;
     }
@@ -382,17 +399,29 @@ public class S3BlobStore implements BlobStore {
         checkNotNull(layerName, "layerName");
         checkNotNull(gridSetId, "gridSetId");
 
-        final String gridsetPrefix = keyBuilder.forGridset(layerName, gridSetId);
+        var layerId = keyBuilder.layerId(layerName);
+        var deleteTileGridSet = DeleteTileGridSet.newBuilder()
+                .withBucket(bucketName)
+                .withLayer(layerId)
+                .withGridSetId(gridSetId)
+                .withLayerName(layerName)
+                .build();
+
+        var lockingDecorator =
+                new S3Ops.LockingDecorator(
+                        new NotifyListenDecorator(
+                                new BulkDeleteTask.LoggingCallback(),
+                                listeners,
+                                deleteTileGridSet)
+                );
 
         boolean prefixExists;
         try {
-            prefixExists = s3Ops.scheduleAsyncDelete(gridsetPrefix);
+            prefixExists = s3Ops.scheduleAsyncDelete(deleteTileGridSet, lockingDecorator);
         } catch (GeoWebCacheException e) {
             throw new RuntimeException(e);
         }
-        if (prefixExists) {
-            listeners.sendGridSubsetDeleted(layerName, gridSetId);
-        }
+
         return prefixExists;
     }
 
@@ -483,19 +512,34 @@ public class S3BlobStore implements BlobStore {
         checkNotNull(layerName, "layerName");
         checkNotNull(parametersId, "parametersId");
 
-        boolean prefixExists = keyBuilder.forParameters(layerName, parametersId).stream()
-                .map(prefix -> {
-                    try {
-                        return s3Ops.scheduleAsyncDelete(prefix);
-                    } catch (RuntimeException | GeoWebCacheException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .reduce(Boolean::logicalOr) // Don't use Stream.anyMatch as it would short
-                // circuit
-                .orElse(false);
-        if (prefixExists) {
-            listeners.sendParametersDeleted(layerName, parametersId);
+        var layerId = keyBuilder.layerId(layerName);
+        var gridSetIds = keyBuilder.layerGridsets(layerName);
+
+        var deleteParameterIdRanges = gridSetIds.stream().
+                map(gridSetId -> DeleteTileParameterId.newBuilder()
+                        .withBucket(bucketName)
+                        .withLayer(layerId)
+                        .withLayerName(layerName)
+                        .withGridSetId(gridSetId)
+                        .withParameterId(parametersId)
+                        .build())
+                .collect(Collectors.toSet());
+
+        boolean prefixExists = false;
+        for (DeleteTileParameterId deleteTileRange : deleteParameterIdRanges) {
+            var lockingCallback = new S3Ops.LockingDecorator(
+                    new NotifyListenDecorator(
+                            new BulkDeleteTask.LoggingCallback(),
+                            listeners,
+                            deleteTileRange
+                    )
+            ); // TODO Hack need to wrap this in a single DeleteTileRange, this will call the notifcations multiple times
+
+            try {
+                prefixExists = s3Ops.scheduleAsyncDelete(deleteTileRange, lockingCallback) || prefixExists;
+            } catch (GeoWebCacheException e) {
+                throw new RuntimeException(e);
+            }
         }
         return prefixExists;
     }
@@ -518,5 +562,58 @@ public class S3BlobStore implements BlobStore {
                 .map(s3Ops::getProperties)
                 .map(props -> (Map<String, String>) (Map<?, ?>) props)
                 .collect(Collectors.toMap(ParametersUtils::getId, Optional::of));
+    }
+
+    static class NotifyListenDecorator implements BulkDeleteTask.Callback {
+        private final BulkDeleteTask.Callback delegate;
+        private final BlobStoreListenerList listeners;
+        private final DeleteTileRange deleteTileRange;
+
+        public NotifyListenDecorator(BulkDeleteTask.Callback delegate, BlobStoreListenerList listeners, DeleteTileRange deleteTileRange) {
+            Preconditions.checkNotNull(delegate, "decorator cannot be null");
+            this.delegate = delegate;
+            this.listeners = listeners;
+            this.deleteTileRange = deleteTileRange;
+        }
+
+        @Override
+        public void results(BulkDeleteTask.Statistics statistics) {
+            delegate.results(statistics);
+
+
+            if (deleteTileRange instanceof DeleteTileLayer) {
+                notifyLayerDeleted(statistics, (DeleteTileLayer) deleteTileRange);
+            }
+
+            if (deleteTileRange instanceof DeleteTileGridSet) {
+                notifyGridSetDeleted(statistics, (DeleteTileGridSet) deleteTileRange);
+            }
+
+            if (deleteTileRange instanceof DeleteTileParameterId){
+                notifyWhenParameterd(statistics, (DeleteTileParameterId)deleteTileRange);
+            }
+        }
+
+        private void notifyGridSetDeleted(BulkDeleteTask.Statistics statistics, DeleteTileGridSet deleteTileRange) {
+            if(statistics.completed()) {
+                for (BlobStoreListener listener : listeners.getListeners()) {
+                    listeners.sendGridSubsetDeleted(deleteTileRange.getLayerName(), deleteTileRange.getGridSetId());
+                }
+            }
+        }
+
+        private void notifyLayerDeleted(BulkDeleteTask.Statistics statistics, DeleteTileLayer deletelayer) {
+            if (statistics.completed()) {
+                for (BlobStoreListener listener : listeners.getListeners()) {
+                    listener.layerDeleted(deletelayer.getLayerName());
+                }
+            }
+        }
+
+        private void notifyWhenParameterd(BulkDeleteTask.Statistics statistics, DeleteTileParameterId deletelayer) {
+            if (statistics.completed()) {
+                listeners.sendParametersDeleted(deletelayer.getLayerName(), deletelayer.getLayerName());
+            }
+        }
     }
 }
