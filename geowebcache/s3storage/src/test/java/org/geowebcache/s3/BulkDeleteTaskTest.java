@@ -76,5 +76,12 @@ public class BulkDeleteTaskTest {
         assertEquals("Callback was not set", callback, task.getCallback());
     }
 
+    @Test
+    public void testConstructor_WithDeleteTileLayer_DeleteTileRangeSet() {
+        DeleteTileLayer deleteTileRange = new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME);
+        BulkDeleteTask task = builder.withDeleteRange(deleteTileRange).build();
+        assertEquals("DeleteTileRange was not set", deleteTileRange, task.getDeleteTileRange());
+    }
+
 
 }

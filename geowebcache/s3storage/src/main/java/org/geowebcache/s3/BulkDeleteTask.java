@@ -21,7 +21,7 @@ class BulkDeleteTask implements Callable<Long> {
     private final Callback callback;
     private final Statistics statistics = new Statistics();
 
-    private final ThreadNotInterruptedPredicate threadNotInterrupted = new ThreadNotInterruptedPredicate();
+    //private final ThreadNotInterruptedPredicate threadNotInterrupted = new ThreadNotInterruptedPredicate();
     private final MapS3ObjectSummaryToKeyObject mapS3ObjectSummaryToKeyObject = new MapS3ObjectSummaryToKeyObject();
     private final MapKeyObjectsToDeleteObjectRequest mapKeyObjectsToDeleteObjectRequest;
 
@@ -312,10 +312,6 @@ class BulkDeleteTask implements Callable<Long> {
             return statsPerPrefix;
         }
 
-        boolean shouldRetry() {
-            return !completed() && (!nonrecoverableIssues.isEmpty() || !unknownIssues.isEmpty());
-        }
-
         Long addSubStats(SubStats stats) {
             String prefix = stats.prefix;
             ObjectPathStrategy strategy = stats.strategy;
@@ -379,6 +375,10 @@ class BulkDeleteTask implements Callable<Long> {
                 this.recoverableIssues.addAll(stats.recoverableIssues);
                 this.nonrecoverableIssues.addAll(stats.nonrecoverableIssues);
                 this.unknownIssues.addAll(stats.unknownIssues);
+                this.batchSent += stats.batchSent;
+                this.batchTotal += stats.batchTotal;
+                this.batchLowTideLevel = this.batchLowTideLevel == 0 ? stats.batchLowTideLevel : Math.min(stats.batchLowTideLevel, batchLowTideLevel);
+                this.batchHighTideLevel = Math.max(stats.batchHighTideLevel, this.batchHighTideLevel);
             }
 
             public void incrementDeleted(long count) {

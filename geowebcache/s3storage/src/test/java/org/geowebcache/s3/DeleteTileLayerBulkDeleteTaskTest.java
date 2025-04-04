@@ -41,14 +41,14 @@ public class DeleteTileLayerBulkDeleteTaskTest {
     @Test
     public void test_ChooseStrategy_S3ObjectPathsForPrefix() {
         DeleteTileLayer deleteTileRange = new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME);
-        var task = builder.withDeleteRange(deleteTileRange).build();
-        var strategy = task.chooseStrategy(deleteTileRange);
+        BulkDeleteTask task = builder.withDeleteRange(deleteTileRange).build();
+        BulkDeleteTask.ObjectPathStrategy strategy = task.chooseStrategy(deleteTileRange);
         assertEquals("Expected default strategy", S3ObjectPathsForPrefix, strategy);
     }
 
     @Test
     public void testCall_WhenBatchOrLessToProcess() throws Exception {
-        Iterator<S3ObjectSummary> iterator = S_3_OBJECT_SUMMARY_BATCH_LIST.iterator();
+        Iterator<S3ObjectSummary> iterator = S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST.iterator();
         when(s3ObjectsWrapper.iterator()).thenReturn(iterator);
         when(amazonS3Wrapper.deleteObjects(any(DeleteObjectsRequest.class))).thenAnswer(invocationOnMock -> {
             DeleteObjectsRequest request =
@@ -61,14 +61,14 @@ public class DeleteTileLayerBulkDeleteTaskTest {
         Long count = task.call();
         BulkDeleteTask.Statistics statistics = callback.statistics;
         assertEquals(
-                "Should have batch large summary collection size", S_3_OBJECT_SUMMARY_BATCH_LIST.size(), (long) count);
+                "Should have batch large summary collection size", S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST.size(), (long) count);
         assertEquals(
                 "Should have deleted large summary collection size",
-                S_3_OBJECT_SUMMARY_BATCH_LIST.size(),
+                S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST.size(),
                 statistics.deleted);
         assertEquals(
                 "Should have batch large summary collection size",
-                S_3_OBJECT_SUMMARY_BATCH_LIST.size(),
+                S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST.size(),
                 statistics.processed);
     }
 

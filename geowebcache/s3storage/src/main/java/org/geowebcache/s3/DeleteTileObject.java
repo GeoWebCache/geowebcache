@@ -13,6 +13,7 @@ public class DeleteTileObject implements DeleteTileRange {
     public DeleteTileObject(TileObject tileObject, String prefix, boolean skipExistsCheck) {
         checkNotNull(tileObject, "tileObject must not be null");
         checkNotNull(prefix, "prefix must not be null");
+        checkNotNull(prefix, "prefix must not be null");
 
         this.tileObject = tileObject;
         this.prefix = prefix;
@@ -31,6 +32,10 @@ public class DeleteTileObject implements DeleteTileRange {
 
     public TileObject getTileObject() {
         return tileObject;
+    }
+
+    public String getPrefix() {
+        return prefix;
     }
 
     public boolean shouldSkipExistsCheck() {
