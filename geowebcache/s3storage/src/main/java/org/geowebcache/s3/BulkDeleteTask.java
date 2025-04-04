@@ -8,7 +8,6 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-
 import org.geowebcache.s3.BulkDeleteTask.Statistics.SubStats;
 import org.geowebcache.util.KeyObject;
 
@@ -79,7 +78,7 @@ class BulkDeleteTask implements Callable<Long> {
             S3BlobStore.log.severe(format("Exiting from bulk delete task: %s", e.getMessage()));
             statistics.nonrecoverableIssues.add(e);
             throw e;
-            //return statistics.deleted;
+            // return statistics.deleted;
         } finally {
             callback.results(statistics);
         }
@@ -125,7 +124,6 @@ class BulkDeleteTask implements Callable<Long> {
                 .map(mapKeyObjectsToDeleteObjectRequest)
                 .map(performDeleteObjects)
                 .mapToLong(processDeletedObjects)
-
                 .sum();
 
         S3BlobStore.log.info(format(
@@ -183,9 +181,7 @@ class BulkDeleteTask implements Callable<Long> {
 
     private Stream<List<KeyObject>> batchedStreamOfKeyObjects(DeleteTileRange deleteTileRange, SubStats stats) {
         return BatchingIterator.batchedStreamOf(
-                generateStreamOfKeyObjects(
-                        createS3ObjectPathsForPrefixSupplier(deleteTileRange.path()), stats),
-                batch);
+                generateStreamOfKeyObjects(createS3ObjectPathsForPrefixSupplier(deleteTileRange.path()), stats), batch);
     }
 
     private Stream<KeyObject> generateStreamOfKeyObjects(S3ObjectPathsForPrefixSupplier supplier, SubStats subStats) {
@@ -208,7 +204,7 @@ class BulkDeleteTask implements Callable<Long> {
             return S3ObjectPathsForPrefix;
         }
 
-        if (deleteTileRange instanceof DeleteTileObject){
+        if (deleteTileRange instanceof DeleteTileObject) {
             return SingleTile;
         }
 
@@ -285,7 +281,8 @@ class BulkDeleteTask implements Callable<Long> {
                         stats.batchSent,
                         stats.batchTotal,
                         stats.batchHighTideLevel,
-                        stats.batchLowTideLevel));            }
+                        stats.batchLowTideLevel));
+            }
         }
     }
 
@@ -344,9 +341,10 @@ class BulkDeleteTask implements Callable<Long> {
             this.unknownIssues.addAll(stats.unknownIssues);
             this.batchSent += stats.batchSent;
             this.batchTotal += stats.batchTotal;
-            this.batchLowTideLevel = batchLowTideLevel == 0 ? stats.batchLowTideLevel : Math.min(stats.batchLowTideLevel, batchLowTideLevel);
+            this.batchLowTideLevel = batchLowTideLevel == 0
+                    ? stats.batchLowTideLevel
+                    : Math.min(stats.batchLowTideLevel, batchLowTideLevel);
             this.batchHighTideLevel = Math.max(stats.batchHighTideLevel, batchHighTideLevel);
-
 
             return this.deleted;
         }

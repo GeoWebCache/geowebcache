@@ -1,8 +1,7 @@
 package org.geowebcache.s3;
 
-import org.geowebcache.storage.TileObject;
-
 import java.util.Iterator;
+import org.geowebcache.storage.TileObject;
 
 public class BoundedBoxTileIterator implements Iterator<TileObject> {
     @Override

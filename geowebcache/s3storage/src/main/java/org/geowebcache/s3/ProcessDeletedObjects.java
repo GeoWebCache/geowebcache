@@ -1,8 +1,6 @@
 package org.geowebcache.s3;
 
-
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
-
 import java.util.function.ToLongFunction;
 
 public class ProcessDeletedObjects implements ToLongFunction<DeleteObjectsResult> {
@@ -16,7 +14,7 @@ public class ProcessDeletedObjects implements ToLongFunction<DeleteObjectsResult
     public long applyAsLong(DeleteObjectsResult result) {
         int count = result.getDeletedObjects().size();
         stats.incrementDeleted(count);
-        return (long)count;
-    };
-
+        return (long) count;
+    }
+    ;
 }

@@ -14,8 +14,15 @@ public class DeleteTilesByZoomLevelInBoundedBox implements DeleteTileRange {
 
     private final String path;
 
-
-    public DeleteTilesByZoomLevelInBoundedBox(String prefix, String bucketName, String layerId, String gridSetId, String format, String paramatesId, long zoomLevel, long[] boundedBox) {
+    public DeleteTilesByZoomLevelInBoundedBox(
+            String prefix,
+            String bucketName,
+            String layerId,
+            String gridSetId,
+            String format,
+            String paramatesId,
+            long zoomLevel,
+            long[] boundedBox) {
         this.prefix = prefix;
         this.bucketName = bucketName;
         this.layerId = layerId;

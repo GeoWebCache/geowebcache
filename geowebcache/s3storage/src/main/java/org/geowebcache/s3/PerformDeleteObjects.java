@@ -4,7 +4,6 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 
 public class PerformDeleteObjects implements Function<DeleteObjectsRequest, DeleteObjectsResult> {

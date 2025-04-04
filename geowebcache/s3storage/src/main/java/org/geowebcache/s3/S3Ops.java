@@ -152,7 +152,8 @@ class S3Ops {
         }
     }
 
-    public boolean scheduleAsyncDelete(DeleteTileRange deleteTileRange, BulkDeleteTask.Callback callback, LockingDecorator lockingDecorator)
+    public boolean scheduleAsyncDelete(
+            DeleteTileRange deleteTileRange, BulkDeleteTask.Callback callback, LockingDecorator lockingDecorator)
             throws GeoWebCacheException {
         final long timestamp = currentTimeSeconds();
         String msg = format(
@@ -169,13 +170,14 @@ class S3Ops {
         return asyncBulkDelete(deleteTileRange.path(), deleteTileRange, timestamp, callback);
     }
 
-    static class MarkPendingDeleteTask implements  BulkDeleteTask.Callback {
+    static class MarkPendingDeleteTask implements BulkDeleteTask.Callback {
         private final BulkDeleteTask.Callback delegate;
         private final String pendingDeletesKey;
         private final Long pendingDeletesKeyTime;
         private final S3Ops s3Opts;
 
-        public MarkPendingDeleteTask(BulkDeleteTask.Callback delegate, String pendingDeletesKey, Long pendingDeletesKeyTime, S3Ops s3Opts) {
+        public MarkPendingDeleteTask(
+                BulkDeleteTask.Callback delegate, String pendingDeletesKey, Long pendingDeletesKeyTime, S3Ops s3Opts) {
             checkNotNull(delegate, "delegate cannot be null");
             checkNotNull(pendingDeletesKey, "pendingDeletesKey cannot be null");
             checkNotNull(pendingDeletesKeyTime, "pendingDeletesKeyTime cannot be null");

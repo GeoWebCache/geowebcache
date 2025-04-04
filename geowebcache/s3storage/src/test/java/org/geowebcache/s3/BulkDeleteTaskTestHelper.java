@@ -3,12 +3,10 @@ package org.geowebcache.s3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import org.geowebcache.util.KeyObject;
-import org.mockito.ArgumentMatcher;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+import org.geowebcache.util.KeyObject;
 
 public class BulkDeleteTaskTestHelper {
     public static final Random RANDOM = new Random(System.currentTimeMillis());
@@ -32,7 +30,6 @@ public class BulkDeleteTaskTestHelper {
 
     public static final String PARAMETERS_ID = "75595e9159afae9c4669aee57366de8c196a57e1";
 
-
     public static final long TIMESTAMP = System.currentTimeMillis();
 
     public static final Set<String> SINGLE_SET_OF_GRID_SET_IDS = Set.of(GRID_SET_ID);
@@ -46,9 +43,6 @@ public class BulkDeleteTaskTestHelper {
     public static final Set<Long> ZOOM_LEVEL_4 = Set.of(4L);
 
     public static final Set<Long> ZOOM_LEVEL_0_THROUGH_9 = Set.of(0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L);
-
-
-
 
     static class CaptureCallback implements BulkDeleteTask.Callback {
         BulkDeleteTask.Statistics statistics = null;
@@ -69,13 +63,15 @@ public class BulkDeleteTaskTestHelper {
         return Math.min(Math.round(Math.pow(2.0, zoomLevel)), 32);
     }
 
-    static List<S3ObjectSummary> generateLayerSummaries(Set<String> gridSetIds, Set<String> formats, Set<Long> setOfZoomLevels) {
+    static List<S3ObjectSummary> generateLayerSummaries(
+            Set<String> gridSetIds, Set<String> formats, Set<Long> setOfZoomLevels) {
         List<S3ObjectSummary> summaries = new ArrayList<>();
 
         gridSetIds.forEach(gridSetId -> {
             formats.forEach(format -> {
-                setOfZoomLevels.forEach( z-> {
-                    List<S3ObjectSummary> layerSummaries = generateZoomLevelSummaries(z, zoomScaleModifier(z), zoomScaleModifier(z), gridSetId, format);
+                setOfZoomLevels.forEach(z -> {
+                    List<S3ObjectSummary> layerSummaries = generateZoomLevelSummaries(
+                            z, zoomScaleModifier(z), zoomScaleModifier(z), gridSetId, format);
                     summaries.addAll(layerSummaries);
                 });
             });
@@ -84,17 +80,15 @@ public class BulkDeleteTaskTestHelper {
         return summaries;
     }
 
-    static List<S3ObjectSummary> generateZoomLevelSummaries(long zoomLevel, long xScale, long yScale, String gridSetId, String format) {
+    static List<S3ObjectSummary> generateZoomLevelSummaries(
+            long zoomLevel, long xScale, long yScale, String gridSetId, String format) {
         List<S3ObjectSummary> summaries = new ArrayList<>();
 
-        LongStream.range(0, xScale).forEach(x ->
-                LongStream.range(0, yScale).forEach(y -> {
-                            long size = RANDOM.nextLong() % 9_900_000L + 100_000L;
-                            S3ObjectSummary summary = generateFromConstants(gridSetId, format, x, y, zoomLevel, size);
-                            summaries.add(summary);
-                        }
-                )
-        );
+        LongStream.range(0, xScale).forEach(x -> LongStream.range(0, yScale).forEach(y -> {
+            long size = RANDOM.nextLong() % 9_900_000L + 100_000L;
+            S3ObjectSummary summary = generateFromConstants(gridSetId, format, x, y, zoomLevel, size);
+            summaries.add(summary);
+        }));
         return summaries;
     }
 
@@ -102,7 +96,17 @@ public class BulkDeleteTaskTestHelper {
         return generate(BUCKET, PREFIX, LAYER_ID, gridSetId, format, PARAMETERS_ID, x, y, z, size);
     }
 
-    static S3ObjectSummary generate(String bucket, String prefix, String layerId, String gridSetId, String format, String parametersId, long x, long y, long z, long size) {
+    static S3ObjectSummary generate(
+            String bucket,
+            String prefix,
+            String layerId,
+            String gridSetId,
+            String format,
+            String parametersId,
+            long x,
+            long y,
+            long z,
+            long size) {
         S3ObjectSummary summary = new S3ObjectSummary();
         String key = KeyObject.toFullPath(prefix, layerId, gridSetId, format, parametersId, z, x, y, format);
 
@@ -116,13 +120,14 @@ public class BulkDeleteTaskTestHelper {
     }
 
     public static final List<S3ObjectSummary> S_3_OBJECT_EMPTY_SUMMARY_LIST = new ArrayList<>();
-    public static final List<S3ObjectSummary> S_3_OBJECT_SUMMARY_BATCH_LIST = generateLayerSummaries(SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, ZOOM_LEVEL_1);
-    public static final List<S3ObjectSummary> S_3_OBJECT_SUMMARY_LARGE_LIST = generateLayerSummaries(SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, ZOOM_LEVEL_0_THROUGH_9);;
-
+    public static final List<S3ObjectSummary> S_3_OBJECT_SUMMARY_BATCH_LIST =
+            generateLayerSummaries(SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, ZOOM_LEVEL_1);
+    public static final List<S3ObjectSummary> S_3_OBJECT_SUMMARY_LARGE_LIST =
+            generateLayerSummaries(SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, ZOOM_LEVEL_0_THROUGH_9);
+    ;
 
     public static DeleteObjectsResult generateDeleteObjectsResult(DeleteObjectsRequest request) {
-        List<DeleteObjectsResult.DeletedObject> deletedObjects  = request.getKeys()
-                .stream()
+        List<DeleteObjectsResult.DeletedObject> deletedObjects = request.getKeys().stream()
                 .map(key -> {
                     DeleteObjectsResult.DeletedObject deletedObject = new DeleteObjectsResult.DeletedObject();
                     deletedObject.setKey(key.getKey());

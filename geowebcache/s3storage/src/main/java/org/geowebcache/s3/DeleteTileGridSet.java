@@ -1,9 +1,8 @@
 package org.geowebcache.s3;
 
-import org.geowebcache.util.KeyObject;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
+
+import org.geowebcache.util.KeyObject;
 
 class DeleteTileGridSet implements DeleteTileRange {
     private final String prefix;
@@ -21,7 +20,7 @@ class DeleteTileGridSet implements DeleteTileRange {
         this.gridSetId = gridSetId;
         this.layerName = layerName;
 
-        this.path = KeyObject.toGridSet(prefix,layerId, gridSetId);
+        this.path = KeyObject.toGridSet(prefix, layerId, gridSetId);
     }
 
     public String path() {

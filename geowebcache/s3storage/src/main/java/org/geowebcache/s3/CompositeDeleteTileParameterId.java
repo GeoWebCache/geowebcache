@@ -1,14 +1,13 @@
 package org.geowebcache.s3;
 
-import org.geowebcache.util.KeyObject;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
+import org.geowebcache.util.KeyObject;
 
 class CompositeDeleteTileParameterId implements CompositeDeleteTileRange {
     private final String prefix;
@@ -21,7 +20,13 @@ class CompositeDeleteTileParameterId implements CompositeDeleteTileRange {
     private final String path;
 
     public CompositeDeleteTileParameterId(
-            String prefix, String bucket, String layerId, Set<String> gridSetIds, Set<String> formats, String parametersId, String layerName) {
+            String prefix,
+            String bucket,
+            String layerId,
+            Set<String> gridSetIds,
+            Set<String> formats,
+            String parametersId,
+            String layerName) {
         checkNotNull(prefix, "prefix must not be null");
         checkNotNull(bucket, "bucket cannot be null");
         checkNotNull(layerId, "layerId cannot be null");
@@ -43,45 +48,47 @@ class CompositeDeleteTileParameterId implements CompositeDeleteTileRange {
         });
 
         this.path = KeyObject.toLayerId(prefix, layerId);
-}
+    }
 
-public String path() {
-    return path;
-}
+    public String path() {
+        return path;
+    }
 
-public String getBucket() {
-    return bucket;
-}
+    public String getBucket() {
+        return bucket;
+    }
 
-public String getLayerId() {
-    return layerId;
-}
+    public String getLayerId() {
+        return layerId;
+    }
 
-public String getParameterId() {
-    return parameterId;
-}
+    public String getParameterId() {
+        return parameterId;
+    }
 
-public String getLayerName() {
-    return layerName;
-}
+    public String getLayerName() {
+        return layerName;
+    }
 
-@Override
-public List<DeleteTileRange> children() {
-    return new ArrayList<>(children);
-}
+    @Override
+    public List<DeleteTileRange> children() {
+        return new ArrayList<>(children);
+    }
 
-@Override
-public void add(DeleteTileRange child) {
-    checkNotNull(child, "child cannot be null");
-    checkArgument(child instanceof DeleteTileGridSet, "child should be a DeleteTileGridSet");
+    @Override
+    public void add(DeleteTileRange child) {
+        checkNotNull(child, "child cannot be null");
+        checkArgument(child instanceof DeleteTileGridSet, "child should be a DeleteTileGridSet");
 
-    DeleteTileParameterId gridSet = (DeleteTileParameterId) child;
+        DeleteTileParameterId gridSet = (DeleteTileParameterId) child;
 
-    checkArgument(gridSet.getBucket() == getBucket(), "child bucket should be the same as the bucket");
-    checkArgument(gridSet.getLayerName() == getLayerName(), "child layer name should be the same as the layerName");
-    checkArgument(gridSet.getLayerId() == getLayerId(), "child layer id should be the same as the layerId");
-    checkArgument(gridSet.getParameterId() == getParameterId(), "child parameter id should be the same as the parameterId");
+        checkArgument(gridSet.getBucket() == getBucket(), "child bucket should be the same as the bucket");
+        checkArgument(gridSet.getLayerName() == getLayerName(), "child layer name should be the same as the layerName");
+        checkArgument(gridSet.getLayerId() == getLayerId(), "child layer id should be the same as the layerId");
+        checkArgument(
+                gridSet.getParameterId() == getParameterId(),
+                "child parameter id should be the same as the parameterId");
 
-    children.add(child);
-}
+        children.add(child);
+    }
 }
