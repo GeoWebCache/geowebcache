@@ -2,6 +2,9 @@ package org.geowebcache.s3;
 
 import org.geowebcache.util.KeyObject;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 class DeleteTileLayer implements DeleteTileRange {
     private final String prefix;
     private final String bucket;
@@ -11,6 +14,14 @@ class DeleteTileLayer implements DeleteTileRange {
     private final String path;
 
     public DeleteTileLayer(String prefix, String bucket, String layerId, String layerName) {
+        checkNotNull(prefix, "prefix cannot not be null");
+        checkNotNull(bucket, "bucket cannot not be null");
+        checkNotNull(layerId, "layerId cannot not be null");
+        checkNotNull(layerName, "layerName cannot not be null");
+        checkArgument(!bucket.isBlank(), "bucket cannot be blank");
+        checkArgument(!layerId.isBlank(), "layerId cannot be blank");
+        checkArgument(!layerName.isBlank(), "layerName cannot be blank");
+
         this.prefix = prefix;
         this.bucket = bucket;
         this.layerId = layerId;

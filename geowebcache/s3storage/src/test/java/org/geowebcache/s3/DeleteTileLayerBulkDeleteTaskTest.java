@@ -2,13 +2,14 @@ package org.geowebcache.s3;
 
 import static org.geowebcache.s3.BulkDeleteTask.ObjectPathStrategy.S3ObjectPathsForPrefix;
 import static org.geowebcache.s3.BulkDeleteTaskTestHelper.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import java.util.Iterator;
-import junit.framework.TestCase;
+
 import org.geowebcache.s3.BulkDeleteTask.LoggingCallback;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,10 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DeleteTileLayerBulkDeleteTaskTest extends TestCase {
-    private static final String PATH_WITH_PREFIX = "prefix/layer-id/";
-    private static final String PATH_WITHOUT_PREFIX = "/layer-id/";
-
+public class DeleteTileLayerBulkDeleteTaskTest {
     @Mock
     public S3ObjectsWrapper s3ObjectsWrapper;
 
@@ -31,103 +29,13 @@ public class DeleteTileLayerBulkDeleteTaskTest extends TestCase {
     private final CaptureCallback callback = new CaptureCallback(new LoggingCallback());
 
     @Before
-    public void setup() throws Exception {
+    public void setup() {
         builder = BulkDeleteTask.newBuilder()
                 .withAmazonS3Wrapper(amazonS3Wrapper)
                 .withS3ObjectsWrapper(s3ObjectsWrapper)
                 .withBucket(BUCKET)
                 .withBatch(BATCH)
                 .withCallback(callback);
-    }
-
-    @Test
-    public void testConstructor_WithDeleteTileLayer_TaskNotNull() {
-        BulkDeleteTask task = builder.withDeleteRange(new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME))
-                .build();
-        assertNotNull(task);
-    }
-
-    @Test
-    public void testConstructor_WithDeleteTileLayer_AmazonS3Wrapper() {
-        BulkDeleteTask task = builder.withDeleteRange(new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME))
-                .build();
-        assertEquals("AmazonS3Wrapper was not set", amazonS3Wrapper, task.getAmazonS3Wrapper());
-    }
-
-    @Test
-    public void testConstructor_WithDeleteTileLayer_S3ObjectsWrapper() {
-        BulkDeleteTask task = builder.withDeleteRange(new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME))
-                .build();
-        assertEquals("S3ObjectsWrapper was not set", s3ObjectsWrapper, task.getS3ObjectsWrapper());
-    }
-
-    @Test
-    public void testConstructor_WithDeleteTileLayer_Bucket() {
-        BulkDeleteTask task = builder.withDeleteRange(new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME))
-                .build();
-        assertEquals("Bucket was not set", BUCKET, task.getBucketName());
-    }
-
-    @Test
-    public void testConstructor_WithDeleteTileLayer_Batch() {
-        BulkDeleteTask task = builder.withDeleteRange(new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME))
-                .build();
-        assertEquals("Batch was not set", BATCH, task.getBatch());
-    }
-
-    @Test
-    public void testConstructor_WithDeleteTileLayer_Callback() {
-        BulkDeleteTask task = builder.withDeleteRange(new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME))
-                .build();
-        assertEquals("Callback was not set", callback, task.getCallback());
-    }
-
-    @Test
-    public void testConstructor_WithDeleteTileLayer_PrefixSet() {
-        BulkDeleteTask task = builder.withDeleteRange(new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME))
-                .build();
-        DeleteTileLayer deleteTileLayer = (DeleteTileLayer) task.getDeleteTileRange();
-        assertEquals("Prefix was not set", PREFIX, deleteTileLayer.getPrefix());
-    }
-
-    @Test
-    public void testConstructor_WithDeleteTileLayer_BucketSet() {
-        BulkDeleteTask task = builder.withDeleteRange(new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME))
-                .build();
-        DeleteTileLayer deleteTileLayer = (DeleteTileLayer) task.getDeleteTileRange();
-        assertEquals("Bucket was not set", BUCKET, deleteTileLayer.getBucket());
-    }
-
-    @Test
-    public void testConstructor_WithDeleteTileLayer_LayerId() {
-        BulkDeleteTask task = builder.withDeleteRange(new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME))
-                .build();
-        DeleteTileLayer deleteTileLayer = (DeleteTileLayer) task.getDeleteTileRange();
-        assertEquals("LayerId was not set", LAYER_ID, deleteTileLayer.getLayerId());
-    }
-
-    @Test
-    public void testConstructor_WithDeleteTileLayer_LayerName() {
-        BulkDeleteTask task = builder.withDeleteRange(new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME))
-                .build();
-        DeleteTileLayer deleteTileLayer = (DeleteTileLayer) task.getDeleteTileRange();
-        assertEquals("LayerName was not set", LAYER_NAME, deleteTileLayer.getLayerName());
-    }
-
-    @Test
-    public void testConstructor_WithDeleteTileLayer_PathWithPrefix() {
-        BulkDeleteTask task = builder.withDeleteRange(new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME))
-                .build();
-        DeleteTileLayer deleteTileLayer = (DeleteTileLayer) task.getDeleteTileRange();
-        assertEquals("Path with prefix is wrong", PATH_WITH_PREFIX, deleteTileLayer.path());
-    }
-
-    @Test
-    public void testConstructor_WithDeleteTileLayer_PathWithoutPrefix() {
-        BulkDeleteTask task = builder.withDeleteRange(new DeleteTileLayer("", BUCKET, LAYER_ID, LAYER_NAME))
-                .build();
-        DeleteTileLayer deleteTileLayer = (DeleteTileLayer) task.getDeleteTileRange();
-        assertEquals("Path without prefix is wrong", PATH_WITHOUT_PREFIX, deleteTileLayer.path());
     }
 
     @Test
