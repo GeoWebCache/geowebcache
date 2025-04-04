@@ -18,10 +18,6 @@ public class BulkDeleteTaskTestHelper {
 
     public static final int BATCH = 100;
 
-    public static final long X1 = 1;
-    public static final long Y1 = 1;
-    public static final long X2 = 1;
-    public static final long Y2 = 1;
     public static final String GRID_SET_ID = "EPSG:4326";
     public static final String GRID_SET_ID_2 = "EPSG:900913";
 
