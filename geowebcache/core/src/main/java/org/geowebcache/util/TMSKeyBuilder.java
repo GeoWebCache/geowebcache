@@ -40,6 +40,10 @@ public final class TMSKeyBuilder {
     public static final String PARAMETERS_METADATA_OBJECT_SUFFIX = ".properties";
     public static final String PENDING_DELETES = "_pending_deletes.properties";
 
+    public String getPrefix() {
+        return prefix;
+    }
+
     private String prefix;
 
     private TileLayerDispatcher layers;
@@ -111,19 +115,7 @@ public final class TMSKeyBuilder {
             throw new RuntimeException(e);
         }
 
-        KeyObject keyObject = KeyObject.newBuilder()
-                .withPrefix(prefix)
-                .withLayerId(layer)
-                .withGridSetId(gridset)
-                .withFormat(shortFormat)
-                .withParametersId(parametersId)
-                .withX(x)
-                .withY(y)
-                .withZ(z)
-                .withoutVersion()
-                .build();
-
-        return keyObject.objectPath();
+        return KeyObject.toFullPath(prefix, layer, gridset, shortFormat, parametersId, z, x, y, extension);
     }
 
     public String forLocation(String prefix, long[] loc, MimeType mime) {

@@ -13,6 +13,7 @@
  */
 package org.geowebcache.s3;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -151,29 +152,53 @@ class S3Ops {
         }
     }
 
-    public boolean scheduleAsyncDelete(DeleteTileRange deleteTileRange, LockingDecorator callback)
+    public boolean scheduleAsyncDelete(DeleteTileRange deleteTileRange, BulkDeleteTask.Callback callback, LockingDecorator lockingDecorator)
             throws GeoWebCacheException {
         final long timestamp = currentTimeSeconds();
         String msg = format(
                 "Issuing bulk delete on '%s/%s' for objects older than %d",
-                bucketName, deleteTileRange.prefix(), timestamp);
+                bucketName, deleteTileRange.path(), timestamp);
         S3BlobStore.log.info(msg);
 
-        Lock lock = locks.getLock(deleteTileRange.prefix());
-        S3BlobStore.log.info(format("Acquired lock for %s", deleteTileRange.prefix()));
-        callback.addLock(deleteTileRange.prefix(), lock);
+        if (lockingDecorator != null) {
+            Lock lock = locks.getLock(deleteTileRange.path());
+            S3BlobStore.log.info(format("Acquired lock for %s", deleteTileRange.path()));
+            lockingDecorator.addLock(deleteTileRange.path(), lock);
+        }
 
-        try {
-            boolean taskRuns = asyncBulkDelete(deleteTileRange.prefix(), deleteTileRange, timestamp, callback);
-            if (taskRuns) {
-                final String pendingDeletesKey = keyBuilder.pendingDeletes();
-                Properties deletes = getProperties(pendingDeletesKey);
-                deletes.setProperty(deleteTileRange.prefix(), String.valueOf(timestamp));
-                putProperties(pendingDeletesKey, deletes);
+        return asyncBulkDelete(deleteTileRange.path(), deleteTileRange, timestamp, callback);
+    }
+
+    static class MarkPendingDeleteTask implements  BulkDeleteTask.Callback {
+        private final BulkDeleteTask.Callback delegate;
+        private final String pendingDeletesKey;
+        private final Long pendingDeletesKeyTime;
+        private final S3Ops s3Opts;
+
+        public MarkPendingDeleteTask(BulkDeleteTask.Callback delegate, String pendingDeletesKey, Long pendingDeletesKeyTime, S3Ops s3Opts) {
+            checkNotNull(delegate, "delegate cannot be null");
+            checkNotNull(pendingDeletesKey, "pendingDeletesKey cannot be null");
+            checkNotNull(pendingDeletesKeyTime, "pendingDeletesKeyTime cannot be null");
+            checkNotNull(s3Opts, "s3Opts cannot be null");
+
+            this.delegate = delegate;
+            this.pendingDeletesKey = pendingDeletesKey;
+            this.pendingDeletesKeyTime = pendingDeletesKeyTime;
+            this.s3Opts = s3Opts;
+        }
+
+        @Override
+        public void results(BulkDeleteTask.Statistics statistics) {
+
+            for (String prefix : statistics.getStatsPerPrefix().keySet()) {
+                Properties deletes = s3Opts.getProperties(pendingDeletesKey);
+                deletes.setProperty(prefix, String.valueOf(pendingDeletesKeyTime));
+                try {
+                    s3Opts.putProperties(pendingDeletesKey, deletes);
+                } catch (StorageException e) {
+                    S3BlobStore.log.severe(format("Unable to store pending deletes: %s", e.getMessage()));
+                }
             }
-            return taskRuns;
-        } catch (StorageException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -210,7 +235,7 @@ class S3Ops {
 
     // S3 truncates timestamps to seconds precision and does not allow to programmatically set
     // the last modified time
-    private long currentTimeSeconds() {
+    public long currentTimeSeconds() {
         final long timestamp = (long) Math.ceil(System.currentTimeMillis() / 1000D) * 1000L;
         return timestamp;
     }

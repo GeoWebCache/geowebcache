@@ -21,7 +21,9 @@ public class MapKeyObjectsToDeleteObjectRequest implements Function<List<KeyObje
                 .map(DeleteObjectsRequest.KeyVersion::new)
                 .collect(Collectors.toList());
 
+        request.setBucketName(bucket);
         request.setKeys(keys);
+        request.setQuiet(false); // TODO check this setting
         return request;
     }
 }

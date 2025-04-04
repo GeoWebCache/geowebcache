@@ -9,24 +9,32 @@ import java.util.function.Function;
 
 public class PerformDeleteObjects implements Function<DeleteObjectsRequest, DeleteObjectsResult> {
     private final AmazonS3Wrapper wrapper;
-    private final List<AmazonServiceException> issues = new ArrayList<>();
+    private final BulkDeleteTask.Statistics.SubStats stats;
 
-    public PerformDeleteObjects(AmazonS3Wrapper wrapper) {
+    public PerformDeleteObjects(AmazonS3Wrapper wrapper, BulkDeleteTask.Statistics.SubStats stats) {
         this.wrapper = wrapper;
-    }
-
-    public List<AmazonServiceException> getIssues() {
-        return issues;
+        this.stats = stats;
     }
 
     @Override
     public DeleteObjectsResult apply(DeleteObjectsRequest deleteObjectsRequest) {
         try {
-            return wrapper.deleteObjects(deleteObjectsRequest);
+            DeleteObjectsResult deleteObjectsResult = wrapper.deleteObjects(deleteObjectsRequest);
+            stats.updateBatches(deleteObjectsRequest.getKeys().size());
+            return deleteObjectsResult;
         } catch (AmazonServiceException e) {
-            // TODO Errors that retryable type = Service should be retried
             S3BlobStore.log.severe(e.getMessage());
-            issues.add(e);
+            switch (e.getErrorType()) {
+                case Client:
+                    stats.nonrecoverableIssues.add(e);
+                    break;
+                case Service:
+                    stats.recoverableIssues.add(e);
+                    break;
+                case Unknown:
+                    stats.unknownIssues.add(e);
+                    break;
+            }
             return new DeleteObjectsResult(new ArrayList<>());
         }
     }
