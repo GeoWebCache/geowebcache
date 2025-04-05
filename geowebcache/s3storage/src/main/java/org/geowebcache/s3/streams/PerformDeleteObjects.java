@@ -3,6 +3,12 @@ package org.geowebcache.s3.streams;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.ToLongFunction;
+import java.util.stream.Collectors;
 import org.geowebcache.s3.AmazonS3Wrapper;
 import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.delete.BulkDeleteTask.Callback;
@@ -12,13 +18,6 @@ import org.geowebcache.s3.statistics.BatchStats;
 import org.geowebcache.s3.statistics.ResultStat;
 import org.geowebcache.s3.statistics.SubStats;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.function.ToLongFunction;
-import java.util.stream.Collectors;
-
 public class PerformDeleteObjects implements ToLongFunction<Map<String, DeleteTileInfo>> {
     private final AmazonS3Wrapper wrapper;
     private final SubStats stats;
@@ -26,7 +25,12 @@ public class PerformDeleteObjects implements ToLongFunction<Map<String, DeleteTi
     private final Callback callback;
     private final DeleteTileRange deleteTileRange;
 
-    public PerformDeleteObjects(AmazonS3Wrapper wrapper, String bucket, Callback callback, SubStats stats, DeleteTileRange deleteTileRange) {
+    public PerformDeleteObjects(
+            AmazonS3Wrapper wrapper,
+            String bucket,
+            Callback callback,
+            SubStats stats,
+            DeleteTileRange deleteTileRange) {
         this.wrapper = wrapper;
         this.bucket = bucket;
         this.stats = stats;
@@ -55,13 +59,13 @@ public class PerformDeleteObjects implements ToLongFunction<Map<String, DeleteTi
             S3BlobStore.getLog().severe(e.getMessage());
             switch (e.getErrorType()) {
                 case Client:
-                    stats.getNonrecoverableIssues().add(e);
+                    stats.addNonRecoverableIssue(e);
                     break;
                 case Service:
-                    stats.getRecoverableIssues().add(e);
+                    stats.addRecoverableIssue(e);
                     break;
                 case Unknown:
-                    stats.getUnknownIssues().add(e);
+                    stats.addUnknownIssue(e);
                     break;
             }
             return new DeleteObjectsResult(new ArrayList<>());
@@ -81,17 +85,16 @@ public class PerformDeleteObjects implements ToLongFunction<Map<String, DeleteTi
         return request;
     }
 
-    public void processResults(DeleteObjectsResult deleteObjectsResult, Map<String, DeleteTileInfo> mapKeyObjectsByPath) {
+    public void processResults(
+            DeleteObjectsResult deleteObjectsResult, Map<String, DeleteTileInfo> mapKeyObjectsByPath) {
         deleteObjectsResult.getDeletedObjects().forEach(deletedObject -> {
-                    DeleteTileInfo keyObject = mapKeyObjectsByPath.get(deletedObject.getKey());
-                    ResultStat resultStat = new ResultStat(
-                            deletedObject.getKey(),
-                            keyObject.getTile(),
-                            keyObject.getSize(),
-                            Instant.now().getEpochSecond());
-                    callback.tileDeleted(resultStat);
-                }
-        );
+            DeleteTileInfo keyObject = mapKeyObjectsByPath.get(deletedObject.getKey());
+            ResultStat resultStat = new ResultStat(
+                    deletedObject.getKey(),
+                    keyObject.getTile(),
+                    keyObject.getSize(),
+                    Instant.now().getEpochSecond());
+            callback.tileDeleted(resultStat);
+        });
     }
-
 }

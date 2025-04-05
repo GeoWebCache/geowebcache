@@ -1,5 +1,8 @@
 package org.geowebcache.s3.callback;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
+
 import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.delete.BulkDeleteTask.Callback;
 import org.geowebcache.s3.delete.DeleteTileGridSet;
@@ -13,9 +16,6 @@ import org.geowebcache.s3.statistics.SubStats;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.BlobStoreListenerList;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
-
 public class NotificationDecorator implements Callback {
 
     private final Callback delegate;
@@ -28,7 +28,6 @@ public class NotificationDecorator implements Callback {
         this.delegate = delegate;
         this.listeners = listeners;
     }
-
 
     @Override
     public void tileDeleted(ResultStat statistics) {
@@ -56,7 +55,6 @@ public class NotificationDecorator implements Callback {
     @Override
     public void subTaskEnded() {
         delegate.subTaskEnded();
-
 
         if (listeners.isEmpty()) {
             return;
@@ -90,7 +88,6 @@ public class NotificationDecorator implements Callback {
         delegate.taskEnded();
     }
 
-
     // Single tile to delete
     void notifyTileDeleted(ResultStat statistic) {
         if (listeners.isEmpty()) {
@@ -100,7 +97,8 @@ public class NotificationDecorator implements Callback {
         if (statistic.getTileObject() != null) {
             listeners.sendTileDeleted(statistic.getTileObject());
         } else {
-            S3BlobStore.getLog().warning(format("No tile object found for %s cannot notify of deletion", statistic.getPath()));
+            S3BlobStore.getLog()
+                    .warning(format("No tile object found for %s cannot notify of deletion", statistic.getPath()));
         }
     }
 
@@ -124,4 +122,3 @@ public class NotificationDecorator implements Callback {
         }
     }
 }
-

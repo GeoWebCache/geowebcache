@@ -1,8 +1,8 @@
 package org.geowebcache.s3.statistics;
 
-import org.geowebcache.s3.delete.DeleteTileRange;
-
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.geowebcache.s3.delete.DeleteTileRange;
 
 public class BatchStats {
     private DeleteTileRange deleteTileRange;

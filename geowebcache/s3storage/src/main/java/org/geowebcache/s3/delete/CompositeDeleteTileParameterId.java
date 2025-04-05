@@ -82,10 +82,15 @@ public class CompositeDeleteTileParameterId implements CompositeDeleteTileRange 
 
         DeleteTileParameterId gridSet = (DeleteTileParameterId) child;
 
-        checkArgument(Objects.equals(gridSet.getBucket(), getBucket()), "child bucket should be the same as the bucket");
-        checkArgument(Objects.equals(gridSet.getLayerName(), getLayerName()), "child layer name should be the same as the layerName");
-        checkArgument(Objects.equals(gridSet.getLayerId(), getLayerId()), "child layer id should be the same as the layerId");
-        checkArgument(Objects.equals(gridSet.getParameterId(), getParameterId()),
+        checkArgument(
+                Objects.equals(gridSet.getBucket(), getBucket()), "child bucket should be the same as the bucket");
+        checkArgument(
+                Objects.equals(gridSet.getLayerName(), getLayerName()),
+                "child layer name should be the same as the layerName");
+        checkArgument(
+                Objects.equals(gridSet.getLayerId(), getLayerId()), "child layer id should be the same as the layerId");
+        checkArgument(
+                Objects.equals(gridSet.getParameterId(), getParameterId()),
                 "child parameter id should be the same as the parameterId");
 
         children.add(gridSet);

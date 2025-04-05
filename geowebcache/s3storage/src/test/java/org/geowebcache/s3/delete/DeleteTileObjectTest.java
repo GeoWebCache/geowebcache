@@ -1,5 +1,8 @@
 package org.geowebcache.s3.delete;
 
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.junit.Assert.*;
+
 import org.geowebcache.io.Resource;
 import org.geowebcache.storage.TileObject;
 import org.junit.Before;
@@ -7,9 +10,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
-import static org.junit.Assert.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DeleteTileObjectTest {
@@ -20,7 +20,8 @@ public class DeleteTileObjectTest {
 
     @Before
     public void setUp() {
-        tileObject = TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, resource);
+        tileObject =
+                TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, resource);
     }
 
     @Test
@@ -56,5 +57,4 @@ public class DeleteTileObjectTest {
         DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX, true);
         assertTrue("skipExistingCheck was not set", deleteTileObject.shouldSkipExistsCheck());
     }
-
 }

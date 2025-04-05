@@ -1,9 +1,9 @@
 package org.geowebcache.s3.delete;
 
-import org.junit.Test;
-
 import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
 import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 public class DeleteTileLayerTest {
     private static final String PATH_WITH_PREFIX = "prefix/layer-id/";
@@ -58,7 +58,6 @@ public class DeleteTileLayerTest {
         assertThrows(IllegalArgumentException.class, () -> new DeleteTileLayer(PREFIX, BUCKET, "", LAYER_NAME));
     }
 
-
     @Test
     public void testConstructor_WithDeleteTileLayer_LayerName() {
         DeleteTileLayer deleteTileLayer = new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME);
@@ -75,7 +74,6 @@ public class DeleteTileLayerTest {
         assertThrows(IllegalArgumentException.class, () -> new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, ""));
     }
 
-
     @Test
     public void testConstructor_WithDeleteTileLayer_PathWithPrefix() {
         DeleteTileLayer deleteTileLayer = new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME);
@@ -87,5 +85,4 @@ public class DeleteTileLayerTest {
         DeleteTileLayer deleteTileLayer = new DeleteTileLayer("", BUCKET, LAYER_ID, LAYER_NAME);
         assertEquals("Path without prefix is wrong", PATH_WITHOUT_PREFIX, deleteTileLayer.path());
     }
-
 }

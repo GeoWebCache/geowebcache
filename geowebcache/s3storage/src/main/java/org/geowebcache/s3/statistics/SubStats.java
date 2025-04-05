@@ -1,27 +1,28 @@
 package org.geowebcache.s3.statistics;
 
-import org.geowebcache.s3.delete.DeleteTileRange;
-import org.geowebcache.s3.delete.BulkDeleteTask;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import org.geowebcache.s3.delete.BulkDeleteTask;
+import org.geowebcache.s3.delete.DeleteTileRange;
 
 public class SubStats {
-    private final BulkDeleteTask.ObjectPathStrategy strategy;
-    private final DeleteTileRange deleteTileRange;
-    private long deleted;
-    private long processed;
-    private long count = 1;
-    private long batchSent = 0;
-    private long batchTotal = 0;
-    private long batchLowTideLevel = 0;
-    private long batchHighTideLevel = 0;
+    final BulkDeleteTask.ObjectPathStrategy strategy;
+    final DeleteTileRange deleteTileRange;
+    long deleted;
+    long processed;
+    long count = 1;
+    long batchSent = 0;
+    long batchTotal = 0;
+    long batchLowTideLevel = 0;
+    long batchHighTideLevel = 0;
 
-    private final List<Exception> recoverableIssues = new ArrayList<>();
-    private final List<Exception> nonrecoverableIssues = new ArrayList<>();
-    private final List<Exception> unknownIssues = new ArrayList<>();
+    final List<Exception> recoverableIssues = new ArrayList<>();
+    final List<Exception> nonRecoverableIssues = new ArrayList<>();
+    final List<Exception> unknownIssues = new ArrayList<>();
 
     public SubStats(DeleteTileRange deleteTileRange, BulkDeleteTask.ObjectPathStrategy strategy) {
         checkNotNull(deleteTileRange, "deleteTileRange cannot be null");
@@ -32,7 +33,9 @@ public class SubStats {
     }
 
     public boolean completed() {
-        return getRecoverableIssues().isEmpty() && getNonrecoverableIssues().isEmpty() && getUnknownIssues().isEmpty();
+        return recoverableIssues.isEmpty()
+                && nonRecoverableIssues.isEmpty()
+                && unknownIssues.isEmpty();
     }
 
     public void addBatch(BatchStats batchStats) {
@@ -40,7 +43,9 @@ public class SubStats {
         deleted = getDeleted() + batchStats.getDeleted();
         batchSent = getBatchSent() + 1;
         batchTotal = getBatchTotal() + batchStats.getProcessed();
-        batchLowTideLevel = getBatchLowTideLevel() == 0 ? batchStats.getProcessed() : Math.min(batchStats.getProcessed(), getBatchLowTideLevel());
+        batchLowTideLevel = getBatchLowTideLevel() == 0
+                ? batchStats.getProcessed()
+                : Math.min(batchStats.getProcessed(), getBatchLowTideLevel());
         batchHighTideLevel = Math.max(batchStats.getProcessed(), getBatchHighTideLevel());
     }
 
@@ -80,15 +85,41 @@ public class SubStats {
         return batchHighTideLevel;
     }
 
-    public List<Exception> getRecoverableIssues() {
-        return recoverableIssues;
+    public Stream<Exception> getRecoverableIssues() {
+        return recoverableIssues.stream();
     }
 
-    public List<Exception> getNonrecoverableIssues() {
-        return nonrecoverableIssues;
+    public void addRecoverableIssue(Exception e) {
+        this.recoverableIssues.add(e);
     }
 
-    public List<Exception> getUnknownIssues() {
-        return unknownIssues;
+    public int getRecoverableIssuesSize() {
+        return recoverableIssues.size();
     }
+
+    public void addNonRecoverableIssue(Exception e) {
+        this.nonRecoverableIssues.add(e);
+    }
+
+    public Stream<Exception> getNonRecoverableIssues() {
+        return nonRecoverableIssues.stream();
+    }
+
+    public int getNonRecoverableIssuesSize() {
+        return nonRecoverableIssues.size();
+    }
+
+    public Stream<Exception> getUnknownIssues() {
+        return unknownIssues.stream();
+    }
+
+    public int getUnknownIssuesSize() {
+        return unknownIssues.size();
+    }
+
+    public void addUnknownIssue(Exception e) {
+        this.unknownIssues.add(e);
+    }
+
 }
+

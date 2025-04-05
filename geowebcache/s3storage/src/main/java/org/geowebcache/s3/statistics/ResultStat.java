@@ -4,7 +4,7 @@ import org.geowebcache.storage.TileObject;
 
 public class ResultStat {
     private String path;
-    private TileObject tileObject;  // Can be null?
+    private TileObject tileObject; // Can be null?
     private long size;
     private long when;
 
@@ -30,5 +30,4 @@ public class ResultStat {
     public long getWhen() {
         return when;
     }
-
 }

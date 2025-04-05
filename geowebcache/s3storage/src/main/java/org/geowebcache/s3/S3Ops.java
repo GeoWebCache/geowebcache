@@ -28,7 +28,6 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -52,7 +51,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
-
 import org.apache.commons.io.IOUtils;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.locks.LockProvider;
@@ -119,8 +117,8 @@ class S3Ops {
             for (Entry<Object, Object> e : deletes.entrySet()) {
                 final String prefix = e.getKey().toString();
                 final long timestamp = Long.parseLong(e.getValue().toString());
-                S3BlobStore.getLog().info(
-                        format("Restarting pending bulk delete on '%s/%s':%d", bucketName, prefix, timestamp));
+                S3BlobStore.getLog()
+                        .info(format("Restarting pending bulk delete on '%s/%s':%d", bucketName, prefix, timestamp));
                 asyncDelete(prefix, timestamp);
             }
         } finally {
@@ -151,8 +149,10 @@ class S3Ops {
             if (timestamp >= storedTimestamp) {
                 putProperties(pendingDeletesKey, deletes);
             } else {
-                S3BlobStore.getLog().info(format(
-                        "bulk delete finished but there's a newer one ongoing for bucket '%s/%s'", bucketName, prefix));
+                S3BlobStore.getLog()
+                        .info(format(
+                                "bulk delete finished but there's a newer one ongoing for bucket '%s/%s'",
+                                bucketName, prefix));
             }
         } catch (StorageException e) {
             throw new RuntimeException(e);
@@ -203,7 +203,6 @@ class S3Ops {
         @Override
         public void tileDeleted(ResultStat result) {
             delegate.tileDeleted(result);
-
         }
 
         @Override
@@ -348,10 +347,7 @@ class S3Ops {
     }
 
     private synchronized boolean asyncBulkDelete(
-            final String prefix,
-            final DeleteTileRange deleteTileRange,
-            final long timestamp,
-            final Callback callback) {
+            final String prefix, final DeleteTileRange deleteTileRange, final long timestamp, final Callback callback) {
 
         if (!prefixExists(prefix)) {
             return false;
@@ -464,9 +460,7 @@ class S3Ops {
         }
     }
 
-    /**
-     * Simply checks if there are objects starting with {@code prefix}
-     */
+    /** Simply checks if there are objects starting with {@code prefix} */
     public boolean prefixExists(String prefix) {
         boolean hasNext = S3Objects.withPrefix(conn, bucketName, prefix)
                 .withBatchSize(1)
@@ -572,19 +566,24 @@ class S3Ops {
                     }
                 }
             } catch (InterruptedException | IllegalStateException e) {
-                S3BlobStore.getLog().info(
-                        format("S3 bulk delete aborted for '%s/%s'. Will resume on next startup.", bucketName, prefix));
+                S3BlobStore.getLog()
+                        .info(format(
+                                "S3 bulk delete aborted for '%s/%s'. Will resume on next startup.",
+                                bucketName, prefix));
                 throw e;
             } catch (Exception e) {
-                S3BlobStore.getLog().log(
-                        Level.WARNING,
-                        format("Unknown error performing bulk S3 delete of '%s/%s'", bucketName, prefix),
-                        e);
+                S3BlobStore.getLog()
+                        .log(
+                                Level.WARNING,
+                                format("Unknown error performing bulk S3 delete of '%s/%s'", bucketName, prefix),
+                                e);
                 throw e;
             }
 
-            S3BlobStore.getLog().info(format(
-                    "Finished bulk delete on '%s/%s':%d. %d objects deleted", bucketName, prefix, timestamp, count));
+            S3BlobStore.getLog()
+                    .info(format(
+                            "Finished bulk delete on '%s/%s':%d. %d objects deleted",
+                            bucketName, prefix, timestamp, count));
 
             S3Ops.this.clearPendingBulkDelete(prefix, timestamp);
             return count;
@@ -597,9 +596,7 @@ class S3Ops {
         }
     }
 
-    /**
-     * Filters objects that are newer than the given timestamp
-     */
+    /** Filters objects that are newer than the given timestamp */
     private static class TimeStampFilter implements Predicate<S3ObjectSummary> {
 
         private long timeStamp;

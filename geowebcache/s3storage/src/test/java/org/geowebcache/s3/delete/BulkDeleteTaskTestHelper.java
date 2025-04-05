@@ -1,19 +1,18 @@
 package org.geowebcache.s3.delete;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 import org.geowebcache.s3.delete.BulkDeleteTask.Callback;
 import org.geowebcache.s3.statistics.BatchStats;
 import org.geowebcache.s3.statistics.ResultStat;
 import org.geowebcache.s3.statistics.Statistics;
 import org.geowebcache.s3.statistics.SubStats;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.LongStream;
-
-import static com.google.common.base.Preconditions.checkState;
 
 public class BulkDeleteTaskTestHelper {
     public static final Random RANDOM = new Random(System.currentTimeMillis());
@@ -26,98 +25,29 @@ public class BulkDeleteTaskTestHelper {
     public static final int BATCH = 100;
 
     public static final String GRID_SET_ID = "EPSG:4326";
-    //public static final String GRID_SET_ID_2 = "EPSG:900913";
+    // public static final String GRID_SET_ID_2 = "EPSG:900913";
 
     public static final String FORMAT_IN_KEY = "png";
-    //public static final String FORMAT_IN_KEY_2 = "jpg";
+    // public static final String FORMAT_IN_KEY_2 = "jpg";
 
     public static final String PARAMETERS_ID = "75595e9159afae9c4669aee57366de8c196a57e1";
 
     public static final long TIMESTAMP = System.currentTimeMillis();
 
     public static final Set<String> SINGLE_SET_OF_GRID_SET_IDS = Set.of(GRID_SET_ID);
-    //public static final Set<String> ALL_SET_OF_GRID_SET_IDS = Set.of(GRID_SET_ID, GRID_SET_ID_2);
+    // public static final Set<String> ALL_SET_OF_GRID_SET_IDS = Set.of(GRID_SET_ID, GRID_SET_ID_2);
 
     public static final Set<String> SINGLE_SET_OF_FORMATS = Set.of(FORMAT_IN_KEY);
-    //public static final Set<String> ALL_SET_OF_FORMATS = Set.of(FORMAT_IN_KEY, FORMAT_IN_KEY_2);
+    // public static final Set<String> ALL_SET_OF_FORMATS = Set.of(FORMAT_IN_KEY, FORMAT_IN_KEY_2);
 
     public static final Set<Long> ZOOM_LEVEL_0 = Set.of(0L);
     public static final Set<Long> ZOOM_LEVEL_1 = Set.of(1L);
-    //public static final Set<Long> ZOOM_LEVEL_4 = Set.of(4L);
+    // public static final Set<Long> ZOOM_LEVEL_4 = Set.of(4L);
 
     public static final Set<Long> ZOOM_LEVEL_0_THROUGH_9 = Set.of(0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L);
 
-
-    public static final long[] XYZ = {1,2,3};
+    public static final long[] XYZ = {1, 2, 3};
     public static final Map<String, String> PARAMETERS = new HashMap<>() {};
-
-
-    static class CaptureCallback implements Callback {
-        private final Callback delegate;
-
-        long batchStartedCount = 0;
-        long batchEndedCount = 0;
-        long subTaskStartedCount = 0;
-        long subTaskEndedCount = 0;
-        long taskStartedCount = 0;
-        long taskEndedCount = 0;
-        long tileDeletedCount = 0;
-
-        Statistics statistics = null;
-        List<SubStats> subStats = new ArrayList<>();
-        List<BatchStats> batchStats = new ArrayList<>();
-        public CaptureCallback(Callback delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public void tileDeleted(ResultStat result) {
-            this.delegate.tileDeleted(result);
-            tileDeletedCount++;
-        }
-
-        @Override
-        public void batchStarted(BatchStats batchStats) {
-            this.delegate.batchStarted(batchStats);
-            this.batchStats.add(batchStats);
-            batchStartedCount++;
-        }
-
-
-        @Override
-        public void batchEnded() {
-            this.delegate.batchEnded();
-            batchEndedCount++;
-        }
-
-        @Override
-        public void subTaskStarted(SubStats subStats) {
-            this.delegate.subTaskStarted(subStats);
-            this.subStats.add(subStats);
-            subTaskStartedCount++;
-        }
-
-        @Override
-        public void subTaskEnded() {
-            this.delegate.subTaskEnded();
-            subTaskEndedCount++;
-        }
-
-        @Override
-        public void taskStarted(Statistics statistics) {
-            checkState(this.statistics == null, "Statistics already set");
-
-            this.delegate.taskStarted(statistics);
-            this.statistics = statistics;
-            taskStartedCount++;
-        }
-
-        @Override
-        public void taskEnded() {
-            this.delegate.taskEnded();
-            taskEndedCount++;
-        }
-    }
 
     static long zoomScaleModifier(long zoomLevel) {
         return Math.min(Math.round(Math.pow(2.0, zoomLevel)), 32);
@@ -128,8 +58,8 @@ public class BulkDeleteTaskTestHelper {
         List<S3ObjectSummary> summaries = new ArrayList<>();
 
         gridSetIds.forEach(gridSetId -> formats.forEach(format -> setOfZoomLevels.forEach(z -> {
-            List<S3ObjectSummary> layerSummaries = generateZoomLevelSummaries(
-                    z, zoomScaleModifier(z), zoomScaleModifier(z), gridSetId, format);
+            List<S3ObjectSummary> layerSummaries =
+                    generateZoomLevelSummaries(z, zoomScaleModifier(z), zoomScaleModifier(z), gridSetId, format);
             summaries.addAll(layerSummaries);
         })));
 
@@ -175,7 +105,7 @@ public class BulkDeleteTaskTestHelper {
         return summary;
     }
 
-    //public static final List<S3ObjectSummary> S_3_OBJECT_EMPTY_SUMMARY_LIST = new ArrayList<>();
+    // public static final List<S3ObjectSummary> S_3_OBJECT_EMPTY_SUMMARY_LIST = new ArrayList<>();
     public static final List<S3ObjectSummary> S_3_OBJECT_SUMMARY_SINGLE_TILE_LIST =
             generateLayerSummaries(SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, ZOOM_LEVEL_0);
     public static final List<S3ObjectSummary> S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST =

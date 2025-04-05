@@ -3,11 +3,10 @@ package org.geowebcache.s3.streams;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import org.geowebcache.s3.S3BlobStore;
-import org.geowebcache.s3.S3ObjectsWrapper;
-
 import java.util.Iterator;
 import java.util.function.Supplier;
+import org.geowebcache.s3.S3BlobStore;
+import org.geowebcache.s3.S3ObjectsWrapper;
 
 /**
  * S3ObjectPathsForPrefixSupplier This class will interact with the AmazonS3 connection to retrieve all the objects with
@@ -35,16 +34,18 @@ public class S3ObjectPathsForPrefixSupplier implements Supplier<S3ObjectSummary>
 
     private synchronized S3ObjectSummary next() {
         if (iterator == null) {
-            S3BlobStore.getLog().info(
-                    String.format("Creating an iterator for objects in bucket: %s with prefix: %s", bucket, prefix));
+            S3BlobStore.getLog()
+                    .info(String.format(
+                            "Creating an iterator for objects in bucket: %s with prefix: %s", bucket, prefix));
             iterator = wrapper.iterator();
         }
         if (iterator.hasNext()) {
             count++;
             return iterator.next();
         } else {
-            S3BlobStore.getLog().info(
-                    String.format("No more objects in bucket: %s with prefix: %s supplied %d", bucket, prefix, count));
+            S3BlobStore.getLog()
+                    .info(String.format(
+                            "No more objects in bucket: %s with prefix: %s supplied %d", bucket, prefix, count));
             return null;
         }
     }

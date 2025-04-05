@@ -12,7 +12,8 @@ import java.util.Iterator;
 
 import org.geowebcache.s3.AmazonS3Wrapper;
 import org.geowebcache.s3.S3ObjectsWrapper;
-import org.geowebcache.s3.callback.LoggingCallbackDecorator;
+import org.geowebcache.s3.callback.CaptureCallback;
+import org.geowebcache.s3.callback.StatisticCallbackDecorator;
 import org.geowebcache.s3.statistics.Statistics;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +30,7 @@ public class DeleteTileLayerBulkDeleteTaskTest {
     public AmazonS3Wrapper amazonS3Wrapper;
 
     private BulkDeleteTask.Builder builder;
-    private final CaptureCallback callback = new CaptureCallback(new LoggingCallbackDecorator());
+    private final CaptureCallback callback = new CaptureCallback(new StatisticCallbackDecorator());
 
     @Before
     public void setup() {
@@ -62,7 +63,7 @@ public class DeleteTileLayerBulkDeleteTaskTest {
         BulkDeleteTask task = builder.withDeleteRange(new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME))
                 .build();
         Long count = task.call();
-        Statistics statistics = callback.statistics;
+        Statistics statistics = callback.getStatistics();
         assertEquals(
                 "Should have batch large summary collection size", S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST.size(), (long) count);
         assertEquals(
@@ -87,7 +88,7 @@ public class DeleteTileLayerBulkDeleteTaskTest {
         BulkDeleteTask task = builder.withDeleteRange(new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME))
                 .build();
         Long count = task.call();
-        Statistics statistics = callback.statistics;
+        Statistics statistics = callback.getStatistics();
         assertEquals("Should have processed large summary collection size", S_3_OBJECT_SUMMARY_LARGE_LIST.size(), (long)
                 count);
         assertEquals(

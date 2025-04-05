@@ -5,7 +5,8 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.geowebcache.io.Resource;
 import org.geowebcache.s3.AmazonS3Wrapper;
 import org.geowebcache.s3.S3ObjectsWrapper;
-import org.geowebcache.s3.callback.LoggingCallbackDecorator;
+import org.geowebcache.s3.callback.CaptureCallback;
+import org.geowebcache.s3.callback.StatisticCallbackDecorator;
 import org.geowebcache.s3.statistics.Statistics;
 import org.geowebcache.storage.TileObject;
 import org.junit.Before;
@@ -35,7 +36,7 @@ public class DeleteTileObjectBulkDeleteTaskTest {
 
     public TileObject tileObject;
     private BulkDeleteTask.Builder builder;
-    private final CaptureCallback callback = new CaptureCallback(new LoggingCallbackDecorator());
+    private final CaptureCallback callback = new CaptureCallback(new StatisticCallbackDecorator());
 
     @Before
     public void setup() {
@@ -70,7 +71,7 @@ public class DeleteTileObjectBulkDeleteTaskTest {
         BulkDeleteTask task = builder.withDeleteRange(deleteTileObject)
                 .build();
         Long count = task.call();
-        Statistics statistics = callback.statistics;
+        Statistics statistics = callback.getStatistics();
         long expectedProcessed = 1;
         long expectedDeleted = 1;
         long expectedBatches = 1;
@@ -93,7 +94,7 @@ public class DeleteTileObjectBulkDeleteTaskTest {
         BulkDeleteTask task = builder.withDeleteRange(deleteTileObject)
                 .build();
         Long count = task.call();
-        Statistics statistics = callback.statistics;
+        Statistics statistics = callback.getStatistics();
         long expectedProcessed = 1;
         long expectedDeleted = 1;
         long expectedBatches = 1;
@@ -117,8 +118,8 @@ public class DeleteTileObjectBulkDeleteTaskTest {
                 .build();
         Long count = task.call();
 
-        assertEquals("Expected TaskStarted callback called once", 1, callback.taskStartedCount);
-        assertEquals("Expected TaskEnded callback called once", 1, callback.taskEndedCount);
+        assertEquals("Expected TaskStarted callback called once", 1, callback.getTaskStartedCount());
+        assertEquals("Expected TaskEnded callback called once", 1, callback.getTaskEndedCount());
     }
 
     @Test
@@ -136,8 +137,8 @@ public class DeleteTileObjectBulkDeleteTaskTest {
                 .build();
         Long count = task.call();
 
-        assertEquals("Expected SubTaskStarted callback called once", 1, callback.subTaskStartedCount);
-        assertEquals("Expected SubTaskEnded callback called once", 1, callback.subTaskEndedCount);
+        assertEquals("Expected SubTaskStarted callback called once", 1, callback.getSubTaskStartedCount());
+        assertEquals("Expected SubTaskEnded callback called once", 1, callback.getSubTaskEndedCount());
     }
 
     @Test
@@ -155,8 +156,8 @@ public class DeleteTileObjectBulkDeleteTaskTest {
                 .build();
         Long count = task.call();
 
-        assertEquals("Expected BatchStarted callback called once", 1, callback.batchStartedCount);
-        assertEquals("Expected BatchEnded  callback called once", 1, callback.batchEndedCount);
+        assertEquals("Expected BatchStarted callback called once", 1, callback.getBatchStartedCount());
+        assertEquals("Expected BatchEnded  callback called once", 1, callback.getBatchEndedCount());
     }
 
 }

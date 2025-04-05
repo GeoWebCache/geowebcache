@@ -1,20 +1,19 @@
 package org.geowebcache.s3.delete;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.stream.Stream;
 import org.geowebcache.s3.*;
 import org.geowebcache.s3.statistics.BatchStats;
 import org.geowebcache.s3.statistics.ResultStat;
 import org.geowebcache.s3.statistics.Statistics;
 import org.geowebcache.s3.statistics.SubStats;
 import org.geowebcache.s3.streams.*;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.Callable;
-import java.util.stream.Stream;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
 
 public class BulkDeleteTask implements Callable<Long> {
     private final AmazonS3Wrapper amazonS3Wrapper;
@@ -25,9 +24,10 @@ public class BulkDeleteTask implements Callable<Long> {
 
     private final Callback callback;
 
-    //private final ThreadNotInterruptedPredicate threadNotInterrupted = new ThreadNotInterruptedPredicate();
+    // private final ThreadNotInterruptedPredicate threadNotInterrupted = new ThreadNotInterruptedPredicate();
     private final MapS3ObjectSummaryToKeyObject mapS3ObjectSummaryToKeyObject = new MapS3ObjectSummaryToKeyObject();
-    private final MapKeyObjectsToDeleteObjectRequest mapKeyObjectsToDeleteObjectRequest = new MapKeyObjectsToDeleteObjectRequest();
+    private final MapKeyObjectsToDeleteObjectRequest mapKeyObjectsToDeleteObjectRequest =
+            new MapKeyObjectsToDeleteObjectRequest();
 
     // Only build with builder
     private BulkDeleteTask(
@@ -81,7 +81,7 @@ public class BulkDeleteTask implements Callable<Long> {
 
         } catch (Exception e) {
             S3BlobStore.getLog().severe(format("Exiting from bulk delete task: %s", e.getMessage()));
-            statistics.getNonrecoverableIssues().add(e);
+            statistics.addUnknownIssue(e);
             return statistics.getProcessed();
         } finally {
             callback.taskEnded();
@@ -111,20 +111,23 @@ public class BulkDeleteTask implements Callable<Long> {
         SubStats subStats = new SubStats(deleteTileRange, SingleTile);
         callback.subTaskStarted(subStats);
 
-        PerformDeleteObjects performDeleteObjects = new PerformDeleteObjects(amazonS3Wrapper, bucketName, callback, subStats, deleteTileRange);
+        PerformDeleteObjects performDeleteObjects =
+                new PerformDeleteObjects(amazonS3Wrapper, bucketName, callback, subStats, deleteTileRange);
 
-        S3BlobStore.getLog().info(format(
-                "Using strategy SingleTile to a delete tile from bucket %s with prefix: %s",
-                bucketName, deleteTileRange.path()));
+        S3BlobStore.getLog()
+                .info(format(
+                        "Using strategy SingleTile to a delete tile from bucket %s with prefix: %s",
+                        bucketName, deleteTileRange.path()));
 
         Long count = batchedStreamOfKeyObjects(deleteTileRange, subStats)
                 .map(mapKeyObjectsToDeleteObjectRequest)
                 .mapToLong(performDeleteObjects)
                 .sum();
 
-        S3BlobStore.getLog().info(format(
-                "Finished applying strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s processed: %d",
-                bucketName, deleteTileRange.path(), count));
+        S3BlobStore.getLog()
+                .info(format(
+                        "Finished applying strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s processed: %d",
+                        bucketName, deleteTileRange.path(), count));
 
         callback.subTaskEnded();
         return subStats.getProcessed();
@@ -166,11 +169,13 @@ public class BulkDeleteTask implements Callable<Long> {
         SubStats subStats = new SubStats(deleteTileRange, S3ObjectPathsForPrefix);
         callback.subTaskStarted(subStats);
 
-        var performDeleteObjects = new PerformDeleteObjects(amazonS3Wrapper, bucketName, callback, subStats, deleteTileRange);
+        var performDeleteObjects =
+                new PerformDeleteObjects(amazonS3Wrapper, bucketName, callback, subStats, deleteTileRange);
 
-        S3BlobStore.getLog().info(format(
-                "Using strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s",
-                bucketName, deleteTileRange.path()));
+        S3BlobStore.getLog()
+                .info(format(
+                        "Using strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s",
+                        bucketName, deleteTileRange.path()));
 
         var count = batchedStreamOfKeyObjects(deleteTileRange, subStats)
                 .map(mapKeyObjectsToDeleteObjectRequest)
@@ -178,12 +183,14 @@ public class BulkDeleteTask implements Callable<Long> {
                 .sum();
 
         if (count != subStats.getDeleted()) {
-            S3BlobStore.getLog().warning(format("Mismatch during tile delete expected %d found %d", count, subStats.getDeleted()));
+            S3BlobStore.getLog()
+                    .warning(format("Mismatch during tile delete expected %d found %d", count, subStats.getDeleted()));
         }
 
-        S3BlobStore.getLog().info(format(
-                "Finished applying strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s deleted: %d",
-                bucketName, deleteTileRange.path(), count));
+        S3BlobStore.getLog()
+                .info(format(
+                        "Finished applying strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s deleted: %d",
+                        bucketName, deleteTileRange.path(), count));
 
         callback.subTaskEnded();
         return subStats.getProcessed();
@@ -194,10 +201,9 @@ public class BulkDeleteTask implements Callable<Long> {
                 generateStreamOfKeyObjects(createS3ObjectPathsForPrefixSupplier(deleteTileRange.path()), stats), batch);
     }
 
-    private Stream<DeleteTileInfo> generateStreamOfKeyObjects(S3ObjectPathsForPrefixSupplier supplier, SubStats subStats) {
-        return Stream.generate(supplier)
-                .takeWhile(Objects::nonNull)
-                .map(mapS3ObjectSummaryToKeyObject);
+    private Stream<DeleteTileInfo> generateStreamOfKeyObjects(
+            S3ObjectPathsForPrefixSupplier supplier, SubStats subStats) {
+        return Stream.generate(supplier).takeWhile(Objects::nonNull).map(mapS3ObjectSummaryToKeyObject);
     }
 
     private S3ObjectPathsForPrefixSupplier createS3ObjectPathsForPrefixSupplier(String prefix) {
@@ -232,38 +238,42 @@ public class BulkDeleteTask implements Callable<Long> {
 
     public interface Callback {
         void tileDeleted(ResultStat result);
+
         void batchStarted(BatchStats batchStats);
+
         void batchEnded();
+
         void subTaskStarted(SubStats subStats);
+
         void subTaskEnded();
+
         void taskStarted(Statistics statistics);
+
         void taskEnded();
     }
 
     public static class NoopCallback implements Callback {
         @Override
-        public void tileDeleted(ResultStat result) {
-        }
-        @Override
-        public void batchStarted(BatchStats batchStats) {
-        }
-        @Override
-        public void batchEnded() {
-        }
-        @Override
-        public void subTaskStarted(SubStats subStats) {
-        }
-        @Override
-        public void subTaskEnded() {
-        }
-        @Override
-        public void taskStarted(Statistics statistics) {
-        }
-        @Override
-        public void taskEnded() {
-        }
-    }
+        public void tileDeleted(ResultStat result) {}
 
+        @Override
+        public void batchStarted(BatchStats batchStats) {}
+
+        @Override
+        public void batchEnded() {}
+
+        @Override
+        public void subTaskStarted(SubStats subStats) {}
+
+        @Override
+        public void subTaskEnded() {}
+
+        @Override
+        public void taskStarted(Statistics statistics) {}
+
+        @Override
+        public void taskEnded() {}
+    }
 
     public static Builder newBuilder() {
         return new Builder();

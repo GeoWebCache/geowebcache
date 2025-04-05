@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
-
 import org.geowebcache.s3.S3ObjectsWrapper;
 import org.geowebcache.s3.streams.S3ObjectPathsForPrefixSupplier.Builder;
 import org.junit.Before;

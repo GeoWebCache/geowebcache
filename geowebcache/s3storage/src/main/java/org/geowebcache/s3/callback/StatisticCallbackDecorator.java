@@ -1,68 +1,78 @@
 package org.geowebcache.s3.callback;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
+
+import java.util.Objects;
+import java.util.logging.Logger;
 import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.delete.BulkDeleteTask;
+import org.geowebcache.s3.delete.BulkDeleteTask.Callback;
 import org.geowebcache.s3.statistics.BatchStats;
 import org.geowebcache.s3.statistics.ResultStat;
 import org.geowebcache.s3.statistics.Statistics;
 import org.geowebcache.s3.statistics.SubStats;
 
-import java.util.Objects;
-import java.util.logging.Logger;
+/**
+ * This class has the responsibility of managing the statistics and logging of delete tasks as they are processed
+ *
+ * <p>When the taskEnded is called it will dump a summary of activity
+ */
+public class StatisticCallbackDecorator implements Callback {
+    final Logger logger;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-import static java.lang.String.format;
+    final Callback delegate;
+    Statistics statistics;
+    SubStats currentSub;
+    BatchStats currentBatch;
 
-public class LoggingCallbackDecorator implements BulkDeleteTask.Callback {
-    private static final Logger LOG = S3BlobStore.getLog();
+    public StatisticCallbackDecorator() {
 
-    private final BulkDeleteTask.Callback delegate;
-    private Statistics statistics;
-    private SubStats currentSub;
-    private BatchStats currentBatch;
-
-    public LoggingCallbackDecorator() {
-        this(new BulkDeleteTask.NoopCallback());
+        this(S3BlobStore.getLog(), new BulkDeleteTask.NoopCallback());
     }
 
-    public LoggingCallbackDecorator(BulkDeleteTask.Callback delegate) {
+    public StatisticCallbackDecorator(Logger logger, Callback delegate) {
         checkNotNull(delegate, "delegate parameter cannot be null");
+        checkNotNull(logger, "logger parameter cannot be null");
 
+        this.logger = logger;
         this.delegate = delegate;
     }
 
     @Override
     public void taskEnded() {
+        checkState(Objects.nonNull(statistics), "Statistics not initialized");
+
         try {
             String message = format(
                     "Completed: %b Processed %s Deleted: %d Recoverable Errors: %d Unrecoverable Errors: %d Unknown Issues %d Batches Sent %d Batches Total %d High Tide %d Low Tide %d",
                     statistics.completed(),
                     statistics.getProcessed(),
                     statistics.getDeleted(),
-                    statistics.getRecoverableIssues().size(),
-                    statistics.getRecoverableIssues().size(),
-                    statistics.getUnknownIssues().size(),
+                    statistics.getNonRecoverableIssuesSize(),
+                    statistics.getRecoverableIssuesSize(),
+                    statistics.getUnknownIssuesSize(),
                     statistics.getBatchSent(),
                     statistics.getBatchTotal(),
                     statistics.getBatchHighTideLevel(),
                     statistics.getBatchLowTideLevel());
             if (statistics.completed()) {
-                LOG.info(message);
+                logger.info(message);
             } else {
-                LOG.warning(message);
+                logger.warning(message);
             }
 
             for (var subStat : statistics.getSubStats()) {
-                LOG.info(format(
+                logger.info(format(
                         "Strategy %s Count: %d Processed %d Deleted: %d Recoverable Errors: %d Unrecoverable Errors: %d Unknown Issues %d Batches Sent %d Batches Total %d High Tide %d Low Tide %d",
                         subStat.getStrategy().toString(),
                         subStat.getCount(),
                         subStat.getProcessed(),
                         subStat.getDeleted(),
-                        subStat.getRecoverableIssues().size(),
-                        subStat.getUnknownIssues().size(),
-                        subStat.getNonrecoverableIssues().size(),
+                        subStat.getRecoverableIssuesSize(),
+                        subStat.getUnknownIssuesSize(),
+                        subStat.getNonRecoverableIssuesSize(),
                         subStat.getBatchSent(),
                         subStat.getBatchTotal(),
                         subStat.getBatchHighTideLevel(),
@@ -74,14 +84,13 @@ public class LoggingCallbackDecorator implements BulkDeleteTask.Callback {
     }
 
     @Override
-    public void tileDeleted(ResultStat result){
+    public void tileDeleted(ResultStat result) {
         checkNotNull(result, "result parameter cannot be null");
         checkState(Objects.nonNull(currentBatch), "current batch field cannot be null");
 
         currentBatch.add(result);
         delegate.tileDeleted(result);
     }
-
 
     @Override
     public void batchStarted(BatchStats statistics) {
@@ -101,6 +110,8 @@ public class LoggingCallbackDecorator implements BulkDeleteTask.Callback {
 
     @Override
     public void subTaskStarted(SubStats subStats) {
+        checkNotNull(subStats, "subStats parameter cannot be null");
+        checkState(Objects.nonNull(statistics), "task should have been been started");
         checkState(Objects.isNull(currentSub), "Sub task has already been started");
         this.currentSub = subStats;
         delegate.subTaskStarted(subStats);
@@ -108,7 +119,7 @@ public class LoggingCallbackDecorator implements BulkDeleteTask.Callback {
 
     @Override
     public void subTaskEnded() {
-        checkState(Objects.nonNull(this.statistics), "statistics fields should have been set");
+        checkState(Objects.nonNull(this.statistics), "statistics field should have been set");
         checkState(Objects.nonNull(currentSub), "no current sub stats have been set");
         this.statistics.addSubStats(currentSub);
         currentSub = null;
@@ -117,8 +128,10 @@ public class LoggingCallbackDecorator implements BulkDeleteTask.Callback {
 
     @Override
     public void taskStarted(Statistics statistics) {
+        checkNotNull(statistics, "statistics parameter cannot be null");
+        checkState(Objects.isNull(this.statistics), "statistics field should have been set");
+
         this.statistics = statistics;
         delegate.taskStarted(statistics);
     }
 }
-

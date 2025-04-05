@@ -1,31 +1,33 @@
 package org.geowebcache.s3.statistics;
 
-import org.geowebcache.s3.delete.DeleteTileRange;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
+import org.geowebcache.s3.delete.DeleteTileRange;
 
 public class Statistics {
-    private long deleted;
-    private long processed;
-    private long batchSent = 0;
-    private long batchTotal = 0;
-    private long batchLowTideLevel = 0;
-    private long batchHighTideLevel = 0;
-    private final DeleteTileRange deleteTileRange;
-    private final List<Exception> recoverableIssues = new ArrayList<>();
-    private final List<Exception> nonrecoverableIssues = new ArrayList<>();
-    private final List<Exception> unknownIssues = new ArrayList<>();
+    long deleted;
+    long processed;
+    long batchSent = 0;
+    long batchTotal = 0;
+    long batchLowTideLevel = 0;
+    long batchHighTideLevel = 0;
+    final DeleteTileRange deleteTileRange;
+    final List<Exception> recoverableIssues = new ArrayList<>();
+    final List<Exception> nonRecoverableIssues = new ArrayList<>();
+    final List<Exception> unknownIssues = new ArrayList<>();
 
-    private final List<SubStats> subStats = new ArrayList<>();
+    final List<SubStats> subStats = new ArrayList<>();
 
     public Statistics(DeleteTileRange deleteTileRange) {
         this.deleteTileRange = deleteTileRange;
     }
 
     public boolean completed() {
-        return getRecoverableIssues().isEmpty() && getNonrecoverableIssues().isEmpty() && getUnknownIssues().isEmpty();
+        return recoverableIssues.isEmpty()
+                && nonRecoverableIssues.isEmpty()
+                && unknownIssues.isEmpty();
     }
 
     public List<SubStats> getSubStats() {
@@ -36,9 +38,9 @@ public class Statistics {
         this.getSubStats().add(stats);
         this.deleted = this.getDeleted() + stats.getDeleted();
         this.processed = this.getProcessed() + stats.getProcessed();
-        this.getRecoverableIssues().addAll(stats.getRecoverableIssues());
-        this.getNonrecoverableIssues().addAll(stats.getNonrecoverableIssues());
-        this.getUnknownIssues().addAll(stats.getUnknownIssues());
+        stats.getRecoverableIssues().forEach(this.recoverableIssues::add);
+        stats.getNonRecoverableIssues().forEach(this.nonRecoverableIssues::add);
+        stats.getUnknownIssues().forEach(this.unknownIssues::add);
         this.batchSent = this.getBatchSent() + stats.getBatchSent();
         this.batchTotal = this.getBatchTotal() + stats.getBatchTotal();
         this.batchLowTideLevel = getBatchLowTideLevel() == 0
@@ -75,16 +77,40 @@ public class Statistics {
         return deleteTileRange;
     }
 
-    public List<Exception> getRecoverableIssues() {
-        return recoverableIssues;
+    public Stream<Exception> getRecoverableIssues() {
+        return recoverableIssues.stream();
     }
 
-    public List<Exception> getNonrecoverableIssues() {
-        return nonrecoverableIssues;
+    public void addRecoverableIssue(Exception e) {
+        this.recoverableIssues.add(e);
     }
 
-    public List<Exception> getUnknownIssues() {
-        return unknownIssues;
+    public int getRecoverableIssuesSize() {
+        return recoverableIssues.size();
     }
+
+    public void addNonRecoverableIssue(Exception e) {
+        this.nonRecoverableIssues.add(e);
+    }
+
+    public Stream<Exception> getNonRecoverableIssues() {
+        return nonRecoverableIssues.stream();
+    }
+
+    public int getNonRecoverableIssuesSize() {
+        return nonRecoverableIssues.size();
+    }
+
+    public Stream<Exception> getUnknownIssues() {
+        return unknownIssues.stream();
+    }
+
+    public int getUnknownIssuesSize() {
+        return unknownIssues.size();
+    }
+
+    public void addUnknownIssue(Exception e) {
+        this.unknownIssues.add(e);
+    }
+
 }
-

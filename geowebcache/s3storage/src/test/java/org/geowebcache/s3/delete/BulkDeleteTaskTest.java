@@ -1,18 +1,19 @@
 package org.geowebcache.s3.delete;
 
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.LAYER_NAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.geowebcache.s3.AmazonS3Wrapper;
 import org.geowebcache.s3.S3ObjectsWrapper;
-import org.geowebcache.s3.callback.LoggingCallbackDecorator;
+import org.geowebcache.s3.callback.CaptureCallback;
+import org.geowebcache.s3.callback.StatisticCallbackDecorator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.LAYER_NAME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BulkDeleteTaskTest {
@@ -23,10 +24,10 @@ public class BulkDeleteTaskTest {
     public AmazonS3Wrapper amazonS3Wrapper;
 
     private BulkDeleteTask.Builder builder;
-    private final CaptureCallback callback = new CaptureCallback(new LoggingCallbackDecorator());
+    private final CaptureCallback callback = new CaptureCallback(new StatisticCallbackDecorator());
 
     @Before
-    public void setup(){
+    public void setup() {
         builder = BulkDeleteTask.newBuilder()
                 .withAmazonS3Wrapper(amazonS3Wrapper)
                 .withS3ObjectsWrapper(s3ObjectsWrapper)
@@ -34,8 +35,6 @@ public class BulkDeleteTaskTest {
                 .withBatch(BATCH)
                 .withCallback(callback);
     }
-
-
 
     @Test
     public void testConstructor_WithDeleteTileLayer_TaskNotNull() {
@@ -85,6 +84,4 @@ public class BulkDeleteTaskTest {
         BulkDeleteTask task = builder.withDeleteRange(deleteTileRange).build();
         assertEquals("DeleteTileRange was not set", deleteTileRange, task.getDeleteTileRange());
     }
-
-
 }
