@@ -7,6 +7,10 @@ import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import java.util.Iterator;
 
+/**
+ * This class wraps the S3Objects class to assist in unit testing and providing a geosolutions
+ * wrapper around the amazon class
+ */
 public class S3ObjectsWrapper {
     private S3Objects s3Objects;
 
