@@ -1,28 +1,32 @@
 package org.geowebcache.s3.delete;
 
-import static java.lang.String.format;
 
-public class DeleteTileGridSet implements DeleteTileRange {
+public class DeleteTilePrefix implements DeleteTileRange{
     private final String prefix;
     private final String bucket;
     private final String layerId;
     private final String gridSetId;
-    private final String layerName;
-
+    private final String format;
+    private final String parameterId;
     private final String path;
 
-    public DeleteTileGridSet(String prefix, String bucket, String layerId, String gridSetId, String layerName) {
+    public DeleteTilePrefix(String prefix, String bucket, String layerId, String gridSetId, String format, String parameterId, String path) {
         this.prefix = prefix;
         this.bucket = bucket;
         this.layerId = layerId;
         this.gridSetId = gridSetId;
-        this.layerName = layerName;
-
-        this.path = DeleteTileInfo.toGridSet(prefix, layerId, gridSetId);
+        this.format = format;
+        this.parameterId = parameterId;
+        this.path = path;
     }
 
+    @Override
     public String path() {
         return path;
+    }
+
+    public String getPrefix() {
+        return prefix;
     }
 
     public String getBucket() {
@@ -37,7 +41,11 @@ public class DeleteTileGridSet implements DeleteTileRange {
         return gridSetId;
     }
 
-    public String getLayerName() {
-        return layerName;
+    public String getFormat() {
+        return format;
+    }
+
+    public String getParameterId() {
+        return parameterId;
     }
 }

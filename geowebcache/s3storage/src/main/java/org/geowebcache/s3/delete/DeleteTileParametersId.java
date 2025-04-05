@@ -2,7 +2,7 @@ package org.geowebcache.s3.delete;
 
 import static java.lang.String.format;
 
-public class DeleteTileParameterId implements DeleteTileRange {
+public class DeleteTileParametersId implements DeleteTileRange {
     private final String prefix;
     private final String bucket;
     private final String layerId;
@@ -13,7 +13,7 @@ public class DeleteTileParameterId implements DeleteTileRange {
 
     private final String path;
 
-    public DeleteTileParameterId(
+    public DeleteTileParametersId(
             String prefix,
             String bucket,
             String layerId,

@@ -1,8 +1,5 @@
 package org.geowebcache.s3.callback;
 
-import org.geowebcache.s3.delete.BulkDeleteTask;
-import org.geowebcache.s3.delete.BulkDeleteTask.Callback;
-import org.geowebcache.s3.delete.BulkDeleteTask.NoopCallback;
 import org.geowebcache.s3.statistics.BatchStats;
 import org.geowebcache.s3.statistics.ResultStat;
 import org.geowebcache.s3.statistics.Statistics;
@@ -10,8 +7,6 @@ import org.geowebcache.s3.statistics.SubStats;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.google.common.base.Preconditions.checkState;
 
 public class CaptureCallback implements Callback {
     private final Callback delegate;
@@ -81,8 +76,8 @@ public class CaptureCallback implements Callback {
     }
 
     @Override
-    public void tileDeleted(ResultStat result) {
-        this.delegate.tileDeleted(result);
+    public void tileResult(ResultStat result) {
+        this.delegate.tileResult(result);
         tileDeletedCount++;
     }
 

@@ -1,11 +1,20 @@
 package org.geowebcache.s3.callback;
 
-import org.geowebcache.s3.delete.BulkDeleteTask;
-import org.geowebcache.s3.delete.BulkDeleteTask.Callback;
+import org.geowebcache.storage.BlobStoreListener;
+import org.geowebcache.storage.BlobStoreListenerList;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.geowebcache.s3.statistics.StatisticsTestHelper.*;
 
 public class CallbackTestHelper {
+
+    static void WithBlobStoreListener(BlobStoreListenerList blobStoreListenerList, BlobStoreListener captureListener) {
+        checkNotNull(blobStoreListenerList);
+        checkNotNull(captureListener);
+
+        blobStoreListenerList.addListener(captureListener);
+    }
+
     static void WithTaskStarted(Callback callback) {
         callback.taskStarted(EMPTY_STATISTICS());
     }
@@ -26,4 +35,6 @@ public class CallbackTestHelper {
         callback.subTaskStarted(EMPTY_SUB_STATS());
         callback.batchStarted(EMPTY_BATCH_STATS());
     }
+
+
 }

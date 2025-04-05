@@ -11,7 +11,7 @@ import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 import org.geowebcache.s3.AmazonS3Wrapper;
 import org.geowebcache.s3.S3BlobStore;
-import org.geowebcache.s3.delete.BulkDeleteTask.Callback;
+import org.geowebcache.s3.callback.Callback;
 import org.geowebcache.s3.delete.DeleteTileInfo;
 import org.geowebcache.s3.delete.DeleteTileRange;
 import org.geowebcache.s3.statistics.BatchStats;
@@ -90,11 +90,13 @@ public class PerformDeleteObjects implements ToLongFunction<Map<String, DeleteTi
         deleteObjectsResult.getDeletedObjects().forEach(deletedObject -> {
             DeleteTileInfo keyObject = mapKeyObjectsByPath.get(deletedObject.getKey());
             ResultStat resultStat = new ResultStat(
+                    deleteTileRange,
                     deletedObject.getKey(),
                     keyObject.getTile(),
                     keyObject.getSize(),
-                    Instant.now().getEpochSecond());
-            callback.tileDeleted(resultStat);
+                    Instant.now().getEpochSecond(),
+                    ResultStat.Change.Deleted);
+            callback.tileResult(resultStat);
         });
     }
 }

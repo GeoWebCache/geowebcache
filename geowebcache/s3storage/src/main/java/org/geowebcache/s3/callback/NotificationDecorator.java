@@ -4,11 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
 import org.geowebcache.s3.S3BlobStore;
-import org.geowebcache.s3.delete.BulkDeleteTask.Callback;
-import org.geowebcache.s3.delete.DeleteTileGridSet;
-import org.geowebcache.s3.delete.DeleteTileLayer;
-import org.geowebcache.s3.delete.DeleteTileParameterId;
-import org.geowebcache.s3.delete.DeleteTileRange;
+import org.geowebcache.s3.delete.*;
 import org.geowebcache.s3.statistics.BatchStats;
 import org.geowebcache.s3.statistics.ResultStat;
 import org.geowebcache.s3.statistics.Statistics;
@@ -24,14 +20,15 @@ public class NotificationDecorator implements Callback {
     private SubStats currentSubStats;
 
     public NotificationDecorator(Callback delegate, BlobStoreListenerList listeners) {
-        checkNotNull(delegate, "decorator cannot be null");
+        checkNotNull(delegate, "delegate cannot be null");
+        checkNotNull(listeners, "listeners cannot be null");
         this.delegate = delegate;
         this.listeners = listeners;
     }
 
     @Override
-    public void tileDeleted(ResultStat statistics) {
-        delegate.tileDeleted(statistics);
+    public void tileResult(ResultStat statistics) {
+        delegate.tileResult(statistics);
         notifyTileDeleted(statistics);
     }
 
@@ -64,6 +61,8 @@ public class NotificationDecorator implements Callback {
     }
 
     void notifyWhenSubTaskEnded(SubStats subStats) {
+        checkNotNull(subStats, "subStats cannot be null, missing subTaskStart message");
+
         DeleteTileRange deleteTileRange = subStats.getDeleteTileRange();
         if (deleteTileRange instanceof DeleteTileLayer) {
             notifyLayerDeleted(subStats, (DeleteTileLayer) deleteTileRange);
@@ -73,8 +72,8 @@ public class NotificationDecorator implements Callback {
             notifyGridSetDeleted(subStats, (DeleteTileGridSet) deleteTileRange);
         }
 
-        if (deleteTileRange instanceof DeleteTileParameterId) {
-            notifyWhenParameterId(subStats, (DeleteTileParameterId) deleteTileRange);
+        if (deleteTileRange instanceof DeleteTileParametersId) {
+            notifyWhenParameterId(subStats, (DeleteTileParametersId) deleteTileRange);
         }
     }
 
@@ -89,17 +88,27 @@ public class NotificationDecorator implements Callback {
     }
 
     // Single tile to delete
-    void notifyTileDeleted(ResultStat statistic) {
+    void notifyTileDeleted(ResultStat stats) {
         if (listeners.isEmpty()) {
             return;
         }
 
-        if (statistic.getTileObject() != null) {
-            listeners.sendTileDeleted(statistic.getTileObject());
+        if (checkDeleteLayerCompatibleWithTileDeleted(stats)) return;
+
+        if (stats.getTileObject() != null) {
+            listeners.sendTileDeleted(stats.getTileObject());
         } else {
             S3BlobStore.getLog()
-                    .warning(format("No tile object found for %s cannot notify of deletion", statistic.getPath()));
+                    .warning(format("No tile object found for %s cannot notify of deletion", stats.getPath()));
         }
+    }
+
+    private static boolean checkDeleteLayerCompatibleWithTileDeleted(ResultStat stats) {
+        return !(
+                stats.getDeleteTileRange() instanceof DeleteTileObject ||
+                        stats.getDeleteTileRange() instanceof DeleteTileZoom ||
+                        stats.getDeleteTileRange() instanceof DeleteTileZoomInBoundedBox
+        );
     }
 
     void notifyGridSetDeleted(SubStats statistics, DeleteTileGridSet deleteTileRange) {
@@ -116,7 +125,7 @@ public class NotificationDecorator implements Callback {
         }
     }
 
-    void notifyWhenParameterId(SubStats statistics, DeleteTileParameterId deleteLayer) {
+    void notifyWhenParameterId(SubStats statistics, DeleteTileParametersId deleteLayer) {
         if (statistics.completed()) {
             listeners.sendParametersDeleted(deleteLayer.getLayerName(), deleteLayer.getLayerName());
         }

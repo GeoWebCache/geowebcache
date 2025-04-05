@@ -1,19 +1,21 @@
 package org.geowebcache.s3.delete;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
+import org.geowebcache.s3.AmazonS3Wrapper;
+import org.geowebcache.s3.S3BlobStore;
+import org.geowebcache.s3.S3ObjectsWrapper;
+import org.geowebcache.s3.callback.Callback;
+import org.geowebcache.s3.statistics.Statistics;
+import org.geowebcache.s3.statistics.SubStats;
+import org.geowebcache.s3.streams.*;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
-import org.geowebcache.s3.*;
-import org.geowebcache.s3.statistics.BatchStats;
-import org.geowebcache.s3.statistics.ResultStat;
-import org.geowebcache.s3.statistics.Statistics;
-import org.geowebcache.s3.statistics.SubStats;
-import org.geowebcache.s3.streams.*;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
 
 public class BulkDeleteTask implements Callable<Long> {
     private final AmazonS3Wrapper amazonS3Wrapper;
@@ -233,46 +235,8 @@ public class BulkDeleteTask implements Callable<Long> {
         S3ObjectPathsForPrefixFilterByBoundedBox,
         TileRangeWithBoundedBox,
         TileRangeWithBoundedBoxIfTileExist,
+        RetryPendingTask,
         DefaultStrategy
-    }
-
-    public interface Callback {
-        void tileDeleted(ResultStat result);
-
-        void batchStarted(BatchStats batchStats);
-
-        void batchEnded();
-
-        void subTaskStarted(SubStats subStats);
-
-        void subTaskEnded();
-
-        void taskStarted(Statistics statistics);
-
-        void taskEnded();
-    }
-
-    public static class NoopCallback implements Callback {
-        @Override
-        public void tileDeleted(ResultStat result) {}
-
-        @Override
-        public void batchStarted(BatchStats batchStats) {}
-
-        @Override
-        public void batchEnded() {}
-
-        @Override
-        public void subTaskStarted(SubStats subStats) {}
-
-        @Override
-        public void subTaskEnded() {}
-
-        @Override
-        public void taskStarted(Statistics statistics) {}
-
-        @Override
-        public void taskEnded() {}
     }
 
     public static Builder newBuilder() {

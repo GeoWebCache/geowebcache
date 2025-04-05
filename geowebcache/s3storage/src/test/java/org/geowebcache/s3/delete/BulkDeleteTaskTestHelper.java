@@ -1,18 +1,13 @@
 package org.geowebcache.s3.delete;
 
-import static com.google.common.base.Preconditions.checkState;
-
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import org.geowebcache.storage.TileObject;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
-import org.geowebcache.s3.delete.BulkDeleteTask.Callback;
-import org.geowebcache.s3.statistics.BatchStats;
-import org.geowebcache.s3.statistics.ResultStat;
-import org.geowebcache.s3.statistics.Statistics;
-import org.geowebcache.s3.statistics.SubStats;
 
 public class BulkDeleteTaskTestHelper {
     public static final Random RANDOM = new Random(System.currentTimeMillis());
@@ -40,6 +35,7 @@ public class BulkDeleteTaskTestHelper {
     public static final Set<String> SINGLE_SET_OF_FORMATS = Set.of(FORMAT_IN_KEY);
     // public static final Set<String> ALL_SET_OF_FORMATS = Set.of(FORMAT_IN_KEY, FORMAT_IN_KEY_2);
 
+    public static final Long ZOOM_LEVEL = 4L;
     public static final Set<Long> ZOOM_LEVEL_0 = Set.of(0L);
     public static final Set<Long> ZOOM_LEVEL_1 = Set.of(1L);
     // public static final Set<Long> ZOOM_LEVEL_4 = Set.of(4L);
@@ -48,6 +44,14 @@ public class BulkDeleteTaskTestHelper {
 
     public static final long[] XYZ = {1, 2, 3};
     public static final Map<String, String> PARAMETERS = new HashMap<>() {};
+
+    public static final TileObject TILE_OBJECT = TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
+    public static final long BLOB_SIZE = 12_344_567L;
+    static {
+        TILE_OBJECT.setParametersId(PARAMETERS_ID);
+        TILE_OBJECT.setBlobSize((int)BLOB_SIZE);
+    }
+
 
     static long zoomScaleModifier(long zoomLevel) {
         return Math.min(Math.round(Math.pow(2.0, zoomLevel)), 32);

@@ -273,22 +273,22 @@ public class StatisticsCallbackDecoratorTest {
     // test tileDeleted()
 
     @Test
-    public void test_tileDeleted_ensureDelegateIsCalled() {
+    public void test_tileResult_ensureDelegateIsCalled() {
         WithBatchStarted(statisticCallbackDecorator);
 
         ResultStat resultStat = EMPTY_RESULT_STAT();
-        statisticCallbackDecorator.tileDeleted(resultStat);
+        statisticCallbackDecorator.tileResult(resultStat);
         assertThat("Expected the delegate to have been called", 1L, is(captureCallback.getTileDeletedCount()));
     }
 
     @Test
-    public void test_tileDeleted_mustBeCalledAfterBatchStarted() {
+    public void test_tileResult_mustBeCalledAfterBatchStarted() {
         ResultStat resultStat = EMPTY_RESULT_STAT();
 
         assertThrows(
                 "batchStarted must be called before tileDeleted",
                 IllegalStateException.class,
-                () ->statisticCallbackDecorator.tileDeleted(resultStat)
+                () ->statisticCallbackDecorator.tileResult(resultStat)
         );
     }
 }

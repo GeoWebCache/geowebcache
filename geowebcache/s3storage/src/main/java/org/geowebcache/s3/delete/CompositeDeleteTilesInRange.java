@@ -18,8 +18,7 @@ public class CompositeDeleteTilesInRange implements CompositeDeleteTileRange {
     private final String path;
     private final List<DeleteTileRange> deleteTileRanges;
 
-    public CompositeDeleteTilesInRange(
-            String prefix, String bucket, String layerId, String format, TileRange tileRange) {
+    public CompositeDeleteTilesInRange(String prefix, String bucket, String layerId, String format, TileRange tileRange) {
         checkNotNull(tileRange, "tilerange must not be null");
         checkNotNull(prefix, "prefix must not be null");
         checkNotNull(layerId, "layerId must not be null");
@@ -39,7 +38,7 @@ public class CompositeDeleteTilesInRange implements CompositeDeleteTileRange {
                 .mapToObj(zoomLevel -> {
                     long[] bounds = tileRange.rangeBounds((int) zoomLevel);
                     if (bounds != null && bounds.length >= 4) {
-                        return new DeleteTilesByZoomLevelInBoundedBox(
+                        return new DeleteTileZoomInBoundedBox(
                                 prefix,
                                 bucket,
                                 layerId,
@@ -49,7 +48,7 @@ public class CompositeDeleteTilesInRange implements CompositeDeleteTileRange {
                                 zoomLevel,
                                 bounds);
                     } else {
-                        return new DeleteTilesByZoomLevel(
+                        return new DeleteTileZoom(
                                 prefix,
                                 bucket,
                                 layerId,

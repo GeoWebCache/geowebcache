@@ -13,9 +13,6 @@
  */
 package org.geowebcache.s3;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.Objects.isNull;
-
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
@@ -25,16 +22,6 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.ParametersUtils;
@@ -44,12 +31,24 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.s3.callback.NotificationDecorator;
-import org.geowebcache.s3.callback.StatisticCallbackDecorator;
+import org.geowebcache.s3.callback.*;
 import org.geowebcache.s3.delete.*;
-import org.geowebcache.s3.delete.BulkDeleteTask.Callback;
 import org.geowebcache.storage.*;
 import org.geowebcache.util.TMSKeyBuilder;
+
+import javax.annotation.Nullable;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.isNull;
 
 public class S3BlobStore implements BlobStore {
 
@@ -370,13 +369,12 @@ public class S3BlobStore implements BlobStore {
 
         DeleteTileRange deleteLayer = new DeleteTileLayer(keyBuilder.getPrefix(), bucketName, layerId, layerName);
 
-        var lockingDecorator = new S3Ops.LockingDecorator(
-                new S3Ops.MarkPendingDeleteTask(
+        var lockingDecorator = new LockingDecorator(
+                new MarkPendingDeleteDecorator(
                         new NotificationDecorator(new StatisticCallbackDecorator(), listeners),
-                        keyBuilder.pendingDeletes(),
-                        s3Ops.currentTimeSeconds(),
-                        s3Ops),
-                lockProvider);
+                        s3Ops,
+                        S3BlobStore.getLog()),
+                lockProvider, S3BlobStore.getLog());
 
         boolean layerExists;
         try {
@@ -397,8 +395,8 @@ public class S3BlobStore implements BlobStore {
         var deleteTileGridSet =
                 new DeleteTileGridSet(keyBuilder.getPrefix(), bucketName, layerId, gridSetId, layerName);
 
-        var lockingDecorator = new S3Ops.LockingDecorator(
-                new NotificationDecorator(new StatisticCallbackDecorator(), listeners), lockProvider);
+        var lockingDecorator = new LockingDecorator(
+                new NotificationDecorator(new StatisticCallbackDecorator(), listeners), lockProvider, S3BlobStore.getLog());
 
         boolean prefixExists;
         try {
@@ -499,8 +497,8 @@ public class S3BlobStore implements BlobStore {
         CompositeDeleteTileParameterId deleteTileRange = new CompositeDeleteTileParameterId(
                 keyBuilder.getPrefix(), bucketName, layerId, gridSetIds, formats, parametersId, layerName);
 
-        var lockingCallback = new S3Ops.LockingDecorator(
-                new NotificationDecorator(new StatisticCallbackDecorator(), listeners), lockProvider);
+        var lockingCallback = new LockingDecorator(
+                new NotificationDecorator(new StatisticCallbackDecorator(), listeners), lockProvider, S3BlobStore.getLog());
 
         try {
             return s3Ops.scheduleAsyncDelete(deleteTileRange, lockingCallback, lockingCallback);

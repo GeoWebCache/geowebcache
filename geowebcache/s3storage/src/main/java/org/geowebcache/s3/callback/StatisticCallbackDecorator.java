@@ -7,8 +7,6 @@ import static java.lang.String.format;
 import java.util.Objects;
 import java.util.logging.Logger;
 import org.geowebcache.s3.S3BlobStore;
-import org.geowebcache.s3.delete.BulkDeleteTask;
-import org.geowebcache.s3.delete.BulkDeleteTask.Callback;
 import org.geowebcache.s3.statistics.BatchStats;
 import org.geowebcache.s3.statistics.ResultStat;
 import org.geowebcache.s3.statistics.Statistics;
@@ -29,7 +27,7 @@ public class StatisticCallbackDecorator implements Callback {
 
     public StatisticCallbackDecorator() {
 
-        this(S3BlobStore.getLog(), new BulkDeleteTask.NoopCallback());
+        this(S3BlobStore.getLog(), new NoopCallback());
     }
 
     public StatisticCallbackDecorator(Logger logger, Callback delegate) {
@@ -84,12 +82,12 @@ public class StatisticCallbackDecorator implements Callback {
     }
 
     @Override
-    public void tileDeleted(ResultStat result) {
+    public void tileResult(ResultStat result) {
         checkNotNull(result, "result parameter cannot be null");
         checkState(Objects.nonNull(currentBatch), "current batch field cannot be null");
 
         currentBatch.add(result);
-        delegate.tileDeleted(result);
+        delegate.tileResult(result);
     }
 
     @Override

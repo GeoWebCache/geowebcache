@@ -15,7 +15,7 @@ public class CompositeDeleteTileParameterId implements CompositeDeleteTileRange 
     private final String layerId;
     private final String parameterId;
     private final String layerName;
-    private final List<DeleteTileParameterId> children = new ArrayList<>();
+    private final List<DeleteTileParametersId> children = new ArrayList<>();
 
     private final String path;
 
@@ -43,7 +43,7 @@ public class CompositeDeleteTileParameterId implements CompositeDeleteTileRange 
 
         formats.forEach(format -> {
             gridSetIds.forEach(gridSetId -> {
-                add(new DeleteTileParameterId(prefix, bucket, layerId, gridSetId, format, parametersId, layerName));
+                add(new DeleteTileParametersId(prefix, bucket, layerId, gridSetId, format, parametersId, layerName));
             });
         });
 
@@ -78,9 +78,9 @@ public class CompositeDeleteTileParameterId implements CompositeDeleteTileRange 
     @Override
     public void add(DeleteTileRange child) {
         checkNotNull(child, "child cannot be null");
-        checkArgument(child instanceof DeleteTileParameterId, "child should be a DeleteTileParameterId");
+        checkArgument(child instanceof DeleteTileParametersId, "child should be a DeleteTileParameterId");
 
-        DeleteTileParameterId gridSet = (DeleteTileParameterId) child;
+        DeleteTileParametersId gridSet = (DeleteTileParametersId) child;
 
         checkArgument(
                 Objects.equals(gridSet.getBucket(), getBucket()), "child bucket should be the same as the bucket");
