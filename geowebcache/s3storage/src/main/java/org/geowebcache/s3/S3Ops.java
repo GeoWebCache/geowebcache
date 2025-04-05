@@ -28,6 +28,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -51,11 +52,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
+
 import org.apache.commons.io.IOUtils;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.LockProvider.Lock;
 import org.geowebcache.locks.NoOpLockProvider;
+import org.geowebcache.s3.BulkDeleteTask.BatchStats;
+import org.geowebcache.s3.BulkDeleteTask.Callback;
+import org.geowebcache.s3.BulkDeleteTask.ResultStat;
+import org.geowebcache.s3.BulkDeleteTask.Statistics;
+import org.geowebcache.s3.BulkDeleteTask.Statistics.SubStats;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.TMSKeyBuilder;
 
@@ -69,9 +76,9 @@ class S3Ops {
 
     private final LockProvider locks;
 
-    private ExecutorService deleteExecutorService;
+    private final ExecutorService deleteExecutorService;
 
-    private Map<String, Long> pendingDeletesKeyTime = new ConcurrentHashMap<>();
+    private final Map<String, Long> pendingDeletesKeyTime = new ConcurrentHashMap<>();
 
     public S3Ops(AmazonS3Client conn, String bucketName, TMSKeyBuilder keyBuilder, LockProvider locks)
             throws StorageException {
@@ -153,7 +160,7 @@ class S3Ops {
     }
 
     public boolean scheduleAsyncDelete(
-            DeleteTileRange deleteTileRange, BulkDeleteTask.Callback callback, LockingDecorator lockingDecorator)
+            DeleteTileRange deleteTileRange, Callback callback, LockingDecorator lockingDecorator)
             throws GeoWebCacheException {
         final long timestamp = currentTimeSeconds();
         String msg = format(
@@ -170,14 +177,16 @@ class S3Ops {
         return asyncBulkDelete(deleteTileRange.path(), deleteTileRange, timestamp, callback);
     }
 
-    static class MarkPendingDeleteTask implements BulkDeleteTask.Callback {
-        private final BulkDeleteTask.Callback delegate;
+    static class MarkPendingDeleteTask implements Callback {
+        private final Callback delegate;
         private final String pendingDeletesKey;
         private final Long pendingDeletesKeyTime;
         private final S3Ops s3Opts;
 
+        private SubStats currentSubStats = null;
+
         public MarkPendingDeleteTask(
-                BulkDeleteTask.Callback delegate, String pendingDeletesKey, Long pendingDeletesKeyTime, S3Ops s3Opts) {
+                Callback delegate, String pendingDeletesKey, Long pendingDeletesKeyTime, S3Ops s3Opts) {
             checkNotNull(delegate, "delegate cannot be null");
             checkNotNull(pendingDeletesKey, "pendingDeletesKey cannot be null");
             checkNotNull(pendingDeletesKeyTime, "pendingDeletesKeyTime cannot be null");
@@ -190,48 +199,124 @@ class S3Ops {
         }
 
         @Override
-        public void results(BulkDeleteTask.Statistics statistics) {
+        public void tileDeleted(ResultStat result) {
+            delegate.tileDeleted(result);
 
-            for (String prefix : statistics.getStatsPerPrefix().keySet()) {
+        }
+
+        @Override
+        public void batchStarted(BatchStats stats) {
+            delegate.batchStarted(stats);
+        }
+
+        @Override
+        public void batchEnded() {
+            delegate.batchEnded();
+        }
+
+        @Override
+        public void subTaskStarted(SubStats subStats) {
+            this.currentSubStats = subStats;
+            delegate.subTaskStarted(subStats);
+        }
+
+        @Override
+        public void subTaskEnded() {
+            try {
+                DeleteTileRange deleteTileRange = currentSubStats.deleteTileRange;
                 Properties deletes = s3Opts.getProperties(pendingDeletesKey);
-                deletes.setProperty(prefix, String.valueOf(pendingDeletesKeyTime));
+                deletes.setProperty(deleteTileRange.path(), String.valueOf(pendingDeletesKeyTime));
                 try {
                     s3Opts.putProperties(pendingDeletesKey, deletes);
                 } catch (StorageException e) {
                     S3BlobStore.log.severe(format("Unable to store pending deletes: %s", e.getMessage()));
                 }
+            } finally {
+                delegate.subTaskEnded();
             }
-        }
-    }
-
-    static class LockingDecorator implements BulkDeleteTask.Callback {
-        private final Map<String, Lock> locksPrePrefix = new ConcurrentHashMap<>();
-        private final BulkDeleteTask.Callback delegate;
-
-        public LockingDecorator(BulkDeleteTask.Callback delegate) {
-            this.delegate = delegate;
-        }
-
-        public void addLock(String prefix, Lock lock) {
-            locksPrePrefix.put(prefix, lock);
         }
 
         @Override
-        public void results(BulkDeleteTask.Statistics statistics) {
+        public void taskStarted(Statistics statistics) {
+            delegate.taskStarted(statistics);
+        }
 
-            // Release locks
-            statistics.statsPerPrefix.keySet().forEach(key -> {
-                var lock = locksPrePrefix.get(key);
-                try {
-                    lock.release();
-                    S3BlobStore.log.info(format("Unlocked %s", key));
-                } catch (GeoWebCacheException e) {
-                    S3BlobStore.log.warning("Unable to release lock for key: " + key);
-                }
-            });
+        @Override
+        public void taskEnded() {
+            delegate.taskEnded();
+        }
+    }
 
-            // Notify listeners
-            delegate.results(statistics);
+    static class LockingDecorator implements Callback {
+        private final Map<String, Lock> locksPrePrefix = new ConcurrentHashMap<>();
+        private final Callback delegate;
+        private final LockProvider lockProvider;
+
+        private SubStats currentSubStats = null;
+
+        public LockingDecorator(Callback delegate, LockProvider lockProvider) {
+            this.delegate = delegate;
+            this.lockProvider = lockProvider;
+        }
+
+        public void addLock(String prefix, Lock lock) {
+            try {
+                lockProvider.getLock(prefix);
+                locksPrePrefix.put(prefix, lock);
+            } catch (GeoWebCacheException ex) {
+                S3BlobStore.log.severe(format("Could not lock %s because %s", prefix, ex.getMessage()));
+            }
+        }
+
+        public void removeLock(String prefix) {
+            locksPrePrefix.get(prefix);
+            locksPrePrefix.remove(prefix);
+        }
+
+        @Override
+        public void tileDeleted(ResultStat result) {
+            delegate.tileDeleted(result);
+        }
+
+        @Override
+        public void batchStarted(BatchStats stats) {
+            delegate.batchStarted(stats);
+        }
+
+        @Override
+        public void batchEnded() {
+            delegate.batchEnded();
+        }
+
+        @Override
+        public void subTaskStarted(SubStats subStats) {
+            this.currentSubStats = subStats;
+            delegate.subTaskStarted(subStats);
+        }
+
+        @Override
+        public void subTaskEnded() {
+            String key = currentSubStats.deleteTileRange.path();
+
+            try {
+                Lock lock = locksPrePrefix.get(key);
+                lock.release();
+                S3BlobStore.log.info(format("Unlocked %s", key));
+            } catch (GeoWebCacheException e) {
+                S3BlobStore.log.warning("Unable to release lock for key: " + key);
+            } finally {
+                delegate.subTaskEnded();
+            }
+        }
+
+        @Override
+        public void taskStarted(Statistics statistics) {
+            delegate.taskStarted(statistics);
+        }
+
+        @Override
+        public void taskEnded() {
+            delegate.taskEnded();
         }
     }
 
@@ -264,7 +349,7 @@ class S3Ops {
             final String prefix,
             final DeleteTileRange deleteTileRange,
             final long timestamp,
-            final BulkDeleteTask.Callback callback) {
+            final Callback callback) {
 
         if (!prefixExists(prefix)) {
             return false;
@@ -377,7 +462,9 @@ class S3Ops {
         }
     }
 
-    /** Simply checks if there are objects starting with {@code prefix} */
+    /**
+     * Simply checks if there are objects starting with {@code prefix}
+     */
     public boolean prefixExists(String prefix) {
         boolean hasNext = S3Objects.withPrefix(conn, bucketName, prefix)
                 .withBatchSize(1)
@@ -508,7 +595,9 @@ class S3Ops {
         }
     }
 
-    /** Filters objects that are newer than the given timestamp */
+    /**
+     * Filters objects that are newer than the given timestamp
+     */
     private static class TimeStampFilter implements Predicate<S3ObjectSummary> {
 
         private long timeStamp;

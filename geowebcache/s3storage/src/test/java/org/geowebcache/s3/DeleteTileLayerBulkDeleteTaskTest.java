@@ -10,7 +10,6 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import java.util.Iterator;
 
-import org.geowebcache.s3.BulkDeleteTask.LoggingCallback;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +25,7 @@ public class DeleteTileLayerBulkDeleteTaskTest {
     public AmazonS3Wrapper amazonS3Wrapper;
 
     private BulkDeleteTask.Builder builder;
-    private final CaptureCallback callback = new CaptureCallback(new LoggingCallback());
+    private final CaptureCallback callback = new CaptureCallback(new LoggingCallbackDecorator());
 
     @Before
     public void setup() {

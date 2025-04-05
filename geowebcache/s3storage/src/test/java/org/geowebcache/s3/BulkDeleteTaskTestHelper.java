@@ -3,10 +3,16 @@ package org.geowebcache.s3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import org.geowebcache.s3.BulkDeleteTask.BatchStats;
+import org.geowebcache.s3.BulkDeleteTask.Callback;
+import org.geowebcache.s3.BulkDeleteTask.Statistics;
+import org.geowebcache.s3.BulkDeleteTask.Statistics.SubStats;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
-import org.geowebcache.util.KeyObject;
+
+import static com.google.common.base.Preconditions.checkState;
 
 public class BulkDeleteTaskTestHelper {
     public static final Random RANDOM = new Random(System.currentTimeMillis());
@@ -45,18 +51,70 @@ public class BulkDeleteTaskTestHelper {
     public static final Map<String, String> PARAMETERS = new HashMap<>() {};
 
 
-    static class CaptureCallback implements BulkDeleteTask.Callback {
-        BulkDeleteTask.Statistics statistics = null;
-        private final BulkDeleteTask.Callback delegate;
+    static class CaptureCallback implements Callback {
+        private final Callback delegate;
 
-        public CaptureCallback(BulkDeleteTask.Callback delegate) {
+        long batchStartedCount = 0;
+        long batchEndedCount = 0;
+        long subTaskStartedCount = 0;
+        long subTaskEndedCount = 0;
+        long taskStartedCount = 0;
+        long taskEndedCount = 0;
+        long tileDeletedCount = 0;
+
+        Statistics statistics = null;
+        List<SubStats> subStats = new ArrayList<>();
+        List<BatchStats> batchStats = new ArrayList<>();
+        public CaptureCallback(Callback delegate) {
             this.delegate = delegate;
         }
 
         @Override
-        public void results(BulkDeleteTask.Statistics statistics) {
+        public void tileDeleted(BulkDeleteTask.ResultStat result) {
+            this.delegate.tileDeleted(result);
+            tileDeletedCount++;
+        }
+
+        @Override
+        public void batchStarted(BatchStats batchStats) {
+            this.delegate.batchStarted(batchStats);
+            this.batchStats.add(batchStats);
+            batchStartedCount++;
+        }
+
+
+        @Override
+        public void batchEnded() {
+            this.delegate.batchEnded();
+            batchEndedCount++;
+        }
+
+        @Override
+        public void subTaskStarted(SubStats subStats) {
+            this.delegate.subTaskStarted(subStats);
+            this.subStats.add(subStats);
+            subTaskStartedCount++;
+        }
+
+        @Override
+        public void subTaskEnded() {
+            this.delegate.subTaskEnded();
+            subTaskEndedCount++;
+        }
+
+        @Override
+        public void taskStarted(Statistics statistics) {
+            checkState(this.statistics == null, "Statistics already set");
+
+            this.delegate.taskStarted(statistics);
             this.statistics = statistics;
-            this.delegate.results(statistics);
+            taskStartedCount++;
+        }
+
+        @Override
+        public void taskEnded() {
+            this.delegate.taskEnded();
+            taskEndedCount++;
         }
     }
 
@@ -105,7 +163,7 @@ public class BulkDeleteTaskTestHelper {
             long z,
             long size) {
         S3ObjectSummary summary = new S3ObjectSummary();
-        String key = KeyObject.toFullPath(prefix, layerId, gridSetId, format, parametersId, z, x, y, format);
+        String key = DeleteTileInfo.toFullPath(prefix, layerId, gridSetId, format, parametersId, z, x, y, format);
 
         summary.setBucketName(bucket);
         summary.setKey(key);

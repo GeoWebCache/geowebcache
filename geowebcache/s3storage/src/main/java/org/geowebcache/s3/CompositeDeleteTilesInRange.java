@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import org.geowebcache.storage.TileRange;
-import org.geowebcache.util.KeyObject;
 
 public class CompositeDeleteTilesInRange implements CompositeDeleteTileRange {
     private final String prefix;
@@ -33,7 +32,7 @@ public class CompositeDeleteTilesInRange implements CompositeDeleteTileRange {
         this.format = format;
         this.tileRange = tileRange;
 
-        this.path = KeyObject.toParametersId(
+        this.path = DeleteTileInfo.toParametersId(
                 this.prefix, this.layerId, tileRange.getGridSetId(), this.format, tileRange.getParametersId());
 
         this.deleteTileRanges = LongStream.of(tileRange.getZoomStart(), tileRange.getZoomStop())

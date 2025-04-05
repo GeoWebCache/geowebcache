@@ -20,7 +20,7 @@ public class BulkDeleteTaskTest {
     public AmazonS3Wrapper amazonS3Wrapper;
 
     private BulkDeleteTask.Builder builder;
-    private final CaptureCallback callback = new CaptureCallback(new BulkDeleteTask.LoggingCallback());
+    private final CaptureCallback callback = new CaptureCallback(new LoggingCallbackDecorator());
 
     @Before
     public void setup(){

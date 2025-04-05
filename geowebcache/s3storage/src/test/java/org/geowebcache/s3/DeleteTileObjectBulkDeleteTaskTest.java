@@ -3,7 +3,6 @@ package org.geowebcache.s3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.geowebcache.io.Resource;
-import org.geowebcache.s3.BulkDeleteTask.LoggingCallback;
 import org.geowebcache.storage.TileObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,6 +15,7 @@ import java.util.Iterator;
 import static org.geowebcache.s3.BulkDeleteTask.ObjectPathStrategy.SingleTile;
 import static org.geowebcache.s3.BulkDeleteTaskTestHelper.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -31,7 +31,7 @@ public class DeleteTileObjectBulkDeleteTaskTest {
 
     public TileObject tileObject;
     private BulkDeleteTask.Builder builder;
-    private final CaptureCallback callback = new CaptureCallback(new LoggingCallback());
+    private final CaptureCallback callback = new CaptureCallback(new LoggingCallbackDecorator());
 
     @Before
     public void setup() {
@@ -53,7 +53,7 @@ public class DeleteTileObjectBulkDeleteTaskTest {
     }
 
     @Test
-    public void testCall_WhenBatchOrLessToProcess_withCheck() throws Exception {
+    public void testCall_WhenSingleToProcess_withCheck() {
         Iterator<S3ObjectSummary> iterator = S_3_OBJECT_SUMMARY_SINGLE_TILE_LIST.iterator();
         when(s3ObjectsWrapper.iterator()).thenReturn(iterator);
         when(amazonS3Wrapper.deleteObjects(any(DeleteObjectsRequest.class))).thenAnswer(invocationOnMock -> {
@@ -76,7 +76,7 @@ public class DeleteTileObjectBulkDeleteTaskTest {
     }
 
     @Test
-    public void testCall_WhenBatchOrLessToProcess_skipCheck() throws Exception {
+    public void testCall_WhenSingleToProcess_skipCheck() {
         Iterator<S3ObjectSummary> iterator = S_3_OBJECT_SUMMARY_SINGLE_TILE_LIST.iterator();
         when(s3ObjectsWrapper.iterator()).thenReturn(iterator);
         when(amazonS3Wrapper.deleteObjects(any(DeleteObjectsRequest.class))).thenAnswer(invocationOnMock -> {
@@ -97,4 +97,62 @@ public class DeleteTileObjectBulkDeleteTaskTest {
         assertEquals("Should have deleted 1 tile", expectedDeleted, statistics.deleted);
         assertEquals("Should have sent one batch", expectedBatches, statistics.batchSent);
     }
+
+    @Test
+    public void testCall_WhenSingleToProcess_checkTaskNotificationCalled() {
+        Iterator<S3ObjectSummary> iterator = S_3_OBJECT_SUMMARY_SINGLE_TILE_LIST.iterator();
+        when(s3ObjectsWrapper.iterator()).thenReturn(iterator);
+        when(amazonS3Wrapper.deleteObjects(any(DeleteObjectsRequest.class))).thenAnswer(invocationOnMock -> {
+            DeleteObjectsRequest request =
+                    (DeleteObjectsRequest) invocationOnMock.getArguments()[0];
+            return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
+        });
+
+        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX, false);
+        BulkDeleteTask task = builder.withDeleteRange(deleteTileObject)
+                .build();
+        Long count = task.call();
+
+        assertEquals("Expected TaskStarted callback called once", 1, callback.taskStartedCount);
+        assertEquals("Expected TaskEnded callback called once", 1, callback.taskEndedCount);
+    }
+
+    @Test
+    public void testCall_WhenSingleToProcess_checkSubTaskNotificationCalled() {
+        Iterator<S3ObjectSummary> iterator = S_3_OBJECT_SUMMARY_SINGLE_TILE_LIST.iterator();
+        when(s3ObjectsWrapper.iterator()).thenReturn(iterator);
+        when(amazonS3Wrapper.deleteObjects(any(DeleteObjectsRequest.class))).thenAnswer(invocationOnMock -> {
+            DeleteObjectsRequest request =
+                    (DeleteObjectsRequest) invocationOnMock.getArguments()[0];
+            return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
+        });
+
+        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX, false);
+        BulkDeleteTask task = builder.withDeleteRange(deleteTileObject)
+                .build();
+        Long count = task.call();
+
+        assertEquals("Expected SubTaskStarted callback called once", 1, callback.subTaskStartedCount);
+        assertEquals("Expected SubTaskEnded callback called once", 1, callback.subTaskEndedCount);
+    }
+
+    @Test
+    public void testCall_WhenSingleToProcess_checkBatchNotificationCalled() {
+        Iterator<S3ObjectSummary> iterator = S_3_OBJECT_SUMMARY_SINGLE_TILE_LIST.iterator();
+        when(s3ObjectsWrapper.iterator()).thenReturn(iterator);
+        when(amazonS3Wrapper.deleteObjects(any(DeleteObjectsRequest.class))).thenAnswer(invocationOnMock -> {
+            DeleteObjectsRequest request =
+                    (DeleteObjectsRequest) invocationOnMock.getArguments()[0];
+            return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
+        });
+
+        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX, false);
+        BulkDeleteTask task = builder.withDeleteRange(deleteTileObject)
+                .build();
+        Long count = task.call();
+
+        assertEquals("Expected BatchStarted callback called once", 1, callback.batchStartedCount);
+        assertEquals("Expected BatchEnded  callback called once", 1, callback.batchEndedCount);
+    }
+
 }

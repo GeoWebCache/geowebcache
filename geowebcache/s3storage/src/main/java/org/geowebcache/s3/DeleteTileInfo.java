@@ -1,13 +1,19 @@
-package org.geowebcache.util;
+package org.geowebcache.s3;
+
+import org.geowebcache.storage.TileObject;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
+import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class KeyObject {
+public class DeleteTileInfo {
     public static final Pattern keyRegex = Pattern.compile("(.*)/(.*)/(.*)/(.*)/(.*)/(\\d+)/(\\d+)/(\\d+)\\..*");
 
     public static final int PREFIX_GROUP_POS = 1;
@@ -28,8 +34,11 @@ public class KeyObject {
     final long y;
     final long z;
     final Long version;
+    TileObject tile;
+    long size;
+    Map<String, String> parameters;
 
-    private KeyObject(
+    private DeleteTileInfo(
             String prefix,
             String layerId,
             String gridSetId,
@@ -38,7 +47,9 @@ public class KeyObject {
             long x,
             long y,
             long z,
-            Long version) {
+            Long version,
+            TileObject tile
+    ) {
         this.prefix = prefix;
         this.layerId = layerId;
         this.gridSetId = gridSetId;
@@ -48,7 +59,26 @@ public class KeyObject {
         this.z = z;
         this.parametersSha = parametersSha;
         this.version = version;
+        this.tile = tile;
     }
+
+    public TileObject getTile() {
+        return tile;
+    }
+
+    public void setTile(TileObject tile) {
+        this.tile = tile;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+
 
     public long[] XYZ() {
         return new long[] {x, y, z};
@@ -60,11 +90,11 @@ public class KeyObject {
         return toFullPath(prefix, layerId, gridSetId, format, parametersSha, z, x, y, format);
     }
 
-    public static KeyObject fromObjectPath(String objectKey) {
+    public static DeleteTileInfo fromObjectPath(String objectKey) {
         Matcher matcher = keyRegex.matcher(objectKey);
         checkArgument(matcher.matches());
 
-        return new KeyObject(
+        return new DeleteTileInfo(
                 matcher.group(PREFIX_GROUP_POS),
                 matcher.group(LAYER_ID_GROUP_POS),
                 matcher.group(GRID_SET_ID_GROUP_POS),
@@ -73,28 +103,15 @@ public class KeyObject {
                 Long.parseLong(matcher.group(X_GROUP_POS)),
                 Long.parseLong(matcher.group(Y_GROUP_POS)),
                 Long.parseLong(matcher.group(Z_GROUP_POS)),
-                null);
-    }
-
-    public static KeyObject fromVersionedObjectPath(String objectKey, Long version) {
-        Matcher matcher = keyRegex.matcher(objectKey);
-        checkArgument(matcher.matches());
-
-        return new KeyObject(
-                matcher.group(PREFIX_GROUP_POS),
-                matcher.group(LAYER_ID_GROUP_POS),
-                matcher.group(GRID_SET_ID_GROUP_POS),
-                matcher.group(TYPE_GROUP_POS),
-                matcher.group(PARAMETERS_SHAR_GOROUP_POS),
-                Long.parseLong(matcher.group(X_GROUP_POS)),
-                Long.parseLong(matcher.group(Y_GROUP_POS)),
-                Long.parseLong(matcher.group(Z_GROUP_POS)),
-                version);
+                null,
+                null
+                );
     }
 
     public static Builder newBuilder() {
         return new Builder();
     }
+
 
     public static class Builder {
         private String prefix;
@@ -152,7 +169,7 @@ public class KeyObject {
             return this;
         }
 
-        KeyObject build() {
+        DeleteTileInfo build() {
             checkNotNull(prefix, "Prefix cannot be null");
             checkNotNull(layerId, "LayerId cannot be null");
             checkNotNull(gridSetId, "GridSetId cannot be null");
@@ -162,7 +179,7 @@ public class KeyObject {
             checkNotNull(y, "Y cannot be null");
             checkNotNull(z, "Z cannot be null");
 
-            return new KeyObject(prefix, layerId, gridSetId, format, parametersSha, x, y, z, version);
+            return new DeleteTileInfo(prefix, layerId, gridSetId, format, parametersSha, x, y, z, version, null);
         }
 
         public Builder withoutVersion() {
@@ -172,27 +189,50 @@ public class KeyObject {
     }
 
     public static String toLayerId(String prefix, String layerId) {
-        return String.join("/", prefix, layerId) + "/";
+        checkNotNull(layerId, "LayerId cannot be null");
+        return Stream.of(prefix, layerId).filter(Objects::nonNull).collect(Collectors.joining("/")) + "/";
     }
 
     public static String toGridSet(String prefix, String layerId, String gridSetId) {
-        return format("%s/%s/%s/", prefix, layerId, gridSetId);
+        checkNotNull(layerId, "LayerId cannot be null");
+        checkNotNull(gridSetId, "GridSetId cannot be null");
+        return Stream.of(prefix, layerId, gridSetId).filter(Objects::nonNull).collect(Collectors.joining("/"));
     }
 
     public static String toFormat(String prefix, String layerId, String gridSetId, String format) {
-        return format("%s/%s/%s/%s/", prefix, layerId, gridSetId, format);
+        checkNotNull(layerId, "LayerId cannot be null");
+        checkNotNull(gridSetId, "GridSetId cannot be null");
+        checkNotNull(format, "Format cannot be null");
+        return Stream.of(prefix, layerId, gridSetId, format)
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining("/"));
     }
 
     public static String toParametersId(
             String prefix, String layerId, String gridSetId, String format, String parametersId) {
-        return format("%s/%s/%s/%s/%s/", prefix, layerId, gridSetId, format, parametersId);
+        checkNotNull(layerId, "LayerId cannot be null");
+        checkNotNull(gridSetId, "GridSetId cannot be null");
+        checkNotNull(format, "Format cannot be null");
+        checkNotNull(parametersId, "ParametersId cannot be null");
+        return Stream.of(prefix, layerId, gridSetId, format,parametersId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining("/"));
     }
 
     public static String toZoomPrefix(
             String prefix, String layerId, String gridSetId, String format, String parametersId, long zoomLevel) {
-        return format("%s/%s/%s/%s/%s/%d/", prefix, layerId, gridSetId, format, parametersId, zoomLevel);
+        checkNotNull(layerId, "LayerId cannot be null");
+        checkNotNull(gridSetId, "GridSetId cannot be null");
+        checkNotNull(format, "Format cannot be null");
+        checkNotNull(parametersId, "ParametersId cannot be null");
+        return Stream.of(prefix, layerId, gridSetId, format,parametersId, String.valueOf(zoomLevel))
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining("/"));
     }
 
+    public String toFullPath() {
+        return toFullPath(prefix, layerId, gridSetId, format, parametersSha, z, x, y, format);
+    }
     public static String toFullPath(
             String prefix,
             String layerId,
@@ -203,8 +243,14 @@ public class KeyObject {
             long x,
             long y,
             String extension) {
-        return format(
-                "%s/%s/%s/%s/%s/%d/%d/%d.%s",
-                prefix, layerId, gridSetId, format, parametersId, zoomLevel, x, y, format);
+        checkNotNull(layerId, "LayerId cannot be null");
+        checkNotNull(gridSetId, "GridSetId cannot be null");
+        checkNotNull(format, "Format cannot be null");
+        checkNotNull(parametersId, "ParametersId cannot be null");
+        checkNotNull(extension, "Extension cannot be null");
+        return Stream.of(prefix, layerId, gridSetId, format,parametersId, String.valueOf(zoomLevel), String.valueOf(x), format("%d.%s", y, extension))
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining("/"));
+
     }
 }

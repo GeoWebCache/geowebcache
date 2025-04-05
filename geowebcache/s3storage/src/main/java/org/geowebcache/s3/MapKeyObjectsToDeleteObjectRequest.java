@@ -2,28 +2,16 @@ package org.geowebcache.s3;
 
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.geowebcache.util.KeyObject;
 
-public class MapKeyObjectsToDeleteObjectRequest implements Function<List<KeyObject>, DeleteObjectsRequest> {
-    private final String bucket;
-
-    public MapKeyObjectsToDeleteObjectRequest(String bucket) {
-        this.bucket = bucket;
-    }
+public class MapKeyObjectsToDeleteObjectRequest implements Function<List<DeleteTileInfo>, Map<String, DeleteTileInfo>> {
 
     @Override
-    public DeleteObjectsRequest apply(List<KeyObject> keyObjects) {
-        var request = new DeleteObjectsRequest(bucket);
-        var keys = keyObjects.stream()
-                .map(KeyObject::objectPath)
-                .map(DeleteObjectsRequest.KeyVersion::new)
-                .collect(Collectors.toList());
+    public Map<String, DeleteTileInfo> apply(List<DeleteTileInfo> keyObjects) {
 
-        request.setBucketName(bucket);
-        request.setKeys(keys);
-        request.setQuiet(false); // TODO check this setting
-        return request;
+        return keyObjects.stream()
+                .collect(Collectors.toMap(DeleteTileInfo::toFullPath, info -> info));
     }
 }

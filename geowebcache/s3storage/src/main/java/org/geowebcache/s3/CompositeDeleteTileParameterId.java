@@ -6,8 +6,8 @@ import static java.lang.String.format;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
-import org.geowebcache.util.KeyObject;
 
 class CompositeDeleteTileParameterId implements CompositeDeleteTileRange {
     private final String prefix;
@@ -15,7 +15,7 @@ class CompositeDeleteTileParameterId implements CompositeDeleteTileRange {
     private final String layerId;
     private final String parameterId;
     private final String layerName;
-    private final List<DeleteTileRange> children = new ArrayList<>();
+    private final List<DeleteTileParameterId> children = new ArrayList<>();
 
     private final String path;
 
@@ -47,7 +47,7 @@ class CompositeDeleteTileParameterId implements CompositeDeleteTileRange {
             });
         });
 
-        this.path = KeyObject.toLayerId(prefix, layerId);
+        this.path = DeleteTileInfo.toLayerId(prefix, layerId);
     }
 
     public String path() {
@@ -78,17 +78,16 @@ class CompositeDeleteTileParameterId implements CompositeDeleteTileRange {
     @Override
     public void add(DeleteTileRange child) {
         checkNotNull(child, "child cannot be null");
-        checkArgument(child instanceof DeleteTileGridSet, "child should be a DeleteTileGridSet");
+        checkArgument(child instanceof DeleteTileParameterId, "child should be a DeleteTileParameterId");
 
         DeleteTileParameterId gridSet = (DeleteTileParameterId) child;
 
-        checkArgument(gridSet.getBucket() == getBucket(), "child bucket should be the same as the bucket");
-        checkArgument(gridSet.getLayerName() == getLayerName(), "child layer name should be the same as the layerName");
-        checkArgument(gridSet.getLayerId() == getLayerId(), "child layer id should be the same as the layerId");
-        checkArgument(
-                gridSet.getParameterId() == getParameterId(),
+        checkArgument(Objects.equals(gridSet.getBucket(), getBucket()), "child bucket should be the same as the bucket");
+        checkArgument(Objects.equals(gridSet.getLayerName(), getLayerName()), "child layer name should be the same as the layerName");
+        checkArgument(Objects.equals(gridSet.getLayerId(), getLayerId()), "child layer id should be the same as the layerId");
+        checkArgument(Objects.equals(gridSet.getParameterId(), getParameterId()),
                 "child parameter id should be the same as the parameterId");
 
-        children.add(child);
+        children.add(gridSet);
     }
 }

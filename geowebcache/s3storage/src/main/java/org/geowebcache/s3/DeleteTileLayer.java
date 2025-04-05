@@ -1,7 +1,5 @@
 package org.geowebcache.s3;
 
-import org.geowebcache.util.KeyObject;
-
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -26,7 +24,7 @@ class DeleteTileLayer implements DeleteTileRange {
         this.bucket = bucket;
         this.layerId = layerId;
         this.layerName = layerName;
-        this.path = KeyObject.toLayerId(prefix, layerId);
+        this.path = DeleteTileInfo.toLayerId(prefix, layerId);
     }
 
     public String getPrefix() {

@@ -1,4 +1,4 @@
-package org.geowebcache.util;
+package org.geowebcache.s3;
 
 import static org.junit.Assert.assertThrows;
 
@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class KeyObjectTest extends TestCase {
+public class DeleteTileInfoTest extends TestCase {
 
     private static final String PREFIX = "Store";
     private static final String LAYER_NAME = "layer";
@@ -33,7 +33,7 @@ public class KeyObjectTest extends TestCase {
         PARAMETERS.put(PARAMETER_1_KEY, PARAMETER_1_VALUE);
     }
 
-    private KeyObject.Builder builder = KeyObject.newBuilder()
+    private final DeleteTileInfo.Builder builder = DeleteTileInfo.newBuilder()
             .withPrefix(PREFIX)
             .withLayerId(LAYER_ID)
             .withGridSetId(GRID_SET_ID)
@@ -50,59 +50,59 @@ public class KeyObjectTest extends TestCase {
     public void test_checkLayerIDInKey() {
         var result = builder.build().objectPath();
 
-        Matcher keyMatcher = KeyObject.keyRegex.matcher(result);
+        Matcher keyMatcher = DeleteTileInfo.keyRegex.matcher(result);
         assertTrue(keyMatcher.matches());
-        assertEquals(LAYER_ID, keyMatcher.group(KeyObject.LAYER_ID_GROUP_POS));
+        assertEquals(LAYER_ID, keyMatcher.group(DeleteTileInfo.LAYER_ID_GROUP_POS));
     }
 
     @Test
     public void test_checkGridSetIDInKey() {
         var result = builder.build().objectPath();
 
-        Matcher keyMatcher = KeyObject.keyRegex.matcher(result);
+        Matcher keyMatcher = DeleteTileInfo.keyRegex.matcher(result);
         assertTrue(keyMatcher.matches());
-        assertEquals(GRID_SET_ID, keyMatcher.group(KeyObject.GRID_SET_ID_GROUP_POS));
+        assertEquals(GRID_SET_ID, keyMatcher.group(DeleteTileInfo.GRID_SET_ID_GROUP_POS));
     }
 
     @Test
     public void test_checkFormatInKey() {
         var result = builder.build().objectPath();
 
-        Matcher keyMatcher = KeyObject.keyRegex.matcher(result);
+        Matcher keyMatcher = DeleteTileInfo.keyRegex.matcher(result);
         assertTrue(keyMatcher.matches());
-        assertEquals(FORMAT_IN_KEY, keyMatcher.group(KeyObject.TYPE_GROUP_POS));
+        assertEquals(FORMAT_IN_KEY, keyMatcher.group(DeleteTileInfo.TYPE_GROUP_POS));
     }
 
     @Test
     public void test_checkXInKey() {
         var result = builder.build().objectPath();
 
-        Matcher keyMatcher = KeyObject.keyRegex.matcher(result);
+        Matcher keyMatcher = DeleteTileInfo.keyRegex.matcher(result);
         assertTrue(keyMatcher.matches());
-        assertEquals(X, Long.parseLong(keyMatcher.group(KeyObject.X_GROUP_POS)));
+        assertEquals(X, Long.parseLong(keyMatcher.group(DeleteTileInfo.X_GROUP_POS)));
     }
 
     @Test
     public void test_checkYInKey() {
         var result = builder.build().objectPath();
 
-        Matcher keyMatcher = KeyObject.keyRegex.matcher(result);
+        Matcher keyMatcher = DeleteTileInfo.keyRegex.matcher(result);
         assertTrue(keyMatcher.matches());
-        assertEquals(Y, Long.parseLong(keyMatcher.group(KeyObject.Y_GROUP_POS)));
+        assertEquals(Y, Long.parseLong(keyMatcher.group(DeleteTileInfo.Y_GROUP_POS)));
     }
 
     @Test
     public void test_checkZInKey() {
         var result = builder.build().objectPath();
 
-        Matcher keyMatcher = KeyObject.keyRegex.matcher(result);
+        Matcher keyMatcher = DeleteTileInfo.keyRegex.matcher(result);
         assertTrue(keyMatcher.matches());
-        assertEquals(Z, Long.parseLong(keyMatcher.group(KeyObject.Z_GROUP_POS)));
+        assertEquals(Z, Long.parseLong(keyMatcher.group(DeleteTileInfo.Z_GROUP_POS)));
     }
 
     @Test
     public void test_checkFromS3ObjectKey() {
-        var testData = Arrays.asList(new KeyObjectTest.TestHelper(
+        var testData = List.of(new TestHelper(
                 "Valid case",
                 "Store/layer_id/grid_set_id/png/75595e9159afae9c4669aee57366de8c196a57e1/1/1/1.png",
                 PREFIX,
@@ -116,7 +116,7 @@ public class KeyObjectTest extends TestCase {
 
         testData.forEach(data -> {
             if (!Objects.nonNull(data.err)) {
-                KeyObject keyObject = KeyObject.fromObjectPath(data.objectKey);
+                DeleteTileInfo keyObject = DeleteTileInfo.fromObjectPath(data.objectKey);
                 assertEquals(data.name, data.prefix, keyObject.prefix);
                 assertEquals(data.name, data.parameterSha, keyObject.parametersSha);
                 assertEquals(data.name, data.layerId, keyObject.layerId);
@@ -126,7 +126,7 @@ public class KeyObjectTest extends TestCase {
                 assertEquals(data.name, data.y, keyObject.y);
                 assertEquals(data.name, data.z, keyObject.z);
             } else {
-                assertThrows(data.name, data.err.getClass(), () -> KeyObject.fromObjectPath(data.objectKey));
+                assertThrows(data.name, data.err.getClass(), () -> DeleteTileInfo.fromObjectPath(data.objectKey));
             }
         });
     }

@@ -1,15 +1,18 @@
 package org.geowebcache.s3;
 
+import org.geowebcache.s3.BulkDeleteTask.Statistics.SubStats;
+import org.geowebcache.storage.TileObject;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 import static org.geowebcache.s3.BulkDeleteTask.ObjectPathStrategy.*;
-
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
-import org.geowebcache.s3.BulkDeleteTask.Statistics.SubStats;
-import org.geowebcache.util.KeyObject;
 
 class BulkDeleteTask implements Callable<Long> {
     private final AmazonS3Wrapper amazonS3Wrapper;
@@ -19,11 +22,10 @@ class BulkDeleteTask implements Callable<Long> {
     private final int batch;
 
     private final Callback callback;
-    private final Statistics statistics = new Statistics();
 
     //private final ThreadNotInterruptedPredicate threadNotInterrupted = new ThreadNotInterruptedPredicate();
     private final MapS3ObjectSummaryToKeyObject mapS3ObjectSummaryToKeyObject = new MapS3ObjectSummaryToKeyObject();
-    private final MapKeyObjectsToDeleteObjectRequest mapKeyObjectsToDeleteObjectRequest;
+    private final MapKeyObjectsToDeleteObjectRequest mapKeyObjectsToDeleteObjectRequest = new MapKeyObjectsToDeleteObjectRequest();
 
     // Only build with builder
     private BulkDeleteTask(
@@ -37,7 +39,6 @@ class BulkDeleteTask implements Callable<Long> {
         this.s3ObjectsWrapper = s3ObjectsWrapper;
         this.bucketName = bucketName;
         this.deleteTileRange = deleteTileRange;
-        this.mapKeyObjectsToDeleteObjectRequest = new MapKeyObjectsToDeleteObjectRequest(bucketName);
         this.batch = batch;
         this.callback = callback;
     }
@@ -67,128 +68,134 @@ class BulkDeleteTask implements Callable<Long> {
     }
 
     @Override
-    public Long call() throws Exception {
+    public Long call() {
+        Statistics statistics = new Statistics(deleteTileRange);
+        callback.taskStarted(statistics);
+
         try {
             return deleteTileRange.stream()
-                    .map(this::performDeleteStrategy)
-                    .mapToLong(statistics::addSubStats)
+                    .mapToLong(this::performDeleteStrategy)
                     .sum();
 
         } catch (Exception e) {
             S3BlobStore.log.severe(format("Exiting from bulk delete task: %s", e.getMessage()));
             statistics.nonrecoverableIssues.add(e);
-            throw e;
-            // return statistics.deleted;
+            return statistics.processed;
         } finally {
-            callback.results(statistics);
+            callback.taskEnded();
         }
     }
 
-    private SubStats performDeleteStrategy(DeleteTileRange deleteRange) {
-        SubStats stats;
+    private Long performDeleteStrategy(DeleteTileRange deleteRange) {
         switch (chooseStrategy(deleteRange)) {
             case NoDeletionsRequired:
-                stats = noDeletionsRequired(deleteRange);
-                break;
+                return noDeletionsRequired(deleteRange);
             case SingleTile:
-                stats = singleTile(deleteRange);
-                break;
+                return singleTile(deleteRange);
             case S3ObjectPathsForPrefix:
-                stats = s3ObjectPathsForPrefix(deleteRange);
-                break;
+                return s3ObjectPathsForPrefix(deleteRange);
             case S3ObjectPathsForPrefixFilterByBoundedBox:
-                stats = s3ObjectPathsForPrefixFilterByBoundedBox(deleteRange);
-                break;
+                return s3ObjectPathsForPrefixFilterByBoundedBox(deleteRange);
             case TileRangeWithBoundedBox:
-                stats = tileRangeWithBounderBox(deleteRange);
-                break;
+                return tileRangeWithBounderBox(deleteRange);
             case TileRangeWithBoundedBoxIfTileExist:
-                stats = tileRangeWithBounderBoxIfTileExists(deleteRange);
-                break;
+                return tileRangeWithBounderBoxIfTileExists(deleteRange);
             default:
-                stats = s3ObjectPathsForPrefix(deleteTileRange);
+                return s3ObjectPathsForPrefix(deleteTileRange);
         }
-        return stats;
     }
 
-    private SubStats singleTile(DeleteTileRange deleteRange) {
-        SubStats stats = new SubStats(deleteRange.path(), SingleTile);
-        PerformDeleteObjects performDeleteObjects = new PerformDeleteObjects(amazonS3Wrapper, stats);
-        var processDeletedObjects = new ProcessDeletedObjects(stats);
+    private Long singleTile(DeleteTileRange deleteRange) {
+        SubStats subStats = new SubStats(deleteTileRange, SingleTile);
+        callback.subTaskStarted(subStats);
+
+        PerformDeleteObjects performDeleteObjects = new PerformDeleteObjects(amazonS3Wrapper, bucketName, callback, subStats, deleteTileRange);
 
         S3BlobStore.log.info(format(
                 "Using strategy SingleTile to a delete tile from bucket %s with prefix: %s",
                 bucketName, deleteTileRange.path()));
 
-        Long count = batchedStreamOfKeyObjects(deleteTileRange, stats)
+        Long count = batchedStreamOfKeyObjects(deleteTileRange, subStats)
                 .map(mapKeyObjectsToDeleteObjectRequest)
-                .map(performDeleteObjects)
-                .mapToLong(processDeletedObjects)
+                .mapToLong(performDeleteObjects)
                 .sum();
 
         S3BlobStore.log.info(format(
-                "Finished applying strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s deleted: %d",
-                bucketName, deleteTileRange.path(), stats.deleted));
+                "Finished applying strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s processed: %d",
+                bucketName, deleteTileRange.path(), count));
 
-        return stats;
+        callback.subTaskEnded();
+        return subStats.processed;
     }
 
-    private SubStats tileRangeWithBounderBox(DeleteTileRange deleteTileRange) {
+    private Long tileRangeWithBounderBox(DeleteTileRange deleteTileRange) {
         S3BlobStore.log.warning("Strategy TileRangeWithBounderBox not implemented");
-        return new SubStats(deleteTileRange.path(), TileRangeWithBoundedBox);
+        SubStats subStats = new SubStats(deleteTileRange, TileRangeWithBoundedBox);
+        callback.subTaskStarted(subStats);
+        callback.subTaskEnded();
+        return subStats.processed;
     }
 
-    private SubStats tileRangeWithBounderBoxIfTileExists(DeleteTileRange deleteTileRange) {
+    private Long tileRangeWithBounderBoxIfTileExists(DeleteTileRange deleteTileRange) {
         S3BlobStore.log.warning("Strategy TileRangeWithBounderBoxIfTileExists not implemented");
-        return new SubStats(deleteTileRange.path(), TileRangeWithBoundedBoxIfTileExist);
+        SubStats subStats = new SubStats(deleteTileRange, TileRangeWithBoundedBoxIfTileExist);
+        callback.subTaskStarted(subStats);
+        callback.subTaskEnded();
+        return subStats.processed;
     }
 
-    private SubStats s3ObjectPathsForPrefixFilterByBoundedBox(DeleteTileRange deleteTileRange) {
+    private Long s3ObjectPathsForPrefixFilterByBoundedBox(DeleteTileRange deleteTileRange) {
         S3BlobStore.log.warning("Strategy S3ObjectPathsForPrefixFilterByBoundedBox not implemented");
-        return new SubStats(deleteTileRange.path(), S3ObjectPathsForPrefixFilterByBoundedBox);
+        SubStats subStats = new SubStats(deleteTileRange, S3ObjectPathsForPrefixFilterByBoundedBox);
+        callback.subTaskStarted(subStats);
+        callback.subTaskEnded();
+        return subStats.processed;
     }
 
-    private SubStats noDeletionsRequired(DeleteTileRange deleteTileRange) {
+    private Long noDeletionsRequired(DeleteTileRange deleteTileRange) {
         S3BlobStore.log.warning("Strategy NoDeletionsRequired nothing to do");
-        return new SubStats(deleteTileRange.path(), NoDeletionsRequired);
+        SubStats subStats = new SubStats(deleteTileRange, NoDeletionsRequired);
+        callback.subTaskStarted(subStats);
+        callback.subTaskEnded();
+        return subStats.processed;
     }
 
-    private SubStats s3ObjectPathsForPrefix(DeleteTileRange deleteTileRange) {
-        SubStats stats = new SubStats(deleteTileRange.path(), S3ObjectPathsForPrefix);
-        var performDeleteObjects = new PerformDeleteObjects(amazonS3Wrapper, stats);
-        var processDeletedObjects = new ProcessDeletedObjects(stats);
+    private Long s3ObjectPathsForPrefix(DeleteTileRange deleteTileRange) {
+        SubStats subStats = new SubStats(deleteTileRange, S3ObjectPathsForPrefix);
+        callback.subTaskStarted(subStats);
+
+        var performDeleteObjects = new PerformDeleteObjects(amazonS3Wrapper, bucketName, callback, subStats, deleteTileRange);
 
         S3BlobStore.log.info(format(
                 "Using strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s",
                 bucketName, deleteTileRange.path()));
 
-        var count = batchedStreamOfKeyObjects(deleteTileRange, stats)
+        var count = batchedStreamOfKeyObjects(deleteTileRange, subStats)
                 .map(mapKeyObjectsToDeleteObjectRequest)
-                .map(performDeleteObjects)
-                .mapToLong(processDeletedObjects)
+                .mapToLong(performDeleteObjects)
                 .sum();
 
-        if (count != stats.deleted) {
-            S3BlobStore.log.warning(format("Mismatch during tile delete expected %d found %d", count, stats.deleted));
+        if (count != subStats.deleted) {
+            S3BlobStore.log.warning(format("Mismatch during tile delete expected %d found %d", count, subStats.deleted));
         }
 
         S3BlobStore.log.info(format(
                 "Finished applying strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s deleted: %d",
                 bucketName, deleteTileRange.path(), count));
 
-        return stats;
+        callback.subTaskEnded();
+        return subStats.processed;
     }
 
-    private Stream<List<KeyObject>> batchedStreamOfKeyObjects(DeleteTileRange deleteTileRange, SubStats stats) {
+    private Stream<List<DeleteTileInfo>> batchedStreamOfKeyObjects(DeleteTileRange deleteTileRange, SubStats stats) {
         return BatchingIterator.batchedStreamOf(
                 generateStreamOfKeyObjects(createS3ObjectPathsForPrefixSupplier(deleteTileRange.path()), stats), batch);
     }
 
-    private Stream<KeyObject> generateStreamOfKeyObjects(S3ObjectPathsForPrefixSupplier supplier, SubStats subStats) {
+    private Stream<DeleteTileInfo> generateStreamOfKeyObjects(S3ObjectPathsForPrefixSupplier supplier, SubStats subStats) {
         return Stream.generate(supplier)
                 .takeWhile(Objects::nonNull)
-                .map(mapS3ObjectSummaryToKeyObject)
-                .peek(key -> subStats.processed += 1);
+                .map(mapS3ObjectSummaryToKeyObject);
     }
 
     private S3ObjectPathsForPrefixSupplier createS3ObjectPathsForPrefixSupplier(String prefix) {
@@ -222,69 +229,39 @@ class BulkDeleteTask implements Callable<Long> {
     }
 
     public interface Callback {
-        void results(Statistics statistics);
+        void tileDeleted(ResultStat result);
+        void batchStarted(BatchStats batchStats);
+        void batchEnded();
+        void subTaskStarted(SubStats subStats);
+        void subTaskEnded();
+        void taskStarted(Statistics statistics);
+        void taskEnded();
     }
 
-    public static class LoggingCallback implements Callback {
-        private static final Logger LOG = S3BlobStore.log;
-
+    public static class NoopCallback implements Callback {
         @Override
-        public void results(Statistics statistics) {
-            String message = format(
-                    "Completed: %b Processed %s Deleted: %d Recoverable Errors: %d Unrecoverable Errors: %d Unknown Issues %d Batches Sent %d Batches Total %d High Tide %d Low Tide %d",
-                    statistics.completed(),
-                    statistics.processed,
-                    statistics.deleted,
-                    statistics.recoverableIssues.size(),
-                    statistics.unknownIssues.size(),
-                    statistics.nonrecoverableIssues.size(),
-                    statistics.batchSent,
-                    statistics.batchTotal,
-                    statistics.batchHighTideLevel,
-                    statistics.batchLowTideLevel);
-            if (statistics.completed()) {
-                LOG.info(message);
-            } else {
-                LOG.warning(message);
-            }
-
-            for (var entry : statistics.statsPerStrategy.entrySet()) {
-                var strategy = entry.getKey();
-                var stats = entry.getValue();
-                LOG.info(format(
-                        "Strategy %s Count: %d Processed %d Deleted: %d Recoverable Errors: %d Unrecoverable Errors: %d Unknown Issues %d Batches Sent %d Batches Total %d High Tide %d Low Tide %d",
-                        strategy.toString(),
-                        stats.count,
-                        stats.processed,
-                        stats.deleted,
-                        stats.recoverableIssues.size(),
-                        stats.unknownIssues.size(),
-                        stats.nonrecoverableIssues.size(),
-                        stats.batchSent,
-                        stats.batchTotal,
-                        stats.batchHighTideLevel,
-                        stats.batchLowTideLevel));
-            }
-
-            for (var entry : statistics.statsPerPrefix.entrySet()) {
-                var prefix = entry.getKey();
-                var stats = entry.getValue();
-                LOG.info(format(
-                        "Prefix %s Count: %d Processed %d Deleted: %d Recoverable Errors: %d Unrecoverable Errors: %d Unknown Issues %d Batches Sent %d Batches Total %d High Tide %d Low Tide %d",
-                        prefix,
-                        stats.count,
-                        stats.processed,
-                        stats.deleted,
-                        stats.recoverableIssues.size(),
-                        stats.unknownIssues.size(),
-                        stats.nonrecoverableIssues.size(),
-                        stats.batchSent,
-                        stats.batchTotal,
-                        stats.batchHighTideLevel,
-                        stats.batchLowTideLevel));
-            }
+        public void tileDeleted(ResultStat result) {
+        }
+        @Override
+        public void batchStarted(BatchStats batchStats) {
+        }
+        @Override
+        public void batchEnded() {
+        }
+        @Override
+        public void subTaskStarted(SubStats subStats) {
+        }
+        @Override
+        public void subTaskEnded() {
+        }
+        @Override
+        public void taskStarted(Statistics statistics) {
+        }
+        @Override
+        public void taskEnded() {
         }
     }
+
 
     static Builder newBuilder() {
         return new Builder();
@@ -297,39 +274,27 @@ class BulkDeleteTask implements Callable<Long> {
         long batchTotal = 0;
         long batchLowTideLevel = 0;
         long batchHighTideLevel = 0;
+        final DeleteTileRange deleteTileRange;
         final List<Exception> recoverableIssues = new ArrayList<>();
         final List<Exception> nonrecoverableIssues = new ArrayList<>();
         final List<Exception> unknownIssues = new ArrayList<>();
 
-        final Map<String, SubStats> statsPerPrefix = new HashMap<>();
-        final Map<ObjectPathStrategy, SubStats> statsPerStrategy = new HashMap<>();
+        final List<SubStats> subStats = new ArrayList<>();
+
+        public Statistics(DeleteTileRange deleteTileRange) {
+            this.deleteTileRange = deleteTileRange;
+        }
 
         boolean completed() {
             return recoverableIssues.isEmpty() && nonrecoverableIssues.isEmpty() && unknownIssues.isEmpty();
         }
 
-        public Map<String, SubStats> getStatsPerPrefix() {
-            return statsPerPrefix;
+        public List<SubStats> getSubStats() {
+            return subStats;
         }
 
         Long addSubStats(SubStats stats) {
-            String prefix = stats.prefix;
-            ObjectPathStrategy strategy = stats.strategy;
-
-            if (statsPerPrefix.containsKey(prefix)) {
-                var old = statsPerPrefix.get(prefix);
-                old.merge(stats);
-            } else {
-                statsPerPrefix.put(prefix, stats);
-            }
-
-            if (statsPerStrategy.containsKey(strategy)) {
-                var old = statsPerStrategy.get(strategy);
-                old.merge(stats);
-            } else {
-                statsPerStrategy.put(strategy, stats);
-            }
-
+            this.subStats.add(stats);
             this.deleted += stats.deleted;
             this.processed += stats.processed;
             this.recoverableIssues.addAll(stats.recoverableIssues);
@@ -346,8 +311,8 @@ class BulkDeleteTask implements Callable<Long> {
         }
 
         public static class SubStats {
-            String prefix;
             ObjectPathStrategy strategy;
+            DeleteTileRange deleteTileRange;
             long deleted;
             long processed;
             long count = 1;
@@ -360,37 +325,60 @@ class BulkDeleteTask implements Callable<Long> {
             final List<Exception> nonrecoverableIssues = new ArrayList<>();
             final List<Exception> unknownIssues = new ArrayList<>();
 
-            public SubStats(String prefix, ObjectPathStrategy strategy) {
-                checkNotNull(prefix, "prefix cannot be null");
+            public SubStats(DeleteTileRange deleteTileRange, ObjectPathStrategy strategy) {
+                checkNotNull(deleteTileRange, "deleteTileRange cannot be null");
                 checkNotNull(strategy, "strategy cannot be null");
 
-                this.prefix = prefix;
+                this.deleteTileRange = deleteTileRange;
                 this.strategy = strategy;
             }
 
-            public void merge(SubStats stats) {
-                this.count += stats.count;
-                this.deleted += stats.deleted;
-                this.processed += stats.processed;
-                this.recoverableIssues.addAll(stats.recoverableIssues);
-                this.nonrecoverableIssues.addAll(stats.nonrecoverableIssues);
-                this.unknownIssues.addAll(stats.unknownIssues);
-                this.batchSent += stats.batchSent;
-                this.batchTotal += stats.batchTotal;
-                this.batchLowTideLevel = this.batchLowTideLevel == 0 ? stats.batchLowTideLevel : Math.min(stats.batchLowTideLevel, batchLowTideLevel);
-                this.batchHighTideLevel = Math.max(stats.batchHighTideLevel, this.batchHighTideLevel);
+            boolean completed() {
+                return recoverableIssues.isEmpty() && nonrecoverableIssues.isEmpty() && unknownIssues.isEmpty();
             }
 
-            public void incrementDeleted(long count) {
-                deleted += count;
-            }
-
-            public void updateBatches(long size) {
+            public void addBatch(BatchStats batchStats) {
+                processed += batchStats.processed;
+                deleted += batchStats.deleted;
                 batchSent += 1;
-                batchTotal += size;
-                batchLowTideLevel = batchLowTideLevel == 0 ? size : Math.min(size, batchLowTideLevel);
-                batchHighTideLevel = Math.max(size, batchHighTideLevel);
+                batchTotal += batchStats.processed;
+                batchLowTideLevel = batchLowTideLevel == 0 ? batchStats.processed : Math.min(batchStats.processed, batchLowTideLevel);
+                batchHighTideLevel = Math.max(batchStats.processed, batchHighTideLevel);
             }
+        }
+    }
+
+    public static class BatchStats {
+        DeleteTileRange deleteTileRange;
+        long deleted;
+        long processed;
+
+
+        BatchStats(DeleteTileRange deleteTileRange) {
+            checkNotNull(deleteTileRange, "deleteTileRange cannot be null");
+            this.deleteTileRange = deleteTileRange;
+        }
+
+        public void setProcessed (long processed) {
+            this.processed = processed;
+        }
+
+        public void add(ResultStat stat) {
+            deleted += 1;
+        }
+    }
+
+    public static class ResultStat {
+        String path;
+        TileObject tileObject;  // Can be null?
+        long size;
+        long when;
+
+        public ResultStat(String path, TileObject tileObject, long size, long when) {
+            this.path = path;
+            this.tileObject = tileObject;
+            this.size = size;
+            this.when = when;
         }
     }
 
@@ -442,11 +430,6 @@ class BulkDeleteTask implements Callable<Long> {
             checkNotNull(callback, "Missing Callback");
 
             return new BulkDeleteTask(amazonS3Wrapper, s3ObjectsWrapper, bucketName, deleteTileRange, callback, batch);
-        }
-
-        public Builder withLoggingCallback() {
-            this.callback = new LoggingCallback();
-            return this;
         }
     }
 }

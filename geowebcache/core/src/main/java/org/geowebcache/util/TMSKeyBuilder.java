@@ -115,7 +115,11 @@ public final class TMSKeyBuilder {
             throw new RuntimeException(e);
         }
 
-        return KeyObject.toFullPath(prefix, layer, gridset, shortFormat, parametersId, z, x, y, extension);
+        // Key format, comprised of
+        // {@code <prefix>/<layer name>/<gridset id>/<format id>/<parameters
+        // hash>/<z>/<x>/<y>.<extension>}
+        String key = join(false, prefix, layer, gridset, shortFormat, parametersId, z, x, y + "." + extension);
+        return key;
     }
 
     public String forLocation(String prefix, long[] loc, MimeType mime) {

@@ -1,7 +1,5 @@
 package org.geowebcache.s3;
 
-import org.geowebcache.util.KeyObject;
-
 public class DeleteTilesByZoomLevelInBoundedBox implements DeleteTileRange {
     private final String prefix;
     private final String bucketName;
@@ -32,7 +30,7 @@ public class DeleteTilesByZoomLevelInBoundedBox implements DeleteTileRange {
         this.zoomLevel = zoomLevel;
         this.boundedBox = boundedBox;
 
-        this.path = KeyObject.toZoomPrefix(prefix, layerId, gridSetId, format, paramatesId, zoomLevel);
+        this.path = DeleteTileInfo.toZoomPrefix(prefix, layerId, gridSetId, format, paramatesId, zoomLevel);
     }
 
     @Override
