@@ -1,16 +1,20 @@
 package org.geowebcache.s3.delete;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
+import org.geowebcache.storage.TileObject;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import org.geowebcache.storage.TileObject;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
 
 public class DeleteTileInfo {
     public static final Pattern keyRegex = Pattern.compile("(.*)/(.*)/(.*)/(.*)/(.*)/(\\d+)/(\\d+)/(\\d+)\\..*");
@@ -19,10 +23,10 @@ public class DeleteTileInfo {
     public static final int LAYER_ID_GROUP_POS = 2;
     public static final int GRID_SET_ID_GROUP_POS = 3;
     public static final int TYPE_GROUP_POS = 4;
-    public static final int PARAMETERS_SHAR_GOROUP_POS = 5;
-    public static final int X_GROUP_POS = 6;
-    public static final int Y_GROUP_POS = 7;
-    public static final int Z_GROUP_POS = 8;
+    public static final int PARAMETERS_ID_GROUP_POS = 5;
+    public static final int X_GROUP_POS = 7;
+    public static final int Y_GROUP_POS = 8;
+    public static final int Z_GROUP_POS = 6;
 
     final String prefix;
     final String layerId;
@@ -95,7 +99,7 @@ public class DeleteTileInfo {
                 matcher.group(LAYER_ID_GROUP_POS),
                 matcher.group(GRID_SET_ID_GROUP_POS),
                 matcher.group(TYPE_GROUP_POS),
-                matcher.group(PARAMETERS_SHAR_GOROUP_POS),
+                matcher.group(PARAMETERS_ID_GROUP_POS),
                 Long.parseLong(matcher.group(X_GROUP_POS)),
                 Long.parseLong(matcher.group(Y_GROUP_POS)),
                 Long.parseLong(matcher.group(Z_GROUP_POS)),
@@ -158,11 +162,6 @@ public class DeleteTileInfo {
             return this;
         }
 
-        public Builder withVersion(long version) {
-            this.version = version;
-            return this;
-        }
-
         DeleteTileInfo build() {
             checkNotNull(prefix, "Prefix cannot be null");
             checkNotNull(layerId, "LayerId cannot be null");
@@ -179,6 +178,50 @@ public class DeleteTileInfo {
         public Builder withoutVersion() {
             this.version = null;
             return this;
+        }
+    }
+
+    public static boolean isPathValid(String path, String prefix) {
+        List<String> results = new ArrayList<>(List.of(path.split("/")));
+        if (path.contains("//")) {
+            return false;
+        }
+        if (path.endsWith(".")) {
+            return false;
+        }
+
+        if (Objects.equals(results.get(0),prefix)) {
+            results.remove(0);
+        }
+
+        if (results.isEmpty()) {
+            return false;
+        }
+
+        // Check all the token are valid
+        return IntStream.range(0, results.size()).mapToObj( index -> {
+            if (index == X_GROUP_POS -2 ||  index == Z_GROUP_POS -2) {
+                return isALong(results.get(index));
+            }
+
+            if (index == Y_GROUP_POS -2) {
+                String[] lastPathPart = results.get(index).split("\\.");
+                if (lastPathPart.length == 1 && isALong(lastPathPart[0])) {
+                    return true;
+                }
+                return lastPathPart.length == 2 && isALong(lastPathPart[0]) && !lastPathPart[1].isBlank();
+            }
+
+            return !results.get(index).isEmpty();
+        }).filter(x->x).count() == results.size();
+    }
+
+    private static Boolean isALong(String test) {
+        try {
+            Long.parseLong(test);
+            return true;
+        }  catch (NumberFormatException e) {
+            return false;
         }
     }
 

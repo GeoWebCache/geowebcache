@@ -1,22 +1,22 @@
 package org.geowebcache.s3.delete;
 
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class DeleteTilePrefix implements DeleteTileRange{
     private final String prefix;
     private final String bucket;
-    private final String layerId;
-    private final String gridSetId;
-    private final String format;
-    private final String parameterId;
     private final String path;
 
-    public DeleteTilePrefix(String prefix, String bucket, String layerId, String gridSetId, String format, String parameterId, String path) {
+    public DeleteTilePrefix(String prefix, String bucket, String path) {
+        checkNotNull(prefix, "prefix must not be null");
+        checkNotNull(bucket, "bucket must not be null");
+        checkNotNull(path, "path must not be null");
+        checkArgument(DeleteTileInfo.isPathValid(path, prefix), "path must be valid");
+
         this.prefix = prefix;
         this.bucket = bucket;
-        this.layerId = layerId;
-        this.gridSetId = gridSetId;
-        this.format = format;
-        this.parameterId = parameterId;
         this.path = path;
     }
 
@@ -33,19 +33,4 @@ public class DeleteTilePrefix implements DeleteTileRange{
         return bucket;
     }
 
-    public String getLayerId() {
-        return layerId;
-    }
-
-    public String getGridSetId() {
-        return gridSetId;
-    }
-
-    public String getFormat() {
-        return format;
-    }
-
-    public String getParameterId() {
-        return parameterId;
-    }
 }

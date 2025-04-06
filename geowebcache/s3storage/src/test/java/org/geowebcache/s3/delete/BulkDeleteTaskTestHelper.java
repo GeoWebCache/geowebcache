@@ -23,6 +23,7 @@ public class BulkDeleteTaskTestHelper {
     // public static final String GRID_SET_ID_2 = "EPSG:900913";
 
     public static final String FORMAT_IN_KEY = "png";
+    public static final String EXTENSION = "png";
     // public static final String FORMAT_IN_KEY_2 = "jpg";
 
     public static final String PARAMETERS_ID = "75595e9159afae9c4669aee57366de8c196a57e1";

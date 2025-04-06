@@ -225,6 +225,10 @@ public class BulkDeleteTask implements Callable<Long> {
             return SingleTile;
         }
 
+        if (deleteTileRange instanceof DeleteTilePrefix) {
+            return RetryPendingTask;
+        }
+
         return DefaultStrategy;
     }
 

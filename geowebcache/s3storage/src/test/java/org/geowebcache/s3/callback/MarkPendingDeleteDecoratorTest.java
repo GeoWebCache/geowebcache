@@ -194,7 +194,7 @@ public class MarkPendingDeleteDecoratorTest  {
     @Test
     public void test_subTaskEnded_removePendingDeleted_withRetryPendingTask() throws Exception {
         String path = DeleteTileInfo.toZoomPrefix(PREFIX, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL);
-        DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY,  PARAMETERS_ID, path);
+        DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, path);
         SubStats subStats = new SubStats(deleteTilePrefix, RetryPendingTask);
 
         markPendingDeleteDecorator.subTaskStarted(subStats);
