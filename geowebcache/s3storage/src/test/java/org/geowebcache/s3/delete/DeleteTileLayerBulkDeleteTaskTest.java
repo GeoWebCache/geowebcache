@@ -52,8 +52,7 @@ public class DeleteTileLayerBulkDeleteTaskTest {
 
     @Test
     public void testCall_WhenBatchOrLessToProcess() throws Exception {
-        Iterator<S3ObjectSummary> iterator = S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST.iterator();
-        when(s3ObjectsWrapper.iterator()).thenReturn(iterator);
+        when(s3ObjectsWrapper.iterator()).thenAnswer(invocation -> S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST().iterator());
         when(amazonS3Wrapper.deleteObjects(any(DeleteObjectsRequest.class))).thenAnswer(invocationOnMock -> {
             DeleteObjectsRequest request =
                     (DeleteObjectsRequest) invocationOnMock.getArguments()[0];
@@ -65,14 +64,14 @@ public class DeleteTileLayerBulkDeleteTaskTest {
         Long count = task.call();
         Statistics statistics = callback.getStatistics();
         assertEquals(
-                "Should have batch large summary collection size", S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST.size(), (long) count);
+                "Should have batch large summary collection size", S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST().size(), (long) count);
         assertEquals(
                 "Should have deleted large summary collection size",
-                S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST.size(),
+                S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST().size(),
                 statistics.getDeleted());
         assertEquals(
                 "Should have batch large summary collection size",
-                S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST.size(),
+                S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST().size(),
                 statistics.getProcessed());
     }
 

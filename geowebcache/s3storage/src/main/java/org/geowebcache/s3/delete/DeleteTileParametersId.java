@@ -1,6 +1,7 @@
 package org.geowebcache.s3.delete;
 
-import static java.lang.String.format;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class DeleteTileParametersId implements DeleteTileRange {
     private final String prefix;
@@ -9,6 +10,7 @@ public class DeleteTileParametersId implements DeleteTileRange {
     private final String gridSetId;
     private final String format;
     private final String parameterId;
+
     private final String layerName;
 
     private final String path;
@@ -21,19 +23,34 @@ public class DeleteTileParametersId implements DeleteTileRange {
             String format,
             String parametersId,
             String layerName) {
-        this.prefix = prefix;
-        this.bucket = bucket;
-        this.layerId = layerId;
-        this.gridSetId = gridSetId;
-        this.format = format;
-        this.parameterId = parametersId;
-        this.layerName = layerName;
+        checkNotNull(prefix, "Prefix must not be null");
+        checkNotNull(bucket, "Bucket must not be null");
+        checkNotNull(layerId, "LayerId must not be null");
+        checkNotNull(gridSetId, "GridSetId must not be null");
+        checkNotNull(format, "Format must not be null");
+        checkNotNull(parametersId, "ParametersId must not be null");
+        checkNotNull(layerName, "LayerName must not be null");
+
+        checkArgument(!bucket.trim().isEmpty(), "Bucket must not be empty");
+        checkArgument(!layerId.trim().isEmpty(), "LayerId must not be empty");
+        checkArgument(!gridSetId.trim().isEmpty(), "GridSetId must not be empty");
+        checkArgument(!format.trim().isEmpty(), "Format must not be empty");
+        checkArgument(!parametersId.trim().isEmpty(), "ParametersId must not be empty");
+        checkArgument(!layerName.trim().isEmpty(), "LayerName must not be empty");
+
+        this.prefix = prefix.trim();
+        this.bucket = bucket.trim();
+        this.layerId = layerId.trim();
+        this.gridSetId = gridSetId.trim();
+        this.format = format.trim();
+        this.parameterId = parametersId.trim();
+        this.layerName = layerName.trim();
 
         this.path = DeleteTileInfo.toParametersId(prefix, layerId, gridSetId, format, parametersId);
     }
 
     public String path() {
-        return format("%s/%s/%s/%s/", layerId, gridSetId, format, parameterId);
+        return path;
     }
 
     public String getBucket() {
@@ -45,7 +62,7 @@ public class DeleteTileParametersId implements DeleteTileRange {
     }
 
     public String getLayerName() {
-        return layerId;
+        return layerName;
     }
 
     public String getGridSetId() {
@@ -55,4 +72,13 @@ public class DeleteTileParametersId implements DeleteTileRange {
     public String getParameterId() {
         return parameterId;
     }
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public String getFormat() {
+        return format;
+    }
+
+
 }

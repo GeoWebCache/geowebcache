@@ -20,21 +20,23 @@ public class BulkDeleteTaskTestHelper {
     public static final int BATCH = 100;
 
     public static final String GRID_SET_ID = "EPSG:4326";
-    // public static final String GRID_SET_ID_2 = "EPSG:900913";
+    public static final String GRID_SET_ID_2 = "EPSG:900913";
 
     public static final String FORMAT_IN_KEY = "png";
+    public static final String FORMAT_IN_KEY_2 = "jpg";
     public static final String EXTENSION = "png";
-    // public static final String FORMAT_IN_KEY_2 = "jpg";
 
     public static final String PARAMETERS_ID = "75595e9159afae9c4669aee57366de8c196a57e1";
 
     public static final long TIMESTAMP = System.currentTimeMillis();
 
+    public static final Set<String> EMPTY_SET_OF_GRID_SET_IDS = Set.of();
     public static final Set<String> SINGLE_SET_OF_GRID_SET_IDS = Set.of(GRID_SET_ID);
-    // public static final Set<String> ALL_SET_OF_GRID_SET_IDS = Set.of(GRID_SET_ID, GRID_SET_ID_2);
+    public static final Set<String> ALL_SET_OF_GRID_SET_IDS = Set.of(GRID_SET_ID, GRID_SET_ID_2);
 
+    public static final Set<String> EMPTY_SET_OF_FORMATS = Set.of();
     public static final Set<String> SINGLE_SET_OF_FORMATS = Set.of(FORMAT_IN_KEY);
-    // public static final Set<String> ALL_SET_OF_FORMATS = Set.of(FORMAT_IN_KEY, FORMAT_IN_KEY_2);
+    public static final Set<String> ALL_SET_OF_FORMATS = Set.of(FORMAT_IN_KEY, FORMAT_IN_KEY_2);
 
     public static final Long ZOOM_LEVEL = 4L;
     public static final Set<Long> ZOOM_LEVEL_0 = Set.of(0L);
@@ -44,13 +46,15 @@ public class BulkDeleteTaskTestHelper {
     public static final Set<Long> ZOOM_LEVEL_0_THROUGH_9 = Set.of(0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L);
 
     public static final long[] XYZ = {1, 2, 3};
-    public static final Map<String, String> PARAMETERS = new HashMap<>() {};
+    public static final Map<String, String> PARAMETERS = new HashMap<>() {
+    };
 
     public static final TileObject TILE_OBJECT = TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
     public static final long BLOB_SIZE = 12_344_567L;
+
     static {
         TILE_OBJECT.setParametersId(PARAMETERS_ID);
-        TILE_OBJECT.setBlobSize((int)BLOB_SIZE);
+        TILE_OBJECT.setBlobSize((int) BLOB_SIZE);
     }
 
 
@@ -113,8 +117,11 @@ public class BulkDeleteTaskTestHelper {
     // public static final List<S3ObjectSummary> S_3_OBJECT_EMPTY_SUMMARY_LIST = new ArrayList<>();
     public static final List<S3ObjectSummary> S_3_OBJECT_SUMMARY_SINGLE_TILE_LIST =
             generateLayerSummaries(SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, ZOOM_LEVEL_0);
-    public static final List<S3ObjectSummary> S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST =
-            generateLayerSummaries(SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, ZOOM_LEVEL_1);
+
+    public static final List<S3ObjectSummary> S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST() {
+        return generateLayerSummaries(SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, ZOOM_LEVEL_1);
+    }
+
     public static final List<S3ObjectSummary> S_3_OBJECT_SUMMARY_LARGE_LIST =
             generateLayerSummaries(SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, ZOOM_LEVEL_0_THROUGH_9);
 
@@ -136,4 +143,14 @@ public class BulkDeleteTaskTestHelper {
     public static DeleteObjectsResult emptyDeleteObjectsResult() {
         return new DeleteObjectsResult(Collections.emptyList());
     }
+
+    public static final CompositeDeleteTileParameterId ALL_GRIDS_ALL_FORMATS_COMPOSITE_TILE_PARAMETERS = new CompositeDeleteTileParameterId(
+            PREFIX,
+            BUCKET,
+            LAYER_ID,
+            ALL_SET_OF_GRID_SET_IDS,
+            ALL_SET_OF_FORMATS,
+            PARAMETERS_ID,
+            LAYER_NAME
+    );
 }

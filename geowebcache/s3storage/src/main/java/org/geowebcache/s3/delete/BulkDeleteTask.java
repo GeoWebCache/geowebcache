@@ -217,7 +217,7 @@ public class BulkDeleteTask implements Callable<Long> {
     }
 
     ObjectPathStrategy chooseStrategy(DeleteTileRange deleteTileRange) {
-        if (deleteTileRange instanceof DeleteTileLayer) {
+        if (deleteTileRange instanceof DeleteTileLayer || deleteTileRange instanceof DeleteTileParametersId) {
             return S3ObjectPathsForPrefix;
         }
 

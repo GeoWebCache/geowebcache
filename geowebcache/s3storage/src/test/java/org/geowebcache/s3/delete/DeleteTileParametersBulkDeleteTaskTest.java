@@ -15,14 +15,20 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Iterator;
 
+import static java.lang.String.format;
 import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.RetryPendingTask;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.S3ObjectPathsForPrefix;
 import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DeleteTilePrefixBulkDeleteTaskTest {
+public class DeleteTileParametersBulkDeleteTaskTest {
     @Mock
     public S3ObjectsWrapper s3ObjectsWrapper;
 
@@ -43,11 +49,10 @@ public class DeleteTilePrefixBulkDeleteTaskTest {
     }
 
     @Test
-    public void test_ChooseStrategy_RetryPendingTask() {
-        DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, DeleteTileInfo.toLayerId(PREFIX, LAYER_ID));
-        BulkDeleteTask task = builder.withDeleteRange(deleteTilePrefix).build();
-        BulkDeleteTask.ObjectPathStrategy strategy = task.chooseStrategy(deleteTilePrefix);
-        assertEquals("Expected SingleTile strategy", RetryPendingTask, strategy);
+    public void test_ChooseStrategy_S3ObjectPathsForPrefix() {
+        DeleteTileParametersId deleteTileParametersId = new DeleteTileParametersId(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, LAYER_NAME);
+        BulkDeleteTask task = builder.withDeleteRange(deleteTileParametersId).build();
+        assertThat("Expected S3ObjectPathsForPrefix strategy", task.chooseStrategy(deleteTileParametersId), is(S3ObjectPathsForPrefix));
     }
 
     @Test
@@ -59,8 +64,8 @@ public class DeleteTilePrefixBulkDeleteTaskTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, DeleteTileInfo.toLayerId(PREFIX, LAYER_ID));
-        BulkDeleteTask task = builder.withDeleteRange(deleteTilePrefix)
+        DeleteTileParametersId deleteTileParametersId = new DeleteTileParametersId(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, LAYER_NAME);
+        BulkDeleteTask task = builder.withDeleteRange(deleteTileParametersId)
                 .build();
         Long count = task.call();
         Statistics statistics = callback.getStatistics();
@@ -81,8 +86,8 @@ public class DeleteTilePrefixBulkDeleteTaskTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, DeleteTileInfo.toLayerId(PREFIX, LAYER_ID));
-        BulkDeleteTask task = builder.withDeleteRange(deleteTilePrefix)
+        DeleteTileParametersId deleteTileParametersId = new DeleteTileParametersId(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, LAYER_NAME);
+        BulkDeleteTask task = builder.withDeleteRange(deleteTileParametersId)
                 .build();
         task.call();
 
@@ -99,8 +104,8 @@ public class DeleteTilePrefixBulkDeleteTaskTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, DeleteTileInfo.toLayerId(PREFIX, LAYER_ID));
-        BulkDeleteTask task = builder.withDeleteRange(deleteTilePrefix)
+        DeleteTileParametersId deleteTileParametersId = new DeleteTileParametersId(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, LAYER_NAME);
+        BulkDeleteTask task = builder.withDeleteRange(deleteTileParametersId)
                 .build();
         task.call();
 
@@ -117,8 +122,8 @@ public class DeleteTilePrefixBulkDeleteTaskTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, DeleteTileInfo.toLayerId(PREFIX, LAYER_ID));
-        BulkDeleteTask task = builder.withDeleteRange(deleteTilePrefix)
+        DeleteTileParametersId deleteTileParametersId = new DeleteTileParametersId(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, LAYER_NAME);
+        BulkDeleteTask task = builder.withDeleteRange(deleteTileParametersId)
                 .build();
         task.call();
 
@@ -135,8 +140,8 @@ public class DeleteTilePrefixBulkDeleteTaskTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, DeleteTileInfo.toLayerId(PREFIX, LAYER_ID));
-        BulkDeleteTask task = builder.withDeleteRange(deleteTilePrefix)
+        DeleteTileParametersId deleteTileParametersId = new DeleteTileParametersId(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, LAYER_NAME);
+        BulkDeleteTask task = builder.withDeleteRange(deleteTileParametersId)
                 .build();
         task.call();
 
@@ -149,8 +154,8 @@ public class DeleteTilePrefixBulkDeleteTaskTest {
         when(amazonS3Wrapper.deleteObjects(any(DeleteObjectsRequest.class)))
                 .thenAnswer(invocationOnMock -> BulkDeleteTaskTestHelper.emptyDeleteObjectsResult());
 
-        DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, DeleteTileInfo.toLayerId(PREFIX, LAYER_ID));
-        BulkDeleteTask task = builder.withDeleteRange(deleteTilePrefix)
+        DeleteTileParametersId deleteTileParametersId = new DeleteTileParametersId(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, LAYER_NAME);
+        BulkDeleteTask task = builder.withDeleteRange(deleteTileParametersId)
                 .build();
         task.call();
 

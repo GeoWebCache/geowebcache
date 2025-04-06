@@ -1,7 +1,6 @@
 package org.geowebcache.s3.delete;
 
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.geowebcache.s3.AmazonS3Wrapper;
 import org.geowebcache.s3.S3ObjectsWrapper;
 import org.geowebcache.s3.callback.CaptureCallback;
@@ -13,16 +12,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Iterator;
-
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.RetryPendingTask;
 import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DeleteTilePrefixBulkDeleteTaskTest {
+public class CompositeDeleteTileParametersBulkDeleteTaskTest {
     @Mock
     public S3ObjectsWrapper s3ObjectsWrapper;
 
@@ -43,15 +40,7 @@ public class DeleteTilePrefixBulkDeleteTaskTest {
     }
 
     @Test
-    public void test_ChooseStrategy_RetryPendingTask() {
-        DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, DeleteTileInfo.toLayerId(PREFIX, LAYER_ID));
-        BulkDeleteTask task = builder.withDeleteRange(deleteTilePrefix).build();
-        BulkDeleteTask.ObjectPathStrategy strategy = task.chooseStrategy(deleteTilePrefix);
-        assertEquals("Expected SingleTile strategy", RetryPendingTask, strategy);
-    }
-
-    @Test
-    public void testCall_WhenSmallBatchToProcess_withCheck() {
+    public void testCall_WhenSmallBatchToProcess() {
         when(s3ObjectsWrapper.iterator()).thenAnswer(invocation -> S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST().iterator());
         when(amazonS3Wrapper.deleteObjects(any(DeleteObjectsRequest.class))).thenAnswer(invocationOnMock -> {
             DeleteObjectsRequest request =
@@ -59,17 +48,18 @@ public class DeleteTilePrefixBulkDeleteTaskTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, DeleteTileInfo.toLayerId(PREFIX, LAYER_ID));
-        BulkDeleteTask task = builder.withDeleteRange(deleteTilePrefix)
+        CompositeDeleteTileParameterId compositeDeleteTileParameterId = ALL_GRIDS_ALL_FORMATS_COMPOSITE_TILE_PARAMETERS;
+        BulkDeleteTask task = builder.withDeleteRange(compositeDeleteTileParameterId)
                 .build();
         Long count = task.call();
         Statistics statistics = callback.getStatistics();
-        long expectedProcessed = 4;
-        long expectedDeleted = 4;
-        long expectedBatches = 1;
-        assertEquals("Result should be 1", expectedProcessed, (long) count);
-        assertEquals("Should have deleted 1 tile", expectedDeleted, statistics.getDeleted());
-        assertEquals("Should have sent one batch", expectedBatches, statistics.getBatchSent());
+
+        long subTasks = compositeDeleteTileParameterId.children().size() ;
+        assertThat("As the batch is one hundred one batch per sub task", statistics.getBatchSent(), is(subTasks));
+        long processed  = subTasks * S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST().size();
+        assertThat("The task.call() return the number of tiles processed", count, is(processed));
+        assertThat("All are processed", statistics.getProcessed(), is(processed));
+        assertThat("All are deleted", statistics.getDeleted(), is(processed));
     }
 
     @Test
@@ -80,14 +70,12 @@ public class DeleteTilePrefixBulkDeleteTaskTest {
                     (DeleteObjectsRequest) invocationOnMock.getArguments()[0];
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
-
-        DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, DeleteTileInfo.toLayerId(PREFIX, LAYER_ID));
-        BulkDeleteTask task = builder.withDeleteRange(deleteTilePrefix)
+        BulkDeleteTask task = builder.withDeleteRange(ALL_GRIDS_ALL_FORMATS_COMPOSITE_TILE_PARAMETERS)
                 .build();
         task.call();
 
-        assertEquals("Expected TaskStarted callback called once", 1, callback.getTaskStartedCount());
-        assertEquals("Expected TaskEnded callback called once", 1, callback.getTaskEndedCount());
+        assertThat("Expected TaskStarted callback called once", callback.getTaskStartedCount(), is(1L));
+        assertThat("Expected TaskEnded callback called once", callback.getTaskEndedCount(), is(1L));
     }
 
     @Test
@@ -99,13 +87,12 @@ public class DeleteTilePrefixBulkDeleteTaskTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, DeleteTileInfo.toLayerId(PREFIX, LAYER_ID));
-        BulkDeleteTask task = builder.withDeleteRange(deleteTilePrefix)
+        BulkDeleteTask task = builder.withDeleteRange(ALL_GRIDS_ALL_FORMATS_COMPOSITE_TILE_PARAMETERS)
                 .build();
         task.call();
 
-        assertEquals("Expected SubTaskStarted callback called once", 1, callback.getSubTaskStartedCount());
-        assertEquals("Expected SubTaskEnded callback called once", 1, callback.getSubTaskEndedCount());
+        assertThat("Expected SubTaskStarted callback called per subtask", callback.getSubTaskStartedCount(), is(4L));
+        assertThat("Expected SubTaskEnded callback called per subtask",  callback.getSubTaskEndedCount(), is(4L));
     }
 
     @Test
@@ -117,13 +104,12 @@ public class DeleteTilePrefixBulkDeleteTaskTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, DeleteTileInfo.toLayerId(PREFIX, LAYER_ID));
-        BulkDeleteTask task = builder.withDeleteRange(deleteTilePrefix)
+        BulkDeleteTask task = builder.withDeleteRange(ALL_GRIDS_ALL_FORMATS_COMPOSITE_TILE_PARAMETERS)
                 .build();
         task.call();
 
-        assertEquals("Expected BatchStarted callback called once", 1, callback.getBatchStartedCount());
-        assertEquals("Expected BatchEnded  callback called once", 1, callback.getBatchEndedCount());
+        assertThat("Expected one batch per subtask for small single batches",  callback.getBatchStartedCount(), is(4L));
+        assertThat("Expected one batch per subtask for small single batches", callback.getBatchEndedCount(), is(4L));
     }
 
     @Test
@@ -135,12 +121,12 @@ public class DeleteTilePrefixBulkDeleteTaskTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, DeleteTileInfo.toLayerId(PREFIX, LAYER_ID));
-        BulkDeleteTask task = builder.withDeleteRange(deleteTilePrefix)
+        BulkDeleteTask task = builder.withDeleteRange(ALL_GRIDS_ALL_FORMATS_COMPOSITE_TILE_PARAMETERS)
                 .build();
         task.call();
 
-        assertEquals("Expected TileResult callback called once", 4, callback.getTileResultCount());
+        long processed = (long) ALL_GRIDS_ALL_FORMATS_COMPOSITE_TILE_PARAMETERS.children().size() * S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST().size();
+        assertThat("Expected TileResult callback called once per processed tile", callback.getTileResultCount(), is(processed));
     }
 
     @Test
@@ -149,11 +135,10 @@ public class DeleteTilePrefixBulkDeleteTaskTest {
         when(amazonS3Wrapper.deleteObjects(any(DeleteObjectsRequest.class)))
                 .thenAnswer(invocationOnMock -> BulkDeleteTaskTestHelper.emptyDeleteObjectsResult());
 
-        DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, DeleteTileInfo.toLayerId(PREFIX, LAYER_ID));
-        BulkDeleteTask task = builder.withDeleteRange(deleteTilePrefix)
+        BulkDeleteTask task = builder.withDeleteRange(ALL_GRIDS_ALL_FORMATS_COMPOSITE_TILE_PARAMETERS)
                 .build();
         task.call();
 
-        assertEquals("Expected TileResult not to called", 0, callback.getTileResultCount());
+        assertThat("Expected TileResult not to called", callback.getTileResultCount(), is(0L));
     }
 }

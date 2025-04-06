@@ -15,13 +15,13 @@ public class DeleteTilePrefixTest{
     public void testDeleteTilePrefix_constructor_canCreateAnInstance() {
         String path = DeleteTileInfo.toZoomPrefix(PREFIX, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL);
         DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, path);
-        assertThat("Expected instance to be constructed", deleteTilePrefix, is(notNullValue()));
+        assertThat("Expected instance to be constructed for a partial path", deleteTilePrefix, is(notNullValue()));
     }
     @Test
     public void testDeleteTilePrefix_constructor_withACompletePath() {
         String path = DeleteTileInfo.toFullPath(PREFIX, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL, XYZ[0], XYZ[1], EXTENSION );
         DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, path);
-        assertThat("Expected instance to be constructed", deleteTilePrefix, is(notNullValue()));
+        assertThat("Expected instance to be constructed for a full path", deleteTilePrefix, is(notNullValue()));
     }
 
     @Test
