@@ -1,14 +1,5 @@
 package org.geowebcache.s3.callback;
 
-import org.geowebcache.s3.S3BlobStore;
-import org.geowebcache.s3.statistics.BatchStats;
-import org.geowebcache.s3.statistics.Statistics;
-import org.geowebcache.s3.statistics.SubStats;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.logging.Logger;
-
 import static org.geowebcache.s3.callback.CallbackTestHelper.WithSubTaskStarted;
 import static org.geowebcache.s3.callback.LockProviderCapture.LockProviderMode.AlwaysSucceed;
 import static org.geowebcache.s3.statistics.StatisticsTestHelper.*;
@@ -17,6 +8,14 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
+import java.util.logging.Logger;
+import org.geowebcache.s3.S3BlobStore;
+import org.geowebcache.s3.statistics.BatchStats;
+import org.geowebcache.s3.statistics.Statistics;
+import org.geowebcache.s3.statistics.SubStats;
+import org.junit.Before;
+import org.junit.Test;
+
 public class LockingDecoratorTest {
     private LockingDecorator lockingDecorator;
     private CaptureCallback captureCallback;
@@ -24,7 +23,7 @@ public class LockingDecoratorTest {
     private final Logger logger = S3BlobStore.getLog();
 
     @Before
-    public void setUp(){
+    public void setUp() {
         captureCallback = new CaptureCallback();
         lockProvider = new LockProviderCapture(AlwaysSucceed);
         lockingDecorator = new LockingDecorator(captureCallback, lockProvider, logger);
@@ -38,8 +37,7 @@ public class LockingDecoratorTest {
         Exception exp = assertThrows(
                 "delegate cannot be null",
                 NullPointerException.class,
-                () -> lockingDecorator = new LockingDecorator(null, lockProvider, logger)
-        );
+                () -> lockingDecorator = new LockingDecorator(null, lockProvider, logger));
         System.out.println(exp.getMessage());
     }
 
@@ -48,8 +46,7 @@ public class LockingDecoratorTest {
         assertThrows(
                 "lockProvider cannot be null",
                 NullPointerException.class,
-                () -> lockingDecorator = new LockingDecorator(new NoopCallback(), null, logger)
-        );
+                () -> lockingDecorator = new LockingDecorator(new NoopCallback(), null, logger));
     }
 
     @Test
@@ -57,10 +54,8 @@ public class LockingDecoratorTest {
         assertThrows(
                 "BlobStoreListners cannot be null",
                 NullPointerException.class,
-                () -> lockingDecorator = new LockingDecorator(new NoopCallback(), lockProvider, null)
-        );
+                () -> lockingDecorator = new LockingDecorator(new NoopCallback(), lockProvider, null));
     }
-
 
     ///////////////////////////////////////////////////////////////////////////
     // test taskStarted()
@@ -75,7 +70,6 @@ public class LockingDecoratorTest {
 
     ///////////////////////////////////////////////////////////////////////////
     // test taskEnded()
-
 
     @Test
     public void test_taskEnded_ensureDelegateIsCalled() {
@@ -103,15 +97,16 @@ public class LockingDecoratorTest {
 
         assertThat("Expected the delegate to have been called", captureCallback.getSubTaskStartedCount(), is(1L));
         assertThat("Expected a single subStats", captureCallback.getSubStats().size(), is(1));
-        captureCallback.getSubStats().stream().findFirst().ifPresentOrElse(
-                stats -> assertThat("Expected the EMPTY_STATISTICS() to be passed through", subStats, is(stats)),
-                () -> fail("Missing expected subStat")
-        );
+        captureCallback.getSubStats().stream()
+                .findFirst()
+                .ifPresentOrElse(
+                        stats ->
+                                assertThat("Expected the EMPTY_STATISTICS() to be passed through", subStats, is(stats)),
+                        () -> fail("Missing expected subStat"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
     // test subTaskEnded()
-
 
     @Test
     public void test_subTaskEnded_ensureDelegateIsCalled() {
@@ -130,10 +125,11 @@ public class LockingDecoratorTest {
         lockingDecorator.batchStarted(batchStats);
         assertThat("Expected the delegate to have been called", captureCallback.getBatchStartedCount(), is(1L));
         assertThat("Expected a single subStats", captureCallback.getBatchStats().size(), is(1));
-        captureCallback.getBatchStats().stream().findFirst().ifPresentOrElse(
-                stats -> assertThat("Expected the statistics to be passed through", batchStats, is(stats)),
-                () -> fail("Missing expected batch stat")
-        );
+        captureCallback.getBatchStats().stream()
+                .findFirst()
+                .ifPresentOrElse(
+                        stats -> assertThat("Expected the statistics to be passed through", batchStats, is(stats)),
+                        () -> fail("Missing expected batch stat"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -152,6 +148,4 @@ public class LockingDecoratorTest {
         lockingDecorator.tileResult(EMPTY_RESULT_STAT());
         assertThat("Expected the delegate to have been called", captureCallback.getTileResultCount(), is(1L));
     }
-
-
 }

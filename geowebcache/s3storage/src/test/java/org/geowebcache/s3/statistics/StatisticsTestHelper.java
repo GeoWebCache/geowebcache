@@ -41,6 +41,4 @@ public class StatisticsTestHelper {
     public static ResultStat EMPTY_RESULT_STAT() {
         return new ResultStat(DELETE_TILE_RANGE, RESULT_PATH, null, 0, 0, Deleted);
     }
-
-
 }

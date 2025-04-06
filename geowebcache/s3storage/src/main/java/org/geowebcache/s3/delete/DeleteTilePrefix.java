@@ -1,10 +1,9 @@
 package org.geowebcache.s3.delete;
 
-
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class DeleteTilePrefix implements DeleteTileRange{
+public class DeleteTilePrefix implements DeleteTileRange {
     private final String prefix;
     private final String bucket;
     private final String path;
@@ -32,5 +31,4 @@ public class DeleteTilePrefix implements DeleteTileRange{
     public String getBucket() {
         return bucket;
     }
-
 }

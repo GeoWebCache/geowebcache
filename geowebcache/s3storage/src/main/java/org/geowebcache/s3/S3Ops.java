@@ -13,27 +13,12 @@
  */
 package org.geowebcache.s3;
 
+import static java.lang.String.format;
+
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.*;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.commons.io.IOUtils;
-import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.locks.LockProvider;
-import org.geowebcache.locks.LockProvider.Lock;
-import org.geowebcache.locks.NoOpLockProvider;
-import org.geowebcache.s3.callback.LockingDecorator;
-import org.geowebcache.s3.delete.BulkDeleteTask;
-import org.geowebcache.s3.callback.Callback;
-import org.geowebcache.s3.delete.DeleteTileRange;
-import org.geowebcache.s3.statistics.BatchStats;
-import org.geowebcache.s3.statistics.ResultStat;
-import org.geowebcache.s3.statistics.Statistics;
-import org.geowebcache.s3.statistics.SubStats;
-import org.geowebcache.storage.StorageException;
-import org.geowebcache.util.TMSKeyBuilder;
-
-import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -46,9 +31,18 @@ import java.util.concurrent.ThreadFactory;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
+import javax.annotation.Nullable;
+import org.apache.commons.io.IOUtils;
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.locks.LockProvider;
+import org.geowebcache.locks.LockProvider.Lock;
+import org.geowebcache.locks.NoOpLockProvider;
+import org.geowebcache.s3.callback.Callback;
+import org.geowebcache.s3.callback.LockingDecorator;
+import org.geowebcache.s3.delete.BulkDeleteTask;
+import org.geowebcache.s3.delete.DeleteTileRange;
+import org.geowebcache.storage.StorageException;
+import org.geowebcache.util.TMSKeyBuilder;
 
 public class S3Ops {
 

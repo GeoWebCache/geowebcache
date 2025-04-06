@@ -1,17 +1,16 @@
 package org.geowebcache.s3.callback;
 
-import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.locks.LockProvider;
+import static org.geowebcache.s3.callback.LockProviderCapture.LockProviderMode.*;
 
 import java.util.List;
-
-import static org.geowebcache.s3.callback.LockProviderCapture.LockProviderMode.*;
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.locks.LockProvider;
 
 public class LockProviderCapture implements LockProvider {
     private final LockProviderMode lockProviderMode;
 
-    private final static List<LockProviderMode> succeedOnLock = List.of(AlwaysSucceed, ThrowOnRelease);
-    private final static List<LockProviderMode> succeedOnRelease = List.of(AlwaysSucceed, ThrowOnLock);
+    private static final List<LockProviderMode> succeedOnLock = List.of(AlwaysSucceed, ThrowOnRelease);
+    private static final List<LockProviderMode> succeedOnRelease = List.of(AlwaysSucceed, ThrowOnLock);
 
     long lockCount = 0;
     long unlockCount = 0;
@@ -30,7 +29,7 @@ public class LockProviderCapture implements LockProvider {
 
     @Override
     public Lock getLock(String lockKey) throws GeoWebCacheException {
-        if (succeedOnLock.contains(lockProviderMode)){
+        if (succeedOnLock.contains(lockProviderMode)) {
             lockCount++;
             return new CaptureLock(lockProviderMode, this);
         } else {

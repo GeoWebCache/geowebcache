@@ -1,29 +1,21 @@
 package org.geowebcache.s3.delete;
 
-import org.junit.Test;
-
-import java.util.Locale;
-
 import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
 
+import org.junit.Test;
+
 public class CompositeDeleteTileParameterIdTest {
 
     @Test
     public void test_constructor_createsAnInstance() {
         CompositeDeleteTileParameterId compositeDeleteTileParameterId = new CompositeDeleteTileParameterId(
-                PREFIX,
-                BUCKET,
-                LAYER_ID,
-                SINGLE_SET_OF_GRID_SET_IDS,
-                SINGLE_SET_OF_FORMATS,
-                PARAMETERS_ID,
-                LAYER_NAME
-        );
-        assertThat("Expected an instance of CompositeDeleteTileParameterId to be created",
+                PREFIX, BUCKET, LAYER_ID, SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, PARAMETERS_ID, LAYER_NAME);
+        assertThat(
+                "Expected an instance of CompositeDeleteTileParameterId to be created",
                 compositeDeleteTileParameterId,
                 is(instanceOf(CompositeDeleteTileParameterId.class)));
     }
@@ -40,22 +32,15 @@ public class CompositeDeleteTileParameterIdTest {
                         SINGLE_SET_OF_GRID_SET_IDS,
                         SINGLE_SET_OF_FORMATS,
                         PARAMETERS_ID,
-                        LAYER_NAME
-                ));
+                        LAYER_NAME));
     }
 
     @Test
     public void test_constructor_prefixCanEmpty() {
         CompositeDeleteTileParameterId compositeDeleteTileParameterId = new CompositeDeleteTileParameterId(
-                "",
-                BUCKET,
-                LAYER_ID,
-                SINGLE_SET_OF_GRID_SET_IDS,
-                SINGLE_SET_OF_FORMATS,
-                PARAMETERS_ID,
-                LAYER_NAME
-        );
-        assertThat("Expected an instance of CompositeDeleteTileParameterId to be created",
+                "", BUCKET, LAYER_ID, SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, PARAMETERS_ID, LAYER_NAME);
+        assertThat(
+                "Expected an instance of CompositeDeleteTileParameterId to be created",
                 compositeDeleteTileParameterId,
                 is(instanceOf(CompositeDeleteTileParameterId.class)));
     }
@@ -72,10 +57,8 @@ public class CompositeDeleteTileParameterIdTest {
                         SINGLE_SET_OF_GRID_SET_IDS,
                         SINGLE_SET_OF_FORMATS,
                         PARAMETERS_ID,
-                        LAYER_NAME
-                ));
+                        LAYER_NAME));
     }
-
 
     @Test
     public void test_constructor_bucketCannotBeEmpty() {
@@ -89,9 +72,9 @@ public class CompositeDeleteTileParameterIdTest {
                         SINGLE_SET_OF_GRID_SET_IDS,
                         SINGLE_SET_OF_FORMATS,
                         PARAMETERS_ID,
-                        LAYER_NAME
-                ));
+                        LAYER_NAME));
     }
+
     @Test
     public void test_constructor_layerIdCannotBeNull() {
         assertThrows(
@@ -104,8 +87,7 @@ public class CompositeDeleteTileParameterIdTest {
                         SINGLE_SET_OF_GRID_SET_IDS,
                         SINGLE_SET_OF_FORMATS,
                         PARAMETERS_ID,
-                        LAYER_NAME
-                ));
+                        LAYER_NAME));
     }
 
     @Test
@@ -120,8 +102,7 @@ public class CompositeDeleteTileParameterIdTest {
                         SINGLE_SET_OF_GRID_SET_IDS,
                         SINGLE_SET_OF_FORMATS,
                         PARAMETERS_ID,
-                        LAYER_NAME
-                ));
+                        LAYER_NAME));
     }
 
     @Test
@@ -130,14 +111,7 @@ public class CompositeDeleteTileParameterIdTest {
                 "grid set ids cannot be null",
                 NullPointerException.class,
                 () -> new CompositeDeleteTileParameterId(
-                        PREFIX,
-                        BUCKET,
-                        LAYER_ID,
-                        null,
-                        SINGLE_SET_OF_FORMATS,
-                        PARAMETERS_ID,
-                        LAYER_NAME
-                ));
+                        PREFIX, BUCKET, LAYER_ID, null, SINGLE_SET_OF_FORMATS, PARAMETERS_ID, LAYER_NAME));
     }
 
     @Test
@@ -152,22 +126,17 @@ public class CompositeDeleteTileParameterIdTest {
                         EMPTY_SET_OF_GRID_SET_IDS,
                         SINGLE_SET_OF_FORMATS,
                         PARAMETERS_ID,
-                        LAYER_NAME
-                ));
+                        LAYER_NAME));
     }
 
     @Test
     public void test_constructor_gridSetIdManyGridIds() {
         CompositeDeleteTileParameterId compositeDeleteTileParameterId = new CompositeDeleteTileParameterId(
-                PREFIX,
-                BUCKET,
-                LAYER_ID,
-                ALL_SET_OF_GRID_SET_IDS,
-                SINGLE_SET_OF_FORMATS,
-                PARAMETERS_ID,
-                LAYER_NAME
-        );
-        assertThat("One child per GridSetId", compositeDeleteTileParameterId.children().size(), is(ALL_SET_OF_GRID_SET_IDS.size()));
+                PREFIX, BUCKET, LAYER_ID, ALL_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, PARAMETERS_ID, LAYER_NAME);
+        assertThat(
+                "One child per GridSetId",
+                compositeDeleteTileParameterId.children().size(),
+                is(ALL_SET_OF_GRID_SET_IDS.size()));
     }
 
     @Test
@@ -176,14 +145,7 @@ public class CompositeDeleteTileParameterIdTest {
                 "formats cannot be null",
                 NullPointerException.class,
                 () -> new CompositeDeleteTileParameterId(
-                        PREFIX,
-                        BUCKET,
-                        LAYER_ID,
-                        SINGLE_SET_OF_GRID_SET_IDS,
-                        null,
-                        PARAMETERS_ID,
-                        LAYER_NAME
-                ));
+                        PREFIX, BUCKET, LAYER_ID, SINGLE_SET_OF_GRID_SET_IDS, null, PARAMETERS_ID, LAYER_NAME));
     }
 
     @Test
@@ -198,36 +160,27 @@ public class CompositeDeleteTileParameterIdTest {
                         SINGLE_SET_OF_GRID_SET_IDS,
                         EMPTY_SET_OF_FORMATS,
                         PARAMETERS_ID,
-                        LAYER_NAME
-                ));
+                        LAYER_NAME));
     }
 
     @Test
     public void test_constructor_formatsManyFormats() {
         CompositeDeleteTileParameterId compositeDeleteTileParameterId = new CompositeDeleteTileParameterId(
-                PREFIX,
-                BUCKET,
-                LAYER_ID,
-                SINGLE_SET_OF_GRID_SET_IDS,
-                ALL_SET_OF_FORMATS,
-                PARAMETERS_ID,
-                LAYER_NAME
-        );
-        assertThat("One child per format", compositeDeleteTileParameterId.children().size(), is(ALL_SET_OF_FORMATS.size()));
+                PREFIX, BUCKET, LAYER_ID, SINGLE_SET_OF_GRID_SET_IDS, ALL_SET_OF_FORMATS, PARAMETERS_ID, LAYER_NAME);
+        assertThat(
+                "One child per format",
+                compositeDeleteTileParameterId.children().size(),
+                is(ALL_SET_OF_FORMATS.size()));
     }
 
     @Test
     public void test_constructor_withManyFormatsAndManyGridSetIds() {
         CompositeDeleteTileParameterId compositeDeleteTileParameterId = new CompositeDeleteTileParameterId(
-                PREFIX,
-                BUCKET,
-                LAYER_ID,
-                ALL_SET_OF_GRID_SET_IDS,
-                ALL_SET_OF_FORMATS,
-                PARAMETERS_ID,
-                LAYER_NAME
-        );
-        assertThat("One child per format per gridId", compositeDeleteTileParameterId.children().size(), is(ALL_SET_OF_FORMATS.size() * ALL_SET_OF_GRID_SET_IDS.size()));
+                PREFIX, BUCKET, LAYER_ID, ALL_SET_OF_GRID_SET_IDS, ALL_SET_OF_FORMATS, PARAMETERS_ID, LAYER_NAME);
+        assertThat(
+                "One child per format per gridId",
+                compositeDeleteTileParameterId.children().size(),
+                is(ALL_SET_OF_FORMATS.size() * ALL_SET_OF_GRID_SET_IDS.size()));
     }
 
     @Test
@@ -236,14 +189,7 @@ public class CompositeDeleteTileParameterIdTest {
                 "ParametersId cannot be null",
                 NullPointerException.class,
                 () -> new CompositeDeleteTileParameterId(
-                        PREFIX,
-                        BUCKET,
-                        LAYER_ID,
-                        SINGLE_SET_OF_GRID_SET_IDS,
-                        SINGLE_SET_OF_FORMATS,
-                        null,
-                        LAYER_NAME
-                ));
+                        PREFIX, BUCKET, LAYER_ID, SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, null, LAYER_NAME));
     }
 
     @Test
@@ -258,8 +204,7 @@ public class CompositeDeleteTileParameterIdTest {
                         SINGLE_SET_OF_GRID_SET_IDS,
                         SINGLE_SET_OF_FORMATS,
                         " \t\n",
-                        LAYER_NAME
-                ));
+                        LAYER_NAME));
     }
 
     @Test
@@ -274,8 +219,7 @@ public class CompositeDeleteTileParameterIdTest {
                         SINGLE_SET_OF_GRID_SET_IDS,
                         SINGLE_SET_OF_FORMATS,
                         PARAMETERS_ID,
-                        null
-                ));
+                        null));
     }
 
     @Test
@@ -290,8 +234,6 @@ public class CompositeDeleteTileParameterIdTest {
                         SINGLE_SET_OF_GRID_SET_IDS,
                         SINGLE_SET_OF_FORMATS,
                         PARAMETERS_ID,
-                        " \t\n"
-                ));
+                        " \t\n"));
     }
-
 }

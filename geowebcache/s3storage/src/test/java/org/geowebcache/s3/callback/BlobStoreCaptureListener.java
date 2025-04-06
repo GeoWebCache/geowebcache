@@ -1,11 +1,11 @@
 package org.geowebcache.s3.callback;
 
-import org.geowebcache.storage.BlobStoreListener;
-
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class BlobStoreCaptureListener  implements BlobStoreListener {
+import org.geowebcache.storage.BlobStoreListener;
+
+public class BlobStoreCaptureListener implements BlobStoreListener {
     long tileStoredCount = 0;
     long tileDeletedCount = 0;
     long tileUpdatedCount = 0;
@@ -15,7 +15,15 @@ public class BlobStoreCaptureListener  implements BlobStoreListener {
     long parametersDeletedCount = 0;
 
     @Override
-    public void tileStored(String layerName, String gridSetId, String blobFormat, String parametersId, long x, long y, int z, long blobSize) {
+    public void tileStored(
+            String layerName,
+            String gridSetId,
+            String blobFormat,
+            String parametersId,
+            long x,
+            long y,
+            int z,
+            long blobSize) {
         checkNotNull(layerName, "LayerName cannot be null");
         checkNotNull(gridSetId, "GridSetId cannot be null");
         checkNotNull(blobFormat, "BlobFormat cannot be null");
@@ -26,7 +34,15 @@ public class BlobStoreCaptureListener  implements BlobStoreListener {
     }
 
     @Override
-    public void tileDeleted(String layerName, String gridSetId, String blobFormat, String parametersId, long x, long y, int z, long blobSize) {
+    public void tileDeleted(
+            String layerName,
+            String gridSetId,
+            String blobFormat,
+            String parametersId,
+            long x,
+            long y,
+            int z,
+            long blobSize) {
         checkNotNull(layerName, "LayerName cannot be null");
         checkNotNull(gridSetId, "GridSetId cannot be null");
         checkNotNull(blobFormat, "BlobFormat cannot be null");
@@ -37,7 +53,16 @@ public class BlobStoreCaptureListener  implements BlobStoreListener {
     }
 
     @Override
-    public void tileUpdated(String layerName, String gridSetId, String blobFormat, String parametersId, long x, long y, int z, long blobSize, long oldSize) {
+    public void tileUpdated(
+            String layerName,
+            String gridSetId,
+            String blobFormat,
+            String parametersId,
+            long x,
+            long y,
+            int z,
+            long blobSize,
+            long oldSize) {
         checkNotNull(layerName, "LayerName cannot be null");
         checkNotNull(gridSetId, "GridSetId cannot be null");
         checkNotNull(blobFormat, "BlobFormat cannot be null");

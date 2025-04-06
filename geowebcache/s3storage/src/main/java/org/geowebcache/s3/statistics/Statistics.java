@@ -3,7 +3,6 @@ package org.geowebcache.s3.statistics;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-
 import org.geowebcache.s3.delete.DeleteTileRange;
 
 public class Statistics {
@@ -25,9 +24,7 @@ public class Statistics {
     }
 
     public boolean completed() {
-        return recoverableIssues.isEmpty()
-                && nonRecoverableIssues.isEmpty()
-                && unknownIssues.isEmpty();
+        return recoverableIssues.isEmpty() && nonRecoverableIssues.isEmpty() && unknownIssues.isEmpty();
     }
 
     public List<SubStats> getSubStats() {
@@ -112,5 +109,4 @@ public class Statistics {
     public void addUnknownIssue(Exception e) {
         this.unknownIssues.add(e);
     }
-
 }

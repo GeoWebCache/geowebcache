@@ -104,11 +104,9 @@ public class NotificationDecorator implements Callback {
     }
 
     private static boolean checkDeleteLayerCompatibleWithTileDeleted(ResultStat stats) {
-        return !(
-                stats.getDeleteTileRange() instanceof DeleteTileObject ||
-                        stats.getDeleteTileRange() instanceof DeleteTileZoom ||
-                        stats.getDeleteTileRange() instanceof DeleteTileZoomInBoundedBox
-        );
+        return !(stats.getDeleteTileRange() instanceof DeleteTileObject
+                || stats.getDeleteTileRange() instanceof DeleteTileZoom
+                || stats.getDeleteTileRange() instanceof DeleteTileZoomInBoundedBox);
     }
 
     void notifyGridSetDeleted(SubStats statistics, DeleteTileGridSet deleteTileRange) {

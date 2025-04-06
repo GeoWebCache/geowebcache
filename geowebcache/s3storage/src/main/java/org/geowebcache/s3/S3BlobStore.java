@@ -13,6 +13,9 @@
  */
 package org.geowebcache.s3;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.isNull;
+
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
@@ -22,6 +25,16 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.ParametersUtils;
@@ -35,20 +48,6 @@ import org.geowebcache.s3.callback.*;
 import org.geowebcache.s3.delete.*;
 import org.geowebcache.storage.*;
 import org.geowebcache.util.TMSKeyBuilder;
-
-import javax.annotation.Nullable;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.Objects.isNull;
 
 public class S3BlobStore implements BlobStore {
 
@@ -374,7 +373,8 @@ public class S3BlobStore implements BlobStore {
                         new NotificationDecorator(new StatisticCallbackDecorator(), listeners),
                         s3Ops,
                         S3BlobStore.getLog()),
-                lockProvider, S3BlobStore.getLog());
+                lockProvider,
+                S3BlobStore.getLog());
 
         boolean layerExists;
         try {
@@ -396,7 +396,9 @@ public class S3BlobStore implements BlobStore {
                 new DeleteTileGridSet(keyBuilder.getPrefix(), bucketName, layerId, gridSetId, layerName);
 
         var lockingDecorator = new LockingDecorator(
-                new NotificationDecorator(new StatisticCallbackDecorator(), listeners), lockProvider, S3BlobStore.getLog());
+                new NotificationDecorator(new StatisticCallbackDecorator(), listeners),
+                lockProvider,
+                S3BlobStore.getLog());
 
         boolean prefixExists;
         try {
@@ -498,7 +500,9 @@ public class S3BlobStore implements BlobStore {
                 keyBuilder.getPrefix(), bucketName, layerId, gridSetIds, formats, parametersId, layerName);
 
         var lockingCallback = new LockingDecorator(
-                new NotificationDecorator(new StatisticCallbackDecorator(), listeners), lockProvider, S3BlobStore.getLog());
+                new NotificationDecorator(new StatisticCallbackDecorator(), listeners),
+                lockProvider,
+                S3BlobStore.getLog());
 
         try {
             return s3Ops.scheduleAsyncDelete(deleteTileRange, lockingCallback, lockingCallback);

@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-
 import org.geowebcache.s3.delete.BulkDeleteTask;
 import org.geowebcache.s3.delete.DeleteTileRange;
 
@@ -33,9 +32,7 @@ public class SubStats {
     }
 
     public boolean completed() {
-        return recoverableIssues.isEmpty()
-                && nonRecoverableIssues.isEmpty()
-                && unknownIssues.isEmpty();
+        return recoverableIssues.isEmpty() && nonRecoverableIssues.isEmpty() && unknownIssues.isEmpty();
     }
 
     public void addBatch(BatchStats batchStats) {
@@ -120,6 +117,4 @@ public class SubStats {
     public void addUnknownIssue(Exception e) {
         this.unknownIssues.add(e);
     }
-
 }
-

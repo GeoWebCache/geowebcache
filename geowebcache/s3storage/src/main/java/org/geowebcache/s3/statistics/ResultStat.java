@@ -11,7 +11,8 @@ public class ResultStat {
     private final long when;
     private final Change change;
 
-    public ResultStat(DeleteTileRange deleteTileRange, String path, TileObject tileObject, long size, long when, Change change) {
+    public ResultStat(
+            DeleteTileRange deleteTileRange, String path, TileObject tileObject, long size, long when, Change change) {
         this.deleteTileRange = deleteTileRange;
         this.path = path;
         this.tileObject = tileObject;

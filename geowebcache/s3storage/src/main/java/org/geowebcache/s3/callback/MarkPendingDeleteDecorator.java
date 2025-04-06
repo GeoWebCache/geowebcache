@@ -1,9 +1,17 @@
 package org.geowebcache.s3.callback;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.logging.Logger;
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.S3Ops;
-import org.geowebcache.s3.delete.BulkDeleteTask;
 import org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy;
 import org.geowebcache.s3.delete.DeleteTileRange;
 import org.geowebcache.s3.statistics.BatchStats;
@@ -11,18 +19,6 @@ import org.geowebcache.s3.statistics.ResultStat;
 import org.geowebcache.s3.statistics.Statistics;
 import org.geowebcache.s3.statistics.SubStats;
 import org.geowebcache.storage.StorageException;
-
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.logging.Logger;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
 
 public class MarkPendingDeleteDecorator implements Callback {
     private final Callback delegate;
@@ -32,8 +28,7 @@ public class MarkPendingDeleteDecorator implements Callback {
     private SubStats currentSubStats = null;
     private final Long pendingDeletesKeyTime;
 
-    public MarkPendingDeleteDecorator(
-            Callback delegate, S3Ops s3Opts, Logger logger) {
+    public MarkPendingDeleteDecorator(Callback delegate, S3Ops s3Opts, Logger logger) {
         checkNotNull(delegate, "delegate cannot be null");
         checkNotNull(s3Opts, "s3Opts cannot be null");
         checkNotNull(logger, "logger cannot be null");
@@ -91,11 +86,8 @@ public class MarkPendingDeleteDecorator implements Callback {
     ///////////////////////////////////////////////////////////////////////////
     // Helper methods
 
-    private static final List<ObjectPathStrategy> strategiesThatDoNotRequireAnInsert = List.of(
-            NoDeletionsRequired,
-            SingleTile,
-            RetryPendingTask
-    );
+    private static final List<ObjectPathStrategy> strategiesThatDoNotRequireAnInsert =
+            List.of(NoDeletionsRequired, SingleTile, RetryPendingTask);
 
     /*
      * Only long running strategies should insert a marker for a running
@@ -106,14 +98,11 @@ public class MarkPendingDeleteDecorator implements Callback {
     private boolean shouldInsertAPendingDelete(ObjectPathStrategy strategy) {
         checkNotNull(strategy, "strategy cannot be null");
 
-
         return !strategiesThatDoNotRequireAnInsert.contains(strategy);
     }
 
-    private static final List<ObjectPathStrategy> strategiesThatDoNotRequireARemoval = List.of(
-            NoDeletionsRequired,
-            SingleTile
-    );
+    private static final List<ObjectPathStrategy> strategiesThatDoNotRequireARemoval =
+            List.of(NoDeletionsRequired, SingleTile);
 
     /*
      * Only short running strategies should not remove a marker for a running
@@ -135,12 +124,18 @@ public class MarkPendingDeleteDecorator implements Callback {
 
             if (e instanceof RuntimeException) {
                 if (Objects.nonNull(e.getCause()) && e.getCause() instanceof StorageException) {
-                    logger.warning(format("Unable to remove pending delete: %s issue with S3 storage, this will allow repeat calls to delete", e.getCause().getMessage()));
+                    logger.warning(format(
+                            "Unable to remove pending delete: %s issue with S3 storage, this will allow repeat calls to delete",
+                            e.getCause().getMessage()));
                 } else {
-                    logger.severe(format("Unable to remove pending delete: %s unexpected runtime exception report to admin, this will allow repeat calls to delete", e.getMessage()));
+                    logger.severe(format(
+                            "Unable to remove pending delete: %s unexpected runtime exception report to admin, this will allow repeat calls to delete",
+                            e.getMessage()));
                 }
             } else {
-                logger.warning(format("Unable to remove pending delete: %s unexpected GeoWebException, this will allow repeat calls to delete", e.getMessage()));
+                logger.warning(format(
+                        "Unable to remove pending delete: %s unexpected GeoWebException, this will allow repeat calls to delete",
+                        e.getMessage()));
             }
         }
     }
@@ -153,10 +148,9 @@ public class MarkPendingDeleteDecorator implements Callback {
             s3Opts.putProperties(pendingDeletesKey, deletes);
             logger.info(format("Inserted pending delete %s to persistent store ", pendingDeletesKey));
         } catch (RuntimeException | StorageException e) {
-            logger.warning(format("Unable to mark pending deletes %s. Will continue with delete but persistant retry is not enabled.", e.getMessage()));
+            logger.warning(format(
+                    "Unable to mark pending deletes %s. Will continue with delete but persistant retry is not enabled.",
+                    e.getMessage()));
         }
     }
-
 }
-
-

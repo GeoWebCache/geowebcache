@@ -1,18 +1,17 @@
 package org.geowebcache.s3.callback;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.s3.statistics.BatchStats;
 import org.geowebcache.s3.statistics.ResultStat;
 import org.geowebcache.s3.statistics.Statistics;
 import org.geowebcache.s3.statistics.SubStats;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
 
 public class LockingDecorator implements Callback {
     private final Map<String, LockProvider.Lock> locksPrePrefix = new ConcurrentHashMap<>();
@@ -34,7 +33,7 @@ public class LockingDecorator implements Callback {
 
     public void addLock(String key) {
         try {
-            synchronized (lockProvider){
+            synchronized (lockProvider) {
                 LockProvider.Lock lock = lockProvider.getLock(key);
                 locksPrePrefix.putIfAbsent(key, lock);
             }
@@ -46,7 +45,7 @@ public class LockingDecorator implements Callback {
 
     public void removeLock(String key) {
         try {
-            synchronized (lockProvider){
+            synchronized (lockProvider) {
                 LockProvider.Lock lock = locksPrePrefix.get(key);
                 lock.release();
             }
@@ -103,6 +102,5 @@ public class LockingDecorator implements Callback {
                 }
             }
         }
-
     }
 }

@@ -1,14 +1,12 @@
 package org.geowebcache.s3.delete;
 
-import static com.google.common.base.Preconditions.*;
-import static java.lang.String.format;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CompositeDeleteTileParameterId implements CompositeDeleteTileRange {
     private final String prefix;
@@ -41,7 +39,6 @@ public class CompositeDeleteTileParameterId implements CompositeDeleteTileRange 
         checkArgument(!parametersId.trim().isEmpty(), "parametersId cannot be empty");
         checkArgument(!bucket.trim().isEmpty(), "bucket cannot be empty");
 
-
         this.prefix = prefix.trim();
         this.bucket = bucket.trim();
         this.layerId = layerId.trim();
@@ -52,10 +49,10 @@ public class CompositeDeleteTileParameterId implements CompositeDeleteTileRange 
 
         formats.forEach(format -> {
             gridSetIds.forEach(gridSetId -> {
-                add(new DeleteTileParametersId(this.prefix, this.bucket, this.layerId, gridSetId, format, this.parametersId, this.layerName));
+                add(new DeleteTileParametersId(
+                        this.prefix, this.bucket, this.layerId, gridSetId, format, this.parametersId, this.layerName));
             });
         });
-
     }
 
     public String path() {
@@ -96,19 +93,22 @@ public class CompositeDeleteTileParameterId implements CompositeDeleteTileRange 
                 Objects.equals(parametersId.getLayerName(), getLayerName()),
                 "child layer name should be the same as the layerName");
         checkArgument(
-                Objects.equals(parametersId.getLayerId(), getLayerId()), "child layer id should be the same as the layerId");
+                Objects.equals(parametersId.getLayerId(), getLayerId()),
+                "child layer id should be the same as the layerId");
         checkArgument(
                 Objects.equals(parametersId.getParameterId(), getParametersId()),
                 "child parameter id should be the same as the parameterId");
 
-        checkArgument(childMatchedExistingWithSameGridSetIdAndFormat(parametersId), "Already child with format and gridSetId");
+        checkArgument(
+                childMatchedExistingWithSameGridSetIdAndFormat(parametersId),
+                "Already child with format and gridSetId");
 
         children.add(parametersId);
     }
 
     private boolean childMatchedExistingWithSameGridSetIdAndFormat(DeleteTileParametersId parametersId) {
-        return children.stream().noneMatch(elem ->
-                Objects.equals(elem.getGridSetId(), parametersId.getGridSetId()) &&
-                        Objects.equals(elem.getFormat(), parametersId.getFormat()));
+        return children.stream()
+                .noneMatch(elem -> Objects.equals(elem.getGridSetId(), parametersId.getGridSetId())
+                        && Objects.equals(elem.getFormat(), parametersId.getFormat()));
     }
 }

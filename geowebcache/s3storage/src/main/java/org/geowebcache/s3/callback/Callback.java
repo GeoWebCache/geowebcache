@@ -5,11 +5,7 @@ import org.geowebcache.s3.statistics.ResultStat;
 import org.geowebcache.s3.statistics.Statistics;
 import org.geowebcache.s3.statistics.SubStats;
 
-/**
- * Used to provide lifecycle functionality to tasks that are being processed
- *
- *
- */
+/** Used to provide lifecycle functionality to tasks that are being processed */
 public interface Callback {
     void tileResult(ResultStat result);
 

@@ -27,4 +27,3 @@ public class NoopCallback implements Callback {
     @Override
     public void taskEnded() {}
 }
-

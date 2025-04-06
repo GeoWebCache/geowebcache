@@ -1,6 +1,8 @@
 package org.geowebcache.s3.delete;
 
-import org.geowebcache.storage.TileObject;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +13,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
+import org.geowebcache.storage.TileObject;
 
 public class DeleteTileInfo {
     public static final Pattern keyRegex = Pattern.compile("(.*)/(.*)/(.*)/(.*)/(.*)/(\\d+)/(\\d+)/(\\d+)\\..*");
@@ -190,7 +189,7 @@ public class DeleteTileInfo {
             return false;
         }
 
-        if (Objects.equals(results.get(0),prefix)) {
+        if (Objects.equals(results.get(0), prefix)) {
             results.remove(0);
         }
 
@@ -199,28 +198,34 @@ public class DeleteTileInfo {
         }
 
         // Check all the token are valid
-        return IntStream.range(0, results.size()).mapToObj( index -> {
-            if (index == X_GROUP_POS -2 ||  index == Z_GROUP_POS -2) {
-                return isALong(results.get(index));
-            }
+        return IntStream.range(0, results.size())
+                        .mapToObj(index -> {
+                            if (index == X_GROUP_POS - 2 || index == Z_GROUP_POS - 2) {
+                                return isALong(results.get(index));
+                            }
 
-            if (index == Y_GROUP_POS -2) {
-                String[] lastPathPart = results.get(index).split("\\.");
-                if (lastPathPart.length == 1 && isALong(lastPathPart[0])) {
-                    return true;
-                }
-                return lastPathPart.length == 2 && isALong(lastPathPart[0]) && !lastPathPart[1].isBlank();
-            }
+                            if (index == Y_GROUP_POS - 2) {
+                                String[] lastPathPart = results.get(index).split("\\.");
+                                if (lastPathPart.length == 1 && isALong(lastPathPart[0])) {
+                                    return true;
+                                }
+                                return lastPathPart.length == 2
+                                        && isALong(lastPathPart[0])
+                                        && !lastPathPart[1].isBlank();
+                            }
 
-            return !results.get(index).isEmpty();
-        }).filter(x->x).count() == results.size();
+                            return !results.get(index).isEmpty();
+                        })
+                        .filter(x -> x)
+                        .count()
+                == results.size();
     }
 
     private static Boolean isALong(String test) {
         try {
             Long.parseLong(test);
             return true;
-        }  catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return false;
         }
     }

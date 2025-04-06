@@ -1,7 +1,6 @@
 package org.geowebcache.s3.delete;
 
 import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.LAYER_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 

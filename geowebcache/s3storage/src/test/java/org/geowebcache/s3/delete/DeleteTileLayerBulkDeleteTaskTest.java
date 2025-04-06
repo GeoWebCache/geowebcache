@@ -7,9 +7,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-import java.util.Iterator;
-
 import org.geowebcache.s3.AmazonS3Wrapper;
 import org.geowebcache.s3.S3ObjectsWrapper;
 import org.geowebcache.s3.callback.CaptureCallback;
@@ -52,7 +49,8 @@ public class DeleteTileLayerBulkDeleteTaskTest {
 
     @Test
     public void testCall_WhenBatchOrLessToProcess() throws Exception {
-        when(s3ObjectsWrapper.iterator()).thenAnswer(invocation -> S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST().iterator());
+        when(s3ObjectsWrapper.iterator())
+                .thenAnswer(invocation -> S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST().iterator());
         when(amazonS3Wrapper.deleteObjects(any(DeleteObjectsRequest.class))).thenAnswer(invocationOnMock -> {
             DeleteObjectsRequest request =
                     (DeleteObjectsRequest) invocationOnMock.getArguments()[0];
@@ -64,7 +62,9 @@ public class DeleteTileLayerBulkDeleteTaskTest {
         Long count = task.call();
         Statistics statistics = callback.getStatistics();
         assertEquals(
-                "Should have batch large summary collection size", S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST().size(), (long) count);
+                "Should have batch large summary collection size",
+                S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST().size(),
+                (long) count);
         assertEquals(
                 "Should have deleted large summary collection size",
                 S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST().size(),

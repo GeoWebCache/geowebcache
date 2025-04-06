@@ -3,11 +3,10 @@ package org.geowebcache.s3.delete;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import org.geowebcache.storage.TileObject;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+import org.geowebcache.storage.TileObject;
 
 public class BulkDeleteTaskTestHelper {
     public static final Random RANDOM = new Random(System.currentTimeMillis());
@@ -46,17 +45,16 @@ public class BulkDeleteTaskTestHelper {
     public static final Set<Long> ZOOM_LEVEL_0_THROUGH_9 = Set.of(0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L);
 
     public static final long[] XYZ = {1, 2, 3};
-    public static final Map<String, String> PARAMETERS = new HashMap<>() {
-    };
+    public static final Map<String, String> PARAMETERS = new HashMap<>() {};
 
-    public static final TileObject TILE_OBJECT = TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
+    public static final TileObject TILE_OBJECT =
+            TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
     public static final long BLOB_SIZE = 12_344_567L;
 
     static {
         TILE_OBJECT.setParametersId(PARAMETERS_ID);
         TILE_OBJECT.setBlobSize((int) BLOB_SIZE);
     }
-
 
     static long zoomScaleModifier(long zoomLevel) {
         return Math.min(Math.round(Math.pow(2.0, zoomLevel)), 32);
@@ -144,13 +142,7 @@ public class BulkDeleteTaskTestHelper {
         return new DeleteObjectsResult(Collections.emptyList());
     }
 
-    public static final CompositeDeleteTileParameterId ALL_GRIDS_ALL_FORMATS_COMPOSITE_TILE_PARAMETERS = new CompositeDeleteTileParameterId(
-            PREFIX,
-            BUCKET,
-            LAYER_ID,
-            ALL_SET_OF_GRID_SET_IDS,
-            ALL_SET_OF_FORMATS,
-            PARAMETERS_ID,
-            LAYER_NAME
-    );
+    public static final CompositeDeleteTileParameterId ALL_GRIDS_ALL_FORMATS_COMPOSITE_TILE_PARAMETERS =
+            new CompositeDeleteTileParameterId(
+                    PREFIX, BUCKET, LAYER_ID, ALL_SET_OF_GRID_SET_IDS, ALL_SET_OF_FORMATS, PARAMETERS_ID, LAYER_NAME);
 }

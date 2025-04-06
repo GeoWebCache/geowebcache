@@ -1,15 +1,5 @@
 package org.geowebcache.s3.callback;
 
-import org.geowebcache.s3.delete.*;
-import org.geowebcache.s3.statistics.BatchStats;
-import org.geowebcache.s3.statistics.ResultStat;
-import org.geowebcache.s3.statistics.Statistics;
-import org.geowebcache.s3.statistics.SubStats;
-import org.geowebcache.storage.BlobStoreListenerList;
-import org.geowebcache.storage.TileObject;
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.geowebcache.s3.callback.CallbackTestHelper.WithBlobStoreListener;
 import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.DefaultStrategy;
 import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
@@ -19,6 +9,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
+
+import org.geowebcache.s3.delete.*;
+import org.geowebcache.s3.statistics.BatchStats;
+import org.geowebcache.s3.statistics.ResultStat;
+import org.geowebcache.s3.statistics.Statistics;
+import org.geowebcache.s3.statistics.SubStats;
+import org.geowebcache.storage.BlobStoreListenerList;
+import org.geowebcache.storage.TileObject;
+import org.junit.Before;
+import org.junit.Test;
 
 public class NotificationDecoratorTest {
     private CaptureCallback captureCallback;
@@ -42,8 +42,7 @@ public class NotificationDecoratorTest {
         Exception exp = assertThrows(
                 "delegate cannot be null",
                 NullPointerException.class,
-                () -> notificationDecorator = new NotificationDecorator(null, blobStoreListenerList)
-        );
+                () -> notificationDecorator = new NotificationDecorator(null, blobStoreListenerList));
     }
 
     @Test
@@ -51,10 +50,8 @@ public class NotificationDecoratorTest {
         assertThrows(
                 "BlobStoreListners cannot be null",
                 NullPointerException.class,
-                () -> notificationDecorator = new NotificationDecorator(new NoopCallback(), null)
-        );
+                () -> notificationDecorator = new NotificationDecorator(new NoopCallback(), null));
     }
-
 
     ///////////////////////////////////////////////////////////////////////////
     // test taskStarted()
@@ -69,7 +66,6 @@ public class NotificationDecoratorTest {
 
     ///////////////////////////////////////////////////////////////////////////
     // test taskEnded()
-
 
     @Test
     public void test_taskEnded_ensureDelegateIsCalled() {
@@ -87,16 +83,20 @@ public class NotificationDecoratorTest {
         notificationDecorator.subTaskStarted(subStats);
 
         assertThat("Expected the delegate to have been called", 1L, is(captureCallback.getSubTaskStartedCount()));
-        assertThat("Expected a single subStats", 1, is(captureCallback.getSubStats().size()));
-        captureCallback.getSubStats().stream().findFirst().ifPresentOrElse(
-                stats -> assertThat("Expected the EMPTY_STATISTICS() to be passed through", subStats, is(stats)),
-                () -> fail("Missing expected subStat")
-        );
+        assertThat(
+                "Expected a single subStats",
+                1,
+                is(captureCallback.getSubStats().size()));
+        captureCallback.getSubStats().stream()
+                .findFirst()
+                .ifPresentOrElse(
+                        stats ->
+                                assertThat("Expected the EMPTY_STATISTICS() to be passed through", subStats, is(stats)),
+                        () -> fail("Missing expected subStat"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
     // test subTaskEnded()
-
 
     @Test
     public void test_subTaskEnded_fromDeleteTileLayer_checkListenerIsCalled() {
@@ -121,7 +121,8 @@ public class NotificationDecoratorTest {
     @Test
     public void test_subTaskEnded_fromDeleteTileParameters_checkListenerIsCalled() {
         WithBlobStoreListener(blobStoreListenerList, captureListener);
-        DeleteTileParametersId deleteTileParametersId = new DeleteTileParametersId(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, LAYER_NAME);
+        DeleteTileParametersId deleteTileParametersId = new DeleteTileParametersId(
+                PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, LAYER_NAME);
         SubStats subStats = new SubStats(deleteTileParametersId, DefaultStrategy);
         notificationDecorator.subTaskStarted(subStats);
         notificationDecorator.subTaskEnded();
@@ -143,11 +144,15 @@ public class NotificationDecoratorTest {
 
         notificationDecorator.batchStarted(batchStats);
         assertThat("Expected the delegate to have been called", 1L, is(captureCallback.getBatchStartedCount()));
-        assertThat("Expected a single subStats", 1, is(captureCallback.getBatchStats().size()));
-        captureCallback.getBatchStats().stream().findFirst().ifPresentOrElse(
-                stats -> assertThat("Expected the statistics to be passed through", batchStats, is(stats)),
-                () -> fail("Missing expected batch stat")
-        );
+        assertThat(
+                "Expected a single subStats",
+                1,
+                is(captureCallback.getBatchStats().size()));
+        captureCallback.getBatchStats().stream()
+                .findFirst()
+                .ifPresentOrElse(
+                        stats -> assertThat("Expected the statistics to be passed through", batchStats, is(stats)),
+                        () -> fail("Missing expected batch stat"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -164,64 +169,78 @@ public class NotificationDecoratorTest {
     @Test
     public void test_tileDeleted_fromDeleteTileObject_checkListenerIsCalled() {
         WithBlobStoreListener(blobStoreListenerList, captureListener);
-        TileObject tileObject = TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
-        tileObject.setBlobSize((int)FILE_SIZE);
+        TileObject tileObject =
+                TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
+        tileObject.setBlobSize((int) FILE_SIZE);
         tileObject.setParametersId(PARAMETERS_ID);
         DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, RESULT_PATH, false);
-        ResultStat resultStat = new ResultStat(deleteTileObject,  RESULT_PATH, tileObject, FILE_SIZE, TIMESTAMP, Deleted);
+        ResultStat resultStat =
+                new ResultStat(deleteTileObject, RESULT_PATH, tileObject, FILE_SIZE, TIMESTAMP, Deleted);
 
         notificationDecorator.tileResult(resultStat);
-        assertThat("Expected the capture listener to be have its tileDeleted methods called once",
-                1L, is(captureListener.tileDeletedCount));
+        assertThat(
+                "Expected the capture listener to be have its tileDeleted methods called once",
+                1L,
+                is(captureListener.tileDeletedCount));
     }
 
     @Test
     public void test_tileDeleted_fromDeleteTileLayer_checkListenerIsNotCalled() {
         WithBlobStoreListener(blobStoreListenerList, captureListener);
-        TileObject tileObject = TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
+        TileObject tileObject =
+                TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
         DeleteTileLayer deleteTileLayer = new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME);
-        ResultStat resultStat = new ResultStat(deleteTileLayer,  RESULT_PATH, tileObject, FILE_SIZE, TIMESTAMP, Deleted);
+        ResultStat resultStat = new ResultStat(deleteTileLayer, RESULT_PATH, tileObject, FILE_SIZE, TIMESTAMP, Deleted);
 
         notificationDecorator.tileResult(resultStat);
-        assertThat("Expected the capture listener not to be called",
-                0L, is(captureListener.tileDeletedCount));
+        assertThat("Expected the capture listener not to be called", 0L, is(captureListener.tileDeletedCount));
     }
 
     @Test
     public void test_tileResult_fromDeleteTilesZoom_checkListenerIsCalled() {
         WithBlobStoreListener(blobStoreListenerList, captureListener);
-        TileObject tileObject = TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
-        tileObject.setBlobSize((int)FILE_SIZE);
+        TileObject tileObject =
+                TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
+        tileObject.setBlobSize((int) FILE_SIZE);
         tileObject.setParametersId(PARAMETERS_ID);
-        DeleteTileZoom deleteTileZoom = new DeleteTileZoom(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, 10);
-        ResultStat resultStat = new ResultStat(deleteTileZoom,  RESULT_PATH, tileObject, FILE_SIZE, TIMESTAMP, Deleted);
+        DeleteTileZoom deleteTileZoom =
+                new DeleteTileZoom(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, 10);
+        ResultStat resultStat = new ResultStat(deleteTileZoom, RESULT_PATH, tileObject, FILE_SIZE, TIMESTAMP, Deleted);
 
         notificationDecorator.tileResult(resultStat);
-        assertThat("Expected the capture listener to be have its tileDeleted methods called once",
-                1L, is(captureListener.tileDeletedCount));
+        assertThat(
+                "Expected the capture listener to be have its tileDeleted methods called once",
+                1L,
+                is(captureListener.tileDeletedCount));
     }
 
     @Test
     public void test_tileResult_fromDeleteTilesZoomBounded_checkListenerIsCalled() {
         WithBlobStoreListener(blobStoreListenerList, captureListener);
-        TileObject tileObject = TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
-        tileObject.setBlobSize((int)FILE_SIZE);
+        TileObject tileObject =
+                TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
+        tileObject.setBlobSize((int) FILE_SIZE);
         tileObject.setParametersId(PARAMETERS_ID);
-        DeleteTileZoom deleteTileZoom = new DeleteTileZoom(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, 10);
-        ResultStat resultStat = new ResultStat(deleteTileZoom,  RESULT_PATH, tileObject, FILE_SIZE, TIMESTAMP, Deleted);
+        DeleteTileZoom deleteTileZoom =
+                new DeleteTileZoom(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, 10);
+        ResultStat resultStat = new ResultStat(deleteTileZoom, RESULT_PATH, tileObject, FILE_SIZE, TIMESTAMP, Deleted);
 
         notificationDecorator.tileResult(resultStat);
-        assertThat("Expected the capture listener to be have its tileDeleted methods called once",
-                1L, is(captureListener.tileDeletedCount));
+        assertThat(
+                "Expected the capture listener to be have its tileDeleted methods called once",
+                1L,
+                is(captureListener.tileDeletedCount));
     }
 
     @Test
     public void test_tileDeleted_fromDeleteTileObject_noListeners() {
-        TileObject tileObject = TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
-        tileObject.setBlobSize((int)FILE_SIZE);
+        TileObject tileObject =
+                TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
+        tileObject.setBlobSize((int) FILE_SIZE);
         tileObject.setParametersId(PARAMETERS_ID);
         DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, RESULT_PATH, false);
-        ResultStat resultStat = new ResultStat(deleteTileObject,  RESULT_PATH, tileObject, FILE_SIZE, TIMESTAMP, Deleted);
+        ResultStat resultStat =
+                new ResultStat(deleteTileObject, RESULT_PATH, tileObject, FILE_SIZE, TIMESTAMP, Deleted);
 
         // Just check no exceptions are raised
         notificationDecorator.tileResult(resultStat);
@@ -232,5 +251,4 @@ public class NotificationDecoratorTest {
         notificationDecorator.tileResult(EMPTY_RESULT_STAT());
         assertThat("Expected the delegate to have been called", 1L, is(captureCallback.getTileResultCount()));
     }
-
 }

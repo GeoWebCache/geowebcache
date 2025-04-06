@@ -1,5 +1,18 @@
 package org.geowebcache.s3.callback;
 
+import static org.geowebcache.s3.callback.CallbackTestHelper.WithSubTaskStarted;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.geowebcache.s3.statistics.StatisticsTestHelper.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+import java.util.Properties;
+import java.util.logging.Logger;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.S3Ops;
@@ -19,22 +32,8 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Properties;
-import java.util.logging.Logger;
-
-import static org.geowebcache.s3.callback.CallbackTestHelper.WithSubTaskStarted;
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
-import static org.geowebcache.s3.statistics.StatisticsTestHelper.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
-
 @RunWith(MockitoJUnitRunner.class)
-public class MarkPendingDeleteDecoratorTest  {
+public class MarkPendingDeleteDecoratorTest {
     private MarkPendingDeleteDecorator markPendingDeleteDecorator;
     private CaptureCallback captureCallback;
     private Logger logger = S3BlobStore.getLog();
@@ -49,7 +48,7 @@ public class MarkPendingDeleteDecoratorTest  {
     ArgumentCaptor<Properties> propertiesCaptor;
 
     @Before
-    public void setUp(){
+    public void setUp() {
         captureCallback = new CaptureCallback();
         markPendingDeleteDecorator = new MarkPendingDeleteDecorator(captureCallback, s3Ops, logger);
     }
@@ -62,8 +61,7 @@ public class MarkPendingDeleteDecoratorTest  {
         assertThrows(
                 "delegate cannot be null",
                 NullPointerException.class,
-                () -> markPendingDeleteDecorator = new MarkPendingDeleteDecorator(null, s3Ops, logger)
-        );
+                () -> markPendingDeleteDecorator = new MarkPendingDeleteDecorator(null, s3Ops, logger));
     }
 
     @Test
@@ -71,8 +69,7 @@ public class MarkPendingDeleteDecoratorTest  {
         assertThrows(
                 "s3Ops cannot be null",
                 NullPointerException.class,
-                () -> markPendingDeleteDecorator = new MarkPendingDeleteDecorator(new NoopCallback(), null, logger)
-        );
+                () -> markPendingDeleteDecorator = new MarkPendingDeleteDecorator(new NoopCallback(), null, logger));
     }
 
     @Test
@@ -80,8 +77,7 @@ public class MarkPendingDeleteDecoratorTest  {
         assertThrows(
                 "logger cannot be null",
                 NullPointerException.class,
-                () -> markPendingDeleteDecorator = new MarkPendingDeleteDecorator(new NoopCallback(), s3Ops, null)
-        );
+                () -> markPendingDeleteDecorator = new MarkPendingDeleteDecorator(new NoopCallback(), s3Ops, null));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -97,7 +93,6 @@ public class MarkPendingDeleteDecoratorTest  {
 
     ///////////////////////////////////////////////////////////////////////////
     // test taskEnded()
-
 
     @Test
     public void test_taskEnded_ensureDelegateIsCalled() {
@@ -118,7 +113,8 @@ public class MarkPendingDeleteDecoratorTest  {
 
         verify(s3Ops, times(1)).getProperties(anyString());
         verify(s3Ops, times(1)).putProperties(anyString(), propertiesCaptor.capture());
-        assertThat("There should be a single property", propertiesCaptor.getValue().size(), is(1));
+        assertThat(
+                "There should be a single property", propertiesCaptor.getValue().size(), is(1));
         verifyNoMoreInteractions(s3Ops);
     }
 
@@ -164,10 +160,12 @@ public class MarkPendingDeleteDecoratorTest  {
 
         assertThat("Expected the delegate to have been called", captureCallback.getSubTaskStartedCount(), is(1L));
         assertThat("Expected a single subStats", captureCallback.getSubStats().size(), is(1));
-        captureCallback.getSubStats().stream().findFirst().ifPresentOrElse(
-                stats -> assertThat("Expected the EMPTY_STATISTICS() to be passed through", subStats, is(stats)),
-                () -> fail("Missing expected subStat")
-        );
+        captureCallback.getSubStats().stream()
+                .findFirst()
+                .ifPresentOrElse(
+                        stats ->
+                                assertThat("Expected the EMPTY_STATISTICS() to be passed through", subStats, is(stats)),
+                        () -> fail("Missing expected subStat"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -193,7 +191,8 @@ public class MarkPendingDeleteDecoratorTest  {
 
     @Test
     public void test_subTaskEnded_removePendingDeleted_withRetryPendingTask() throws Exception {
-        String path = DeleteTileInfo.toZoomPrefix(PREFIX, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL);
+        String path =
+                DeleteTileInfo.toZoomPrefix(PREFIX, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL);
         DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, path);
         SubStats subStats = new SubStats(deleteTilePrefix, RetryPendingTask);
 
@@ -261,7 +260,9 @@ public class MarkPendingDeleteDecoratorTest  {
         doNothing().when(mockLogger).warning(anyString());
         markPendingDeleteDecorator.subTaskStarted(subStats);
 
-        doThrow(new RuntimeException(new StorageException("Test exception"))).when(s3Ops).clearPendingBulkDelete(anyString(), anyLong());
+        doThrow(new RuntimeException(new StorageException("Test exception")))
+                .when(s3Ops)
+                .clearPendingBulkDelete(anyString(), anyLong());
         markPendingDeleteDecorator.subTaskEnded();
 
         verify(s3Ops, times(1)).getProperties(path);
@@ -310,10 +311,11 @@ public class MarkPendingDeleteDecoratorTest  {
         markPendingDeleteDecorator.batchStarted(batchStats);
         assertThat("Expected the delegate to have been called", captureCallback.getBatchStartedCount(), is(1L));
         assertThat("Expected a single subStats", captureCallback.getBatchStats().size(), is(1));
-        captureCallback.getBatchStats().stream().findFirst().ifPresentOrElse(
-                stats -> assertThat("Expected the statistics to be passed through", batchStats, is(stats)),
-                () -> fail("Missing expected batch stat")
-        );
+        captureCallback.getBatchStats().stream()
+                .findFirst()
+                .ifPresentOrElse(
+                        stats -> assertThat("Expected the statistics to be passed through", batchStats, is(stats)),
+                        () -> fail("Missing expected batch stat"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -332,7 +334,4 @@ public class MarkPendingDeleteDecoratorTest  {
         markPendingDeleteDecorator.tileResult(EMPTY_RESULT_STAT());
         assertThat("Expected the delegate to have been called", captureCallback.getTileResultCount(), is(1L));
     }
-
-
-
 }

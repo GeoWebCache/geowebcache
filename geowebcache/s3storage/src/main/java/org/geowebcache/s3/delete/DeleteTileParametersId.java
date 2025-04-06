@@ -72,6 +72,7 @@ public class DeleteTileParametersId implements DeleteTileRange {
     public String getParameterId() {
         return parameterId;
     }
+
     public String getPrefix() {
         return prefix;
     }
@@ -79,6 +80,4 @@ public class DeleteTileParametersId implements DeleteTileRange {
     public String getFormat() {
         return format;
     }
-
-
 }

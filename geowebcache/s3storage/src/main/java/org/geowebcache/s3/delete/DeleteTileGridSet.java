@@ -1,7 +1,5 @@
 package org.geowebcache.s3.delete;
 
-import static java.lang.String.format;
-
 public class DeleteTileGridSet implements DeleteTileRange {
     private final String prefix;
     private final String bucket;

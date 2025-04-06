@@ -1,6 +1,15 @@
 package org.geowebcache.s3.callback;
 
+import static org.geowebcache.s3.callback.CallbackTestHelper.*;
+import static org.geowebcache.s3.statistics.StatisticsTestHelper.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
+import java.util.logging.Logger;
 import org.geowebcache.s3.statistics.BatchStats;
 import org.geowebcache.s3.statistics.ResultStat;
 import org.geowebcache.s3.statistics.Statistics;
@@ -11,17 +20,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.logging.Logger;
-
-import static org.geowebcache.s3.callback.CallbackTestHelper.*;
-import static org.geowebcache.s3.statistics.StatisticsTestHelper.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StatisticsCallbackDecoratorTest {
@@ -71,8 +69,7 @@ public class StatisticsCallbackDecoratorTest {
         assertThrows(
                 "statistics cannot be null when calling taskStarted",
                 NullPointerException.class,
-                () -> statisticCallbackDecorator.taskStarted(null)
-        );
+                () -> statisticCallbackDecorator.taskStarted(null));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -143,7 +140,6 @@ public class StatisticsCallbackDecoratorTest {
     ///////////////////////////////////////////////////////////////////////////
     // test subTaskStarted()
 
-
     @Test
     public void test_subTaskStarted_currentSubIsSet() {
         WithTaskStarted(statisticCallbackDecorator);
@@ -160,8 +156,7 @@ public class StatisticsCallbackDecoratorTest {
         assertThrows(
                 "subStats cannot be null when calling subTaskStarted",
                 NullPointerException.class,
-                () -> statisticCallbackDecorator.subTaskStarted(null)
-        );
+                () -> statisticCallbackDecorator.subTaskStarted(null));
     }
 
     @Test
@@ -181,11 +176,16 @@ public class StatisticsCallbackDecoratorTest {
         statisticCallbackDecorator.subTaskStarted(subStats);
 
         assertThat("Expected the delegate to have been called", 1L, is(captureCallback.getSubTaskStartedCount()));
-        assertThat("Expected a single subStats", 1, is(captureCallback.getSubStats().size()));
-        captureCallback.getSubStats().stream().findFirst().ifPresentOrElse(
-                stats -> assertThat("Expected the EMPTY_STATISTICS() to be passed through", subStats, is(stats)),
-                () -> fail("Missing expected subStat")
-        );
+        assertThat(
+                "Expected a single subStats",
+                1,
+                is(captureCallback.getSubStats().size()));
+        captureCallback.getSubStats().stream()
+                .findFirst()
+                .ifPresentOrElse(
+                        stats ->
+                                assertThat("Expected the EMPTY_STATISTICS() to be passed through", subStats, is(stats)),
+                        () -> fail("Missing expected subStat"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -198,8 +198,7 @@ public class StatisticsCallbackDecoratorTest {
         assertThrows(
                 "subTaskStarted must be called before subTaskEnded",
                 IllegalStateException.class,
-                ()->statisticCallbackDecorator.subTaskEnded()
-        );
+                () -> statisticCallbackDecorator.subTaskEnded());
     }
 
     @Test
@@ -209,8 +208,7 @@ public class StatisticsCallbackDecoratorTest {
         assertThrows(
                 "taskStarted must be called before subTaskEnded",
                 IllegalStateException.class,
-                ()->statisticCallbackDecorator.subTaskEnded()
-        );
+                () -> statisticCallbackDecorator.subTaskEnded());
     }
 
     @Test
@@ -221,7 +219,10 @@ public class StatisticsCallbackDecoratorTest {
         statisticCallbackDecorator.subTaskStarted(subStats);
         statisticCallbackDecorator.subTaskEnded();
 
-        assertThat("Sub should have been added to statistics", subStats, is(statistics.getSubStats().get(0)));
+        assertThat(
+                "Sub should have been added to statistics",
+                subStats,
+                is(statistics.getSubStats().get(0)));
     }
 
     @Test
@@ -244,11 +245,16 @@ public class StatisticsCallbackDecoratorTest {
 
         statisticCallbackDecorator.batchStarted(batchStats);
         assertThat("Expected the delegate to have been called", 1L, is(captureCallback.getBatchStartedCount()));
-        assertThat("Expected a single subStats", 1, is(captureCallback.getBatchStats().size()));
-        captureCallback.getBatchStats().stream().findFirst().ifPresentOrElse(
-                stats -> assertThat("Expected the EMPTY_STATISTICS() to be passed through", batchStats, is(stats)),
-                () -> fail("Missing expected batch stat")
-        );
+        assertThat(
+                "Expected a single subStats",
+                1,
+                is(captureCallback.getBatchStats().size()));
+        captureCallback.getBatchStats().stream()
+                .findFirst()
+                .ifPresentOrElse(
+                        stats -> assertThat(
+                                "Expected the EMPTY_STATISTICS() to be passed through", batchStats, is(stats)),
+                        () -> fail("Missing expected batch stat"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -265,8 +271,7 @@ public class StatisticsCallbackDecoratorTest {
         assertThrows(
                 "batchStarted must be called before batchEnded",
                 IllegalStateException.class,
-                () ->statisticCallbackDecorator.batchEnded()
-        );
+                () -> statisticCallbackDecorator.batchEnded());
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -288,7 +293,6 @@ public class StatisticsCallbackDecoratorTest {
         assertThrows(
                 "batchStarted must be called before tileDeleted",
                 IllegalStateException.class,
-                () ->statisticCallbackDecorator.tileResult(resultStat)
-        );
+                () -> statisticCallbackDecorator.tileResult(resultStat));
     }
 }

@@ -35,5 +35,4 @@ public class DeleteTileObject implements DeleteTileRange {
     public String getPrefix() {
         return prefix;
     }
-
 }
