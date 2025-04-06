@@ -8,7 +8,6 @@ import org.geowebcache.storage.TileObject;
 public class DeleteTileObject implements DeleteTileRange {
     private final TileObject tileObject;
     private final String prefix;
-    private final boolean skipExistsCheck;
 
     public DeleteTileObject(TileObject tileObject, String prefix, boolean skipExistsCheck) {
         checkNotNull(tileObject, "tileObject must not be null");
@@ -17,7 +16,6 @@ public class DeleteTileObject implements DeleteTileRange {
 
         this.tileObject = tileObject;
         this.prefix = prefix;
-        this.skipExistsCheck = skipExistsCheck;
     }
 
     @Override
@@ -38,7 +36,4 @@ public class DeleteTileObject implements DeleteTileRange {
         return prefix;
     }
 
-    public boolean shouldSkipExistsCheck() {
-        return skipExistsCheck;
-    }
 }

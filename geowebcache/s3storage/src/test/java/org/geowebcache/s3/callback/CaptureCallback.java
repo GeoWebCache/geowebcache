@@ -17,7 +17,7 @@ public class CaptureCallback implements Callback {
     long subTaskEndedCount = 0;
     long taskStartedCount = 0;
     long taskEndedCount = 0;
-    long tileDeletedCount = 0;
+    long tileResultCount = 0;
 
     Statistics statistics = null;
     List<SubStats> subStats = new ArrayList<>();
@@ -51,8 +51,8 @@ public class CaptureCallback implements Callback {
         return taskEndedCount;
     }
 
-    public long getTileDeletedCount() {
-        return tileDeletedCount;
+    public long getTileResultCount() {
+        return tileResultCount;
     }
 
     public Statistics getStatistics() {
@@ -78,7 +78,7 @@ public class CaptureCallback implements Callback {
     @Override
     public void tileResult(ResultStat result) {
         this.delegate.tileResult(result);
-        tileDeletedCount++;
+        tileResultCount++;
     }
 
     @Override

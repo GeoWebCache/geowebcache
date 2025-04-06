@@ -131,4 +131,8 @@ public class BulkDeleteTaskTestHelper {
         result.setRequesterCharged(false);
         return result;
     }
+
+    public static DeleteObjectsResult emptyDeleteObjectsResult() {
+        return new DeleteObjectsResult(Collections.emptyList());
+    }
 }

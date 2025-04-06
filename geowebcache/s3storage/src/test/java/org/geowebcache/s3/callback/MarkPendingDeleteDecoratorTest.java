@@ -330,7 +330,7 @@ public class MarkPendingDeleteDecoratorTest  {
     @Test
     public void test_tileResult_ensureDelegateIsCalled() {
         markPendingDeleteDecorator.tileResult(EMPTY_RESULT_STAT());
-        assertThat("Expected the delegate to have been called", captureCallback.getTileDeletedCount(), is(1L));
+        assertThat("Expected the delegate to have been called", captureCallback.getTileResultCount(), is(1L));
     }
 
 

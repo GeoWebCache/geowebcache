@@ -51,10 +51,4 @@ public class DeleteTileObjectTest {
     public void testConstructor_WithDeleteTileObject_TileObjectNull() {
         assertThrows(NullPointerException.class, () -> new DeleteTileObject(null, PREFIX, false));
     }
-
-    @Test
-    public void testConstructor_WithDeleteTileObject_SkipExistingCheckSet() {
-        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX, true);
-        assertTrue("skipExistingCheck was not set", deleteTileObject.shouldSkipExistsCheck());
-    }
 }

@@ -150,7 +150,7 @@ public class LockingDecoratorTest {
     @Test
     public void test_tileResult_ensureDelegateIsCalled() {
         lockingDecorator.tileResult(EMPTY_RESULT_STAT());
-        assertThat("Expected the delegate to have been called", captureCallback.getTileDeletedCount(), is(1L));
+        assertThat("Expected the delegate to have been called", captureCallback.getTileResultCount(), is(1L));
     }
 
 

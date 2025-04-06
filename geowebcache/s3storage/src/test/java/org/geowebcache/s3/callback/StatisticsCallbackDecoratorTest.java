@@ -278,7 +278,7 @@ public class StatisticsCallbackDecoratorTest {
 
         ResultStat resultStat = EMPTY_RESULT_STAT();
         statisticCallbackDecorator.tileResult(resultStat);
-        assertThat("Expected the delegate to have been called", 1L, is(captureCallback.getTileDeletedCount()));
+        assertThat("Expected the delegate to have been called", 1L, is(captureCallback.getTileResultCount()));
     }
 
     @Test

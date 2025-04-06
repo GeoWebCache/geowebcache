@@ -230,7 +230,7 @@ public class NotificationDecoratorTest {
     @Test
     public void test_tileResult_ensureDelegateIsCalled() {
         notificationDecorator.tileResult(EMPTY_RESULT_STAT());
-        assertThat("Expected the delegate to have been called", 1L, is(captureCallback.getTileDeletedCount()));
+        assertThat("Expected the delegate to have been called", 1L, is(captureCallback.getTileResultCount()));
     }
 
 }
