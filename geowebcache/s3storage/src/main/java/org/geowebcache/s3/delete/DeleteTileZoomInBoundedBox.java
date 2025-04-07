@@ -15,7 +15,6 @@ public class DeleteTileZoomInBoundedBox implements DeleteTileRangeWithTileRange 
     private final TileRange tileRange;
     private final int[] metaTilingFactor;
 
-
     private final String path;
 
     public DeleteTileZoomInBoundedBox(
@@ -28,8 +27,7 @@ public class DeleteTileZoomInBoundedBox implements DeleteTileRangeWithTileRange 
             long zoomLevel,
             long[] boundedBox,
             TileRange tileRange,
-            int[] metaTilingFactor
-    ) {
+            int[] metaTilingFactor) {
         this.prefix = prefix;
         this.bucketName = bucketName;
         this.layerId = layerId;

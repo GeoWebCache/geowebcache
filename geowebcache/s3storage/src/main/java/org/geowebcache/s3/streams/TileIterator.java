@@ -4,7 +4,7 @@ import com.google.common.collect.AbstractIterator;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.TileRangeIterator;
 
-public class TileIterator extends AbstractIterator<long[]>{
+public class TileIterator extends AbstractIterator<long[]> {
     private final TileRangeIterator trIter;
     private final TileRange tileRange;
 

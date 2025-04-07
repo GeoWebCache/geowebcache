@@ -1,15 +1,5 @@
 package org.geowebcache.s3.callback;
 
-import org.geowebcache.s3.delete.*;
-import org.geowebcache.s3.statistics.BatchStats;
-import org.geowebcache.s3.statistics.ResultStat;
-import org.geowebcache.s3.statistics.Statistics;
-import org.geowebcache.s3.statistics.SubStats;
-import org.geowebcache.storage.BlobStoreListenerList;
-import org.geowebcache.storage.TileObject;
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.geowebcache.s3.callback.CallbackTestHelper.WithBlobStoreListener;
 import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.DefaultStrategy;
 import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
@@ -20,6 +10,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
+
+import org.geowebcache.s3.delete.*;
+import org.geowebcache.s3.statistics.BatchStats;
+import org.geowebcache.s3.statistics.ResultStat;
+import org.geowebcache.s3.statistics.Statistics;
+import org.geowebcache.s3.statistics.SubStats;
+import org.geowebcache.storage.BlobStoreListenerList;
+import org.geowebcache.storage.TileObject;
+import org.junit.Before;
+import org.junit.Test;
 
 public class NotificationDecoratorTest {
     private CaptureCallback captureCallback;
@@ -59,7 +59,8 @@ public class NotificationDecoratorTest {
         assertThrows(
                 "Logger cannot be null",
                 NullPointerException.class,
-                () -> notificationDecorator = new NotificationDecorator(new NoopCallback(), blobStoreListenerList, null));
+                () -> notificationDecorator =
+                        new NotificationDecorator(new NoopCallback(), blobStoreListenerList, null));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -212,8 +213,15 @@ public class NotificationDecoratorTest {
                 TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
         tileObject.setBlobSize((int) FILE_SIZE);
         tileObject.setParametersId(PARAMETERS_ID);
-        DeleteTileZoom deleteTileZoom =
-                new DeleteTileZoom(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, 10, SINGLE_ZOOM_SINGLE_BOUND_MATCHING);
+        DeleteTileZoom deleteTileZoom = new DeleteTileZoom(
+                PREFIX,
+                BUCKET,
+                LAYER_ID,
+                GRID_SET_ID,
+                FORMAT_IN_KEY,
+                PARAMETERS_ID,
+                10,
+                SINGLE_ZOOM_SINGLE_BOUND_MATCHING);
         ResultStat resultStat = new ResultStat(deleteTileZoom, RESULT_PATH, tileObject, FILE_SIZE, TIMESTAMP, Deleted);
 
         notificationDecorator.tileResult(resultStat);
@@ -230,8 +238,15 @@ public class NotificationDecoratorTest {
                 TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
         tileObject.setBlobSize((int) FILE_SIZE);
         tileObject.setParametersId(PARAMETERS_ID);
-        DeleteTileZoom deleteTileZoom =
-                new DeleteTileZoom(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, 10, SINGLE_ZOOM_SINGLE_BOUND_MATCHING);
+        DeleteTileZoom deleteTileZoom = new DeleteTileZoom(
+                PREFIX,
+                BUCKET,
+                LAYER_ID,
+                GRID_SET_ID,
+                FORMAT_IN_KEY,
+                PARAMETERS_ID,
+                10,
+                SINGLE_ZOOM_SINGLE_BOUND_MATCHING);
         ResultStat resultStat = new ResultStat(deleteTileZoom, RESULT_PATH, tileObject, FILE_SIZE, TIMESTAMP, Deleted);
 
         notificationDecorator.tileResult(resultStat);

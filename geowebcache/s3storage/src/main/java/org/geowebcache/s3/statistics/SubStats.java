@@ -1,13 +1,12 @@
 package org.geowebcache.s3.statistics;
 
-import org.geowebcache.s3.delete.BulkDeleteTask;
-import org.geowebcache.s3.delete.DeleteTileRange;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import org.geowebcache.s3.delete.BulkDeleteTask;
+import org.geowebcache.s3.delete.DeleteTileRange;
 
 public class SubStats {
     final BulkDeleteTask.ObjectPathStrategy strategy;

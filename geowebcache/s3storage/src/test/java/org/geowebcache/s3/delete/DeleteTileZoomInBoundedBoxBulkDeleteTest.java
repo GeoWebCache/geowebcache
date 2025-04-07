@@ -1,5 +1,15 @@
 package org.geowebcache.s3.delete;
 
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.TileRangeWithBoundedBoxIfTileExist;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.geowebcache.s3.delete.DeleteTileRangeWithTileRange.ONE_BY_ONE_META_TILING_FACTOR;
+import static org.geowebcache.s3.streams.StreamTestHelper.SINGLE_ZOOM_SINGLE_BOUND_MATCHING;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import org.geowebcache.s3.AmazonS3Wrapper;
 import org.geowebcache.s3.S3ObjectsWrapper;
@@ -11,16 +21,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.TileRangeWithBoundedBoxIfTileExist;
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
-import static org.geowebcache.s3.delete.DeleteTileRangeWithTileRange.ONE_BY_ONE_META_TILING_FACTOR;
-import static org.geowebcache.s3.streams.StreamTestHelper.SINGLE_ZOOM_SINGLE_BOUND_MATCHING;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DeleteTileZoomInBoundedBoxBulkDeleteTest {
@@ -46,11 +46,19 @@ public class DeleteTileZoomInBoundedBoxBulkDeleteTest {
 
     @Test
     public void test_ChooseStrategy_RetryPendingTask() {
-        DeleteTileZoomInBoundedBox deleteTileZoomInBoundedBox =
-                new DeleteTileZoomInBoundedBox(
-                        PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL_4,
-                        SMALL_BOUNDED_BOX, SINGLE_ZOOM_SINGLE_BOUND_MATCHING, ONE_BY_ONE_META_TILING_FACTOR);
-        BulkDeleteTask task = builder.withDeleteRange(deleteTileZoomInBoundedBox).build();
+        DeleteTileZoomInBoundedBox deleteTileZoomInBoundedBox = new DeleteTileZoomInBoundedBox(
+                PREFIX,
+                BUCKET,
+                LAYER_ID,
+                GRID_SET_ID,
+                FORMAT_IN_KEY,
+                PARAMETERS_ID,
+                ZOOM_LEVEL_4,
+                SMALL_BOUNDED_BOX,
+                SINGLE_ZOOM_SINGLE_BOUND_MATCHING,
+                ONE_BY_ONE_META_TILING_FACTOR);
+        BulkDeleteTask task =
+                builder.withDeleteRange(deleteTileZoomInBoundedBox).build();
         BulkDeleteTask.ObjectPathStrategy strategy = task.chooseStrategy(deleteTileZoomInBoundedBox);
         assertEquals("Expected SingleTile strategy", TileRangeWithBoundedBoxIfTileExist, strategy);
     }
@@ -63,8 +71,8 @@ public class DeleteTileZoomInBoundedBoxBulkDeleteTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        BulkDeleteTask task =
-                builder.withDeleteRange(SINGLE_ZOOM_SINGLE_BOUND_DELETE_TILES_IN_RANGE).build();
+        BulkDeleteTask task = builder.withDeleteRange(SINGLE_ZOOM_SINGLE_BOUND_DELETE_TILES_IN_RANGE)
+                .build();
         Long count = task.call();
         Statistics statistics = callback.getStatistics();
 
@@ -83,8 +91,8 @@ public class DeleteTileZoomInBoundedBoxBulkDeleteTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        BulkDeleteTask task =
-                builder.withDeleteRange(SINGLE_ZOOM_SINGLE_BOUND_DELETE_TILES_IN_RANGE).build();
+        BulkDeleteTask task = builder.withDeleteRange(SINGLE_ZOOM_SINGLE_BOUND_DELETE_TILES_IN_RANGE)
+                .build();
         task.call();
 
         assertThat("Expected TaskStarted callback called once", callback.getTaskStartedCount(), is(1L));
@@ -99,12 +107,13 @@ public class DeleteTileZoomInBoundedBoxBulkDeleteTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        BulkDeleteTask task =
-                builder.withDeleteRange(SINGLE_ZOOM_SINGLE_BOUND_DELETE_TILES_IN_RANGE).build();
+        BulkDeleteTask task = builder.withDeleteRange(SINGLE_ZOOM_SINGLE_BOUND_DELETE_TILES_IN_RANGE)
+                .build();
         task.call();
 
         long subTasks = 1L;
-        assertThat("Expected SubTaskStarted callback called per subtask", callback.getSubTaskStartedCount(), is(subTasks));
+        assertThat(
+                "Expected SubTaskStarted callback called per subtask", callback.getSubTaskStartedCount(), is(subTasks));
         assertThat("Expected SubTaskEnded callback called per subtask", callback.getSubTaskEndedCount(), is(subTasks));
     }
 
@@ -116,14 +125,18 @@ public class DeleteTileZoomInBoundedBoxBulkDeleteTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        BulkDeleteTask task =
-                builder.withDeleteRange(SINGLE_ZOOM_SINGLE_BOUND_DELETE_TILES_IN_RANGE).build();
+        BulkDeleteTask task = builder.withDeleteRange(SINGLE_ZOOM_SINGLE_BOUND_DELETE_TILES_IN_RANGE)
+                .build();
         task.call();
 
         long batches = SINGLE_ZOOM_SINGLE_BOUND_TILES / BATCH + 1;
 
-        assertThat("Expected one batch per subtask for small single batches", callback.getBatchStartedCount(), is(batches));
-        assertThat("Expected one batch per subtask for small single batches", callback.getBatchEndedCount(), is(batches));
+        assertThat(
+                "Expected one batch per subtask for small single batches",
+                callback.getBatchStartedCount(),
+                is(batches));
+        assertThat(
+                "Expected one batch per subtask for small single batches", callback.getBatchEndedCount(), is(batches));
     }
 
     @Test
@@ -134,8 +147,8 @@ public class DeleteTileZoomInBoundedBoxBulkDeleteTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        BulkDeleteTask task =
-                builder.withDeleteRange(SINGLE_ZOOM_SINGLE_BOUND_DELETE_TILES_IN_RANGE).build();
+        BulkDeleteTask task = builder.withDeleteRange(SINGLE_ZOOM_SINGLE_BOUND_DELETE_TILES_IN_RANGE)
+                .build();
         task.call();
 
         long subTasks = 1L;
@@ -152,12 +165,11 @@ public class DeleteTileZoomInBoundedBoxBulkDeleteTest {
         when(amazonS3Wrapper.deleteObjects(any(DeleteObjectsRequest.class)))
                 .thenAnswer(invocationOnMock -> BulkDeleteTaskTestHelper.emptyDeleteObjectsResult());
 
-        BulkDeleteTask task =
-                builder.withDeleteRange(SINGLE_ZOOM_SINGLE_BOUND_DELETE_TILES_IN_RANGE).build();
+        BulkDeleteTask task = builder.withDeleteRange(SINGLE_ZOOM_SINGLE_BOUND_DELETE_TILES_IN_RANGE)
+                .build();
         task.call();
 
         assertThat("Expected TileResult not to called", callback.getTileResultCount(), is(0L));
         verify(amazonS3Wrapper, times(1)).deleteObjects(any(DeleteObjectsRequest.class));
     }
-
 }

@@ -1,11 +1,10 @@
 package org.geowebcache.s3.callback;
 
-import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.locks.LockProvider;
+import static org.geowebcache.s3.callback.LockProviderCapture.LockProviderMode.*;
 
 import java.util.List;
-
-import static org.geowebcache.s3.callback.LockProviderCapture.LockProviderMode.*;
+import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.locks.LockProvider;
 
 public class LockProviderCapture implements LockProvider {
     private final LockProviderMode lockProviderMode;

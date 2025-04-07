@@ -1,10 +1,9 @@
 package org.geowebcache.s3.statistics;
 
-import org.geowebcache.s3.delete.DeleteTileRange;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
+import org.geowebcache.s3.delete.DeleteTileRange;
 
 public class Statistics {
     long deleted;

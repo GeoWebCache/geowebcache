@@ -9,5 +9,3 @@ public interface DeleteTileRange {
         return Stream.of(this);
     }
 }
-
-

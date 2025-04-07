@@ -1,5 +1,9 @@
 package org.geowebcache.s3.delete;
 
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.geowebcache.s3.AmazonS3Wrapper;
 import org.geowebcache.s3.S3ObjectsWrapper;
 import org.geowebcache.s3.callback.CaptureCallback;
@@ -10,10 +14,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 @RunWith(MockitoJUnitRunner.class)
 public class BulkDeleteTaskTest {
     @Mock
@@ -21,7 +21,6 @@ public class BulkDeleteTaskTest {
 
     @Mock
     public AmazonS3Wrapper amazonS3Wrapper;
-
 
     private BulkDeleteTask.Builder builder;
     private final CaptureCallback callback = new CaptureCallback(new StatisticCallbackDecorator(LOGGER));

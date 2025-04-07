@@ -1,10 +1,10 @@
 package org.geowebcache.s3.statistics;
 
-import org.junit.Test;
-
 import static org.geowebcache.s3.statistics.StatisticsTestHelper.EMPTY_SUB_STATS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+
+import org.junit.Test;
 
 public class SubStatsTest {
     ///////////////////////////////////////////////////////////////////////////

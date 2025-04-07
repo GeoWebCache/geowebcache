@@ -1,10 +1,9 @@
 package org.geowebcache.s3.streams;
 
+import java.util.function.Supplier;
 import org.geowebcache.s3.delete.DeleteTileInfo;
 import org.geowebcache.s3.delete.DeleteTileRangeWithTileRange;
 import org.geowebcache.storage.TileObject;
-
-import java.util.function.Supplier;
 
 public class TileIteratorSupplier implements Supplier<DeleteTileInfo> {
     private final TileIterator tileIterator;
@@ -37,9 +36,7 @@ public class TileIteratorSupplier implements Supplier<DeleteTileInfo> {
                                 tileRange.getGridSetId(),
                                 deleteTileZoomInBoundedBox.getFormat(),
                                 tileRange.getParameters(),
-                                null
-                        )
-                );
+                                null));
             } else {
                 return null;
             }

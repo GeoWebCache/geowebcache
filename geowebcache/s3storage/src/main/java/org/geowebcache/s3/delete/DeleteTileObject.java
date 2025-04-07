@@ -1,8 +1,8 @@
 package org.geowebcache.s3.delete;
 
-import org.geowebcache.storage.TileObject;
-
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.geowebcache.storage.TileObject;
 
 public class DeleteTileObject implements DeleteTileRange {
     private final TileObject tileObject;

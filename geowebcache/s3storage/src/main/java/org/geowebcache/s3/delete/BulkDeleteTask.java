@@ -1,21 +1,20 @@
 package org.geowebcache.s3.delete;
 
-import org.geowebcache.s3.AmazonS3Wrapper;
-import org.geowebcache.s3.S3ObjectsWrapper;
-import org.geowebcache.s3.callback.Callback;
-import org.geowebcache.s3.statistics.Statistics;
-import org.geowebcache.s3.statistics.SubStats;
-import org.geowebcache.s3.streams.*;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
+import org.geowebcache.s3.AmazonS3Wrapper;
+import org.geowebcache.s3.S3ObjectsWrapper;
+import org.geowebcache.s3.callback.Callback;
+import org.geowebcache.s3.statistics.Statistics;
+import org.geowebcache.s3.statistics.SubStats;
+import org.geowebcache.s3.streams.*;
 
 public class BulkDeleteTask implements Callable<Long> {
     private final AmazonS3Wrapper amazonS3Wrapper;
@@ -39,7 +38,8 @@ public class BulkDeleteTask implements Callable<Long> {
             String bucketName,
             DeleteTileRange deleteTileRange,
             Callback callback,
-            int batch, Logger logger) {
+            int batch,
+            Logger logger) {
         this.amazonS3Wrapper = amazonS3Wrapper;
         this.s3ObjectsWrapper = s3ObjectsWrapper;
         this.bucketName = bucketName;
@@ -118,20 +118,18 @@ public class BulkDeleteTask implements Callable<Long> {
         PerformDeleteObjects performDeleteObjects =
                 new PerformDeleteObjects(amazonS3Wrapper, bucketName, callback, subStats, deleteRange);
 
-        logger
-                .info(format(
-                        "Using strategy SingleTile to a delete tile from bucket %s with prefix: %s",
-                        bucketName, deleteRange.path()));
+        logger.info(format(
+                "Using strategy SingleTile to a delete tile from bucket %s with prefix: %s",
+                bucketName, deleteRange.path()));
 
         Long count = batchedStreamOfKeyObjects(deleteRange)
                 .map(mapKeyObjectsToDeleteObjectRequest)
                 .mapToLong(performDeleteObjects)
                 .sum();
 
-        logger
-                .info(format(
-                        "Finished applying strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s processed: %d",
-                        bucketName, deleteRange.path(), count));
+        logger.info(format(
+                "Finished applying strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s processed: %d",
+                bucketName, deleteRange.path(), count));
 
         callback.subTaskEnded();
         return subStats.getProcessed();
@@ -154,23 +152,16 @@ public class BulkDeleteTask implements Callable<Long> {
                 new PerformDeleteObjects(amazonS3Wrapper, bucketName, callback, subStats, deleteTileRange);
 
         TileIteratorSupplier supplier = new TileIteratorSupplier(
-                new TileIterator(
-                        deleteTileRange.getTileRange(),
-                        deleteTileRange.getMetaTilingFactor())
-                , deleteTileRange
-        );
+                new TileIterator(deleteTileRange.getTileRange(), deleteTileRange.getMetaTilingFactor()),
+                deleteTileRange);
 
-        long count = BatchingIterator.batchedStreamOf(
-                        Stream.generate(supplier)
-                                .takeWhile(Objects::nonNull)
-                        , batch)
+        long count = BatchingIterator.batchedStreamOf(Stream.generate(supplier).takeWhile(Objects::nonNull), batch)
                 .map(mapKeyObjectsToDeleteObjectRequest)
                 .mapToLong(performDeleteObjects)
                 .sum();
 
         if (count != subStats.getDeleted()) {
-            logger
-                    .warning(format("Mismatch during tile delete expected %d found %d", count, subStats.getDeleted()));
+            logger.warning(format("Mismatch during tile delete expected %d found %d", count, subStats.getDeleted()));
         }
 
         callback.subTaskEnded();
@@ -200,10 +191,9 @@ public class BulkDeleteTask implements Callable<Long> {
         var performDeleteObjects =
                 new PerformDeleteObjects(amazonS3Wrapper, bucketName, callback, subStats, deleteTileRange);
 
-        logger
-                .info(format(
-                        "Using strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s",
-                        bucketName, deleteTileRange.path()));
+        logger.info(format(
+                "Using strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s",
+                bucketName, deleteTileRange.path()));
 
         var count = batchedStreamOfKeyObjects(deleteTileRange)
                 .map(mapKeyObjectsToDeleteObjectRequest)
@@ -211,14 +201,12 @@ public class BulkDeleteTask implements Callable<Long> {
                 .sum();
 
         if (count != subStats.getDeleted()) {
-            logger
-                    .warning(format("Mismatch during tile delete expected %d found %d", count, subStats.getDeleted()));
+            logger.warning(format("Mismatch during tile delete expected %d found %d", count, subStats.getDeleted()));
         }
 
-        logger
-                .info(format(
-                        "Finished applying strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s deleted: %d",
-                        bucketName, deleteTileRange.path(), count));
+        logger.info(format(
+                "Finished applying strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s deleted: %d",
+                bucketName, deleteTileRange.path(), count));
 
         callback.subTaskEnded();
         return subStats.getProcessed();
@@ -229,8 +217,7 @@ public class BulkDeleteTask implements Callable<Long> {
                 generateStreamOfKeyObjects(createS3ObjectPathsForPrefixSupplier(deleteTileRange.path())), batch);
     }
 
-    private Stream<DeleteTileInfo> generateStreamOfKeyObjects(
-            S3ObjectPathsForPrefixSupplier supplier) {
+    private Stream<DeleteTileInfo> generateStreamOfKeyObjects(S3ObjectPathsForPrefixSupplier supplier) {
         return Stream.generate(supplier).takeWhile(Objects::nonNull).map(mapS3ObjectSummaryToKeyObject);
     }
 
@@ -241,8 +228,7 @@ public class BulkDeleteTask implements Callable<Long> {
     ObjectPathStrategy chooseStrategy(DeleteTileRange deleteTileRange) {
         if (deleteTileRange instanceof DeleteTileLayer
                 || deleteTileRange instanceof DeleteTileParametersId
-                || deleteTileRange instanceof DeleteTileZoom
-        ) {
+                || deleteTileRange instanceof DeleteTileZoom) {
             return S3ObjectPathsForPrefix;
         }
 
@@ -330,7 +316,8 @@ public class BulkDeleteTask implements Callable<Long> {
             checkNotNull(callback, "Missing Callback");
             checkNotNull(logger, "Missing Logger");
 
-            return new BulkDeleteTask(amazonS3Wrapper, s3ObjectsWrapper, bucketName, deleteTileRange, callback, batch, logger);
+            return new BulkDeleteTask(
+                    amazonS3Wrapper, s3ObjectsWrapper, bucketName, deleteTileRange, callback, batch, logger);
         }
     }
 }

@@ -13,10 +13,25 @@
  */
 package org.geowebcache.s3;
 
+import static java.lang.String.format;
+
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.*;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import javax.annotation.Nullable;
 import org.apache.commons.io.IOUtils;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.locks.LockProvider;
@@ -31,22 +46,6 @@ import org.geowebcache.s3.delete.DeleteTilePrefix;
 import org.geowebcache.s3.delete.DeleteTileRange;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.TMSKeyBuilder;
-
-import javax.annotation.Nullable;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import static java.lang.String.format;
 
 public class S3Ops {
 
@@ -97,17 +96,12 @@ public class S3Ops {
             final long timestamp = Long.parseLong(e.getValue().toString());
             logger.info(format("Restarting pending bulk delete on '%s/%s':%d", bucketName, path, timestamp));
             LockingDecorator lockingDecorator = new LockingDecorator(
-                    new MarkPendingDeleteDecorator(
-                            new StatisticCallbackDecorator(logger),
-                            this,
-                            logger),
+                    new MarkPendingDeleteDecorator(new StatisticCallbackDecorator(logger), this, logger),
                     locks,
                     logger);
             DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(assumedPrefix, bucketName, path);
             asyncBulkDelete(assumedPrefix, deleteTilePrefix, timestamp, lockingDecorator);
         }
-
-
     }
 
     public void clearPendingBulkDelete(final String prefix, final long timestamp) throws GeoWebCacheException {
@@ -129,10 +123,8 @@ public class S3Ops {
             if (timestamp >= storedTimestamp) {
                 putProperties(pendingDeletesKey, deletes);
             } else {
-                logger
-                        .info(format(
-                                "bulk delete finished but there's a newer one ongoing for bucket '%s/%s'",
-                                bucketName, prefix));
+                logger.info(format(
+                        "bulk delete finished but there's a newer one ongoing for bucket '%s/%s'", bucketName, prefix));
             }
         } catch (StorageException e) {
             throw new RuntimeException(e);
@@ -141,9 +133,7 @@ public class S3Ops {
         }
     }
 
-    public boolean scheduleAsyncDelete(
-            DeleteTileRange deleteTileRange, Callback callback)
-            throws GeoWebCacheException {
+    public boolean scheduleAsyncDelete(DeleteTileRange deleteTileRange, Callback callback) throws GeoWebCacheException {
         final long timestamp = currentTimeSeconds();
         String msg = format(
                 "Issuing bulk delete on '%s/%s' for objects older than %d",
@@ -263,9 +253,7 @@ public class S3Ops {
         }
     }
 
-    /**
-     * Simply checks if there are objects starting with {@code prefix}
-     */
+    /** Simply checks if there are objects starting with {@code prefix} */
     public boolean prefixExists(String prefix) {
         return S3Objects.withPrefix(conn, bucketName, prefix)
                 .withBatchSize(1)

@@ -1,9 +1,9 @@
 package org.geowebcache.s3.callback;
 
-import org.geowebcache.storage.BlobStoreListener;
-
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.geowebcache.storage.BlobStoreListener;
 
 public class BlobStoreCaptureListener implements BlobStoreListener {
     long tileStoredCount = 0;

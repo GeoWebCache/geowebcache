@@ -13,7 +13,7 @@
  */
 package org.geowebcache.s3;
 
-import org.geotools.util.logging.Logging;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,8 +22,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static com.google.common.base.Preconditions.checkArgument;
+import org.geotools.util.logging.Logging;
 
 /**
  * Loads the configuration from a properties file {@code $HOME/.gwc_s3_tests.properties}, which must exist and contain

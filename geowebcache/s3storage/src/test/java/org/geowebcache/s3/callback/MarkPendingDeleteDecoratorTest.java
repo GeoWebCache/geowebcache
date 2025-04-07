@@ -1,5 +1,18 @@
 package org.geowebcache.s3.callback;
 
+import static org.geowebcache.s3.callback.CallbackTestHelper.WithSubTaskStarted;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.geowebcache.s3.statistics.StatisticsTestHelper.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+import java.util.Properties;
+import java.util.logging.Logger;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.s3.S3Ops;
 import org.geowebcache.s3.delete.DeleteTileInfo;
@@ -17,20 +30,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.Properties;
-import java.util.logging.Logger;
-
-import static org.geowebcache.s3.callback.CallbackTestHelper.WithSubTaskStarted;
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
-import static org.geowebcache.s3.statistics.StatisticsTestHelper.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MarkPendingDeleteDecoratorTest {
@@ -206,7 +205,7 @@ public class MarkPendingDeleteDecoratorTest {
     }
 
     @Test
-    public void test_subTaskEnded_removePendingDeleted_notWithSingleTileStrategy()  {
+    public void test_subTaskEnded_removePendingDeleted_notWithSingleTileStrategy() {
         DeleteTileObject deleteTileObject = new DeleteTileObject(TILE_OBJECT, PREFIX);
         SubStats subStats = new SubStats(deleteTileObject, SingleTile);
 

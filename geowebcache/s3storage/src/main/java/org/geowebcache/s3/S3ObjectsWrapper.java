@@ -1,12 +1,11 @@
 package org.geowebcache.s3;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-
 import java.util.Iterator;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * This class wraps the S3Objects class to assist in unit testing and providing a geosolutions wrapper around the amazon

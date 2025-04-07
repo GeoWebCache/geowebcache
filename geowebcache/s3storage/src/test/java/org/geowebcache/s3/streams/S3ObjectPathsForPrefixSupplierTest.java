@@ -1,21 +1,20 @@
 package org.geowebcache.s3.streams;
 
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
+
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 import org.geowebcache.s3.S3ObjectsWrapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class S3ObjectPathsForPrefixSupplierTest {
@@ -40,7 +39,6 @@ public class S3ObjectPathsForPrefixSupplierTest {
     @Mock
     Logger logger;
 
-
     @Before
     public void setup() {
         when(wrapper.iterator()).thenReturn(S_3_OBJECT_SUMMARY_LIST.iterator());
@@ -64,22 +62,25 @@ public class S3ObjectPathsForPrefixSupplierTest {
 
     @Test
     public void testPrefix_CannotBuildIfNullPrefix() {
-        assertThrows(NullPointerException.class, () ->  new S3ObjectPathsForPrefixSupplier(null, BUCKET, wrapper, logger));
+        assertThrows(
+                NullPointerException.class, () -> new S3ObjectPathsForPrefixSupplier(null, BUCKET, wrapper, logger));
     }
 
     @Test
     public void testPrefix_CannotBuildIfNullBucket() {
-        assertThrows(NullPointerException.class, () ->  new S3ObjectPathsForPrefixSupplier(PREFIX, null, wrapper, logger));
+        assertThrows(
+                NullPointerException.class, () -> new S3ObjectPathsForPrefixSupplier(PREFIX, null, wrapper, logger));
     }
 
     @Test
     public void testPrefix_CannotBuildIfNullConn() {
-        assertThrows(NullPointerException.class, () ->  new S3ObjectPathsForPrefixSupplier(PREFIX, BUCKET, null, logger));
+        assertThrows(
+                NullPointerException.class, () -> new S3ObjectPathsForPrefixSupplier(PREFIX, BUCKET, null, logger));
     }
-
 
     @Test
     public void testPrefix_CannotBuildIfNullLogger() {
-        assertThrows(NullPointerException.class, () ->  new S3ObjectPathsForPrefixSupplier(PREFIX, BUCKET, wrapper, null));
+        assertThrows(
+                NullPointerException.class, () -> new S3ObjectPathsForPrefixSupplier(PREFIX, BUCKET, wrapper, null));
     }
 }

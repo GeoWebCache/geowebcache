@@ -22,8 +22,7 @@ public class DeleteTileZoom implements DeleteTileRange {
             String format,
             String paramatesId,
             long zoomLevel,
-            TileRange tileRange
-            ) {
+            TileRange tileRange) {
         this.prefix = prefix;
         this.bucketName = bucketName;
         this.layerId = layerId;

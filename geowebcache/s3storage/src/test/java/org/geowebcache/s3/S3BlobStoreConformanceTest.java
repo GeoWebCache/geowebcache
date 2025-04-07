@@ -13,6 +13,12 @@
  */
 package org.geowebcache.s3;
 
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.fail;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Stream;
 import org.easymock.EasyMock;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.TileLayer;
@@ -22,13 +28,6 @@ import org.geowebcache.locks.NoOpLockProvider;
 import org.geowebcache.storage.AbstractBlobStoreTest;
 import org.junit.Assume;
 import org.junit.Rule;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.stream.Stream;
-
-import static org.easymock.EasyMock.*;
-import static org.junit.Assert.fail;
 
 public class S3BlobStoreConformanceTest extends AbstractBlobStoreTest<S3BlobStore> {
     public PropertiesLoader testConfigLoader = new PropertiesLoader();

@@ -1,11 +1,11 @@
 package org.geowebcache.s3.statistics;
 
-import org.junit.Test;
-
 import static org.geowebcache.s3.statistics.StatisticsTestHelper.ALL_ONE_SUBSTATS;
 import static org.geowebcache.s3.statistics.StatisticsTestHelper.EMPTY_STATISTICS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+
+import org.junit.Test;
 
 public class StatisticsTest {
 
@@ -44,7 +44,7 @@ public class StatisticsTest {
     // Recoverable issue tests
 
     @Test
-    public void testAddRecoverableIssue()  {
+    public void testAddRecoverableIssue() {
         Statistics statistics = EMPTY_STATISTICS();
         RuntimeException issue = new RuntimeException();
         statistics.addRecoverableIssue(issue);

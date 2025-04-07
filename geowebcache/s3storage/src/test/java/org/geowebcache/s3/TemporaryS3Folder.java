@@ -13,6 +13,8 @@
  */
 package org.geowebcache.s3;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.iterable.S3Objects;
@@ -21,13 +23,10 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import org.junit.rules.ExternalResource;
-
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
-
-import static com.google.common.base.Preconditions.checkState;
+import org.junit.rules.ExternalResource;
 
 /**
  * The TemporaryS3Folder provides a path prefix for S3 storage and deletes all resources under the given prefix at

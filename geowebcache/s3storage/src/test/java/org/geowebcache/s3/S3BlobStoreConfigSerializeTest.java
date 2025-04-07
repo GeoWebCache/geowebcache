@@ -13,16 +13,16 @@
  */
 package org.geowebcache.s3;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThrows;
+
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.XStreamException;
 import org.geowebcache.util.PropertyRule;
 import org.junit.Rule;
 import org.junit.Test;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThrows;
 
 public class S3BlobStoreConfigSerializeTest {
 

@@ -1,11 +1,11 @@
 package org.geowebcache.s3.delete;
 
-import org.junit.Test;
-
 import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
+
+import org.junit.Test;
 
 public class DeleteTileParametersIdTest {
     @Test
