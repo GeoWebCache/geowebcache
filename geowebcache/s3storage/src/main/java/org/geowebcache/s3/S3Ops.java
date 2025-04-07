@@ -24,7 +24,10 @@ import org.geowebcache.locks.LockProvider.Lock;
 import org.geowebcache.locks.NoOpLockProvider;
 import org.geowebcache.s3.callback.Callback;
 import org.geowebcache.s3.callback.LockingDecorator;
+import org.geowebcache.s3.callback.MarkPendingDeleteDecorator;
+import org.geowebcache.s3.callback.StatisticCallbackDecorator;
 import org.geowebcache.s3.delete.BulkDeleteTask;
+import org.geowebcache.s3.delete.DeleteTilePrefix;
 import org.geowebcache.s3.delete.DeleteTileRange;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.TMSKeyBuilder;
@@ -39,7 +42,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -48,6 +50,7 @@ import static java.lang.String.format;
 
 public class S3Ops {
 
+    public static final int BATCH_SIZE = 1000;
     private final AmazonS3Client conn;
 
     private final String bucketName;
@@ -61,8 +64,7 @@ public class S3Ops {
     private final Map<String, Long> pendingDeletesKeyTime = new ConcurrentHashMap<>();
     private final Logger logger;
 
-    public S3Ops(AmazonS3Client conn, String bucketName, TMSKeyBuilder keyBuilder, LockProvider locks, Logger logger)
-            throws StorageException {
+    public S3Ops(AmazonS3Client conn, String bucketName, TMSKeyBuilder keyBuilder, LockProvider locks, Logger logger) {
         this.conn = conn;
         this.bucketName = bucketName;
         this.keyBuilder = keyBuilder;
@@ -85,31 +87,27 @@ public class S3Ops {
         deleteExecutorService.shutdownNow();
     }
 
-    private void issuePendingBulkDeletes() throws StorageException {
+    private void issuePendingBulkDeletes() {
         final String pendingDeletesKey = keyBuilder.pendingDeletes();
-        Lock lock;
-        try {
-            lock = locks.getLock(pendingDeletesKey);
-        } catch (GeoWebCacheException e) {
-            throw new StorageException("Unable to lock pending deletes", e);
+        final String assumedPrefix = "";
+
+        Properties deletes = getProperties(pendingDeletesKey);
+        for (Entry<Object, Object> e : deletes.entrySet()) {
+            final String path = e.getKey().toString();
+            final long timestamp = Long.parseLong(e.getValue().toString());
+            logger.info(format("Restarting pending bulk delete on '%s/%s':%d", bucketName, path, timestamp));
+            LockingDecorator lockingDecorator = new LockingDecorator(
+                    new MarkPendingDeleteDecorator(
+                            new StatisticCallbackDecorator(logger),
+                            this,
+                            logger),
+                    locks,
+                    logger);
+            DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(assumedPrefix, bucketName, path);
+            asyncBulkDelete(assumedPrefix, deleteTilePrefix, timestamp, lockingDecorator);
         }
 
-        try {
-            Properties deletes = getProperties(pendingDeletesKey);
-            for (Entry<Object, Object> e : deletes.entrySet()) {
-                final String prefix = e.getKey().toString();
-                final long timestamp = Long.parseLong(e.getValue().toString());
-                logger
-                        .info(format("Restarting pending bulk delete on '%s/%s':%d", bucketName, prefix, timestamp));
-                // asyncDelete(prefix, timestamp);
-            }
-        } finally {
-            try {
-                lock.release();
-            } catch (GeoWebCacheException e) {
-                throw new StorageException("Unable to unlock pending deletes", e);
-            }
-        }
+
     }
 
     public void clearPendingBulkDelete(final String prefix, final long timestamp) throws GeoWebCacheException {
@@ -118,7 +116,7 @@ public class S3Ops {
             return; // someone else cleared it up for us. A task that run after this one but
             // finished before?
         }
-        if (taskTime.longValue() > timestamp) {
+        if (taskTime > timestamp) {
             return; // someone else issued a bulk delete after this one for the same key prefix
         }
         final String pendingDeletesKey = keyBuilder.pendingDeletes();
@@ -144,7 +142,7 @@ public class S3Ops {
     }
 
     public boolean scheduleAsyncDelete(
-            DeleteTileRange deleteTileRange, Callback callback, LockingDecorator lockingDecorator)
+            DeleteTileRange deleteTileRange, Callback callback)
             throws GeoWebCacheException {
         final long timestamp = currentTimeSeconds();
         String msg = format(
@@ -158,8 +156,7 @@ public class S3Ops {
     // S3 truncates timestamps to seconds precision and does not allow to programmatically set
     // the last modified time
     public long currentTimeSeconds() {
-        final long timestamp = (long) Math.ceil(System.currentTimeMillis() / 1000D) * 1000L;
-        return timestamp;
+        return (long) Math.ceil(System.currentTimeMillis() / 1000D) * 1000L;
     }
 
     private synchronized boolean asyncBulkDelete(
@@ -170,7 +167,7 @@ public class S3Ops {
         }
 
         Long currentTaskTime = pendingDeletesKeyTime.get(prefix);
-        if (currentTaskTime != null && currentTaskTime.longValue() > timestamp) {
+        if (currentTaskTime != null && currentTaskTime > timestamp) {
             return false;
         }
 
@@ -180,7 +177,7 @@ public class S3Ops {
                 .withBucket(bucketName)
                 .withDeleteRange(deleteTileRange)
                 .withCallback(callback)
-                .withBatch(1000)
+                .withBatch(BATCH_SIZE)
                 .build();
 
         deleteExecutorService.submit(task);
@@ -236,15 +233,6 @@ public class S3Ops {
         }
     }
 
-    public boolean deleteObject(final String key) {
-        try {
-            conn.deleteObject(bucketName, key);
-        } catch (AmazonS3Exception e) {
-            return false;
-        }
-        return true;
-    }
-
     private boolean isPendingDelete(S3Object object) {
         if (pendingDeletesKeyTime.isEmpty()) {
             return false;
@@ -254,7 +242,7 @@ public class S3Ops {
         for (Map.Entry<String, Long> e : pendingDeletesKeyTime.entrySet()) {
             String parentKey = e.getKey();
             if (key.startsWith(parentKey)) {
-                long deleteTime = e.getValue().longValue();
+                long deleteTime = e.getValue();
                 return deleteTime >= lastModified;
             }
         }
@@ -268,21 +256,21 @@ public class S3Ops {
                 return null;
             }
             try (S3ObjectInputStream in = object.getObjectContent()) {
-                byte[] bytes = IOUtils.toByteArray(in);
-                return bytes;
+                return IOUtils.toByteArray(in);
             }
         } catch (IOException e) {
             throw new StorageException("Error getting " + key, e);
         }
     }
 
-    /** Simply checks if there are objects starting with {@code prefix} */
+    /**
+     * Simply checks if there are objects starting with {@code prefix}
+     */
     public boolean prefixExists(String prefix) {
-        boolean hasNext = S3Objects.withPrefix(conn, bucketName, prefix)
+        return S3Objects.withPrefix(conn, bucketName, prefix)
                 .withBatchSize(1)
                 .iterator()
                 .hasNext();
-        return hasNext;
     }
 
     public Properties getProperties(String key) {
@@ -325,22 +313,5 @@ public class S3Ops {
     public Stream<S3ObjectSummary> objectStream(String prefix) {
         return StreamSupport.stream(
                 S3Objects.withPrefix(conn, bucketName, prefix).spliterator(), false);
-    }
-
-    /** Filters objects that are newer than the given timestamp */
-    private static class TimeStampFilter implements Predicate<S3ObjectSummary> {
-
-        private long timeStamp;
-
-        public TimeStampFilter(long timeStamp) {
-            this.timeStamp = timeStamp;
-        }
-
-        @Override
-        public boolean test(S3ObjectSummary summary) {
-            long lastModified = summary.getLastModified().getTime();
-            boolean applies = timeStamp >= lastModified;
-            return applies;
-        }
     }
 }
