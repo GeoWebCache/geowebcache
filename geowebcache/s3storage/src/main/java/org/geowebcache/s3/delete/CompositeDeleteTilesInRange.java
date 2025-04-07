@@ -39,7 +39,7 @@ public class CompositeDeleteTilesInRange implements CompositeDeleteTileRange {
         this.tileRange = tileRange;
 
         this.path = DeleteTileInfo.toParametersId(
-                this.prefix, this.layerId, tileRange.getGridSetId(), this.format, tileRange.getParametersId());
+                this.prefix, this.layerId, tileRange.getGridSetId(), this.format, tileRange.getParametersIdOrDefault());
 
         this.deleteTileRanges = LongStream.range(tileRange.getZoomStart(), tileRange.getZoomStop() + 1)
                 .mapToObj(zoomLevel -> {
@@ -51,7 +51,7 @@ public class CompositeDeleteTilesInRange implements CompositeDeleteTileRange {
                                 layerId,
                                 tileRange.getGridSetId(),
                                 format,
-                                tileRange.getParametersId(),
+                                tileRange.getParametersIdOrDefault(),
                                 zoomLevel,
                                 bounds,
                                 tileRange,
@@ -63,7 +63,7 @@ public class CompositeDeleteTilesInRange implements CompositeDeleteTileRange {
                                 layerId,
                                 tileRange.getGridSetId(),
                                 format,
-                                tileRange.getParametersId(),
+                                tileRange.getParametersIdOrDefault(),
                                 zoomLevel,
                                 tileRange);
                     }

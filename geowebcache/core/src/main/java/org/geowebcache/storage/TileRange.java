@@ -78,7 +78,7 @@ public class TileRange {
                 if (bounds != null) {
                     // could be null in case calling code is only interested in a subset of zoom
                     // levels
-                    this.rangeBounds.put(Integer.valueOf((int) bounds[4]), bounds);
+                    this.rangeBounds.put((int) bounds[4], bounds);
                 }
             }
         }
@@ -102,9 +102,7 @@ public class TileRange {
 
             long[] rB = rangeBounds(z);
 
-            if (rB[0] <= x && rB[2] >= x && rB[1] <= y && rB[3] >= y) {
-                return true;
-            }
+            return rB[0] <= x && rB[2] >= x && rB[1] <= y && rB[3] >= y;
         }
         return false;
     }
@@ -115,6 +113,18 @@ public class TileRange {
 
     /** @return the parameters id, or {@code null} if unset */
     public String getParametersId() {
+        return parametersId;
+    }
+
+    /** @return the parameters id, or {@code null} if unset */
+    public String getParametersIdOrDefault() {
+        if (parametersId == null) {
+            Map<String, String> parameters = this.getParameters();
+            parametersId = ParametersUtils.getId(parameters);
+            if (parametersId == null) {
+                parametersId = "default";
+            }
+        }
         return parametersId;
     }
 
@@ -161,7 +171,7 @@ public class TileRange {
         if (zoomLevel > zoomStop) {
             throw new IllegalArgumentException(zoomLevel + " > zoomStop (" + zoomStop + ")");
         }
-        long[] zlevelBounds = rangeBounds.get(Integer.valueOf(zoomLevel));
+        long[] zlevelBounds = rangeBounds.get(zoomLevel);
         if (zlevelBounds == null) {
             throw new IllegalStateException("Found no range bounds for z level " + zoomLevel + ": " + rangeBounds);
         }
