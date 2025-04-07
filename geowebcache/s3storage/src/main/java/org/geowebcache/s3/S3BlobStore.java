@@ -57,8 +57,6 @@ public class S3BlobStore implements BlobStore {
 
     private final String bucketName;
 
-    private volatile boolean shutDown;
-
     private final S3Ops s3Ops;
 
     private final CannedAccessControlList acl;
@@ -148,7 +146,6 @@ public class S3BlobStore implements BlobStore {
 
     @Override
     public void destroy() {
-        this.shutDown = true;
         AmazonS3Client conn = this.conn;
         this.conn = null;
         if (conn != null) {
