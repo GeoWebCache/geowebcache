@@ -68,8 +68,10 @@ public class MarkPendingDeleteDecorator implements Callback {
 
     @Override
     public void subTaskEnded() {
-        String pendingDeletesKey = currentSubStats.getDeleteTileRange().path();
-        removeAnyPendingDelete(pendingDeletesKey);
+        if (shouldRemoveAPendingDelete(currentSubStats.getStrategy())) {
+            String pendingDeletesKey = currentSubStats.getDeleteTileRange().path();
+            removeAnyPendingDelete(pendingDeletesKey);
+        }
         delegate.subTaskEnded();
     }
 
@@ -110,7 +112,7 @@ public class MarkPendingDeleteDecorator implements Callback {
      * @return true when a pending delete should be removed
      */
     private boolean shouldRemoveAPendingDelete(ObjectPathStrategy strategy) {
-        return !strategiesThatDoNotRequireAnInsert.contains(strategiesThatDoNotRequireARemoval);
+        return !strategiesThatDoNotRequireARemoval.contains(strategy);
     }
 
     /*

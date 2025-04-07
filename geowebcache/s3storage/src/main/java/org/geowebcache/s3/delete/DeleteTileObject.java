@@ -11,7 +11,6 @@ public class DeleteTileObject implements DeleteTileRange {
     public DeleteTileObject(TileObject tileObject, String prefix) {
         checkNotNull(tileObject, "tileObject must not be null");
         checkNotNull(prefix, "prefix must not be null");
-        checkNotNull(prefix, "prefix must not be null");
 
         this.tileObject = tileObject;
         this.prefix = prefix;
