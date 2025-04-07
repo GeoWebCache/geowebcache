@@ -2,7 +2,6 @@ package org.geowebcache.s3.streams;
 
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.storage.TileRange;
 
 import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
@@ -15,7 +14,7 @@ public class StreamTestHelper {
         try {
             PNG_MIME_TYPE = MimeType.createFromExtension("png");
         } catch (MimeException e) {
-            S3BlobStore.getLog().severe("Unable to determine PNG mime type");
+            System.err.println(e.getMessage());
         }
     }
 

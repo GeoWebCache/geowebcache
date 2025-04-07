@@ -16,11 +16,6 @@ package org.geowebcache.s3;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
-import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
-import com.google.common.base.Function;
-import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
@@ -52,7 +47,7 @@ import static java.util.Objects.isNull;
 
 public class S3BlobStore implements BlobStore {
 
-    private static Logger log = Logging.getLogger(S3BlobStore.class.getName());
+    private static final Logger log = Logging.getLogger(S3BlobStore.class.getName());
 
     private final BlobStoreListenerList listeners = new BlobStoreListenerList();
 
@@ -80,7 +75,7 @@ public class S3BlobStore implements BlobStore {
         conn = validateClient(config.buildClient(), bucketName);
         acl = config.getAccessControlList();
 
-        this.s3Ops = new S3Ops(conn, bucketName, keyBuilder, lockProvider);
+        this.s3Ops = new S3Ops(conn, bucketName, keyBuilder, lockProvider, log);
 
         boolean empty = !s3Ops.prefixExists(prefix);
         boolean existing = Objects.nonNull(s3Ops.getObjectMetadata(keyBuilder.storeMetadata()));
@@ -91,10 +86,6 @@ public class S3BlobStore implements BlobStore {
         // to indicate this is a GWC cache.
         s3Ops.putProperties(keyBuilder.storeMetadata(), new Properties());
         this.lockProvider = lockProvider;
-    }
-
-    public static Logger getLog() {
-        return log;
     }
 
     /**
@@ -132,10 +123,10 @@ public class S3BlobStore implements BlobStore {
      */
     private void checkAccessControlList(AmazonS3Client client, String bucketName) throws Exception {
         try {
-            getLog().fine("Checking access rights to bucket " + bucketName);
+            log.fine("Checking access rights to bucket " + bucketName);
             AccessControlList bucketAcl = client.getBucketAcl(bucketName);
             List<Grant> grants = bucketAcl.getGrantsAsList();
-            getLog().fine("Bucket " + bucketName + " permissions: " + grants);
+            log.fine("Bucket " + bucketName + " permissions: " + grants);
         } catch (AmazonServiceException se) {
             throw new StorageException("Server error listing bucket ACLs: " + se.getMessage(), se);
         }
@@ -147,9 +138,9 @@ public class S3BlobStore implements BlobStore {
      */
     private void checkBucketPolicy(AmazonS3Client client, String bucketName) throws Exception {
         try {
-            getLog().fine("Checking policy for bucket " + bucketName);
+            log.fine("Checking policy for bucket " + bucketName);
             BucketPolicy bucketPol = client.getBucketPolicy(bucketName);
-            getLog().fine("Bucket " + bucketName + " policy: " + bucketPol.getPolicyText());
+            log.fine("Bucket " + bucketName + " policy: " + bucketPol.getPolicyText());
         } catch (AmazonServiceException se) {
             throw new StorageException("Server error getting bucket policy: " + se.getMessage(), se);
         }
@@ -210,7 +201,7 @@ public class S3BlobStore implements BlobStore {
         PutObjectRequest putObjectRequest =
                 new PutObjectRequest(bucketName, key, input, objectMetadata).withCannedAcl(acl);
 
-        getLog().finer(getLog().isLoggable(Level.FINER) ? ("Storing " + key) : "");
+        log.finer(log.isLoggable(Level.FINER) ? ("Storing " + key) : "");
         s3Ops.putObject(putObjectRequest);
 
         putParametersMetadata(obj.getLayerName(), obj.getParametersId(), obj.getParameters());
@@ -263,26 +254,6 @@ public class S3BlobStore implements BlobStore {
         return true;
     }
 
-    private static class TileToKey implements Function<long[], KeyVersion> {
-
-        private final String coordsPrefix;
-
-        private final String extension;
-
-        public TileToKey(String coordsPrefix, MimeType mimeType) {
-            this.coordsPrefix = coordsPrefix;
-            this.extension = mimeType.getInternalName();
-        }
-
-        @Override
-        public KeyVersion apply(long[] loc) {
-            long z = loc[2];
-            long x = loc[0];
-            long y = loc[1];
-            return new KeyVersion(coordsPrefix + z + '/' + x + '/' + y + '.' + extension);
-        }
-    }
-
     @Override
     public boolean delete(final TileRange tileRange) {
 
@@ -291,71 +262,17 @@ public class S3BlobStore implements BlobStore {
 
         MimeType mimeType = tileRange.getMimeType();
         String shortFormat = mimeType.getFileExtension(); // png, png8, png24, etc
-        String extension = mimeType.getInternalName(); // png, jpeg, etc
 
         CompositeDeleteTileRange deleteTileRange =
                 new CompositeDeleteTilesInRange(keyBuilder.getPrefix(), bucketName, layerId, shortFormat, tileRange);
 
-        Callback callback = new NotificationDecorator(new StatisticCallbackDecorator(), listeners);
+        Callback callback = new NotificationDecorator(new StatisticCallbackDecorator(log), listeners, log);
 
         try {
             return s3Ops.scheduleAsyncDelete(deleteTileRange, callback, null);
         } catch (GeoWebCacheException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public boolean deleteOlder(final TileRange tileRange) {
-
-        final String coordsPrefix = keyBuilder.coordinatesPrefix(tileRange, true);
-        if (!s3Ops.prefixExists(coordsPrefix)) {
-            return false;
-        }
-
-        final Iterator<long[]> tileLocations = new AbstractIterator<>() {
-
-            // TileRange iterator with 1x1 meta tiling factor
-            private final TileRangeIterator trIter = new TileRangeIterator(tileRange, new int[] {1, 1});
-
-            @Override
-            protected long[] computeNext() {
-                long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
-                return gridLoc == null ? endOfData() : gridLoc;
-            }
-        };
-
-        if (listeners.isEmpty()) {
-            // if there are no listeners, don't bother requesting every tile
-            // metadata to notify the listeners
-            Iterator<List<long[]>> partition = Iterators.partition(tileLocations, 1000);
-            final TileToKey tileToKey = new TileToKey(coordsPrefix, tileRange.getMimeType());
-
-            while (partition.hasNext() && !shutDown) {
-                List<long[]> locations = partition.next();
-                List<KeyVersion> keys = Lists.transform(locations, tileToKey);
-
-                DeleteObjectsRequest req = new DeleteObjectsRequest(bucketName);
-                req.setQuiet(true);
-                req.setKeys(keys);
-                conn.deleteObjects(req);
-            }
-
-        } else {
-            long[] xyz;
-            String layerName = tileRange.getLayerName();
-            String gridSetId = tileRange.getGridSetId();
-            String format = tileRange.getMimeType().getFormat();
-            Map<String, String> parameters = tileRange.getParameters();
-
-            while (tileLocations.hasNext()) {
-                xyz = tileLocations.next();
-                TileObject tile = TileObject.createQueryTileObject(layerName, xyz, gridSetId, format, parameters);
-                tile.setParametersId(tileRange.getParametersId());
-                delete(tile);
-            }
-        }
-
-        return true;
     }
 
     @Override
@@ -371,11 +288,11 @@ public class S3BlobStore implements BlobStore {
 
         var lockingDecorator = new LockingDecorator(
                 new MarkPendingDeleteDecorator(
-                        new NotificationDecorator(new StatisticCallbackDecorator(), listeners),
+                        new NotificationDecorator(new StatisticCallbackDecorator(log), listeners, log),
                         s3Ops,
-                        S3BlobStore.getLog()),
+                        S3BlobStore.log),
                 lockProvider,
-                S3BlobStore.getLog());
+                S3BlobStore.log);
 
         boolean layerExists;
         try {
@@ -397,9 +314,9 @@ public class S3BlobStore implements BlobStore {
                 new DeleteTileGridSet(keyBuilder.getPrefix(), bucketName, layerId, gridSetId, layerName);
 
         var lockingDecorator = new LockingDecorator(
-                new NotificationDecorator(new StatisticCallbackDecorator(), listeners),
+                new NotificationDecorator(new StatisticCallbackDecorator(log), listeners, log),
                 lockProvider,
-                S3BlobStore.getLog());
+                S3BlobStore.log);
 
         boolean prefixExists;
         try {
@@ -419,9 +336,9 @@ public class S3BlobStore implements BlobStore {
             DeleteTileObject deleteTile = new DeleteTileObject(obj, key);
             Callback callback;
             if (listeners.isEmpty()) {
-                callback = new StatisticCallbackDecorator();
+                callback = new StatisticCallbackDecorator(log);
             } else {
-                callback = new NotificationDecorator(new StatisticCallbackDecorator(), listeners);
+                callback = new NotificationDecorator(new StatisticCallbackDecorator(log), listeners, log);
             }
             return s3Ops.scheduleAsyncDelete(deleteTile, callback, null);
         } catch (GeoWebCacheException e) {
@@ -431,7 +348,7 @@ public class S3BlobStore implements BlobStore {
 
     @Override
     public boolean rename(String oldLayerName, String newLayerName) {
-        getLog().fine("No need to rename layers, S3BlobStore uses layer id as key root");
+        log.fine("No need to rename layers, S3BlobStore uses layer id as key root");
         if (s3Ops.prefixExists(oldLayerName)) {
             listeners.sendLayerRenamed(oldLayerName, newLayerName);
         }
@@ -501,9 +418,9 @@ public class S3BlobStore implements BlobStore {
                 keyBuilder.getPrefix(), bucketName, layerId, gridSetIds, formats, parametersId, layerName);
 
         var lockingCallback = new LockingDecorator(
-                new NotificationDecorator(new StatisticCallbackDecorator(), listeners),
+                new NotificationDecorator(new StatisticCallbackDecorator(log), listeners, log),
                 lockProvider,
-                S3BlobStore.getLog());
+                S3BlobStore.log);
 
         try {
             return s3Ops.scheduleAsyncDelete(deleteTileRange, lockingCallback, lockingCallback);

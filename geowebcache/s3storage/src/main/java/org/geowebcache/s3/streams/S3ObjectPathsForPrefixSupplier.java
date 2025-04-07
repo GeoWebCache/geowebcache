@@ -1,11 +1,11 @@
 package org.geowebcache.s3.streams;
 
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.S3ObjectsWrapper;
 
 import java.util.Iterator;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -19,13 +19,20 @@ public class S3ObjectPathsForPrefixSupplier implements Supplier<S3ObjectSummary>
     private final String bucket;
     private final S3ObjectsWrapper wrapper;
     private long count = 0;
+    private final Logger logger;
 
     private Iterator<S3ObjectSummary> iterator;
 
-    private S3ObjectPathsForPrefixSupplier(String prefix, String bucket, S3ObjectsWrapper wrapper) {
+    public S3ObjectPathsForPrefixSupplier(String prefix, String bucket, S3ObjectsWrapper wrapper, Logger logger) {
+        checkNotNull(prefix, "prefix must not be null");
+        checkNotNull(bucket, "bucket must not be null");
+        checkNotNull(wrapper, "wrapper must not be null");
+        checkNotNull(logger, "logger must not be null");
+
         this.prefix = prefix;
         this.bucket = bucket;
         this.wrapper = wrapper;
+        this.logger = logger;
     }
 
     @Override
@@ -35,7 +42,7 @@ public class S3ObjectPathsForPrefixSupplier implements Supplier<S3ObjectSummary>
 
     private synchronized S3ObjectSummary next() {
         if (iterator == null) {
-            S3BlobStore.getLog()
+            logger
                     .info(String.format(
                             "Creating an iterator for objects in bucket: %s with prefix: %s", bucket, prefix));
             iterator = wrapper.iterator();
@@ -44,43 +51,10 @@ public class S3ObjectPathsForPrefixSupplier implements Supplier<S3ObjectSummary>
             count++;
             return iterator.next();
         } else {
-            S3BlobStore.getLog()
+            logger
                     .info(String.format(
                             "No more objects in bucket: %s with prefix: %s supplied %d", bucket, prefix, count));
             return null;
-        }
-    }
-
-    public static Builder newBuilder() {
-        return new Builder();
-    }
-
-    public static class Builder {
-        private String prefix;
-        private String bucket;
-        private S3ObjectsWrapper s3ObjectsWrapper;
-
-        public Builder withPrefix(String prefix) {
-            this.prefix = prefix;
-            return this;
-        }
-
-        public Builder withBucket(String bucket) {
-            this.bucket = bucket;
-            return this;
-        }
-
-        public Builder withWrapper(S3ObjectsWrapper wrapper) {
-            this.s3ObjectsWrapper = wrapper;
-            return this;
-        }
-
-        public S3ObjectPathsForPrefixSupplier build() {
-            checkNotNull(prefix);
-            checkNotNull(bucket);
-            checkNotNull(s3ObjectsWrapper);
-
-            return new S3ObjectPathsForPrefixSupplier(prefix, bucket, s3ObjectsWrapper);
         }
     }
 }

@@ -1,6 +1,5 @@
 package org.geowebcache.s3.callback;
 
-import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.statistics.BatchStats;
 import org.geowebcache.s3.statistics.Statistics;
 import org.geowebcache.s3.statistics.SubStats;
@@ -11,6 +10,7 @@ import java.util.logging.Logger;
 
 import static org.geowebcache.s3.callback.CallbackTestHelper.WithSubTaskStarted;
 import static org.geowebcache.s3.callback.LockProviderCapture.LockProviderMode.AlwaysSucceed;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.LOGGER;
 import static org.geowebcache.s3.statistics.StatisticsTestHelper.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -21,7 +21,7 @@ public class LockingDecoratorTest {
     private LockingDecorator lockingDecorator;
     private CaptureCallback captureCallback;
     private LockProviderCapture lockProvider;
-    private final Logger logger = S3BlobStore.getLog();
+    private final Logger logger = LOGGER;
 
     @Before
     public void setUp() {

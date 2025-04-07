@@ -40,6 +40,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Predicate;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -58,13 +59,15 @@ public class S3Ops {
     private final ExecutorService deleteExecutorService;
 
     private final Map<String, Long> pendingDeletesKeyTime = new ConcurrentHashMap<>();
+    private final Logger logger;
 
-    public S3Ops(AmazonS3Client conn, String bucketName, TMSKeyBuilder keyBuilder, LockProvider locks)
+    public S3Ops(AmazonS3Client conn, String bucketName, TMSKeyBuilder keyBuilder, LockProvider locks, Logger logger)
             throws StorageException {
         this.conn = conn;
         this.bucketName = bucketName;
         this.keyBuilder = keyBuilder;
         this.locks = locks == null ? new NoOpLockProvider() : locks;
+        this.logger = logger;
         this.deleteExecutorService = createDeleteExecutorService();
         issuePendingBulkDeletes();
     }
@@ -96,7 +99,7 @@ public class S3Ops {
             for (Entry<Object, Object> e : deletes.entrySet()) {
                 final String prefix = e.getKey().toString();
                 final long timestamp = Long.parseLong(e.getValue().toString());
-                S3BlobStore.getLog()
+                logger
                         .info(format("Restarting pending bulk delete on '%s/%s':%d", bucketName, prefix, timestamp));
                 // asyncDelete(prefix, timestamp);
             }
@@ -128,7 +131,7 @@ public class S3Ops {
             if (timestamp >= storedTimestamp) {
                 putProperties(pendingDeletesKey, deletes);
             } else {
-                S3BlobStore.getLog()
+                logger
                         .info(format(
                                 "bulk delete finished but there's a newer one ongoing for bucket '%s/%s'",
                                 bucketName, prefix));
@@ -147,7 +150,7 @@ public class S3Ops {
         String msg = format(
                 "Issuing bulk delete on '%s/%s' for objects older than %d",
                 bucketName, deleteTileRange.path(), timestamp);
-        S3BlobStore.getLog().info(msg);
+        logger.info(msg);
 
         return asyncBulkDelete(deleteTileRange.path(), deleteTileRange, timestamp, callback);
     }

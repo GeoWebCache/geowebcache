@@ -22,8 +22,9 @@ public class BulkDeleteTaskTest {
     @Mock
     public AmazonS3Wrapper amazonS3Wrapper;
 
+
     private BulkDeleteTask.Builder builder;
-    private final CaptureCallback callback = new CaptureCallback(new StatisticCallbackDecorator());
+    private final CaptureCallback callback = new CaptureCallback(new StatisticCallbackDecorator(LOGGER));
 
     @Before
     public void setup() {
@@ -32,6 +33,7 @@ public class BulkDeleteTaskTest {
                 .withS3ObjectsWrapper(s3ObjectsWrapper)
                 .withBucket(BUCKET)
                 .withBatch(BATCH)
+                .withLogger(LOGGER)
                 .withCallback(callback);
     }
 

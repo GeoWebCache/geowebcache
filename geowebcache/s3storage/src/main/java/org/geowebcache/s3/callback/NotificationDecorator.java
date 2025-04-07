@@ -1,6 +1,5 @@
 package org.geowebcache.s3.callback;
 
-import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.delete.*;
 import org.geowebcache.s3.statistics.BatchStats;
 import org.geowebcache.s3.statistics.ResultStat;
@@ -9,6 +8,8 @@ import org.geowebcache.s3.statistics.SubStats;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.BlobStoreListenerList;
 
+import java.util.logging.Logger;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
@@ -16,14 +17,18 @@ public class NotificationDecorator implements Callback {
 
     private final Callback delegate;
     private final BlobStoreListenerList listeners;
+    private final Logger logger;
 
     private SubStats currentSubStats;
 
-    public NotificationDecorator(Callback delegate, BlobStoreListenerList listeners) {
+    public NotificationDecorator(Callback delegate, BlobStoreListenerList listeners, Logger logger) {
         checkNotNull(delegate, "delegate cannot be null");
         checkNotNull(listeners, "listeners cannot be null");
+        checkNotNull(logger, "logger cannot be null");
+
         this.delegate = delegate;
         this.listeners = listeners;
+        this.logger = logger;
     }
 
     @Override
@@ -98,7 +103,7 @@ public class NotificationDecorator implements Callback {
         if (stats.getTileObject() != null) {
             listeners.sendTileDeleted(stats.getTileObject());
         } else {
-            S3BlobStore.getLog()
+            logger
                     .warning(format("No tile object found for %s cannot notify of deletion", stats.getPath()));
         }
     }

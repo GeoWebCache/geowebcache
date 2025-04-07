@@ -32,7 +32,7 @@ public class NotificationDecoratorTest {
         captureCallback = new CaptureCallback();
         captureListener = new BlobStoreCaptureListener();
         blobStoreListenerList = new BlobStoreListenerList();
-        notificationDecorator = new NotificationDecorator(captureCallback, blobStoreListenerList);
+        notificationDecorator = new NotificationDecorator(captureCallback, blobStoreListenerList, LOGGER);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ public class NotificationDecoratorTest {
         assertThrows(
                 "delegate cannot be null",
                 NullPointerException.class,
-                () -> notificationDecorator = new NotificationDecorator(null, blobStoreListenerList));
+                () -> notificationDecorator = new NotificationDecorator(null, blobStoreListenerList, LOGGER));
     }
 
     @Test
@@ -51,7 +51,15 @@ public class NotificationDecoratorTest {
         assertThrows(
                 "BlobStoreListners cannot be null",
                 NullPointerException.class,
-                () -> notificationDecorator = new NotificationDecorator(new NoopCallback(), null));
+                () -> notificationDecorator = new NotificationDecorator(new NoopCallback(), null, LOGGER));
+    }
+
+    @Test
+    public void test_constructor_loggerCannotBeNull() {
+        assertThrows(
+                "Logger cannot be null",
+                NullPointerException.class,
+                () -> notificationDecorator = new NotificationDecorator(new NoopCallback(), blobStoreListenerList, null));
     }
 
     ///////////////////////////////////////////////////////////////////////////

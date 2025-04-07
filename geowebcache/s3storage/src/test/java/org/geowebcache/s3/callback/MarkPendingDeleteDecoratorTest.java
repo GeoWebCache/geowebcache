@@ -1,7 +1,6 @@
 package org.geowebcache.s3.callback;
 
 import org.geowebcache.GeoWebCacheException;
-import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.S3Ops;
 import org.geowebcache.s3.delete.DeleteTileInfo;
 import org.geowebcache.s3.delete.DeleteTileLayer;
@@ -37,7 +36,7 @@ import static org.mockito.Mockito.*;
 public class MarkPendingDeleteDecoratorTest {
     private MarkPendingDeleteDecorator markPendingDeleteDecorator;
     private CaptureCallback captureCallback;
-    private final Logger logger = S3BlobStore.getLog();
+    private final Logger logger = LOGGER;
 
     @Mock
     private S3Ops s3Ops;

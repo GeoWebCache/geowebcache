@@ -1,7 +1,6 @@
 package org.geowebcache.s3.delete;
 
 import org.geowebcache.s3.AmazonS3Wrapper;
-import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.S3ObjectsWrapper;
 import org.geowebcache.s3.callback.Callback;
 import org.geowebcache.s3.statistics.Statistics;
@@ -11,6 +10,7 @@ import org.geowebcache.s3.streams.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -23,6 +23,7 @@ public class BulkDeleteTask implements Callable<Long> {
     private final String bucketName;
     private final DeleteTileRange deleteTileRange;
     private final int batch;
+    private final Logger logger;
 
     private final Callback callback;
 
@@ -38,13 +39,14 @@ public class BulkDeleteTask implements Callable<Long> {
             String bucketName,
             DeleteTileRange deleteTileRange,
             Callback callback,
-            int batch) {
+            int batch, Logger logger) {
         this.amazonS3Wrapper = amazonS3Wrapper;
         this.s3ObjectsWrapper = s3ObjectsWrapper;
         this.bucketName = bucketName;
         this.deleteTileRange = deleteTileRange;
         this.batch = batch;
         this.callback = callback;
+        this.logger = logger;
     }
 
     public AmazonS3Wrapper getAmazonS3Wrapper() {
@@ -82,7 +84,7 @@ public class BulkDeleteTask implements Callable<Long> {
                     .sum();
 
         } catch (Exception e) {
-            S3BlobStore.getLog().severe(format("Exiting from bulk delete task: %s", e.getMessage()));
+            logger.severe(format("Exiting from bulk delete task: %s", e.getMessage()));
             statistics.addUnknownIssue(e);
             return statistics.getProcessed();
         } finally {
@@ -116,7 +118,7 @@ public class BulkDeleteTask implements Callable<Long> {
         PerformDeleteObjects performDeleteObjects =
                 new PerformDeleteObjects(amazonS3Wrapper, bucketName, callback, subStats, deleteRange);
 
-        S3BlobStore.getLog()
+        logger
                 .info(format(
                         "Using strategy SingleTile to a delete tile from bucket %s with prefix: %s",
                         bucketName, deleteRange.path()));
@@ -126,7 +128,7 @@ public class BulkDeleteTask implements Callable<Long> {
                 .mapToLong(performDeleteObjects)
                 .sum();
 
-        S3BlobStore.getLog()
+        logger
                 .info(format(
                         "Finished applying strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s processed: %d",
                         bucketName, deleteRange.path(), count));
@@ -136,7 +138,7 @@ public class BulkDeleteTask implements Callable<Long> {
     }
 
     private Long tileRangeWithBounderBox(DeleteTileRangeWithTileRange deleteTileRange) {
-        S3BlobStore.getLog().warning("Strategy TileRangeWithBounderBox not implemented");
+        logger.warning("Strategy TileRangeWithBounderBox not implemented");
         SubStats subStats = new SubStats(deleteTileRange, TileRangeWithBoundedBox);
         callback.subTaskStarted(subStats);
         callback.subTaskEnded();
@@ -144,7 +146,7 @@ public class BulkDeleteTask implements Callable<Long> {
     }
 
     private Long tileRangeWithBounderBoxIfTileExists(DeleteTileRangeWithTileRange deleteTileRange) {
-        S3BlobStore.getLog().warning("Strategy TileRangeWithBounderBoxIfTileExists not implemented");
+        logger.warning("Strategy TileRangeWithBounderBoxIfTileExists not implemented");
         SubStats subStats = new SubStats(deleteTileRange, TileRangeWithBoundedBoxIfTileExist);
         callback.subTaskStarted(subStats);
 
@@ -167,7 +169,7 @@ public class BulkDeleteTask implements Callable<Long> {
                 .sum();
 
         if (count != subStats.getDeleted()) {
-            S3BlobStore.getLog()
+            logger
                     .warning(format("Mismatch during tile delete expected %d found %d", count, subStats.getDeleted()));
         }
 
@@ -176,7 +178,7 @@ public class BulkDeleteTask implements Callable<Long> {
     }
 
     private Long s3ObjectPathsForPrefixFilterByBoundedBox(DeleteTileRange deleteTileRange) {
-        S3BlobStore.getLog().warning("Strategy S3ObjectPathsForPrefixFilterByBoundedBox not implemented");
+        logger.warning("Strategy S3ObjectPathsForPrefixFilterByBoundedBox not implemented");
         SubStats subStats = new SubStats(deleteTileRange, S3ObjectPathsForPrefixFilterByBoundedBox);
         callback.subTaskStarted(subStats);
         callback.subTaskEnded();
@@ -184,7 +186,7 @@ public class BulkDeleteTask implements Callable<Long> {
     }
 
     private Long noDeletionsRequired(DeleteTileRange deleteTileRange) {
-        S3BlobStore.getLog().warning("Strategy NoDeletionsRequired nothing to do");
+        logger.warning("Strategy NoDeletionsRequired nothing to do");
         SubStats subStats = new SubStats(deleteTileRange, NoDeletionsRequired);
         callback.subTaskStarted(subStats);
         callback.subTaskEnded();
@@ -198,7 +200,7 @@ public class BulkDeleteTask implements Callable<Long> {
         var performDeleteObjects =
                 new PerformDeleteObjects(amazonS3Wrapper, bucketName, callback, subStats, deleteTileRange);
 
-        S3BlobStore.getLog()
+        logger
                 .info(format(
                         "Using strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s",
                         bucketName, deleteTileRange.path()));
@@ -209,11 +211,11 @@ public class BulkDeleteTask implements Callable<Long> {
                 .sum();
 
         if (count != subStats.getDeleted()) {
-            S3BlobStore.getLog()
+            logger
                     .warning(format("Mismatch during tile delete expected %d found %d", count, subStats.getDeleted()));
         }
 
-        S3BlobStore.getLog()
+        logger
                 .info(format(
                         "Finished applying strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s deleted: %d",
                         bucketName, deleteTileRange.path(), count));
@@ -233,11 +235,7 @@ public class BulkDeleteTask implements Callable<Long> {
     }
 
     private S3ObjectPathsForPrefixSupplier createS3ObjectPathsForPrefixSupplier(String prefix) {
-        return S3ObjectPathsForPrefixSupplier.newBuilder()
-                .withBucket(bucketName)
-                .withPrefix(prefix)
-                .withWrapper(s3ObjectsWrapper)
-                .build();
+        return new S3ObjectPathsForPrefixSupplier(prefix, bucketName, s3ObjectsWrapper, logger);
     }
 
     ObjectPathStrategy chooseStrategy(DeleteTileRange deleteTileRange) {
@@ -285,6 +283,7 @@ public class BulkDeleteTask implements Callable<Long> {
         private DeleteTileRange deleteTileRange;
         private Integer batch;
         private Callback callback;
+        private Logger logger;
 
         public Builder withS3ObjectsWrapper(S3ObjectsWrapper s3ObjectsWrapper) {
             this.s3ObjectsWrapper = s3ObjectsWrapper;
@@ -311,6 +310,11 @@ public class BulkDeleteTask implements Callable<Long> {
             return this;
         }
 
+        public Builder withLogger(Logger logger) {
+            this.logger = logger;
+            return this;
+        }
+
         public Builder withCallback(Callback callback) {
             this.callback = callback;
             return this;
@@ -324,8 +328,9 @@ public class BulkDeleteTask implements Callable<Long> {
             checkNotNull(deleteTileRange, "Missing DeleteRange");
             checkNotNull(batch, "Missing Batch");
             checkNotNull(callback, "Missing Callback");
+            checkNotNull(logger, "Missing Logger");
 
-            return new BulkDeleteTask(amazonS3Wrapper, s3ObjectsWrapper, bucketName, deleteTileRange, callback, batch);
+            return new BulkDeleteTask(amazonS3Wrapper, s3ObjectsWrapper, bucketName, deleteTileRange, callback, batch, logger);
         }
     }
 }

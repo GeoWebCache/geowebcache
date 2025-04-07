@@ -2,7 +2,6 @@ package org.geowebcache.s3.streams;
 
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.geowebcache.s3.S3ObjectsWrapper;
-import org.geowebcache.s3.streams.S3ObjectPathsForPrefixSupplier.Builder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,6 +11,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
@@ -37,21 +37,18 @@ public class S3ObjectPathsForPrefixSupplierTest {
     @Mock
     S3ObjectsWrapper wrapper;
 
-    private Builder builder;
+    @Mock
+    Logger logger;
+
 
     @Before
     public void setup() {
         when(wrapper.iterator()).thenReturn(S_3_OBJECT_SUMMARY_LIST.iterator());
-
-        builder = S3ObjectPathsForPrefixSupplier.newBuilder()
-                .withPrefix(PREFIX)
-                .withBucket(BUCKET)
-                .withWrapper(wrapper);
     }
 
     @Test
     public void testGet_FirstReturns_Summary_1() {
-        var supplier = builder.build();
+        var supplier = new S3ObjectPathsForPrefixSupplier(PREFIX, BUCKET, wrapper, logger);
         var summary = supplier.get();
         assertNotNull("Should have returned summary", summary);
         assertEquals("Should have returned SUMMARY_1", SUMMARY_1, summary);
@@ -59,7 +56,7 @@ public class S3ObjectPathsForPrefixSupplierTest {
 
     @Test
     public void testGet_CanCountAllElements() {
-        var supplier = builder.build();
+        var supplier = new S3ObjectPathsForPrefixSupplier(PREFIX, BUCKET, wrapper, logger);
         var stream = Stream.generate(supplier);
         var count = stream.takeWhile(Objects::nonNull).count();
         assertEquals("Expected count", S_3_OBJECT_SUMMARY_LIST.size(), count);
@@ -67,19 +64,22 @@ public class S3ObjectPathsForPrefixSupplierTest {
 
     @Test
     public void testPrefix_CannotBuildIfNullPrefix() {
-        builder.withPrefix(null);
-        assertThrows(NullPointerException.class, () -> builder.build());
+        assertThrows(NullPointerException.class, () ->  new S3ObjectPathsForPrefixSupplier(null, BUCKET, wrapper, logger));
     }
 
     @Test
     public void testPrefix_CannotBuildIfNullBucket() {
-        builder.withBucket(null);
-        assertThrows(NullPointerException.class, () -> builder.build());
+        assertThrows(NullPointerException.class, () ->  new S3ObjectPathsForPrefixSupplier(PREFIX, null, wrapper, logger));
     }
 
     @Test
     public void testPrefix_CannotBuildIfNullConn() {
-        builder.withWrapper(null);
-        assertThrows(NullPointerException.class, () -> builder.build());
+        assertThrows(NullPointerException.class, () ->  new S3ObjectPathsForPrefixSupplier(PREFIX, BUCKET, null, logger));
+    }
+
+
+    @Test
+    public void testPrefix_CannotBuildIfNullLogger() {
+        assertThrows(NullPointerException.class, () ->  new S3ObjectPathsForPrefixSupplier(PREFIX, BUCKET, wrapper, null));
     }
 }

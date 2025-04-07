@@ -3,9 +3,11 @@ package org.geowebcache.s3.delete;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.storage.TileObject;
 
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -168,4 +170,7 @@ public class BulkDeleteTaskTestHelper {
                     SMALL_BOUNDED_BOX, SINGLE_ZOOM_SINGLE_BOUND_MATCHING, ONE_BY_ONE_META_TILING_FACTOR);
 
     public static final Long SINGLE_ZOOM_SINGLE_BOUND_TILES = 16L;
+
+    public final static Logger LOGGER = Logger.getLogger(S3BlobStore.class.getName());
+
 }

@@ -1,6 +1,5 @@
 package org.geowebcache.s3.callback;
 
-import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.statistics.BatchStats;
 import org.geowebcache.s3.statistics.ResultStat;
 import org.geowebcache.s3.statistics.Statistics;
@@ -26,9 +25,8 @@ public class StatisticCallbackDecorator implements Callback {
     SubStats currentSub;
     BatchStats currentBatch;
 
-    public StatisticCallbackDecorator() {
-
-        this(S3BlobStore.getLog(), new NoopCallback());
+    public StatisticCallbackDecorator(Logger logger) {
+        this(logger, new NoopCallback());
     }
 
     public StatisticCallbackDecorator(Logger logger, Callback delegate) {

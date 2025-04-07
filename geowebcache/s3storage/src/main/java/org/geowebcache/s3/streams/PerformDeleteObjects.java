@@ -4,7 +4,6 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import org.geowebcache.s3.AmazonS3Wrapper;
-import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.callback.Callback;
 import org.geowebcache.s3.delete.DeleteTileInfo;
 import org.geowebcache.s3.delete.DeleteTileRange;
@@ -57,7 +56,6 @@ public class PerformDeleteObjects implements ToLongFunction<Map<String, DeleteTi
         try {
             return wrapper.deleteObjects(deleteObjectsRequest);
         } catch (AmazonServiceException e) {
-            S3BlobStore.getLog().severe(e.getMessage());
             switch (e.getErrorType()) {
                 case Client:
                     stats.addNonRecoverableIssue(e);
