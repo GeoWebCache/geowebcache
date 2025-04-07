@@ -185,7 +185,7 @@ public class DeleteTileObjectBulkDeleteTaskTest {
 
         DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX);
         BulkDeleteTask task = builder.withDeleteRange(deleteTileObject).build();
-        Long count = task.call();
+        task.call();
 
         assertEquals("Expected TileResult not to called", 0, callback.getTileResultCount());
     }
