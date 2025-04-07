@@ -5,6 +5,7 @@ import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.Defaul
 import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
 import static org.geowebcache.s3.statistics.ResultStat.Change.Deleted;
 import static org.geowebcache.s3.statistics.StatisticsTestHelper.*;
+import static org.geowebcache.s3.streams.StreamTestHelper.SINGLE_ZOOM_SINGLE_BOUND_MATCHING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
@@ -204,7 +205,7 @@ public class NotificationDecoratorTest {
         tileObject.setBlobSize((int) FILE_SIZE);
         tileObject.setParametersId(PARAMETERS_ID);
         DeleteTileZoom deleteTileZoom =
-                new DeleteTileZoom(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, 10);
+                new DeleteTileZoom(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, 10, SINGLE_ZOOM_SINGLE_BOUND_MATCHING);
         ResultStat resultStat = new ResultStat(deleteTileZoom, RESULT_PATH, tileObject, FILE_SIZE, TIMESTAMP, Deleted);
 
         notificationDecorator.tileResult(resultStat);
@@ -222,7 +223,7 @@ public class NotificationDecoratorTest {
         tileObject.setBlobSize((int) FILE_SIZE);
         tileObject.setParametersId(PARAMETERS_ID);
         DeleteTileZoom deleteTileZoom =
-                new DeleteTileZoom(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, 10);
+                new DeleteTileZoom(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, 10, SINGLE_ZOOM_SINGLE_BOUND_MATCHING);
         ResultStat resultStat = new ResultStat(deleteTileZoom, RESULT_PATH, tileObject, FILE_SIZE, TIMESTAMP, Deleted);
 
         notificationDecorator.tileResult(resultStat);

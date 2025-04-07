@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
+
 import org.geowebcache.s3.AmazonS3Wrapper;
 import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.S3ObjectsWrapper;
@@ -100,9 +101,9 @@ public class BulkDeleteTask implements Callable<Long> {
             case S3ObjectPathsForPrefixFilterByBoundedBox:
                 return s3ObjectPathsForPrefixFilterByBoundedBox(deleteRange);
             case TileRangeWithBoundedBox:
-                return tileRangeWithBounderBox(deleteRange);
+                return tileRangeWithBounderBox((DeleteTileRangeWithTileRange) deleteRange);
             case TileRangeWithBoundedBoxIfTileExist:
-                return tileRangeWithBounderBoxIfTileExists(deleteRange);
+                return tileRangeWithBounderBoxIfTileExists((DeleteTileRangeWithTileRange) deleteRange);
             default:
                 return s3ObjectPathsForPrefix(deleteTileRange);
         }
@@ -134,7 +135,7 @@ public class BulkDeleteTask implements Callable<Long> {
         return subStats.getProcessed();
     }
 
-    private Long tileRangeWithBounderBox(DeleteTileRange deleteTileRange) {
+    private Long tileRangeWithBounderBox(DeleteTileRangeWithTileRange deleteTileRange) {
         S3BlobStore.getLog().warning("Strategy TileRangeWithBounderBox not implemented");
         SubStats subStats = new SubStats(deleteTileRange, TileRangeWithBoundedBox);
         callback.subTaskStarted(subStats);
@@ -142,10 +143,34 @@ public class BulkDeleteTask implements Callable<Long> {
         return subStats.getProcessed();
     }
 
-    private Long tileRangeWithBounderBoxIfTileExists(DeleteTileRange deleteTileRange) {
+    private Long tileRangeWithBounderBoxIfTileExists(DeleteTileRangeWithTileRange deleteTileRange) {
         S3BlobStore.getLog().warning("Strategy TileRangeWithBounderBoxIfTileExists not implemented");
         SubStats subStats = new SubStats(deleteTileRange, TileRangeWithBoundedBoxIfTileExist);
         callback.subTaskStarted(subStats);
+
+        var performDeleteObjects =
+                new PerformDeleteObjects(amazonS3Wrapper, bucketName, callback, subStats, deleteTileRange);
+
+        TileIteratorSupplier supplier = new TileIteratorSupplier(
+                new TileIterator(
+                        deleteTileRange.getTileRange(),
+                        deleteTileRange.getMetaTilingFactor())
+                , deleteTileRange
+        );
+
+        long count = BatchingIterator.batchedStreamOf(
+                        Stream.generate(supplier)
+                                .takeWhile(Objects::nonNull)
+                        , batch)
+                .map(mapKeyObjectsToDeleteObjectRequest)
+                .mapToLong(performDeleteObjects)
+                .sum();
+
+        if (count != subStats.getDeleted()) {
+            S3BlobStore.getLog()
+                    .warning(format("Mismatch during tile delete expected %d found %d", count, subStats.getDeleted()));
+        }
+
         callback.subTaskEnded();
         return subStats.getProcessed();
     }
@@ -216,12 +241,19 @@ public class BulkDeleteTask implements Callable<Long> {
     }
 
     ObjectPathStrategy chooseStrategy(DeleteTileRange deleteTileRange) {
-        if (deleteTileRange instanceof DeleteTileLayer || deleteTileRange instanceof DeleteTileParametersId) {
+        if (deleteTileRange instanceof DeleteTileLayer
+                || deleteTileRange instanceof DeleteTileParametersId
+                || deleteTileRange instanceof DeleteTileZoom
+        ) {
             return S3ObjectPathsForPrefix;
         }
 
         if (deleteTileRange instanceof DeleteTileObject) {
             return SingleTile;
+        }
+
+        if (deleteTileRange instanceof DeleteTileZoomInBoundedBox) {
+            return TileRangeWithBoundedBoxIfTileExist;
         }
 
         if (deleteTileRange instanceof DeleteTilePrefix) {

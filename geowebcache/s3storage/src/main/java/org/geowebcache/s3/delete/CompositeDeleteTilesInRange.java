@@ -1,8 +1,11 @@
 package org.geowebcache.s3.delete;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.geowebcache.s3.delete.DeleteTileRangeWithTileRange.ONE_BY_ONE_META_TILING_FACTOR;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -20,14 +23,17 @@ public class CompositeDeleteTilesInRange implements CompositeDeleteTileRange {
 
     public CompositeDeleteTilesInRange(
             String prefix, String bucket, String layerId, String format, TileRange tileRange) {
-        checkNotNull(tileRange, "tilerange must not be null");
+        checkNotNull(tileRange, "tile range must not be null");
         checkNotNull(prefix, "prefix must not be null");
+        checkNotNull(bucket, "bucket must not be null");
         checkNotNull(layerId, "layerId must not be null");
         checkNotNull(format, "format must not be null");
-        checkNotNull(bucket, "bucket must not be null");
+        checkArgument(!bucket.trim().isEmpty(), "bucket must not be empty");
+        checkArgument(!layerId.trim().isEmpty(), "layerId must not be empty");
+        checkArgument(!format.trim().isEmpty(), "format must not be empty");
 
-        this.prefix = prefix;
-        this.bucket = bucket;
+        this.prefix = prefix.trim();
+        this.bucket = bucket.trim();
         this.layerId = layerId;
         this.format = format;
         this.tileRange = tileRange;
@@ -35,10 +41,10 @@ public class CompositeDeleteTilesInRange implements CompositeDeleteTileRange {
         this.path = DeleteTileInfo.toParametersId(
                 this.prefix, this.layerId, tileRange.getGridSetId(), this.format, tileRange.getParametersId());
 
-        this.deleteTileRanges = LongStream.of(tileRange.getZoomStart(), tileRange.getZoomStop())
+        this.deleteTileRanges = LongStream.range(tileRange.getZoomStart(), tileRange.getZoomStop()+1)
                 .mapToObj(zoomLevel -> {
                     long[] bounds = tileRange.rangeBounds((int) zoomLevel);
-                    if (bounds != null && bounds.length >= 4) {
+                    if (bounds != null && bounds.length == 5) {
                         return new DeleteTileZoomInBoundedBox(
                                 prefix,
                                 bucket,
@@ -47,7 +53,10 @@ public class CompositeDeleteTilesInRange implements CompositeDeleteTileRange {
                                 format,
                                 tileRange.getParametersId(),
                                 zoomLevel,
-                                bounds);
+                                bounds,
+                                tileRange,
+                                ONE_BY_ONE_META_TILING_FACTOR
+                        );
                     } else {
                         return new DeleteTileZoom(
                                 prefix,
@@ -56,7 +65,9 @@ public class CompositeDeleteTilesInRange implements CompositeDeleteTileRange {
                                 tileRange.getGridSetId(),
                                 format,
                                 tileRange.getParametersId(),
-                                zoomLevel);
+                                zoomLevel,
+                                tileRange
+                        );
                     }
                 })
                 .collect(Collectors.toList());
@@ -73,5 +84,25 @@ public class CompositeDeleteTilesInRange implements CompositeDeleteTileRange {
     @Override
     public String path() {
         return path;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public String getBucket() {
+        return bucket;
+    }
+
+    public String getLayerId() {
+        return layerId;
+    }
+
+    public String getFormat() {
+        return format;
+    }
+
+    public TileRange getTileRange() {
+        return tileRange;
     }
 }

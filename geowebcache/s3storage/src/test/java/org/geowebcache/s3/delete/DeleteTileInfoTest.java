@@ -212,7 +212,7 @@ public class DeleteTileInfoTest {
 
     @Test
     public void test_isPathValid_zoom() {
-        String path = format("%s/%s/%s/%s/%d/", LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL);
+        String path = format("%s/%s/%s/%s/%d/", LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL_4);
         assertThat("format path is valid", DeleteTileInfo.isPathValid(path, PREFIX), is(true));
     }
 
@@ -225,14 +225,14 @@ public class DeleteTileInfoTest {
 
     @Test
     public void test_isPathValid_zoom_missingLayerId() {
-        String path = format("%s/%s/%s/%s/%d/", "", GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL);
+        String path = format("%s/%s/%s/%s/%d/", "", GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL_4);
         assertThat(
                 "format path is invalid when layerId is missing", DeleteTileInfo.isPathValid(path, PREFIX), is(false));
     }
 
     @Test
     public void test_isPathValid_zoom_missingGridSetId() {
-        String path = format("%s/%s/%s/%s/%d/", LAYER_ID, "", FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL);
+        String path = format("%s/%s/%s/%s/%d/", LAYER_ID, "", FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL_4);
         assertThat(
                 "format path is invalid when gridSetId is missing",
                 DeleteTileInfo.isPathValid(path, PREFIX),
@@ -241,14 +241,14 @@ public class DeleteTileInfoTest {
 
     @Test
     public void test_isPathValid_zoom_missingFormat() {
-        String path = format("%s/%s/%s/%s/%d/", LAYER_ID, GRID_SET_ID, "", PARAMETERS_ID, ZOOM_LEVEL);
+        String path = format("%s/%s/%s/%s/%d/", LAYER_ID, GRID_SET_ID, "", PARAMETERS_ID, ZOOM_LEVEL_4);
         assertThat(
                 "format path is invalid when format is missing", DeleteTileInfo.isPathValid(path, PREFIX), is(false));
     }
 
     @Test
     public void test_isPathValid_zoom_missingParametersId() {
-        String path = format("%s/%s/%s/%s/%d/", LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, "", ZOOM_LEVEL);
+        String path = format("%s/%s/%s/%s/%d/", LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, "", ZOOM_LEVEL_4);
         assertThat(
                 "format path is invalid when format is missing", DeleteTileInfo.isPathValid(path, PREFIX), is(false));
     }
@@ -263,14 +263,14 @@ public class DeleteTileInfoTest {
     @Test
     public void test_isPathValid_x() {
         String path =
-                format("%s/%s/%s/%s/%d/%d/", LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL, XYZ[0]);
+                format("%s/%s/%s/%s/%d/%d/", LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL_4, XYZ[0]);
         assertThat("format path is valid", DeleteTileInfo.isPathValid(path, PREFIX), is(true));
     }
 
     @Test
     public void test_isPathValid_x_notANumber() {
         String path = format(
-                "%s/%s/%s/%s/%d/%s/", LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL, "notANumber");
+                "%s/%s/%s/%s/%d/%s/", LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL_4, "notANumber");
         assertThat(
                 "format path is invalid when x is not a number", DeleteTileInfo.isPathValid(path, PREFIX), is(false));
     }
@@ -279,7 +279,7 @@ public class DeleteTileInfoTest {
     public void test_isPathValid_y() {
         String path = format(
                 "%s/%s/%s/%s/%d/%d/%d",
-                LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL, XYZ[0], XYZ[1]);
+                LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL_4, XYZ[0], XYZ[1]);
         assertThat("format path is valid", DeleteTileInfo.isPathValid(path, PREFIX), is(true));
     }
 
@@ -287,7 +287,7 @@ public class DeleteTileInfoTest {
     public void test_isPathValid_y_notANumber() {
         String path = format(
                 "%s/%s/%s/%s/%d/%d/%s",
-                LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL, XYZ[0], "notANumber");
+                LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL_4, XYZ[0], "notANumber");
         assertThat(
                 "format path is invalid when y is not a number", DeleteTileInfo.isPathValid(path, PREFIX), is(false));
     }
@@ -296,7 +296,7 @@ public class DeleteTileInfoTest {
     public void test_isPathValid_yWithExtension() {
         String path = format(
                 "%s/%s/%s/%s/%d/%d/%d.%s",
-                LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL, XYZ[0], XYZ[1], EXTENSION);
+                LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL_4, XYZ[0], XYZ[1], EXTENSION);
         assertThat("path with extension is valid", DeleteTileInfo.isPathValid(path, PREFIX), is(true));
     }
 
@@ -304,7 +304,7 @@ public class DeleteTileInfoTest {
     public void test_isPathValid_yWithExtension_notANumber() {
         String path = format(
                 "%s/%s/%s/%s/%d/%d/%s.%s",
-                LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL, XYZ[0], "notANumber", EXTENSION);
+                LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL_4, XYZ[0], "notANumber", EXTENSION);
         assertThat(
                 "path with extension invalid when y is not a number",
                 DeleteTileInfo.isPathValid(path, PREFIX),
@@ -315,7 +315,7 @@ public class DeleteTileInfoTest {
     public void test_isPathValid_yWithExtension_whenExtensionMissing() {
         String path = format(
                 "%s/%s/%s/%s/%d/%d/%d.%s",
-                LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL, XYZ[0], XYZ[1], "");
+                LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL_4, XYZ[0], XYZ[1], "");
         assertThat(
                 "path with extension invalid when extension is missing",
                 DeleteTileInfo.isPathValid(path, PREFIX),

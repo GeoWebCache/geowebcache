@@ -1,5 +1,7 @@
 package org.geowebcache.s3.delete;
 
+import org.geowebcache.storage.TileRange;
+
 public class DeleteTileZoom implements DeleteTileRange {
     private final String prefix;
     private final String bucketName;
@@ -8,6 +10,7 @@ public class DeleteTileZoom implements DeleteTileRange {
     private final String format;
     private final String paramatesId;
     private final long zoomLevel;
+    private final TileRange tileRange;
 
     private final String path;
 
@@ -18,7 +21,9 @@ public class DeleteTileZoom implements DeleteTileRange {
             String gridSetId,
             String format,
             String paramatesId,
-            long zoomLevel) {
+            long zoomLevel,
+            TileRange tileRange
+            ) {
         this.prefix = prefix;
         this.bucketName = bucketName;
         this.layerId = layerId;
@@ -26,6 +31,7 @@ public class DeleteTileZoom implements DeleteTileRange {
         this.format = format;
         this.paramatesId = paramatesId;
         this.zoomLevel = zoomLevel;
+        this.tileRange = tileRange;
 
         this.path = DeleteTileInfo.toZoomPrefix(prefix, layerId, gridSetId, format, paramatesId, zoomLevel);
     }

@@ -38,4 +38,8 @@ public class DeleteTileGridSet implements DeleteTileRange {
     public String getLayerName() {
         return layerName;
     }
+
+    public String getPrefix() {
+        return prefix;
+    }
 }

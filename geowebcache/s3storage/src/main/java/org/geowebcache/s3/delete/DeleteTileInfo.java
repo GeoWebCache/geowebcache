@@ -40,7 +40,7 @@ public class DeleteTileInfo {
     long size;
     Map<String, String> parameters;
 
-    private DeleteTileInfo(
+    public DeleteTileInfo(
             String prefix,
             String layerId,
             String gridSetId,

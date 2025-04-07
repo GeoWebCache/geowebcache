@@ -14,7 +14,7 @@ public class DeleteTilePrefixTest {
     @Test
     public void testDeleteTilePrefix_constructor_canCreateAnInstance() {
         String path =
-                DeleteTileInfo.toZoomPrefix(PREFIX, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL);
+                DeleteTileInfo.toZoomPrefix(PREFIX, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL_4);
         DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, path);
         assertThat("Expected instance to be constructed for a partial path", deleteTilePrefix, is(notNullValue()));
     }
@@ -22,7 +22,7 @@ public class DeleteTilePrefixTest {
     @Test
     public void testDeleteTilePrefix_constructor_withACompletePath() {
         String path = DeleteTileInfo.toFullPath(
-                PREFIX, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL, XYZ[0], XYZ[1], EXTENSION);
+                PREFIX, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL_4, XYZ[0], XYZ[1], EXTENSION);
         DeleteTilePrefix deleteTilePrefix = new DeleteTilePrefix(PREFIX, BUCKET, path);
         assertThat("Expected instance to be constructed for a full path", deleteTilePrefix, is(notNullValue()));
     }
@@ -30,7 +30,7 @@ public class DeleteTilePrefixTest {
     @Test
     public void testDeleteTilePrefix_constructor_prefixCannotBeNull() {
         String path =
-                DeleteTileInfo.toZoomPrefix(PREFIX, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL);
+                DeleteTileInfo.toZoomPrefix(PREFIX, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL_4);
 
         assertThrows(
                 "Prefix cannot be null", NullPointerException.class, () -> new DeleteTilePrefix(null, BUCKET, path));
@@ -39,7 +39,7 @@ public class DeleteTilePrefixTest {
     @Test
     public void testDeleteTilePrefix_constructor_bucketCannotBeNull() {
         String path =
-                DeleteTileInfo.toZoomPrefix(PREFIX, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL);
+                DeleteTileInfo.toZoomPrefix(PREFIX, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL_4);
 
         assertThrows(
                 "Bucket cannot be null", NullPointerException.class, () -> new DeleteTilePrefix(PREFIX, null, path));

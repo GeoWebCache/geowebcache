@@ -8,6 +8,9 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import org.geowebcache.storage.TileObject;
 
+import static org.geowebcache.s3.delete.DeleteTileRangeWithTileRange.ONE_BY_ONE_META_TILING_FACTOR;
+import static org.geowebcache.s3.streams.StreamTestHelper.SINGLE_ZOOM_SINGLE_BOUND_MATCHING;
+
 public class BulkDeleteTaskTestHelper {
     public static final Random RANDOM = new Random(System.currentTimeMillis());
 
@@ -37,15 +40,24 @@ public class BulkDeleteTaskTestHelper {
     public static final Set<String> SINGLE_SET_OF_FORMATS = Set.of(FORMAT_IN_KEY);
     public static final Set<String> ALL_SET_OF_FORMATS = Set.of(FORMAT_IN_KEY, FORMAT_IN_KEY_2);
 
-    public static final Long ZOOM_LEVEL = 4L;
-    public static final Set<Long> ZOOM_LEVEL_0 = Set.of(0L);
-    public static final Set<Long> ZOOM_LEVEL_1 = Set.of(1L);
+    public static final Long ZOOM_LEVEL_4 = 4L;
+    public static final Long ZOOM_LEVEL_6 = 6L;
+    public static final Long ZOOM_LEVEL_9 = 9L;
+
+    public static final Set<Long> ZOOM_LEVEL_SET_0 = Set.of(0L);
+    public static final Set<Long> ZOOM_LEVEL_SET_1 = Set.of(1L);
     // public static final Set<Long> ZOOM_LEVEL_4 = Set.of(4L);
+
+    public static final long[][] SMALL_RANGE_BOUNDS_ZOOM_4_ZOOM_4 = {{0,0,3,3,4}};
+    public static final long[][] LARGE_RANGE_BOUNDS_ZOOM_4_ZOOM_8 = {{0,0,8,8,4},{0,0,16,16,4},{0,0,32,32,7},{0,0,64,64,6},{0,0,64,64,6}};
+    public static final long[] SMALL_BOUNDED_BOX = {0,0,3,3};
+    public static final long[] LARGE_BOUNDED_BOX = {0,0,128,128};
 
     public static final Set<Long> ZOOM_LEVEL_0_THROUGH_9 = Set.of(0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L);
 
     public static final long[] XYZ = {1, 2, 3};
-    public static final Map<String, String> PARAMETERS = new HashMap<>() {};
+    public static final Map<String, String> PARAMETERS = Map.of("key1", "value1", "key2", "value2");
+
 
     public static final TileObject TILE_OBJECT =
             TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
@@ -114,10 +126,10 @@ public class BulkDeleteTaskTestHelper {
 
     // public static final List<S3ObjectSummary> S_3_OBJECT_EMPTY_SUMMARY_LIST = new ArrayList<>();
     public static final List<S3ObjectSummary> S_3_OBJECT_SUMMARY_SINGLE_TILE_LIST =
-            generateLayerSummaries(SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, ZOOM_LEVEL_0);
+            generateLayerSummaries(SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, ZOOM_LEVEL_SET_0);
 
     public static final List<S3ObjectSummary> S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST() {
-        return generateLayerSummaries(SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, ZOOM_LEVEL_1);
+        return generateLayerSummaries(SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, ZOOM_LEVEL_SET_1);
     }
 
     public static final List<S3ObjectSummary> S_3_OBJECT_SUMMARY_LARGE_LIST =
@@ -145,4 +157,14 @@ public class BulkDeleteTaskTestHelper {
     public static final CompositeDeleteTileParameterId ALL_GRIDS_ALL_FORMATS_COMPOSITE_TILE_PARAMETERS =
             new CompositeDeleteTileParameterId(
                     PREFIX, BUCKET, LAYER_ID, ALL_SET_OF_GRID_SET_IDS, ALL_SET_OF_FORMATS, PARAMETERS_ID, LAYER_NAME);
+
+
+    public static final CompositeDeleteTilesInRange SINGLE_ZOOM_SINGLE_BOUND_COMPOSITE_DELETE_TILES_IN_RANGE =
+            new CompositeDeleteTilesInRange(PREFIX, BUCKET, LAYER_ID, FORMAT_IN_KEY, SINGLE_ZOOM_SINGLE_BOUND_MATCHING);
+
+    public static final DeleteTileZoomInBoundedBox SINGLE_ZOOM_SINGLE_BOUND_DELETE_TILES_IN_RANGE =
+            new DeleteTileZoomInBoundedBox(PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL_4,
+                    SMALL_BOUNDED_BOX, SINGLE_ZOOM_SINGLE_BOUND_MATCHING, ONE_BY_ONE_META_TILING_FACTOR);
+
+    public static final Long SINGLE_ZOOM_SINGLE_BOUND_TILES = 16L;
 }

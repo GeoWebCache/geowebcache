@@ -1,5 +1,7 @@
 package org.geowebcache.s3.delete;
 
+import org.geowebcache.storage.TileRange;
+
 import java.util.stream.Stream;
 
 public interface DeleteTileRange {
@@ -9,3 +11,5 @@ public interface DeleteTileRange {
         return Stream.of(this);
     }
 }
+
+
