@@ -18,6 +18,7 @@ public class CaptureCallback implements Callback {
     long taskStartedCount = 0;
     long taskEndedCount = 0;
     long tileResultCount = 0;
+    long bytes = 0;
 
     Statistics statistics = null;
     List<SubStats> subStats = new ArrayList<>();
@@ -71,10 +72,15 @@ public class CaptureCallback implements Callback {
         this.delegate = delegate;
     }
 
+    public long getBytes() {
+        return bytes;
+    }
+
     @Override
     public void tileResult(ResultStat result) {
         this.delegate.tileResult(result);
         tileResultCount++;
+        bytes += result.getSize();
     }
 
     @Override

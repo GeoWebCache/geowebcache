@@ -19,6 +19,7 @@ public class SubStats {
     long batchTotal = 0;
     long batchLowTideLevel = 0;
     long batchHighTideLevel = 0;
+    long bytes = 0;
 
     final List<Exception> recoverableIssues = new ArrayList<>();
     final List<Exception> nonRecoverableIssues = new ArrayList<>();
@@ -45,6 +46,7 @@ public class SubStats {
                 ? batchStats.getProcessed()
                 : Math.min(batchStats.getProcessed(), getBatchLowTideLevel());
         batchHighTideLevel = Math.max(batchStats.getProcessed(), getBatchHighTideLevel());
+        bytes += batchStats.getBytes();
     }
 
     public BulkDeleteTask.ObjectPathStrategy getStrategy() {

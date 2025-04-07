@@ -20,6 +20,7 @@ import java.util.Iterator;
 import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.SingleTile;
 import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -171,6 +172,7 @@ public class DeleteTileObjectBulkDeleteTaskTest {
         task.call();
 
         assertEquals("Expected TileResult callback called once", 1, callback.getTileResultCount());
+        assertTrue("Expected the number of bytes processed to be greater than 0", callback.getTileResultCount() > 0);
     }
 
     @Test

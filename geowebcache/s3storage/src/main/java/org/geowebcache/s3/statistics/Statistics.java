@@ -13,6 +13,7 @@ public class Statistics {
     long batchTotal = 0;
     long batchLowTideLevel = 0;
     long batchHighTideLevel = 0;
+    long bytes = 0;
     final DeleteTileRange deleteTileRange;
     final List<Exception> recoverableIssues = new ArrayList<>();
     final List<Exception> nonRecoverableIssues = new ArrayList<>();
@@ -45,6 +46,7 @@ public class Statistics {
                 ? stats.getBatchLowTideLevel()
                 : Math.min(stats.getBatchLowTideLevel(), getBatchLowTideLevel());
         this.batchHighTideLevel = Math.max(stats.getBatchHighTideLevel(), getBatchHighTideLevel());
+        this.bytes += stats.bytes;
     }
 
     public long getDeleted() {
