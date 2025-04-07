@@ -1,7 +1,16 @@
 package org.geowebcache.s3.delete;
 
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.SingleTile;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.geowebcache.s3.statistics.StatisticsTestHelper.FILE_SIZE;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import java.util.Iterator;
 import org.geowebcache.io.Resource;
 import org.geowebcache.s3.AmazonS3Wrapper;
 import org.geowebcache.s3.S3ObjectsWrapper;
@@ -14,16 +23,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.Iterator;
-
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.SingleTile;
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
-import static org.geowebcache.s3.statistics.StatisticsTestHelper.FILE_SIZE;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DeleteTileObjectBulkDeleteTaskTest {
@@ -98,8 +97,8 @@ public class DeleteTileObjectBulkDeleteTaskTest {
         BulkDeleteTask task = builder.withDeleteRange(deleteTileObject).build();
         task.call();
 
-        assertThat("Expected TaskStarted callback called once",  callback.getTaskStartedCount(), is(1L));
-        assertThat("Expected TaskEnded callback called once",  callback.getTaskEndedCount(), is(1L));
+        assertThat("Expected TaskStarted callback called once", callback.getTaskStartedCount(), is(1L));
+        assertThat("Expected TaskEnded callback called once", callback.getTaskEndedCount(), is(1L));
     }
 
     @Test
@@ -153,7 +152,9 @@ public class DeleteTileObjectBulkDeleteTaskTest {
         task.call();
 
         assertThat("Expected TileResult callback called once", callback.getTileResultCount(), is(1L));
-        long bytesDeleted = S_3_OBJECT_SUMMARY_SINGLE_TILE_LIST.stream().mapToLong(S3ObjectSummary::getSize).sum();
+        long bytesDeleted = S_3_OBJECT_SUMMARY_SINGLE_TILE_LIST.stream()
+                .mapToLong(S3ObjectSummary::getSize)
+                .sum();
         assertThat("Expected the number of bytes processed to correct", callback.getBytes(), is(bytesDeleted));
     }
 
@@ -168,7 +169,7 @@ public class DeleteTileObjectBulkDeleteTaskTest {
         BulkDeleteTask task = builder.withDeleteRange(deleteTileObject).build();
         task.call();
 
-        assertThat("Expected TileResult not to called",  callback.getTileResultCount(), is(0L));
+        assertThat("Expected TileResult not to called", callback.getTileResultCount(), is(0L));
         assertThat("Expected the number of bytes processed to be 0", callback.getBytes(), is(0L));
     }
 }

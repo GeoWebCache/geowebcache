@@ -16,8 +16,8 @@ package org.geowebcache.s3;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.fail;
 
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 import org.easymock.EasyMock;
 import org.geowebcache.GeoWebCacheException;
@@ -25,6 +25,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.NoOpLockProvider;
+import org.geowebcache.mime.ImageMime;
 import org.geowebcache.storage.AbstractBlobStoreTest;
 import org.junit.Assume;
 import org.junit.Rule;
@@ -48,7 +49,7 @@ public class S3BlobStoreConformanceTest extends AbstractBlobStoreTest<S3BlobStor
                     expect(mock.getName()).andStubReturn(name);
                     expect(mock.getId()).andStubReturn(name);
                     expect(mock.getGridSubsets()).andStubReturn(Collections.singleton("testGridSet"));
-                    expect(mock.getMimeTypes()).andStubReturn(Arrays.asList(org.geowebcache.mime.ImageMime.png));
+                    expect(mock.getMimeTypes()).andStubReturn(List.of(ImageMime.png));
                     try {
                         expect(layers.getTileLayer(eq(name))).andStubReturn(mock);
                     } catch (GeoWebCacheException e) {

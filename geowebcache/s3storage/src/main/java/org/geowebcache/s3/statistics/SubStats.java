@@ -123,6 +123,4 @@ public class SubStats {
     public long getBytes() {
         return bytes;
     }
-
-
 }

@@ -59,16 +59,4 @@ public class DeleteTileZoom implements DeleteTileRange {
     public String getFormat() {
         return format;
     }
-
-    public String getParamatesId() {
-        return paramatesId;
-    }
-
-    public long getZoomLevel() {
-        return zoomLevel;
-    }
-
-    public TileRange getTileRange() {
-        return tileRange;
-    }
 }

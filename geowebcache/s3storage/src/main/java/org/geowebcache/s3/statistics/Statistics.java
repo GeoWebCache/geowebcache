@@ -115,6 +115,4 @@ public class Statistics {
     public long getBytes() {
         return bytes;
     }
-
-
 }

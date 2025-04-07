@@ -53,8 +53,7 @@ public class StatisticCallbackDecorator implements Callback {
                     statistics.getBatchTotal(),
                     statistics.getBatchHighTideLevel(),
                     statistics.getBatchLowTideLevel(),
-                    statistics.getBytes()
-            );
+                    statistics.getBytes());
             if (statistics.completed()) {
                 logger.info(message);
             } else {
@@ -75,8 +74,7 @@ public class StatisticCallbackDecorator implements Callback {
                         subStat.getBatchTotal(),
                         subStat.getBatchHighTideLevel(),
                         subStat.getBatchLowTideLevel(),
-                        subStat.getBytes()
-                ));
+                        subStat.getBytes()));
             }
         } finally {
             delegate.taskEnded();
