@@ -92,7 +92,7 @@ public class BulkDeleteTaskTestHelper {
         List<S3ObjectSummary> summaries = new ArrayList<>();
 
         LongStream.range(0, xScale).forEach(x -> LongStream.range(0, yScale).forEach(y -> {
-            long size = RANDOM.nextLong() % 9_900_000L + 100_000L;
+            long size = Math.abs(RANDOM.nextLong()) % 9_900_000L + 100_000L;
             S3ObjectSummary summary = generateFromConstants(gridSetId, format, x, y, zoomLevel, size);
             summaries.add(summary);
         }));

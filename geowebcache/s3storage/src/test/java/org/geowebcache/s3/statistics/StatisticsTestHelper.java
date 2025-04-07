@@ -5,7 +5,7 @@ import static org.geowebcache.s3.delete.DeleteTestHelper.DELETE_TILE_RANGE;
 import static org.geowebcache.s3.statistics.ResultStat.Change.Deleted;
 
 public class StatisticsTestHelper {
-    public static long FILE_SIZE = 1_000_000;
+    public static Long FILE_SIZE = 1_000_000L;
     public static final String RESULT_PATH = "layer_id/grid_set/format/parametersID/z/x/y.extension";
 
     public static SubStats ALL_ONE_SUBSTATS() {

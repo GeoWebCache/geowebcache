@@ -111,4 +111,10 @@ public class Statistics {
     public void addUnknownIssue(Exception e) {
         this.unknownIssues.add(e);
     }
+
+    public long getBytes() {
+        return bytes;
+    }
+
+
 }

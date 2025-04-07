@@ -181,7 +181,7 @@ public class NotificationDecoratorTest {
         WithBlobStoreListener(blobStoreListenerList, captureListener);
         TileObject tileObject =
                 TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
-        tileObject.setBlobSize((int) FILE_SIZE);
+        tileObject.setBlobSize(FILE_SIZE.intValue());
         tileObject.setParametersId(PARAMETERS_ID);
         DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, RESULT_PATH);
         ResultStat resultStat =
@@ -211,7 +211,7 @@ public class NotificationDecoratorTest {
         WithBlobStoreListener(blobStoreListenerList, captureListener);
         TileObject tileObject =
                 TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
-        tileObject.setBlobSize((int) FILE_SIZE);
+        tileObject.setBlobSize(FILE_SIZE.intValue());
         tileObject.setParametersId(PARAMETERS_ID);
         DeleteTileZoom deleteTileZoom = new DeleteTileZoom(
                 PREFIX,
@@ -236,7 +236,7 @@ public class NotificationDecoratorTest {
         WithBlobStoreListener(blobStoreListenerList, captureListener);
         TileObject tileObject =
                 TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
-        tileObject.setBlobSize((int) FILE_SIZE);
+        tileObject.setBlobSize(FILE_SIZE.intValue());
         tileObject.setParametersId(PARAMETERS_ID);
         DeleteTileZoom deleteTileZoom = new DeleteTileZoom(
                 PREFIX,
@@ -260,7 +260,7 @@ public class NotificationDecoratorTest {
     public void test_tileDeleted_fromDeleteTileObject_noListeners() {
         TileObject tileObject =
                 TileObject.createCompleteTileObject(LAYER_NAME, XYZ, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS, null);
-        tileObject.setBlobSize((int) FILE_SIZE);
+        tileObject.setBlobSize(FILE_SIZE.intValue());
         tileObject.setParametersId(PARAMETERS_ID);
         DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, RESULT_PATH);
         ResultStat resultStat =

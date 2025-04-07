@@ -42,7 +42,7 @@ public class StatisticCallbackDecorator implements Callback {
 
         try {
             String message = format(
-                    "Completed: %b Processed %s Deleted: %d Recoverable Errors: %d Unrecoverable Errors: %d Unknown Issues %d Batches Sent %d Batches Total %d High Tide %d Low Tide %d",
+                    "Completed: %b Processed %s Deleted: %d Recoverable Errors: %d Unrecoverable Errors: %d Unknown Issues %d Batches Sent %d Batches Total %d High Tide %d Low Tide %d Bytes Deleted: %d",
                     statistics.completed(),
                     statistics.getProcessed(),
                     statistics.getDeleted(),
@@ -52,7 +52,9 @@ public class StatisticCallbackDecorator implements Callback {
                     statistics.getBatchSent(),
                     statistics.getBatchTotal(),
                     statistics.getBatchHighTideLevel(),
-                    statistics.getBatchLowTideLevel());
+                    statistics.getBatchLowTideLevel(),
+                    statistics.getBytes()
+            );
             if (statistics.completed()) {
                 logger.info(message);
             } else {
@@ -61,7 +63,7 @@ public class StatisticCallbackDecorator implements Callback {
 
             for (var subStat : statistics.getSubStats()) {
                 logger.info(format(
-                        "Strategy %s Count: %d Processed %d Deleted: %d Recoverable Errors: %d Unrecoverable Errors: %d Unknown Issues %d Batches Sent %d Batches Total %d High Tide %d Low Tide %d",
+                        "Strategy %s Count: %d Processed %d Deleted: %d Recoverable Errors: %d Unrecoverable Errors: %d Unknown Issues %d Batches Sent %d Batches Total %d High Tide %d Low Tide %d Bytes Deleted %d",
                         subStat.getStrategy().toString(),
                         subStat.getCount(),
                         subStat.getProcessed(),
@@ -72,7 +74,9 @@ public class StatisticCallbackDecorator implements Callback {
                         subStat.getBatchSent(),
                         subStat.getBatchTotal(),
                         subStat.getBatchHighTideLevel(),
-                        subStat.getBatchLowTideLevel()));
+                        subStat.getBatchLowTideLevel(),
+                        subStat.getBytes()
+                ));
             }
         } finally {
             delegate.taskEnded();
