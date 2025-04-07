@@ -68,4 +68,8 @@ public class DeleteTileZoom implements DeleteTileRange {
     public long getZoomLevel() {
         return zoomLevel;
     }
+
+    public TileRange getTileRange() {
+        return tileRange;
+    }
 }

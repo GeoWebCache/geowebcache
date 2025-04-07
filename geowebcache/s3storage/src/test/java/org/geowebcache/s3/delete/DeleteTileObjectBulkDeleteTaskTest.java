@@ -1,14 +1,7 @@
 package org.geowebcache.s3.delete;
 
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.SingleTile;
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import java.util.Iterator;
 import org.geowebcache.io.Resource;
 import org.geowebcache.s3.AmazonS3Wrapper;
 import org.geowebcache.s3.S3ObjectsWrapper;
@@ -21,6 +14,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.Iterator;
+
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.SingleTile;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DeleteTileObjectBulkDeleteTaskTest {
@@ -51,7 +52,7 @@ public class DeleteTileObjectBulkDeleteTaskTest {
 
     @Test
     public void test_ChooseStrategy_S3ObjectPathsForPrefix() {
-        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX, false);
+        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX);
         BulkDeleteTask task = builder.withDeleteRange(deleteTileObject).build();
         BulkDeleteTask.ObjectPathStrategy strategy = task.chooseStrategy(deleteTileObject);
         assertEquals("Expected SingleTile strategy", SingleTile, strategy);
@@ -67,7 +68,7 @@ public class DeleteTileObjectBulkDeleteTaskTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX, false);
+        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX);
         BulkDeleteTask task = builder.withDeleteRange(deleteTileObject).build();
         Long count = task.call();
         Statistics statistics = callback.getStatistics();
@@ -89,7 +90,7 @@ public class DeleteTileObjectBulkDeleteTaskTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX, true);
+        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX);
         BulkDeleteTask task = builder.withDeleteRange(deleteTileObject).build();
         Long count = task.call();
         Statistics statistics = callback.getStatistics();
@@ -111,9 +112,9 @@ public class DeleteTileObjectBulkDeleteTaskTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX, false);
+        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX);
         BulkDeleteTask task = builder.withDeleteRange(deleteTileObject).build();
-        Long count = task.call();
+        task.call();
 
         assertEquals("Expected TaskStarted callback called once", 1, callback.getTaskStartedCount());
         assertEquals("Expected TaskEnded callback called once", 1, callback.getTaskEndedCount());
@@ -129,9 +130,9 @@ public class DeleteTileObjectBulkDeleteTaskTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX, false);
+        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX);
         BulkDeleteTask task = builder.withDeleteRange(deleteTileObject).build();
-        Long count = task.call();
+        task.call();
 
         assertEquals("Expected SubTaskStarted callback called once", 1, callback.getSubTaskStartedCount());
         assertEquals("Expected SubTaskEnded callback called once", 1, callback.getSubTaskEndedCount());
@@ -147,9 +148,9 @@ public class DeleteTileObjectBulkDeleteTaskTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX, false);
+        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX);
         BulkDeleteTask task = builder.withDeleteRange(deleteTileObject).build();
-        Long count = task.call();
+        task.call();
 
         assertEquals("Expected BatchStarted callback called once", 1, callback.getBatchStartedCount());
         assertEquals("Expected BatchEnded  callback called once", 1, callback.getBatchEndedCount());
@@ -165,9 +166,9 @@ public class DeleteTileObjectBulkDeleteTaskTest {
             return BulkDeleteTaskTestHelper.generateDeleteObjectsResult(request);
         });
 
-        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX, false);
+        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX);
         BulkDeleteTask task = builder.withDeleteRange(deleteTileObject).build();
-        Long count = task.call();
+        task.call();
 
         assertEquals("Expected TileResult callback called once", 1, callback.getTileResultCount());
     }
@@ -176,13 +177,10 @@ public class DeleteTileObjectBulkDeleteTaskTest {
     public void testCall_WhenSingleToProcess_DeleteBatchResult_nothingDeleted() {
         Iterator<S3ObjectSummary> iterator = S_3_OBJECT_SUMMARY_SINGLE_TILE_LIST.iterator();
         when(s3ObjectsWrapper.iterator()).thenReturn(iterator);
-        when(amazonS3Wrapper.deleteObjects(any(DeleteObjectsRequest.class))).thenAnswer(invocationOnMock -> {
-            DeleteObjectsRequest request =
-                    (DeleteObjectsRequest) invocationOnMock.getArguments()[0];
-            return BulkDeleteTaskTestHelper.emptyDeleteObjectsResult();
-        });
+        when(amazonS3Wrapper.deleteObjects(any(DeleteObjectsRequest.class)))
+                .thenAnswer(invocationOnMock -> BulkDeleteTaskTestHelper.emptyDeleteObjectsResult());
 
-        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX, false);
+        DeleteTileObject deleteTileObject = new DeleteTileObject(tileObject, PREFIX);
         BulkDeleteTask task = builder.withDeleteRange(deleteTileObject).build();
         Long count = task.call();
 

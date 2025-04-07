@@ -1,18 +1,17 @@
 package org.geowebcache.s3.statistics;
 
+import org.junit.Test;
+
 import static org.geowebcache.s3.statistics.StatisticsTestHelper.EMPTY_SUB_STATS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import junit.framework.TestCase;
-import org.junit.Test;
-
-public class SubStatsTest extends TestCase {
+public class SubStatsTest {
     ///////////////////////////////////////////////////////////////////////////
     // Recoverable issue tests
 
     @Test
-    public void testAddRecoverableIssue() throws Exception {
+    public void testAddRecoverableIssue() {
         SubStats subStats = EMPTY_SUB_STATS();
         RuntimeException issue = new RuntimeException();
         subStats.addRecoverableIssue(issue);
@@ -31,7 +30,7 @@ public class SubStatsTest extends TestCase {
     // NonRecoverable issue tests
 
     @Test
-    public void testAddNonRecoverableIssue() throws Exception {
+    public void testAddNonRecoverableIssue() {
         SubStats subStats = EMPTY_SUB_STATS();
         RuntimeException issue = new RuntimeException();
         subStats.addNonRecoverableIssue(issue);
@@ -50,7 +49,7 @@ public class SubStatsTest extends TestCase {
     // Unknown issue tests
 
     @Test
-    public void testAddUnknownIssue() throws Exception {
+    public void testAddUnknownIssue() {
         SubStats subStats = EMPTY_SUB_STATS();
         RuntimeException issue = new RuntimeException();
         subStats.addUnknownIssue(issue);

@@ -1,8 +1,6 @@
 package org.geowebcache.s3.delete;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
+import org.geowebcache.storage.TileObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +11,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import org.geowebcache.storage.TileObject;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
 
 public class DeleteTileInfo {
     public static final Pattern keyRegex = Pattern.compile("(.*)/(.*)/(.*)/(.*)/(.*)/(\\d+)/(\\d+)/(\\d+)\\..*");
@@ -172,11 +173,6 @@ public class DeleteTileInfo {
             checkNotNull(z, "Z cannot be null");
 
             return new DeleteTileInfo(prefix, layerId, gridSetId, format, parametersSha, x, y, z, version, null);
-        }
-
-        public Builder withoutVersion() {
-            this.version = null;
-            return this;
         }
     }
 

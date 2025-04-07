@@ -1,13 +1,5 @@
 package org.geowebcache.s3.delete;
 
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.S3ObjectPathsForPrefix;
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import org.geowebcache.s3.AmazonS3Wrapper;
 import org.geowebcache.s3.S3ObjectsWrapper;
@@ -19,6 +11,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.S3ObjectPathsForPrefix;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DeleteTileParametersBulkDeleteTaskTest {

@@ -1,18 +1,5 @@
 package org.geowebcache.s3.callback;
 
-import static org.geowebcache.s3.callback.CallbackTestHelper.WithSubTaskStarted;
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
-import static org.geowebcache.s3.statistics.StatisticsTestHelper.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
-
-import java.util.Properties;
-import java.util.logging.Logger;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.S3Ops;
@@ -32,11 +19,25 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.Properties;
+import java.util.logging.Logger;
+
+import static org.geowebcache.s3.callback.CallbackTestHelper.WithSubTaskStarted;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.geowebcache.s3.statistics.StatisticsTestHelper.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
 @RunWith(MockitoJUnitRunner.class)
 public class MarkPendingDeleteDecoratorTest {
     private MarkPendingDeleteDecorator markPendingDeleteDecorator;
     private CaptureCallback captureCallback;
-    private Logger logger = S3BlobStore.getLog();
+    private final Logger logger = S3BlobStore.getLog();
 
     @Mock
     private S3Ops s3Ops;
@@ -120,7 +121,7 @@ public class MarkPendingDeleteDecoratorTest {
 
     @Test
     public void test_subTaskStarted_insertPendingDeleted_withSingleTile() {
-        DeleteTileObject deleteTileObject = new DeleteTileObject(TILE_OBJECT, PREFIX, false);
+        DeleteTileObject deleteTileObject = new DeleteTileObject(TILE_OBJECT, PREFIX);
         SubStats subStats = new SubStats(deleteTileObject, SingleTile);
 
         markPendingDeleteDecorator.subTaskStarted(subStats);
@@ -129,7 +130,7 @@ public class MarkPendingDeleteDecoratorTest {
     }
 
     @Test
-    public void test_subTaskStarted_insertPendingDeleted_getProperties() throws StorageException {
+    public void test_subTaskStarted_insertPendingDeleted_getProperties() {
         markPendingDeleteDecorator = new MarkPendingDeleteDecorator(captureCallback, s3Ops, logger);
         DeleteTileLayer deleteTileLayer = new DeleteTileLayer(PREFIX, BUCKET, LAYER_ID, LAYER_NAME);
         String path = deleteTileLayer.path();
@@ -144,7 +145,7 @@ public class MarkPendingDeleteDecoratorTest {
 
     @Test
     public void test_subTaskStarted_insertPendingDeleted_withRetryPendingTask() {
-        DeleteTileObject deleteTileObject = new DeleteTileObject(TILE_OBJECT, PREFIX, false);
+        DeleteTileObject deleteTileObject = new DeleteTileObject(TILE_OBJECT, PREFIX);
         SubStats subStats = new SubStats(deleteTileObject, RetryPendingTask);
 
         markPendingDeleteDecorator.subTaskStarted(subStats);
@@ -206,8 +207,8 @@ public class MarkPendingDeleteDecoratorTest {
     }
 
     @Test
-    public void test_subTaskEnded_removePendingDeleted_notWithSingleTileStrategy() throws StorageException {
-        DeleteTileObject deleteTileObject = new DeleteTileObject(TILE_OBJECT, PREFIX, false);
+    public void test_subTaskEnded_removePendingDeleted_notWithSingleTileStrategy()  {
+        DeleteTileObject deleteTileObject = new DeleteTileObject(TILE_OBJECT, PREFIX);
         SubStats subStats = new SubStats(deleteTileObject, SingleTile);
 
         markPendingDeleteDecorator.subTaskStarted(subStats);
@@ -216,8 +217,8 @@ public class MarkPendingDeleteDecoratorTest {
     }
 
     @Test
-    public void test_subTaskEnded_removePendingDeleted_notWithNoDeletionsRequiredStrategy() throws StorageException {
-        DeleteTileObject deleteTileObject = new DeleteTileObject(TILE_OBJECT, PREFIX, false);
+    public void test_subTaskEnded_removePendingDeleted_notWithNoDeletionsRequiredStrategy() {
+        DeleteTileObject deleteTileObject = new DeleteTileObject(TILE_OBJECT, PREFIX);
         SubStats subStats = new SubStats(deleteTileObject, NoDeletionsRequired);
 
         markPendingDeleteDecorator.subTaskStarted(subStats);

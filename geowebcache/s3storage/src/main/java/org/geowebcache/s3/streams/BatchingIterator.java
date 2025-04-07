@@ -1,13 +1,13 @@
 package org.geowebcache.s3.streams;
 
-import static java.util.Spliterator.ORDERED;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import static java.util.Spliterator.ORDERED;
 
 /** An iterator which returns batches of items taken from another iterator */
 public class BatchingIterator<T> implements Iterator<List<T>> {
@@ -27,9 +27,9 @@ public class BatchingIterator<T> implements Iterator<List<T>> {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, ORDERED), false);
     }
 
-    private int batchSize;
+    private final int batchSize;
     private List<T> currentBatch;
-    private Iterator<T> sourceIterator;
+    private final Iterator<T> sourceIterator;
 
     public BatchingIterator(Iterator<T> sourceIterator, int batchSize) {
         this.batchSize = batchSize;

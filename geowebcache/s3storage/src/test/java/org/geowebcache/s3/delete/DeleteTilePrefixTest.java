@@ -1,13 +1,13 @@
 package org.geowebcache.s3.delete;
 
+import org.junit.Test;
+
 import static java.lang.String.format;
 import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThrows;
-
-import org.junit.Test;
 
 public class DeleteTilePrefixTest {
 

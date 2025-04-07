@@ -1,16 +1,5 @@
 package org.geowebcache.config;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URL;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheEnvironment;
@@ -33,6 +22,18 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.web.context.WebApplicationContext;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class S3BlobStoreConfigStoreLoadTest {
 

@@ -10,7 +10,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.RetryPendingTask;
 import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.S3ObjectPathsForPrefix;
 import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
 import static org.geowebcache.s3.streams.StreamTestHelper.SINGLE_ZOOM_SINGLE_BOUND_MATCHING;

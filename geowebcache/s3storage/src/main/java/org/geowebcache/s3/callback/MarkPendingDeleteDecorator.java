@@ -1,15 +1,5 @@
 package org.geowebcache.s3.callback;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
-
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.logging.Logger;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.s3.S3Ops;
 import org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy;
@@ -19,6 +9,17 @@ import org.geowebcache.s3.statistics.ResultStat;
 import org.geowebcache.s3.statistics.Statistics;
 import org.geowebcache.s3.statistics.SubStats;
 import org.geowebcache.storage.StorageException;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.logging.Logger;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
 
 public class MarkPendingDeleteDecorator implements Callback {
     private final Callback delegate;

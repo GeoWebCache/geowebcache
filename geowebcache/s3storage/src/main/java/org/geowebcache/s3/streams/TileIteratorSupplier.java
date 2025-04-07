@@ -2,8 +2,6 @@ package org.geowebcache.s3.streams;
 
 import org.geowebcache.s3.delete.DeleteTileInfo;
 import org.geowebcache.s3.delete.DeleteTileRangeWithTileRange;
-import org.geowebcache.s3.delete.DeleteTileZoom;
-import org.geowebcache.s3.delete.DeleteTileZoomInBoundedBox;
 import org.geowebcache.storage.TileObject;
 
 import java.util.function.Supplier;

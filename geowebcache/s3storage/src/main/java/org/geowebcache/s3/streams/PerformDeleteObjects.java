@@ -3,12 +3,6 @@ package org.geowebcache.s3.streams;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.function.ToLongFunction;
-import java.util.stream.Collectors;
 import org.geowebcache.s3.AmazonS3Wrapper;
 import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.callback.Callback;
@@ -17,6 +11,13 @@ import org.geowebcache.s3.delete.DeleteTileRange;
 import org.geowebcache.s3.statistics.BatchStats;
 import org.geowebcache.s3.statistics.ResultStat;
 import org.geowebcache.s3.statistics.SubStats;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.ToLongFunction;
+import java.util.stream.Collectors;
 
 public class PerformDeleteObjects implements ToLongFunction<Map<String, DeleteTileInfo>> {
     private final AmazonS3Wrapper wrapper;

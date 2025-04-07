@@ -13,10 +13,6 @@
  */
 package org.geowebcache.s3;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThrows;
-
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.XStreamException;
@@ -24,10 +20,14 @@ import org.geowebcache.util.PropertyRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThrows;
+
 public class S3BlobStoreConfigSerializeTest {
 
     @Test
-    public void testNoAccess() throws Exception {
+    public void testNoAccess() {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
         S3BlobStoreInfo config = (S3BlobStoreInfo)
@@ -36,7 +36,7 @@ public class S3BlobStoreConfigSerializeTest {
     }
 
     @Test
-    public void testPublicAccess() throws Exception {
+    public void testPublicAccess() {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
         S3BlobStoreInfo config = (S3BlobStoreInfo)
@@ -46,7 +46,7 @@ public class S3BlobStoreConfigSerializeTest {
     }
 
     @Test
-    public void testPrivateAccess() throws Exception {
+    public void testPrivateAccess() {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
         S3BlobStoreInfo config = (S3BlobStoreInfo)
@@ -56,7 +56,7 @@ public class S3BlobStoreConfigSerializeTest {
     }
 
     @Test
-    public void testPrivateAccessLowerCase() throws Exception {
+    public void testPrivateAccessLowerCase() {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
         S3BlobStoreInfo config = (S3BlobStoreInfo)
@@ -66,7 +66,7 @@ public class S3BlobStoreConfigSerializeTest {
     }
 
     @Test
-    public void testPublicAccessLowerCase() throws Exception {
+    public void testPublicAccessLowerCase() {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
         S3BlobStoreInfo config = (S3BlobStoreInfo)
@@ -76,7 +76,7 @@ public class S3BlobStoreConfigSerializeTest {
     }
 
     @Test
-    public void testInvalidAccess() throws Exception {
+    public void testInvalidAccess() {
         S3BlobStoreConfigProvider provider = new S3BlobStoreConfigProvider();
         XStream xs = provider.getConfiguredXStream(new XStream());
         assertThrows(

@@ -1,11 +1,12 @@
 package org.geowebcache.s3.callback;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.geowebcache.s3.statistics.BatchStats;
 import org.geowebcache.s3.statistics.ResultStat;
 import org.geowebcache.s3.statistics.Statistics;
 import org.geowebcache.s3.statistics.SubStats;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CaptureCallback implements Callback {
     private final Callback delegate;
@@ -21,10 +22,6 @@ public class CaptureCallback implements Callback {
     Statistics statistics = null;
     List<SubStats> subStats = new ArrayList<>();
     List<BatchStats> batchStats = new ArrayList<>();
-
-    public Callback getDelegate() {
-        return delegate;
-    }
 
     public long getBatchStartedCount() {
         return batchStartedCount;

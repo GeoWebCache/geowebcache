@@ -13,9 +13,6 @@
  */
 package org.geowebcache.s3;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.Objects.isNull;
-
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
@@ -25,16 +22,6 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.filter.parameters.ParametersUtils;
@@ -48,6 +35,20 @@ import org.geowebcache.s3.callback.*;
 import org.geowebcache.s3.delete.*;
 import org.geowebcache.storage.*;
 import org.geowebcache.util.TMSKeyBuilder;
+
+import javax.annotation.Nullable;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.isNull;
 
 public class S3BlobStore implements BlobStore {
 
@@ -415,7 +416,7 @@ public class S3BlobStore implements BlobStore {
         final String key = keyBuilder.forTile(obj);
 
         try {
-            DeleteTileObject deleteTile = new DeleteTileObject(obj, key, listeners.isEmpty());
+            DeleteTileObject deleteTile = new DeleteTileObject(obj, key);
             Callback callback;
             if (listeners.isEmpty()) {
                 callback = new StatisticCallbackDecorator();

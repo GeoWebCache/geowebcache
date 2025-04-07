@@ -1,10 +1,10 @@
 package org.geowebcache.s3.callback;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static org.geowebcache.s3.statistics.StatisticsTestHelper.*;
-
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.BlobStoreListenerList;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.geowebcache.s3.statistics.StatisticsTestHelper.*;
 
 public class CallbackTestHelper {
 

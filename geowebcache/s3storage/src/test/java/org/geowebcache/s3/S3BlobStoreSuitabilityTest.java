@@ -13,12 +13,7 @@
  */
 package org.geowebcache.s3;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItemInArray;
-import static org.junit.Assume.assumeFalse;
-
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import java.io.InputStream;
 import org.apache.commons.io.input.NullInputStream;
 import org.easymock.EasyMock;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -36,6 +31,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
+
+import java.io.InputStream;
+
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItemInArray;
+import static org.junit.Assume.assumeFalse;
 
 @RunWith(S3BlobStoreSuitabilityTest.MyTheories.class)
 public class S3BlobStoreSuitabilityTest extends BlobStoreSuitabilityTest {

@@ -1,12 +1,13 @@
 package org.geowebcache.s3.streams;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import java.util.Iterator;
-import java.util.function.Supplier;
 import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.S3ObjectsWrapper;
+
+import java.util.Iterator;
+import java.util.function.Supplier;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * S3ObjectPathsForPrefixSupplier This class will interact with the AmazonS3 connection to retrieve all the objects with

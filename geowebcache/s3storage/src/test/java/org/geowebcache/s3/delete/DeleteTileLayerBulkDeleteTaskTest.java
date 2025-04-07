@@ -1,11 +1,5 @@
 package org.geowebcache.s3.delete;
 
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.S3ObjectPathsForPrefix;
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import org.geowebcache.s3.AmazonS3Wrapper;
 import org.geowebcache.s3.S3ObjectsWrapper;
@@ -17,6 +11,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.S3ObjectPathsForPrefix;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DeleteTileLayerBulkDeleteTaskTest {
@@ -48,7 +48,7 @@ public class DeleteTileLayerBulkDeleteTaskTest {
     }
 
     @Test
-    public void testCall_WhenBatchOrLessToProcess() throws Exception {
+    public void testCall_WhenBatchOrLessToProcess() {
         when(s3ObjectsWrapper.iterator())
                 .thenAnswer(invocation -> S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST().iterator());
         when(amazonS3Wrapper.deleteObjects(any(DeleteObjectsRequest.class))).thenAnswer(invocationOnMock -> {
@@ -76,7 +76,7 @@ public class DeleteTileLayerBulkDeleteTaskTest {
     }
 
     @Test
-    public void testCall_WhenMoreThanBatchToProcess() throws Exception {
+    public void testCall_WhenMoreThanBatchToProcess() {
         when(s3ObjectsWrapper.iterator()).thenReturn(S_3_OBJECT_SUMMARY_LARGE_LIST.iterator());
         when(amazonS3Wrapper.deleteObjects(any(DeleteObjectsRequest.class))).thenAnswer(invocationOnMock -> {
             DeleteObjectsRequest request =

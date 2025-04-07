@@ -52,7 +52,7 @@ public class TileIteratorSupplierTest {
     }
 
     @Test
-    public void test_next_singleZoom_singleBound_not_matching() throws Exception {
+    public void test_next_singleZoom_singleBound_not_matching() {
         TileIterator tileIterator = new TileIterator(SINGLE_ZOOM_SINGLE_BOUND_NOT_MATCHING, ONE_BY_ONE_META_TILING_FACTOR);
         DeleteTileZoomInBoundedBox deleteTileZoomInBoundedBox = new DeleteTileZoomInBoundedBox(
                 PREFIX, BUCKET, LAYER_ID, GRID_SET_ID, FORMAT_IN_KEY, PARAMETERS_ID, ZOOM_LEVEL_4, SMALL_BOUNDED_BOX, MULTIPLE_ZOOM_SINGLE_BOUND_PER_ZOOM_MATCHING, ONE_BY_ONE_META_TILING_FACTOR);

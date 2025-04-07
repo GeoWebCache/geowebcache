@@ -1,8 +1,5 @@
 package org.geowebcache.s3.callback;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
-
 import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.delete.*;
 import org.geowebcache.s3.statistics.BatchStats;
@@ -11,6 +8,9 @@ import org.geowebcache.s3.statistics.Statistics;
 import org.geowebcache.s3.statistics.SubStats;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.BlobStoreListenerList;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
 
 public class NotificationDecorator implements Callback {
 

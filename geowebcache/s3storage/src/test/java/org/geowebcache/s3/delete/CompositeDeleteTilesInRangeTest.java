@@ -5,7 +5,6 @@ import org.junit.Test;
 import java.util.Optional;
 
 import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.FORMAT_IN_KEY;
 import static org.geowebcache.s3.streams.StreamTestHelper.SINGLE_ZOOM_SINGLE_BOUND_MATCHING;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;

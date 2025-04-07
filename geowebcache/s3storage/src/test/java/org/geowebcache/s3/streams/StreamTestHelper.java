@@ -5,9 +5,6 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.storage.TileRange;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
 
 public class StreamTestHelper {

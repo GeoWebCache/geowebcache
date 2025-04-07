@@ -1,14 +1,5 @@
 package org.geowebcache.s3.delete;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.Callable;
-import java.util.stream.Stream;
-
 import org.geowebcache.s3.AmazonS3Wrapper;
 import org.geowebcache.s3.S3BlobStore;
 import org.geowebcache.s3.S3ObjectsWrapper;
@@ -16,6 +7,15 @@ import org.geowebcache.s3.callback.Callback;
 import org.geowebcache.s3.statistics.Statistics;
 import org.geowebcache.s3.statistics.SubStats;
 import org.geowebcache.s3.streams.*;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.stream.Stream;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
 
 public class BulkDeleteTask implements Callable<Long> {
     private final AmazonS3Wrapper amazonS3Wrapper;
@@ -110,18 +110,18 @@ public class BulkDeleteTask implements Callable<Long> {
     }
 
     private Long singleTile(DeleteTileRange deleteRange) {
-        SubStats subStats = new SubStats(deleteTileRange, SingleTile);
+        SubStats subStats = new SubStats(deleteRange, SingleTile);
         callback.subTaskStarted(subStats);
 
         PerformDeleteObjects performDeleteObjects =
-                new PerformDeleteObjects(amazonS3Wrapper, bucketName, callback, subStats, deleteTileRange);
+                new PerformDeleteObjects(amazonS3Wrapper, bucketName, callback, subStats, deleteRange);
 
         S3BlobStore.getLog()
                 .info(format(
                         "Using strategy SingleTile to a delete tile from bucket %s with prefix: %s",
-                        bucketName, deleteTileRange.path()));
+                        bucketName, deleteRange.path()));
 
-        Long count = batchedStreamOfKeyObjects(deleteTileRange, subStats)
+        Long count = batchedStreamOfKeyObjects(deleteRange)
                 .map(mapKeyObjectsToDeleteObjectRequest)
                 .mapToLong(performDeleteObjects)
                 .sum();
@@ -129,7 +129,7 @@ public class BulkDeleteTask implements Callable<Long> {
         S3BlobStore.getLog()
                 .info(format(
                         "Finished applying strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s processed: %d",
-                        bucketName, deleteTileRange.path(), count));
+                        bucketName, deleteRange.path(), count));
 
         callback.subTaskEnded();
         return subStats.getProcessed();
@@ -203,7 +203,7 @@ public class BulkDeleteTask implements Callable<Long> {
                         "Using strategy S3ObjectPathsForPrefix to delete tiles of bucket %s with prefix: %s",
                         bucketName, deleteTileRange.path()));
 
-        var count = batchedStreamOfKeyObjects(deleteTileRange, subStats)
+        var count = batchedStreamOfKeyObjects(deleteTileRange)
                 .map(mapKeyObjectsToDeleteObjectRequest)
                 .mapToLong(performDeleteObjects)
                 .sum();
@@ -222,13 +222,13 @@ public class BulkDeleteTask implements Callable<Long> {
         return subStats.getProcessed();
     }
 
-    private Stream<List<DeleteTileInfo>> batchedStreamOfKeyObjects(DeleteTileRange deleteTileRange, SubStats stats) {
+    private Stream<List<DeleteTileInfo>> batchedStreamOfKeyObjects(DeleteTileRange deleteTileRange) {
         return BatchingIterator.batchedStreamOf(
-                generateStreamOfKeyObjects(createS3ObjectPathsForPrefixSupplier(deleteTileRange.path()), stats), batch);
+                generateStreamOfKeyObjects(createS3ObjectPathsForPrefixSupplier(deleteTileRange.path())), batch);
     }
 
     private Stream<DeleteTileInfo> generateStreamOfKeyObjects(
-            S3ObjectPathsForPrefixSupplier supplier, SubStats subStats) {
+            S3ObjectPathsForPrefixSupplier supplier) {
         return Stream.generate(supplier).takeWhile(Objects::nonNull).map(mapS3ObjectSummaryToKeyObject);
     }
 

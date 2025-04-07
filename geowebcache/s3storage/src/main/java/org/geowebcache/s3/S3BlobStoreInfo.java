@@ -13,18 +13,12 @@
  */
 package org.geowebcache.s3;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
 import com.amazonaws.auth.*;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.S3ClientOptions;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.SerializationUtils;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheEnvironment;
@@ -34,6 +28,13 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.StorageException;
+
+import javax.annotation.Nullable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 /** Plain old java object representing the configuration for an S3 blob store. */
 @SuppressWarnings("deprecation")

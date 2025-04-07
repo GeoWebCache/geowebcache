@@ -3,10 +3,11 @@ package org.geowebcache.s3.delete;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import org.geowebcache.storage.TileObject;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
-import org.geowebcache.storage.TileObject;
 
 import static org.geowebcache.s3.delete.DeleteTileRangeWithTileRange.ONE_BY_ONE_META_TILING_FACTOR;
 import static org.geowebcache.s3.streams.StreamTestHelper.SINGLE_ZOOM_SINGLE_BOUND_MATCHING;
@@ -48,10 +49,10 @@ public class BulkDeleteTaskTestHelper {
     public static final Set<Long> ZOOM_LEVEL_SET_1 = Set.of(1L);
     // public static final Set<Long> ZOOM_LEVEL_4 = Set.of(4L);
 
-    public static final long[][] SMALL_RANGE_BOUNDS_ZOOM_4_ZOOM_4 = {{0,0,3,3,4}};
-    public static final long[][] LARGE_RANGE_BOUNDS_ZOOM_4_ZOOM_8 = {{0,0,8,8,4},{0,0,16,16,4},{0,0,32,32,7},{0,0,64,64,6},{0,0,64,64,6}};
+    //public static final long[][] SMALL_RANGE_BOUNDS_ZOOM_4_ZOOM_4 = {{0,0,3,3,4}};
+    //public static final long[][] LARGE_RANGE_BOUNDS_ZOOM_4_ZOOM_8 = {{0,0,8,8,4},{0,0,16,16,4},{0,0,32,32,7},{0,0,64,64,6},{0,0,64,64,6}};
     public static final long[] SMALL_BOUNDED_BOX = {0,0,3,3};
-    public static final long[] LARGE_BOUNDED_BOX = {0,0,128,128};
+    //public static final long[] LARGE_BOUNDED_BOX = {0,0,128,128};
 
     public static final Set<Long> ZOOM_LEVEL_0_THROUGH_9 = Set.of(0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L);
 
@@ -128,7 +129,7 @@ public class BulkDeleteTaskTestHelper {
     public static final List<S3ObjectSummary> S_3_OBJECT_SUMMARY_SINGLE_TILE_LIST =
             generateLayerSummaries(SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, ZOOM_LEVEL_SET_0);
 
-    public static final List<S3ObjectSummary> S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST() {
+    public static List<S3ObjectSummary> S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST() {
         return generateLayerSummaries(SINGLE_SET_OF_GRID_SET_IDS, SINGLE_SET_OF_FORMATS, ZOOM_LEVEL_SET_1);
     }
 

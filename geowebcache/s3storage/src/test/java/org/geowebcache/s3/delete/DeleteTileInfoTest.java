@@ -1,18 +1,19 @@
 package org.geowebcache.s3.delete;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.regex.Matcher;
+
 import static java.lang.String.format;
 import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.regex.Matcher;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DeleteTileInfoTest {
@@ -334,31 +335,6 @@ public class DeleteTileInfoTest {
         final long y;
         final long z;
         final RuntimeException err;
-
-        public TestHelper(
-                String name,
-                String objectKey,
-                String prefix,
-                String layerId,
-                String gridSetId,
-                String format,
-                String parameterSha,
-                long x,
-                long y,
-                long z,
-                RuntimeException err) {
-            this.name = name;
-            this.prefix = prefix;
-            this.objectKey = objectKey;
-            this.layerId = layerId;
-            this.gridSetId = gridSetId;
-            this.format = format;
-            this.parameterSha = parameterSha;
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.err = err;
-        }
 
         public TestHelper(
                 String name,

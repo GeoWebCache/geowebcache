@@ -4,7 +4,7 @@ package org.geowebcache.s3.streams;
 import org.junit.Test;
 
 import static org.geowebcache.s3.delete.DeleteTileRangeWithTileRange.ONE_BY_ONE_META_TILING_FACTOR;
-import static org.geowebcache.s3.streams.StreamTestHelper.*;
+import static org.geowebcache.s3.streams.StreamTestHelper.SINGLE_ZOOM_SINGLE_BOUND_MATCHING;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
