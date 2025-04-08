@@ -31,6 +31,7 @@ public class DeleteTileLayer implements DeleteTileRange {
         return prefix;
     }
 
+    @Override
     public String path() {
         return path;
     }
