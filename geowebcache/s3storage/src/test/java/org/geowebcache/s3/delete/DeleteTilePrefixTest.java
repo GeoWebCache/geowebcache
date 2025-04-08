@@ -51,11 +51,4 @@ public class DeleteTilePrefixTest {
                 "Path cannot be null", NullPointerException.class, () -> new DeleteTilePrefix(PREFIX, BUCKET, null));
     }
 
-    @Test
-    public void testDeleteTilePrefix_constructor_pathMustBeValid() {
-        assertThrows(
-                "Path must be at least have a layer_id",
-                IllegalArgumentException.class,
-                () -> new DeleteTilePrefix(PREFIX, BUCKET, format("%s/", PREFIX)));
-    }
 }

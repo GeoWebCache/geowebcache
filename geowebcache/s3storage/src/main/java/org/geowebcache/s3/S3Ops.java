@@ -88,6 +88,9 @@ public class S3Ops {
 
     private void issuePendingBulkDeletes() {
         final String pendingDeletesKey = keyBuilder.pendingDeletes();
+        // Seems to be a conflations of terms prefix and path. Is the prefix meant
+        // to be something added to a relative path to make it an absolute path.
+        // The full file path is saved when the in the key. No additional prefix is needed.
         final String assumedPrefix = "";
 
         Properties deletes = getProperties(pendingDeletesKey);
@@ -168,6 +171,7 @@ public class S3Ops {
                 .withDeleteRange(deleteTileRange)
                 .withCallback(callback)
                 .withBatch(BATCH_SIZE)
+                .withLogger(logger)
                 .build();
 
         deleteExecutorService.submit(task);

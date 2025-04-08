@@ -55,6 +55,7 @@ public class Demo {
 
     private static Logger LOGGER = Logging.getLogger(Demo.class.getName());
 
+    @SuppressWarnings("DefaultCharset")
     public static void makeMap(
             TileLayerDispatcher tileLayerDispatcher,
             GridSetBroker gridSetBroker,
@@ -118,6 +119,7 @@ public class Demo {
         }
     }
 
+    @SuppressWarnings("JdkObsolete")
     private static String generateHTML(TileLayerDispatcher tileLayerDispatcher, GridSetBroker gridSetBroker)
             throws GeoWebCacheException {
         String reloadPath = "rest/reload";
@@ -216,6 +218,7 @@ public class Demo {
         }
     }
 
+    @SuppressWarnings("ReferenceEquality")
     private static void outputKMLSupport(StringBuffer buf, TileLayer layer) {
         buf.append(" &nbsp; KML: [");
         String prefix = "";
@@ -378,6 +381,7 @@ public class Demo {
         return buf.append("</body>\n</html>").toString();
     }
 
+    @SuppressWarnings("StringCaseLocaleUsage")
     private static String makeModifiableParameters(TileLayer tl) {
         List<ParameterFilter> parameterFilters = tl.getParameterFilters();
         if (parameterFilters == null || parameterFilters.isEmpty()) {

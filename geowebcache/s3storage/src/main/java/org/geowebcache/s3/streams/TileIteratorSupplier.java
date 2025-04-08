@@ -36,7 +36,8 @@ public class TileIteratorSupplier implements Supplier<DeleteTileInfo> {
                                 tileRange.getGridSetId(),
                                 deleteTileZoomInBoundedBox.getFormat(),
                                 tileRange.getParameters(),
-                                null));
+                                null),
+                        deleteTileZoomInBoundedBox.getFormat());
             } else {
                 return null;
             }

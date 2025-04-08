@@ -1,6 +1,5 @@
 package org.geowebcache.s3.delete;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class DeleteTilePrefix implements DeleteTileRange {
@@ -12,7 +11,6 @@ public class DeleteTilePrefix implements DeleteTileRange {
         checkNotNull(prefix, "prefix must not be null");
         checkNotNull(bucket, "bucket must not be null");
         checkNotNull(path, "path must not be null");
-        checkArgument(DeleteTileInfo.isPathValid(path, prefix), "path must be valid");
 
         this.prefix = prefix;
         this.bucket = bucket;

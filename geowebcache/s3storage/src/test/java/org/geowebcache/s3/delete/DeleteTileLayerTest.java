@@ -8,7 +8,7 @@ import org.junit.Test;
 
 public class DeleteTileLayerTest {
     private static final String PATH_WITH_PREFIX = "prefix/layer-id/";
-    private static final String PATH_WITHOUT_PREFIX = "/layer-id/";
+    private static final String PATH_WITHOUT_PREFIX = "layer-id/";
 
     @Test
     public void testConstructor_WithDeleteTileLayer_PrefixSet() {

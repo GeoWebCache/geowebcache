@@ -144,7 +144,6 @@ public class BulkDeleteTask implements Callable<Long> {
     }
 
     private Long tileRangeWithBounderBoxIfTileExists(DeleteTileRangeWithTileRange deleteTileRange) {
-        logger.warning("Strategy TileRangeWithBounderBoxIfTileExists not implemented");
         SubStats subStats = new SubStats(deleteTileRange, TileRangeWithBoundedBoxIfTileExist);
         callback.subTaskStarted(subStats);
 
