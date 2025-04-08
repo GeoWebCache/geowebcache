@@ -1,6 +1,11 @@
 package org.geowebcache.s3.delete;
 
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.FORMAT_IN_KEY;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.GRID_SET_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.LAYER_NAME;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.PARAMETERS;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.PREFIX;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.XYZ;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 

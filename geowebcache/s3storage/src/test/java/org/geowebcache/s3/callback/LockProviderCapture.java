@@ -1,6 +1,8 @@
 package org.geowebcache.s3.callback;
 
-import static org.geowebcache.s3.callback.LockProviderCapture.LockProviderMode.*;
+import static org.geowebcache.s3.callback.LockProviderCapture.LockProviderMode.AlwaysSucceed;
+import static org.geowebcache.s3.callback.LockProviderCapture.LockProviderMode.ThrowOnLock;
+import static org.geowebcache.s3.callback.LockProviderCapture.LockProviderMode.ThrowOnRelease;
 
 import java.util.List;
 import org.geowebcache.GeoWebCacheException;

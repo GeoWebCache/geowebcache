@@ -2,7 +2,14 @@ package org.geowebcache.s3.delete;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.DefaultStrategy;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.NoDeletionsRequired;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.RetryPendingTask;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.S3ObjectPathsForPrefix;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.S3ObjectPathsForPrefixFilterByBoundedBox;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.SingleTile;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.TileRangeWithBoundedBox;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.TileRangeWithBoundedBoxIfTileExist;
 
 import java.util.List;
 import java.util.Objects;
@@ -14,7 +21,13 @@ import org.geowebcache.s3.S3ObjectsWrapper;
 import org.geowebcache.s3.callback.Callback;
 import org.geowebcache.s3.statistics.Statistics;
 import org.geowebcache.s3.statistics.SubStats;
-import org.geowebcache.s3.streams.*;
+import org.geowebcache.s3.streams.BatchingIterator;
+import org.geowebcache.s3.streams.MapKeyObjectsToDeleteObjectRequest;
+import org.geowebcache.s3.streams.MapS3ObjectSummaryToKeyObject;
+import org.geowebcache.s3.streams.PerformDeleteObjects;
+import org.geowebcache.s3.streams.S3ObjectPathsForPrefixSupplier;
+import org.geowebcache.s3.streams.TileIterator;
+import org.geowebcache.s3.streams.TileIteratorSupplier;
 
 public class BulkDeleteTask implements Callable<Long> {
     private final AmazonS3Wrapper amazonS3Wrapper;

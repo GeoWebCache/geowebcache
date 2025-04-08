@@ -1,6 +1,11 @@
 package org.geowebcache.s3.delete;
 
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.BUCKET;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.FORMAT_IN_KEY;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.GRID_SET_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.LAYER_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.PREFIX;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.ZOOM_LEVEL_4;
 import static org.geowebcache.s3.streams.StreamTestHelper.SINGLE_ZOOM_SINGLE_BOUND_MATCHING;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;

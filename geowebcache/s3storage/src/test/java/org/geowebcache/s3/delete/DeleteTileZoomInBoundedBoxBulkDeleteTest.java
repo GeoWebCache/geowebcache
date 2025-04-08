@@ -1,14 +1,27 @@
 package org.geowebcache.s3.delete;
 
 import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.TileRangeWithBoundedBoxIfTileExist;
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.BATCH;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.BUCKET;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.FORMAT_IN_KEY;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.GRID_SET_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.LAYER_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.LOGGER;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.PARAMETERS_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.PREFIX;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.SINGLE_ZOOM_SINGLE_BOUND_DELETE_TILES_IN_RANGE;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.SINGLE_ZOOM_SINGLE_BOUND_TILES;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.SMALL_BOUNDED_BOX;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.ZOOM_LEVEL_4;
 import static org.geowebcache.s3.delete.DeleteTileRangeWithTileRange.ONE_BY_ONE_META_TILING_FACTOR;
 import static org.geowebcache.s3.streams.StreamTestHelper.SINGLE_ZOOM_SINGLE_BOUND_MATCHING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import org.geowebcache.s3.AmazonS3Wrapper;

@@ -2,7 +2,9 @@ package org.geowebcache.s3.callback;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
-import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.*;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.NoDeletionsRequired;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.RetryPendingTask;
+import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.SingleTile;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

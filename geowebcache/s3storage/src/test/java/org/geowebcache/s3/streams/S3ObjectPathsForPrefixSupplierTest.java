@@ -1,6 +1,8 @@
 package org.geowebcache.s3.streams;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.s3.model.S3ObjectSummary;

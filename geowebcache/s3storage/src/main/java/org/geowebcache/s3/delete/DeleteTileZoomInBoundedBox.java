@@ -47,6 +47,7 @@ public class DeleteTileZoomInBoundedBox implements DeleteTileRangeWithTileRange 
         return path;
     }
 
+    @Override
     public String getPrefix() {
         return prefix;
     }
@@ -55,18 +56,22 @@ public class DeleteTileZoomInBoundedBox implements DeleteTileRangeWithTileRange 
         return bucketName;
     }
 
+    @Override
     public String getLayerId() {
         return layerId;
     }
 
+    @Override
     public String getGridSetId() {
         return gridSetId;
     }
 
+    @Override
     public String getFormat() {
         return format;
     }
 
+    @Override
     public String getParametersId() {
         return parametersId;
     }
@@ -79,6 +84,7 @@ public class DeleteTileZoomInBoundedBox implements DeleteTileRangeWithTileRange 
         return boundedBox;
     }
 
+    @Override
     public TileRange getTileRange() {
         return tileRange;
     }

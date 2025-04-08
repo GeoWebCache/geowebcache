@@ -8,6 +8,7 @@ public interface CompositeDeleteTileRange extends DeleteTileRange {
 
     void add(DeleteTileRange child);
 
+    @Override
     default Stream<DeleteTileRange> stream() {
         return children().stream();
     }

@@ -3,7 +3,10 @@ package org.geowebcache.s3.callback;
 import static org.geowebcache.s3.callback.CallbackTestHelper.WithSubTaskStarted;
 import static org.geowebcache.s3.callback.LockProviderCapture.LockProviderMode.AlwaysSucceed;
 import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.LOGGER;
-import static org.geowebcache.s3.statistics.StatisticsTestHelper.*;
+import static org.geowebcache.s3.statistics.StatisticsTestHelper.EMPTY_BATCH_STATS;
+import static org.geowebcache.s3.statistics.StatisticsTestHelper.EMPTY_RESULT_STAT;
+import static org.geowebcache.s3.statistics.StatisticsTestHelper.EMPTY_STATISTICS;
+import static org.geowebcache.s3.statistics.StatisticsTestHelper.EMPTY_SUB_STATS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
@@ -34,11 +37,10 @@ public class LockingDecoratorTest {
 
     @Test
     public void test_constructor_delegateCannotBeNull() {
-        Exception exp = assertThrows(
+        assertThrows(
                 "delegate cannot be null",
                 NullPointerException.class,
                 () -> lockingDecorator = new LockingDecorator(null, lockProvider, logger));
-        System.out.println(exp.getMessage());
     }
 
     @Test

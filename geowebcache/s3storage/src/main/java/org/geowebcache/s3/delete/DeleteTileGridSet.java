@@ -19,6 +19,7 @@ public class DeleteTileGridSet implements DeleteTileRange {
         this.path = DeleteTileInfo.toGridSet(prefix, layerId, gridSetId);
     }
 
+    @Override
     public String path() {
         return path;
     }

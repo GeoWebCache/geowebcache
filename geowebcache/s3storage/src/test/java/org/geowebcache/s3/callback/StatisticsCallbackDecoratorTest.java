@@ -1,13 +1,21 @@
 package org.geowebcache.s3.callback;
 
-import static org.geowebcache.s3.callback.CallbackTestHelper.*;
-import static org.geowebcache.s3.statistics.StatisticsTestHelper.*;
+import static org.geowebcache.s3.callback.CallbackTestHelper.WithBatchStarted;
+import static org.geowebcache.s3.callback.CallbackTestHelper.WithSubTaskEnded;
+import static org.geowebcache.s3.callback.CallbackTestHelper.WithSubTaskStarted;
+import static org.geowebcache.s3.callback.CallbackTestHelper.WithTaskStarted;
+import static org.geowebcache.s3.statistics.StatisticsTestHelper.EMPTY_BATCH_STATS;
+import static org.geowebcache.s3.statistics.StatisticsTestHelper.EMPTY_RESULT_STAT;
+import static org.geowebcache.s3.statistics.StatisticsTestHelper.EMPTY_STATISTICS;
+import static org.geowebcache.s3.statistics.StatisticsTestHelper.EMPTY_SUB_STATS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.atMostOnce;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.logging.Logger;
 import org.geowebcache.s3.statistics.BatchStats;

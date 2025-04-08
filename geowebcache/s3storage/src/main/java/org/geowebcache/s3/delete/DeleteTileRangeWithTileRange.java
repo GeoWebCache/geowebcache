@@ -7,7 +7,7 @@ public interface DeleteTileRangeWithTileRange extends DeleteTileRange {
 
     int[] getMetaTilingFactor();
 
-    int[] ONE_BY_ONE_META_TILING_FACTOR = new int[] {1, 1};
+    int[] ONE_BY_ONE_META_TILING_FACTOR = {1, 1};
 
     // When iterating over a parameter range all of these are available
     String getLayerId();

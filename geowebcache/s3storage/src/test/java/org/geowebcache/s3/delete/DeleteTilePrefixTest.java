@@ -1,7 +1,14 @@
 package org.geowebcache.s3.delete;
 
-import static java.lang.String.format;
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.BUCKET;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.EXTENSION;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.FORMAT_IN_KEY;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.GRID_SET_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.LAYER_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.PARAMETERS_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.PREFIX;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.XYZ;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.ZOOM_LEVEL_4;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -50,5 +57,4 @@ public class DeleteTilePrefixTest {
         assertThrows(
                 "Path cannot be null", NullPointerException.class, () -> new DeleteTilePrefix(PREFIX, BUCKET, null));
     }
-
 }

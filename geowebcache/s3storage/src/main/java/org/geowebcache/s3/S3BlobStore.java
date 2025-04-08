@@ -18,14 +18,29 @@ import static java.util.Objects.isNull;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.AccessControlList;
+import com.amazonaws.services.s3.model.BucketPolicy;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.Grant;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.io.ByteStreams;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -39,9 +54,25 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.s3.callback.*;
-import org.geowebcache.s3.delete.*;
-import org.geowebcache.storage.*;
+import org.geowebcache.s3.callback.Callback;
+import org.geowebcache.s3.callback.LockingDecorator;
+import org.geowebcache.s3.callback.MarkPendingDeleteDecorator;
+import org.geowebcache.s3.callback.NotificationDecorator;
+import org.geowebcache.s3.callback.StatisticCallbackDecorator;
+import org.geowebcache.s3.delete.CompositeDeleteTileParameterId;
+import org.geowebcache.s3.delete.CompositeDeleteTileRange;
+import org.geowebcache.s3.delete.CompositeDeleteTilesInRange;
+import org.geowebcache.s3.delete.DeleteTileGridSet;
+import org.geowebcache.s3.delete.DeleteTileLayer;
+import org.geowebcache.s3.delete.DeleteTileObject;
+import org.geowebcache.s3.delete.DeleteTileRange;
+import org.geowebcache.storage.BlobStore;
+import org.geowebcache.storage.BlobStoreListener;
+import org.geowebcache.storage.BlobStoreListenerList;
+import org.geowebcache.storage.CompositeBlobStore;
+import org.geowebcache.storage.StorageException;
+import org.geowebcache.storage.TileObject;
+import org.geowebcache.storage.TileRange;
 import org.geowebcache.util.TMSKeyBuilder;
 
 public class S3BlobStore implements BlobStore {
@@ -275,7 +306,6 @@ public class S3BlobStore implements BlobStore {
     public boolean delete(String layerName) {
         checkNotNull(layerName, "layerName");
 
-        final String metadataKey = keyBuilder.layerMetadata(layerName);
         final String layerId = keyBuilder.layerId(layerName);
 
         DeleteTileRange deleteLayer = new DeleteTileLayer(keyBuilder.getPrefix(), bucketName, layerId, layerName);

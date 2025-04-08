@@ -1,8 +1,18 @@
 package org.geowebcache.s3.streams;
 
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.BUCKET;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.FORMAT_IN_KEY;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.GRID_SET_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.LAYER_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.PARAMETERS_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.PREFIX;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.SMALL_BOUNDED_BOX;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.ZOOM_LEVEL_4;
 import static org.geowebcache.s3.delete.DeleteTileRangeWithTileRange.ONE_BY_ONE_META_TILING_FACTOR;
-import static org.geowebcache.s3.streams.StreamTestHelper.*;
+import static org.geowebcache.s3.streams.StreamTestHelper.MULTIPLE_ZOOM_SINGLE_BOUND_PER_ZOOM_MATCHING;
+import static org.geowebcache.s3.streams.StreamTestHelper.SINGLE_ZOOM_MULTIPLE_BOUNDS_MATCHING;
+import static org.geowebcache.s3.streams.StreamTestHelper.SINGLE_ZOOM_SINGLE_BOUND_MATCHING;
+import static org.geowebcache.s3.streams.StreamTestHelper.SINGLE_ZOOM_SINGLE_BOUND_NOT_MATCHING;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;

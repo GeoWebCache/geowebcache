@@ -1,7 +1,9 @@
 package org.geowebcache.s3.callback;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.geowebcache.s3.statistics.StatisticsTestHelper.*;
+import static org.geowebcache.s3.statistics.StatisticsTestHelper.EMPTY_BATCH_STATS;
+import static org.geowebcache.s3.statistics.StatisticsTestHelper.EMPTY_STATISTICS;
+import static org.geowebcache.s3.statistics.StatisticsTestHelper.EMPTY_SUB_STATS;
 
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.BlobStoreListenerList;

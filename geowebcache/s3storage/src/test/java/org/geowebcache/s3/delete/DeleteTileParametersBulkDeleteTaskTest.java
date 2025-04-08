@@ -1,7 +1,16 @@
 package org.geowebcache.s3.delete;
 
 import static org.geowebcache.s3.delete.BulkDeleteTask.ObjectPathStrategy.S3ObjectPathsForPrefix;
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.BATCH;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.BUCKET;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.FORMAT_IN_KEY;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.GRID_SET_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.LAYER_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.LAYER_NAME;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.LOGGER;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.PARAMETERS_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.PREFIX;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.S_3_OBJECT_SUMMARY_SINGLE_BATCH_LIST;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;

@@ -1,6 +1,11 @@
 package org.geowebcache.s3.streams;
 
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.GRID_SET_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.LAYER_NAME;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.PARAMETERS;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.ZOOM_LEVEL_4;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.ZOOM_LEVEL_6;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.ZOOM_LEVEL_9;
 
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
@@ -14,7 +19,7 @@ public class StreamTestHelper {
         try {
             PNG_MIME_TYPE = MimeType.createFromExtension("png");
         } catch (MimeException e) {
-            System.err.println(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 

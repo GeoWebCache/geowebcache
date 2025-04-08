@@ -51,6 +51,7 @@ public class CompositeDeleteTileParameterId implements CompositeDeleteTileRange 
                 this.prefix, this.bucket, this.layerId, gridSetId, format, this.parametersId, this.layerName))));
     }
 
+    @Override
     public String path() {
         return path;
     }

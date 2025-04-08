@@ -1,11 +1,18 @@
 package org.geowebcache.s3.delete;
 
-import static java.lang.String.format;
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.EXTENSION;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.FORMAT_IN_KEY;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.GRID_SET_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.LAYER_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.PARAMETERS_ID;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.PREFIX;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.XYZ;
 import static org.geowebcache.s3.delete.DeleteTileInfo.EXTENSION_GROUP_POS;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Objects;
@@ -36,7 +43,6 @@ public class DeleteTileInfoTest {
                         null,
                         EXTENSION)
                 .objectPath();
-        ;
 
         Matcher keyMatcher = DeleteTileInfo.keyRegex.matcher(result);
         assertTrue("Regex does not match " + result, keyMatcher.matches());
@@ -58,7 +64,6 @@ public class DeleteTileInfoTest {
                         null,
                         EXTENSION)
                 .objectPath();
-        ;
 
         Matcher keyMatcher = DeleteTileInfo.keyRegex.matcher(result);
         assertTrue("Regex does not match " + result, keyMatcher.matches());
@@ -80,7 +85,6 @@ public class DeleteTileInfoTest {
                         null,
                         EXTENSION)
                 .objectPath();
-        ;
 
         Matcher keyMatcher = DeleteTileInfo.keyRegex.matcher(result);
         assertTrue("Regex does not match " + result, keyMatcher.matches());
@@ -102,7 +106,6 @@ public class DeleteTileInfoTest {
                         null,
                         EXTENSION)
                 .objectPath();
-        ;
 
         Matcher keyMatcher = DeleteTileInfo.keyRegex.matcher(result);
         assertTrue("Regex does not match " + result, keyMatcher.matches());
@@ -124,7 +127,6 @@ public class DeleteTileInfoTest {
                         null,
                         EXTENSION)
                 .objectPath();
-        ;
 
         Matcher keyMatcher = DeleteTileInfo.keyRegex.matcher(result);
         assertTrue("Regex does not match " + result, keyMatcher.matches());
@@ -147,7 +149,6 @@ public class DeleteTileInfoTest {
                         null,
                         EXTENSION)
                 .objectPath();
-        ;
 
         Matcher keyMatcher = DeleteTileInfo.keyRegex.matcher(result);
         assertTrue("Regex does not match " + result, keyMatcher.matches());
@@ -170,7 +171,6 @@ public class DeleteTileInfoTest {
                         null,
                         EXTENSION)
                 .objectPath();
-        ;
 
         Matcher keyMatcher = DeleteTileInfo.keyRegex.matcher(result);
         assertTrue("Regex does not match " + result, keyMatcher.matches());

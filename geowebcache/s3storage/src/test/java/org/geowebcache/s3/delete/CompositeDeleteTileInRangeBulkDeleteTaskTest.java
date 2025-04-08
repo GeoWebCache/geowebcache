@@ -1,10 +1,16 @@
 package org.geowebcache.s3.delete;
 
-import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.*;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.BATCH;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.BUCKET;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.LOGGER;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.SINGLE_ZOOM_SINGLE_BOUND_COMPOSITE_DELETE_TILES_IN_RANGE;
+import static org.geowebcache.s3.delete.BulkDeleteTaskTestHelper.SINGLE_ZOOM_SINGLE_BOUND_TILES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import org.geowebcache.s3.AmazonS3Wrapper;

@@ -49,6 +49,7 @@ public class DeleteTileParametersId implements DeleteTileRange {
         this.path = DeleteTileInfo.toParametersId(prefix, layerId, gridSetId, format, parametersId);
     }
 
+    @Override
     public String path() {
         return path;
     }

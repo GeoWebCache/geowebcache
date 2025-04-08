@@ -4,7 +4,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
 import java.util.logging.Logger;
-import org.geowebcache.s3.delete.*;
+import org.geowebcache.s3.delete.DeleteTileGridSet;
+import org.geowebcache.s3.delete.DeleteTileLayer;
+import org.geowebcache.s3.delete.DeleteTileObject;
+import org.geowebcache.s3.delete.DeleteTileParametersId;
+import org.geowebcache.s3.delete.DeleteTileRange;
+import org.geowebcache.s3.delete.DeleteTileZoom;
+import org.geowebcache.s3.delete.DeleteTileZoomInBoundedBox;
 import org.geowebcache.s3.statistics.BatchStats;
 import org.geowebcache.s3.statistics.ResultStat;
 import org.geowebcache.s3.statistics.Statistics;
