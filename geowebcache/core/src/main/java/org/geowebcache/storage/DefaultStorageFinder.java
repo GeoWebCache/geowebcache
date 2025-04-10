@@ -94,7 +94,7 @@ public class DefaultStorageFinder {
                 String value = v.getValue();
                 if (value == null || value.isEmpty()) {
                     if (log.isLoggable(Level.FINE)) {
-                        log.fine(typeStr + varStr + " is unset");
+                        log.fine(typeStr + " " + varStr + " is unset");
                     }
                     continue;
                 }
@@ -102,18 +102,18 @@ public class DefaultStorageFinder {
                 File fh = new File(value);
 
                 // Being a bit pessimistic here
-                msgPrefix = "Found " + typeStr + varStr + " set to " + value;
+                msgPrefix = "Found " + typeStr + " " + varStr + " set to " + value;
 
                 if (!fh.exists()) {
-                    log.log(Level.SEVERE, msgPrefix + " , but this path does not exist");
+                    log.log(Level.SEVERE, msgPrefix + ", but this path does not exist");
                     continue;
                 }
                 if (!fh.isDirectory()) {
-                    log.log(Level.SEVERE, msgPrefix + " , which is not a directory");
+                    log.log(Level.SEVERE, msgPrefix + ", which is not a directory");
                     continue;
                 }
                 if (!fh.canWrite()) {
-                    log.log(Level.SEVERE, msgPrefix + " , which is not writeable");
+                    log.log(Level.SEVERE, msgPrefix + ", which is not writeable");
                     continue;
                 }
 
