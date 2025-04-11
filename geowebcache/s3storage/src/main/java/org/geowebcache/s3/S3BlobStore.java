@@ -29,7 +29,6 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.io.ByteStreams;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -43,9 +42,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -80,8 +76,6 @@ public class S3BlobStore implements BlobStore {
     private final TMSKeyBuilder keyBuilder;
 
     private String bucketName;
-
-    private volatile boolean shutDown;
 
     private final S3Ops s3Ops;
 
@@ -170,7 +164,6 @@ public class S3BlobStore implements BlobStore {
 
     @Override
     public void destroy() {
-        this.shutDown = true;
         AmazonS3Client conn = this.conn;
         this.conn = null;
         if (conn != null) {
@@ -474,18 +467,5 @@ public class S3BlobStore implements BlobStore {
                 .map(s3Ops::getProperties)
                 .map(props -> (Map<String, String>) (Map<?, ?>) props)
                 .collect(Collectors.toMap(ParametersUtils::getId, Optional::of));
-    }
-
-    private ExecutorService createDeleteExecutorService() {
-        ThreadFactory tf = new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("GWC S3BlobStore bulk delete thread-%d. Bucket: " + bucketName)
-                .setPriority(Thread.MIN_PRIORITY)
-                .build();
-        return Executors.newCachedThreadPool(tf);
-    }
-
-    private boolean coversWholeLayer(TileRange tileRange) {
-        return false;
     }
 }

@@ -117,9 +117,6 @@ class S3Ops {
             for (Entry<Object, Object> e : deletes.entrySet()) {
                 final String prefix = e.getKey().toString();
                 final long timestamp = Long.parseLong(e.getValue().toString());
-                final TileListenerNotifier tileListenerNotifier =
-                        new TileListenerNotifier(listeners, keyBuilder, S3BlobStore.log);
-
                 S3BlobStore.log.info(
                         String.format("Restarting pending bulk delete on '%s/%s':%d", bucketName, prefix, timestamp));
                 asyncDelete(prefix, timestamp);

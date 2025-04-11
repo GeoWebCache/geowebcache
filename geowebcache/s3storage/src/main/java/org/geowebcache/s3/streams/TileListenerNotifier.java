@@ -1,21 +1,29 @@
+/**
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ * Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 package org.geowebcache.s3.streams;
 
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-import org.geowebcache.mime.MimeException;
-import org.geowebcache.mime.MimeType;
-import org.geowebcache.storage.BlobStoreListenerList;
-import org.geowebcache.storage.TileObject;
-import org.geowebcache.util.TMSKeyBuilder;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import javax.swing.*;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import org.geowebcache.mime.MimeException;
+import org.geowebcache.mime.MimeType;
+import org.geowebcache.storage.BlobStoreListenerList;
+import org.geowebcache.util.TMSKeyBuilder;
 
 public class TileListenerNotifier implements Consumer<List<S3ObjectSummary>> {
     private static final String LAYER_GROUP_POS = "layer";
@@ -79,7 +87,7 @@ public class TileListenerNotifier implements Consumer<List<S3ObjectSummary>> {
                     }
                 }
 
-                if (Objects.equals(parametersId, "default")){
+                if (Objects.equals(parametersId, "default")) {
                     parametersId = null;
                 }
 

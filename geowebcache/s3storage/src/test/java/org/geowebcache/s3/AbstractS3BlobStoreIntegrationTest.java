@@ -60,10 +60,8 @@ import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
-import org.geowebcache.util.TMSKeyBuilder;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -92,7 +90,7 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
     public void before() throws Exception {
         Awaitility.setDefaultPollInterval(10, TimeUnit.MILLISECONDS);
         Awaitility.setDefaultPollDelay(Duration.ZERO);
-        Awaitility.setDefaultTimeout(Duration.ofMinutes(1L));
+        Awaitility.setDefaultTimeout(Duration.ofSeconds(30L));
 
         S3BlobStoreInfo config = getConfiguration();
 
@@ -376,7 +374,7 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
         int expectedCount = 5; // 1 for level 0, 4 for level 1, as per seed()
         Awaitility.await().untilAsserted(() -> verify(listener, times(expectedCount))
                 .tileDeleted(
-                        anyString(), anyString(), anyString(), anyString(), anyLong(), anyLong(), anyInt(), anyLong()));
+                        anyString(), anyString(), anyString(), isNull(), anyLong(), anyLong(), anyInt(), anyLong()));
     }
 
     /** If there are not {@link BlobStoreListener}s, use an optimized code path (not calling delete() for each tile) */
