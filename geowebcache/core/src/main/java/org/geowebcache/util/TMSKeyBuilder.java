@@ -59,6 +59,15 @@ public final class TMSKeyBuilder {
         return layer.getId();
     }
 
+    public String layerNameFromId(String layerId) {
+        for (TileLayer tileLayer : layers.getLayerList()) {
+            if (layerId.equals(tileLayer.getId())) {
+                return tileLayer.getName();
+            }
+        }
+        return null;
+    }
+
     public Set<String> layerGridsets(String layerName) {
         TileLayer layer;
         try {
@@ -116,6 +125,18 @@ public final class TMSKeyBuilder {
         // hash>/<z>/<x>/<y>.<extension>}
         String key = join(false, prefix, layer, gridset, shortFormat, parametersId, z, x, y + "." + extension);
         return key;
+    }
+
+    public static String buildParametersId(TileObject obj) {
+        String parametersId;
+        Map<String, String> parameters = obj.getParameters();
+        parametersId = ParametersUtils.getId(parameters);
+        if (parametersId == null) {
+            parametersId = "default";
+        } else {
+            obj.setParametersId(parametersId);
+        }
+        return parametersId;
     }
 
     public String forLocation(String prefix, long[] loc, MimeType mime) {
@@ -188,6 +209,13 @@ public final class TMSKeyBuilder {
         String gridset = obj.getGridSetId();
         MimeType mimeType = obj.getMimeType();
 
+        String parametersId = parametersFromTileRange(obj);
+        String shortFormat = mimeType.getFileExtension(); // png, png8, png24, etc
+
+        return join(endWithSlash, prefix, layer, gridset, shortFormat, parametersId);
+    }
+
+    private static String parametersFromTileRange(TileRange obj) {
         String parametersId = obj.getParametersId();
         if (parametersId == null) {
             Map<String, String> parameters = obj.getParameters();
@@ -198,10 +226,7 @@ public final class TMSKeyBuilder {
                 obj.setParametersId(parametersId);
             }
         }
-        String shortFormat = mimeType.getFileExtension(); // png, png8, png24, etc
-
-        String key = join(endWithSlash, prefix, layer, gridset, shortFormat, parametersId);
-        return key;
+        return parametersId;
     }
 
     public String pendingDeletes() {
@@ -221,5 +246,14 @@ public final class TMSKeyBuilder {
             joiner.add("");
         }
         return joiner.toString();
+    }
+
+    public String forZoomLevel(TileRange tileRange, int level) {
+        String layerId = layerId(tileRange.getLayerName());
+        String gridsetId = tileRange.getGridSetId();
+        String format = tileRange.getMimeType().getFileExtension();
+        String parametersId = parametersFromTileRange(tileRange);
+
+        return join(true, prefix, layerId, gridsetId, format, parametersId, String.valueOf(level));
     }
 }

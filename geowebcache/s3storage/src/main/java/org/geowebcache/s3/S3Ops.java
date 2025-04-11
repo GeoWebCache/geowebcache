@@ -17,8 +17,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.DeleteObjectsRequest;
-import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
@@ -31,20 +29,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
+import java.util.function.Supplier;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
@@ -53,11 +50,16 @@ import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.LockProvider.Lock;
 import org.geowebcache.locks.NoOpLockProvider;
+import org.geowebcache.s3.streams.BatchingIterator;
+import org.geowebcache.s3.streams.DeleteBatchesOfS3Objects;
+import org.geowebcache.s3.streams.S3ObjectForPrefixSupplier;
+import org.geowebcache.s3.streams.TileListenerNotifier;
+import org.geowebcache.storage.BlobStoreListenerList;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.TMSKeyBuilder;
 
 class S3Ops {
-
+    private static final int BATCH_SIZE = 1000;
     private final AmazonS3Client conn;
 
     private final String bucketName;
@@ -70,12 +72,20 @@ class S3Ops {
 
     private Map<String, Long> pendingDeletesKeyTime = new ConcurrentHashMap<>();
 
-    public S3Ops(AmazonS3Client conn, String bucketName, TMSKeyBuilder keyBuilder, LockProvider locks)
+    private final BlobStoreListenerList listeners;
+
+    public S3Ops(
+            AmazonS3Client conn,
+            String bucketName,
+            TMSKeyBuilder keyBuilder,
+            LockProvider locks,
+            BlobStoreListenerList listeners)
             throws StorageException {
         this.conn = conn;
         this.bucketName = bucketName;
         this.keyBuilder = keyBuilder;
         this.locks = locks == null ? new NoOpLockProvider() : locks;
+        this.listeners = listeners;
         this.deleteExecutorService = createDeleteExecutorService();
         issuePendingBulkDeletes();
     }
@@ -107,6 +117,9 @@ class S3Ops {
             for (Entry<Object, Object> e : deletes.entrySet()) {
                 final String prefix = e.getKey().toString();
                 final long timestamp = Long.parseLong(e.getValue().toString());
+                final TileListenerNotifier tileListenerNotifier =
+                        new TileListenerNotifier(listeners, keyBuilder, S3BlobStore.log);
+
                 S3BlobStore.log.info(
                         String.format("Restarting pending bulk delete on '%s/%s':%d", bucketName, prefix, timestamp));
                 asyncDelete(prefix, timestamp);
@@ -179,7 +192,7 @@ class S3Ops {
         return timestamp;
     }
 
-    private synchronized boolean asyncDelete(final String prefix, final long timestamp) {
+    private synchronized boolean asyncDelete(final String prefix, final long timestamp) throws StorageException {
         if (!prefixExists(prefix)) {
             return false;
         }
@@ -189,7 +202,8 @@ class S3Ops {
             return false;
         }
 
-        BulkDelete task = new BulkDelete(conn, bucketName, prefix, timestamp);
+        TileListenerNotifier tileListenerNotifier = new TileListenerNotifier(listeners, keyBuilder, S3BlobStore.log);
+        BulkDelete task = new BulkDelete(conn, bucketName, prefix, timestamp, S3BlobStore.log, tileListenerNotifier);
         deleteExecutorService.submit(task);
         pendingDeletesKeyTime.put(prefix, timestamp);
 
@@ -334,7 +348,7 @@ class S3Ops {
                 S3Objects.withPrefix(conn, bucketName, prefix).spliterator(), false);
     }
 
-    private class BulkDelete implements Callable<Long> {
+    public class BulkDelete implements Callable<Long> {
 
         private final String prefix;
 
@@ -343,71 +357,65 @@ class S3Ops {
         private final AmazonS3 conn;
 
         private final String bucketName;
+        private final Logger logger;
+        private final TileListenerNotifier tileListenerNotifier;
 
-        public BulkDelete(final AmazonS3 conn, final String bucketName, final String prefix, final long timestamp) {
+        public BulkDelete(
+                final AmazonS3 conn,
+                final String bucketName,
+                final String prefix,
+                final long timestamp,
+                final Logger logger,
+                TileListenerNotifier tileListenerNotifier) {
             this.conn = conn;
             this.bucketName = bucketName;
             this.prefix = prefix;
             this.timestamp = timestamp;
+            this.logger = logger;
+            this.tileListenerNotifier = tileListenerNotifier;
         }
 
         @Override
         public Long call() throws Exception {
-            long count = 0L;
-            try {
-                checkInterrupted();
-                S3BlobStore.log.info(String.format("Running bulk delete on '%s/%s':%d", bucketName, prefix, timestamp));
-                Predicate<S3ObjectSummary> filter = new TimeStampFilter(timestamp);
-                AtomicInteger n = new AtomicInteger(0);
-                Iterable<List<S3ObjectSummary>> partitions = objectStream(prefix)
-                        .filter(filter)
-                        .collect(Collectors.groupingBy((x) -> n.getAndIncrement() % 1000))
-                        .values();
+            logger.info(String.format("Running bulk delete on '%s/%s':%d", bucketName, prefix, timestamp));
 
-                for (List<S3ObjectSummary> partition : partitions) {
+            long tilesDeleted = deleteBatchesOfTilesAndInformListeners();
 
-                    checkInterrupted();
+            logger.info(String.format(
+                    "Finished bulk delete on '%s/%s':%d. %d objects deleted",
+                    bucketName, prefix, timestamp, tilesDeleted));
 
-                    List<KeyVersion> keys = new ArrayList<>(partition.size());
-                    for (S3ObjectSummary so : partition) {
-                        String key = so.getKey();
-                        keys.add(new KeyVersion(key));
-                    }
+            // Once clear of the streams, throw the interrupt exception if required
+            // Streams will exit cleanly without clearing the interrupt flag
+            checkInterrupted();
+            clearPendingBulkDelete(prefix, timestamp);
+            return tilesDeleted;
+        }
 
-                    checkInterrupted();
+        private long deleteBatchesOfTilesAndInformListeners() {
+            DeleteBatchesOfS3Objects<S3ObjectSummary> deleteBatchesOfS3Objects =
+                    new DeleteBatchesOfS3Objects<>(bucketName, conn, S3ObjectSummary::getKey, logger);
+            S3Objects s3Objects = S3Objects.withPrefix(conn, bucketName, prefix).withBatchSize(BATCH_SIZE);
+            Supplier<S3ObjectSummary> s3SummaryObjectSupplier =
+                    new S3ObjectForPrefixSupplier(prefix, bucketName, s3Objects, logger);
+            Predicate<S3ObjectSummary> timeStampFilter = new TimeStampFilter(timestamp);
 
-                    if (!keys.isEmpty()) {
-                        DeleteObjectsRequest deleteReq = new DeleteObjectsRequest(bucketName);
-                        deleteReq.setQuiet(true);
-                        deleteReq.setKeys(keys);
-
-                        checkInterrupted();
-
-                        conn.deleteObjects(deleteReq);
-                        count += keys.size();
-                    }
-                }
-            } catch (InterruptedException | IllegalStateException e) {
-                S3BlobStore.log.info(String.format(
-                        "S3 bulk delete aborted for '%s/%s'. Will resume on next startup.", bucketName, prefix));
-                throw e;
-            } catch (Exception e) {
-                S3BlobStore.log.log(
-                        Level.WARNING,
-                        String.format("Unknown error performing bulk S3 delete of '%s/%s'", bucketName, prefix),
-                        e);
-                throw e;
-            }
-
-            S3BlobStore.log.info(String.format(
-                    "Finished bulk delete on '%s/%s':%d. %d objects deleted", bucketName, prefix, timestamp, count));
-
-            S3Ops.this.clearPendingBulkDelete(prefix, timestamp);
-            return count;
+            return BatchingIterator.batchedStreamOf(
+                            Stream.generate(s3SummaryObjectSupplier)
+                                    .takeWhile(Objects::nonNull)
+                                    .takeWhile(o -> !Thread.currentThread().isInterrupted())
+                                    .filter(timeStampFilter),
+                            BATCH_SIZE)
+                    .map(deleteBatchesOfS3Objects)
+                    .peek(tileListenerNotifier)
+                    .mapToLong(List::size)
+                    .sum();
         }
 
         private void checkInterrupted() throws InterruptedException {
             if (Thread.interrupted()) {
+                S3BlobStore.log.info(String.format(
+                        "S3 bulk delete aborted for '%s/%s'. Will resume on next startup.", bucketName, prefix));
                 throw new InterruptedException();
             }
         }

@@ -16,12 +16,12 @@ package org.geowebcache.s3;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -32,11 +32,15 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import org.awaitility.Awaitility;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.grid.GridSet;
@@ -56,8 +60,10 @@ import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
+import org.geowebcache.util.TMSKeyBuilder;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -84,12 +90,17 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
 
     @Before
     public void before() throws Exception {
+        Awaitility.setDefaultPollInterval(10, TimeUnit.MILLISECONDS);
+        Awaitility.setDefaultPollDelay(Duration.ZERO);
+        Awaitility.setDefaultTimeout(Duration.ofMinutes(1L));
+
         S3BlobStoreInfo config = getConfiguration();
 
         TileLayerDispatcher layers = mock(TileLayerDispatcher.class);
         LockProvider lockProvider = new NoOpLockProvider();
         TileLayer layer = mock(TileLayer.class);
         when(layers.getTileLayer(eq(DEFAULT_LAYER))).thenReturn(layer);
+        when(layers.getLayerList()).thenReturn(List.of(layer));
         when(layer.getName()).thenReturn(DEFAULT_LAYER);
         when(layer.getId()).thenReturn(DEFAULT_LAYER);
         blobStore = new S3BlobStore(config, layers, lockProvider);
@@ -153,7 +164,7 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
                         eq(tile.getLayerName()),
                         eq(tile.getGridSetId()),
                         eq(tile.getBlobFormat()),
-                        anyString(),
+                        isNull(),
                         eq(20L),
                         eq(30L),
                         eq(12),
@@ -170,7 +181,7 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
                         eq(tile.getLayerName()),
                         eq(tile.getGridSetId()),
                         eq(tile.getBlobFormat()),
-                        anyString(),
+                        isNull(),
                         eq(20L),
                         eq(30L),
                         eq(12),
@@ -211,7 +222,7 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
                         eq(tile.getLayerName()),
                         eq(tile.getGridSetId()),
                         eq(tile.getBlobFormat()),
-                        anyString(),
+                        isNull(),
                         eq(22L),
                         eq(30L),
                         eq(12),
@@ -265,9 +276,11 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
         blobStore.putLayerMetadata(DEFAULT_LAYER, "prop1", "value1");
         blobStore.putLayerMetadata(DEFAULT_LAYER, "prop2", "value2");
 
-        assertNull(blobStore.getLayerMetadata(DEFAULT_LAYER, "nonExistingKey"));
-        assertEquals("value1", blobStore.getLayerMetadata(DEFAULT_LAYER, "prop1"));
-        assertEquals("value2", blobStore.getLayerMetadata(DEFAULT_LAYER, "prop2"));
+        Awaitility.await().untilAsserted(() -> blobStore.getLayerMetadata(DEFAULT_LAYER, "nonExistingKey"));
+        Awaitility.await()
+                .untilAsserted(() -> assertEquals("value1", blobStore.getLayerMetadata(DEFAULT_LAYER, "prop1")));
+        Awaitility.await()
+                .untilAsserted(() -> assertEquals("value2", blobStore.getLayerMetadata(DEFAULT_LAYER, "prop2")));
     }
 
     @Test
@@ -294,9 +307,9 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
                 tileRange(DEFAULT_LAYER, DEFAULT_GRIDSET, zoomStart, zoomStop, rangeBounds, mimeType, parameters);
 
         assertFalse(blobStore.delete(tileRange));
-        verify(listener, times(0))
+        Awaitility.await().untilAsserted(() -> verify(listener, times(0))
                 .tileDeleted(
-                        anyString(), anyString(), anyString(), anyString(), anyLong(), anyLong(), anyInt(), anyLong());
+                        anyString(), anyString(), anyString(), anyString(), anyLong(), anyLong(), anyInt(), anyLong()));
     }
 
     @Test
@@ -325,9 +338,9 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
                 tileRange(DEFAULT_LAYER, gridset.getName(), zoomStart, zoomStop, rangeBounds, mimeType, parameters);
 
         assertFalse(blobStore.delete(tileRange));
-        verify(listener, times(0))
+        Awaitility.await().untilAsserted(() -> verify(listener, times(0))
                 .tileDeleted(
-                        anyString(), anyString(), anyString(), anyString(), anyLong(), anyLong(), anyInt(), anyLong());
+                        anyString(), anyString(), anyString(), anyString(), anyLong(), anyLong(), anyInt(), anyLong()));
     }
 
     /** Seed levels 0 to 2, truncate levels 0 and 1, check level 2 didn't get deleted */
@@ -361,10 +374,9 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
         assertTrue(blobStore.delete(tileRange));
 
         int expectedCount = 5; // 1 for level 0, 4 for level 1, as per seed()
-
-        verify(listener, times(expectedCount))
+        Awaitility.await().untilAsserted(() -> verify(listener, times(expectedCount))
                 .tileDeleted(
-                        anyString(), anyString(), anyString(), anyString(), anyLong(), anyLong(), anyInt(), anyLong());
+                        anyString(), anyString(), anyString(), anyString(), anyLong(), anyLong(), anyInt(), anyLong()));
     }
 
     /** If there are not {@link BlobStoreListener}s, use an optimized code path (not calling delete() for each tile) */

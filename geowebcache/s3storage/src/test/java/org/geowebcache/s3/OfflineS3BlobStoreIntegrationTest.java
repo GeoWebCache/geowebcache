@@ -16,7 +16,6 @@ import org.geowebcache.mime.MimeException;
 import org.geowebcache.storage.StorageException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -24,7 +23,7 @@ import org.junit.Test;
  *
  * <p>
  */
-@Ignore // this test fails very often on the AppVeyor build and frequently on Travis, disabling
+// this test fails very often on the AppVeyor build and frequently on Travis, disabling
 public class OfflineS3BlobStoreIntegrationTest extends AbstractS3BlobStoreIntegrationTest {
 
     private static S3Mock api;
@@ -57,7 +56,6 @@ public class OfflineS3BlobStoreIntegrationTest extends AbstractS3BlobStoreIntegr
     }
 
     @Override
-    @Ignore // randomly fails
     @Test
     public void testTruncateShortCutsIfNoTilesInGridsetPrefix() throws StorageException, MimeException {
         super.testTruncateShortCutsIfNoTilesInGridsetPrefix();

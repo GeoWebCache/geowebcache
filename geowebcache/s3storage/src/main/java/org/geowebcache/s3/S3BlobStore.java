@@ -13,6 +13,7 @@
  */
 package org.geowebcache.s3;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.isNull;
 
@@ -21,19 +22,14 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AccessControlList;
 import com.amazonaws.services.s3.model.BucketPolicy;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.DeleteObjectsRequest;
-import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.Grant;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.google.common.base.Function;
-import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -41,16 +37,19 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
@@ -68,7 +67,6 @@ import org.geowebcache.storage.CompositeBlobStore;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
-import org.geowebcache.storage.TileRangeIterator;
 import org.geowebcache.util.TMSKeyBuilder;
 
 public class S3BlobStore implements BlobStore {
@@ -100,7 +98,7 @@ public class S3BlobStore implements BlobStore {
         conn = validateClient(config.buildClient(), bucketName);
         acl = config.getAccessControlList();
 
-        this.s3Ops = new S3Ops(conn, bucketName, keyBuilder, lockProvider);
+        this.s3Ops = new S3Ops(conn, bucketName, keyBuilder, lockProvider, listeners);
 
         boolean empty = !s3Ops.prefixExists(prefix);
         boolean existing = Objects.nonNull(s3Ops.getObjectMetadata(keyBuilder.storeMetadata()));
@@ -193,6 +191,7 @@ public class S3BlobStore implements BlobStore {
 
     @Override
     public void put(TileObject obj) throws StorageException {
+        TMSKeyBuilder.buildParametersId(obj);
         final Resource blob = obj.getBlob();
         checkNotNull(blob);
         checkNotNull(obj.getBlobFormat());
@@ -279,80 +278,38 @@ public class S3BlobStore implements BlobStore {
         return true;
     }
 
-    private class TileToKey implements Function<long[], KeyVersion> {
-
-        private final String coordsPrefix;
-
-        private final String extension;
-
-        public TileToKey(String coordsPrefix, MimeType mimeType) {
-            this.coordsPrefix = coordsPrefix;
-            this.extension = mimeType.getInternalName();
-        }
-
-        @Override
-        public KeyVersion apply(long[] loc) {
-            long z = loc[2];
-            long x = loc[0];
-            long y = loc[1];
-            StringBuilder sb = new StringBuilder(coordsPrefix);
-            sb.append(z).append('/').append(x).append('/').append(y).append('.').append(extension);
-            return new KeyVersion(sb.toString());
-        }
-    }
-
     @Override
     public boolean delete(final TileRange tileRange) throws StorageException {
+        checkNotNull(tileRange, "tile range must not be null");
+        checkArgument(tileRange.getZoomStart() >= 0, "zoom start must be greater or equal than zero");
+        checkArgument(
+                tileRange.getZoomStop() >= tileRange.getZoomStart(),
+                "zoom stop must be greater or equal than start zoom");
 
         final String coordsPrefix = keyBuilder.coordinatesPrefix(tileRange, true);
         if (!s3Ops.prefixExists(coordsPrefix)) {
             return false;
         }
 
-        final Iterator<long[]> tileLocations = new AbstractIterator<>() {
+        // Create a prefix for each zoom level
+        long count = IntStream.range(tileRange.getZoomStart(), tileRange.getZoomStop() + 1)
+                .mapToObj(level -> scheduleDeleteForZoomLevel(tileRange, level))
+                .filter(Objects::nonNull)
+                .count();
 
-            // TileRange iterator with 1x1 meta tiling factor
-            private TileRangeIterator trIter = new TileRangeIterator(tileRange, new int[] {1, 1});
+        // Check all ranges where scheduled
+        return count == (tileRange.getZoomStop() - tileRange.getZoomStart() + 1);
+    }
 
-            @Override
-            protected long[] computeNext() {
-                long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
-                return gridLoc == null ? endOfData() : gridLoc;
-            }
-        };
-
-        if (listeners.isEmpty()) {
-            // if there are no listeners, don't bother requesting every tile
-            // metadata to notify the listeners
-            Iterator<List<long[]>> partition = Iterators.partition(tileLocations, 1000);
-            final TileToKey tileToKey = new TileToKey(coordsPrefix, tileRange.getMimeType());
-
-            while (partition.hasNext() && !shutDown) {
-                List<long[]> locations = partition.next();
-                List<KeyVersion> keys = Lists.transform(locations, tileToKey);
-
-                DeleteObjectsRequest req = new DeleteObjectsRequest(bucketName);
-                req.setQuiet(true);
-                req.setKeys(keys);
-                conn.deleteObjects(req);
-            }
-
-        } else {
-            long[] xyz;
-            String layerName = tileRange.getLayerName();
-            String gridSetId = tileRange.getGridSetId();
-            String format = tileRange.getMimeType().getFormat();
-            Map<String, String> parameters = tileRange.getParameters();
-
-            while (tileLocations.hasNext()) {
-                xyz = tileLocations.next();
-                TileObject tile = TileObject.createQueryTileObject(layerName, xyz, gridSetId, format, parameters);
-                tile.setParametersId(tileRange.getParametersId());
-                delete(tile);
-            }
+    private String scheduleDeleteForZoomLevel(TileRange tileRange, int level) {
+        String prefix = keyBuilder.forZoomLevel(tileRange, level);
+        try {
+            s3Ops.scheduleAsyncDelete(prefix);
+            return prefix;
+        } catch (GeoWebCacheException e) {
+            log.warning("Cannot schedule delete for prefix " + prefix);
+            return null;
         }
-
-        return true;
     }
 
     @Override
@@ -457,8 +414,7 @@ public class S3BlobStore implements BlobStore {
     }
 
     private void putParametersMetadata(String layerName, String parametersId, Map<String, String> parameters) {
-        assert (isNull(parametersId) == isNull(parameters));
-        if (isNull(parametersId)) {
+        if (isNull(parameters)) {
             return;
         }
         Properties properties = new Properties();
@@ -518,5 +474,18 @@ public class S3BlobStore implements BlobStore {
                 .map(s3Ops::getProperties)
                 .map(props -> (Map<String, String>) (Map<?, ?>) props)
                 .collect(Collectors.toMap(ParametersUtils::getId, Optional::of));
+    }
+
+    private ExecutorService createDeleteExecutorService() {
+        ThreadFactory tf = new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("GWC S3BlobStore bulk delete thread-%d. Bucket: " + bucketName)
+                .setPriority(Thread.MIN_PRIORITY)
+                .build();
+        return Executors.newCachedThreadPool(tf);
+    }
+
+    private boolean coversWholeLayer(TileRange tileRange) {
+        return false;
     }
 }

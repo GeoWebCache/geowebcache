@@ -423,7 +423,8 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
             clientConfig.setUseGzip(useGzip);
         }
         log.fine("Initializing AWS S3 connection");
-        AmazonS3Client client = new AmazonS3Client(getCredentialsProvider(), clientConfig);
+        AWSCredentialsProvider credentialsProvider = getCredentialsProvider();
+        AmazonS3Client client = new AmazonS3Client(credentialsProvider, clientConfig);
         if (endpoint != null && !"".equals(endpoint)) {
             S3ClientOptions s3ClientOptions = new S3ClientOptions();
             s3ClientOptions.setPathStyleAccess(true);
