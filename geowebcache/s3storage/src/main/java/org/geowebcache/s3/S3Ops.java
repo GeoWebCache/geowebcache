@@ -119,8 +119,14 @@ class S3Ops {
                 final long timestamp = Long.parseLong(e.getValue().toString());
                 S3BlobStore.log.info(
                         String.format("Restarting pending bulk delete on '%s/%s':%d", bucketName, prefix, timestamp));
-                asyncDelete(prefix, timestamp);
+                pendingDeletesKeyTime.put(prefix, timestamp);
+                boolean nothingToDelete = !asyncDelete(prefix, timestamp);
+                if (nothingToDelete) {
+                    clearPendingBulkDelete(prefix, timestamp);
+                }
             }
+        } catch (GeoWebCacheException e) {
+            S3BlobStore.log.warning("Unable to delete pending deletes: " + e.getMessage());
         } finally {
             try {
                 lock.release();
@@ -374,19 +380,27 @@ class S3Ops {
 
         @Override
         public Long call() throws Exception {
+            LockProvider.Lock lock = locks.getLock(prefix);
             logger.info(String.format("Running bulk delete on '%s/%s':%d", bucketName, prefix, timestamp));
+            try {
+                long tilesDeleted = deleteBatchesOfTilesAndInformListeners();
+                logger.info(String.format(
+                        "Finished bulk delete on '%s/%s':%d. %d objects deleted",
+                        bucketName, prefix, timestamp, tilesDeleted));
 
-            long tilesDeleted = deleteBatchesOfTilesAndInformListeners();
-
-            logger.info(String.format(
-                    "Finished bulk delete on '%s/%s':%d. %d objects deleted",
-                    bucketName, prefix, timestamp, tilesDeleted));
-
-            // Once clear of the streams, throw the interrupt exception if required
-            // Streams will exit cleanly without clearing the interrupt flag
-            checkInterrupted();
-            clearPendingBulkDelete(prefix, timestamp);
-            return tilesDeleted;
+                // Once clear of the streams, throw the interrupt exception if required
+                // Streams will exit cleanly without clearing the interrupt flag
+                checkInterrupted();
+                clearPendingBulkDelete(prefix, timestamp);
+                return tilesDeleted;
+            } finally {
+                try {
+                    lock.release();
+                } catch (GeoWebCacheException e) {
+                    // Do not allow checked exception to escape from a finally block
+                    logger.warning("Error releasing lock: " + e.getMessage());
+                }
+            }
         }
 
         private long deleteBatchesOfTilesAndInformListeners() {
