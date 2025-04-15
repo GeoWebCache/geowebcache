@@ -17,13 +17,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -432,12 +430,8 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
 
         int level = 3;
         seed(level, level);
-        BlobStoreListener listener = mock(BlobStoreListener.class);
-        blobStore.addListener(listener);
-        doNothing()
-                .when(listener)
-                .tileDeleted(
-                        anyString(), anyString(), anyString(), isNull(), anyLong(), anyLong(), anyInt(), anyLong());
+        FakeListener fakeListener = new FakeListener();
+        blobStore.addListener(fakeListener);
 
         long[][] rangeBounds = {{2, 2, 3, 3, level}};
 
@@ -455,9 +449,9 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
         }
 
         int wantedNumberOfInvocations =
-                (int) ((rangeBounds[0][2] - rangeBounds[0][0] + 1) * (rangeBounds[0][level] - rangeBounds[0][1] + 1));
-        Awaitility.await().untilAsserted(() -> verify(listener, times(wantedNumberOfInvocations))
-                .tileDeleted(anyString(), anyString(), anyString(), any(), anyLong(), anyLong(), anyInt(), anyLong()));
+                (int) ((rangeBounds[0][2] - rangeBounds[0][0] + 1) * (rangeBounds[0][3] - rangeBounds[0][1] + 1));
+        Awaitility.await().untilAsserted(() -> assertEquals(wantedNumberOfInvocations, fakeListener.tileDeleted));
+        assertEquals(wantedNumberOfInvocations, fakeListener.total());
     }
 
     private TileRange tileRange(

@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,9 +55,10 @@ import org.geowebcache.locks.LockProvider.Lock;
 import org.geowebcache.locks.NoOpLockProvider;
 import org.geowebcache.s3.S3BlobStore.Bounds;
 import org.geowebcache.s3.streams.BatchingIterator;
+import org.geowebcache.s3.streams.BoundedS3KeySupplier;
 import org.geowebcache.s3.streams.DeleteBatchesOfS3Objects;
-import org.geowebcache.s3.streams.S3ObjectForPrefixSupplier;
 import org.geowebcache.s3.streams.TileDeletionListenerNotifier;
+import org.geowebcache.s3.streams.UnboundedS3KeySupplier;
 import org.geowebcache.storage.BlobStoreListenerList;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.util.TMSKeyBuilder;
@@ -426,7 +428,7 @@ class S3Ops {
                     possibleBounds.isPresent() ? tileDeletionListenerNotifier : NO_OPERATION_POST_PROCESSOR;
 
             return BatchingIterator.batchedStreamOf(
-                            createS3ObjectStream()
+                            createS3ObjectStream(possibleBounds)
                                     .takeWhile(Objects::nonNull)
                                     .takeWhile(o -> !Thread.currentThread().isInterrupted())
                                     .filter(timeStampFilter),
@@ -437,8 +439,7 @@ class S3Ops {
                     .sum();
         }
 
-        private Stream<S3ObjectSummary> createS3ObjectStream() {
-            var possibleBounds = Bounds.createBounds(prefix);
+        private Stream<S3ObjectSummary> createS3ObjectStream(Optional<Bounds> possibleBounds) {
             if (possibleBounds.isPresent()) {
                 String prefixWithoutBounds = prefixWithoutBounds(prefix);
                 return boundedStreamOfS3Objects(prefixWithoutBounds, possibleBounds.get());
@@ -449,15 +450,16 @@ class S3Ops {
 
         private Stream<S3ObjectSummary> unboundedStreamOfS3Objects(String prefix) {
             S3Objects s3Objects = S3Objects.withPrefix(conn, bucketName, prefix).withBatchSize(BATCH_SIZE);
-            S3ObjectForPrefixSupplier supplier = new S3ObjectForPrefixSupplier(prefix, bucketName, s3Objects, logger);
+            UnboundedS3KeySupplier supplier = new UnboundedS3KeySupplier(prefix, bucketName, s3Objects, logger);
             return Stream.generate(supplier).takeWhile(Objects::nonNull);
         }
 
         private Stream<S3ObjectSummary> boundedStreamOfS3Objects(String prefixWithoutBounds, Bounds bounds) {
-            S3Objects s3Objects =
-                    S3Objects.withPrefix(conn, bucketName, prefixWithoutBounds).withBatchSize(BATCH_SIZE);
-            S3ObjectForPrefixSupplier supplier = new S3ObjectForPrefixSupplier(prefix, bucketName, s3Objects, logger);
-            return Stream.generate(supplier).takeWhile(Objects::nonNull).filter(bounds::predicate);
+            BoundedS3KeySupplier supplier =
+                    new BoundedS3KeySupplier(prefixWithoutBounds, logger, conn, bounds, bucketName, BATCH_SIZE);
+            return Stream.generate(supplier)
+                    .takeWhile(Objects::nonNull)
+                    .filter(bounds::predicate); // Filter Y bounds as X is taken care of by the supplier
         }
 
         private void checkInterrupted() throws InterruptedException {

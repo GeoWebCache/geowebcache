@@ -25,6 +25,7 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/** @param <T> The type of the data object used to track abstract the s3 class */
 public class DeleteBatchesOfS3Objects<T> implements Function<List<T>, List<T>> {
     private final String bucket;
     private final AmazonS3 conn;

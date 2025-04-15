@@ -20,11 +20,11 @@ import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 /**
- * S3ObjectPathsForPrefixSupplier This class will interact with the AmazonS3 connection to retrieve all the objects with
- * prefix and bucket provided <br>
+ * UnboundedS3KeySupplier This class will interact with the AmazonS3 connection to retrieve all the objects with prefix
+ * and bucket provided <br>
  * It will return these lazily one by one as the get methods is called
  */
-public class S3ObjectForPrefixSupplier implements Supplier<S3ObjectSummary> {
+public class UnboundedS3KeySupplier implements Supplier<S3ObjectSummary> {
     private final String prefix;
     private long count = 0;
     private final Logger logger;
@@ -32,7 +32,7 @@ public class S3ObjectForPrefixSupplier implements Supplier<S3ObjectSummary> {
 
     private Iterator<S3ObjectSummary> iterator;
 
-    public S3ObjectForPrefixSupplier(String prefix, String bucket, S3Objects s3Objects, Logger logger) {
+    public UnboundedS3KeySupplier(String prefix, String bucket, S3Objects s3Objects, Logger logger) {
         checkNotNull(prefix, "prefix must not be null");
         checkNotNull(bucket, "bucket must not be null");
         checkNotNull(s3Objects, "s3Objects must not be null");

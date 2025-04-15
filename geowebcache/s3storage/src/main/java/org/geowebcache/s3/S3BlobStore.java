@@ -486,6 +486,14 @@ public class S3BlobStore implements BlobStore {
             maxY = Math.max(bound[1], bound[3]);
         }
 
+        public long getMinX() {
+            return minX;
+        }
+
+        public long getMaxX() {
+            return maxX;
+        }
+
         static Optional<Bounds> createBounds(String prefix) {
             Matcher matcher = boundsRegex.matcher(prefix);
             if (!matcher.matches()) {
