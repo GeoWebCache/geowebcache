@@ -127,18 +127,6 @@ public final class TMSKeyBuilder {
         return key;
     }
 
-    public static String buildParametersId(TileObject obj) {
-        String parametersId;
-        Map<String, String> parameters = obj.getParameters();
-        parametersId = ParametersUtils.getId(parameters);
-        if (parametersId == null) {
-            parametersId = "default";
-        } else {
-            obj.setParametersId(parametersId);
-        }
-        return parametersId;
-    }
-
     public String forLocation(String prefix, long[] loc, MimeType mime) {
         Long x = loc[0];
         Long y = loc[1];
@@ -209,13 +197,6 @@ public final class TMSKeyBuilder {
         String gridset = obj.getGridSetId();
         MimeType mimeType = obj.getMimeType();
 
-        String parametersId = parametersFromTileRange(obj);
-        String shortFormat = mimeType.getFileExtension(); // png, png8, png24, etc
-
-        return join(endWithSlash, prefix, layer, gridset, shortFormat, parametersId);
-    }
-
-    private static String parametersFromTileRange(TileRange obj) {
         String parametersId = obj.getParametersId();
         if (parametersId == null) {
             Map<String, String> parameters = obj.getParameters();
@@ -226,7 +207,10 @@ public final class TMSKeyBuilder {
                 obj.setParametersId(parametersId);
             }
         }
-        return parametersId;
+        String shortFormat = mimeType.getFileExtension(); // png, png8, png24, etc
+
+        String key = join(endWithSlash, prefix, layer, gridset, shortFormat, parametersId);
+        return key;
     }
 
     public String pendingDeletes() {
@@ -246,6 +230,20 @@ public final class TMSKeyBuilder {
             joiner.add("");
         }
         return joiner.toString();
+    }
+
+    private static String parametersFromTileRange(TileRange obj) {
+        String parametersId = obj.getParametersId();
+        if (parametersId == null) {
+            Map<String, String> parameters = obj.getParameters();
+            parametersId = ParametersUtils.getId(parameters);
+            if (parametersId == null) {
+                parametersId = "default";
+            } else {
+                obj.setParametersId(parametersId);
+            }
+        }
+        return parametersId;
     }
 
     public String forZoomLevel(TileRange tileRange, int level) {

@@ -15,6 +15,7 @@ package org.geowebcache.s3;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 
 import com.amazonaws.AmazonServiceException;
@@ -44,6 +45,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
@@ -56,6 +59,7 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.mime.MimeException;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.s3.streams.TileDeletionListenerNotifier;
 import org.geowebcache.storage.BlobStore;
 import org.geowebcache.storage.BlobStoreListener;
 import org.geowebcache.storage.BlobStoreListenerList;
@@ -184,7 +188,6 @@ public class S3BlobStore implements BlobStore {
 
     @Override
     public void put(TileObject obj) throws StorageException {
-        TMSKeyBuilder.buildParametersId(obj);
         final Resource blob = obj.getBlob();
         checkNotNull(blob);
         checkNotNull(obj.getBlobFormat());
@@ -295,7 +298,9 @@ public class S3BlobStore implements BlobStore {
     }
 
     private String scheduleDeleteForZoomLevel(TileRange tileRange, int level) {
-        String prefix = keyBuilder.forZoomLevel(tileRange, level);
+        String zoomPath = keyBuilder.forZoomLevel(tileRange, level);
+        Bounds bounds = new Bounds(tileRange.rangeBounds(level));
+        String prefix = format("%s?%s", zoomPath, bounds);
         try {
             s3Ops.scheduleAsyncDelete(prefix);
             return prefix;
@@ -467,5 +472,56 @@ public class S3BlobStore implements BlobStore {
                 .map(s3Ops::getProperties)
                 .map(props -> (Map<String, String>) (Map<?, ?>) props)
                 .collect(Collectors.toMap(ParametersUtils::getId, Optional::of));
+    }
+
+    public static class Bounds {
+        private static final Pattern boundsRegex =
+                Pattern.compile("^(?<prefix>.*/)\\?bounds=(?<minx>\\d+),(?<miny>\\d+),(?<maxx>\\d+),(?<maxy>\\d+)$");
+        private final long minX, minY, maxX, maxY;
+
+        public Bounds(long[] bound) {
+            minX = Math.min(bound[0], bound[2]);
+            minY = Math.min(bound[1], bound[3]);
+            maxX = Math.max(bound[0], bound[2]);
+            maxY = Math.max(bound[1], bound[3]);
+        }
+
+        static Optional<Bounds> createBounds(String prefix) {
+            Matcher matcher = boundsRegex.matcher(prefix);
+            if (!matcher.matches()) {
+                return Optional.empty();
+            }
+
+            Bounds bounds = new Bounds(new long[] {
+                Long.parseLong(matcher.group("minx")),
+                Long.parseLong(matcher.group("miny")),
+                Long.parseLong(matcher.group("maxx")),
+                Long.parseLong(matcher.group("maxy"))
+            });
+            return Optional.of(bounds);
+        }
+
+        static String prefixWithoutBounds(String prefix) {
+            Matcher matcher = boundsRegex.matcher(prefix);
+            if (matcher.matches()) {
+                return matcher.group("prefix");
+            }
+            return prefix;
+        }
+
+        @Override
+        public String toString() {
+            return format("bounds=%d,%d,%d,%d", minX, minY, maxX, maxY);
+        }
+
+        public boolean predicate(S3ObjectSummary s3ObjectSummary) {
+            var matcher = TileDeletionListenerNotifier.keyRegex.matcher(s3ObjectSummary.getKey());
+            if (!matcher.matches()) {
+                return false;
+            }
+            long x = Long.parseLong(matcher.group(TileDeletionListenerNotifier.X_GROUP_POS));
+            long y = Long.parseLong(matcher.group(TileDeletionListenerNotifier.Y_GROUP_POS));
+            return x >= minX && x <= maxX && y >= minY && y <= maxY;
+        }
     }
 }

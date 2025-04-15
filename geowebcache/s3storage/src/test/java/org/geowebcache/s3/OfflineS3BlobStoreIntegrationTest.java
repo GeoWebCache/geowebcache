@@ -23,7 +23,6 @@ import org.junit.Test;
  *
  * <p>
  */
-// this test fails very often on the AppVeyor build and frequently on Travis, disabling
 public class OfflineS3BlobStoreIntegrationTest extends AbstractS3BlobStoreIntegrationTest {
 
     private static S3Mock api;

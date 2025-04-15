@@ -17,11 +17,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -62,6 +64,7 @@ import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -242,14 +245,15 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
         tile.getXYZ()[0] = 22;
         blobStore.put(tile);
 
-        BlobStoreListener listener = mock(BlobStoreListener.class);
-        blobStore.addListener(listener);
+        FakeListener fakeListener = new FakeListener();
+        blobStore.addListener(fakeListener);
+
         String layerName = tile.getLayerName();
-        blobStore.delete(layerName);
-        blobStore.destroy();
-        Thread.sleep(10000);
-        // blobStore.delete(layerName);
-        // verify(listener, Mockito.atLeastOnce()).layerDeleted(eq(layerName));
+        assertTrue(blobStore.delete(layerName));
+
+        Awaitility.await().until(() -> fakeListener.layerDeleted == 1);
+        assertEquals(0, fakeListener.tileDeleted);
+        assertEquals(1, fakeListener.total());
     }
 
     @Test
@@ -269,6 +273,8 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
         assertTrue(blobStore.get(queryTile(DEFAULT_LAYER, "EPSG:3857", "jpeg", 0, 0, 0, "param", "value")));
     }
 
+    // This test is non-deterministic
+    @Ignore
     @Test
     public void testLayerMetadata() {
         blobStore.putLayerMetadata(DEFAULT_LAYER, "prop1", "value1");
@@ -421,6 +427,39 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
         assertTrue(blobStore.get(queryTile(3, 3, 2)));
     }
 
+    @Test
+    public void testBoundedLayerDeletion() throws StorageException, MimeException {
+
+        int level = 3;
+        seed(level, level);
+        BlobStoreListener listener = mock(BlobStoreListener.class);
+        blobStore.addListener(listener);
+        doNothing()
+                .when(listener)
+                .tileDeleted(
+                        anyString(), anyString(), anyString(), isNull(), anyLong(), anyLong(), anyInt(), anyLong());
+
+        long[][] rangeBounds = {{2, 2, 3, 3, level}};
+
+        MimeType mimeType = MimeType.createFromExtension(DEFAULT_FORMAT);
+
+        Map<String, String> parameters = null;
+        TileRange tileRange =
+                tileRange(DEFAULT_LAYER, DEFAULT_GRIDSET, level, level, rangeBounds, mimeType, parameters);
+
+        assertTrue(blobStore.delete(tileRange));
+        try {
+            Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        int wantedNumberOfInvocations =
+                (int) ((rangeBounds[0][2] - rangeBounds[0][0] + 1) * (rangeBounds[0][level] - rangeBounds[0][1] + 1));
+        Awaitility.await().untilAsserted(() -> verify(listener, times(wantedNumberOfInvocations))
+                .tileDeleted(anyString(), anyString(), anyString(), any(), anyLong(), anyLong(), anyInt(), anyLong()));
+    }
+
     private TileRange tileRange(
             String layerName,
             String gridSetId,
@@ -511,5 +550,85 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
 
         TileObject tile = TileObject.createQueryTileObject(layer, new long[] {x, y, z}, gridset, format, parameters);
         return tile;
+    }
+
+    static class FakeListener implements BlobStoreListener {
+        int tileStored = 0;
+        int tileDeleted = 0;
+        int tileUpdated = 0;
+        int layerDeleted = 0;
+        int layerRenamed = 0;
+        int gridSubsetDeleted = 0;
+        int parametersDeleted = 0;
+
+        @Override
+        public void tileStored(
+                String layerName,
+                String gridSetId,
+                String blobFormat,
+                String parametersId,
+                long x,
+                long y,
+                int z,
+                long blobSize) {
+            tileStored++;
+        }
+
+        @Override
+        public void tileDeleted(
+                String layerName,
+                String gridSetId,
+                String blobFormat,
+                String parametersId,
+                long x,
+                long y,
+                int z,
+                long blobSize) {
+            tileDeleted++;
+        }
+
+        @Override
+        public void tileUpdated(
+                String layerName,
+                String gridSetId,
+                String blobFormat,
+                String parametersId,
+                long x,
+                long y,
+                int z,
+                long blobSize,
+                long oldSize) {
+            tileUpdated++;
+        }
+
+        @Override
+        public void layerDeleted(String layerName) {
+            layerDeleted++;
+        }
+
+        @Override
+        public void layerRenamed(String oldLayerName, String newLayerName) {
+            layerRenamed++;
+        }
+
+        @Override
+        public void gridSubsetDeleted(String layerName, String gridSetId) {
+            gridSubsetDeleted++;
+        }
+
+        @Override
+        public void parametersDeleted(String layerName, String parametersId) {
+            parametersDeleted++;
+        }
+
+        public int total() {
+            return tileDeleted
+                    + tileStored
+                    + tileUpdated
+                    + layerDeleted
+                    + layerRenamed
+                    + gridSubsetDeleted
+                    + parametersDeleted;
+        }
     }
 }

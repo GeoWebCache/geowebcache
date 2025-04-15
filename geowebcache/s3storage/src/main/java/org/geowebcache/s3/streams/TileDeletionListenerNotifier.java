@@ -25,22 +25,26 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.storage.BlobStoreListenerList;
 import org.geowebcache.util.TMSKeyBuilder;
 
-public class TileListenerNotifier implements Consumer<List<S3ObjectSummary>> {
-    private static final String LAYER_GROUP_POS = "layer";
-    private static final String GRID_SET_ID_GROUP_POS = "gridSetId";
-    private static final String FORMAT_GROUP_POS = "format";
-    private static final String PARAMETERS_ID_GROUP_POS = "parametersId";
-    private static final String X_GROUP_POS = "x";
-    private static final String Y_GROUP_POS = "y";
-    private static final String Z_GROUP_POS = "z";
+/**
+ * TileDeletionListenerNotifier is responsible for informing BlobStoreListeners that a tile has been deleted. The method
+ * is called when the
+ */
+public class TileDeletionListenerNotifier implements Consumer<List<S3ObjectSummary>> {
+    public static final String LAYER_GROUP_POS = "layer";
+    public static final String GRID_SET_ID_GROUP_POS = "gridSetId";
+    public static final String FORMAT_GROUP_POS = "format";
+    public static final String PARAMETERS_ID_GROUP_POS = "parametersId";
+    public static final String X_GROUP_POS = "x";
+    public static final String Y_GROUP_POS = "y";
+    public static final String Z_GROUP_POS = "z";
 
-    private static final Pattern keyRegex = Pattern.compile(
+    public static final Pattern keyRegex = Pattern.compile(
             "((?<prefix>.+)/)?(?<layer>.+)/(?<gridSetId>.+)/(?<format>.+)/(?<parametersId>.+)/(?<z>\\d+)/(?<x>\\d+)/(?<y>\\d+)\\.(?<extension>.+)");
 
     private final BlobStoreListenerList listenerList;
     private final TMSKeyBuilder keyBuilder;
 
-    public TileListenerNotifier(BlobStoreListenerList listenerList, TMSKeyBuilder keyBuilder, Logger logger) {
+    public TileDeletionListenerNotifier(BlobStoreListenerList listenerList, TMSKeyBuilder keyBuilder, Logger logger) {
         checkNotNull(listenerList, "listenerList cannot be null");
         checkNotNull(keyBuilder, "keyBuilder cannot be null");
         checkNotNull(logger, "logger cannot be null");
@@ -99,7 +103,6 @@ public class TileListenerNotifier implements Consumer<List<S3ObjectSummary>> {
 
                 listenerList.sendTileDeleted(
                         layerName, gridSetId, mimeType.getMimeType(), parametersId, x, y, z, s3ObjectSummary.getSize());
-                count++;
             } else {
                 logger.warning("Key is in an invalid format " + s3ObjectSummary.getKey());
             }

@@ -20,7 +20,6 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-/** An iterator which returns batches of items taken from another iterator */
 public class BatchingIterator<T> implements Iterator<List<T>> {
     /**
      * Given a stream, convert it to a stream of batches no greater than the batchSize.
@@ -39,29 +38,24 @@ public class BatchingIterator<T> implements Iterator<List<T>> {
     }
 
     private final int batchSize;
-    private List<T> currentBatch;
     private final Iterator<T> sourceIterator;
 
-    public BatchingIterator(Iterator<T> sourceIterator, int batchSize) {
+    private BatchingIterator(Iterator<T> sourceIterator, int batchSize) {
         this.batchSize = batchSize;
         this.sourceIterator = sourceIterator;
     }
 
     @Override
     public boolean hasNext() {
-        prepareNextBatch();
-        return currentBatch != null && !currentBatch.isEmpty();
+        return sourceIterator.hasNext();
     }
 
     @Override
     public List<T> next() {
-        return currentBatch;
-    }
-
-    private void prepareNextBatch() {
-        currentBatch = new ArrayList<>(batchSize);
+        List<T> currentBatch = new ArrayList<>(batchSize);
         while (sourceIterator.hasNext() && currentBatch.size() < batchSize) {
             currentBatch.add(sourceIterator.next());
         }
+        return currentBatch;
     }
 }
