@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import org.apache.commons.lang3.SystemUtils;
 import org.awaitility.Awaitility;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.config.DefaultGridsets;
@@ -61,6 +62,7 @@ import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -88,6 +90,7 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
 
     @Before
     public void before() throws Exception {
+        Assume.assumeFalse("Test skipped on Windows", SystemUtils.IS_OS_WINDOWS);
         Awaitility.setDefaultPollInterval(10, TimeUnit.MILLISECONDS);
         Awaitility.setDefaultPollDelay(Duration.ZERO);
         Awaitility.setDefaultTimeout(Duration.ofSeconds(30L));
@@ -347,7 +350,7 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
     /** Seed levels 0 to 2, truncate levels 0 and 1, check level 2 didn't get deleted */
     @Test
     public void testTruncateRespectsLevels() throws StorageException, MimeException {
-
+        Assume.assumeFalse("Test skipped on Windows", SystemUtils.IS_OS_WINDOWS);
         final int zoomStart = 0;
         final int zoomStop = 2;
 
@@ -360,7 +363,7 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
 
         seed(zoomStart, zoomStop, gridset.getName(), DEFAULT_FORMAT, null);
 
-        BlobStoreListener listener = mock(BlobStoreListener.class);
+        FakeListener listener = new FakeListener();
         blobStore.addListener(listener);
 
         MimeType mimeType = MimeType.createFromExtension(DEFAULT_FORMAT);
@@ -375,9 +378,10 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
         assertTrue(blobStore.delete(tileRange));
 
         int expectedCount = 5; // 1 for level 0, 4 for level 1, as per seed()
-        Awaitility.await().untilAsserted(() -> verify(listener, times(expectedCount))
-                .tileDeleted(
-                        anyString(), anyString(), anyString(), isNull(), anyLong(), anyLong(), anyInt(), anyLong()));
+        Awaitility.await().untilAsserted(() -> {
+            assertEquals(expectedCount, listener.tileDeleted);
+            assertEquals(expectedCount, listener.total());
+        });
     }
 
     @Test

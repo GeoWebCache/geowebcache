@@ -410,10 +410,10 @@ class S3Ops {
                 clearPendingBulkDelete(prefix, timestamp);
                 return tilesDeleted;
             } catch (RuntimeException e) {
-                S3BlobStore.log.severe("Aborted bulk delete '" + e.getMessage() + "' from "
+                S3BlobStore.log.warning("Aborted bulk delete '" + e.getMessage() + "' from "
                         + e.getClass().getSimpleName());
                 if (Objects.nonNull(e.getMessage())) {
-                    S3BlobStore.log.severe("Aborted caused '" + e.getCause().getMessage() + "' from "
+                    S3BlobStore.log.warning("Aborted caused '" + e.getCause().getMessage() + "' from "
                             + e.getCause().getClass().getSimpleName());
                 }
                 throw e;
