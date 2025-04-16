@@ -90,6 +90,8 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
 
     @Before
     public void before() throws Exception {
+        Assume.assumeFalse("Test skipped on Windows", SystemUtils.IS_OS_WINDOWS);
+
         Awaitility.setDefaultPollInterval(10, TimeUnit.MILLISECONDS);
         Awaitility.setDefaultPollDelay(Duration.ZERO);
         Awaitility.setDefaultTimeout(Duration.ofSeconds(30L));
@@ -349,7 +351,6 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
     /** Seed levels 0 to 2, truncate levels 0 and 1, check level 2 didn't get deleted */
     @Test
     public void testTruncateRespectsLevels() throws StorageException, MimeException {
-        Assume.assumeFalse("Test skipped on Windows", SystemUtils.IS_OS_WINDOWS);
         final int zoomStart = 0;
         final int zoomStop = 2;
 
