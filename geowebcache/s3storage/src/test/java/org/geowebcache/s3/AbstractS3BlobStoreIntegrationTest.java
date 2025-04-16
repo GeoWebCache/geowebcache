@@ -90,7 +90,6 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
 
     @Before
     public void before() throws Exception {
-        Assume.assumeFalse("Test skipped on Windows", SystemUtils.IS_OS_WINDOWS);
         Awaitility.setDefaultPollInterval(10, TimeUnit.MILLISECONDS);
         Awaitility.setDefaultPollDelay(Duration.ZERO);
         Awaitility.setDefaultTimeout(Duration.ofSeconds(30L));
