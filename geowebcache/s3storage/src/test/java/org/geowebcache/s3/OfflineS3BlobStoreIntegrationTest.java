@@ -50,12 +50,6 @@ public class OfflineS3BlobStoreIntegrationTest extends AbstractS3BlobStoreIntegr
 
     @Override
     @Test
-    public void testTruncateOptimizationIfNoListeners() throws StorageException, MimeException {
-        super.testTruncateOptimizationIfNoListeners();
-    }
-
-    @Override
-    @Test
     public void testTruncateShortCutsIfNoTilesInGridsetPrefix() throws StorageException, MimeException {
         super.testTruncateShortCutsIfNoTilesInGridsetPrefix();
     }

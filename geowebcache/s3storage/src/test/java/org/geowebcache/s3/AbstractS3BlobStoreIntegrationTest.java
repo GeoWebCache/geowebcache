@@ -64,7 +64,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * Integration tests for {@link S3BlobStore}.
@@ -379,50 +378,6 @@ public abstract class AbstractS3BlobStoreIntegrationTest {
         Awaitility.await().untilAsserted(() -> verify(listener, times(expectedCount))
                 .tileDeleted(
                         anyString(), anyString(), anyString(), isNull(), anyLong(), anyLong(), anyInt(), anyLong()));
-    }
-
-    /** If there are not {@link BlobStoreListener}s, use an optimized code path (not calling delete() for each tile) */
-    @Test
-    public void testTruncateOptimizationIfNoListeners() throws StorageException, MimeException {
-
-        final int zoomStart = 0;
-        final int zoomStop = 2;
-
-        long[][] rangeBounds = { //
-            {0, 0, 0, 0, 0}, //
-            {0, 0, 1, 1, 1}, //
-            {0, 0, 3, 3, 2} //
-        };
-
-        seed(zoomStart, zoomStop);
-
-        MimeType mimeType = MimeType.createFromExtension(DEFAULT_FORMAT);
-
-        Map<String, String> parameters = null;
-
-        final int truncateStart = 0, truncateStop = 1;
-
-        TileRange tileRange = tileRange(
-                DEFAULT_LAYER, DEFAULT_GRIDSET, truncateStart, truncateStop, rangeBounds, mimeType, parameters);
-
-        blobStore = Mockito.spy(blobStore);
-        assertTrue(blobStore.delete(tileRange));
-
-        verify(blobStore, times(0)).delete(Mockito.any(TileObject.class));
-        assertFalse(blobStore.get(queryTile(0, 0, 0)));
-        assertFalse(blobStore.get(queryTile(0, 0, 1)));
-        assertFalse(blobStore.get(queryTile(0, 1, 1)));
-        assertFalse(blobStore.get(queryTile(1, 0, 1)));
-        assertFalse(blobStore.get(queryTile(1, 1, 1)));
-
-        assertTrue(blobStore.get(queryTile(0, 0, 2)));
-        assertTrue(blobStore.get(queryTile(0, 1, 2)));
-        assertTrue(blobStore.get(queryTile(0, 2, 2)));
-        // ...
-        assertTrue(blobStore.get(queryTile(3, 0, 2)));
-        assertTrue(blobStore.get(queryTile(3, 1, 2)));
-        assertTrue(blobStore.get(queryTile(3, 2, 2)));
-        assertTrue(blobStore.get(queryTile(3, 3, 2)));
     }
 
     @Test

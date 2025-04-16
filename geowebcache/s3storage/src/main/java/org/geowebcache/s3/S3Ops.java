@@ -160,9 +160,12 @@ class S3Ops {
             long storedTimestamp = storedVal == null ? Long.MIN_VALUE : Long.parseLong(storedVal);
             if (timestamp >= storedTimestamp) {
                 putProperties(pendingDeletesKey, deletes);
+                S3BlobStore.log.info(
+                        String.format("Bulk delete removed pendingDelete for for bucket '%s/%s'", bucketName, prefix));
+
             } else {
                 S3BlobStore.log.info(String.format(
-                        "bulk delete finished but there's a newer one ongoing for bucket '%s/%s'", bucketName, prefix));
+                        "Bulk delete finished but there's a newer one ongoing for bucket '%s/%s'", bucketName, prefix));
             }
         } catch (StorageException e) {
             throw new RuntimeException(e);
@@ -407,7 +410,12 @@ class S3Ops {
                 clearPendingBulkDelete(prefix, timestamp);
                 return tilesDeleted;
             } catch (RuntimeException e) {
-                S3BlobStore.log.severe("Aborted bulk delete " + e.getMessage());
+                S3BlobStore.log.severe("Aborted bulk delete '" + e.getMessage() + "' from "
+                        + e.getClass().getSimpleName());
+                if (Objects.nonNull(e.getMessage())) {
+                    S3BlobStore.log.severe("Aborted caused '" + e.getCause().getMessage() + "' from "
+                            + e.getCause().getClass().getSimpleName());
+                }
                 throw e;
             } finally {
                 try {
