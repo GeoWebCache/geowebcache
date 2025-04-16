@@ -38,7 +38,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
-
 import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.geowebcache.config.DefaultGridsets;
@@ -59,15 +58,11 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
 
     protected boolean events = true;
 
-    /**
-     * Set up the test store in {@link #store}.
-     */
+    /** Set up the test store in {@link #store}. */
     @Before
     public abstract void createTestUnit() throws Exception;
 
-    /**
-     * Override and add tear down assertions after calling super
-     */
+    /** Override and add tear down assertions after calling super */
     @After
     public void destroyTestUnit() throws Exception {
         // Might be null if an Assumption failed during createTestUnit
@@ -79,7 +74,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
     @Test
     public void testEmpty() throws Exception {
         TileObject fromCache = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", null);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", null);
         assertThat(store.get(fromCache), equalTo(false));
         // assertThat(fromCache, hasProperty("status", is(Status.MISS)));
     }
@@ -90,14 +85,14 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         store.addListener(listener);
         TileObject toCache = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 null,
                 new ByteArrayResource("1,2,4,5,6 test".getBytes(StandardCharsets.UTF_8)));
         final long size = toCache.getBlobSize();
         TileObject fromCache = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", null);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", null);
 
         if (events) {
             listener.tileStored(
@@ -109,7 +104,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
                     eq(0L),
                     eq(0),
                     geq(size) // Some stores have minimum block sizes and so have to pad this
-            );
+                    );
             EasyMock.expectLastCall();
         }
 
@@ -135,14 +130,14 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         store.addListener(listener);
         TileObject toCache1 = TileObject.createCompleteTileObject(
                 "testLayer1",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 null,
                 new ByteArrayResource("1,2,4,5,6 test".getBytes(StandardCharsets.UTF_8)));
         TileObject toCache2 = TileObject.createCompleteTileObject(
                 "testLayer2",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 null,
@@ -150,11 +145,11 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         final long size1 = toCache1.getBlobSize();
         final long size2 = toCache2.getBlobSize();
         TileObject fromCache1 = TileObject.createQueryTileObject(
-                "testLayer1", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", null);
+                "testLayer1", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", null);
         TileObject fromCache2_1 = TileObject.createQueryTileObject(
-                "testLayer2", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", null);
+                "testLayer2", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", null);
         TileObject fromCache2_2 = TileObject.createQueryTileObject(
-                "testLayer2", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", null);
+                "testLayer2", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", null);
 
         if (events) {
             listener.tileStored(
@@ -191,15 +186,15 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         store.addListener(listener);
         TileObject toCache = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 null,
                 new ByteArrayResource("1,2,4,5,6 test".getBytes(StandardCharsets.UTF_8)));
         TileObject remove = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", null);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", null);
         TileObject fromCache = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", null);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", null);
 
         Capture<Long> sizeCapture = EasyMock.newCapture();
         if (events) {
@@ -249,21 +244,21 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         store.addListener(listener);
         TileObject toCache1 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 null,
                 new ByteArrayResource("1,2,4,5,6 test".getBytes(StandardCharsets.UTF_8)));
         TileObject toCache2 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 null,
                 new ByteArrayResource("7,8,9,10 test".getBytes(StandardCharsets.UTF_8)));
         final long size2 = toCache2.getBlobSize();
         TileObject fromCache = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", null);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", null);
 
         Capture<Long> sizeCapture = EasyMock.newCapture();
         if (events) {
@@ -316,14 +311,14 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         store.addListener(listener);
         TileObject toCache1 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet1",
                 "image/png",
                 null,
                 new ByteArrayResource("1,2,4,5,6 test".getBytes(StandardCharsets.UTF_8)));
         TileObject toCache2 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet2",
                 "image/png",
                 null,
@@ -331,17 +326,17 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         final long size1 = toCache1.getBlobSize();
         final long size2 = toCache2.getBlobSize();
         TileObject remove = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet1", "image/png", null);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet1", "image/png", null);
         TileObject fromCache1_1 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet1", "image/png", null);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet1", "image/png", null);
         TileObject fromCache2_1 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet2", "image/png", null);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet2", "image/png", null);
         TileObject fromCache1_2 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet1", "image/png", null);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet1", "image/png", null);
         TileObject fromCache2_2 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet2", "image/png", null);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet2", "image/png", null);
         TileObject fromCache2_3 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet2", "image/png", null);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet2", "image/png", null);
 
         Capture<Long> sizeCapture1 = EasyMock.newCapture();
         Capture<Long> sizeCapture2 = EasyMock.newCapture();
@@ -420,7 +415,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         store.addListener(listener);
         TileObject toCache1 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet1",
                 "image/png",
                 null,
@@ -428,7 +423,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         final long size1 = toCache1.getBlobSize();
 
         TileObject fromCache1_2 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet1", "image/png", null);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet1", "image/png", null);
 
         if (events) {
             listener.tileStored(
@@ -455,14 +450,14 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
     public void testDeleteGridsetDoesntDeleteOthers() throws Exception {
         TileObject toCache1 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet1",
                 "image/png",
                 null,
                 new ByteArrayResource("1,2,4,5,6 test".getBytes(StandardCharsets.UTF_8)));
         TileObject toCache2 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet2",
                 "image/png",
                 null,
@@ -471,15 +466,15 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         final long size2 = toCache2.getBlobSize();
 
         TileObject fromCache1_1 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet1", "image/png", null);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet1", "image/png", null);
         TileObject fromCache2_1 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet2", "image/png", null);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet2", "image/png", null);
         TileObject fromCache1_2 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet1", "image/png", null);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet1", "image/png", null);
         TileObject fromCache2_2 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet2", "image/png", null);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet2", "image/png", null);
         TileObject fromCache2_3 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet2", "image/png", null);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet2", "image/png", null);
 
         store.put(toCache1);
         assertThat(store.get(fromCache2_1), is(false));
@@ -514,14 +509,14 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         Map<String, String> params2 = Collections.singletonMap("testKey", "testValue2");
         TileObject toCache1 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 params1,
                 new ByteArrayResource("1,2,4,5,6 test".getBytes(StandardCharsets.UTF_8)));
         TileObject toCache2 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 params2,
@@ -530,17 +525,17 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         final long size2 = toCache2.getBlobSize();
 
         TileObject remove = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", params1);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", params1);
         TileObject fromCache1_1 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", params1);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", params1);
         TileObject fromCache2_1 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", params2);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", params2);
         TileObject fromCache1_2 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", params1);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", params1);
         TileObject fromCache2_2 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", params2);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", params2);
         TileObject fromCache2_3 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", params2);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", params2);
 
         Capture<Long> sizeCapture1 = EasyMock.newCapture();
         Capture<Long> sizeCapture2 = EasyMock.newCapture();
@@ -676,14 +671,14 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         Map<String, String> params2 = Collections.singletonMap("testKey", "testValue2");
         TileObject toCache1 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 params1,
                 new ByteArrayResource("1,2,4,5,6 test".getBytes(StandardCharsets.UTF_8)));
         TileObject toCache2 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 params2,
@@ -704,14 +699,14 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         String params2Id = ParametersUtils.getId(params2);
         TileObject toCache1 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 params1,
                 new ByteArrayResource("1,2,4,5,6 test".getBytes(StandardCharsets.UTF_8)));
         TileObject toCache2 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 params2,
@@ -737,14 +732,14 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         String paramID2 = ParametersUtils.getId(params2);
         TileObject toCache1 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 params1,
                 new ByteArrayResource("1,2,4,5,6 test".getBytes(StandardCharsets.UTF_8)));
         TileObject toCache2 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 params2,
@@ -755,13 +750,13 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         final long size2 = toCache2.getBlobSize();
 
         TileObject fromCache1_1 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", params1);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", params1);
         TileObject fromCache2_1 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", params2);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", params2);
         TileObject fromCache1_2 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", params1);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", params1);
         TileObject fromCache2_2 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", params2);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", params2);
 
         if (events) {
             listener.tileStored(
@@ -819,14 +814,14 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         Map<String, String> params2 = Collections.singletonMap("testKey", "testValue2");
         TileObject toCache1 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 params1,
                 new ByteArrayResource("1,2,4,5,6 test".getBytes(StandardCharsets.UTF_8)));
         TileObject toCache2 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 params2,
@@ -834,7 +829,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         final long size2 = toCache2.getBlobSize();
 
         TileObject fromCache2_3 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", params2);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", params2);
 
         store.put(toCache1);
         store.put(toCache2);
@@ -865,14 +860,14 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         String paramID2 = ParametersUtils.getId(params2);
         TileObject toCache1 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 params1,
                 new ByteArrayResource("1,2,4,5,6 test".getBytes(StandardCharsets.UTF_8)));
         TileObject toCache2 = TileObject.createCompleteTileObject(
                 "testLayer",
-                new long[]{0L, 0L, 0L},
+                new long[] {0L, 0L, 0L},
                 "testGridSet",
                 "image/png",
                 params2,
@@ -883,13 +878,13 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         final long size2 = toCache2.getBlobSize();
 
         TileObject fromCache1_1 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", params1);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", params1);
         TileObject fromCache2_1 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", params2);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", params2);
         TileObject fromCache1_2 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", params1);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", params1);
         TileObject fromCache2_2 = TileObject.createQueryTileObject(
-                "testLayer", new long[]{0L, 0L, 0L}, "testGridSet", "image/png", params2);
+                "testLayer", new long[] {0L, 0L, 0L}, "testGridSet", "image/png", params2);
 
         if (events) {
             listener.tileStored(
@@ -951,7 +946,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
             throws StorageException {
         TileObject to = TileObject.createCompleteTileObject(
                 layerName,
-                new long[]{x, y, z},
+                new long[] {x, y, z},
                 gridSetId,
                 format,
                 parameters,
@@ -970,7 +965,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
             String content)
             throws StorageException {
         TileObject to =
-                TileObject.createQueryTileObject(layerName, new long[]{x, y, z}, gridSetId, format, parameters);
+                TileObject.createQueryTileObject(layerName, new long[] {x, y, z}, gridSetId, format, parameters);
         assertThat(store.get(to), describedAs("get a tile", is(true)));
         assertThat(to, hasProperty("blob", resource(new ByteArrayResource(content.getBytes(StandardCharsets.UTF_8)))));
     }
@@ -979,7 +974,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
             String layerName, long x, long y, int z, String gridSetId, String format, Map<String, String> parameters)
             throws StorageException {
         TileObject to =
-                TileObject.createQueryTileObject(layerName, new long[]{x, y, z}, gridSetId, format, parameters);
+                TileObject.createQueryTileObject(layerName, new long[] {x, y, z}, gridSetId, format, parameters);
         assertNoTile(to);
     }
 
@@ -1053,10 +1048,9 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         // store full world coverage for zoom levels 0, 1, 2
         setupFullCoverage(layerName, gridSet, format, content, gridsetId, 0, 2);
 
-        // Create a fake listener
         // delete sub-range at zoom level 2
         TileRange range =
-                new TileRange(layerName, gridsetId, 2, 2, new long[][]{{0, 0, 2, 2, 2}}, ImageMime.png, null);
+                new TileRange(layerName, gridsetId, 2, 2, new long[][] {{0, 0, 2, 2, 2}}, ImageMime.png, null);
         store.delete(range);
 
         // check tiles in range have have been deleted, but others are there
@@ -1081,7 +1075,7 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
 
         // delete sub-range at zoom level 2
         TileRange range = new TileRange(
-                layerName, gridsetId, 1, 2, new long[][]{{0, 0, 2, 2, 1}, {0, 0, 2, 2, 2}}, ImageMime.png, null);
+                layerName, gridsetId, 1, 2, new long[][] {{0, 0, 2, 2, 1}, {0, 0, 2, 2, 2}}, ImageMime.png, null);
         store.delete(range);
 
         // check tiles in range have have been deleted, but others are there
