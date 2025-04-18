@@ -59,6 +59,15 @@ public final class TMSKeyBuilder {
         return layer.getId();
     }
 
+    public String layerNameFromId(String layerId) {
+        for (TileLayer tileLayer : layers.getLayerList()) {
+            if (layerId.equals(tileLayer.getId())) {
+                return tileLayer.getName();
+            }
+        }
+        return null;
+    }
+
     public Set<String> layerGridsets(String layerName) {
         TileLayer layer;
         try {
@@ -221,5 +230,28 @@ public final class TMSKeyBuilder {
             joiner.add("");
         }
         return joiner.toString();
+    }
+
+    private static String parametersFromTileRange(TileRange obj) {
+        String parametersId = obj.getParametersId();
+        if (parametersId == null) {
+            Map<String, String> parameters = obj.getParameters();
+            parametersId = ParametersUtils.getId(parameters);
+            if (parametersId == null) {
+                parametersId = "default";
+            } else {
+                obj.setParametersId(parametersId);
+            }
+        }
+        return parametersId;
+    }
+
+    public String forZoomLevel(TileRange tileRange, int level) {
+        String layerId = layerId(tileRange.getLayerName());
+        String gridsetId = tileRange.getGridSetId();
+        String format = tileRange.getMimeType().getFileExtension();
+        String parametersId = parametersFromTileRange(tileRange);
+
+        return join(true, prefix, layerId, gridsetId, format, parametersId, String.valueOf(level));
     }
 }
