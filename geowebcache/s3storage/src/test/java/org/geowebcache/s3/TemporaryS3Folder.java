@@ -86,6 +86,7 @@ public class TemporaryS3Folder extends ExternalResource {
         config.setBucket(bucket);
         config.setAwsAccessKey(accessKey);
         config.setAwsSecretKey(secretKey);
+        config.setAccess(Access.PRIVATE);
         config.setPrefix(temporaryPrefix);
         if (properties.getProperty("endpoint") != null) {
             config.setEndpoint(properties.getProperty("endpoint"));
