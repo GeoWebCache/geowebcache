@@ -13,6 +13,7 @@
  */
 package org.geowebcache.s3;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
@@ -22,13 +23,17 @@ import static org.junit.Assert.fail;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Stream;
+import org.awaitility.Awaitility;
 import org.easymock.EasyMock;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.grid.GridSet;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.NoOpLockProvider;
 import org.geowebcache.storage.AbstractBlobStoreTest;
+import org.geowebcache.storage.StorageException;
+import org.geowebcache.storage.TileRange;
 import org.junit.Assume;
 import org.junit.Rule;
 
@@ -62,5 +67,20 @@ public class S3BlobStoreConformanceTest extends AbstractBlobStoreTest<S3BlobStor
                 .forEach(EasyMock::replay);
         replay(layers);
         store = new S3BlobStore(config, layers, lockProvider);
+    }
+
+    @Override
+    public void assertTileRangeEmpty(String layerName, GridSet gridSet, String format, TileRange range)
+            throws StorageException {
+        Awaitility.await().atMost(30, SECONDS).untilAsserted(() -> {
+            for (int z = range.getZoomStart(); z <= range.getZoomStop(); z++) {
+                long[] bounds = range.rangeBounds(z);
+                for (long x = bounds[0]; x <= bounds[2]; x++) {
+                    for (long y = bounds[1]; y < bounds[2]; y++) {
+                        assertNoTile(layerName, x, y, z, gridSet.getName(), format, null);
+                    }
+                }
+            }
+        });
     }
 }
