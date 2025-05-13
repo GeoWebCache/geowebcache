@@ -1,4 +1,4 @@
-GeoWebCache 1.26.3 (2025-05-12)
+GeoWebCache 1.26.3 (2025-05-13)
 -------------------------------
 
 Maintenance release.
