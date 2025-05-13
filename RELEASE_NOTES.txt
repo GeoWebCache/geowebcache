@@ -1,5 +1,21 @@
+GeoWebCache 1.27.1 (2025-05-12)
+-------------------------------
+
+Stable release
+
+Improvements:
++++++++++++++
+
+- Mime type: advertise preferred content disposition
+
+Fixes:
+++++++
+- Limit number of S3 requests when truncating based on tile range
+- Update to GeoTools 33.1
+
+
 GeoWebCache 1.27.0 (2025-04-02)
-------------------------------
+-------------------------------
 
 Stable release
 
@@ -24,23 +40,22 @@ Updates:
 ++++++++
 
 - Upgraded to GeoTools 33.0
-- Upgraded to Spring Framework 6.0.15
-- Updated Jackson 2 libraries from 2.17.2 to 2.18.0
-- Upgraded to JTS 1.21.0
-- Updated ImageIO-EXT to 1.5.0
-- Upgraded JAI-EXT to 1.2.0
-- Updated Guava from 33.2.1 to 34.0.0
+- Upgraded to Spring Framework 5.3.39
+- Updated Jackson 2 libraries from 2.17.2 to 2.18.2
+- Upgraded to JTS 1.20.0
+- Updated ImageIO-EXT to 1.4.15
+- Upgraded JAI-EXT to 1.31
+- Updated Guava from 33.2.1 to 33.4.0
 - Upgraded Azure SDK to 12.30.0
 - Updated Apache Commons libraries to latest versions
 
 Internals:
 ++++++++++
 
-- Migrated build system to Java 17 as minimum version
 - Improved test coverage for vector tile capabilities
 - Enhanced CI/CD pipeline with additional automated tests
-- Upgraded JUnit from 4.13.2 to 5.10.0
-- Updated Mockito to 5.14.0
+- Upgraded JUnit from 4.13.2
+- Updated Mockito to 5.15.2
 - Improved JavaDoc documentation
 - Upgraded SLF4J and Logback dependencies
 
