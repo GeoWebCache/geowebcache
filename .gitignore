@@ -2,6 +2,7 @@
 *.settings
 *.project
 .factorypath
+.pmd
 bin
 target
 .DS_Store
