@@ -32,7 +32,6 @@
     <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-xml</artifactId>
-      <version>${gt.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
