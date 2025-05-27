@@ -512,11 +512,6 @@
     <pluginManagement>
       <plugins>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>cobertura-maven-plugin</artifactId>
-          <version>2.0</version>
-        </plugin>
-        <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>3.3.1</version>
           <executions>
@@ -539,13 +534,105 @@
             <skipTests>${skipITs}</skipTests>
           </configuration>
         </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>buildnumber-maven-plugin</artifactId>
+          <version>1.4</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.4</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>3.5.0</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.14.0</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>2.2.1</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.22.1</version>
+        </plugin>
+
+        <plugin>
+          <groupId>pl.project13.maven</groupId>
+          <artifactId>git-commit-id-plugin</artifactId>
+          <version>4.9.10</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.2</version>
+        </plugin>
+
+        <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>2.43.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>com.github.ekryd.sortpom</groupId>
+          <artifactId>sortpom-maven-plugin</artifactId>
+          <version>2.15.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.commonjava.maven.plugins</groupId>
+          <artifactId>directory-maven-plugin</artifactId>
+          <version>0.3.1</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>3.4.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.eclipse.jetty</groupId>
+          <artifactId>jetty-maven-plugin</artifactId>
+          <version>9.4.14.v20181114</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.11.2</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-pmd-plugin</artifactId>
+          <version>3.22.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <version>4.8.2.0</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>3.6.0</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>buildnumber-maven-plugin</artifactId>
-        <version>1.4</version>
         <executions>
           <execution>
             <phase>validate</phase>
@@ -566,7 +653,6 @@
 
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>2.4</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -594,11 +680,42 @@
       </plugin>
 
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce</id>
+            <!-- Enforcing a minimum Maven version is crucial to ensure that:
+                 - Plugin version resolution works as expected: Different Maven versions
+                   may resolve plugin versions differently due to changes in the default
+                   lifecycle mappings, dependency resolution behavior, and plugin inheritance.
+                 - Features and bug fixes required by newer plugins are available: For example,
+                   some plugins (e.g., surefire-plugin 3.x) require Maven 3.6+ or 3.8+.
+                 - Consistent builds across environments: Without enforcing a Maven version,
+                   developers or CI/CD pipelines using different Maven versions may face
+                   unexpected build failures or inconsistencies.
+            -->
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>[3.8,4.0)</version>
+                  <message>You must use Maven 3.8 or higher to build this project.</message>
+                </requireMavenVersion>
+                <requireJavaVersion>
+                  <version>[17,)</version>
+                </requireJavaVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.13.0</version>
         <configuration>
-          <source>11</source>
-          <target>11</target>
+          <release>17</release>
           <encoding>UTF-8</encoding>
           <parameters>true</parameters>
         </configuration>
@@ -606,7 +723,6 @@
 
       <plugin>
         <artifactId>maven-source-plugin</artifactId>
-        <version>2.2.1</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -622,7 +738,6 @@
 
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.1</version>
         <configuration>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
@@ -639,7 +754,6 @@
       <plugin>
         <groupId>pl.project13.maven</groupId>
         <artifactId>git-commit-id-plugin</artifactId>
-        <version>4.9.10</version>
         <executions>
           <execution>
             <goals>
@@ -657,7 +771,6 @@
 
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.2</version>
         <configuration>
           <!--descriptorRefs>
             <descriptorRef>project</descriptorRef>
@@ -675,7 +788,6 @@
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>2.43.0</version>
         <executions>
           <execution>
             <phase>validate</phase>
@@ -701,7 +813,6 @@
       <plugin>
         <groupId>com.github.ekryd.sortpom</groupId>
         <artifactId>sortpom-maven-plugin</artifactId>
-        <version>2.15.0</version>
         <executions>
           <execution>
             <phase>verify</phase>
@@ -723,7 +834,6 @@
       <plugin>
         <groupId>org.commonjava.maven.plugins</groupId>
         <artifactId>directory-maven-plugin</artifactId>
-        <version>0.3.1</version>
         <executions>
           <execution>
             <id>directories</id>
@@ -742,26 +852,27 @@
 
   <reporting>
     <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>cobertura-maven-plugin</artifactId>
-        <configuration>
-          <formats>
-            <format>html</format>
-            <format>xml</format>
-          </formats>
-        </configuration>
-      </plugin>
       <!-- javadoc -->
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
-          <source>11</source>
+          <release>17</release>
+          <!-- Force non-modular mode for projects without module-info.java -->
+          <legacyMode>true</legacyMode>
+          <!-- Specifies whether or not the version text is included.-->
           <version>false</version>
+          <!-- Omit qualifying package name before class names in output.-->
           <noqualifier>all</noqualifier>
-          <maxmemory>256M</maxmemory>
-          <encoding>ISO-8859-1</encoding>
-          <additionalparam>-keywords</additionalparam>
+          <!-- Shuts off non-error and non-warning messages.-->
+          <quiet>true</quiet>
+          <!-- The maximum Java heap size to be used to run javadoc. -->
+          <maxmemory>${javadoc.maxHeapSize}</maxmemory>
+          <!-- Specifies the encoding name of the source files.-->
+          <encoding>UTF-8</encoding>
+          <!-- Set an additional parameter for the command line. -->
+          <additionalOptions>-keywords</additionalOptions>
+          <breakiterator>true</breakiterator>
+
           <tags>
             <tag>
               <name>todo</name>
@@ -780,8 +891,8 @@
             </tag>
           </tags>
           <links>
-            <link>http://docs.oracle.com/javase/7/docs/api/</link>
-            <link>http://docs.geotools.org/stable/javadocs/</link>
+            <link>https://docs.oracle.com/en/java/javase/17/docs/api/</link>
+            <link>https://docs.geotools.org/stable/javadocs/</link>
           </links>
         </configuration>
       </plugin>
@@ -800,7 +911,6 @@
         <plugins>
           <plugin>
             <artifactId>maven-pmd-plugin</artifactId>
-            <version>3.22.0</version>
             <executions>
               <execution>
                 <goals>
@@ -860,12 +970,45 @@
         <plugins>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.8.0</version>
             <configuration>
               <fork>false</fork>
               <compilerArgs>
                 <arg>-XDcompilePolicy=simple</arg>
-                <arg>-Xplugin:ErrorProne -XepExcludedPaths:${project.build.directory}/generated-sources/.* -Xep:SelfAssertion:OFF ${errorProneFlags}</arg>
+                <arg>--should-stop=ifError=FLOW</arg>
+                <arg>-Xplugin:ErrorProne -XepExcludedPaths:${project.build.directory}/generated-sources/.* \
+                -Xep:SelfAssertion:OFF \
+                -Xep:MissingSummary:OFF \
+                -Xep:DefaultCharset:OFF \
+                -Xep:DoubleCheckedLocking:OFF \
+                -Xep:EmptyBlockTag:OFF \
+                -Xep:EmptyCatch:OFF \
+                -Xep:EqualsGetClass:OFF \
+                -Xep:Finalize:OFF \
+                -Xep:FutureReturnValueIgnored:OFF \
+                -Xep:InconsistentCapitalization:OFF \
+                -Xep:InconsistentHashCode:OFF \
+                -Xep:InlineMeInliner:OFF \
+                -Xep:InlineMeSuggester:OFF \
+                -Xep:InvalidBlockTag:OFF \
+                -Xep:InvalidLink:OFF \
+                -Xep:InvalidParam:OFF \
+                -Xep:JavaTimeDefaultTimeZone:OFF \
+                -Xep:JavaUtilDate:OFF \
+                -Xep:JdkObsolete:OFF \
+                -Xep:LongDoubleConversion:OFF \
+                -Xep:MixedMutabilityReturnType:OFF \
+                -Xep:NonApiType:OFF \
+                -Xep:NotJavadoc:OFF \
+                -Xep:ObjectEqualsForPrimitives:OFF \
+                -Xep:OperatorPrecedence:OFF \
+                -Xep:StringCaseLocaleUsage:OFF \
+                -Xep:StringSplitter:OFF \
+                -Xep:SynchronizeOnNonFinalField:OFF \
+                -Xep:UnnecessaryParentheses:OFF \
+                -Xep:UnnecessaryStringBuilder:OFF \
+                -Xep:UnrecognisedJavadocTag:OFF \
+                -Xep:UnusedVariable:OFF \
+                ${errorProneFlags}</arg>
                 <arg>-Xlint:${lint}</arg>
                 <arg>-Werror</arg>
               </compilerArgs>
@@ -894,7 +1037,6 @@
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.8.2.0</version>
             <executions>
               <execution>
                 <goals>
@@ -926,7 +1068,6 @@
         <plugins>
           <plugin>
             <artifactId>maven-checkstyle-plugin</artifactId>
-            <version>3.1.1</version>
             <executions>
               <execution>
                 <goals>

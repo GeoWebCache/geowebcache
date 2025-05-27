@@ -348,7 +348,7 @@ public class FileBlobStore implements BlobStore {
         } else {
             throw new StorageException("Couldn't rename layer directory " + oldLayerPath + " to " + newLayerPath);
         }
-        return renamed;
+        return true;
     }
 
     private File getLayerPath(String layerName) {
@@ -697,7 +697,7 @@ public class FileBlobStore implements BlobStore {
 
         final int blockSize = this.diskBlockSize;
 
-        long actuallyUsedStorage = blockSize * (int) Math.ceil((double) fileSize / blockSize);
+        long actuallyUsedStorage = blockSize * (long) Math.ceil((double) fileSize / blockSize);
 
         return actuallyUsedStorage;
     }
@@ -749,7 +749,7 @@ public class FileBlobStore implements BlobStore {
         if (!layerPath.exists()) {
             return Stream.of();
         }
-        @SuppressWarnings("PMD.CloseResource") // wrapped and closed in the return value
+        @SuppressWarnings({"PMD.CloseResource", "StreamResourceLeak"}) // wrapped and closed in the return value
         final DirectoryStream<Path> layerDirStream = Files.newDirectoryStream(layerPath.toPath(), filter);
         return StreamSupport.stream(layerDirStream.spliterator(), false)
                 .onClose( // Delegate closing so that when the returned stream is closed, so is the

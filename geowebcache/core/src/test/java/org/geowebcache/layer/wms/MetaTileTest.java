@@ -24,6 +24,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+@SuppressWarnings("AssertEqualsArgumentOrderChecker") // TODO: un-swap assertEquals() arguments
 public class MetaTileTest {
 
     GridSetBroker gridSetBroker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
