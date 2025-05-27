@@ -27,6 +27,7 @@ public class UnsuitableStorageException extends StorageException {
         super(msg);
     }
 
+    @SuppressWarnings("FallThrough") // REVISIT the switch logic is hard to follow
     public static void checkSuitability(String location, final boolean exists, boolean empty)
             throws UnsuitableStorageException {
         switch (CompositeBlobStore.getStoreSuitabilityCheck()) {

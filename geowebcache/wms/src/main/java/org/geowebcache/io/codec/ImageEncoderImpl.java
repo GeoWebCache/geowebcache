@@ -104,7 +104,7 @@ public class ImageEncoderImpl implements ImageEncoder {
 
             @Override
             public RenderedImage prepareImage(RenderedImage image, MimeType type) {
-                boolean isPNG8 = type == ImageMime.png8;
+                boolean isPNG8 = ImageMime.png8.equals(type);
                 if (isPNG8) {
                     return applyPalette(image);
                 }
@@ -150,10 +150,11 @@ public class ImageEncoderImpl implements ImageEncoder {
         TIFF("image/tiff"),
         BMP("image/bmp");
 
-        private String[] formatNames;
+        @SuppressWarnings("ImmutableEnumChecker") // instance is immutable
+        private final List<String> formatNames;
 
         WriteHelper(String... formatNames) {
-            this.formatNames = formatNames;
+            this.formatNames = List.of(formatNames);
         }
 
         public ImageWriteParam prepareParams(Map<String, String> inputParams, ImageWriter writer) {

@@ -74,7 +74,7 @@ public abstract class WMSSourceHelper {
         }
         wmsParams.putAll(filteringParameters);
 
-        if (tile.getMimeType() == XMLMime.kml) {
+        if (XMLMime.kml.equals(tile.getMimeType())) {
             // This is a hack for GeoServer to produce regionated KML,
             // but it is unlikely to do much harm, especially since nobody
             // else appears to produce regionated KML at this point

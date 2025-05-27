@@ -634,7 +634,7 @@ public abstract class JDBCQuotaStoreTest {
         assertEquals(sysUtils.currentTimeMinutes(), lastAccessTimeMinutes);
 
         float frequencyOfUsePerMinute = stats.getFrequencyOfUsePerMinute();
-        assertEquals(100f, frequencyOfUsePerMinute, 1e-6f);
+        assertEquals(100f, frequencyOfUsePerMinute, 1e-5f);
 
         // now 1 minute later...
         sysUtils.setCurrentTimeMinutes(sysUtils.currentTimeMinutes() + 2);
@@ -762,7 +762,7 @@ public abstract class JDBCQuotaStoreTest {
     public void testGetLeastRecentlyUsedPage() throws Exception {
         MockSystemUtils mockSystemUtils = new MockSystemUtils();
         mockSystemUtils.setCurrentTimeMinutes(1000);
-        mockSystemUtils.setCurrentTimeMillis(mockSystemUtils.currentTimeMinutes() * 60 * 1000);
+        mockSystemUtils.setCurrentTimeMillis(mockSystemUtils.currentTimeMinutes() * 60L * 1000L);
         SystemUtils.set(mockSystemUtils);
 
         final String layerName = testTileSet.getLayerName();
@@ -777,8 +777,8 @@ public abstract class JDBCQuotaStoreTest {
         PageStatsPayload payload1 = new PageStatsPayload(page1, testTileSet);
         PageStatsPayload payload2 = new PageStatsPayload(page2, testTileSet);
 
-        payload1.setLastAccessTime(mockSystemUtils.currentTimeMillis() + 1 * 60 * 1000);
-        payload2.setLastAccessTime(mockSystemUtils.currentTimeMillis() + 2 * 60 * 1000);
+        payload1.setLastAccessTime(mockSystemUtils.currentTimeMillis() + 1 * 60L * 1000L);
+        payload2.setLastAccessTime(mockSystemUtils.currentTimeMillis() + 2 * 60L * 1000L);
 
         Collection<PageStatsPayload> statsUpdates = Arrays.asList(payload1, payload2);
         store.addHitsAndSetAccesTime(statsUpdates).get();
@@ -786,7 +786,7 @@ public abstract class JDBCQuotaStoreTest {
         leastRecentlyUsedPage = store.getLeastRecentlyUsedPage(layerNames);
         assertEquals(page1, leastRecentlyUsedPage);
 
-        payload1.setLastAccessTime(mockSystemUtils.currentTimeMillis() + 10 * 60 * 1000);
+        payload1.setLastAccessTime(mockSystemUtils.currentTimeMillis() + 10 * 60L * 1000L);
         store.addHitsAndSetAccesTime(statsUpdates).get();
 
         leastRecentlyUsedPage = store.getLeastRecentlyUsedPage(layerNames);
@@ -797,7 +797,7 @@ public abstract class JDBCQuotaStoreTest {
     public void testGetLeastRecentlyUsedPageSkipEmpty() throws Exception {
         MockSystemUtils mockSystemUtils = new MockSystemUtils();
         mockSystemUtils.setCurrentTimeMinutes(1000);
-        mockSystemUtils.setCurrentTimeMillis(mockSystemUtils.currentTimeMinutes() * 60 * 1000);
+        mockSystemUtils.setCurrentTimeMillis(mockSystemUtils.currentTimeMinutes() * 60L * 1000L);
         SystemUtils.set(mockSystemUtils);
 
         final String layerName = testTileSet.getLayerName();

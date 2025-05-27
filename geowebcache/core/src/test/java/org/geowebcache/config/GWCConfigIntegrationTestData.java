@@ -27,6 +27,7 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.wms.WMSLayer;
 
 /** Test data for {@link GWCConfigIntegrationTest} */
+@SuppressWarnings("MutablePublicArray")
 public class GWCConfigIntegrationTestData {
 
     // Names / ids for config objects

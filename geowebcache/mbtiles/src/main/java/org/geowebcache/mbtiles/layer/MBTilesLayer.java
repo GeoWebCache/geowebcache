@@ -73,7 +73,6 @@ public class MBTilesLayer extends AbstractTileLayer implements TileJSONProvider 
     /*
      * configuration properties
      */
-    private Boolean enabled;
 
     private File tilesPath;
 
@@ -98,16 +97,6 @@ public class MBTilesLayer extends AbstractTileLayer implements TileJSONProvider 
     @Override
     public String getBlobStoreId() {
         return null;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    @Override
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
     }
 
     /** Returns the location of the actual tiles set. */
