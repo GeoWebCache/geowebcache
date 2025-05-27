@@ -528,8 +528,8 @@ public class TileBreeder implements ApplicationContextAware {
      */
     private Iterator<GWCTask> filterTasks(STATE... filter) {
         Set<STATE> states = new HashSet<>(Arrays.asList(filter));
-        lock.readLock().lock();
         List<GWCTask> runningTasks = new ArrayList<>(this.currentPool.size());
+        lock.readLock().lock();
         try {
             Collection<SubmittedTask> values = this.currentPool.values();
             for (SubmittedTask t : values) {

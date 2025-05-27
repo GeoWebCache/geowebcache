@@ -52,7 +52,7 @@ public class KMLSiteMap {
         tile.servletResp.setContentType("application/xml");
         tile.servletResp.setStatus(200);
 
-        if (tile.getHint() == KMLService.HINT_SITEMAP_LAYER) {
+        if (KMLService.HINT_SITEMAP_LAYER.equals(tile.getHint())) {
             writeSiteMap();
         } else {
             writeSiteMapIndex();

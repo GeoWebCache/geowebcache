@@ -13,6 +13,7 @@
  */
 package org.geowebcache.layer;
 
+import com.google.common.base.Objects;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -301,7 +302,7 @@ public abstract class TileLayer implements Info {
         Iterator<FormatModifier> iter = formatModifiers.iterator();
         while (iter.hasNext()) {
             FormatModifier mod = iter.next();
-            if (mod.getResponseFormat() == responseFormat) {
+            if (Objects.equal(mod.getResponseFormat(), responseFormat)) {
                 return mod;
             }
         }

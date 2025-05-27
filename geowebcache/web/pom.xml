@@ -157,7 +157,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
-        <version>3.2.3</version>
         <executions>
           <execution>
             <phase>install</phase>
@@ -175,7 +174,6 @@
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.4.14.v20181114</version>
         <configuration>
           <webApp>
             <contextPath>/geowebcache</contextPath>

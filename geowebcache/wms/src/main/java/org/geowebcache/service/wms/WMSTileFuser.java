@@ -155,9 +155,10 @@ public class WMSTileFuser {
         DEFAULT(1, "default"),
         SPEED(2, "speed");
 
-        private RenderingHints hints;
+        @SuppressWarnings("ImmutableEnumChecker") // RenderingHints is mutable
+        private final RenderingHints hints;
 
-        private String mode;
+        private final String mode;
 
         HintsLevel(int numHint, String mode) {
             this.mode = mode;
@@ -213,6 +214,8 @@ public class WMSTileFuser {
                             RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF));
                     hints.add(new RenderingHints(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE));
                     break;
+                default:
+                    hints = null;
             }
         }
 
