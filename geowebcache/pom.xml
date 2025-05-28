@@ -979,6 +979,7 @@
                 -Xep:SelfAssertion:OFF \
                 -Xep:MissingSummary:OFF \
                 -Xep:StringSplitter:OFF \
+                -Xep:UnrecognisedJavadocTag:OFF \
                 ${errorProneFlags}</arg>
                 <arg>-Xlint:${lint}</arg>
                 <arg>-Werror</arg>
