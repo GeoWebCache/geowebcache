@@ -53,7 +53,7 @@
   <properties>
     <gt.version>34-SNAPSHOT</gt.version>
     <jts.version>1.20.0</jts.version>
-    <jaiext.version>1.1.31</jaiext.version>
+    <imagen.version>0.4-SNAPSHOT</imagen.version>
     <spring.version>5.3.39</spring.version>
     <spring.security.version>5.7.13</spring.security.version>
     <xstream.version>1.4.21</xstream.version>
@@ -235,14 +235,14 @@
       </dependency>
 
       <dependency>
-        <groupId>it.geosolutions.jaiext.utilities</groupId>
-        <artifactId>jt-utilities</artifactId>
-        <version>${jaiext.version}</version>
+        <groupId>org.eclipse.imagen</groupId>
+        <artifactId>utilities</artifactId>
+        <version>${imagen.version}</version>
       </dependency>
       <dependency>
-        <groupId>it.geosolutions.jaiext.colorindexer</groupId>
-        <artifactId>jt-colorindexer</artifactId>
-        <version>${jaiext.version}</version>
+        <groupId>org.eclipse.imagen</groupId>
+        <artifactId>colorindexer</artifactId>
+        <version>${imagen.version}</version>
       </dependency>
 
       <!-- PNG Encoder dependencies -->
