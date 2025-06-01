@@ -171,7 +171,7 @@ public class GetCapabilitiesConfigurationTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked") // to be removed once we upgrade to Hamcrest 2, @SafeVarArgs
+    // to be removed once we upgrade to Hamcrest 2, @SafeVarArgs
     public void testDelegateInitializingLayers() throws Exception {
         GridSetBroker broker = new GridSetBroker(Collections.singletonList(new DefaultGridsets(false, false)));
         String url = "http://test/wms";

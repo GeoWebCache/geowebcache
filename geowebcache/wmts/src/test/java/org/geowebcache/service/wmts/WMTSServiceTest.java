@@ -295,7 +295,6 @@ public class WMTSServiceTest {
 
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
-        @SuppressWarnings("unchecked")
         Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
@@ -553,7 +552,6 @@ public class WMTSServiceTest {
         when(gwcd.getServletPrefix()).thenReturn(null);
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
         extensions.forEach(service::addExtension);
-        @SuppressWarnings("unchecked")
         Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
@@ -625,7 +623,6 @@ public class WMTSServiceTest {
 
         service = new WMTSService(sb, tldx, null, mock(RuntimeStats.class));
 
-        @SuppressWarnings("unchecked")
         Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
@@ -690,7 +687,6 @@ public class WMTSServiceTest {
 
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
-        @SuppressWarnings("unchecked")
         Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
@@ -758,7 +754,6 @@ public class WMTSServiceTest {
 
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
-        @SuppressWarnings("unchecked")
         Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
@@ -820,7 +815,6 @@ public class WMTSServiceTest {
 
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
-        @SuppressWarnings("unchecked")
         Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
@@ -882,7 +876,6 @@ public class WMTSServiceTest {
 
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
-        @SuppressWarnings("unchecked")
         Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
@@ -979,7 +972,6 @@ public class WMTSServiceTest {
      * , "text/html" , "application/vnd.ogc.gml" then checks if in the capabilities documents each <ResourceURL>
      * elements contains both the dimensions components.
      */
-    @SuppressWarnings("unchecked")
     @Test
     public void testGetCapWithMultipleDimensions() throws Exception {
 
@@ -1053,7 +1045,6 @@ public class WMTSServiceTest {
         assertEquals("2", xpath.evaluate("count(//wmts:Contents/wmts:Layer/wmts:Dimension/ows:Identifier)", doc));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testGetTileWithStyle() throws Exception {
 
@@ -1124,7 +1115,6 @@ public class WMTSServiceTest {
         GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
         when(gwcd.getServletPrefix()).thenReturn(null);
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
-        @SuppressWarnings("unchecked")
         Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});
@@ -1384,7 +1374,6 @@ public class WMTSServiceTest {
 
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
-        @SuppressWarnings("unchecked")
         Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
         kvp.put("version", new String[] {"1.0.0"});

@@ -172,7 +172,6 @@ public class MockExtensionRuleTest {
         rule.apply(
                         new Statement() {
 
-                            @SuppressWarnings("unchecked")
                             @Override
                             public void evaluate() throws Throwable {
                                 String bean1 = "THISISTHEBEAN";

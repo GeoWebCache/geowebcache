@@ -664,7 +664,6 @@ public abstract class AbstractBlobStoreTest<TestClass extends BlobStore> {
         assertThat(store.getLayerMetadata("testLayer", "testKey"), equalTo("test%Value"));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testParameterList() throws Exception {
         Map<String, String> params1 = Collections.singletonMap("testKey", "testValue1");

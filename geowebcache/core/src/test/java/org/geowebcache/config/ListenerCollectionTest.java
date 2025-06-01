@@ -143,7 +143,6 @@ public class ListenerCollectionTest {
         control.verify();
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testSuppressedExceptionsRecorded() throws Exception {
         ListenerCollection<Runnable> collection = new ListenerCollection<>();
