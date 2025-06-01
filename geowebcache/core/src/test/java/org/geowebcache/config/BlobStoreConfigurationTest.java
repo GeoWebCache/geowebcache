@@ -477,7 +477,6 @@ public abstract class BlobStoreConfigurationTest extends ConfigurationTest<BlobS
         EasyMock.verify(listener2);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testExceptionInAddListenerRecordsSuppressedExceptions() throws Exception {
         BlobStoreConfigurationListener listener1 =
@@ -578,7 +577,6 @@ public abstract class BlobStoreConfigurationTest extends ConfigurationTest<BlobS
         EasyMock.verify(listener2);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testExceptionInModifyListenerRecordsSuppressedExceptions() throws Exception {
         BlobStoreConfigurationListener listener1 =
@@ -683,7 +681,6 @@ public abstract class BlobStoreConfigurationTest extends ConfigurationTest<BlobS
         EasyMock.verify(listener2);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testExceptionInRenameListenerRecordsSuppressedExceptions() throws Exception {
         BlobStoreConfigurationListener listener1 =
@@ -788,7 +785,6 @@ public abstract class BlobStoreConfigurationTest extends ConfigurationTest<BlobS
         EasyMock.verify(listener2);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testExceptionInRemoveListenerRecordsSuppressedExceptions() throws Exception {
         BlobStoreConfigurationListener listener1 =

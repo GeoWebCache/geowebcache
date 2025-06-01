@@ -39,7 +39,6 @@ import org.junit.Test;
 
 public class TruncateBboxRequestTest {
 
-    @SuppressWarnings("unchecked")
     protected SeedRequest seedRequest(
             String layerName,
             String gridSet,
