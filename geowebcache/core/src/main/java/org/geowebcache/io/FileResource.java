@@ -48,7 +48,7 @@ public class FileResource implements Resource {
     }
 
     @Override
-    @SuppressWarnings({"PMD.UnusedLocalVariable", "PMD.EmptyControlStatement"})
+    @SuppressWarnings("PMD.EmptyControlStatement")
     public long transferTo(WritableByteChannel target) throws IOException {
         // FileLock lock = in.lock();
 

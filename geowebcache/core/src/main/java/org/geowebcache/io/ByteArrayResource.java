@@ -90,7 +90,7 @@ public class ByteArrayResource implements Resource, Serializable {
 
     /** @see org.geowebcache.io.Resource#transferTo(java.nio.channels.WritableByteChannel) */
     @Override
-    @SuppressWarnings({"PMD.UnusedLocalVariable", "PMD.EmptyControlStatement"})
+    @SuppressWarnings("PMD.EmptyControlStatement")
     public long transferTo(WritableByteChannel channel) throws IOException {
         if (length > 0) {
             ByteBuffer buffer = ByteBuffer.wrap(data, offset, length);
@@ -103,7 +103,7 @@ public class ByteArrayResource implements Resource, Serializable {
 
     /** @see org.geowebcache.io.Resource#transferFrom(java.nio.channels.ReadableByteChannel) */
     @Override
-    @SuppressWarnings({"PMD.UnusedLocalVariable", "PMD.EmptyControlStatement"})
+    @SuppressWarnings("PMD.EmptyControlStatement")
     public long transferFrom(ReadableByteChannel channel) throws IOException {
         if (channel instanceof FileChannel) {
             FileChannel fc = (FileChannel) channel;

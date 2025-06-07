@@ -217,7 +217,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
         assertThat(retrieved, isPresent());
     }
 
-    @SuppressWarnings({"unchecked", "PMD.UnnecessaryCast"})
+    @SuppressWarnings("unchecked")
     @Test
     public void testCantModifyReturnedCollection() throws Exception {
         I info = getGoodInfo("test", 1);
@@ -322,7 +322,6 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
                 defaultCount + 10,
                 getInfoNames(config).size());
         // get a thread pool
-        @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService pool =
                 Executors.newFixedThreadPool(16, (Runnable r) -> new Thread(r, "Info Concurrency Test for ADD"));
         // create a bunch of concurrent adds
@@ -364,7 +363,6 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
                 defaultCount + 100,
                 getInfoNames(config).size());
         // get a thread pool
-        @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService pool =
                 Executors.newFixedThreadPool(16, (Runnable r) -> new Thread(r, "Info Concurrency Test for DELETE"));
         // create a bunch of concurrent deletes
@@ -404,7 +402,6 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
                 defaultCount + 100,
                 getInfoNames(config).size());
         // get a thread pool
-        @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService pool =
                 Executors.newFixedThreadPool(16, (Runnable r) -> new Thread(r, "Info Concurrency Test for MODIFY"));
         // create a bunch of concurrent modifies

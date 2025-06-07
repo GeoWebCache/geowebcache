@@ -59,7 +59,6 @@ class GeoRSSReaderFactory {
             contentEncoding = "UTF-8";
         }
 
-        @SuppressWarnings("PMD.CloseResource") // The stream will be kept open to get new events
         Reader reader =
                 new BufferedReader(new InputStreamReader(response.getEntity().getContent(), contentEncoding));
         if (log.isLoggable(Level.FINE)) {

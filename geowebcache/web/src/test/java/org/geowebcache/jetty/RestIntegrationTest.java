@@ -585,7 +585,7 @@ public class RestIntegrationTest {
      * Check that the given request gives a 401 Forbidden when not authenticated, and otherwise has a response matching
      * the given matcher
      */
-    @SuppressWarnings({"PMD.CloseResource", "PMD.UnusedLocalVariable"})
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     protected void testSecured(HttpUriRequest request, Matcher<Integer> authenticatedStatus) throws Exception {
         {
             CloseableHttpClient client = admin.getClient();

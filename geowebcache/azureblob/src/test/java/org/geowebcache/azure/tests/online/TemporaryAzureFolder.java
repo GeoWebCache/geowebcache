@@ -60,7 +60,6 @@ public class TemporaryAzureFolder extends ExternalResource {
     }
 
     @Override
-    @SuppressWarnings("PMD.UseTryWithResources") // client is a field, not created here
     protected void after() {
         if (!isConfigured()) {
             return;
