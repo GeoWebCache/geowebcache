@@ -146,7 +146,6 @@ public final class SqliteConnectionManagerTest extends TestSupport {
             throws Exception {
         SqliteConnectionManager connectionManager = new SqliteConnectionManager(poolSize, 10);
         connectionManagersToClean.add(connectionManager);
-        @SuppressWarnings("PMD.CloseResource") // implements AutoCloseable in Java 21
         ExecutorService executor = Executors.newFixedThreadPool(threadsNumber);
         Random random = new Random();
         List<Future<Tuple<File, String>>> results = new ArrayList<>();
