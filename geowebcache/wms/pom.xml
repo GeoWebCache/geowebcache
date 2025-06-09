@@ -28,7 +28,6 @@
     <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-wms</artifactId>
-      <version>${gt.version}</version>
     </dependency>
 
     <dependency>
