@@ -680,6 +680,7 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     @Override
+    @SuppressWarnings("PMD.CloseResource") // we're closing dataSource, not sure why PMD complains
     public void close() throws Exception {
         log.info("Closing up the JDBC quota store ");
 

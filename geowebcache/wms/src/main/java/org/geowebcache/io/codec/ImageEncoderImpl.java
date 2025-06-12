@@ -225,6 +225,7 @@ public class ImageEncoderImpl implements ImageEncoder {
      * @param aggressiveOutputStreamOptimization Parameter used if aggressive outputStream optimization must be used.
      */
     @Override
+    @SuppressWarnings("PMD.CloseResource") // the caller is in charge of destination's life cycle if its a stream
     public void encode(
             RenderedImage image,
             Object destination,

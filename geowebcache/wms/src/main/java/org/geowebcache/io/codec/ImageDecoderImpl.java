@@ -109,6 +109,7 @@ public class ImageDecoderImpl implements ImageDecoder {
      * @param aggressiveInputStreamOptimization Parameter used if aggressive outputStream optimization must be used.
      */
     @Override
+    @SuppressWarnings("PMD.CloseResource") // the caller is in charge of source's life cycle if its a stream
     public BufferedImage decode(Object source, boolean aggressiveInputStreamOptimization, Map<String, Object> map)
             throws Exception {
 

@@ -791,7 +791,7 @@ public class XMLConfiguration
     public void afterPropertiesSet() throws GeoWebCacheException {
         if (!resourceProvider.hasInput()) {
             throw new ConfigurationException(
-                    "The configuration resource provider is unable to provide a configuration file".formatted());
+                    "The configuration resource provider is unable to provide a configuration file");
         }
         if (gridSetBroker == null) {
             throw new IllegalStateException("GridSetBroker has not been set");
