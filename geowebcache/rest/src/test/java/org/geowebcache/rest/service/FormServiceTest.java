@@ -162,7 +162,9 @@ public class FormServiceTest {
 
         // in lexicographic order after 10 there was 100
         String html = service.makeFormPage(tl1, false);
-        assertTrue(html.contains("""
+        assertTrue(
+                html.contains(
+                        """
                 <select name="threadCount">
                 <option value="01">01</option>
                 <option value="02">02</option>

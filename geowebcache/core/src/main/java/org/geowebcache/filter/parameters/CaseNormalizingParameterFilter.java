@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 public abstract class CaseNormalizingParameterFilter extends ParameterFilter {
     @Serial
     private static final long serialVersionUID = 1761619452677321350L;
+
     protected CaseNormalizer normalize;
 
     public CaseNormalizingParameterFilter() {

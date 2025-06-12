@@ -718,8 +718,8 @@ public class WMTSService extends Service {
                     400,
                     "InvalidParameterValue",
                     "service",
-                    "URL path service '%s' don't match the requested service '%s'.".formatted(
-                            pathServiceName, requestedServiceName));
+                    "URL path service '%s' don't match the requested service '%s'."
+                            .formatted(pathServiceName, requestedServiceName));
         }
     }
 

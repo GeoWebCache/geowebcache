@@ -217,8 +217,9 @@ class GeoRSSPollTask implements Runnable {
                     "Can't access debug directory for " + "dumping mask images: " + target.getAbsolutePath());
         }
 
-        LOGGER.warning("""
-                
+        LOGGER.warning(
+                """
+
                 !!!!!!!!!!!
                  REMEMBER NOT TO SET THE org.geowebcache.georss.debugToDisk\
                  SYSTEM PROPERTY ON A PRODUCTION ENVIRONMENT\s

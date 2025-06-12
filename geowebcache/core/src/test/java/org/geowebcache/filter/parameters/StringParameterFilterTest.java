@@ -243,7 +243,8 @@ public class StringParameterFilterTest {
 
     @Test
     public void testFromXMLUpperCanadianEnglish() throws Exception {
-        Object o = xs.fromXML("""
+        Object o = xs.fromXML(
+                """
                 <stringParameterFilter>
                   <key>TEST</key>
                   <defaultValue>Default</defaultValue>
@@ -274,7 +275,8 @@ public class StringParameterFilterTest {
 
     @Test
     public void testFromXMLIdentifiersCaseInsensitive() throws Exception {
-        Object o = xs.fromXML("""
+        Object o = xs.fromXML(
+                """
                 <stringParameterFilter>
                   <key>TEST</key>
                   <defaultValue>Default</defaultValue>
@@ -306,7 +308,8 @@ public class StringParameterFilterTest {
     @Test
     public void testFromXMLDefaultNormalize() throws Exception {
         // important for backward compatibility with older config files
-        Object o = xs.fromXML("""
+        Object o = xs.fromXML(
+                """
                 <stringParameterFilter>
                   <key>TEST</key>
                   <defaultValue>Default</defaultValue>

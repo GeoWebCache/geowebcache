@@ -618,7 +618,8 @@ public class FormService {
     }
 
     private void makeWarningsAndHints(StringBuilder doc, TileLayer tl) {
-        doc.append("""
+        doc.append(
+                """
                 <h4>Please note:</h4><ul>
                 <li>This minimalistic interface does not check for correctness.</li>
                 <li>Seeding past zoomlevel 20 is usually not recommended.</li>

@@ -91,7 +91,8 @@ public class RestIntegrationTest {
         nsContext.bindNamespaceUri("ows", "http://www.opengis.net/ows/1.1");
 
         // Reset Server configuration
-        final String globalUpdate = """
+        final String globalUpdate =
+                """
                 <global>
                   <serviceInformation>
                     <title>GeoWebCache</title>
@@ -203,7 +204,8 @@ public class RestIntegrationTest {
 
     @Test
     public void testPutGlobal() throws Exception {
-        final String globalUpdate = """
+        final String globalUpdate =
+                """
                 <global>
                   <serviceInformation>
                     <title>GeoWebCache</title>
@@ -685,7 +687,8 @@ public class RestIntegrationTest {
 
     @Test
     public void testPutBlobStoreCreateModifyDelete() throws Exception {
-        String blobStore = """
+        String blobStore =
+                """
                 <FileBlobStore>
                     <id>newCache</id>
                     <enabled>false</enabled>
@@ -716,7 +719,8 @@ public class RestIntegrationTest {
             assertThat(doc, hasXPath("//fileSystemBlockSize", equalTo("4096")));
         }
 
-        String blobStoreUpdate = """
+        String blobStoreUpdate =
+                """
                 <FileBlobStore>
                     <id>newCache</id>
                     <enabled>false</enabled>
@@ -830,7 +834,8 @@ public class RestIntegrationTest {
 
     @Test
     public void testPutGridSetCreateModifyDelete() throws Exception {
-        String gridSet = """
+        String gridSet =
+                """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <gridSet>
                   <name>testGridset</name>
@@ -892,7 +897,8 @@ public class RestIntegrationTest {
             assertThat(doc, hasXPath("//tileHeight", equalTo("211")));
         }
 
-        String gridSetUpdate = """
+        String gridSetUpdate =
+                """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <gridSet>
                   <name>testGridset</name>

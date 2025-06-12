@@ -83,8 +83,7 @@ public class XMLConfigurationGridsetConformanceTest extends GridSetConfiguration
 
             @Override
             public boolean matches(Object item) {
-                return item instanceof GridSet gs
-                        && (Objects.equals(gs.getDescription(), Integer.toString(expected)));
+                return item instanceof GridSet gs && (Objects.equals(gs.getDescription(), Integer.toString(expected)));
             }
         };
     }
