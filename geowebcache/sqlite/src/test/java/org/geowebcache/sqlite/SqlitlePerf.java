@@ -102,7 +102,8 @@ final class SqlitlePerf {
                 LOGGER.info("Tiles raw select time '%d'.".formatted(endTime - startTime));
             }
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.info("Tiles raw selected per second '%f'.".formatted(TILES / (float) (endTime - startTime) * 1000));
+                LOGGER.info(
+                        "Tiles raw selected per second '%f'.".formatted(TILES / (float) (endTime - startTime) * 1000));
             }
         }
         FileUtils.deleteQuietly(databaseFile);
@@ -143,7 +144,8 @@ final class SqlitlePerf {
             LOGGER.info("Tiles pooled select time '%d'.".formatted(endTime - startTime));
         }
         if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("Tiles pooled selected per second '%f'.".formatted(TILES / (float) (endTime - startTime) * 1000));
+            LOGGER.info(
+                    "Tiles pooled selected per second '%f'.".formatted(TILES / (float) (endTime - startTime) * 1000));
         }
         // clean everything
         connectionManager.reapAllConnections();
@@ -199,7 +201,8 @@ final class SqlitlePerf {
             LOGGER.info("Tiles mbtiles blobstore select time '%d'.".formatted(endTime - startTime));
         }
         if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("Tiles mbtiles blobstore selected per second '%f'.".formatted(TILES / (float) (endTime - startTime) * 1000));
+            LOGGER.info("Tiles mbtiles blobstore selected per second '%f'."
+                    .formatted(TILES / (float) (endTime - startTime) * 1000));
         }
         // clean everything
         connectionManager.reapAllConnections();
@@ -245,7 +248,8 @@ final class SqlitlePerf {
             LOGGER.info("Tiles file blobstore read time '%d'.".formatted(endTime - startTime));
         }
         if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("Tiles file blobstore reads per second '%f'.".formatted(TILES / (float) (endTime - startTime) * 1000));
+            LOGGER.info("Tiles file blobstore reads per second '%f'."
+                    .formatted(TILES / (float) (endTime - startTime) * 1000));
         }
     }
 
@@ -350,8 +354,7 @@ final class SqlitlePerf {
                         // the data doesn't have the expected size
                         if (LOGGER.isLoggable(Level.SEVERE)) {
                             LOGGER.log(
-                                    Level.SEVERE,
-                                    "Tile %d-%d-%d data is not valid.".formatted(xyz[2], xyz[0], xyz[1]));
+                                    Level.SEVERE, "Tile %d-%d-%d data is not valid.".formatted(xyz[2], xyz[0], xyz[1]));
                         }
                     }
                     // the tile data looks good
@@ -359,8 +362,7 @@ final class SqlitlePerf {
                 } else {
                     // the tile was not found
                     if (LOGGER.isLoggable(Level.SEVERE)) {
-                        LOGGER.log(
-                                Level.SEVERE, "Failed to load tile %d-%d-%d.".formatted(xyz[2], xyz[0], xyz[1]));
+                        LOGGER.log(Level.SEVERE, "Failed to load tile %d-%d-%d.".formatted(xyz[2], xyz[0], xyz[1]));
                     }
                     return null;
                 }

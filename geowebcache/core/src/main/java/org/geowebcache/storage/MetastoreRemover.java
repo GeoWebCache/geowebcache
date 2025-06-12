@@ -181,7 +181,8 @@ public class MetastoreRemover {
     }
 
     private void migrateTileDates(JdbcTemplate template, final FilePathGenerator generator) {
-        String query = """
+        String query =
+                """
                 select layers.value as layer, gridsets.value as gridset, \
                 tiles.parameters_id, tiles.z, tiles.x, tiles.y, created, formats.value as format\s
                 from tiles join layers on layers.id = tiles.layer_id\s

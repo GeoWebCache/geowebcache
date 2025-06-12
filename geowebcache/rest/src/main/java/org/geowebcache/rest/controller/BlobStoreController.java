@@ -54,8 +54,8 @@ public class BlobStoreController extends GWCController {
             return blobStores.getBlobStore(blobStoreName);
         } catch (GeoWebCacheException e) {
             throw new RestException(
-                    "Failed to get BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.".formatted(
-                            blobStoreName),
+                    "Failed to get BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist."
+                            .formatted(blobStoreName),
                     HttpStatus.NOT_FOUND,
                     e);
         }
@@ -82,8 +82,8 @@ public class BlobStoreController extends GWCController {
             blobStores.removeBlobStore(blobStoreName);
         } else {
             throw new RestException(
-                    "Failed to remove BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.".formatted(
-                            blobStoreName),
+                    "Failed to remove BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist."
+                            .formatted(blobStoreName),
                     HttpStatus.NOT_FOUND);
         }
     }

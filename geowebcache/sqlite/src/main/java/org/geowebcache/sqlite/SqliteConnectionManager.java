@@ -50,8 +50,8 @@ public final class SqliteConnectionManager {
 
     SqliteConnectionManager(long poolSize, long poolReaperIntervalMs) {
         if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("Initiating connection poll: [poolSize='%d', poolReaperIntervalMs='%d'].".formatted(
-                    poolSize, poolReaperIntervalMs));
+            LOGGER.info("Initiating connection poll: [poolSize='%d', poolReaperIntervalMs='%d']."
+                    .formatted(poolSize, poolReaperIntervalMs));
         }
         // let's load the sqlite driver
         try {
@@ -66,8 +66,8 @@ public final class SqliteConnectionManager {
         new Thread(() -> {
                     while (!stopPoolReaper) {
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine("Current pool size is '%d' and threshold is '%f'.".formatted(
-                                    pool.size(), poolSizeThreshold));
+                            LOGGER.fine("Current pool size is '%d' and threshold is '%f'."
+                                    .formatted(pool.size(), poolSizeThreshold));
                         }
                         if (pool.size() > poolSizeThreshold) {
                             // we exceed the pool size threshold, time to reap the less used

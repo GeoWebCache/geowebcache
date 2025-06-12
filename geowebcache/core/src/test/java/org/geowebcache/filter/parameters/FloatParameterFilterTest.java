@@ -125,7 +125,8 @@ public class FloatParameterFilterTest {
 
     @Test
     public void testFromXML() throws Exception {
-        Object o = xs.fromXML("""
+        Object o = xs.fromXML(
+                """
                 <floatParameterFilter>
                   <key>TEST</key>
                   <defaultValue>Default</defaultValue>

@@ -31,7 +31,8 @@ public class MockWMSLayerSource {
     private static final Logger log = Logging.getLogger(MockWMSLayerSource.class.getName());
 
     public MockWMSLayerSource(TileLayerDispatcher tld) {
-        log.info("""
+        log.info(
+                """
                 '
                 ---------------------------------------------------------------------------------
                 Replacing all WMS layer backend helpers by a mock one, don't forget to remove this
