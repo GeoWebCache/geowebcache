@@ -57,6 +57,7 @@ public class XYZFileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileB
     }
 
     @Override
+    @SuppressWarnings("CatchFail")
     public void createTestUnit() throws Exception {
         this.layers = createMock(TileLayerDispatcher.class);
         GridSet wgs84Grid = new DefaultGridsets(false, false).worldEpsg4326();

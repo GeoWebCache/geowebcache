@@ -80,7 +80,7 @@ public class PagePyramidTest {
 
             PageLevelInfo pageInfo = pp.getPageInfo(z);
 
-            long levelPages = pageInfo.pagesX * pageInfo.pagesY;
+            long levelPages = pageInfo.pagesX * (long) pageInfo.pagesY;
             BigInteger tilesPerPage = pageInfo.tilesPerPage;
 
             totalPages += levelPages;
@@ -143,10 +143,10 @@ public class PagePyramidTest {
         int tilesPerPageX = pyramid.getTilesPerPageX(level);
         int tilesPerPageY = pyramid.getTilesPerPageY(level);
         long[] expected = {
-            coverages[level][0] + tilesPerPageX * pageX, //
-            coverages[level][1] + tilesPerPageY * pageY, //
-            coverages[level][0] + tilesPerPageX * pageX + tilesPerPageX - 1, //
-            coverages[level][0] + tilesPerPageY * pageY + tilesPerPageY - 1, //
+            coverages[level][0] + (long) tilesPerPageX * pageX, //
+            coverages[level][1] + (long) tilesPerPageY * pageY, //
+            coverages[level][0] + (long) tilesPerPageX * pageX + tilesPerPageX - 1, //
+            coverages[level][0] + (long) tilesPerPageY * pageY + tilesPerPageY - 1, //
             pageZ
         };
         Assert.assertEquals(asList(expected), asList(gridCoverage[1]));

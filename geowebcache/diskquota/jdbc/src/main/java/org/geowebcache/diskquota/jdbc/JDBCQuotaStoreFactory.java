@@ -198,7 +198,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
                 bds.setMaxOpenPreparedStatements(cp.getMaxOpenPreparedStatements());
                 bds.setMinIdle(cp.getMinConnections());
                 bds.setMaxActive(cp.getMaxConnections());
-                bds.setMaxWait(cp.getConnectionTimeout() * 1000);
+                bds.setMaxWait(cp.getConnectionTimeout() * 1000L);
                 bds.setValidationQuery(cp.getValidationQuery());
 
                 ds = bds;

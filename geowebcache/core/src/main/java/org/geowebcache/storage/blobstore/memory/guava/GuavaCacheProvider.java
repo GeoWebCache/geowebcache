@@ -29,8 +29,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -588,24 +588,15 @@ public class GuavaCacheProvider implements CacheProvider {
      * @author Nicola Lagomarsini, GeoSolutions
      */
     static class LayerMap {
-
-        /** {@link ReentrantReadWriteLock} used for handling concurrency */
-        private final ReentrantReadWriteLock lock;
-
-        /** {@link WriteLock} used when trying to change the map */
-        private final WriteLock writeLock;
-
-        /** {@link ReadLock} used when accessing the map */
-        private final ReadLock readLock;
+        /** {@link WriteLock} used when trying to change remove a layer from the map */
+        private final Lock writeLock;
 
         /** MultiMap containing the {@link TileObject} keys for the Layers */
         private final ConcurrentHashMap<String, Set<String>> layerMap = new ConcurrentHashMap<>();
 
         public LayerMap() {
             // Lock initialization
-            lock = new ReentrantReadWriteLock(true);
-            writeLock = lock.writeLock();
-            readLock = lock.readLock();
+            writeLock = new ReentrantLock(true);
         }
 
         /** Insertion of a {@link TileObject} key in the map for the associated Layer. */
@@ -618,78 +609,36 @@ public class GuavaCacheProvider implements CacheProvider {
             "UL_UNRELEASED_LOCK_EXCEPTION_PATH"
         })
         public void putTile(String layer, String id) {
-            // ReadLock is used because we are only accessing the map
-            readLock.lock();
-            Set<String> tileKeys = layerMap.get(layer);
-            if (tileKeys == null) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("No KeySet for Layer: " + layer);
-                }
-                // If the Map is not present, we must add it
-                // So we do the unlock and try to acquire the writeLock
-                readLock.unlock();
-                writeLock.lock();
-                try {
-                    // Check again if the tileKey has not been added already
-                    tileKeys = layerMap.get(layer);
-                    if (tileKeys == null) {
-                        if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine("Creating new KeySet for Layer: " + layer);
-                        }
-                        // If no key is present then a new KeySet is created and then added to the
-                        // multimap
-                        tileKeys = new ConcurrentSkipListSet<>();
-                        layerMap.put(layer, tileKeys);
-                    }
-                    // Downgrade by acquiring read lock before releasing write lock
-                    readLock.lock();
-                } finally {
-                    // Release the writeLock
-                    writeLock.unlock();
-                }
+            Set<String> tileKeys = layerMap.computeIfAbsent(layer, l -> new ConcurrentSkipListSet<>());
+
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Add the TileObject id to the Map");
             }
-            try {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("Add the TileObject id to the Map");
-                }
-                // Finally the tile key is added.
-                tileKeys.add(id);
-            } finally {
-                readLock.unlock();
-            }
+            // Finally the tile key is added.
+            tileKeys.add(id);
         }
 
         /** Removal of a {@link TileObject} key in the map for the associated Layer. */
         public void removeTile(String layer, String id) {
-            // ReadLock is used because we are only accessing the map
-            readLock.lock();
-            try {
-                // KeySet associated to the image
-                Set<String> tileKeys = layerMap.get(layer);
-                if (tileKeys != null) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Remove TileObject id to the Map");
-                    }
-                    // Removal of the keys
-                    tileKeys.remove(id);
-                    // If the KeySet is empty then it is removed from the multimap
-                    if (tileKeys.isEmpty()) {
-                        readLock.unlock();
-                        writeLock.lock();
-                        try {
-                            if (tileKeys.isEmpty()) {
-                                // Here writeLock is acquired again, but it is reentrant
-                                removeLayer(layer);
-                            }
-                            // Downgrade by acquiring read lock before releasing write lock
-                            readLock.lock();
-                        } finally {
-                            writeLock.unlock();
+            Set<String> tileKeys = layerMap.get(layer);
+            if (tileKeys != null) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Remove TileObject id to the Map");
+                }
+                // Removal of the keys
+                tileKeys.remove(id);
+                // If the KeySet is empty then it is removed from the multimap
+                if (tileKeys.isEmpty()) {
+                    writeLock.lock();
+                    try {
+                        tileKeys = layerMap.get(layer);
+                        if (tileKeys != null && tileKeys.isEmpty()) {
+                            removeLayer(layer);
                         }
+                    } finally {
+                        writeLock.unlock();
                     }
                 }
-            } finally {
-                readLock.unlock();
             }
         }
 

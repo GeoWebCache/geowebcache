@@ -60,7 +60,7 @@ public class DefaultingConfigurationTest {
         boolean cacheBypass = tl.isCacheBypassAllowed();
         int timeout = tl.getBackendTimeout();
         assertFalse(cacheBypass);
-        assertEquals(timeout, 120);
+        assertEquals(120, timeout);
         assertNull(tl.getFormatModifiers());
     }
 
@@ -68,9 +68,9 @@ public class DefaultingConfigurationTest {
     public void initializationTest() {
         initialize(tl);
         Set<String> subsets = tl.getGridSubsets();
-        assertEquals(subsets.size(), 2);
-        assertEquals(subsets.toArray()[0], "EPSG:4326");
-        assertEquals(subsets.toArray()[1], "EPSG:900913");
+        assertEquals(2, subsets.size());
+        assertEquals("EPSG:4326", subsets.toArray()[0]);
+        assertEquals("EPSG:900913", subsets.toArray()[1]);
     }
 
     GeoWebCacheConfiguration getGwcConfig() {

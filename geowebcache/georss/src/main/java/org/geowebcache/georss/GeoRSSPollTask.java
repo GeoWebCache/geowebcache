@@ -325,6 +325,7 @@ class GeoRSSPollTask implements Runnable {
         }
     }
 
+    @SuppressWarnings("ThreadPriorityCheck")
     protected void stopSeeding(boolean checkLiveCount) {
         if (this.seedTasks != null) {
             int liveCount = 0;
