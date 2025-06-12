@@ -162,21 +162,22 @@ public class FormServiceTest {
 
         // in lexicographic order after 10 there was 100
         String html = service.makeFormPage(tl1, false);
-        assertTrue(html.contains("<select name=\"threadCount\">\n"
-                + "<option value=\"01\">01</option>\n"
-                + "<option value=\"02\">02</option>\n"
-                + "<option value=\"03\">03</option>\n"
-                + "<option value=\"04\">04</option>\n"
-                + "<option value=\"05\">05</option>\n"
-                + "<option value=\"06\">06</option>\n"
-                + "<option value=\"07\">07</option>\n"
-                + "<option value=\"08\">08</option>\n"
-                + "<option value=\"09\">09</option>\n"
-                + "<option value=\"10\">10</option>\n"
-                + "<option value=\"11\">11</option>\n"
-                + "<option value=\"12\">12</option>\n"
-                + "<option value=\"13\">13</option>\n"
-                + "<option value=\"14\">14</option>\n"
-                + "<option value=\"15\">15</option>"));
+        assertTrue(html.contains("""
+                <select name="threadCount">
+                <option value="01">01</option>
+                <option value="02">02</option>
+                <option value="03">03</option>
+                <option value="04">04</option>
+                <option value="05">05</option>
+                <option value="06">06</option>
+                <option value="07">07</option>
+                <option value="08">08</option>
+                <option value="09">09</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="13">13</option>
+                <option value="14">14</option>
+                <option value="15">15</option>"""));
     }
 }

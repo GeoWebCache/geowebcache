@@ -13,6 +13,7 @@
  */
 package org.geowebcache.filter.request;
 
+import java.io.Serial;
 import java.io.Serializable;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
@@ -21,6 +22,7 @@ import org.geowebcache.layer.TileLayer;
 /** This is just a dummy class. Should be abstract, but that gets tricky with XStream */
 public abstract class RequestFilter implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = -1058186522442111377L;
 
     private String name;

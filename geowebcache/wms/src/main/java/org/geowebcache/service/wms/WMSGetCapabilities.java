@@ -542,9 +542,9 @@ public class WMSGetCapabilities {
             StringBuilder dims = new StringBuilder();
             StringBuilder extents = new StringBuilder();
             for (ParameterFilter parameterFilter : layer.getParameterFilters()) {
-                if (parameterFilter instanceof WMSDimensionProvider) {
-                    ((WMSDimensionProvider) parameterFilter).appendDimensionElement(dims, "      ");
-                    ((WMSDimensionProvider) parameterFilter).appendExtentElement(extents, "      ");
+                if (parameterFilter instanceof WMSDimensionProvider provider) {
+                    provider.appendDimensionElement(dims, "      ");
+                    provider.appendExtentElement(extents, "      ");
                 }
             }
 

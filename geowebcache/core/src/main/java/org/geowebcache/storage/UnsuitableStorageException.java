@@ -13,6 +13,8 @@
  */
 package org.geowebcache.storage;
 
+import java.io.Serial;
+
 /**
  * Thrown when a Blobstore was initialized with persistance that is unsuitable, such as a non-empty directory
  *
@@ -21,6 +23,7 @@ package org.geowebcache.storage;
 public class UnsuitableStorageException extends StorageException {
 
     /** serialVersionUID */
+    @Serial
     private static final long serialVersionUID = 3939772540460067187L;
 
     public UnsuitableStorageException(String msg) {

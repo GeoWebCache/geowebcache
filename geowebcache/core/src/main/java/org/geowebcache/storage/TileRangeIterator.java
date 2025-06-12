@@ -37,8 +37,8 @@ public class TileRangeIterator {
         this.metaX = metaTilingFactors[0];
         this.metaY = metaTilingFactors[1];
 
-        if (tr instanceof DiscontinuousTileRange) {
-            dtr = (DiscontinuousTileRange) tr;
+        if (tr instanceof DiscontinuousTileRange range) {
+            dtr = range;
         } else {
             dtr = null;
         }

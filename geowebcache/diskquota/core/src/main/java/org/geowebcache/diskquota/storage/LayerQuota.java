@@ -13,12 +13,14 @@
  */
 package org.geowebcache.diskquota.storage;
 
+import java.io.Serial;
 import java.io.Serializable;
 import org.geowebcache.diskquota.ExpirationPolicy;
 
 /** @author groldan */
 public final class LayerQuota implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 5726170502452942487L;
 
     private String layer;

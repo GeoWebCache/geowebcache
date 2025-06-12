@@ -13,6 +13,7 @@
  */
 package org.geowebcache.grid;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.Arrays;
@@ -23,6 +24,7 @@ import org.geotools.util.logging.Logging;
 
 public class BoundingBox implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = -2555598825074884627L;
 
     private NumberFormat getCoordinateFormatter() {
@@ -222,8 +224,7 @@ public class BoundingBox implements Serializable {
      */
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof BoundingBox) {
-            BoundingBox other = (BoundingBox) obj;
+        if (obj instanceof BoundingBox other) {
             return this.equals(other, EQUALITYTHRESHOLD);
         }
         return false;

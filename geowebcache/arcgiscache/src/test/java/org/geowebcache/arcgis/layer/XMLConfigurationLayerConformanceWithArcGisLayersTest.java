@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -123,8 +123,8 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest extends XMLCon
 
             @Override
             public boolean matches(Object item) {
-                return item instanceof ArcGISCacheLayer
-                        && ((ArcGISCacheLayer) item).getBackendTimeout().equals(expected.getBackendTimeout());
+                return item instanceof ArcGISCacheLayer agiscl
+                        && agiscl.getBackendTimeout().equals(expected.getBackendTimeout());
             }
         };
     }
@@ -135,8 +135,8 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest extends XMLCon
 
             @Override
             public boolean matches(Object item) {
-                return item instanceof ArcGISCacheLayer
-                        && ((ArcGISCacheLayer) item).getBackendTimeout().equals(expected);
+                return item instanceof ArcGISCacheLayer agiscl
+                        && agiscl.getBackendTimeout().equals(expected);
             }
         };
     }
@@ -158,7 +158,7 @@ public class XMLConfigurationLayerConformanceWithArcGisLayersTest extends XMLCon
             configFile = temp.newFile("geowebcache.xml");
 
             URL source = XMLConfigurationLayerConformanceWithArcGisLayersTest.class.getResource("geowebcache.xml");
-            try (Stream<String> lines = Files.lines(Paths.get(source.toURI()))) {
+            try (Stream<String> lines = Files.lines(Path.of(source.toURI()))) {
                 List<String> replaced = lines.map(line -> {
                             String tilingSchemePath =
                                     resourceAsFile("/compactcache/Conf.xml").getAbsolutePath();

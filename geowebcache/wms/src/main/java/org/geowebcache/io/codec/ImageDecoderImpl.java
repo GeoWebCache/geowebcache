@@ -125,9 +125,9 @@ public class ImageDecoderImpl implements ImageDecoder {
             ImageInputStream stream = null;
             try { // NOPMD (handling of stream is complicated)
                 reader = newSpi.createReaderInstance();
-                if (source instanceof FileResource) {
+                if (source instanceof FileResource resource) {
                     // file
-                    stream = new FileImageInputStreamExtImpl(((FileResource) source).getFile());
+                    stream = new FileImageInputStreamExtImpl(resource.getFile());
                     // Image reading
                     reader.setInput(stream);
                     return reader.read(0);
@@ -137,12 +137,12 @@ public class ImageDecoderImpl implements ImageDecoder {
                 }
 
                 // Check if the input object is an InputStream
-                if (source instanceof InputStream) {
+                if (source instanceof InputStream inputStream) {
                     // Use of the ImageInputStreamAdapter
                     if (isAggressiveInputStreamSupported()) {
-                        stream = new ImageInputStreamAdapter((InputStream) source);
+                        stream = new ImageInputStreamAdapter(inputStream);
                     } else {
-                        stream = new MemoryCacheImageInputStream((InputStream) source);
+                        stream = new MemoryCacheImageInputStream(inputStream);
                     }
 
                     // Image reading

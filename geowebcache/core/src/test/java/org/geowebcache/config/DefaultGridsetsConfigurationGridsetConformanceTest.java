@@ -42,9 +42,9 @@ public class DefaultGridsetsConfigurationGridsetConformanceTest extends GridSetC
 
             @Override
             public boolean matches(Object item) {
-                return item instanceof GridSet
-                        && ((GridSet) item).getName().equals(expected.getName())
-                        && ((GridSet) item).getDescription().equals(expected.getDescription());
+                return item instanceof GridSet gs
+                        && gs.getName().equals(expected.getName())
+                        && gs.getDescription().equals(expected.getDescription());
             }
         };
     }
@@ -55,8 +55,8 @@ public class DefaultGridsetsConfigurationGridsetConformanceTest extends GridSetC
 
             @Override
             public boolean matches(Object item) {
-                return item instanceof GridSet
-                        && ((GridSet) item).getDescription().equals(Integer.toString(expected));
+                return item instanceof GridSet gs
+                        && gs.getDescription().equals(Integer.toString(expected));
             }
         };
     }

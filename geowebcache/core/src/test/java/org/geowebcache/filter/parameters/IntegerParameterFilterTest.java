@@ -115,35 +115,37 @@ public class IntegerParameterFilterTest {
     @Test
     public void testToXML() throws Exception {
         XMLAssert.assertXMLEqual(
-                "<integerParameterFilter>\n"
-                        + "  <key>TEST</key>\n"
-                        + "  <defaultValue>Default</defaultValue>\n"
-                        + "  <values>\n"
-                        + "    <int>42</int>\n"
-                        + "    <int>2</int>\n"
-                        + "    <int>0</int>\n"
-                        + "    <int>-1</int>\n"
-                        + "    <int>-200</int>\n"
-                        + "  </values>\n"
-                        + "  <threshold>1</threshold>\n"
-                        + "</integerParameterFilter>",
+                """
+                <integerParameterFilter>
+                  <key>TEST</key>
+                  <defaultValue>Default</defaultValue>
+                  <values>
+                    <int>42</int>
+                    <int>2</int>
+                    <int>0</int>
+                    <int>-1</int>
+                    <int>-200</int>
+                  </values>
+                  <threshold>1</threshold>
+                </integerParameterFilter>""",
                 xs.toXML(filter));
     }
 
     @Test
     public void testFromXML() throws Exception {
-        Object o = xs.fromXML("<integerParameterFilter>\n"
-                + "  <key>TEST</key>\n"
-                + "  <defaultValue>Default</defaultValue>\n"
-                + "  <values>\n"
-                + "    <int>42</int>\n"
-                + "    <int>2</int>\n"
-                + "    <int>0</int>\n"
-                + "    <int>-1</int>\n"
-                + "    <int>-200</int>\n"
-                + "  </values>\n"
-                + "  <threshold>15</threshold>\n"
-                + "</integerParameterFilter>");
+        Object o = xs.fromXML("""
+                <integerParameterFilter>
+                  <key>TEST</key>
+                  <defaultValue>Default</defaultValue>
+                  <values>
+                    <int>42</int>
+                    <int>2</int>
+                    <int>0</int>
+                    <int>-1</int>
+                    <int>-200</int>
+                  </values>
+                  <threshold>15</threshold>
+                </integerParameterFilter>""");
 
         assertThat(o, instanceOf(IntegerParameterFilter.class));
         assertThat(o, hasProperty("key", equalTo("TEST")));

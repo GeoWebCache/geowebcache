@@ -64,7 +64,7 @@ class SwiftDeleteTask implements Runnable {
         }
 
         if (deleted) {
-            log.info(String.format("Deleted Swift tile cache at %s/%s", container, path));
+            log.info("Deleted Swift tile cache at %s/%s".formatted(container, path));
 
             if (notifier != null) {
                 notifier.notifyListeners();
@@ -72,8 +72,7 @@ class SwiftDeleteTask implements Runnable {
         } else {
             log.log(
                     Level.SEVERE,
-                    String.format(
-                            "Failed to delete Swift tile cache at %s/%s after %d retries.", container, path, RETRIES));
+                    "Failed to delete Swift tile cache at %s/%s after %d retries.".formatted(container, path, RETRIES));
         }
     }
 }

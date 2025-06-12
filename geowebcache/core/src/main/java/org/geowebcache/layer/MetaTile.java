@@ -306,8 +306,8 @@ public class MetaTile implements TileResponseReceiver {
     public RenderedImage createTile(final int minX, final int minY, final int tileWidth, final int tileHeight) {
 
         // optimize if we get a bufferedimage
-        if (metaTileImage instanceof BufferedImage) {
-            BufferedImage subimage = ((BufferedImage) metaTileImage).getSubimage(minX, minY, tileWidth, tileHeight);
+        if (metaTileImage instanceof BufferedImage image) {
+            BufferedImage subimage = image.getSubimage(minX, minY, tileWidth, tileHeight);
             return new BufferedImageAdapter(subimage);
         }
 
@@ -473,20 +473,20 @@ public class MetaTile implements TileResponseReceiver {
         if (log.isLoggable(Level.FINER)) {
             log.finer("disposing metatile " + image);
         }
-        if (image instanceof BufferedImage) {
-            ((BufferedImage) image).flush();
-        } else if (image instanceof PlanarImage) {
-            disposePlanarImageChain((PlanarImage) image, new HashSet<>());
+        if (image instanceof BufferedImage bufferedImage) {
+            bufferedImage.flush();
+        } else if (image instanceof PlanarImage planarImage) {
+            disposePlanarImageChain(planarImage, new HashSet<>());
         }
         if (disposableImages != null) {
             for (RenderedImage tile : disposableImages) {
                 if (log.isLoggable(Level.FINER)) {
                     log.finer("disposing tile " + tile);
                 }
-                if (tile instanceof BufferedImage) {
-                    ((BufferedImage) tile).flush();
-                } else if (tile instanceof PlanarImage) {
-                    disposePlanarImageChain((PlanarImage) tile, new HashSet<>());
+                if (tile instanceof BufferedImage bufferedImage) {
+                    bufferedImage.flush();
+                } else if (tile instanceof PlanarImage planarImage) {
+                    disposePlanarImageChain(planarImage, new HashSet<>());
                 }
             }
         }
@@ -498,10 +498,10 @@ public class MetaTile implements TileResponseReceiver {
         // check all the sinks (the image might be in the middle of a chain)
         if (sinks != null) {
             for (Object sink : sinks) {
-                if (sink instanceof PlanarImage && !visited.contains(sink)) {
-                    disposePlanarImageChain((PlanarImage) sink, visited);
-                } else if (sink instanceof BufferedImage) {
-                    ((BufferedImage) sink).flush();
+                if (sink instanceof PlanarImage image1 && !visited.contains(sink)) {
+                    disposePlanarImageChain(image1, visited);
+                } else if (sink instanceof BufferedImage image) {
+                    image.flush();
                 }
             }
         }
@@ -513,28 +513,24 @@ public class MetaTile implements TileResponseReceiver {
         List sources = pi.getSources();
         if (sources != null) {
             for (Object child : sources) {
-                if (child instanceof PlanarImage && !visited.contains(child)) {
-                    disposePlanarImageChain((PlanarImage) child, visited);
-                } else if (child instanceof BufferedImage) {
-                    ((BufferedImage) child).flush();
+                if (child instanceof PlanarImage image1 && !visited.contains(child)) {
+                    disposePlanarImageChain(image1, visited);
+                } else if (child instanceof BufferedImage image) {
+                    image.flush();
                 }
             }
         }
 
         // ImageRead might also hold onto a image input stream that we have to close
-        if (pi instanceof RenderedOp) {
-            RenderedOp op = (RenderedOp) pi;
+        if (pi instanceof RenderedOp op) {
             for (Object param : op.getParameterBlock().getParameters()) {
-                if (param instanceof ImageInputStream) {
-                    @SuppressWarnings("PMD.CloseResource") // doing the closing here...
-                    ImageInputStream iis = (ImageInputStream) param;
+                if (param instanceof ImageInputStream iis) {
                     try {
                         iis.close();
                     } catch (IOException e) {
                         // fine, we tried
                     }
-                } else if (param instanceof ImageReader) {
-                    ImageReader reader = (ImageReader) param;
+                } else if (param instanceof ImageReader reader) {
                     reader.dispose();
                 }
             }

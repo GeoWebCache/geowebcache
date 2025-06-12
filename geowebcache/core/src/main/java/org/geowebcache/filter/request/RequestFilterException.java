@@ -13,10 +13,12 @@
  */
 package org.geowebcache.filter.request;
 
+import java.io.Serial;
 import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.io.Resource;
 
 public class RequestFilterException extends Exception {
+    @Serial
     private static final long serialVersionUID = -6790605482047043946L;
 
     RequestFilter reqFilter;

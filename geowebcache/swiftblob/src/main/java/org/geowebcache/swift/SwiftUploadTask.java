@@ -50,8 +50,7 @@ class SwiftUploadTask implements Runnable {
         SwiftObject object = objectApi.getWithoutBody(key);
 
         if (log.isLoggable(Level.FINE)) {
-            log.fine(String.format(
-                    logStr,
+            log.fine(logStr.formatted(
                     time.format(DateTimeFormatter.ISO_DATE_TIME),
                     "HEAD",
                     (System.nanoTime() - getWithoutBody) / 1000000));
@@ -85,8 +84,7 @@ class SwiftUploadTask implements Runnable {
             objectApi.put(key, payload);
 
             if (log.isLoggable(Level.FINE)) {
-                log.fine(String.format(
-                        localLogStr,
+                log.fine(localLogStr.formatted(
                         time.format(DateTimeFormatter.ISO_DATE_TIME),
                         "PUT",
                         (System.nanoTime() - upload) / 1000000,
@@ -94,7 +92,7 @@ class SwiftUploadTask implements Runnable {
             }
             tile.notifyListeners(listeners);
         } catch (HttpResponseException e) {
-            log.warning(String.format("Swift tile upload failed: %s", e.getMessage()));
+            log.warning("Swift tile upload failed: %s".formatted(e.getMessage()));
         } catch (IOException e) {
             // pass
         }

@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.logging.Logger;
 import org.apache.commons.lang3.SerializationUtils;
@@ -230,6 +231,7 @@ public class JDBCConfiguration implements Serializable {
      * @author Andrea Aime - GeoSolutions
      */
     public static class ConnectionPoolConfiguration implements Serializable {
+        @Serial
         private static final long serialVersionUID = 6677252877141737936L;
 
         String driver;

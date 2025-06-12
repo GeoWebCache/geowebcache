@@ -13,11 +13,13 @@
  */
 package org.geowebcache.grid;
 
+import java.io.Serial;
 import java.util.Arrays;
 import org.geowebcache.GeoWebCacheException;
 
 public class OutsideCoverageException extends GeoWebCacheException {
     /** */
+    @Serial
     private static final long serialVersionUID = -2465389680194367974L;
 
     public OutsideCoverageException(long[] index, long firstLevel, long lastLevel) {

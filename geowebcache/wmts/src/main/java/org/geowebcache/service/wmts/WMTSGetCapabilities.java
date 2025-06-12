@@ -734,9 +734,8 @@ public class WMTSGetCapabilities {
             String template = commonTemplate + "/{J}/{I}?format=" + format + commonDimensions;
             layerResourceUrlsGen(xml, format, "FeatureInfo", template);
         }
-        if (layer instanceof TileJSONProvider) {
+        if (layer instanceof TileJSONProvider provider) {
             List<String> formatExtensions = WMTSUtils.getLayerFormatsExtensions(layer);
-            TileJSONProvider provider = (TileJSONProvider) layer;
             String outputFormat = ApplicationMime.json.getFormat();
             if (provider.supportsTileJSON()) {
                 for (String tileJsonFormat : formatExtensions) {

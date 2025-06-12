@@ -13,6 +13,7 @@
  */
 package org.geowebcache.config;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Arrays;
 import org.geowebcache.grid.BoundingBox;
@@ -27,6 +28,7 @@ import org.geowebcache.grid.SRS;
  */
 public class XMLGridSet implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 2684804068163933728L;
 
     private String name;

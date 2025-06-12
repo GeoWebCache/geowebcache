@@ -15,6 +15,7 @@ package org.geowebcache.filter.request;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.geotools.util.logging.Logging;
@@ -29,6 +30,7 @@ import org.geowebcache.io.Resource;
  */
 public class BlankTileException extends RequestFilterException {
     /** */
+    @Serial
     private static final long serialVersionUID = 6910805463474341350L;
 
     private static Logger log = Logging.getLogger(BlankTileException.class.getName());

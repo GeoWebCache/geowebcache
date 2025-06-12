@@ -15,6 +15,7 @@ package org.geowebcache.config;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import java.io.Serial;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.storage.BlobStore;
@@ -38,6 +39,7 @@ public class FileBlobStoreInfo extends BlobStoreInfo {
         SLIPPY
     }
 
+    @Serial
     private static final long serialVersionUID = -6470560864068854508L;
 
     private String baseDirectory;

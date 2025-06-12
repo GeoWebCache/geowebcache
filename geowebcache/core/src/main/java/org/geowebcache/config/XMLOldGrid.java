@@ -13,6 +13,7 @@
  */
 package org.geowebcache.config;
 
+import java.io.Serial;
 import java.io.Serializable;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSet;
@@ -32,6 +33,7 @@ import org.geowebcache.util.SuppressFBWarnings;
 }) // field assignment done by XStream
 public class XMLOldGrid implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1413422643636728997L;
 
     private SRS srs = null;

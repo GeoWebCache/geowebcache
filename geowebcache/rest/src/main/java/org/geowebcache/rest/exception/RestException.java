@@ -15,6 +15,7 @@
  */
 package org.geowebcache.rest.exception;
 
+import java.io.Serial;
 import org.springframework.http.HttpStatus;
 
 /**
@@ -24,6 +25,7 @@ import org.springframework.http.HttpStatus;
 @SuppressWarnings("OverrideThrowableToString")
 public class RestException extends RuntimeException {
     /** serialVersionUID */
+    @Serial
     private static final long serialVersionUID = 5762645820684796082L;
 
     private final HttpStatus status;

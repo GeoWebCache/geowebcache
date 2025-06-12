@@ -16,6 +16,7 @@ package org.geowebcache.azure;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.io.Serial;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -30,6 +31,7 @@ import org.geowebcache.storage.StorageException;
 
 /** Plain old java object representing the configuration for an Azure blob store. */
 public class AzureBlobStoreInfo extends BlobStoreInfo {
+    @Serial
     private static final long serialVersionUID = -8068069256598987874L;
 
     /**
@@ -229,9 +231,9 @@ public class AzureBlobStoreInfo extends BlobStoreInfo {
         String container = this.getContainer();
         String prefix = this.getPrefix();
         if (prefix == null) {
-            return String.format("container: %s", container);
+            return "container: %s".formatted(container);
         } else {
-            return String.format("container: %s prefix: %s", container, prefix);
+            return "container: %s prefix: %s".formatted(container, prefix);
         }
     }
 

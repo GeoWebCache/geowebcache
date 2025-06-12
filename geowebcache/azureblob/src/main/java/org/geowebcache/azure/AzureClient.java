@@ -142,7 +142,7 @@ public class AzureClient {
             // default to account name based location
             String proto = configuration.isUseHTTPS() ? "https" : "http";
             String account = configuration.getAccountName();
-            serviceURL = String.format("%s://%s.blob.core.windows.net", proto, account);
+            serviceURL = "%s://%s.blob.core.windows.net".formatted(proto, account);
         }
         return serviceURL;
     }

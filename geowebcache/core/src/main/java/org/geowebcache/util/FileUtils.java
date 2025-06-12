@@ -18,7 +18,6 @@ import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -125,8 +124,8 @@ public class FileUtils {
         }
 
         // 1) try with Java 7 Files.move
-        Path srcPath = Paths.get(src.toURI());
-        Path dstPath = Paths.get(dst.toURI());
+        Path srcPath = Path.of(src.toURI());
+        Path dstPath = Path.of(dst.toURI());
         Path moved = null;
         try {
             // Execute renaming

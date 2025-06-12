@@ -88,7 +88,7 @@ public class FilePathUtils {
         try {
             return Integer.parseInt(zlevel);
         } catch (NumberFormatException e) {
-            throw new RuntimeException(String.format("unable to find zoom level in '%s'", gridsetPrefix), e);
+            throw new RuntimeException("unable to find zoom level in '%s'".formatted(gridsetPrefix), e);
         }
     }
 

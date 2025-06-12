@@ -131,8 +131,8 @@ class SeedTask extends GWCTask {
                     // if GWC_SEED_RETRY_COUNT was not set then none of the settings have effect, in
                     // order to keep backwards compatibility with the old behaviour
                     if (tileFailureRetryCount < 0) {
-                        if (e instanceof GeoWebCacheException) {
-                            throw (GeoWebCacheException) e;
+                        if (e instanceof GeoWebCacheException exception) {
+                            throw exception;
                         }
                         throw new GeoWebCacheException(e);
                     }
@@ -299,8 +299,8 @@ class SeedTask extends GWCTask {
 
     @Override
     protected void dispose() {
-        if (tl instanceof WMSLayer) {
-            ((WMSLayer) tl).cleanUpThreadLocals();
+        if (tl instanceof WMSLayer layer) {
+            layer.cleanUpThreadLocals();
         }
     }
 }

@@ -109,31 +109,33 @@ public class FloatParameterFilterTest {
     @Test
     public void testToXML() throws Exception {
         XMLAssert.assertXMLEqual(
-                "<floatParameterFilter>\n"
-                        + "  <key>TEST</key>\n"
-                        + "  <defaultValue>Default</defaultValue>\n"
-                        + "  <values>\n"
-                        + "    <float>42.0</float>\n"
-                        + "    <float>6.283</float>\n"
-                        + "    <float>-17.5</float>\n"
-                        + "  </values>\n"
-                        + "  <threshold>1.0E-5</threshold>\n"
-                        + "</floatParameterFilter>",
+                """
+                <floatParameterFilter>
+                  <key>TEST</key>
+                  <defaultValue>Default</defaultValue>
+                  <values>
+                    <float>42.0</float>
+                    <float>6.283</float>
+                    <float>-17.5</float>
+                  </values>
+                  <threshold>1.0E-5</threshold>
+                </floatParameterFilter>""",
                 xs.toXML(filter));
     }
 
     @Test
     public void testFromXML() throws Exception {
-        Object o = xs.fromXML("<floatParameterFilter>\n"
-                + "  <key>TEST</key>\n"
-                + "  <defaultValue>Default</defaultValue>\n"
-                + "  <values>\n"
-                + "    <float>42</float>\n"
-                + "    <float>6.283</float>\n"
-                + "    <float>-17.5</float>\n"
-                + "  </values>\n"
-                + "  <threshold>0.00001</threshold>\n"
-                + "</floatParameterFilter>");
+        Object o = xs.fromXML("""
+                <floatParameterFilter>
+                  <key>TEST</key>
+                  <defaultValue>Default</defaultValue>
+                  <values>
+                    <float>42</float>
+                    <float>6.283</float>
+                    <float>-17.5</float>
+                  </values>
+                  <threshold>0.00001</threshold>
+                </floatParameterFilter>""");
 
         assertThat(o, instanceOf(FloatParameterFilter.class));
         assertThat(o, hasProperty("key", equalTo("TEST")));

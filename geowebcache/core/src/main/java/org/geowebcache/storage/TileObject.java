@@ -13,6 +13,7 @@
  */
 package org.geowebcache.storage;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Map;
@@ -25,6 +26,7 @@ import org.geowebcache.io.Resource;
  */
 public class TileObject extends StorageObject implements Serializable {
     /** serialVersionUID */
+    @Serial
     private static final long serialVersionUID = 2204318806003485110L;
 
     public static final String TYPE = "tile";

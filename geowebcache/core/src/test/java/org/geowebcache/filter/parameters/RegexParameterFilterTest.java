@@ -171,11 +171,12 @@ public class RegexParameterFilterTest {
     @Test
     public void testToXMLNullNormalizer() throws Exception {
         XMLAssert.assertXMLEqual(
-                "<regexParameterFilter>\n"
-                        + "  <key>TEST</key>\n"
-                        + "  <defaultValue>Default</defaultValue>\n"
-                        + "  <regex>foo|Bar|BAZ</regex>\n"
-                        + "</regexParameterFilter>",
+                """
+                <regexParameterFilter>
+                  <key>TEST</key>
+                  <defaultValue>Default</defaultValue>
+                  <regex>foo|Bar|BAZ</regex>
+                </regexParameterFilter>""",
                 xs.toXML(filter));
     }
 
@@ -183,12 +184,13 @@ public class RegexParameterFilterTest {
     public void testToXMLDefaultNormalizer() throws Exception {
         filter.setNormalize(new CaseNormalizer());
         XMLAssert.assertXMLEqual(
-                "<regexParameterFilter>\n"
-                        + "  <key>TEST</key>\n"
-                        + "  <defaultValue>Default</defaultValue>\n"
-                        + "  <normalize/>\n"
-                        + "  <regex>foo|Bar|BAZ</regex>\n"
-                        + "</regexParameterFilter>",
+                """
+                <regexParameterFilter>
+                  <key>TEST</key>
+                  <defaultValue>Default</defaultValue>
+                  <normalize/>
+                  <regex>foo|Bar|BAZ</regex>
+                </regexParameterFilter>""",
                 xs.toXML(filter));
     }
 
@@ -196,14 +198,15 @@ public class RegexParameterFilterTest {
     public void testToXMLNoneNormalizer() throws Exception {
         filter.setNormalize(new CaseNormalizer(Case.NONE));
         XMLAssert.assertXMLEqual(
-                "<regexParameterFilter>\n"
-                        + "  <key>TEST</key>\n"
-                        + "  <defaultValue>Default</defaultValue>\n"
-                        + "  <normalize>\n"
-                        + "    <case>NONE</case>\n"
-                        + "  </normalize>\n"
-                        + "  <regex>foo|Bar|BAZ</regex>\n"
-                        + "</regexParameterFilter>",
+                """
+                <regexParameterFilter>
+                  <key>TEST</key>
+                  <defaultValue>Default</defaultValue>
+                  <normalize>
+                    <case>NONE</case>
+                  </normalize>
+                  <regex>foo|Bar|BAZ</regex>
+                </regexParameterFilter>""",
                 xs.toXML(filter));
     }
 
@@ -211,29 +214,31 @@ public class RegexParameterFilterTest {
     public void testToXMLUpperCanadianEnglish() throws Exception {
         filter.setNormalize(new CaseNormalizer(Case.UPPER, Locale.CANADA));
         XMLAssert.assertXMLEqual(
-                "<regexParameterFilter>\n"
-                        + "  <key>TEST</key>\n"
-                        + "  <defaultValue>Default</defaultValue>\n"
-                        + "  <normalize>\n"
-                        + "    <case>UPPER</case>\n"
-                        + "    <locale>en_CA</locale>\n"
-                        + "  </normalize>\n"
-                        + "  <regex>foo|Bar|BAZ</regex>\n"
-                        + "</regexParameterFilter>",
+                """
+                <regexParameterFilter>
+                  <key>TEST</key>
+                  <defaultValue>Default</defaultValue>
+                  <normalize>
+                    <case>UPPER</case>
+                    <locale>en_CA</locale>
+                  </normalize>
+                  <regex>foo|Bar|BAZ</regex>
+                </regexParameterFilter>""",
                 xs.toXML(filter));
     }
 
     @Test
     public void testFromXMLUpperCanadianEnglish() throws Exception {
-        Object o = xs.fromXML("<regexParameterFilter>\n"
-                + "  <key>TEST</key>\n"
-                + "  <defaultValue>Default</defaultValue>\n"
-                + "  <normalize>\n"
-                + "    <case>UPPER</case>\n"
-                + "    <locale>en_CA</locale>\n"
-                + "  </normalize>\n"
-                + "  <regex>foo|Bar|BAZ</regex>\n"
-                + "</regexParameterFilter>");
+        Object o = xs.fromXML("""
+                <regexParameterFilter>
+                  <key>TEST</key>
+                  <defaultValue>Default</defaultValue>
+                  <normalize>
+                    <case>UPPER</case>
+                    <locale>en_CA</locale>
+                  </normalize>
+                  <regex>foo|Bar|BAZ</regex>
+                </regexParameterFilter>""");
 
         assertThat(o, instanceOf(RegexParameterFilter.class));
         assertThat(o, hasProperty("key", equalTo("TEST")));
@@ -251,15 +256,16 @@ public class RegexParameterFilterTest {
 
     @Test
     public void testFromXMLIdentifiersCaseInsensitive() throws Exception {
-        Object o = xs.fromXML("<regexParameterFilter>\n"
-                + "  <key>TEST</key>\n"
-                + "  <defaultValue>Default</defaultValue>\n"
-                + "  <normalize>\n"
-                + "    <case>uPPer</case>\n"
-                + "    <locale>EN_ca</locale>\n"
-                + "  </normalize>\n"
-                + "  <regex>foo|Bar|BAZ</regex>\n"
-                + "</regexParameterFilter>");
+        Object o = xs.fromXML("""
+                <regexParameterFilter>
+                  <key>TEST</key>
+                  <defaultValue>Default</defaultValue>
+                  <normalize>
+                    <case>uPPer</case>
+                    <locale>EN_ca</locale>
+                  </normalize>
+                  <regex>foo|Bar|BAZ</regex>
+                </regexParameterFilter>""");
 
         assertThat(o, instanceOf(RegexParameterFilter.class));
         assertThat(o, hasProperty("key", equalTo("TEST")));
@@ -278,11 +284,12 @@ public class RegexParameterFilterTest {
     @Test
     public void testFromXMLDefaultNormalize() throws Exception {
         // important for backward compatibility with older config files
-        Object o = xs.fromXML("<regexParameterFilter>\n"
-                + "  <key>TEST</key>\n"
-                + "  <defaultValue>Default</defaultValue>\n"
-                + "  <regex>foo|Bar|BAZ</regex>\n"
-                + "</regexParameterFilter>");
+        Object o = xs.fromXML("""
+                <regexParameterFilter>
+                  <key>TEST</key>
+                  <defaultValue>Default</defaultValue>
+                  <regex>foo|Bar|BAZ</regex>
+                </regexParameterFilter>""");
 
         assertThat(o, instanceOf(RegexParameterFilter.class));
         assertThat(o, hasProperty("key", equalTo("TEST")));

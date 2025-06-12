@@ -17,6 +17,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.geowebcache.util.URLs;
 
 public class WMSRasterFilter extends RasterFilter {
 
+    @Serial
     private static final long serialVersionUID = 5565794752696452109L;
 
     private static Logger log = Logging.getLogger(RasterFilter.class.getName());

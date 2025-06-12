@@ -13,6 +13,7 @@
  */
 package org.geowebcache.storage.blobstore.memory;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -24,6 +25,7 @@ import java.io.Serializable;
 public class CacheStatistics implements Serializable {
 
     /** serialVersionUID */
+    @Serial
     private static final long serialVersionUID = -1049287017217353112L;
 
     /** Cache hit count */

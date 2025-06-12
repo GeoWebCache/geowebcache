@@ -91,41 +91,42 @@ public class RestIntegrationTest {
         nsContext.bindNamespaceUri("ows", "http://www.opengis.net/ows/1.1");
 
         // Reset Server configuration
-        final String globalUpdate = "<global>\n"
-                + "  <serviceInformation>\n"
-                + "    <title>GeoWebCache</title>\n"
-                + "    <description>GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of protocols and\n"
-                + "      formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</description>\n"
-                + "    <keywords>\n"
-                + "      <string>WMS</string>\n"
-                + "      <string>WFS</string>\n"
-                + "      <string>WMTS</string>\n"
-                + "      <string>GEOWEBCACHE</string>\n"
-                + "    </keywords>\n"
-                + "    <serviceProvider>\n"
-                + "      <providerName>John Smith inc.</providerName>\n"
-                + "      <providerSite>http://www.example.com/</providerSite>\n"
-                + "      <serviceContact>\n"
-                + "        <individualName>John Smith</individualName>\n"
-                + "        <positionName>Geospatial Expert</positionName>\n"
-                + "        <addressType>Work</addressType>\n"
-                + "        <addressStreet>1 Bumpy St.</addressStreet>\n"
-                + "        <addressCity>Hobart</addressCity>\n"
-                + "        <addressAdministrativeArea>TAS</addressAdministrativeArea>\n"
-                + "        <addressPostalCode>7005</addressPostalCode>\n"
-                + "        <addressCountry>Australia</addressCountry>\n"
-                + "        <phoneNumber>+61 3 0000 0000</phoneNumber>\n"
-                + "        <faxNumber>+61 3 0000 0001</faxNumber>\n"
-                + "        <addressEmail>john.smith@example.com</addressEmail>\n"
-                + "      </serviceContact>\n"
-                + "    </serviceProvider>\n"
-                + "    <fees>NONE</fees>\n"
-                + "    <accessConstraints>NONE</accessConstraints>\n"
-                + "  </serviceInformation>\n"
-                + "  <runtimeStatsEnabled>true</runtimeStatsEnabled>\n"
-                + "  <wmtsCiteCompliant>false</wmtsCiteCompliant>\n"
-                + "  <backendTimeout>120</backendTimeout>\n"
-                + "</global>";
+        final String globalUpdate = """
+                <global>
+                  <serviceInformation>
+                    <title>GeoWebCache</title>
+                    <description>GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of protocols and
+                      formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</description>
+                    <keywords>
+                      <string>WMS</string>
+                      <string>WFS</string>
+                      <string>WMTS</string>
+                      <string>GEOWEBCACHE</string>
+                    </keywords>
+                    <serviceProvider>
+                      <providerName>John Smith inc.</providerName>
+                      <providerSite>http://www.example.com/</providerSite>
+                      <serviceContact>
+                        <individualName>John Smith</individualName>
+                        <positionName>Geospatial Expert</positionName>
+                        <addressType>Work</addressType>
+                        <addressStreet>1 Bumpy St.</addressStreet>
+                        <addressCity>Hobart</addressCity>
+                        <addressAdministrativeArea>TAS</addressAdministrativeArea>
+                        <addressPostalCode>7005</addressPostalCode>
+                        <addressCountry>Australia</addressCountry>
+                        <phoneNumber>+61 3 0000 0000</phoneNumber>
+                        <faxNumber>+61 3 0000 0001</faxNumber>
+                        <addressEmail>john.smith@example.com</addressEmail>
+                      </serviceContact>
+                    </serviceProvider>
+                    <fees>NONE</fees>
+                    <accessConstraints>NONE</accessConstraints>
+                  </serviceInformation>
+                  <runtimeStatsEnabled>true</runtimeStatsEnabled>
+                  <wmtsCiteCompliant>false</wmtsCiteCompliant>
+                  <backendTimeout>120</backendTimeout>
+                </global>""";
 
         try (CloseableHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate)) {
@@ -202,40 +203,41 @@ public class RestIntegrationTest {
 
     @Test
     public void testPutGlobal() throws Exception {
-        final String globalUpdate = "<global>\n"
-                + "  <serviceInformation>\n"
-                + "    <title>GeoWebCache</title>\n"
-                + "    <description>GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of protocols and\n"
-                + "      formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</description>\n"
-                + "    <keywords>\n"
-                + "      <string>WMS</string>\n"
-                + "      <string>WMTS</string>\n"
-                + "      <string>GEOWEBCACHE</string>\n"
-                + "    </keywords>\n"
-                + "    <serviceProvider>\n"
-                + "      <providerName>Jane Doe inc.</providerName>\n"
-                + "      <providerSite>http://www.example.com/</providerSite>\n"
-                + "      <serviceContact>\n"
-                + "        <individualName>Jane Doe</individualName>\n"
-                + "        <positionName>Geospatial Expert</positionName>\n"
-                + "        <addressType>Work</addressType>\n"
-                + "        <addressStreet>1 Bumpy St.</addressStreet>\n"
-                + "        <addressCity>Hobart</addressCity>\n"
-                + "        <addressAdministrativeArea>TAS</addressAdministrativeArea>\n"
-                + "        <addressPostalCode>7005</addressPostalCode>\n"
-                + "        <addressCountry>Australia</addressCountry>\n"
-                + "        <phoneNumber>+61 3 0000 0000</phoneNumber>\n"
-                + "        <faxNumber>+61 3 0000 0001</faxNumber>\n"
-                + "        <addressEmail>jane.doe@example.com</addressEmail>\n"
-                + "      </serviceContact>\n"
-                + "    </serviceProvider>\n"
-                + "    <fees>NONE</fees>\n"
-                + "    <accessConstraints>NONE</accessConstraints>\n"
-                + "  </serviceInformation>\n"
-                + "  <runtimeStatsEnabled>false</runtimeStatsEnabled>\n"
-                + "  <wmtsCiteCompliant>false</wmtsCiteCompliant>\n"
-                + "  <backendTimeout>120</backendTimeout>\n"
-                + "</global>";
+        final String globalUpdate = """
+                <global>
+                  <serviceInformation>
+                    <title>GeoWebCache</title>
+                    <description>GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of protocols and
+                      formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</description>
+                    <keywords>
+                      <string>WMS</string>
+                      <string>WMTS</string>
+                      <string>GEOWEBCACHE</string>
+                    </keywords>
+                    <serviceProvider>
+                      <providerName>Jane Doe inc.</providerName>
+                      <providerSite>http://www.example.com/</providerSite>
+                      <serviceContact>
+                        <individualName>Jane Doe</individualName>
+                        <positionName>Geospatial Expert</positionName>
+                        <addressType>Work</addressType>
+                        <addressStreet>1 Bumpy St.</addressStreet>
+                        <addressCity>Hobart</addressCity>
+                        <addressAdministrativeArea>TAS</addressAdministrativeArea>
+                        <addressPostalCode>7005</addressPostalCode>
+                        <addressCountry>Australia</addressCountry>
+                        <phoneNumber>+61 3 0000 0000</phoneNumber>
+                        <faxNumber>+61 3 0000 0001</faxNumber>
+                        <addressEmail>jane.doe@example.com</addressEmail>
+                      </serviceContact>
+                    </serviceProvider>
+                    <fees>NONE</fees>
+                    <accessConstraints>NONE</accessConstraints>
+                  </serviceInformation>
+                  <runtimeStatsEnabled>false</runtimeStatsEnabled>
+                  <wmtsCiteCompliant>false</wmtsCiteCompliant>
+                  <backendTimeout>120</backendTimeout>
+                </global>""";
 
         testGetGlobal();
 
@@ -683,12 +685,13 @@ public class RestIntegrationTest {
 
     @Test
     public void testPutBlobStoreCreateModifyDelete() throws Exception {
-        String blobStore = "<FileBlobStore>\n"
-                + "    <id>newCache</id>\n"
-                + "    <enabled>false</enabled>\n"
-                + "    <baseDirectory>/tmp/newCache</baseDirectory>\n"
-                + "    <fileSystemBlockSize>4096</fileSystemBlockSize>\n"
-                + "</FileBlobStore>";
+        String blobStore = """
+                <FileBlobStore>
+                    <id>newCache</id>
+                    <enabled>false</enabled>
+                    <baseDirectory>/tmp/newCache</baseDirectory>
+                    <fileSystemBlockSize>4096</fileSystemBlockSize>
+                </FileBlobStore>""";
 
         // Make it sure doesn't exist
         try (CloseableHttpResponse response =
@@ -713,12 +716,13 @@ public class RestIntegrationTest {
             assertThat(doc, hasXPath("//fileSystemBlockSize", equalTo("4096")));
         }
 
-        String blobStoreUpdate = "<FileBlobStore>\n"
-                + "    <id>newCache</id>\n"
-                + "    <enabled>false</enabled>\n"
-                + "    <baseDirectory>/tmp/newCache</baseDirectory>\n"
-                + "    <fileSystemBlockSize>2048</fileSystemBlockSize>\n"
-                + "</FileBlobStore>";
+        String blobStoreUpdate = """
+                <FileBlobStore>
+                    <id>newCache</id>
+                    <enabled>false</enabled>
+                    <baseDirectory>/tmp/newCache</baseDirectory>
+                    <fileSystemBlockSize>2048</fileSystemBlockSize>
+                </FileBlobStore>""";
 
         try (CloseableHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/blobstores/newCache"), admin.getClient(), blobStoreUpdate)) {
@@ -826,39 +830,40 @@ public class RestIntegrationTest {
 
     @Test
     public void testPutGridSetCreateModifyDelete() throws Exception {
-        String gridSet = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "<gridSet>\n"
-                + "  <name>testGridset</name>\n"
-                + "  <srs>\n"
-                + "    <number>4326</number>\n"
-                + "  </srs>\n"
-                + "  <extent>\n"
-                + "    <coords>\n"
-                + "      <double>-2495667.977678598</double>\n"
-                + "      <double>-2223677.196231552</double>\n"
-                + "      <double>3291070.6104286816</double>\n"
-                + "      <double>959189.3312465074</double>\n"
-                + "    </coords>\n"
-                + "  </extent>\n"
-                + "  <alignTopLeft>false</alignTopLeft>\n"
-                + "  <scaleDenominators>\n"
-                + "    <double>2.5E7</double>\n"
-                + "    <double>1000000.0</double>\n"
-                + "    <double>100000.0</double>\n"
-                + "    <double>25000.0</double>\n"
-                + "  </scaleDenominators>\n"
-                + "  <metersPerUnit>1.0</metersPerUnit>\n"
-                + "  <pixelSize>2.8E-4</pixelSize>\n"
-                + "  <scaleNames>\n"
-                + "    <string>EPSG:4326:0</string>\n"
-                + "    <string>EPSG:4326:1</string>\n"
-                + "    <string>EPSG:4326:2</string>\n"
-                + "    <string>EPSG:4326:3</string>\n"
-                + "  </scaleNames>\n"
-                + "  <tileHeight>211</tileHeight>\n"
-                + "  <tileWidth>211</tileWidth>\n"
-                + "  <yCoordinateFirst>false</yCoordinateFirst>\n"
-                + "</gridSet>";
+        String gridSet = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <gridSet>
+                  <name>testGridset</name>
+                  <srs>
+                    <number>4326</number>
+                  </srs>
+                  <extent>
+                    <coords>
+                      <double>-2495667.977678598</double>
+                      <double>-2223677.196231552</double>
+                      <double>3291070.6104286816</double>
+                      <double>959189.3312465074</double>
+                    </coords>
+                  </extent>
+                  <alignTopLeft>false</alignTopLeft>
+                  <scaleDenominators>
+                    <double>2.5E7</double>
+                    <double>1000000.0</double>
+                    <double>100000.0</double>
+                    <double>25000.0</double>
+                  </scaleDenominators>
+                  <metersPerUnit>1.0</metersPerUnit>
+                  <pixelSize>2.8E-4</pixelSize>
+                  <scaleNames>
+                    <string>EPSG:4326:0</string>
+                    <string>EPSG:4326:1</string>
+                    <string>EPSG:4326:2</string>
+                    <string>EPSG:4326:3</string>
+                  </scaleNames>
+                  <tileHeight>211</tileHeight>
+                  <tileWidth>211</tileWidth>
+                  <yCoordinateFirst>false</yCoordinateFirst>
+                </gridSet>""";
 
         // Make it sure doesn't exist
         try (CloseableHttpResponse response =
@@ -887,39 +892,40 @@ public class RestIntegrationTest {
             assertThat(doc, hasXPath("//tileHeight", equalTo("211")));
         }
 
-        String gridSetUpdate = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "<gridSet>\n"
-                + "  <name>testGridset</name>\n"
-                + "  <srs>\n"
-                + "    <number>2163</number>\n"
-                + "  </srs>\n"
-                + "  <extent>\n"
-                + "    <coords>\n"
-                + "      <double>-2495667.977678598</double>\n"
-                + "      <double>-2223677.196231552</double>\n"
-                + "      <double>3291070.6104286816</double>\n"
-                + "      <double>959189.3312465074</double>\n"
-                + "    </coords>\n"
-                + "  </extent>\n"
-                + "  <alignTopLeft>false</alignTopLeft>\n"
-                + "  <scaleDenominators>\n"
-                + "    <double>2.5E7</double>\n"
-                + "    <double>1000000.0</double>\n"
-                + "    <double>100000.0</double>\n"
-                + "    <double>25000.0</double>\n"
-                + "  </scaleDenominators>\n"
-                + "  <metersPerUnit>1.0</metersPerUnit>\n"
-                + "  <pixelSize>2.8E-4</pixelSize>\n"
-                + "  <scaleNames>\n"
-                + "    <string>EPSG:2163:0</string>\n"
-                + "    <string>EPSG:2163:1</string>\n"
-                + "    <string>EPSG:2163:2</string>\n"
-                + "    <string>EPSG:2163:3</string>\n"
-                + "  </scaleNames>\n"
-                + "  <tileHeight>200</tileHeight>\n"
-                + "  <tileWidth>200</tileWidth>\n"
-                + "  <yCoordinateFirst>false</yCoordinateFirst>\n"
-                + "</gridSet>";
+        String gridSetUpdate = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <gridSet>
+                  <name>testGridset</name>
+                  <srs>
+                    <number>2163</number>
+                  </srs>
+                  <extent>
+                    <coords>
+                      <double>-2495667.977678598</double>
+                      <double>-2223677.196231552</double>
+                      <double>3291070.6104286816</double>
+                      <double>959189.3312465074</double>
+                    </coords>
+                  </extent>
+                  <alignTopLeft>false</alignTopLeft>
+                  <scaleDenominators>
+                    <double>2.5E7</double>
+                    <double>1000000.0</double>
+                    <double>100000.0</double>
+                    <double>25000.0</double>
+                  </scaleDenominators>
+                  <metersPerUnit>1.0</metersPerUnit>
+                  <pixelSize>2.8E-4</pixelSize>
+                  <scaleNames>
+                    <string>EPSG:2163:0</string>
+                    <string>EPSG:2163:1</string>
+                    <string>EPSG:2163:2</string>
+                    <string>EPSG:2163:3</string>
+                  </scaleNames>
+                  <tileHeight>200</tileHeight>
+                  <tileWidth>200</tileWidth>
+                  <yCoordinateFirst>false</yCoordinateFirst>
+                </gridSet>""";
 
         try (CloseableHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/gridsets/testGridset"), admin.getClient(), gridSetUpdate)) {
@@ -980,16 +986,16 @@ public class RestIntegrationTest {
             if (response.getStatusLine().getStatusCode() == 200) {
                 JSONObject jsonObject = getResponseEntityAsJSONObject(response);
                 Object obj = jsonObject.get("org.geowebcache.diskquota.DiskQuotaConfig");
-                if (obj instanceof JSONObject) {
-                    assertEquals(false, ((JSONObject) obj).get("enabled"));
-                    assertEquals(10, ((JSONObject) obj).get("cacheCleanUpFrequency"));
-                    assertEquals("SECONDS", ((JSONObject) obj).get("cacheCleanUpUnits"));
-                    assertEquals(2, ((JSONObject) obj).get("maxConcurrentCleanUps"));
-                    assertEquals("LFU", ((JSONObject) obj).get("globalExpirationPolicyName"));
-                    Object globalQuota = ((JSONObject) obj).get("globalQuota");
-                    if (globalQuota instanceof JSONObject) {
-                        assertEquals(0, ((JSONObject) globalQuota).get("id"));
-                        assertEquals(524288000, ((JSONObject) globalQuota).get("bytes"));
+                if (obj instanceof JSONObject object1) {
+                    assertEquals(false, object1.get("enabled"));
+                    assertEquals(10, object1.get("cacheCleanUpFrequency"));
+                    assertEquals("SECONDS", object1.get("cacheCleanUpUnits"));
+                    assertEquals(2, object1.get("maxConcurrentCleanUps"));
+                    assertEquals("LFU", object1.get("globalExpirationPolicyName"));
+                    Object globalQuota = object1.get("globalQuota");
+                    if (globalQuota instanceof JSONObject object) {
+                        assertEquals(0, object.get("id"));
+                        assertEquals(524288000, object.get("bytes"));
                     }
                 }
             }

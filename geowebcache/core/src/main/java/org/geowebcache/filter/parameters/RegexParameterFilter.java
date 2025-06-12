@@ -15,6 +15,7 @@ package org.geowebcache.filter.parameters;
 
 import com.google.common.base.Preconditions;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import java.io.Serial;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,6 +27,7 @@ import org.geowebcache.filter.parameters.CaseNormalizer.Case;
 @XStreamAlias("regexParameterFilter")
 public class RegexParameterFilter extends CaseNormalizingParameterFilter {
 
+    @Serial
     private static final long serialVersionUID = -1496940509350980799L;
 
     public static final String DEFAULT_EXPRESSION = "";
