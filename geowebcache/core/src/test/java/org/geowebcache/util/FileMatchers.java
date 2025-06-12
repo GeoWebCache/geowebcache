@@ -147,8 +147,7 @@ public class FileMatchers {
             @Override
             public boolean matches(Object item) {
                 if (item instanceof File file) {
-                    return file.isDirectory()
-                            && filesMatcher.matches(Arrays.asList(file.listFiles()));
+                    return file.isDirectory() && filesMatcher.matches(Arrays.asList(file.listFiles()));
                 } else {
                     return false;
                 }

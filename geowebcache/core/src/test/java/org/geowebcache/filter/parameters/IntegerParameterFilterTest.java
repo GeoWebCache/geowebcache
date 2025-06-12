@@ -133,7 +133,8 @@ public class IntegerParameterFilterTest {
 
     @Test
     public void testFromXML() throws Exception {
-        Object o = xs.fromXML("""
+        Object o = xs.fromXML(
+                """
                 <integerParameterFilter>
                   <key>TEST</key>
                   <defaultValue>Default</defaultValue>

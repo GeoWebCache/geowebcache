@@ -431,8 +431,7 @@ public class XMLConfiguration
                 if (extension instanceof ContextualConfigurationProvider provider
                         &&
                         // Check if the context is applicable for the provider
-                        (providerContext == null
-                                || !provider.appliesTo(providerContext))) {
+                        (providerContext == null || !provider.appliesTo(providerContext))) {
                     // If so, try the next one
                     continue;
                 }
@@ -957,7 +956,9 @@ public class XMLConfiguration
         }
         // ensure there isn't a BlobStoreInfo with the same name already
         if (getBlobStoreNames().contains(info.getName())) {
-            throw new IllegalArgumentException("Failed to add BlobStoreInfo. A BlobStoreInfo with name \"%s\" already exists".formatted(info.getName()));
+            throw new IllegalArgumentException(
+                    "Failed to add BlobStoreInfo. A BlobStoreInfo with name \"%s\" already exists"
+                            .formatted(info.getName()));
         }
         // add the BlobStoreInfo
         final List<BlobStoreInfo> blobStores = getGwcConfig().getBlobStores();
@@ -978,8 +979,7 @@ public class XMLConfiguration
             if (ExceptionUtils.isOrSuppresses(e, UnsuitableStorageException.class)) {
                 // Can't store here, roll back
                 blobStores.remove(info);
-                throw new ConfigurationPersistenceException(
-                        "Unable to add BlobStoreInfo \"%s\"".formatted(info), e);
+                throw new ConfigurationPersistenceException("Unable to add BlobStoreInfo \"%s\"".formatted(info), e);
             }
             throw new ConfigurationPersistenceException(e);
         }
@@ -990,7 +990,9 @@ public class XMLConfiguration
     public synchronized void removeBlobStore(String name) {
         // ensure there is a BlobStoreInfo with the name
         final BlobStoreInfo infoToRemove = getBlobStore(name)
-                .orElseThrow(() -> new NoSuchElementException("Failed to remove BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.".formatted(name)));
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Failed to remove BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist."
+                                .formatted(name)));
         // remove the BlobStoreInfo
         final List<BlobStoreInfo> blobStores = getGwcConfig().getBlobStores();
         blobStores.remove(infoToRemove);
@@ -1000,8 +1002,7 @@ public class XMLConfiguration
         } catch (IOException ioe) {
             // save failed, roll back the delete
             blobStores.add(infoToRemove);
-            throw new ConfigurationPersistenceException(
-                    "Unable to remove BlobStoreInfo \"%s\"".formatted(name), ioe);
+            throw new ConfigurationPersistenceException("Unable to remove BlobStoreInfo \"%s\"".formatted(name), ioe);
         }
         try {
             blobStoreListeners.safeForEach(listener -> {
@@ -1021,8 +1022,9 @@ public class XMLConfiguration
         // ensure there is a BlobStoreInfo with the name
         final Optional<BlobStoreInfo> optionalInfo = getBlobStore(info.getName());
         if (optionalInfo.isEmpty()) {
-            throw new NoSuchElementException("Failed to modify BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.".formatted(
-                    info.getName()));
+            throw new NoSuchElementException(
+                    "Failed to modify BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist."
+                            .formatted(info.getName()));
         }
         // remove existing and add the new one
         final List<BlobStoreInfo> blobStores = getGwcConfig().getBlobStores();
@@ -1048,8 +1050,7 @@ public class XMLConfiguration
                 // Can't store here, roll back
                 blobStores.remove(info);
                 blobStores.add(infoToRemove);
-                throw new ConfigurationPersistenceException(
-                        "Unable to modify BlobStoreInfo \"%s\"".formatted(info), e);
+                throw new ConfigurationPersistenceException("Unable to modify BlobStoreInfo \"%s\"".formatted(info), e);
             }
             throw new ConfigurationPersistenceException(e);
         }
@@ -1150,8 +1151,9 @@ public class XMLConfiguration
             if (blobStoreInfoToRevert == null) {
                 // we're really messed up now as we couldn't find the BlobStoreInfo that was just
                 // renamed.
-                throw new ConfigurationPersistenceException("Error reverting BlobStoreInfo modification. Could not revert rename from \"%s\" to \"%s\"".formatted(
-                        oldName, newName));
+                throw new ConfigurationPersistenceException(
+                        "Error reverting BlobStoreInfo modification. Could not revert rename from \"%s\" to \"%s\""
+                                .formatted(oldName, newName));
             }
             // revert the name and add it back to the list
             blobStoreInfoToRevert.setName(oldName);
@@ -1165,8 +1167,8 @@ public class XMLConfiguration
             });
         } catch (IOException | GeoWebCacheException e) {
             throw new ConfigurationPersistenceException(
-                    "Exception while handling listeners for renaming blobstore \"%s\" to \"%s\"".formatted(
-                            oldName, newName),
+                    "Exception while handling listeners for renaming blobstore \"%s\" to \"%s\""
+                            .formatted(oldName, newName),
                     e);
         }
     }

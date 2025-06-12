@@ -86,7 +86,8 @@ public class FilterUpdateControllerTest {
     @Test
     public void testPost() throws Exception {
 
-        String filterXml = """
+        String filterXml =
+                """
                 <wmsRasterFilterUpdate>
                     <gridSetId>EPSG:4326</gridSetId>
                     <zoomStart>0</zoomStart>

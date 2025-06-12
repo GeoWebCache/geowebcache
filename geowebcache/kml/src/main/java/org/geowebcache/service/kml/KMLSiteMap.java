@@ -63,7 +63,8 @@ public class KMLSiteMap {
         @SuppressWarnings("PMD.CloseResource") // managed by servlet container
         OutputStream os = tile.servletResp.getOutputStream();
 
-        String header = """
+        String header =
+                """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
                 """;
@@ -131,7 +132,8 @@ public class KMLSiteMap {
     }
 
     private void writeSiteMapHeader() throws IOException {
-        String header = """
+        String header =
+                """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:geo="http://www.google.com/geo/schemas/sitemap/1.0">
                 """;

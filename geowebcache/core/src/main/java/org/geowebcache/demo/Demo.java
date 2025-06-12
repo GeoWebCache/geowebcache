@@ -129,7 +129,8 @@ public class Demo {
         buf.append(ServletUtils.gwcHtmlHeader("", "GWC Demos"));
         buf.append("<body>\n");
         buf.append(ServletUtils.gwcHtmlLogoLink(""));
-        buf.append("""
+        buf.append(
+                """
                 <table cellspacing="10" border="0">
                 <tr><td><strong>Layer name:</strong></td>
                 <td><strong>Enabled:</strong></td>
@@ -141,7 +142,8 @@ public class Demo {
 
         buf.append("</table>\n");
         buf.append("<br />");
-        buf.append("""
+        buf.append(
+                        """
                         <strong>These are just quick demos. GeoWebCache also supports:</strong><br />
                         <ul><li>WMTS, TMS, Virtual Earth and Google Maps</li>
                         <li>Proxying GetFeatureInfo, GetLegend and other WMS requests</li>
@@ -158,7 +160,8 @@ public class Demo {
                         <form form id="kill" action="\
                         """)
                 .append(reloadPath)
-                .append("""
+                .append(
+                        """
                         " method="post">\
                         <input type="hidden" name="reload_configuration"  value="1" />\
                         <span><input style="padding: 0; margin-bottom: -12px; border: 1;"type="submit" value="Reload TileLayerConfiguration"></span>\
@@ -230,10 +233,15 @@ public class Demo {
                 .filter(type -> type instanceof ImageMime || XMLMime.kml.equals(type) || XMLMime.kmz.equals(type))
                 .map(type -> {
                     if (XMLMime.kmz.equals(type)) {
-                        return "<a href=\"%sservice/kml/%s.kml.kmz\">kmz</a>".formatted(prefix, escapeHtml4(layer.getName()));
+                        return "<a href=\"%sservice/kml/%s.kml.kmz\">kmz</a>"
+                                .formatted(prefix, escapeHtml4(layer.getName()));
                     } else {
-                        return "<a href=\"%sservice/kml/%s.%s.kml\">%s</a>".formatted(
-                                prefix, escapeHtml4(layer.getName()), type.getFileExtension(), type.getFileExtension());
+                        return "<a href=\"%sservice/kml/%s.%s.kml\">%s</a>"
+                                .formatted(
+                                        prefix,
+                                        escapeHtml4(layer.getName()),
+                                        type.getFileExtension(),
+                                        type.getFileExtension());
                     }
                 })
                 .collect(Collectors.joining(", ")));
@@ -242,8 +250,8 @@ public class Demo {
     }
 
     private static String generateDemoUrl(String layerName, String gridSetId, MimeType type) {
-        return "<a href=\"demo/%s?gridSet=%s&format=%s\">%s</a>".formatted(
-                layerName, gridSetId, type.getFormat(), type.getFileExtension());
+        return "<a href=\"demo/%s?gridSet=%s&format=%s\">%s</a>"
+                .formatted(layerName, gridSetId, type.getFormat(), type.getFileExtension());
     }
 
     private static String generateHTML(TileLayer layer, String gridSetStr, String formatStr)
@@ -277,7 +285,8 @@ public class Demo {
         buf.append(" ").append(escapeHtml4(gridSubset.getName()));
         buf.append(" ").append(escapeHtml4(formatStr));
         buf.append("</title>\n");
-        buf.append("""
+        buf.append(
+                """
                 <style type="text/css">
                 body { font-family: sans-serif; font-weight: bold; font-size: .8em; }
                 body { border: 0px; margin: 0px; padding: 0px; }
@@ -301,7 +310,8 @@ public class Demo {
                 .append("</div>\n");
 
         buf.append("<div id=\"map\"></div>\n" + "<div id=\"info\"></div>\n");
-        buf.append("""
+        buf.append(
+                """
                 <div id="tooltip" class="tooltip">
                       <div class="tooltip-header">
                         <span>Attributes</span>

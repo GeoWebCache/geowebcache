@@ -129,8 +129,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
 
         initMbtilesLayersMetadata(configuration.getMbtilesMetadataDirectory());
         if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("MBTiles blob store initiated: [eagerDelete='%b', useCreateTime='%b'.".formatted(
-                    eagerDelete, useCreateTime));
+            LOGGER.info("MBTiles blob store initiated: [eagerDelete='%b', useCreateTime='%b'."
+                    .formatted(eagerDelete, useCreateTime));
         }
     }
 
@@ -323,8 +323,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         connectionManager.executeSql(
                 metadataFile, "INSERT OR REPLACE INTO metadata VALUES (?, ?, ?);", layerName, key, value);
         if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("Metadata for layer '%s' for key '%s' inserted or updated on file '%s'.".formatted(
-                    layerName, key, metadataFile));
+            LOGGER.info("Metadata for layer '%s' for key '%s' inserted or updated on file '%s'."
+                    .formatted(layerName, key, metadataFile));
         }
     }
 
@@ -339,14 +339,15 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                                 // metadata value is available
                                 String value = resultSet.getString(1);
                                 if (LOGGER.isLoggable(Level.FINE)) {
-                                    LOGGER.fine("Metadata for layer '%s' with key '%s' found '%s'.".formatted(
-                                            layerName, key, value));
+                                    LOGGER.fine("Metadata for layer '%s' with key '%s' found '%s'."
+                                            .formatted(layerName, key, value));
                                 }
                                 return value;
                             }
                             // metadata value not found
                             if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.fine("Metadata for layer '%s' with key '%s' not found.".formatted(layerName, key));
+                                LOGGER.fine(
+                                        "Metadata for layer '%s' with key '%s' not found.".formatted(layerName, key));
                             }
                             return null;
                         } catch (Exception exception) {
@@ -359,8 +360,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         } catch (Exception exception) {
             // probably because the metadata table doesn't exists
             if (LOGGER.isLoggable(Level.SEVERE)) {
-                LOGGER.log(
-                        Level.SEVERE, "Error getting metadata from file '%s'.".formatted(metadataFile), exception);
+                LOGGER.log(Level.SEVERE, "Error getting metadata from file '%s'.".formatted(metadataFile), exception);
             }
             return null;
         }
@@ -422,8 +422,8 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
                 // current file
                 for (long[] range : entry.getValue()) {
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Deleting tiles range [minx=%d, miny=%d, maxx=%d, maxxy=%d, zoom=%d] in file '%s'.".formatted(
-                                range[0], range[1], range[2], range[3], range[4], file));
+                        LOGGER.fine("Deleting tiles range [minx=%d, miny=%d, maxx=%d, maxxy=%d, zoom=%d] in file '%s'."
+                                .formatted(range[0], range[1], range[2], range[3], range[4], file));
                     }
                     completionService.submit(
                             () -> connectionManager.executeSql(
@@ -657,16 +657,16 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         File mbtilesMetadataDirectory = new File(mbtilesMetadataDirectoryPath);
         if (!mbtilesMetadataDirectory.exists()) {
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.info("Mbtiles metadata directory '%s' doesn't exists, no mbtiles metadata will be parsed.".formatted(
-                        mbtilesMetadataDirectoryPath));
+                LOGGER.info("Mbtiles metadata directory '%s' doesn't exists, no mbtiles metadata will be parsed."
+                        .formatted(mbtilesMetadataDirectoryPath));
             }
             return;
         }
         File[] files = mbtilesMetadataDirectory.listFiles();
         if (files == null) {
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.info("No files present in mbtiles metadata directory '%s', no mbtiles metadata will be parsed.".formatted(
-                        mbtilesMetadataDirectoryPath));
+                LOGGER.info("No files present in mbtiles metadata directory '%s', no mbtiles metadata will be parsed."
+                        .formatted(mbtilesMetadataDirectoryPath));
             }
             return;
         }
@@ -722,8 +722,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         } catch (Exception exception) {
             // probably because the metadata table doesn't exists
             if (LOGGER.isLoggable(Level.SEVERE)) {
-                LOGGER.log(
-                        Level.SEVERE, "Error getting metadata from file '%s'.".formatted(metadataFile), exception);
+                LOGGER.log(Level.SEVERE, "Error getting metadata from file '%s'.".formatted(metadataFile), exception);
             }
             return Collections.emptyMap();
         }

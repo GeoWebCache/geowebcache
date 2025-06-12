@@ -165,7 +165,8 @@ class S3Ops {
                         "Bulk delete removed pendingDelete for for bucket '%s/%s'".formatted(bucketName, prefix));
 
             } else {
-                S3BlobStore.log.info("Bulk delete finished but there's a newer one ongoing for bucket '%s/%s'".formatted(bucketName, prefix));
+                S3BlobStore.log.info("Bulk delete finished but there's a newer one ongoing for bucket '%s/%s'"
+                        .formatted(bucketName, prefix));
             }
         } catch (StorageException e) {
             throw new RuntimeException(e);
@@ -176,7 +177,8 @@ class S3Ops {
 
     public boolean scheduleAsyncDelete(final String prefix) throws GeoWebCacheException {
         final long timestamp = currentTimeSeconds();
-        String msg = "Issuing bulk delete on '%s/%s' for objects older than %d".formatted(bucketName, prefix, timestamp);
+        String msg =
+                "Issuing bulk delete on '%s/%s' for objects older than %d".formatted(bucketName, prefix, timestamp);
         S3BlobStore.log.info(msg);
 
         Lock lock = locks.getLock(prefix);
@@ -399,8 +401,8 @@ class S3Ops {
             logger.info("Running bulk delete on '%s/%s':%d".formatted(bucketName, prefix, timestamp));
             try {
                 long tilesDeleted = deleteBatchesOfTilesAndInformListeners();
-                logger.info("Finished bulk delete on '%s/%s':%d. %d objects deleted".formatted(
-                        bucketName, prefix, timestamp, tilesDeleted));
+                logger.info("Finished bulk delete on '%s/%s':%d. %d objects deleted"
+                        .formatted(bucketName, prefix, timestamp, tilesDeleted));
 
                 // Once clear of the streams, throw the interrupt exception if required
                 // Streams will exit cleanly without clearing the interrupt flag
@@ -470,7 +472,8 @@ class S3Ops {
 
         private void checkInterrupted() throws InterruptedException {
             if (Thread.interrupted()) {
-                S3BlobStore.log.info("S3 bulk delete aborted for '%s/%s'. Will resume on next startup.".formatted(bucketName, prefix));
+                S3BlobStore.log.info("S3 bulk delete aborted for '%s/%s'. Will resume on next startup."
+                        .formatted(bucketName, prefix));
                 throw new InterruptedException();
             }
         }

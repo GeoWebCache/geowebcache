@@ -55,8 +55,7 @@ public class DefaultGridsetsConfigurationGridsetConformanceTest extends GridSetC
 
             @Override
             public boolean matches(Object item) {
-                return item instanceof GridSet gs
-                        && gs.getDescription().equals(Integer.toString(expected));
+                return item instanceof GridSet gs && gs.getDescription().equals(Integer.toString(expected));
             }
         };
     }
