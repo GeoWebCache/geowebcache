@@ -688,11 +688,13 @@ public class KMLService extends Service {
     }
 
     private static String KMLHeader() {
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                + "<kml xmlns=\"http://www.opengis.net/kml/2.2\" "
-                + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
-                + "xsi:schemaLocation=\"http://www.opengis.net/kml/2.2 "
-                + "http://schemas.opengis.net/kml/2.2.0/ogckml22.xsd\">\n";
+        return """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <kml xmlns="http://www.opengis.net/kml/2.2" \
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" \
+                xsi:schemaLocation="http://www.opengis.net/kml/2.2 \
+                http://schemas.opengis.net/kml/2.2.0/ogckml22.xsd">
+                """;
     }
 
     // private static String moreDataIcon(BBOX bbox){

@@ -13,12 +13,14 @@
  */
 package org.geowebcache.grid;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
 /** @author groldan */
 public class Grid implements Serializable, Cloneable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private long numTilesWide;

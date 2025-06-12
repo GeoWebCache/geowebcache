@@ -31,13 +31,15 @@ public class MockWMSLayerSource {
     private static final Logger log = Logging.getLogger(MockWMSLayerSource.class.getName());
 
     public MockWMSLayerSource(TileLayerDispatcher tld) {
-        log.info("'\n---------------------------------------------------------------------------------\n"
-                + "Replacing all WMS layer backend helpers by a mock one, don't forget to remove this\n"
-                + "---------------------------------------------------------------------------------");
+        log.info("""
+                '
+                ---------------------------------------------------------------------------------
+                Replacing all WMS layer backend helpers by a mock one, don't forget to remove this
+                ---------------------------------------------------------------------------------""");
 
         for (TileLayer layer : tld.getLayerList()) {
-            if (layer instanceof WMSLayer) {
-                ((WMSLayer) layer).setSourceHelper(fakeWMSSource);
+            if (layer instanceof WMSLayer sLayer) {
+                sLayer.setSourceHelper(fakeWMSSource);
             }
         }
     }

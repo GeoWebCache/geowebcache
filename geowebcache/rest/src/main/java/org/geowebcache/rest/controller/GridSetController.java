@@ -53,7 +53,7 @@ public class GridSetController extends GWCController {
             return broker.get(gridSetName);
         } else {
             throw new RestException(
-                    String.format("Failed to get GridSet. A GridSet with name \"%s\" does not exist.", gridSetName),
+                    "Failed to get GridSet. A GridSet with name \"%s\" does not exist.".formatted(gridSetName),
                     HttpStatus.NOT_FOUND);
         }
     }
@@ -79,7 +79,7 @@ public class GridSetController extends GWCController {
             broker.removeGridSet(gridSetName);
         } else {
             throw new RestException(
-                    String.format("Failed to remove GridSet. A GridSet with name \"%s\" does not exist.", gridSetName),
+                    "Failed to remove GridSet. A GridSet with name \"%s\" does not exist.".formatted(gridSetName),
                     HttpStatus.NOT_FOUND);
         }
     }

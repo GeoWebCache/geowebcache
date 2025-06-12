@@ -108,8 +108,7 @@ public class GeoRSSPoller {
                         + "' as the layer is disabled");
             }
             for (UpdateSourceDefinition usd : layer.getUpdateSources()) {
-                if (usd instanceof GeoRSSFeedDefinition) {
-                    final GeoRSSFeedDefinition georssDef = (GeoRSSFeedDefinition) usd;
+                if (usd instanceof GeoRSSFeedDefinition georssDef) {
 
                     final String gridSetId = georssDef.getGridSetId();
                     final GridSubset gridSubset = layer.getGridSubset(gridSetId);

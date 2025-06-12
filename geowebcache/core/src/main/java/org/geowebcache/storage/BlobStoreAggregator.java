@@ -96,8 +96,7 @@ public class BlobStoreAggregator {
 
         return getConfigs().stream()
                 .map(c -> c.getBlobStore(blobStoreName))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .flatMap(Optional::stream)
                 .findFirst()
                 .orElseThrow(() -> new GeoWebCacheException("Thread "
                         + Thread.currentThread().getName()
@@ -197,9 +196,9 @@ public class BlobStoreAggregator {
         }
 
         // Check whether there is any general service information
-        if (this.serviceInformation == null && config instanceof ServerConfiguration) {
+        if (this.serviceInformation == null && config instanceof ServerConfiguration configuration) {
             log.fine("Reading service information.");
-            this.serviceInformation = ((ServerConfiguration) config).getServiceInformation();
+            this.serviceInformation = configuration.getServiceInformation();
         }
         return blobStoreCount;
     }

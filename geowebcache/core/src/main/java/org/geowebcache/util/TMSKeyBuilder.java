@@ -214,7 +214,7 @@ public final class TMSKeyBuilder {
     }
 
     public String pendingDeletes() {
-        if (!Strings.isNullOrEmpty(prefix)) return String.format("%s/%s", prefix, PENDING_DELETES);
+        if (!Strings.isNullOrEmpty(prefix)) return "%s/%s".formatted(prefix, PENDING_DELETES);
         else return PENDING_DELETES;
     }
 

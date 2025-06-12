@@ -13,6 +13,7 @@
  */
 package org.geowebcache.sqlite;
 
+import java.io.Serial;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.storage.BlobStore;
@@ -20,6 +21,7 @@ import org.geowebcache.storage.StorageException;
 
 /** Holder for the properties needed to configure a mbtiles blob store. */
 public class MbtilesInfo extends SqliteInfo {
+    @Serial
     private static final long serialVersionUID = -6618985107587790155L;
 
     public MbtilesInfo() {

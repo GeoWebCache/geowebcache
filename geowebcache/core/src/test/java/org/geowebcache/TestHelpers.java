@@ -111,8 +111,8 @@ public class TestHelpers {
 
             @Override
             public boolean matches(Object item) {
-                if (item instanceof HttpServletResponse) {
-                    return expected.equals(HttpStatus.valueOf(((HttpServletResponse) item).getStatus()));
+                if (item instanceof HttpServletResponse response) {
+                    return expected.equals(HttpStatus.valueOf(response.getStatus()));
                 }
                 return false;
             }
@@ -129,8 +129,8 @@ public class TestHelpers {
 
             @Override
             public void describeMismatch(Object item, Description description) {
-                if (item instanceof HttpServletResponse) {
-                    HttpStatus status = HttpStatus.valueOf(((HttpServletResponse) item).getStatus());
+                if (item instanceof HttpServletResponse response) {
+                    HttpStatus status = HttpStatus.valueOf(response.getStatus());
                     description.appendText("status was ");
                     describeStatus(status, description);
                 } else {

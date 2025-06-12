@@ -14,6 +14,7 @@
 package org.geowebcache;
 
 import java.io.IOException;
+import java.io.Serial;
 
 /**
  * An IOException that means a {@link ServiceStrategy#getDestination(javax.servlet.http.HttpServletResponse)
@@ -28,6 +29,7 @@ import java.io.IOException;
  */
 public final class ClientStreamAbortedException extends IOException {
 
+    @Serial
     private static final long serialVersionUID = -812677957232110980L;
 
     public ClientStreamAbortedException() {

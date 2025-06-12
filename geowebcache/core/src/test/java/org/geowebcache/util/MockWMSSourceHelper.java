@@ -38,8 +38,7 @@ public class MockWMSSourceHelper extends WMSSourceHelper {
         int tileW;
         int tileH;
         String format;
-        if (tileRespRecv instanceof ConveyorTile) {
-            ConveyorTile conveyorTile = (ConveyorTile) tileRespRecv;
+        if (tileRespRecv instanceof ConveyorTile conveyorTile) {
             long[] tileIndex = conveyorTile.getTileIndex();
             tiles = new long[1][1];
             tiles[0] = tileIndex;

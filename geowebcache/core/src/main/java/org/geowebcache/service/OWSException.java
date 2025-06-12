@@ -13,11 +13,13 @@
  */
 package org.geowebcache.service;
 
+import java.io.Serial;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
 import org.owasp.encoder.Encode;
 
 public class OWSException extends Exception {
+    @Serial
     private static final long serialVersionUID = -8024005353689857211L;
 
     int httpCode;

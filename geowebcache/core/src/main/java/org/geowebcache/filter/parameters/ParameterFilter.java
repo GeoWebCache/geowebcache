@@ -14,6 +14,7 @@
 package org.geowebcache.filter.parameters;
 
 import com.google.common.base.Preconditions;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +26,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public abstract class ParameterFilter implements Serializable, Cloneable {
 
+    @Serial
     private static final long serialVersionUID = -531248230951783132L;
 
     private String key;

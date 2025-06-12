@@ -16,6 +16,7 @@ package org.geowebcache.swift;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -44,6 +45,7 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
 
     static Logger log = Logging.getLogger(SwiftBlobStoreInfo.class.getName());
 
+    @Serial
     private static final long serialVersionUID = 9072751143836460389L;
 
     private static final String provider = "openstack-swift";
@@ -164,9 +166,9 @@ public class SwiftBlobStoreInfo extends BlobStoreInfo {
         String bucket = this.getContainer();
         String prefix = this.getPrefix();
         if (prefix == null) {
-            return String.format("bucket: %s", bucket);
+            return "bucket: %s".formatted(bucket);
         } else {
-            return String.format("bucket: %s prefix: %s", bucket, prefix);
+            return "bucket: %s prefix: %s".formatted(bucket, prefix);
         }
     }
 

@@ -43,8 +43,8 @@ public class FileMatchers {
 
             @Override
             public boolean matches(Object item) {
-                if (item instanceof File) {
-                    return ((File) item).exists();
+                if (item instanceof File file) {
+                    return file.exists();
                 } else {
                     return false;
                 }
@@ -74,8 +74,8 @@ public class FileMatchers {
 
             @Override
             public boolean matches(Object item) {
-                if (item instanceof File) {
-                    return ((File) item).isFile();
+                if (item instanceof File file) {
+                    return file.isFile();
                 } else {
                     return false;
                 }
@@ -88,8 +88,8 @@ public class FileMatchers {
 
             @Override
             public void describeMismatch(Object item, Description description) {
-                if (item instanceof File) {
-                    if (((File) item).exists()) {
+                if (item instanceof File file) {
+                    if (file.exists()) {
                         description.appendValue(item);
                         description.appendText(" is a directory");
                     } else {
@@ -110,8 +110,8 @@ public class FileMatchers {
 
             @Override
             public boolean matches(Object item) {
-                if (item instanceof File) {
-                    return ((File) item).isDirectory();
+                if (item instanceof File file) {
+                    return file.isDirectory();
                 } else {
                     return false;
                 }
@@ -124,8 +124,8 @@ public class FileMatchers {
 
             @Override
             public void describeMismatch(Object item, Description description) {
-                if (item instanceof File) {
-                    if (((File) item).exists()) {
+                if (item instanceof File file) {
+                    if (file.exists()) {
                         description.appendValue(item);
                         description.appendText(" is not a directory");
                     } else {
@@ -146,9 +146,9 @@ public class FileMatchers {
 
             @Override
             public boolean matches(Object item) {
-                if (item instanceof File) {
-                    return ((File) item).isDirectory()
-                            && filesMatcher.matches(Arrays.asList(((File) item).listFiles()));
+                if (item instanceof File file) {
+                    return file.isDirectory()
+                            && filesMatcher.matches(Arrays.asList(file.listFiles()));
                 } else {
                     return false;
                 }
@@ -190,8 +190,8 @@ public class FileMatchers {
 
             @Override
             public boolean matches(Object item) {
-                if (item instanceof File) {
-                    return timeMatcher.matches(((File) item).lastModified());
+                if (item instanceof File file) {
+                    return timeMatcher.matches(file.lastModified());
                 } else {
                     return false;
                 }
@@ -205,11 +205,11 @@ public class FileMatchers {
 
             @Override
             public void describeMismatch(Object item, Description description) {
-                if (item instanceof File) {
-                    if (((File) item).exists()) {
+                if (item instanceof File file) {
+                    if (file.exists()) {
                         description.appendValue(item);
                         description.appendText(" had modification time ");
-                        timeMatcher.describeMismatch(((File) item).lastModified(), description);
+                        timeMatcher.describeMismatch(file.lastModified(), description);
                     } else {
                         description.appendValue(item);
                         description.appendText(" does not exist");
@@ -244,8 +244,8 @@ public class FileMatchers {
 
             @Override
             public boolean matches(Object item) {
-                if (item instanceof Resource) {
-                    try (InputStream itemStream = ((Resource) item).getInputStream();
+                if (item instanceof Resource resource) {
+                    try (InputStream itemStream = resource.getInputStream();
                             InputStream expectedStream = expected.getInputStream()) {
                         return IOUtils.contentEquals(itemStream, expectedStream);
                     } catch (IOException e) {

@@ -118,8 +118,7 @@ public interface BlobStore {
     /** Get the cached parameter maps for a layer */
     public default Set<Map<String, String>> getParameters(String layerName) throws StorageException {
         return getParametersMapping(layerName).values().stream()
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .flatMap(Optional::stream)
                 .collect(Collectors.toSet());
     }
 

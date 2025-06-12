@@ -13,6 +13,8 @@
  */
 package org.geowebcache.service;
 
+import java.io.Serial;
+
 /**
  * An exception thrown by a service to report back an http error code.
  *
@@ -22,6 +24,7 @@ package org.geowebcache.service;
  */
 public class HttpErrorCodeException extends RuntimeException {
 
+    @Serial
     private static final long serialVersionUID = -1900532970945396474L;
 
     /** the error code */

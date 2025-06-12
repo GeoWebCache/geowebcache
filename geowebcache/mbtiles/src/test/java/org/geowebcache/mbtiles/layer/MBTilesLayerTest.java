@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -93,14 +93,14 @@ public class MBTilesLayerTest {
 
             File lakesFile = temp.newFile("world_lakes.mbtiles");
             URL source = MBTilesLayerTest.class.getResource("world_lakes.mbtiles");
-            Files.copy(Paths.get(source.toURI()), lakesFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(Path.of(source.toURI()), lakesFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
             File pointsFile = temp.newFile(TEST_POINTS_FILENAME);
             source = MBTilesLayerTest.class.getResource(TEST_POINTS_FILENAME);
-            Files.copy(Paths.get(source.toURI()), pointsFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(Path.of(source.toURI()), pointsFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
             source = MBTilesLayerTest.class.getResource("geowebcache.xml");
-            try (Stream<String> lines = Files.lines(Paths.get(source.toURI()))) {
+            try (Stream<String> lines = Files.lines(Path.of(source.toURI()))) {
                 List<String> replaced = lines.map(line -> {
                             return line.replace("world_lakes.mbtiles", lakesFile.getAbsolutePath())
                                     .replace(TEST_POINTS_FILENAME, pointsFile.getAbsolutePath())

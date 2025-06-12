@@ -62,8 +62,7 @@ public class ListenerCollection<Listener> {
                         return Optional.of(ex);
                     }
                 })
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .flatMap(Optional::stream)
                 .collect(Collectors.collectingAndThen(Collectors.toList(), LinkedList::new));
         if (!exceptions.isEmpty()) {
             Iterator<Exception> it = exceptions.descendingIterator();
@@ -71,10 +70,10 @@ public class ListenerCollection<Listener> {
             while (it.hasNext()) {
                 ex.addSuppressed(it.next());
             }
-            if (ex instanceof GeoWebCacheException) {
-                throw (GeoWebCacheException) ex;
-            } else if (ex instanceof IOException) {
-                throw (IOException) ex;
+            if (ex instanceof GeoWebCacheException exception1) {
+                throw exception1;
+            } else if (ex instanceof IOException exception) {
+                throw exception;
             } else {
                 throw (RuntimeException) ex;
             }

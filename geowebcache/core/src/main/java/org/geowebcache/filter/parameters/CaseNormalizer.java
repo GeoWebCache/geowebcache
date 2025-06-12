@@ -15,6 +15,7 @@ package org.geowebcache.filter.parameters;
 
 import com.google.common.base.Function;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.Objects;
@@ -26,6 +27,7 @@ import javax.annotation.Nullable;
  * @author Kevin Smith, Boundless
  */
 public class CaseNormalizer implements Function<String, String>, Serializable, Cloneable {
+    @Serial
     private static final long serialVersionUID = -4175693577236472098L;
 
     /**

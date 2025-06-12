@@ -250,8 +250,8 @@ public class WMTSRestTest {
                         throw new OWSException(
                                 400, "InvalidParameterValue", "LAYERS", "Layer '" + layerName + "' is disabled");
                     }
-                    if (conveyor instanceof ConveyorTile) {
-                        ((ConveyorTile) conveyor).setTileLayer(layer);
+                    if (conveyor instanceof ConveyorTile tile) {
+                        tile.setTileLayer(layer);
                     }
                 }
                 wmtsService.handleRequest(conveyor);

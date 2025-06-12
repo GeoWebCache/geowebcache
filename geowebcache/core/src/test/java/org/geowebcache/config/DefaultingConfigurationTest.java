@@ -103,8 +103,7 @@ public class DefaultingConfigurationTest {
                     }
                 }
 
-                if (layer instanceof WMSLayer) {
-                    WMSLayer wl = (WMSLayer) layer;
+                if (layer instanceof WMSLayer wl) {
 
                     URL proxyUrl = null;
                     try {

@@ -113,8 +113,7 @@ public class ImageEncoderImpl implements ImageEncoder {
                     params.setCompressionQuality(compressionRate);
                 }
                 // If JPEGWriteParams, additional parameters are set
-                if (params instanceof JPEGImageWriteParam) {
-                    final JPEGImageWriteParam jpegParams = (JPEGImageWriteParam) params;
+                if (params instanceof JPEGImageWriteParam jpegParams) {
                     jpegParams.setOptimizeHuffmanTables(true);
                     try {
                         jpegParams.setProgressiveMode(JPEGImageWriteParam.MODE_DEFAULT);
@@ -248,12 +247,12 @@ public class ImageEncoderImpl implements ImageEncoder {
             try { // NOPMD (complex instantiation of the image stream
                 writer = newSpi.createWriterInstance();
                 // Check if the input object is an OutputStream
-                if (destination instanceof OutputStream) {
+                if (destination instanceof OutputStream outputStream) {
                     // Use of the ImageOutputStreamAdapter
                     if (isAggressiveOutputStreamSupported()) {
-                        stream = new ImageOutputStreamAdapter((OutputStream) destination);
+                        stream = new ImageOutputStreamAdapter(outputStream);
                     } else {
-                        stream = new MemoryCacheImageOutputStream((OutputStream) destination);
+                        stream = new MemoryCacheImageOutputStream(outputStream);
                     }
 
                     // Preparation of the ImageWriteParams

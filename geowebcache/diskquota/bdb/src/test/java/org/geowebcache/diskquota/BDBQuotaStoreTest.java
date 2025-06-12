@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.easymock.Capture;
@@ -517,7 +518,7 @@ public class BDBQuotaStoreTest {
         Map<String, Quota> expectedById = new HashMap<>();
 
         for (TileSet tset : tileSets) {
-            Quota quotaDiff = new Quota(10D * Math.random(), StorageUnit.MiB);
+            Quota quotaDiff = new Quota(10D * ThreadLocalRandom.current().nextDouble(), StorageUnit.MiB);
             store.addToQuotaAndTileCounts(tset, quotaDiff, Collections.EMPTY_SET);
             store.addToQuotaAndTileCounts(tset, quotaDiff, Collections.EMPTY_SET);
             Quota tsetQuota = new Quota(quotaDiff);
@@ -563,8 +564,8 @@ public class BDBQuotaStoreTest {
             @Override
             @SuppressWarnings("SelfAssignment") // this actually changes its fp representation
             public boolean matches(Object item) {
-                if (item instanceof Float) {
-                    item = (double) (float) item;
+                if (item instanceof Float float1) {
+                    item = (double) float1;
                 }
                 return doubleMatcher.matches(item);
             }

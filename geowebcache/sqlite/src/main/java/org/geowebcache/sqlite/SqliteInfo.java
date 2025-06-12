@@ -14,11 +14,13 @@
 package org.geowebcache.sqlite;
 
 import java.io.File;
+import java.io.Serial;
 import java.util.UUID;
 import org.geowebcache.config.BlobStoreInfo;
 
 /** Holder for the common properties needed to configure a sqlite based blob store. */
 public abstract class SqliteInfo extends BlobStoreInfo {
+    @Serial
     private static final long serialVersionUID = 2300159159094621077L;
 
     public SqliteInfo() {

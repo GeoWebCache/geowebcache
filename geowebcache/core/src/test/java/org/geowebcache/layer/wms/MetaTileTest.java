@@ -298,8 +298,8 @@ public class MetaTileTest {
     // Helper method that given an image and a color will check that the borders of the image are of
     // the same color
     private void checkImageBorderSameColor(RenderedImage image, Color color) throws Exception {
-        if (image instanceof PlanarImage) {
-            image = ((PlanarImage) image).getAsBufferedImage();
+        if (image instanceof PlanarImage planarImage) {
+            image = planarImage.getAsBufferedImage();
         }
         // extracting the borders pixels
         int width = image.getWidth();

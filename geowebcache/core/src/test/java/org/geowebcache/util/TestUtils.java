@@ -171,7 +171,7 @@ public class TestUtils {
             public void describeMismatch(Object item, Description description) {
                 if (!(item instanceof Optional)) {
                     description.appendText(item.toString() + " is not an Optional");
-                } else if (!((Optional<?>) item).isPresent()) {
+                } else if (((Optional<?>) item).isEmpty()) {
                     description.appendText("Value was not present");
                 } else {
                     valueMatcher.describeMismatch(((Optional<?>) item).get(), description);

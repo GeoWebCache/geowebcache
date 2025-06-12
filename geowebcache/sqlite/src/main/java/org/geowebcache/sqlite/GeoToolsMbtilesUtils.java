@@ -27,7 +27,7 @@ public final class GeoToolsMbtilesUtils {
         try {
             return new MbtilesFileExtended(connection);
         } catch (Exception exception) {
-            throw new RuntimeException(String.format("Error creating MBTiles file for '%s'.", file), exception);
+            throw new RuntimeException("Error creating MBTiles file for '%s'.".formatted(file), exception);
         }
     }
 

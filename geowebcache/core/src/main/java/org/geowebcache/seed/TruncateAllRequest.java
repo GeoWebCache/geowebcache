@@ -15,6 +15,7 @@ package org.geowebcache.seed;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.logging.Logger;
@@ -32,6 +33,7 @@ import org.springframework.http.ResponseEntity;
 public class TruncateAllRequest implements MassTruncateRequest, Serializable {
 
     /** serialVersionUID */
+    @Serial
     private static final long serialVersionUID = -4730372010898498464L;
 
     private static final Logger log = Logging.getLogger(TruncateAllRequest.class.getName());

@@ -13,7 +13,6 @@
  */
 package org.geowebcache.testcontainers.azure;
 
-import static java.lang.String.format;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
@@ -145,7 +144,7 @@ public class AzuriteContainer extends GenericContainer<AzuriteContainer> {
     }
 
     public String getBlobServiceUrl() {
-        return format("http://localhost:%d/%s", getBlobsPort(), getAccountName());
+        return "http://localhost:%d/%s".formatted(getBlobsPort(), getAccountName());
     }
 
     public AzureBlobStoreData getConfiguration(String container) {

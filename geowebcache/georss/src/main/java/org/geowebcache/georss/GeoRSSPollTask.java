@@ -217,8 +217,12 @@ class GeoRSSPollTask implements Runnable {
                     "Can't access debug directory for " + "dumping mask images: " + target.getAbsolutePath());
         }
 
-        LOGGER.warning("\n!!!!!!!!!!!\n REMEMBER NOT TO SET THE org.geowebcache.georss.debugToDisk"
-                + " SYSTEM PROPERTY ON A PRODUCTION ENVIRONMENT \n!!!!!!!!!!!");
+        LOGGER.warning("""
+                
+                !!!!!!!!!!!
+                 REMEMBER NOT TO SET THE org.geowebcache.georss.debugToDisk\
+                 SYSTEM PROPERTY ON A PRODUCTION ENVIRONMENT\s
+                !!!!!!!!!!!""");
         BufferedImage[] byLevelMasks = matrix.getByLevelMasks();
 
         for (int i = 0; i < byLevelMasks.length; i++) {

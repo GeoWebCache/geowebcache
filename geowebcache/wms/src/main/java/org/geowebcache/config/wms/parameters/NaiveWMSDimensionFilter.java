@@ -14,6 +14,7 @@
 package org.geowebcache.config.wms.parameters;
 
 import com.google.common.base.Preconditions;
+import java.io.Serial;
 import java.util.List;
 import java.util.Objects;
 import org.geotools.ows.wms.xml.Dimension;
@@ -30,6 +31,7 @@ import org.geowebcache.filter.parameters.ParameterFilter;
  */
 public class NaiveWMSDimensionFilter extends ParameterFilter implements WMSDimensionProvider {
 
+    @Serial
     private static final long serialVersionUID = 8217550988333856916L;
 
     private Dimension dimension;
@@ -85,9 +87,9 @@ public class NaiveWMSDimensionFilter extends ParameterFilter implements WMSDimen
 
     @Override
     public boolean equals(Object o) {
-        return ((o instanceof NaiveWMSDimensionFilter) && super.equals(o))
-                && equals(dimension, ((NaiveWMSDimensionFilter) o).dimension)
-                && equals(extent, ((NaiveWMSDimensionFilter) o).extent);
+        return ((o instanceof NaiveWMSDimensionFilter nwmsdf) && super.equals(o))
+                && equals(dimension, nwmsdf.dimension)
+                && equals(extent, nwmsdf.extent);
     }
 
     @Override

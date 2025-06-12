@@ -129,38 +129,44 @@ public class Demo {
         buf.append(ServletUtils.gwcHtmlHeader("", "GWC Demos"));
         buf.append("<body>\n");
         buf.append(ServletUtils.gwcHtmlLogoLink(""));
-        buf.append("<table cellspacing=\"10\" border=\"0\">\n"
-                + "<tr><td><strong>Layer name:</strong></td>\n"
-                + "<td><strong>Enabled:</strong></td>\n"
-                + "<td><strong>Grids Sets:</strong></td>\n");
+        buf.append("""
+                <table cellspacing="10" border="0">
+                <tr><td><strong>Layer name:</strong></td>
+                <td><strong>Enabled:</strong></td>
+                <td><strong>Grids Sets:</strong></td>
+                """);
         buf.append("</tr>\n");
 
         tableRows(buf, tileLayerDispatcher, gridSetBroker);
 
         buf.append("</table>\n");
         buf.append("<br />");
-        buf.append("<strong>These are just quick demos. GeoWebCache also supports:</strong><br />\n"
-                        + "<ul><li>WMTS, TMS, Virtual Earth and Google Maps</li>\n"
-                        + "<li>Proxying GetFeatureInfo, GetLegend and other WMS requests</li>\n"
-                        + "<li>Advanced request and parameter filters</li>\n"
-                        + "<li>Output format adjustments, such as compression level</li>\n"
-                        + "<li>Adjustable expiration headers and automatic cache expiration</li>\n"
-                        + "<li>RESTful interface for seeding and configuration (beta)</li>\n"
-                        + "</ul>\n"
-                        + "<br />\n"
-                        + "<strong>Reload TileLayerConfiguration:</strong><br />\n"
-                        + "<p>You can reload the configuration by pressing the following button. "
-                        + "The username / password is configured in WEB-INF/user.properties, or the admin "
-                        + " user in GeoServer if you are using the plugin.</p>\n"
-                        + "<form form id=\"kill\" action=\"")
+        buf.append("""
+                        <strong>These are just quick demos. GeoWebCache also supports:</strong><br />
+                        <ul><li>WMTS, TMS, Virtual Earth and Google Maps</li>
+                        <li>Proxying GetFeatureInfo, GetLegend and other WMS requests</li>
+                        <li>Advanced request and parameter filters</li>
+                        <li>Output format adjustments, such as compression level</li>
+                        <li>Adjustable expiration headers and automatic cache expiration</li>
+                        <li>RESTful interface for seeding and configuration (beta)</li>
+                        </ul>
+                        <br />
+                        <strong>Reload TileLayerConfiguration:</strong><br />
+                        <p>You can reload the configuration by pressing the following button. \
+                        The username / password is configured in WEB-INF/user.properties, or the admin \
+                         user in GeoServer if you are using the plugin.</p>
+                        <form form id="kill" action="\
+                        """)
                 .append(reloadPath)
-                .append("\" method=\"post\">"
-                        + "<input type=\"hidden\" name=\"reload_configuration\"  value=\"1\" />"
-                        + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;\"type=\"submit\" value=\"Reload TileLayerConfiguration\"></span>"
-                        + "</form>"
-                        + "<br /><strong>Truncate All Layers:</strong><br />\n"
-                        + "<p>Truncate all layers"
-                        + "<form form id=\"truncate\" action=\"")
+                .append("""
+                        " method="post">\
+                        <input type="hidden" name="reload_configuration"  value="1" />\
+                        <span><input style="padding: 0; margin-bottom: -12px; border: 1;"type="submit" value="Reload TileLayerConfiguration"></span>\
+                        </form>\
+                        <br /><strong>Truncate All Layers:</strong><br />
+                        <p>Truncate all layers\
+                        <form form id="truncate" action="\
+                        """)
                 .append(truncatePath)
                 .append("\" method=\"post\"><input type=\"hidden\" name=\"<truncateAll>\" value=\"</truncateAll>\"/>"
                         + "<span><input style=\"padding: 0; margin-bottom: -12px; border: 1;background-color:LightCoral;\"type=\"submit\" value=\"Clear GWC\"></span>"
@@ -224,11 +230,9 @@ public class Demo {
                 .filter(type -> type instanceof ImageMime || XMLMime.kml.equals(type) || XMLMime.kmz.equals(type))
                 .map(type -> {
                     if (XMLMime.kmz.equals(type)) {
-                        return String.format(
-                                "<a href=\"%sservice/kml/%s.kml.kmz\">kmz</a>", prefix, escapeHtml4(layer.getName()));
+                        return "<a href=\"%sservice/kml/%s.kml.kmz\">kmz</a>".formatted(prefix, escapeHtml4(layer.getName()));
                     } else {
-                        return String.format(
-                                "<a href=\"%sservice/kml/%s.%s.kml\">%s</a>",
+                        return "<a href=\"%sservice/kml/%s.%s.kml\">%s</a>".formatted(
                                 prefix, escapeHtml4(layer.getName()), type.getFileExtension(), type.getFileExtension());
                     }
                 })
@@ -238,8 +242,7 @@ public class Demo {
     }
 
     private static String generateDemoUrl(String layerName, String gridSetId, MimeType type) {
-        return String.format(
-                "<a href=\"demo/%s?gridSet=%s&format=%s\">%s</a>",
+        return "<a href=\"demo/%s?gridSet=%s&format=%s\">%s</a>".formatted(
                 layerName, gridSetId, type.getFormat(), type.getFileExtension());
     }
 
@@ -274,18 +277,20 @@ public class Demo {
         buf.append(" ").append(escapeHtml4(gridSubset.getName()));
         buf.append(" ").append(escapeHtml4(formatStr));
         buf.append("</title>\n");
-        buf.append("<style type=\"text/css\">\n"
-                + "body { font-family: sans-serif; font-weight: bold; font-size: .8em; }\n"
-                + "body { border: 0px; margin: 0px; padding: 0px; }\n"
-                + "#map { width: 85%; height: 85%; border: 0px; padding: 0px; }\n"
-                + "#info iframe { width: 100%; height: 250px; border: none; }\n"
-                + ".ol-scale-value {top: 24px; right: 8px; position: absolute; }\n"
-                + ".ol-zoom-value {top: 40px; right: 8px; position: absolute; }\n"
-                + ".tooltip {position: absolute; background-color: white; border: 1px solid black; padding: 5px; border-radius: 3px; white-space: nowrap; max-height: 200px; overflow-y: auto; display: none;}\n"
-                + ".tooltip-header {display: flex; justify-content: space-between; align-items: center; padding: 5px; border-bottom: 1pxsolidblack; }\n"
-                + ".tooltip-content {padding: 5px; max-height: 150px; overflow-y: auto;}\n"
-                + ".close-button {cursor: pointer; background: none; border: none; font-size: 16px; font-weight: bold; }\n"
-                + "</style>\n");
+        buf.append("""
+                <style type="text/css">
+                body { font-family: sans-serif; font-weight: bold; font-size: .8em; }
+                body { border: 0px; margin: 0px; padding: 0px; }
+                #map { width: 85%; height: 85%; border: 0px; padding: 0px; }
+                #info iframe { width: 100%; height: 250px; border: none; }
+                .ol-scale-value {top: 24px; right: 8px; position: absolute; }
+                .ol-zoom-value {top: 40px; right: 8px; position: absolute; }
+                .tooltip {position: absolute; background-color: white; border: 1px solid black; padding: 5px; border-radius: 3px; white-space: nowrap; max-height: 200px; overflow-y: auto; display: none;}
+                .tooltip-header {display: flex; justify-content: space-between; align-items: center; padding: 5px; border-bottom: 1pxsolidblack; }
+                .tooltip-content {padding: 5px; max-height: 150px; overflow-y: auto;}
+                .close-button {cursor: pointer; background: none; border: none; font-size: 16px; font-weight: bold; }
+                </style>
+                """);
 
         buf.append("<script src=\"").append(openLayersPath).append("ol.js\"></script>\n");
         buf.append("<link rel='stylesheet' href='").append(openLayersPath).append("ol.css' type='text/css'>\n");
@@ -296,13 +301,14 @@ public class Demo {
                 .append("</div>\n");
 
         buf.append("<div id=\"map\"></div>\n" + "<div id=\"info\"></div>\n");
-        buf.append("<div id=\"tooltip\" class=\"tooltip\">\n"
-                + "      <div class=\"tooltip-header\">\n"
-                + "        <span>Attributes</span>\n"
-                + "        <button id=\"close-button\" class=\"close-button\">&times;</button>\n"
-                + "      </div>\n"
-                + "      <div id=\"tooltip-content\" class=\"tooltip-content\"></div>\n"
-                + "    </div>");
+        buf.append("""
+                <div id="tooltip" class="tooltip">
+                      <div class="tooltip-header">
+                        <span>Attributes</span>
+                        <button id="close-button" class="close-button">&times;</button>
+                      </div>
+                      <div id="tooltip-content" class="tooltip-content"></div>
+                    </div>""");
 
         // add parameters in hidden inputs
         makeHiddenInput(buf, "dpi", Double.toString(gridSubset.getDotsPerInch()));
@@ -311,7 +317,7 @@ public class Demo {
                 buf,
                 "gridNames",
                 Arrays.stream(gridSubset.getGridNames())
-                        .map(s -> String.format("\"%s\"", s))
+                        .map(s -> "\"%s\"".formatted(s))
                         .collect(Collectors.joining(", ", "[", "]")));
         makeHiddenInput(
                 buf,
@@ -403,8 +409,7 @@ public class Demo {
                 makePullDown(doc, parameterId, keysValues, defaultValue);
             } else if (pf instanceof RegexParameterFilter) {
                 makeTextInput(doc, parameterId, 25);
-            } else if (pf instanceof FloatParameterFilter) {
-                FloatParameterFilter floatParam = (FloatParameterFilter) pf;
+            } else if (pf instanceof FloatParameterFilter floatParam) {
                 if (floatParam.getValues().isEmpty()) {
                     // accepts any value
                     makeTextInput(doc, parameterId, 25);
