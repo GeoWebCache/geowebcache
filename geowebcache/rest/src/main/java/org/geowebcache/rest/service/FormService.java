@@ -350,8 +350,7 @@ public class FormService {
                 makePullDown(doc, parameterId, keysValues, defaultValue);
             } else if (pf instanceof RegexParameterFilter) {
                 makeTextInput(doc, parameterId, 25);
-            } else if (pf instanceof FloatParameterFilter) {
-                FloatParameterFilter floatFilter = (FloatParameterFilter) pf;
+            } else if (pf instanceof FloatParameterFilter floatFilter) {
                 if (floatFilter.getValues().isEmpty()) {
                     // accepts any value
                     makeTextInput(doc, parameterId, 25);
@@ -619,12 +618,14 @@ public class FormService {
     }
 
     private void makeWarningsAndHints(StringBuilder doc, TileLayer tl) {
-        doc.append("<h4>Please note:</h4><ul>\n"
-                + "<li>This minimalistic interface does not check for correctness.</li>\n"
-                + "<li>Seeding past zoomlevel 20 is usually not recommended.</li>\n"
-                + "<li>Truncating KML will also truncate all KMZ archives.</li>\n"
-                + "<li>Please check the logs of the container to look for error messages and progress indicators.</li>\n"
-                + "</ul>\n");
+        doc.append("""
+                <h4>Please note:</h4><ul>
+                <li>This minimalistic interface does not check for correctness.</li>
+                <li>Seeding past zoomlevel 20 is usually not recommended.</li>
+                <li>Truncating KML will also truncate all KMZ archives.</li>
+                <li>Please check the logs of the container to look for error messages and progress indicators.</li>
+                </ul>
+                """);
 
         doc.append("Here are the max bounds, if you do not specify bounds these will be used.\n");
         doc.append("<ul>\n");

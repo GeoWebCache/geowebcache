@@ -13,6 +13,7 @@
  */
 package org.geowebcache.diskquota;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -34,6 +35,7 @@ import org.springframework.util.Assert;
  */
 public class DiskQuotaConfig implements Cloneable, Serializable {
 
+    @Serial
     private static final long serialVersionUID = 4376471696761297546L;
 
     @Deprecated

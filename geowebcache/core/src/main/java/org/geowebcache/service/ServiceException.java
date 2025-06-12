@@ -13,6 +13,7 @@
  */
 package org.geowebcache.service;
 
+import java.io.Serial;
 import org.geowebcache.GeoWebCacheException;
 
 public class ServiceException extends GeoWebCacheException {
@@ -25,5 +26,6 @@ public class ServiceException extends GeoWebCacheException {
         super(message);
     }
 
+    @Serial
     private static final long serialVersionUID = 30867687291108387L;
 }

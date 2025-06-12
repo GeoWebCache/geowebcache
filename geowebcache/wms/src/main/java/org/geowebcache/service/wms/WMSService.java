@@ -311,8 +311,8 @@ public class WMSService extends Service {
                     throw new GeoWebCacheException(tile.getLayerId() + " is unknown.");
                 }
 
-                if (tl instanceof ProxyLayer) {
-                    ((ProxyLayer) tl).proxyRequest(tile);
+                if (tl instanceof ProxyLayer layer) {
+                    layer.proxyRequest(tile);
                 } else {
                     throw new GeoWebCacheException(tile.getLayerId() + " cannot cascade WMS requests.");
                 }
@@ -433,8 +433,8 @@ public class WMSService extends Service {
         // Selection of the TileLayerConfiguration file associated to geowebcache.xml
         ServerConfiguration gwcXMLconfig = null;
         for (BaseConfiguration config : configs) {
-            if (config instanceof XMLConfiguration) {
-                gwcXMLconfig = (ServerConfiguration) config;
+            if (config instanceof ServerConfiguration configuration) {
+                gwcXMLconfig = configuration;
                 break;
             }
         }

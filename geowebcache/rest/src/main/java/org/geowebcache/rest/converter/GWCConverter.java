@@ -116,17 +116,17 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T> implements 
             } else {
                 throw new RestException("Unknown or missing format", HttpStatus.UNSUPPORTED_MEDIA_TYPE);
             }
-            if (object instanceof XMLGridSet) {
-                return (T) ((XMLGridSet) object).makeGridSet();
+            if (object instanceof XMLGridSet set) {
+                return (T) set.makeGridSet();
             }
             return object;
         } catch (ConversionException xstreamExceptionWrapper) {
             Throwable cause = xstreamExceptionWrapper.getCause();
-            if (cause instanceof Error) {
-                throw (Error) cause;
+            if (cause instanceof Error error) {
+                throw error;
             }
-            if (cause instanceof RuntimeException) {
-                throw (RuntimeException) cause;
+            if (cause instanceof RuntimeException exception) {
+                throw exception;
             }
             if (cause != null) {
                 throw new RestException(cause.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, cause);
@@ -150,13 +150,13 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T> implements 
                 XStream xs = new GeoWebCacheXStream();
                 Object xsObject = object;
 
-                if (object instanceof XStreamListAliasWrapper) {
-                    final XStreamListAliasWrapper wrapper = ((XStreamListAliasWrapper) object);
+                if (object instanceof XStreamListAliasWrapper aliasWrapper) {
+                    final XStreamListAliasWrapper wrapper = aliasWrapper;
                     xsObject = wrapper.object;
                     xs.alias(wrapper.alias + "s", wrapper.collectionClass);
                     xs.registerConverter(wrapper.createConverter());
-                } else if (object instanceof GridSet) {
-                    xsObject = new XMLGridSet((GridSet) object);
+                } else if (object instanceof GridSet set) {
+                    xsObject = new XMLGridSet(set);
                 }
 
                 xs = configureXStream(XMLConfiguration.getConfiguredXStreamWithContext(
@@ -170,10 +170,10 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T> implements 
                         context,
                         ContextualConfigurationProvider.Context.REST));
                 Object jsonObject;
-                if (object instanceof XStreamListAliasWrapper) {
-                    jsonObject = new JSONArray(((XStreamListAliasWrapper) object).object);
-                } else if (object instanceof GridSet) {
-                    jsonObject = new JSONObject(xs.toXML(new XMLGridSet((GridSet) object)));
+                if (object instanceof XStreamListAliasWrapper wrapper) {
+                    jsonObject = new JSONArray(wrapper.object);
+                } else if (object instanceof GridSet set) {
+                    jsonObject = new JSONObject(xs.toXML(new XMLGridSet(set)));
                 } else {
                     jsonObject = new JSONObject(xs.toXML(object));
                 }

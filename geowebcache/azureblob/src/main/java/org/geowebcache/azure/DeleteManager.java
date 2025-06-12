@@ -118,8 +118,7 @@ class DeleteManager implements Closeable {
 
     public boolean scheduleAsyncDelete(final String prefix) throws StorageException {
         final long timestamp = currentTimeSeconds();
-        String msg = String.format(
-                "Issuing bulk delete on '%s/%s' for objects older than %d",
+        String msg = "Issuing bulk delete on '%s/%s' for objects older than %d".formatted(
                 client.getContainerName(), prefix, timestamp);
         log.info(msg);
 
@@ -159,8 +158,7 @@ class DeleteManager implements Closeable {
                 final String prefix = e.getKey().toString();
                 final long timestamp = Long.parseLong(e.getValue().toString());
                 if (log.isLoggable(Level.INFO))
-                    log.info(String.format(
-                            "Restarting pending bulk delete on '%s/%s':%d",
+                    log.info("Restarting pending bulk delete on '%s/%s':%d".formatted(
                             client.getContainerName(), prefix, timestamp));
                 if (!asyncDelete(prefix, timestamp)) {
                     deletesToClear.add(prefix);
@@ -219,8 +217,7 @@ class DeleteManager implements Closeable {
             try {
                 checkInterrupted();
                 if (log.isLoggable(Level.INFO))
-                    log.info(String.format(
-                            "Running bulk delete on '%s/%s':%d", client.getContainerName(), prefix, timestamp));
+                    log.info("Running bulk delete on '%s/%s':%d".formatted(client.getContainerName(), prefix, timestamp));
 
                 BlobContainerClient container = client.getContainer();
 
@@ -238,23 +235,20 @@ class DeleteManager implements Closeable {
                     }
                 }
             } catch (InterruptedException | IllegalStateException e) {
-                log.info(String.format(
-                        "Azure bulk delete aborted for '%s/%s'. Will resume on next startup.",
+                log.info("Azure bulk delete aborted for '%s/%s'. Will resume on next startup.".formatted(
                         client.getContainerName(), prefix));
                 throw e;
             } catch (RuntimeException e) {
                 log.log(
                         Level.WARNING,
-                        String.format(
-                                "Unknown error performing bulk Azure blobs delete of '%s/%s'",
+                        "Unknown error performing bulk Azure blobs delete of '%s/%s'".formatted(
                                 client.getContainerName(), prefix),
                         e);
                 throw e;
             }
 
             if (log.isLoggable(Level.INFO))
-                log.info(String.format(
-                        "Finished bulk delete on '%s/%s':%d. %d objects deleted",
+                log.info("Finished bulk delete on '%s/%s':%d. %d objects deleted".formatted(
                         client.getContainerName(), prefix, timestamp, count));
 
             clearPendingBulkDelete(prefix, timestamp);
@@ -286,8 +280,7 @@ class DeleteManager implements Closeable {
                 if (timestamp >= storedTimestamp) {
                     client.putProperties(pendingDeletesKey, deletes);
                 } else if (log.isLoggable(Level.INFO)) {
-                    log.info(String.format(
-                            "bulk delete finished but there's a newer one ongoing for container '%s/%s'",
+                    log.info("bulk delete finished but there's a newer one ongoing for container '%s/%s'".formatted(
                             client.getContainerName(), prefix));
                 }
             } catch (StorageException e) {
@@ -329,8 +322,7 @@ class DeleteManager implements Closeable {
             try {
                 checkInterrupted();
                 if (log.isLoggable(Level.FINER)) {
-                    log.finer(String.format(
-                            "Running delete delete on list of items on '%s':%s ... (only the first 100 items listed)",
+                    log.finer("Running delete delete on list of items on '%s':%s ... (only the first 100 items listed)".formatted(
                             client.getContainerName(), keys.subList(0, Math.min(keys.size(), 100))));
                 }
 
@@ -348,8 +340,7 @@ class DeleteManager implements Closeable {
             }
 
             if (log.isLoggable(Level.INFO))
-                log.info(String.format(
-                        "Finished bulk delete on %s, %d objects deleted", client.getContainerName(), count));
+                log.info("Finished bulk delete on %s, %d objects deleted".formatted(client.getContainerName(), count));
             return count;
         }
 

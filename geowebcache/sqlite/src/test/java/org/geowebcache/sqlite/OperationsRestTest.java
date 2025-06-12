@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
@@ -112,7 +111,7 @@ public class OperationsRestTest extends TestSupport {
         File tempDirectory = Files.createTempDirectory("gwc-").toFile();
         addFilesToDelete(tempDirectory);
         File zipFile = new File(tempDirectory, "replace.zip");
-        zipDirectory(Paths.get(rootDirectory.getPath()), zipFile);
+        zipDirectory(Path.of(rootDirectory.getPath()), zipFile);
         try (FileInputStream zipFileInputStream = new FileInputStream(zipFile)) {
             // perform the rest request
             MockMultipartFile zipUpload = new MockMultipartFile("file", zipFileInputStream);

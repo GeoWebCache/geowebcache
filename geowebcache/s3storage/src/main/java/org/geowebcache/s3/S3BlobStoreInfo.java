@@ -26,6 +26,7 @@ import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.S3ClientOptions;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import java.io.Serial;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -45,6 +46,7 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
 
     static Logger log = Logging.getLogger(S3BlobStoreInfo.class.getName());
 
+    @Serial
     private static final long serialVersionUID = 9072751143836460389L;
 
     private String bucket;
@@ -392,9 +394,9 @@ public class S3BlobStoreInfo extends BlobStoreInfo {
         String bucket = this.getBucket();
         String prefix = this.getPrefix();
         if (prefix == null) {
-            return String.format("bucket: %s", bucket);
+            return "bucket: %s".formatted(bucket);
         } else {
-            return String.format("bucket: %s prefix: %s", bucket, prefix);
+            return "bucket: %s prefix: %s".formatted(bucket, prefix);
         }
     }
 

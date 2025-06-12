@@ -86,11 +86,12 @@ public class FilterUpdateControllerTest {
     @Test
     public void testPost() throws Exception {
 
-        String filterXml = "<wmsRasterFilterUpdate>\n"
-                + "    <gridSetId>EPSG:4326</gridSetId>\n"
-                + "    <zoomStart>0</zoomStart>\n"
-                + "    <zoomStop>6</zoomStop>\n"
-                + "</wmsRasterFilterUpdate>";
+        String filterXml = """
+                <wmsRasterFilterUpdate>
+                    <gridSetId>EPSG:4326</gridSetId>
+                    <zoomStart>0</zoomStart>
+                    <zoomStop>6</zoomStop>
+                </wmsRasterFilterUpdate>""";
 
         this.mockMvc
                 .perform(post("/rest/filter/testWMSRasterFilter/update/xml")

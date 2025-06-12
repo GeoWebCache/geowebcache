@@ -371,7 +371,7 @@ public class WMTSService extends Service {
             // we implement all WMTS supported request, this means that the provided request name is
             // invalid
             throw new OWSException(
-                    400, "InvalidParameterValue", "request", String.format("Invalid request name '%s'.", req));
+                    400, "InvalidParameterValue", "request", "Invalid request name '%s'.".formatted(req));
         }
     }
 
@@ -592,12 +592,12 @@ public class WMTSService extends Service {
                     style = hint.substring(styleIndex + STYLE_HINT.length());
                 }
 
-                if (layer instanceof TileJSONProvider) {
+                if (layer instanceof TileJSONProvider provider) {
                     // in GetCapabilities we are adding a TileJSON resource URL
                     // only when the layer supports TileJSON.
                     // That information allows us to return a 404 when
                     // someone is asking a TileJSON when not supported.
-                    if (!((TileJSONProvider) layer).supportsTileJSON()) {
+                    if (!provider.supportsTileJSON()) {
                         throw new HttpErrorCodeException(404, "TileJSON Not supported");
                     }
                     WMTSTileJSON wmtsTileJSON = new WMTSTileJSON(convTile, servletBase, context, style, urlMangler);
@@ -718,8 +718,7 @@ public class WMTSService extends Service {
                     400,
                     "InvalidParameterValue",
                     "service",
-                    String.format(
-                            "URL path service '%s' don't match the requested service '%s'.",
+                    "URL path service '%s' don't match the requested service '%s'.".formatted(
                             pathServiceName, requestedServiceName));
         }
     }

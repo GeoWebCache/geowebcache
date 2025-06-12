@@ -104,11 +104,12 @@ public class MetastoreRemover {
     private void migrateParameters(JdbcTemplate template, final File root) {
         // find all possible combinations of layer, zoom level, gridset and parameter id
         String query =
-                "select layers.value as layer, gridsets.value as gridset, tiles.z, parameters.value as parameters, parameters_id\n"
-                        + "from tiles join layers on layers.id = tiles.layer_id \n"
-                        + "     join gridsets on gridsets.id = tiles.gridset_id\n"
-                        + "     join parameters on parameters.id = tiles.parameters_id\n"
-                        + "group by layer, gridset, z, parameters, parameters_id";
+                """
+                select layers.value as layer, gridsets.value as gridset, tiles.z, parameters.value as parameters, parameters_id
+                from tiles join layers on layers.id = tiles.layer_id\s
+                     join gridsets on gridsets.id = tiles.gridset_id
+                     join parameters on parameters.id = tiles.parameters_id
+                group by layer, gridset, z, parameters, parameters_id""";
 
         final long total = Optional.ofNullable(
                         template.queryForObject("select count(*) from (" + query + ")", Long.class))
@@ -180,12 +181,13 @@ public class MetastoreRemover {
     }
 
     private void migrateTileDates(JdbcTemplate template, final FilePathGenerator generator) {
-        String query = "select layers.value as layer, gridsets.value as gridset, "
-                + "tiles.parameters_id, tiles.z, tiles.x, tiles.y, created, formats.value as format \n"
-                + "from tiles join layers on layers.id = tiles.layer_id \n"
-                + "join gridsets on gridsets.id = tiles.gridset_id \n"
-                + "join formats on formats.id = tiles.format_id \n"
-                + "order by layer_id, parameters_id, gridset, z, x, y";
+        String query = """
+                select layers.value as layer, gridsets.value as gridset, \
+                tiles.parameters_id, tiles.z, tiles.x, tiles.y, created, formats.value as format\s
+                from tiles join layers on layers.id = tiles.layer_id\s
+                join gridsets on gridsets.id = tiles.gridset_id\s
+                join formats on formats.id = tiles.format_id\s
+                order by layer_id, parameters_id, gridset, z, x, y""";
 
         final long total = Optional.ofNullable(
                         template.queryForObject("select count(*) from (" + query + ")", Long.class))

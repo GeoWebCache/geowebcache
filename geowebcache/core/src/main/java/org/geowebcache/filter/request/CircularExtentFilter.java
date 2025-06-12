@@ -13,6 +13,7 @@
  */
 package org.geowebcache.filter.request;
 
+import java.io.Serial;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.grid.GridSubset;
@@ -27,6 +28,7 @@ import org.geowebcache.layer.TileLayer;
  */
 public class CircularExtentFilter extends RequestFilter {
 
+    @Serial
     private static final long serialVersionUID = -8488899568092162423L;
 
     CircularExtentFilter() {}

@@ -132,8 +132,8 @@ public class ParametersUtilsTest {
 
             @Override
             public boolean matches(Object item) {
-                if (item instanceof Map) {
-                    return entrySetMatcher.matches(((Map<?, ?>) item).entrySet());
+                if (item instanceof Map<?, ?> map) {
+                    return entrySetMatcher.matches(map.entrySet());
                 } else {
                     return false;
                 }

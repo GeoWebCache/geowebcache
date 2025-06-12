@@ -105,8 +105,7 @@ public class ByteArrayResource implements Resource, Serializable {
     @Override
     @SuppressWarnings("PMD.EmptyControlStatement")
     public long transferFrom(ReadableByteChannel channel) throws IOException {
-        if (channel instanceof FileChannel) {
-            FileChannel fc = (FileChannel) channel;
+        if (channel instanceof FileChannel fc) {
             offset = 0;
             length = (int) fc.size();
             if (data == null || data.length < length) {

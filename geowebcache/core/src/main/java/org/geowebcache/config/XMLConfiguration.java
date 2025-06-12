@@ -247,8 +247,7 @@ public class XMLConfiguration
             }
         }
 
-        if (layer instanceof WMSLayer) {
-            WMSLayer wl = (WMSLayer) layer;
+        if (layer instanceof WMSLayer wl) {
 
             URL proxyUrl = null;
             try {
@@ -429,11 +428,11 @@ public class XMLConfiguration
                     GeoWebCacheExtensions.extensions(XMLConfigurationProvider.class, context);
             for (XMLConfigurationProvider extension : configExtensions) {
                 // Check if the provider is context dependent
-                if (extension instanceof ContextualConfigurationProvider
+                if (extension instanceof ContextualConfigurationProvider provider
                         &&
                         // Check if the context is applicable for the provider
                         (providerContext == null
-                                || !((ContextualConfigurationProvider) extension).appliesTo(providerContext))) {
+                                || !provider.appliesTo(providerContext))) {
                     // If so, try the next one
                     continue;
                 }
@@ -793,7 +792,7 @@ public class XMLConfiguration
     public void afterPropertiesSet() throws GeoWebCacheException {
         if (!resourceProvider.hasInput()) {
             throw new ConfigurationException(
-                    String.format("The configuration resource provider is unable to provide a configuration file"));
+                    "The configuration resource provider is unable to provide a configuration file".formatted());
         }
         if (gridSetBroker == null) {
             throw new IllegalStateException("GridSetBroker has not been set");
@@ -958,8 +957,7 @@ public class XMLConfiguration
         }
         // ensure there isn't a BlobStoreInfo with the same name already
         if (getBlobStoreNames().contains(info.getName())) {
-            throw new IllegalArgumentException(String.format(
-                    "Failed to add BlobStoreInfo. A BlobStoreInfo with name \"%s\" already exists", info.getName()));
+            throw new IllegalArgumentException("Failed to add BlobStoreInfo. A BlobStoreInfo with name \"%s\" already exists".formatted(info.getName()));
         }
         // add the BlobStoreInfo
         final List<BlobStoreInfo> blobStores = getGwcConfig().getBlobStores();
@@ -970,7 +968,7 @@ public class XMLConfiguration
         } catch (IOException ioe) {
             // save failed, roll back the add
             blobStores.remove(info);
-            throw new ConfigurationPersistenceException(String.format("Unable to add BlobStoreInfo \"%s\"", info), ioe);
+            throw new ConfigurationPersistenceException("Unable to add BlobStoreInfo \"%s\"".formatted(info), ioe);
         }
         try {
             blobStoreListeners.safeForEach(listener -> {
@@ -981,7 +979,7 @@ public class XMLConfiguration
                 // Can't store here, roll back
                 blobStores.remove(info);
                 throw new ConfigurationPersistenceException(
-                        String.format("Unable to add BlobStoreInfo \"%s\"", info), e);
+                        "Unable to add BlobStoreInfo \"%s\"".formatted(info), e);
             }
             throw new ConfigurationPersistenceException(e);
         }
@@ -992,8 +990,7 @@ public class XMLConfiguration
     public synchronized void removeBlobStore(String name) {
         // ensure there is a BlobStoreInfo with the name
         final BlobStoreInfo infoToRemove = getBlobStore(name)
-                .orElseThrow(() -> new NoSuchElementException(String.format(
-                        "Failed to remove BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.", name)));
+                .orElseThrow(() -> new NoSuchElementException("Failed to remove BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.".formatted(name)));
         // remove the BlobStoreInfo
         final List<BlobStoreInfo> blobStores = getGwcConfig().getBlobStores();
         blobStores.remove(infoToRemove);
@@ -1004,7 +1001,7 @@ public class XMLConfiguration
             // save failed, roll back the delete
             blobStores.add(infoToRemove);
             throw new ConfigurationPersistenceException(
-                    String.format("Unable to remove BlobStoreInfo \"%s\"", name), ioe);
+                    "Unable to remove BlobStoreInfo \"%s\"".formatted(name), ioe);
         }
         try {
             blobStoreListeners.safeForEach(listener -> {
@@ -1023,9 +1020,8 @@ public class XMLConfiguration
         }
         // ensure there is a BlobStoreInfo with the name
         final Optional<BlobStoreInfo> optionalInfo = getBlobStore(info.getName());
-        if (!optionalInfo.isPresent()) {
-            throw new NoSuchElementException(String.format(
-                    "Failed to modify BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.",
+        if (optionalInfo.isEmpty()) {
+            throw new NoSuchElementException("Failed to modify BlobStoreInfo. A BlobStoreInfo with name \"%s\" does not exist.".formatted(
                     info.getName()));
         }
         // remove existing and add the new one
@@ -1041,7 +1037,7 @@ public class XMLConfiguration
             blobStores.remove(info);
             blobStores.add(infoToRemove);
             throw new ConfigurationPersistenceException(
-                    String.format("Unable to modify BlobStoreInfo \"%s\"", info.getName()), ioe);
+                    "Unable to modify BlobStoreInfo \"%s\"".formatted(info.getName()), ioe);
         }
         try {
             blobStoreListeners.safeForEach(listener -> {
@@ -1053,7 +1049,7 @@ public class XMLConfiguration
                 blobStores.remove(info);
                 blobStores.add(infoToRemove);
                 throw new ConfigurationPersistenceException(
-                        String.format("Unable to modify BlobStoreInfo \"%s\"", info), e);
+                        "Unable to modify BlobStoreInfo \"%s\"".formatted(info), e);
             }
             throw new ConfigurationPersistenceException(e);
         }
@@ -1137,7 +1133,7 @@ public class XMLConfiguration
             save();
 
             if (log.isLoggable(Level.FINER)) {
-                log.finer(String.format("BlobStoreInfo rename from \"%s\" to \"%s\" successful.", oldName, newName));
+                log.finer("BlobStoreInfo rename from \"%s\" to \"%s\" successful.".formatted(oldName, newName));
             }
         } catch (IOException ioe) {
             // save didn't work, need to roll things back
@@ -1154,15 +1150,14 @@ public class XMLConfiguration
             if (blobStoreInfoToRevert == null) {
                 // we're really messed up now as we couldn't find the BlobStoreInfo that was just
                 // renamed.
-                throw new ConfigurationPersistenceException(String.format(
-                        "Error reverting BlobStoreInfo modification. Could not revert rename from \"%s\" to \"%s\"",
+                throw new ConfigurationPersistenceException("Error reverting BlobStoreInfo modification. Could not revert rename from \"%s\" to \"%s\"".formatted(
                         oldName, newName));
             }
             // revert the name and add it back to the list
             blobStoreInfoToRevert.setName(oldName);
             blobStoreInfos.add(blobStoreInfoToRevert);
             throw new ConfigurationPersistenceException(
-                    String.format("Unable to rename BlobStoreInfo from \"%s\" to \"%s\"", oldName, newName), ioe);
+                    "Unable to rename BlobStoreInfo from \"%s\" to \"%s\"".formatted(oldName, newName), ioe);
         }
         try {
             blobStoreListeners.safeForEach(listener -> {
@@ -1170,8 +1165,7 @@ public class XMLConfiguration
             });
         } catch (IOException | GeoWebCacheException e) {
             throw new ConfigurationPersistenceException(
-                    String.format(
-                            "Exception while handling listeners for renaming blobstore \"%s\" to \"%s\"",
+                    "Exception while handling listeners for renaming blobstore \"%s\" to \"%s\"".formatted(
                             oldName, newName),
                     e);
         }

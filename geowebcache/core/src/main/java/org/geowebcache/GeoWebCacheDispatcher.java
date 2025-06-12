@@ -339,7 +339,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
         while (current != null
                 && !(current instanceof ClientStreamAbortedException)
                 && !(current instanceof HttpErrorCodeException)) {
-            if (current instanceof SAXException) current = ((SAXException) current).getException();
+            if (current instanceof SAXException exception) current = exception.getException();
             else current = current.getCause();
         }
         if (current instanceof ClientStreamAbortedException) {
@@ -393,8 +393,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
             if (!layer.isEnabled()) {
                 throw new OWSException(400, "InvalidParameterValue", "LAYERS", "Layer '" + layerName + "' is disabled");
             }
-            if (conv instanceof ConveyorTile) {
-                ((ConveyorTile) conv).setTileLayer(layer);
+            if (conv instanceof ConveyorTile tile) {
+                tile.setTileLayer(layer);
             }
         } else {
             layer = null;
@@ -513,8 +513,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
         str.append("<table class=\"stats\">\n");
         str.append("<tbody>");
         XMLConfiguration config;
-        if (mainConfiguration instanceof XMLConfiguration) {
-            config = (XMLConfiguration) mainConfiguration;
+        if (mainConfiguration instanceof XMLConfiguration configuration) {
+            config = configuration;
         } else {
             config = GeoWebCacheExtensions.bean(XMLConfiguration.class);
         }
@@ -522,8 +522,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
         String localStorageLoc;
         // TODO: Disk Quota location
         Map<String, String> blobStoreLocations = new HashMap<>();
-        if (storageBroker instanceof DefaultStorageBroker) {
-            BlobStore bStore = ((DefaultStorageBroker) storageBroker).getBlobStore();
+        if (storageBroker instanceof DefaultStorageBroker broker) {
+            BlobStore bStore = broker.getBlobStore();
             if (bStore instanceof CompositeBlobStore) {
                 for (BlobStoreInfo bsConfig : blobStoreAggregator.getBlobStores()) {
                     blobStoreLocations.put(bsConfig.getName(), bsConfig.getLocation());
@@ -584,8 +584,8 @@ public class GeoWebCacheDispatcher extends AbstractController {
             LOG.fine("Searching for the blobstore used");
         }
         // Getting the BlobStore if present
-        if (storageBroker instanceof DefaultStorageBroker) {
-            blobStore = ((DefaultStorageBroker) storageBroker).getBlobStore();
+        if (storageBroker instanceof DefaultStorageBroker broker) {
+            blobStore = broker.getBlobStore();
         }
 
         // If it is not present, or it is not a memory blobstore, nothing is done

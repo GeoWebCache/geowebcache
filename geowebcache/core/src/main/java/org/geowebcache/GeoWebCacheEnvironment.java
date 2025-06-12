@@ -139,8 +139,8 @@ public class GeoWebCacheEnvironment {
      */
     @SuppressWarnings("unchecked")
     public <T> T resolveValue(T value) {
-        if (value instanceof String) {
-            return (T) resolveStringValue((String) value);
+        if (value instanceof String string) {
+            return (T) resolveStringValue(string);
         }
 
         return value;

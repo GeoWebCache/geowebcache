@@ -684,10 +684,10 @@ public class JDBCQuotaStore implements QuotaStore {
         log.info("Closing up the JDBC quota store ");
 
         // try to close the data source if possible
-        if (dataSource instanceof BasicDataSource) {
-            ((BasicDataSource) dataSource).close();
-        } else if (dataSource instanceof Closeable) {
-            ((Closeable) dataSource).close();
+        if (dataSource instanceof BasicDataSource source) {
+            source.close();
+        } else if (dataSource instanceof Closeable closeable) {
+            closeable.close();
         }
 
         // release the templates

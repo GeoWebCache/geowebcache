@@ -13,11 +13,13 @@
  */
 package org.geowebcache.mime;
 
+import java.io.Serial;
 import org.geowebcache.GeoWebCacheException;
 
 public class MimeException extends GeoWebCacheException {
 
     /** */
+    @Serial
     private static final long serialVersionUID = 5435573041559578453L;
 
     public MimeException(String msg) {
