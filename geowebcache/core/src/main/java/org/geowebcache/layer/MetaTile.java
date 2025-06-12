@@ -493,6 +493,7 @@ public class MetaTile implements TileResponseReceiver {
         disposableImages = null;
     }
 
+    @SuppressWarnings("PMD.CloseResource")
     protected static void disposePlanarImageChain(PlanarImage pi, HashSet<PlanarImage> visited) {
         List sinks = pi.getSinks();
         // check all the sinks (the image might be in the middle of a chain)
