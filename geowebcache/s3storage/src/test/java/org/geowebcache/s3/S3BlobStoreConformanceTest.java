@@ -44,6 +44,7 @@ public class S3BlobStoreConformanceTest extends AbstractBlobStoreTest<S3BlobStor
     public TemporaryS3Folder tempFolder = new TemporaryS3Folder(testConfigLoader.getProperties());
 
     @Override
+    @SuppressWarnings("CatchFail")
     public void createTestUnit() throws Exception {
         Assume.assumeTrue(tempFolder.isConfigured());
         S3BlobStoreInfo config = tempFolder.getConfig();

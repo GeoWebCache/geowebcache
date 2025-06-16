@@ -147,6 +147,7 @@ public class WMSServiceTest {
                 tileRequest.getTileIndex());
     }
 
+    @SuppressWarnings("DirectInvocationOnMock")
     private TileLayer mockTileLayer(String layerName, List<String> gridSetNames) throws Exception {
 
         TileLayer tileLayer = mock(TileLayer.class);
