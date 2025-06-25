@@ -89,6 +89,9 @@ Build
 
       cd web
       mvn jetty:run
+   
+   The service is available on http://localhost:8081/geonetwork allowing local testing with http://localhost:8080/geoserver layers.  To change the port number use ``jetty.http.port``
+   as describde in `jetty 10 documentation <https://jetty.org/docs/jetty/10/programming-guide/maven-jetty/jetty-maven-plugin.html>`_.
 
 #. A WAR is built as the last step in ``mvn clean install`` above.
 

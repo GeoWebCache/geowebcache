@@ -558,9 +558,7 @@ public class RestIntegrationTest {
                     assertThat(doc, hasXPath("/wmsLayer/name", equalTo("img states")));
                     assertThat(
                             doc,
-                            hasXPath(
-                                    "/wmsLayer/wmsUrl/string",
-                                    equalTo("https://demo.boundlessgeo.com/geoserver/wms?")));
+                            hasXPath("/wmsLayer/wmsUrl/string", equalTo("http://localhost:8080/geoserver/topp/wms?")));
                     assertThat(doc, hasXPath("/wmsLayer/wmsLayers", equalTo("nurc:Img_Sample,topp:states")));
                 });
     }

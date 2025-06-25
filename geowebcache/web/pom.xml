@@ -178,6 +178,10 @@
           <webApp>
             <contextPath>/geowebcache</contextPath>
           </webApp>
+          <httpConnector>
+            <!--host>localhost</host-->
+            <port>8081</port>
+          </httpConnector>
           <systemProperties>
             <systemProperty>
               <name>log4j2.configurationFile</name>

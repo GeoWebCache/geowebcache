@@ -42,7 +42,7 @@ public class Start {
             HttpConfiguration httpConfiguration = new HttpConfiguration();
 
             ServerConnector http = new ServerConnector(jettyServer, new HttpConnectionFactory(httpConfiguration));
-            http.setPort(Integer.getInteger("jetty.port", 8080));
+            http.setPort(Integer.getInteger("jetty.http.port", 8081));
             http.setAcceptQueueSize(100);
             http.setIdleTimeout(1000 * 60 * 60);
 
