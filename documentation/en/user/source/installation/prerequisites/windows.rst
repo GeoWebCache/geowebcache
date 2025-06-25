@@ -6,6 +6,8 @@ Windows
 Java Runtime Environment
 ------------------------
 
+Make sure you have a Java Runtime Environment (JRE) installed on your system. GeoWebCache requires a Java 17 or Java 21 environment.
+
 1. Download an OpenJDK release for your platform:
 
    * https://adoptium.net/temurin/releases/?version=11 Temurin 11 (LTS) (Recommended)
@@ -14,6 +16,8 @@ Java Runtime Environment
 
    * Updating the JAVA_HOME environment variable
    * Add the installation to the PATH environment variable
+
+See :doc:`/installation/upgrading` for compatibility table.
 
 Apache Tomcat
 -------------
@@ -30,7 +34,7 @@ Apache Tomcat
     Note that this resource is shared among all servlets running in the container, so if you add more servlets later you may have to adjust this number.
 
 Access Control
---------------
+^^^^^^^^^^^^^^
 
 If you wish to use Tomcat's web administration tool, you will need to create an account for the administrator.
 
@@ -44,7 +48,7 @@ Do this by opening the :file:`conf\tomcat-users.xml` file in from your Tomcat Pr
 Replace ``s3cret`` with your actual password. After making this change you will have to restart Tomcat.
 
 Controlling Tomcat
-------------------
+^^^^^^^^^^^^^^^^^^
 
 By default, Tomcat will now start automatically with your computer. You can modify this by going through the :menuselection:`Control Panel -> Administrative Tools -> Services`, and editing the settings for the **Apache Tomcat** service.
 

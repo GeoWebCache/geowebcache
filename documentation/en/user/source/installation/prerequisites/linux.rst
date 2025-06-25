@@ -17,14 +17,7 @@ Java Runtime Environment
 
 Make sure you have a Java Runtime Environment (JRE) installed on your system. GeoWebCache requires a Java 17 or Java 21 environment, available from `OpenJDK <https://openjdk.java.net/>`__, `Adoptium <https://adoptium.net/>`_, or provided by your OS distribution.
 
-============ ================= ================ ================ ==================
-Java         Initial           Required         Final            Tested
-============ ================= ================ ================ ==================
-Java 21 LTS  GeoWebCache 1.25                                    OpenJDK
-Java 17 LTS  GeoWebCache 1.22  GeoWebCache 1.28                  OpenJDK
-Java 11 LTS  GeoWebCache 1.15  GeoWebCache 1.22 GeoWebCache 1.27 OpenJDK
-Java 8 LTS   GeoWebCache 1.9   GeoWebCache 1.9  GeoWebCache 1.22 Oracle and OpenJDK
-============ ================= ================ ================ ==================
+See :doc:`/installation/upgrading` for compatibility table.
   
 Apache Tomcat
 -------------
@@ -43,7 +36,7 @@ Using your favorite text editor, open ``/opt/apache-tomcat-9.0.106/bin/catalina.
 The first line sets the the JRE just installed is the one that Tomcat uses.  The second line tells Tomcat to run with server settings and to use 256MB for heap memory. (It may be possible to run with less heap memory, but this is no recommended.)  On big installations you will want to use 1024MB or more. Note that this resource is shared among all servlets running in the container, so if you add more servlets later you may have to adjust this number.
 
 Access Control
---------------
+^^^^^^^^^^^^^^
 
 If you wish to use Tomcat's web administration tool, you will need to create an account for the administrator.
 
@@ -55,7 +48,7 @@ Open ``/opt/apache-tomcat-9.0.106/conf/tomcat-users.xml`` in a text editor. Imme
 Replace ``s3cret`` with your actual password. After making this change you will have to restart Tomcat.
 
 Controlling Tomcat
-------------------
+^^^^^^^^^^^^^^^^^^
 
 Running as your own user, you should be able to start and stop Tomcat by using the scripts
 ``/opt/apache-tomcat-9.0.106/bin/startup.sh`` and ``/opt/apache-tomcat-a.b.c/bin/shutdown.sh``
