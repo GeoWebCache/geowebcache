@@ -176,7 +176,7 @@ public class CacheCleaner implements DisposableBean {
                 limit = quotaResolver.getLimit();
                 Quota usedQuota = quotaResolver.getUsed();
                 if (excess.getBytes().compareTo(BigInteger.ZERO) > 0) {
-                    log.warning("No more pages to expire, check if youd disk quota"
+                    log.warning("No more pages to expire, check if your disk quota"
                             + " database is out of date with your blob store. Quota: "
                             + limit.toNiceString()
                             + " used: "
