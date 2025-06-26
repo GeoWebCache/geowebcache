@@ -188,7 +188,7 @@
               <value>src/test/resources/log4j2-test.xml</value>
             </systemProperty>
           </systemProperties>
-          <scanIntervalSeconds>10</scanIntervalSeconds>
+          <scan>10</scan>
           <stopPort>9966</stopPort>
           <stopKey>foo</stopKey>
           <supportedPackagings>
