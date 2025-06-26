@@ -217,9 +217,9 @@
         </gridSubset>
       </gridSubsets>
       <wmsUrl>
-        <string>http://localhost:8080/geoserver/nurc/wms</string>
+        <string>http://localhost:8080/geoserver/wms</string>
       </wmsUrl>
-      <wmsLayers>Arc_Sample</wmsLayers>
+      <wmsLayers>nurc:Arc_Sample</wmsLayers>
       <legends defaultWidth="20" defaultHeight="20" defaultFormat="image/png">
         <legend style=""/>
       </legends>
