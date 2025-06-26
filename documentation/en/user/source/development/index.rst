@@ -41,7 +41,7 @@ Setting Up
 
    .. code-block:: bash
 
-      set M2_HOME = C:\java\apache-maven-33.9.5
+      set M2_HOME = C:\java\apache-maven-3.9.5
       set PATH=%PATH%;%M2_HOME%\bin;%JAVA_HOME%\bin
 
    Linux:
