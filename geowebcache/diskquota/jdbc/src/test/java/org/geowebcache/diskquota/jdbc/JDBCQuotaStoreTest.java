@@ -10,7 +10,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.google.common.base.Objects;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -25,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -462,7 +462,7 @@ public abstract class JDBCQuotaStoreTest {
         assertThat(
                 store.getTileSets(),
                 containsInAnyOrder(expectedTileSets.stream()
-                        .filter(ts -> !(Objects.equal(ts.getParametersId(), paramIds[1])
+                        .filter(ts -> !(Objects.equals(ts.getParametersId(), paramIds[1])
                                 && ts.getLayerName().equals(layerName)))
                         .map(Matchers::equalTo)
                         .collect(Collectors.toSet())));
