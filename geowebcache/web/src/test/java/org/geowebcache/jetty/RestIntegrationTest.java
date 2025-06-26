@@ -572,7 +572,7 @@ public class RestIntegrationTest {
             doGetXML(
                     "rest/layers/img%20states.xml",
                     client, equalTo(401), doc -> {
-                        assertThat(doc, not(hasXPath("//wmsUrl", containsString("demo.opengeo.org"))));
+                        assertThat(doc, not(hasXPath("//wmsUrl", containsString("localhost:8080"))));
                         assertThat(doc, not(hasXPath("//wmsLayer", containsString("nurc"))));
                         assertThat(doc, not(hasXPath("//wmsLayer", containsString("Img_Sample"))));
                         assertThat(doc, not(hasXPath("//wmsLayer", containsString("topp"))));
@@ -613,7 +613,7 @@ public class RestIntegrationTest {
         doGetXML(
                 "rest/layers/img%20states.xml",
                 notAUser.getClient(), equalTo(401), doc -> {
-                    assertThat(doc, not(hasXPath("//wmsUrl", containsString("demo.opengeo.org"))));
+                    assertThat(doc, not(hasXPath("//wmsUrl", containsString("localhost:8080"))));
                     assertThat(doc, not(hasXPath("//wmsLayer", containsString("nurc"))));
                     assertThat(doc, not(hasXPath("//wmsLayer", containsString("Img_Sample"))));
                     assertThat(doc, not(hasXPath("//wmsLayer", containsString("topp"))));

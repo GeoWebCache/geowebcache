@@ -103,7 +103,7 @@ public class GWCConfigIntegrationTestData {
 
         WMSLayer wmsLayer = new WMSLayer(
                 LAYER_TOPP_STATES,
-                new String[] {"http://demo.opengeo.org/geoserver/topp/wms"},
+                new String[] {"http://localhost:8080/geoserver/topp/wms"},
                 null,
                 null,
                 Arrays.asList("image/gif", "image/jpeg", "image/png", "image/png8"),
