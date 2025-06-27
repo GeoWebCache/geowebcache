@@ -49,7 +49,7 @@ public class OWSException extends Exception {
 
     @Override
     public String getMessage() {
-        return toString();
+        return exceptionText;
     }
 
     @Override
