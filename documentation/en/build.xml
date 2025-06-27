@@ -49,6 +49,7 @@
   
   <target name="docs"
     description="Generate html documentation">
+    <antcall target="sphinx-init"/>
     
     <mkdir dir="${build.directory}"/>
     <antcall target="sphinx">
@@ -72,11 +73,24 @@
   
   <target name="site"
     description="Generate html documentation">
+    <antcall target="autobuild-init"/>
+
     
     <mkdir dir="${build.directory}"/>
     <antcall target="autobuild">
       <param name="id" value="user" />
     </antcall>
+  </target>
+
+  <target name="sphinx-init" unless="sphinx.available">
+    <local name="message"/>
+    <property name="message" value="sphinx-build not available:${line.separator}
+    ${line.separator}
+    virtualenv venv${line.separator}
+    source venv/bin/activate${line.separator}
+    pip install -r requirements.txt${line.separator}
+    "/> 
+    <fail message="${message}"/>
   </target>
 
   <target name="sphinx" if="sphinx.available">
@@ -88,6 +102,16 @@
     </exec>
   </target>
 
+  <target name="autobuild-init" unless="autobuild.available">
+    <local name="message"/>
+    <property name="message" value="autobuild not available:${line.separator}
+    ${line.separator}
+    virtualenv venv${line.separator}
+    source venv/bin/activate${line.separator}
+    pip install -r requirements.txt${line.separator}
+    "/> 
+    <fail message="${message}"/>
+  </target>
   
   <target name="autobuild" if="autobuild.available">
     <local name="argLine"/>

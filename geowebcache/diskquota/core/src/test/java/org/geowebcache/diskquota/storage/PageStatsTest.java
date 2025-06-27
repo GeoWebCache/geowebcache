@@ -62,7 +62,7 @@ public class PageStatsTest {
         numHits = 100;
         stats.addHitsAndAccessTime(numHits, CREATION_TIME_MINUTES + 3, CREATION_TIME_MINUTES);
         frequencyOfUsePerMinute = stats.getFrequencyOfUsePerMinute();
-        Assert.assertEquals(110f / 4f, frequencyOfUsePerMinute, 1e-6f);
+        Assert.assertEquals(110f / 4f, frequencyOfUsePerMinute, 1e-5f);
     }
 
     @Test

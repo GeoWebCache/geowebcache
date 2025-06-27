@@ -7,11 +7,11 @@ You are encouraged to help contribute code to GeoWebCache.  To do so, you will f
 
 This is the current prerequisites:
 
- * Java 8 (`OpenJDK <http://openjdk.java.net>`__ linux, `OpenJDK Temurin 8 <https://adoptium.net/?variant=openjdk8&jvmVariant=hotspot>` windows and macOS installers)
- * `Maven <http://maven.apache.org/>`_
- * `Git <http://git-scm.com>`_
+ * Java 17 (`OpenJDK <https://openjdk.java.net>`__ linux, `OpenJDK Temurin 17 <https://adoptium.net/temurin/releases/?variant=openjdk8&jvmVariant=hotspot&os=any&arch=any&version=17>` windows and macOS installers)
+ * `Maven <https://maven.apache.org/>`_
+ * `Git <https://git-scm.com>`_
 
-Please make sure you use **Java 8** to compile to ensure that we don't accidentally use new features only available in Java 11.
+Please make sure you use **Java 17** to compile to ensure that we don't accidentally use new features only available in Java 21.
 
 You are encouraged to join the `GeoWebCache Developers mailing list <https://lists.sourceforge.net/lists/listinfo/geowebcache-devel>`__ to discuss your work.  It is always a good idea to ask whether anyone else has already solved the same problem.
 
@@ -27,28 +27,28 @@ Setting Up
 
    .. code-block:: bash
 
-      set JAVA_HOME=c:\Program Files\Temurin\jdk8u322-b06
+      set JAVA_HOME=c:\Program Files\Temurin\jdk-17.0.15_6
 
    Linux/OS X:
 
    .. code-block:: bash
 
-      export JAVA_HOME=/opt/jdk1.7.0_79
+      export JAVA_HOME=/opt/jdk-17.0.15_6
 
-#. You can download maven from http://maven.apache.org/download.html, unpack and include the :file:`bin` directory in your PATH variable.
+#. You can download maven from https://maven.apache.org/download.html, unpack and include the :file:`bin` directory in your PATH variable.
 
    Windows:
 
    .. code-block:: bash
 
-      set M2_HOME = C:\java\apache-maven-3.8.5
+      set M2_HOME = C:\java\apache-maven-3.9.5
       set PATH=%PATH%;%M2_HOME%\bin;%JAVA_HOME%\bin
 
    Linux:
 
    .. code-block:: bash
 
-      export M2_HOME = ~/java/apache-maven-3.8.5
+      export M2_HOME = ~/java/apache-maven-3.9.5
       export PATH=$PATH:$M2_HOME/bin:$JAVA_HOME/bin
 
    For more detail instructions on maven see the `download page <http://maven.apache.org/download.cgi>`_.
@@ -89,6 +89,9 @@ Build
 
       cd web
       mvn jetty:run
+   
+   The service is available on http://localhost:8081/geonetwork allowing local testing with http://localhost:8080/geoserver layers.  To change the port number use ``jetty.http.port``
+   as describde in `jetty 10 documentation <https://jetty.org/docs/jetty/10/programming-guide/maven-jetty/jetty-maven-plugin.html>`_.
 
 #. A WAR is built as the last step in ``mvn clean install`` above.
 

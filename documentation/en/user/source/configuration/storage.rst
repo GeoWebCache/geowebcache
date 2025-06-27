@@ -23,13 +23,15 @@ does not explicitly indicate which blobstore shall be used.
 
 .. note:: **there will always be a "default" blobstore**. If a blobstore to be used by default is not explicitly configured, one will
    be created automatically following the legacy cache location lookup mechanism used in versions prior to 1.8.0.
- 
+
+.. _configuration.file
+
 Configuration File
 ------------------
 
-The location of the configuration file, :file:`geowebcache.xml`, will be defined by the ``GEOWEBCACHE_CACHE_DIR`` application argument.
+The location of the configuration file, :file:`geowebcache.xml`, will be defined by the ``GEOWEBCACHE_CACHE_DIR`` application parameter.
 
-There are a few ways to define this argument:
+There are a few ways to define ``GEOWEBCACHE_CACHE_DIR``:
 
 * JVM system environment variable
 * Servlet context parameteter
@@ -37,39 +39,41 @@ There are a few ways to define this argument:
 
 The variable in all cases is defined as ``GEOWEBCACHE_CACHE_DIR``.
 
-To set as a JVM system environment variable, add the parameter ``-DGEOWEBCACHE_CACHE_DIR=<path>`` to your servlet startup script.  
-In Tomcat, this can be added to the Java Options (JAVA_OPTS) variable in the startup script.
+1. To set as a JVM system environment variable, add the parameter ``-DGEOWEBCACHE_CACHE_DIR=<path>`` to your servlet startup script.
 
-To set as a servlet context parameter, edit the GeoWebCache :file:`web.xml` file and add the following code:
+   In Tomcat, this can be added to the Java Options (``JAVA_OPTS``) variable in the startup script, or by creating :file:`setenv.sh` / :file:`setenv.bat`:
 
-.. code-block:: xml
+2. To set as a servlet context parameter, edit the GeoWebCache :file:`web.xml` file and add the following code:
 
-   <context-param>
-     <param-name>GEOWEBCACHE_CACHE_DIR</param-name>
-     <param-value>PATH</param-value>
-   </context-param>
+   .. code-block:: xml
+   
+      <context-param>
+        <param-name>GEOWEBCACHE_CACHE_DIR</param-name>
+        <param-value>PATH</param-value>
+      </context-param>
 
-where ``PATH`` is the location of the cache directory.
+    where ``PATH`` is the location of the cache directory.
 
-To set as an operating system environment variable, run one of the the following commands:
+3. To set as an operating system environment variable, run one of the the following commands:
 
-Windows::
+   Windows::
+   
+     > set GEOWEBCACHE_CACHE_DIR=<path>
+   
+   Linux/OS X::
+   
+     $ export GEOWEBCACHE_CACHE_DIR=<path>
 
-  > set GEOWEBCACHE_CACHE_DIR=<path>
+4. Not recommended: It is possible to set this location directly in the :file:`geowebcache-core-context.xml` file.
+   However this file will be replaced each update:
 
-Linux/OS X::
+   .. code-block:: xml
+   
+      <!-- bean id="gwcBlobStore" class="org.geowebcache.storage.blobstore.file.FileBlobStore" destroy-method="destroy">
+        <constructor-arg value="/tmp/gwc_blobstore" />
+      </bean -->
 
-  $ export GEOWEBCACHE_CACHE_DIR=<path>
-
-Finally, although not recommended, it is possible to set this location directly in the :file:`geowebcache-core-context.xml` file.  Uncomment this code:
-
-.. code-block:: xml
-
-   <!-- bean id="gwcBlobStore" class="org.geowebcache.storage.blobstore.file.FileBlobStore" destroy-method="destroy">
-     <constructor-arg value="/tmp/gwc_blobstore" />
-   </bean -->
-
-making sure to edit the path.  As usual, any changes to the servlet configuration files will require :ref:`configuration.reload`.
+   making sure to edit the path.  As usual, any changes to the servlet configuration files will require :ref:`configuration.reload`.
 
 .. note:: if ``GEOWEBCACHE_CACHE_DIR`` is not provided by any of the above mentioned methods, the directory will default
     to the temporary storage folder specified by the web application container. (For Tomcat, this is the :file:`temp` directory inside the root.)

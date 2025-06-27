@@ -3,14 +3,7 @@
 Production
 ==========
 
-This section is a work in progress, and will eventually be extended to cover topics such as:
-
-* Service architecture
-* Apache Portable Runtime
-* Java Advanced Imaging / ImageIO
-* External tools for optimizing tiles
-* Profiling
-* Links for tips on improving WMS performance
+While many optimizations are configured for GeoWebCache by default, here are some additional considerations when operating in a production enviornment..
 
 Operating Environment
 ---------------------
@@ -18,16 +11,14 @@ Operating Environment
 Java Settings
 +++++++++++++
 
-GeoWebCache speed depends in part on the chosen Java Runtime Environment (JRE). GeoWebCache is tested with both OpenJDK 8 and OpenJDK 11. JREs other than these may work correctly, but are not tested nor supported.
+GeoWebCache speed depends in part on the chosen Java Runtime Environment (JRE). GeoWebCache is compiled for Java 17, and is tested with both OpenJDK 17 and OpenJDK 11. JREs other than these may work correctly, but are not tested nor supported.
 
 GeoWebCache does not need a lot of heap memory assigned to the JVM. Usually 512M is just fine if its the only web application running on the servlet container.
 
 Java Advanced Imaging / ImageIO
 +++++++++++++++++++++++++++++++
 
-GeoWebCache uses the Java Advanced Imaging library (for image processing) and ImageIO for image encoding/decoding. 
-
-The Java 8 plugin system offered native code additions for these two libraries. We no longer recommend use of these plugins due improvements in JIT performance, and native code posing a risk to system stability. 
+GeoWebCache uses the Java Advanced Imaging library (for image processing) and ImageIO for image encoding/decoding.
 
 Servlet container settings
 ++++++++++++++++++++++++++
@@ -90,18 +81,18 @@ As of version 1.2.5, it is possible to control how GWC behaves in the event that
 * ``GWC_SEED_RETRY_WAIT`` : specifies how much to wait before each retry upon a failure to seed a tile, in milliseconds. Defaults to ``100ms``
 * ``GWC_SEED_ABORT_LIMIT`` : specifies the aggregated number of failures that a group of seeding threads should reach before aborting the seeding operation as a whole. This value is shared by all the threads launched as a single thread group; so if the value is ``10`` and you launch a seed task with four threads, when ``10`` failures are reached by all or any of those four threads the four threads will abort the seeding task. The default is ``1000``.
 
-These environment variables can be established by any of the following ways, in order of precedence:
+These applicaiton properties can be established by any of the following ways, in order of precedence:
 
 - As a Java environment variable: for example `java -DGWC_SEED_RETRY_COUNT=5 ...`
 - As a Servlet context parameter in the web application's ``WEB-INF/web.xml`` configuration file. for example:
  
-.. code-block:: xml
-
-  <context-param>
-    <!-- milliseconds between each retry upon a backend request failure -->
-    <param-name>GWC_SEED_RETRY_WAIT</param-name>
-    <param-value>500</param-value>
-  </context-param>
+  .. code-block:: xml
+  
+    <context-param>
+      <!-- milliseconds between each retry upon a backend request failure -->
+      <param-name>GWC_SEED_RETRY_WAIT</param-name>
+      <param-value>500</param-value>
+    </context-param>
   
 - As a System environment variable: `export GWC_SEED_ABORT_LIMIT=2000; <your usual command to run GWC here>` (or for Tomcat, use the Tomcat's `CATALINA_OPTS` in Tomcat's `bin/catalina.sh` as this: `CATALINA_OPTS="GWC_SEED_ABORT_LIMIT=2000 GWC_SEED_RETRY_COUNT=2`
 

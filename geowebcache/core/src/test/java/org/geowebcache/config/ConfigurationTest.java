@@ -322,6 +322,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
                 defaultCount + 10,
                 getInfoNames(config).size());
         // get a thread pool
+
         ExecutorService pool =
                 Executors.newFixedThreadPool(16, (Runnable r) -> new Thread(r, "Info Concurrency Test for ADD"));
         // create a bunch of concurrent adds
@@ -363,6 +364,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
                 defaultCount + 100,
                 getInfoNames(config).size());
         // get a thread pool
+
         ExecutorService pool =
                 Executors.newFixedThreadPool(16, (Runnable r) -> new Thread(r, "Info Concurrency Test for DELETE"));
         // create a bunch of concurrent deletes
@@ -402,6 +404,7 @@ public abstract class ConfigurationTest<I extends Info, C extends BaseConfigurat
                 defaultCount + 100,
                 getInfoNames(config).size());
         // get a thread pool
+
         ExecutorService pool =
                 Executors.newFixedThreadPool(16, (Runnable r) -> new Thread(r, "Info Concurrency Test for MODIFY"));
         // create a bunch of concurrent modifies

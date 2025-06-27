@@ -41,6 +41,9 @@ import org.geowebcache.mime.ImageMime;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
+@SuppressWarnings(
+        "AssertEqualsArgumentOrderChecker") // TODO: several assertEquals calls have the expected and actual values
+// swapped
 public class XMLConfigurationBackwardsCompatibilityTest {
 
     public static final String GWC_125_CONFIG_FILE = "geowebcache_125.xml";

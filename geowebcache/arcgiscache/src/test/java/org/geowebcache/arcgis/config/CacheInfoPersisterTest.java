@@ -44,7 +44,7 @@ public class CacheInfoPersisterTest {
         Assert.assertEquals(0.5, sr.getZOrigin(), 1e-6);
         Assert.assertEquals(1, sr.getZScale(), 1e-6);
         Assert.assertEquals(10000, sr.getMScale(), 1e-6);
-        Assert.assertEquals(0.0037383177570093459, sr.getXYTolerance(), 1e-6);
+        Assert.assertEquals(0.003738317757009346, sr.getXYTolerance(), 1e-6);
         Assert.assertEquals(2, sr.getZTolerance(), 1e-6);
         Assert.assertEquals(2, sr.getMTolerance(), 1e-6);
         Assert.assertTrue(sr.isHighPrecision());
@@ -131,7 +131,7 @@ public class CacheInfoPersisterTest {
         TileImageInfo tii = (TileImageInfo) xs.fromXML(new StringReader(tileImageInfo));
         Assert.assertNotNull(tii);
         Assert.assertEquals("JPEG", tii.getCacheTileFormat());
-        Assert.assertEquals(80f, tii.getCompressionQuality(), 1e-6f);
+        Assert.assertEquals(80f, tii.getCompressionQuality(), 0);
         Assert.assertTrue(tii.isAntialiasing());
         Assert.assertEquals(1, tii.getBandCount());
         Assert.assertEquals(0.0f, tii.getLERCError(), 0d);

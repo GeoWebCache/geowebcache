@@ -13,10 +13,10 @@
  */
 package org.geowebcache.filter.parameters;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -127,7 +127,7 @@ public abstract class ParameterFilter implements Serializable, Cloneable {
 
     /** Is the given value exactly a value that could be produced by the filter. */
     public boolean isFilteredValue(final String value) {
-        if (Objects.equal(value, this.getDefaultValue())) {
+        if (Objects.equals(value, this.getDefaultValue())) {
             return true;
         }
         if (Optional.ofNullable(this.getLegalValues())
@@ -136,7 +136,7 @@ public abstract class ParameterFilter implements Serializable, Cloneable {
             return true;
         }
         try {
-            return Objects.equal(value, this.apply(value));
+            return Objects.equals(value, this.apply(value));
         } catch (ParameterException ex) {
             return false;
         }

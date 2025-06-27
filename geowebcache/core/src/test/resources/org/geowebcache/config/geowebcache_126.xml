@@ -77,7 +77,7 @@
         </gridSubset>
       </gridSubsets>
       <wmsUrl>
-        <string>http://demo.opengeo.org/geoserver/wms</string>
+        <string>http://localhost:8080/geoserver/wms</string>
       </wmsUrl>
     </wmsLayer>
   </layers>

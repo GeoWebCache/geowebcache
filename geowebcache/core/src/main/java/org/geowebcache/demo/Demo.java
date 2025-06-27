@@ -221,9 +221,9 @@ public class Demo {
         String prefix = "";
 
         buf.append(layer.getMimeTypes().stream()
-                .filter(type -> type instanceof ImageMime || type == XMLMime.kml || type == XMLMime.kmz)
+                .filter(type -> type instanceof ImageMime || XMLMime.kml.equals(type) || XMLMime.kmz.equals(type))
                 .map(type -> {
-                    if (type == XMLMime.kmz) {
+                    if (XMLMime.kmz.equals(type)) {
                         return String.format(
                                 "<a href=\"%sservice/kml/%s.kml.kmz\">kmz</a>", prefix, escapeHtml4(layer.getName()));
                     } else {

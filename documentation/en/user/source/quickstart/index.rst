@@ -12,9 +12,9 @@ All servers conforming to the `OGC Web Map Service specification <http://www.ope
 View preconfigured layers
 -------------------------
 
-GeoWebCache comes preconfigured with three layers.  To view them, navigate to your GeoWebCache demo page at ``http://GEOWEBCACHE_URL/demo`` (often this is ``http://localhost:8080/geowebcache/demo``).  Click on any of the links next to the :guilabel:`OpenLayers` column.
+GeoWebCache comes preconfigured with three layers from a default GeoServer install which may be installed alongside GeoNetwork.  To view them, navigate to your GeoWebCache demo page at ``http://localhost:8080/geowebcache/demo``.  Click on any of the links next to the :guilabel:`OpenLayers` column.
 
-These layers are all served by the WMS available at ``http://demo.opengeo.org/geoserver/``.
+These layers are all served by the WMS available at ``http://localhost:8080/geowebcache/``.
 
 .. list-table::
    :header-rows: 1
@@ -29,14 +29,14 @@ These layers are all served by the WMS available at ``http://demo.opengeo.org/ge
    * - **topp:states**
      - topp:states
 
-.. note:: This information is set in the :file:`geowebcache.xml` file, which is typically available at :file:`opt/apache-tomcat-6.0.29/webapps/geowebcache/WEB-INF/classes` or :file:`C:\\Program Files\\Apache Software Foundation\\Tomcat 6.0.29\\webapps\\geowebcache\\WEB-INF\\classes`.  See the section on :ref:`configuration.layers` for more information on customizing this file.
+.. note:: This information is set in the :file:`geowebcache.xml` file, which is typically available at :file:`webapps/geowebcache/WEB-INF/classes`. See the section on :ref:`configuration.layers` for more information on customizing this file.
 
 .. _quickstart.wms:
 
 View layers from a WMS
 ----------------------
 
-The file :file:`geowebcache-core-context.xml` is a configuration file controling how the application is loaded. It is located inside the WEB-INF folder, typically :file:`/opt/apache-tomcat-6.0.29/webapps/geowebcache/WEB-INF/` or :file:`C:\\Program Files\\Apache Software Foundation\\Tomcat 6.0.29\\webapps\\geowebcache\\WEB-INF` along with several other configuration files.
+The file :file:`geowebcache-core-context.xml` is a configuration file controling how the application is loaded. It is located inside the WEB-INF folder, typically :file:`webapps/geowebcache/WEB-INF/` along with several other configuration files.
 
 #. Open :file:`geowebcache-core-context.xml` in a text editor.
 
@@ -52,7 +52,7 @@ The file :file:`geowebcache-core-context.xml` is a configuration file controling
 
    .. code-block:: xml
 
-      <constructor-arg value="http://localhost:8282/geoserver/wms?request=getcapabilities&amp;version=1.1.0&amp;service=wms" />
+      <constructor-arg value="http://localhost:8080/geoserver/wms?request=getcapabilities&amp;version=1.1.0&amp;service=wms" />
 
 #. Replace the value with a URL pointing to a valid WMS capabilities document, such as:
 
