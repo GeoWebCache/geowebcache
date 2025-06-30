@@ -163,7 +163,7 @@ public class GeoWebCacheEnvironment {
      * @return Optional resolved value.
      */
     @SuppressWarnings("unchecked")
-    public <T extends Object> Optional<T> resolveValueIfEnabled(final String value, Class<T> type) {
+    public <T> Optional<T> resolveValueIfEnabled(final String value, Class<T> type) {
         if (StringUtils.isBlank(value)) return Optional.empty();
         final String resultValue = resolveValueIfEnabled(value);
         if (type.isAssignableFrom(String.class)) {

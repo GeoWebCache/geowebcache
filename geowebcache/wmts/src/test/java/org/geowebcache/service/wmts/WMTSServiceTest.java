@@ -98,6 +98,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.context.WebApplicationContext;
 import org.w3c.dom.Document;
 
+@SuppressWarnings("DirectInvocationOnMock")
 public class WMTSServiceTest {
 
     private WMTSService service;
@@ -289,9 +290,6 @@ public class WMTSServiceTest {
 
     @Test
     public void testGetCap() throws Exception {
-
-        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
-        when(gwcd.getServletPrefix()).thenReturn(null);
 
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
@@ -548,8 +546,6 @@ public class WMTSServiceTest {
         });
         extensions.add(new WMTSExtensionImpl());
         // mock execution context
-        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
-        when(gwcd.getServletPrefix()).thenReturn(null);
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
         extensions.forEach(service::addExtension);
         Map<String, String[]> kvp = new CaseInsensitiveMap<>();
@@ -618,8 +614,6 @@ public class WMTSServiceTest {
     @Test
     public void testGetCapServiceInfo() throws Exception {
         TileLayerDispatcher tldx = mockTileLayerDispatcher();
-        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
-        when(gwcd.getServletPrefix()).thenReturn(null);
 
         service = new WMTSService(sb, tldx, null, mock(RuntimeStats.class));
 
@@ -681,9 +675,6 @@ public class WMTSServiceTest {
 
     @Test
     public void testGetCapOneWGS84BBox() throws Exception {
-
-        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
-        when(gwcd.getServletPrefix()).thenReturn(null);
 
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
@@ -749,9 +740,6 @@ public class WMTSServiceTest {
     @Test
     public void testGetCapUnboundedStyleFilter() throws Exception {
 
-        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
-        when(gwcd.getServletPrefix()).thenReturn(null);
-
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
         Map<String, String[]> kvp = new CaseInsensitiveMap<>();
@@ -810,9 +798,6 @@ public class WMTSServiceTest {
     @Test
     public void testGetCapEmptyStyleFilter() throws Exception {
 
-        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
-        when(gwcd.getServletPrefix()).thenReturn(null);
-
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
         Map<String, String[]> kvp = new CaseInsensitiveMap<>();
@@ -870,9 +855,6 @@ public class WMTSServiceTest {
 
     @Test
     public void testGetCapMultipleStyles() throws Exception {
-
-        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
-        when(gwcd.getServletPrefix()).thenReturn(null);
 
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
@@ -975,9 +957,6 @@ public class WMTSServiceTest {
     @Test
     public void testGetCapWithMultipleDimensions() throws Exception {
 
-        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
-        when(gwcd.getServletPrefix()).thenReturn(null);
-
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
         Map<String, String[]> kvp = new CaseInsensitiveMap<>();
@@ -1048,9 +1027,6 @@ public class WMTSServiceTest {
     @Test
     public void testGetTileWithStyle() throws Exception {
 
-        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
-        when(gwcd.getServletPrefix()).thenReturn(null);
-
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 
         Map<String, String[]> kvp = new CaseInsensitiveMap<>();
@@ -1112,8 +1088,6 @@ public class WMTSServiceTest {
     @Test
     public void testDispatchCustomOperations() throws Exception {
         // instantiating all the necessary machinery to perform the request
-        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
-        when(gwcd.getServletPrefix()).thenReturn(null);
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
         Map<String, String[]> kvp = new CaseInsensitiveMap<>();
         kvp.put("service", new String[] {"WMTS"});
@@ -1368,9 +1342,6 @@ public class WMTSServiceTest {
 
     @Test
     public void testGetCapWithTileJSONDifferentUrls() throws Exception {
-
-        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
-        when(gwcd.getServletPrefix()).thenReturn(null);
 
         service = new WMTSService(sb, tld, null, mock(RuntimeStats.class));
 

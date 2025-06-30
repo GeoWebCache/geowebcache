@@ -158,7 +158,7 @@ public class MetaTileTest {
 
         int height = Integer.parseInt(wmsParams.get("HEIGHT"));
 
-        Assert.assertEquals(height, 256 + 50);
+        Assert.assertEquals(256 + 50, height);
 
         long[] midGridPos = {83, 45, 6};
         mt = new WMSMetaTile(
@@ -180,7 +180,7 @@ public class MetaTileTest {
 
         height = Integer.parseInt(wmsParams.get("HEIGHT"));
 
-        Assert.assertEquals(height, 768 + 2 * 50);
+        Assert.assertEquals(768 + 2 * 50, height);
 
         String[] coordStrs = wmsParams.get("BBOX").split(",");
 
@@ -222,7 +222,7 @@ public class MetaTileTest {
 
         int height = Integer.parseInt(wmsParams.get("HEIGHT"));
 
-        Assert.assertEquals(height, 256);
+        Assert.assertEquals(256, height);
     }
 
     private WMSLayer createWMSLayer(BoundingBox layerBounds) {

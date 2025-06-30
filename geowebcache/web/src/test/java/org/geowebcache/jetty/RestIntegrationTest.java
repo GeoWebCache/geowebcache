@@ -394,9 +394,9 @@ public class RestIntegrationTest {
             assertThat(
                     doc,
                     hasXPath(
-                            "/layers/layer[name/text()='topp:states']/atom:link/@href",
+                            "/layers/layer[name/text()='states']/atom:link/@href",
                             equalTo(jetty.getUri()
-                                    .resolve("/geowebcache/rest/layers/topp:states.xml")
+                                    .resolve("/geowebcache/rest/layers/states.xml")
                                     .toString())));
             assertThat(
                     doc,
@@ -557,10 +557,7 @@ public class RestIntegrationTest {
                 admin.getClient(), equalTo(200), doc -> {
                     assertThat(doc, hasXPath("/wmsLayer/name", equalTo("img states")));
                     assertThat(
-                            doc,
-                            hasXPath(
-                                    "/wmsLayer/wmsUrl/string",
-                                    equalTo("https://demo.boundlessgeo.com/geoserver/wms?")));
+                            doc, hasXPath("/wmsLayer/wmsUrl/string", equalTo("http://localhost:8080/geoserver/wms?")));
                     assertThat(doc, hasXPath("/wmsLayer/wmsLayers", equalTo("nurc:Img_Sample,topp:states")));
                 });
     }
@@ -572,7 +569,7 @@ public class RestIntegrationTest {
             doGetXML(
                     "rest/layers/img%20states.xml",
                     client, equalTo(401), doc -> {
-                        assertThat(doc, not(hasXPath("//wmsUrl", containsString("demo.opengeo.org"))));
+                        assertThat(doc, not(hasXPath("//wmsUrl", containsString("localhost:8080"))));
                         assertThat(doc, not(hasXPath("//wmsLayer", containsString("nurc"))));
                         assertThat(doc, not(hasXPath("//wmsLayer", containsString("Img_Sample"))));
                         assertThat(doc, not(hasXPath("//wmsLayer", containsString("topp"))));
@@ -613,7 +610,7 @@ public class RestIntegrationTest {
         doGetXML(
                 "rest/layers/img%20states.xml",
                 notAUser.getClient(), equalTo(401), doc -> {
-                    assertThat(doc, not(hasXPath("//wmsUrl", containsString("demo.opengeo.org"))));
+                    assertThat(doc, not(hasXPath("//wmsUrl", containsString("localhost:8080"))));
                     assertThat(doc, not(hasXPath("//wmsLayer", containsString("nurc"))));
                     assertThat(doc, not(hasXPath("//wmsLayer", containsString("Img_Sample"))));
                     assertThat(doc, not(hasXPath("//wmsLayer", containsString("topp"))));
@@ -1026,7 +1023,7 @@ public class RestIntegrationTest {
                 "</seedRequest>";
 
         try (CloseableHttpResponse response =
-                handlePost(URI.create("/geowebcache/rest/seed/topp:states.xml"), admin.getClient(), seedLayer)) {
+                handlePost(URI.create("/geowebcache/rest/seed/states.xml"), admin.getClient(), seedLayer)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
         }
     }
@@ -1034,7 +1031,7 @@ public class RestIntegrationTest {
     @Test
     public void testSeedGet() throws Exception {
         try (CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/seed/topp:states"), admin.getClient())) {
+                handleGet(URI.create("/geowebcache/rest/seed/states"), admin.getClient())) {
             assertEquals(200, response.getStatusLine().getStatusCode());
         }
     }
@@ -1049,7 +1046,7 @@ public class RestIntegrationTest {
     @Test
     public void testSeedGetSeedForm() throws Exception {
         try (CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/seed/topp:states"), admin.getClient())) {
+                handleGet(URI.create("/geowebcache/rest/seed/states"), admin.getClient())) {
             assertEquals(200, response.getStatusLine().getStatusCode());
         }
     }
@@ -1064,7 +1061,7 @@ public class RestIntegrationTest {
     @Test
     public void testSeedGetLayerJson() throws Exception {
         try (CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/seed/topp:states.json"), admin.getClient())) {
+                handleGet(URI.create("/geowebcache/rest/seed/states.json"), admin.getClient())) {
             assertEquals(200, response.getStatusLine().getStatusCode());
         }
     }
@@ -1072,7 +1069,7 @@ public class RestIntegrationTest {
     @Test
     public void testSeedGetLayerXml() throws Exception {
         try (CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/seed/topp:states.xml"), admin.getClient())) {
+                handleGet(URI.create("/geowebcache/rest/seed/states.xml"), admin.getClient())) {
             assertEquals(200, response.getStatusLine().getStatusCode());
         }
     }
@@ -1090,7 +1087,7 @@ public class RestIntegrationTest {
     public void testLayerKillAll() throws Exception {
         String killCommand = "kill_all=all";
         try (CloseableHttpResponse response =
-                handlePost(URI.create("/geowebcache/rest/seed/topp:states"), admin.getClient(), killCommand)) {
+                handlePost(URI.create("/geowebcache/rest/seed/states"), admin.getClient(), killCommand)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
         }
     }

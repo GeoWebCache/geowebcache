@@ -78,6 +78,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /** Unit testing for the Swift Blobstore class */
+@SuppressWarnings("DirectInvocationOnMock")
 public class SwiftBlobStoreTest {
 
     private String TEST_KEY = "test/key";
@@ -267,7 +268,7 @@ public class SwiftBlobStoreTest {
 
     @Test
     @SuppressWarnings("PMD.CloseResource")
-    public void get() {
+    public void get() throws StorageException {
         String thePayloadData = "Test Content";
         Date lastModified = new Date();
         ByteSourcePayload testByteSourcePayload = new ByteSourcePayload(new ByteSource() {
@@ -281,28 +282,24 @@ public class SwiftBlobStoreTest {
         when(swiftObject.getLastModified()).thenReturn(lastModified);
         when(swiftObject.getPayload()).thenReturn(testByteSourcePayload);
 
-        try {
-            when(objectApi.get("sample/key")).thenReturn(swiftObject);
-            boolean result = this.swiftBlobStore.get(sampleTileObject);
+        when(objectApi.get("sample/key")).thenReturn(swiftObject);
+        boolean result = this.swiftBlobStore.get(sampleTileObject);
 
-            verify(keyBuilder, times(1)).forTile(sampleTileObject);
-            verify(objectApi, times(1)).get("sample/key");
-            verify(swiftObject, times(1)).getPayload();
+        verify(keyBuilder, times(1)).forTile(sampleTileObject);
+        verify(objectApi, times(1)).get("sample/key");
+        verify(swiftObject, times(1)).getPayload();
 
-            ByteArrayResource expectedByteArray = new ByteArrayResource(thePayloadData.getBytes());
-            ByteArrayResource actualByteArray = (ByteArrayResource) sampleTileObject.getBlob();
+        ByteArrayResource expectedByteArray = new ByteArrayResource(thePayloadData.getBytes());
+        ByteArrayResource actualByteArray = (ByteArrayResource) sampleTileObject.getBlob();
 
-            assertEquals(thePayloadData.length(), sampleTileObject.getBlobSize());
-            assertArrayEquals(expectedByteArray.getContents(), actualByteArray.getContents());
-            assertEquals(lastModified.getTime(), sampleTileObject.getCreated());
-            assertTrue(result);
+        assertEquals(thePayloadData.length(), sampleTileObject.getBlobSize());
+        assertArrayEquals(expectedByteArray.getContents(), actualByteArray.getContents());
+        assertEquals(lastModified.getTime(), sampleTileObject.getCreated());
+        assertTrue(result);
 
-            when(objectApi.get("sample/key")).thenReturn(null);
-            result = this.swiftBlobStore.get(sampleTileObject);
-            assertFalse(result);
-        } catch (StorageException e) {
-            fail("A storage exception was not expected to be thrown");
-        }
+        when(objectApi.get("sample/key")).thenReturn(null);
+        result = this.swiftBlobStore.get(sampleTileObject);
+        assertFalse(result);
     }
 
     @Test

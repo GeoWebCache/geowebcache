@@ -736,7 +736,7 @@ public final class MbtilesBlobStore extends SqliteBlobStore {
         }
     }
 
-    protected void persistParameterMap(TileObject stObj) {
+    void persistParameterMap(TileObject stObj) {
         if (Objects.nonNull(stObj.getParametersId())) {
             putLayerMetadata(
                     stObj.getLayerName(),

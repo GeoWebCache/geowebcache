@@ -20,10 +20,10 @@ import static org.geowebcache.util.TestUtils.requirePresent;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import com.google.common.base.Objects;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import org.easymock.EasyMock;
 import org.geotools.data.ows.OperationType;
 import org.geotools.ows.wms.CRSEnvelope;
@@ -148,7 +148,7 @@ public class GetCapabilitiesGridSetConfigurationConformanceTest extends GridSetC
             @Override
             public boolean matches(Object item) {
                 return item instanceof GridSet
-                        && Objects.equal(((GridSet) item).getDescription(), Integer.toString(expected));
+                        && Objects.equals(((GridSet) item).getDescription(), Integer.toString(expected));
             }
         };
     }

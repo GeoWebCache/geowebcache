@@ -68,8 +68,6 @@ public class OnlineTestRule extends ExternalResource {
     /**
      * Check whether the fixture is available. This method also loads the configuration if present, and tests the
      * connection using {@link #isOnline()}.
-     *
-     * @return true if fixture is available for use
      */
     void checkAvailable() {
         configureFixture();
@@ -189,6 +187,7 @@ public class OnlineTestRule extends ExternalResource {
 
     /** Tear down method for test, calls through to {@link #disconnect()} if the test is active. */
     @Override
+    @SuppressWarnings("Finally")
     protected final void after() {
         try {
             tearDownInternal();
