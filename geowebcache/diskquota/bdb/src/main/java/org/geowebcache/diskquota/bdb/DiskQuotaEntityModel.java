@@ -78,7 +78,7 @@ public class DiskQuotaEntityModel extends AnnotationModel {
     }
 
     @Override
-    public ClassMetadata getClassMetadata(String className) {
+    public synchronized ClassMetadata getClassMetadata(String className) {
         ClassMetadata metadata = super.getClassMetadata(className);
         if (metadata != null) {
             return metadata;
@@ -88,7 +88,7 @@ public class DiskQuotaEntityModel extends AnnotationModel {
     }
 
     @Override
-    public EntityMetadata getEntityMetadata(String className) {
+    public synchronized EntityMetadata getEntityMetadata(String className) {
         EntityMetadata metadata = super.getEntityMetadata(className);
         if (metadata != null) {
             return metadata;
@@ -98,7 +98,7 @@ public class DiskQuotaEntityModel extends AnnotationModel {
     }
 
     @Override
-    public Set<String> getKnownClasses() {
+    public synchronized Set<String> getKnownClasses() {
         return classes.keySet();
     }
 }

@@ -73,6 +73,7 @@ public class CacheInfo {
 
     private CacheStorageInfo cacheStorageInfo;
 
+    @SuppressWarnings("UnusedMethod") // required by serialization
     private Object readResolve() {
         if (cacheStorageInfo == null) {
             cacheStorageInfo = new CacheStorageInfo();

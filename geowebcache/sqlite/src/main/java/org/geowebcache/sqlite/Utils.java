@@ -13,6 +13,7 @@
  */
 package org.geowebcache.sqlite;
 
+import com.google.errorprone.annotations.FormatMethod;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,18 +77,21 @@ final class Utils {
         return map;
     }
 
+    @FormatMethod
     static void check(boolean condition, String message, Object... arguments) {
         if (!condition) {
             throw exception(message, arguments);
         }
     }
 
+    @FormatMethod
     static RuntimeException exception(String message, Object... arguments) {
         String finalMessage = String.format(message, arguments);
         LOGGER.severe(finalMessage);
         return new RuntimeException(finalMessage);
     }
 
+    @FormatMethod
     static RuntimeException exception(Exception exception, String message, Object... arguments) {
         String finalMessage = String.format(message, arguments);
         LOGGER.severe(finalMessage);

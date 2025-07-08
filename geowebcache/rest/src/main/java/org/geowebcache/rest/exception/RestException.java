@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
  * An exception with an associated {@link HttpStatus}. Used to wrap other exceptions so they can be caught and
  * appropriately handled by an {@link org.springframework.web.bind.annotation.ExceptionHandler}
  */
+@SuppressWarnings("OverrideThrowableToString")
 public class RestException extends RuntimeException {
     /** serialVersionUID */
     private static final long serialVersionUID = 5762645820684796082L;

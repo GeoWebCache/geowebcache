@@ -42,6 +42,7 @@ public class CacheStorageInfo {
 
     private int packetSize;
 
+    @SuppressWarnings("UnusedMethod") // required by serialization
     private Object readResolve() {
         if (storageFormat == null) {
             storageFormat = EXPLODED_FORMAT_CODE;

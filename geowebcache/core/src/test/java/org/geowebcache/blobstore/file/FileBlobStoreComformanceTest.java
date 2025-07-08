@@ -71,6 +71,7 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
     }
 
     private void executeStoresConcurrently(int numberOfStores, int numberOfThreads) throws InterruptedException {
+
         ExecutorService service = Executors.newFixedThreadPool(numberOfStores);
         CountDownLatch latch = new CountDownLatch(numberOfStores);
         for (int i = 0; i < numberOfStores; i++) {
@@ -100,6 +101,7 @@ public class FileBlobStoreComformanceTest extends AbstractBlobStoreTest<FileBlob
     public void testConcurrentMetadataWithPointInKey() throws InterruptedException {
         assertThat(store.getLayerMetadata("testLayer", "test.Key"), nullValue());
         int numberOfThreads = 2;
+
         ExecutorService service = Executors.newFixedThreadPool(numberOfThreads);
         CountDownLatch latch = new CountDownLatch(numberOfThreads);
         for (int i = 0; i < numberOfThreads; i++) {

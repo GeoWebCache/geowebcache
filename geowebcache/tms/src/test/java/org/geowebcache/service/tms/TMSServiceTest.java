@@ -178,6 +178,7 @@ public class TMSServiceTest {
         }
     }
 
+    @SuppressWarnings("DirectInvocationOnMock")
     private static TileLayer mockTileLayer(
             TileLayerDispatcher tld,
             GridSetBroker gridsetBroker,
@@ -239,9 +240,6 @@ public class TMSServiceTest {
 
     @Test
     public void testTileMapServiceDocument() throws Exception {
-
-        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
-        when(gwcd.getServletPrefix()).thenReturn(null);
 
         service = new TMSService(sb, tld, gridsetBroker, mock(RuntimeStats.class));
 

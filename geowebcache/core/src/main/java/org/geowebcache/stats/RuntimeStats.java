@@ -72,7 +72,7 @@ public class RuntimeStats {
      * @param intervalDescs the description for each of the previously defined intervals
      */
     public RuntimeStats(int pollInterval, List<Integer> intervals, List<String> intervalDescs) {
-        this(pollInterval, intervals, intervalDescs, Clock.systemDefaultZone());
+        this(pollInterval, intervals, intervalDescs, Clock.systemUTC());
     }
     /**
      * @param pollInterval seconds between recording aggregate values
@@ -122,6 +122,8 @@ public class RuntimeStats {
         statsThread.start();
     }
 
+    @SuppressWarnings(
+            "ThreadPriorityCheck") // errorprone complaint on Thread.yield(), revisit, might indeed be unnecessary
     public void destroy() {
         if (this.statsThread != null) {
             statsThread.run = false;
@@ -177,18 +179,18 @@ public class RuntimeStats {
 
                 str.append("<tr><th colspan=\"2\" scope=\"row\">Total number of requests:</th><td colspan=\"3\">"
                         + totalRequests);
-                str.append(" (" + totalRequests / (runningTime) + "/s ) ");
+                str.append(" (" + totalRequests / runningTime + "/s ) ");
                 str.append("</td></tr>\n");
 
                 str.append(
                         "<tr><th colspan=\"2\" scope=\"row\">Total number of untiled WMS requests:</th><td colspan=\"3\">"
                                 + totalWMS);
-                str.append(" (" + totalWMS / (runningTime) + "/s ) ");
+                str.append(" (" + totalWMS / runningTime + "/s ) ");
                 str.append("</td></tr>\n");
 
                 str.append("<tr><th colspan=\"2\" scope=\"row\">Total number of bytes:</th><td colspan=\"3\">"
                         + totalBytes);
-                str.append(" (" + formatBits((totalBytes * 8.0) / (runningTime)) + ") ");
+                str.append(" (" + formatBits((totalBytes * 8.0) / runningTime) + ") ");
                 str.append("</td></tr>\n");
 
                 str.append("</tbody>");
@@ -379,7 +381,7 @@ public class RuntimeStats {
         public void run() {
             try {
                 while (run) {
-                    Thread.sleep(stats.pollInterval * 1000);
+                    Thread.sleep(stats.pollInterval * 1000L);
                     updateLists();
                 }
             } catch (InterruptedException e) {

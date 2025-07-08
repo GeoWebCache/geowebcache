@@ -90,7 +90,7 @@ public class GMapsConverterTest {
     private static final String TEST_LAYER_NAME = "testLayer";
 
     @Test
-    public void testConveyorCreation() {
+    public void testConveyorCreation() throws UnsupportedEncodingException, GeoWebCacheException {
         StorageBroker sb = null;
 
         List<ParameterFilter> filters = new ArrayList<>();
@@ -120,15 +120,11 @@ public class GMapsConverterTest {
 
         GMapsConverter converter = new GMapsConverter(sb, tld, gsb);
 
-        try {
-            ConveyorTile conveyorTile = converter.getConveyor(request, response);
-            Map<String, String> parameters = conveyorTile.getParameters();
-            Assert.assertNotNull(parameters);
-            // assertTrue(parameters.contains(URLEncoder.encode(CQL_FILTER_PARAMETER_VALUE,"UTF8")));
-            Assert.assertEquals(
-                    CQL_FILTER_PARAMETER_VALUE, URLDecoder.decode(parameters.get(CQL_FILTER_PARAMETER_NAME), "UTF8"));
-        } catch (UnsupportedEncodingException | GeoWebCacheException e) {
-            Assert.fail();
-        }
+        ConveyorTile conveyorTile = converter.getConveyor(request, response);
+        Map<String, String> parameters = conveyorTile.getParameters();
+        Assert.assertNotNull(parameters);
+        // assertTrue(parameters.contains(URLEncoder.encode(CQL_FILTER_PARAMETER_VALUE,"UTF8")));
+        Assert.assertEquals(
+                CQL_FILTER_PARAMETER_VALUE, URLDecoder.decode(parameters.get(CQL_FILTER_PARAMETER_NAME), "UTF8"));
     }
 }

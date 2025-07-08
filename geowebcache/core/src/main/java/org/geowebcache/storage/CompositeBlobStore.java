@@ -596,6 +596,7 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
      * @param exists The storage is already a GWC cache
      * @param empty The storage is empty
      */
+    @SuppressWarnings("FallThrough")
     public static void checkSuitability(String location, final boolean exists, boolean empty)
             throws UnsuitableStorageException {
         switch (getStoreSuitabilityCheck()) {

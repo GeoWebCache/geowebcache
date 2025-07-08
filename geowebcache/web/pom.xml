@@ -157,7 +157,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
-        <version>3.2.3</version>
         <executions>
           <execution>
             <phase>install</phase>
@@ -175,18 +174,21 @@
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.4.14.v20181114</version>
         <configuration>
           <webApp>
             <contextPath>/geowebcache</contextPath>
           </webApp>
+          <httpConnector>
+            <!--host>localhost</host-->
+            <port>8081</port>
+          </httpConnector>
           <systemProperties>
             <systemProperty>
               <name>log4j2.configurationFile</name>
               <value>src/test/resources/log4j2-test.xml</value>
             </systemProperty>
           </systemProperties>
-          <scanIntervalSeconds>10</scanIntervalSeconds>
+          <scan>10</scan>
           <stopPort>9966</stopPort>
           <stopKey>foo</stopKey>
           <supportedPackagings>

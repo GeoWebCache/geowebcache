@@ -3,11 +3,11 @@
 Installing GeoWebCache
 ======================
 
-Once the :ref:`Java Servlet environment <prerequisites>` is in place, installing GeoWebCache is simple. 
+Once the :ref:`Java Servlet environment <prerequisites>` is in place:
 
-The latest Web ARchive (WAR) file can be downloaded from `GeoWebCache.osgeo.org <https://geowebcache.osgeo.org>`_.  
+1. The :file:`geowebcache-war.zip` Web ARchive (WAR) file can be downloaded from `GeoWebCache.osgeo.org <https://geowebcache.osgeo.org>`_.  
 
-Unpack the zip file and make sure to read the software :ref:`license`.
+2. Unpack the zip file and make sure to read the software :ref:`license`, and locate the :file:`geowebcache.war` for deployment.
 
 Option 1: Tomcat Administration Tool
 ------------------------------------
@@ -18,13 +18,23 @@ Option 1: Tomcat Administration Tool
 
 #. After the upload is complete, look for :guilabel:`geowebcache` in the :guilabel:`Applications` table. 
 
-#. GeoWebCache should be installed at ``http://localhost:8080/geowebcache``.
+#. Once the application is started, GeoWebCache is available ``http://localhost:8080/geowebcache``.
 
 Option 2: Manual Installation
 -----------------------------
 
-The file :file:`geowebcache.war` is just a zip file.  The Tomcat Administration Tool unpacks this file to a folder inside the Tomcat webapps directory called ``<tomcat dir>/webapps/geowebcache``.  If you wish, you can unpack this archive manually in this location. You can also make configuration changes before copying to the webapps directory.
+1. Tomcat will need to be stopped before making any changes to the webapps directory.
+   
+   Ensure that the Tomcat process is stopped before proceeding, as the JVM does not always release file handles immediately.
 
-.. note:: Tomcat will need to be stopped before making any changes to the webapps directory.  Ensure that the Tomcat process is stopped before proceeding, as the JVM does not always release file handles immediately.
+2. To manually deploy:
 
-After restarting Tomcat, GeoWebCache should be installed at ``http://localhost:8080/geowebcache``.
+   * Copy the file :file:`geowebcache.war` to :file:`<tomcat dir>/webapps`.
+   
+     On startup Tomcat will deploy the application to the folder :file:`<tomcat dir>/webapps/geowebcache`
+     
+   * If you wish, you can unpack this archive manually in this location. The :file:`geowebcache.war` may be treated as a zip file and be unpacked to :file:`<tomcat dir>/webapps/geowebcache`.
+  
+    This approach allows you to make configuration changes before restartig Tomcat.
+
+3. After restarting Tomcat, GeoWebCache is available ``http://localhost:8080/geowebcache``.

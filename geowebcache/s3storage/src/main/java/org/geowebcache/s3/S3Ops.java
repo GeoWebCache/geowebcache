@@ -109,6 +109,7 @@ class S3Ops {
         deleteExecutorService.shutdownNow();
     }
 
+    @SuppressWarnings("Finally")
     private void issuePendingBulkDeletes() throws StorageException {
         final String pendingDeletesKey = keyBuilder.pendingDeletes();
         Lock lock;

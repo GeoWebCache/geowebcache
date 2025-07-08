@@ -208,6 +208,7 @@ class SeedTask extends GWCTask {
         super.state = GWCTask.STATE.DONE;
     }
 
+    @SuppressWarnings("ThreadPriorityCheck")
     private void reprioritize() {
         Thread.currentThread().setPriority((java.lang.Thread.NORM_PRIORITY + java.lang.Thread.MIN_PRIORITY) / 2);
     }

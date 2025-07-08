@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.google.errorprone.annotations.FormatMethod;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -213,6 +214,7 @@ public final class SqliteConnectionManagerTest extends TestSupport {
         }.result;
     }
 
+    @FormatMethod
     private static void execute(Connection connection, String sql, Object... arguments) {
         String finalSql = String.format(sql, arguments);
         try (PreparedStatement statement = connection.prepareStatement(finalSql)) {
@@ -226,6 +228,7 @@ public final class SqliteConnectionManagerTest extends TestSupport {
 
         public abstract void extract(ResultSet resultSet) throws Exception;
 
+        @FormatMethod
         public ExecuteQuery(Connection connection, String query, Object... arguments) {
             String finalQuery = String.format(query, arguments);
             try (PreparedStatement statement = connection.prepareStatement(finalQuery)) {

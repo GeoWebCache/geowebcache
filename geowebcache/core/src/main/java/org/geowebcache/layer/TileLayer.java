@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -301,7 +302,7 @@ public abstract class TileLayer implements Info {
         Iterator<FormatModifier> iter = formatModifiers.iterator();
         while (iter.hasNext()) {
             FormatModifier mod = iter.next();
-            if (mod.getResponseFormat() == responseFormat) {
+            if (Objects.equals(mod.getResponseFormat(), responseFormat)) {
                 return mod;
             }
         }

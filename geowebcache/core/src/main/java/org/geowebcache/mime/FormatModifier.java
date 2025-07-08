@@ -97,7 +97,7 @@ public class FormatModifier implements Serializable {
     public synchronized ImageWriteParam adjustImageWriteParam(ImageWriteParam param) {
         if (imgWriteParam == null) {
             if (getCompressionQuality() != null) {
-                if (getResponseFormat() == ImageMime.jpeg) {
+                if (ImageMime.jpeg.equals(getResponseFormat())) {
                     param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                     param.setCompressionQuality(getCompressionQuality());
                 } else {

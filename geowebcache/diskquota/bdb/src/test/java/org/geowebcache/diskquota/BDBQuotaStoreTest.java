@@ -18,7 +18,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +31,6 @@ import org.geowebcache.config.BaseConfiguration;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.GridSetConfiguration;
 import org.geowebcache.config.MockConfigurationResourceProvider;
-import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.config.XMLConfigurationBackwardsCompatibilityTest;
 import org.geowebcache.diskquota.bdb.BDBQuotaStore;
@@ -112,8 +110,6 @@ public class BDBQuotaStoreTest {
                         e -> e.getValue().stream().map(ParametersUtils::getKvp).collect(Collectors.toSet())));
         XMLConfiguration xmlConfig = loadXMLConfig();
         context.addBean("xmlConfig", xmlConfig, XMLConfiguration.class.getInterfaces());
-        LinkedList<TileLayerConfiguration> configList = new LinkedList<>();
-        configList.add(xmlConfig);
         context.addBean(
                 "DefaultGridsets",
                 new DefaultGridsets(true, true),
@@ -311,7 +307,7 @@ public class BDBQuotaStoreTest {
                         throw new AssertionError("Unexpected Exception", e);
                     }
                 })
-                .collect(Collectors.summingLong(mb -> mb * 1024 * 1024));
+                .collect(Collectors.summingLong(mb -> mb * 1024L * 1024L));
         assertThat(quotaToDelete, greaterThan(0L));
         long quotaToKeep = tilePageCalculator.getTileSetsFor(layerName).stream()
                 .filter(ts -> !ts.getGridsetId().equals(gridSetId))
@@ -327,7 +323,7 @@ public class BDBQuotaStoreTest {
                         throw new AssertionError("Unexpected Exception", e);
                     }
                 })
-                .collect(Collectors.summingLong(mb -> mb * 1024 * 1024));
+                .collect(Collectors.summingLong(mb -> mb * 1024L * 1024L));
         assertThat(quotaToKeep, greaterThan(0L));
 
         assertThat(store.getUsedQuotaByLayerName(layerName), bytes(quotaToDelete + quotaToKeep));
@@ -356,7 +352,7 @@ public class BDBQuotaStoreTest {
                         throw new AssertionError("Unexpected Exception", e);
                     }
                 })
-                .collect(Collectors.summingLong(mb -> mb * 1024 * 1024));
+                .collect(Collectors.summingLong(mb -> mb * 1024L * 1024L));
         assertThat(quotaToDelete, greaterThan(0L));
         long quotaToKeep = tilePageCalculator.getTileSetsFor(layerName).stream()
                 .filter(ts -> !ts.getParametersId().equals(parametersId))
@@ -372,7 +368,7 @@ public class BDBQuotaStoreTest {
                         throw new AssertionError("Unexpected Exception", e);
                     }
                 })
-                .collect(Collectors.summingLong(mb -> mb * 1024 * 1024));
+                .collect(Collectors.summingLong(mb -> mb * 1024L * 1024L));
         assertThat(quotaToKeep, greaterThan(0L));
 
         assertThat(store.getUsedQuotaByLayerName(layerName), bytes(quotaToDelete + quotaToKeep));
@@ -445,7 +441,7 @@ public class BDBQuotaStoreTest {
     public void testGetLeastRecentlyUsedPage() throws Exception {
         MockSystemUtils mockSystemUtils = new MockSystemUtils();
         mockSystemUtils.setCurrentTimeMinutes(1000);
-        mockSystemUtils.setCurrentTimeMillis(mockSystemUtils.currentTimeMinutes() * 60 * 1000);
+        mockSystemUtils.setCurrentTimeMillis(mockSystemUtils.currentTimeMinutes() * 60L * 1000L);
         SystemUtils.set(mockSystemUtils);
 
         final String layerName = testTileSet.getLayerName();

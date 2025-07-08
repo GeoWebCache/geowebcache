@@ -188,7 +188,7 @@
         </stringParameterFilter>
       </parameterFilters>
       <wmsUrl>
-        <string>https://demo.boundlessgeo.com/geoserver/topp/wms</string>
+        <string>https://localhost:8080/geoserver/topp/wms</string>
       </wmsUrl>
       <legends defaultWidth="81" defaultHeight="80" defaultFormat="image/png">
         <legend style="population"/>
@@ -217,7 +217,7 @@
         </gridSubset>
       </gridSubsets>
       <wmsUrl>
-        <string>https://demo.boundlessgeo.com/geoserver/wms</string>
+        <string>https://localhost:8080/geoserver/wms</string>
       </wmsUrl>
       <wmsLayers>nasa:bluemarble</wmsLayers>
       <legends defaultWidth="20" defaultHeight="20" defaultFormat="image/png">
@@ -258,7 +258,7 @@
         <expirationRule minZoom="0" expiration="500" />
       </expireClientsList>
       <wmsUrl>
-        <string>https://demo.boundlessgeo.com/geoserver/wms</string>
+        <string>https://localhost:8080/geoserver/wms</string>
       </wmsUrl>
       <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
       <transparent>false</transparent>

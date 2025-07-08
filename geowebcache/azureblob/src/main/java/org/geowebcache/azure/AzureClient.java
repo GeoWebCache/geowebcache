@@ -16,7 +16,6 @@ package org.geowebcache.azure;
 import com.azure.core.credential.AzureNamedKeyCredential;
 import com.azure.core.http.HttpClient;
 import com.azure.core.http.ProxyOptions;
-import com.azure.core.http.ProxyOptions.Type;
 import com.azure.core.http.rest.PagedIterable;
 import com.azure.core.http.rest.Response;
 import com.azure.core.util.BinaryData;
@@ -126,7 +125,7 @@ public class AzureClient {
         ProxyOptions proxyOptions = null;
         Proxy proxy = blobStoreConfig.getProxy();
         if (null != proxy) {
-            ProxyOptions.Type type = Type.HTTP;
+            ProxyOptions.Type type = ProxyOptions.Type.HTTP;
             InetSocketAddress address = (InetSocketAddress) proxy.address();
             String proxyUsername = blobStoreConfig.getProxyUsername();
             String proxyPassword = blobStoreConfig.getProxyPassword();

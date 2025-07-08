@@ -65,8 +65,6 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
      * configuration properties
      */
 
-    private Boolean enabled;
-
     /** The location of the conf.xml tiling scheme configuration file */
     private File tilingScheme;
 
@@ -98,16 +96,6 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
     @Override
     public String getBlobStoreId() {
         return null;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    @Override
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
     }
 
     public File getTilingScheme() {

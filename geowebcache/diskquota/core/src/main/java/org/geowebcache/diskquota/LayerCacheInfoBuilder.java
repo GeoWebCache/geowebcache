@@ -190,7 +190,7 @@ final class LayerCacheInfoBuilder {
 
         private final String parametersId;
 
-        private class Stats {
+        private static class Stats {
             long runTimeMillis;
 
             long numTiles;
@@ -290,7 +290,7 @@ final class LayerCacheInfoBuilder {
          *
          * @author groldan
          */
-        private class TraversalCanceledException extends RuntimeException {
+        private static class TraversalCanceledException extends RuntimeException {
             private static final long serialVersionUID = 1L;
             // doesn't need a body
         }

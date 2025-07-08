@@ -334,7 +334,7 @@ public class GridSubset {
 
                 long baseX = gridLoc[0] * 2;
                 long baseY = gridLoc[1] * 2;
-                long baseZ = idx + 1;
+                long baseZ = idx + 1L;
 
                 long[] xOffset = {0, 1, 0, 1};
                 long[] yOffset = {0, 0, 1, 1};

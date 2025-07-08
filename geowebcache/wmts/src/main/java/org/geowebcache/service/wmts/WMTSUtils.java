@@ -25,11 +25,11 @@ final class WMTSUtils {
 
     private WMTSUtils() {}
 
-    protected static List<String> getLayerFormats(TileLayer layer) throws IOException {
+    static List<String> getLayerFormats(TileLayer layer) throws IOException {
         return layer.getMimeTypes().stream().map(MimeType::getFormat).collect(Collectors.toList());
     }
 
-    protected static List<String> getLayerFormatsExtensions(TileLayer layer) throws IOException {
+    static List<String> getLayerFormatsExtensions(TileLayer layer) throws IOException {
         return layer.getMimeTypes().stream().map(MimeType::getFileExtension).collect(Collectors.toList());
     }
 
