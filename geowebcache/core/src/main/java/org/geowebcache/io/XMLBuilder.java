@@ -47,7 +47,7 @@ public class XMLBuilder {
         ESCAPE_ENTITIES = Collections.unmodifiableMap(entities);
     }
 
-    class NodeInfo {
+    static class NodeInfo {
         String name;
         boolean indented;
         boolean containsIndented = false;

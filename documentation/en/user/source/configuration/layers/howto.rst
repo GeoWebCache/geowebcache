@@ -33,8 +33,8 @@ It is recommended to use a special XML editing tool or at the very least a text 
 
 Two recommended free editors, both of which have support for XML validation, are:
 
-* `jEdit <http://www.jedit.org/>`_ (cross platform)
-* `Notepad++ <http://notepad-plus-plus.org/>`_ (Windows only)
+* `jEdit <https://www.jedit.org>`_ (cross platform)
+* `Notepad++ <https://notepad-plus-plus.org/>`_ (Windows only)
 
 It is also possible to validate an XML document outside of a text editor environment.
 

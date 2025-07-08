@@ -114,8 +114,8 @@ public class DefaultFilePathFilter implements FilenameFilter {
         String[] parts = name.split("_");
         long halfX = Long.parseLong(parts[0]);
         long halfY = Long.parseLong(parts[1]);
-        long shift = z / 2;
-        long half = 2 << shift;
+        long shift = (long) z / 2;
+        long half = 2L << shift;
         long minX = halfX * half;
         long minY = halfY * half;
         long maxX = minX + half;

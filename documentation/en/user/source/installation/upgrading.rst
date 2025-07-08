@@ -1,9 +1,53 @@
 .. _upgrading:
 
-Upgrading from a pre 1.15 release
-=================================
+Upgrading
+=========
 
-In 1.15 GeoWebCache changed to work on Java 9 and higher.  This included several changes to package names to avoid splitting packages across modules.  If you used any of the following classes in plugins, while emebdding GWC in a larger application, or using modified application contexts, you will need to make the follwing changes.
+1. Before you start:
+   
+   * Make a note of any customizations made to geowebcache :file:`WEB-INF` folder.
+
+     .. warning:: When updating, be sure to preserve any changes made to :file:`WEB-INF/geowebcache-core-context.xml` or :file:`WEB-INF/web.xml` as these files will be replaced during the upgrading process.
+
+   * To maintain cache location, follow the :ref:`configuration.file` instructions to define ``GEOWEBCACHE_CACHE_DIR`` and the location of :file:`geowebcache.xml` configuration.
+
+2. Stop Tomcat, follow the installation instructions to download and install the latest GeoWebCache version.
+   
+   Deploying a new version of GeoWebCache will replace :file:`<tomcat dir>/webapps/geowebcache` folder.
+
+3. Re-apply any customizations made to the :file:`WEB-INF` folder.
+
+4. Start tomcat 
+
+Java Compatibility
+------------------
+
+GeoWebCache is compiled with Java 17 (LTS) and tested with Java 17 LTS and Java 21 LTS.
+
+============ ================= ================ ================ ==================
+Java         Initial           Required         Final            Tested
+============ ================= ================ ================ ==================
+Java 21 LTS  GeoWebCache 1.25                                    OpenJDK
+Java 17 LTS  GeoWebCache 1.22  GeoWebCache 1.28                  OpenJDK
+Java 11 LTS  GeoWebCache 1.15  GeoWebCache 1.22 GeoWebCache 1.27 OpenJDK
+Java 8 LTS   GeoWebCache 1.9   GeoWebCache 1.9  GeoWebCache 1.22 Oracle and OpenJDK
+============ ================= ================ ================ ==================
+
+GeoWebCache 1.18 Update
+-----------------------
+
+Java 17 Minimum
+^^^^^^^^^^^^^^^
+
+GeoWebCache 1.18 is now compiled with Java 17 LTS, and is tested with Java 17 LTS and Java 21 LTS.
+
+GeoWebCache 1.15 Update
+-----------------------
+
+Java 9 Minimum
+^^^^^^^^^^^^^^
+
+In 1.15 GeoWebCache changed to work with Java 9 or higher, with Java 11 LTS recommended. This included several changes to package names to avoid splitting packages across modules.  If you used any of the following classes in plugins, while emebdding GWC in a larger application, or using modified application contexts, you will need to make the follwing changes.
 
 +----------------+---------------------------------------+-------------------------------------------+
 | Module         | ≤ 1.14                                | ≥ 1.15                                    |
@@ -38,8 +82,11 @@ In 1.15 GeoWebCache changed to work on Java 9 and higher.  This included several
 +----------------+---------------------------------------+-------------------------------------------+
 
 
-Upgrading from a pre 1.4 release
-================================
+GeoWebCache 1.4.0 Update
+------------------------
+
+File Blob Store replaces metastore
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Starting with GeoWebCache 1.4.0 the metastore support has been removed and all its functionality has been moved to the file blob store, including support for tile expiration based on creatin date and request parameter handling.
 

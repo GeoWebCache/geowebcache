@@ -159,9 +159,8 @@ public class ConfigLoaderTest {
     @Test
     public void testSaveConfig() throws ConfigurationException, IOException {
         DiskQuotaConfig config = new DiskQuotaConfig();
-        List<LayerQuota> quotas = new ArrayList<>();
+
         LayerQuota lq = new LayerQuota("topp:states", LRU, new Quota(10, StorageUnit.MiB));
-        quotas.add(lq);
         config.addLayerQuota(lq);
 
         File configFile = new File(cacheDir, "geowebcache-diskquota.xml");
@@ -170,10 +169,6 @@ public class ConfigLoaderTest {
         }
         loader.saveConfig(config);
         Assert.assertTrue(configFile.exists());
-
-        // loader = new ConfigLoader(storageFinder, contextProvider, tld);
-        // DiskQuotaConfig loadConfig = loader.loadConfig();
-        // assertNotNull(loadConfig);
     }
 
     @Test

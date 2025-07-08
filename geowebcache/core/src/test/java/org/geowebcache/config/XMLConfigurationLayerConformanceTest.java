@@ -156,14 +156,7 @@ public class XMLConfigurationLayerConformanceTest extends LayerConfigurationTest
 
     @Override
     protected Matcher<TileLayer> infoEquals(int expected) {
-        return new CustomMatcher<>("Layer with value" + expected) {
-
-            @Override
-            public boolean matches(Object item) {
-                return item instanceof WMSLayer
-                        && ((WMSLayer) item).getWmsLayers().equals(expected);
-            }
-        };
+        throw new UnsupportedOperationException("unused");
     }
 
     @Override

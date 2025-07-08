@@ -9,7 +9,6 @@
     <description>GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of protocols and
       formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</description>
     <keywords>
-      <string>WFS</string>
       <string>WMS</string>
       <string>WMTS</string>
       <string>GEOWEBCACHE</string>
@@ -148,12 +147,12 @@
   </gridSets>
 
   <layers>
-
+    
     <wmsLayer>
       <!-- 
       <blobStoreId>myS3Cache</blobStoreId>
       -->
-      <name>topp:states</name>
+      <name>states</name>
       <mimeFormats>
         <string>image/gif</string>
         <string>image/jpeg</string>
@@ -188,7 +187,8 @@
         </stringParameterFilter>
       </parameterFilters>
       <wmsUrl>
-        <string>https://demo.boundlessgeo.com/geoserver/topp/wms</string>
+        <!-- Use of workspace 'topp' web map service, allows name 'states' (rather than 'topp:states') -->
+        <string>http://localhost:8080/geoserver/topp/wms</string>
       </wmsUrl>
       <legends defaultWidth="81" defaultHeight="80" defaultFormat="image/png">
         <legend style="population"/>
@@ -217,9 +217,9 @@
         </gridSubset>
       </gridSubsets>
       <wmsUrl>
-        <string>https://demo.boundlessgeo.com/geoserver/wms</string>
+        <string>http://localhost:8080/geoserver/wms</string>
       </wmsUrl>
-      <wmsLayers>nasa:bluemarble</wmsLayers>
+      <wmsLayers>nurc:Arc_Sample</wmsLayers>
       <legends defaultWidth="20" defaultHeight="20" defaultFormat="image/png">
         <legend style=""/>
       </legends>
@@ -257,9 +257,11 @@
       <expireClientsList>
         <expirationRule minZoom="0" expiration="500" />
       </expireClientsList>
+      <!-- global geoserver wms service allows layers different workspaces -->
       <wmsUrl>
-        <string>https://demo.boundlessgeo.com/geoserver/wms</string>
+        <string>http://localhost:8080/geoserver/wms</string>
       </wmsUrl>
+      <!-- layers from several workspaces -->
       <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
       <transparent>false</transparent>
       <bgColor>0x0066FF</bgColor>

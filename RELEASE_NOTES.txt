@@ -1,16 +1,20 @@
 GeoWebCache 1.28-SNAPSHOT (2025-04-03)
 --------------------------------------
 
-<Release Description>
+Stable release, GeoNetwork 1.28.0 is the first release requiring a Java 17 environment.
 
 Improvements:
 +++++++++++++
-- <New feature>
+- Java 17 minimum
 
 Fixes:
 ++++++
 - <Bug fix>
 
+Updates:
+++++++++
+
+- Upgrade to GeoTools 34.x
 
 GeoWebCache 1.27.0 (2025-04-02)
 ------------------------------

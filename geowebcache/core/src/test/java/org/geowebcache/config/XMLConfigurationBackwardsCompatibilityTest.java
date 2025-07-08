@@ -82,8 +82,8 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         assertNotNull(grid);
 
         // The additions in 1.0.1 are allowCacheBypass and backendTimeout
-        assertEquals(layer.getBackendTimeout().intValue(), 60);
-        assertEquals(layer2.getBackendTimeout().intValue(), 235);
+        assertEquals(60, layer.getBackendTimeout().intValue());
+        assertEquals(235, layer2.getBackendTimeout().intValue());
         assertTrue(layer.isCacheBypassAllowed().booleanValue());
         assertFalse(layer2.isCacheBypassAllowed().booleanValue());
     }
@@ -100,18 +100,18 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         assertNotNull(grid);
 
         // The additions in 1.0.1 are allowCacheBypass and backendTimeout
-        assertEquals(layer.getBackendTimeout().intValue(), 120);
-        assertEquals(layer2.getBackendTimeout().intValue(), 120);
+        assertEquals(120, layer.getBackendTimeout().intValue());
+        assertEquals(120, layer2.getBackendTimeout().intValue());
         assertTrue(layer.isCacheBypassAllowed().booleanValue());
         assertTrue(layer2.isCacheBypassAllowed().booleanValue());
 
         FormatModifier fm = layer.getFormatModifier(ImageMime.jpeg);
-        assertEquals(fm.getBgColor(), "0xDDDDDD");
-        assertEquals(fm.getRequestFormat(), ImageMime.png);
+        assertEquals("0xDDDDDD", fm.getBgColor());
+        assertEquals(ImageMime.png, fm.getRequestFormat());
 
         List<RequestFilter> filters = layer.getRequestFilters();
-        assertEquals(filters.get(0).getName(), "testWMSRasterFilter");
-        assertEquals(filters.get(1).getName(), "testFileRasterFilter");
+        assertEquals("testWMSRasterFilter", filters.get(0).getName());
+        assertEquals("testFileRasterFilter", filters.get(1).getName());
     }
 
     @Test
@@ -126,20 +126,20 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         assertNotNull(grid);
 
         // The additions in 1.0.1 are allowCacheBypass and backendTimeout
-        assertEquals(layer.getBackendTimeout().intValue(), 120);
-        assertEquals(layer2.getBackendTimeout().intValue(), 120);
+        assertEquals(120, layer.getBackendTimeout().intValue());
+        assertEquals(120, layer2.getBackendTimeout().intValue());
         assertTrue(layer.isCacheBypassAllowed().booleanValue());
         assertTrue(layer2.isCacheBypassAllowed().booleanValue());
 
         FormatModifier fm = layer.getFormatModifier(ImageMime.jpeg);
-        assertEquals(fm.getBgColor(), "0xDDDDDD");
-        assertEquals(fm.getRequestFormat(), ImageMime.png);
+        assertEquals("0xDDDDDD", fm.getBgColor());
+        assertEquals(ImageMime.png, fm.getRequestFormat());
 
         List<RequestFilter> filters = layer.getRequestFilters();
         RequestFilter filter0 = filters.get(0);
-        assertEquals(filter0.getName(), "testWMSRasterFilter");
+        assertEquals("testWMSRasterFilter", filter0.getName());
         RequestFilter filter1 = filters.get(1);
-        assertEquals(filter1.getName(), "testFileRasterFilter");
+        assertEquals("testFileRasterFilter", filter1.getName());
     }
 
     @Test

@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -285,7 +286,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
                     response,
                     e.getErrorCode(),
                     "text/plain",
-                    new ByteArrayResource(e.getMessage().getBytes()),
+                    new ByteArrayResource(e.getMessage().getBytes(StandardCharsets.UTF_8)),
                     CacheResult.OTHER,
                     runtimeStats);
         } catch (RequestFilterException e) {
@@ -313,7 +314,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
                     response,
                     403,
                     "text/plain",
-                    new ByteArrayResource("Not Authorized".getBytes()),
+                    new ByteArrayResource("Not Authorized".getBytes(StandardCharsets.UTF_8)),
                     CacheResult.OTHER,
                     runtimeStats);
             LOG.warning(e.getMessage());
@@ -377,7 +378,7 @@ public class GeoWebCacheDispatcher extends AbstractController {
     private void handleServiceRequest(String serviceStr, HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
-        Conveyor conv = null;
+        Conveyor conv;
 
         // 1) Figure out what Service should handle this request
         Service service = findService(serviceStr);

@@ -41,6 +41,7 @@ public abstract class AzureBlobStoreConformanceTest extends AbstractBlobStoreTes
     protected abstract AzureBlobStoreData getConfiguration();
 
     @Override
+    @SuppressWarnings("CatchFail")
     public void createTestUnit() throws Exception {
         AzureBlobStoreData config = getConfiguration();
 

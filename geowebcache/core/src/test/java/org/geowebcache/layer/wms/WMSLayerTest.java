@@ -546,6 +546,7 @@ public class WMSLayerTest extends TileLayerTest {
         long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
 
         // six concurrent requests max
+
         ExecutorService requests = Executors.newFixedThreadPool(6);
         ExecutorCompletionService<ConveyorTile> completer = new ExecutorCompletionService<>(requests);
 
@@ -662,7 +663,7 @@ public class WMSLayerTest extends TileLayerTest {
         }
     }
 
-    class MockTileSupport {
+    static class MockTileSupport {
 
         final byte[] fakeWMSResponse;
         final StorageBroker storageBroker = EasyMock.createMock(StorageBroker.class);

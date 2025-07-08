@@ -16,7 +16,6 @@ package org.geowebcache.diskquota.bdb;
 import static org.geowebcache.diskquota.DiskQuotaMonitor.GWC_DISKQUOTA_DISABLED;
 import static org.geowebcache.util.FileUtils.listFilesNullSafe;
 
-import com.google.common.base.Objects;
 import com.sleepycat.je.CursorConfig;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.LockMode;
@@ -34,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -397,12 +397,12 @@ public class BDBQuotaStore implements QuotaStore {
 
     @Override
     public void deleteGridSubset(String layerName, String gridSetId) {
-        issue(new Deleter(layerName, ts -> Objects.equal(ts.getGridsetId(), gridSetId)));
+        issue(new Deleter(layerName, ts -> Objects.equals(ts.getGridsetId(), gridSetId)));
     }
 
     @Override
     public void deleteParameters(String layerName, String parametersId) {
-        issue(new Deleter(layerName, ts -> Objects.equal(ts.getParametersId(), parametersId)));
+        issue(new Deleter(layerName, ts -> Objects.equals(ts.getParametersId(), parametersId)));
     }
 
     private class Deleter implements Callable<Void> {

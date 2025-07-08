@@ -71,7 +71,9 @@ public class BlobStoreAggregator {
 
     /**
      * Indicates if this configurations contains a {@link BlobStoreInfo) identified by a given name.
+     *
      * @param blobStoreInfoName the name of a {@link BlobStoreInfo} for which existence is desired.
+     *
      * @return True if a {@link BlobStoreInfo} currently exists with the unique name provided, false otherwise.
      */
     public boolean blobStoreExists(final String blobStoreInfoName) {

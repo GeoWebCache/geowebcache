@@ -61,7 +61,7 @@ public class DefaultFilePathGenerator implements FilePathGenerator {
         StringBuilder path = new StringBuilder(256);
 
         long shift = z / 2;
-        long half = 2 << shift;
+        long half = 2L << shift;
         int digits = 1;
         if (half > 10) {
             digits = (int) (Math.log10(half)) + 1;

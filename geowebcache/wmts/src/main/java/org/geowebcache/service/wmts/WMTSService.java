@@ -93,9 +93,9 @@ public class WMTSService extends Service {
         // "/{layer}/{style}/tilejson/{tileformat}"
         TILEJSON_STYLE(buildRestPattern(4, true), RequestType.TILEJSON, true);
 
-        Pattern pattern;
-        RequestType type;
-        boolean hasStyle;
+        final Pattern pattern;
+        final RequestType type;
+        final boolean hasStyle;
 
         RestRequest(String pattern, RequestType type, boolean hasStyle) {
             this.pattern = Pattern.compile(pattern);
@@ -144,7 +144,7 @@ public class WMTSService extends Service {
             } else {
                 values.put("tileformat", matcher.group(++i));
             }
-            if (request.getParameter("format") instanceof String) {
+            if (request.getParameter("format") != null) {
                 if (isFeatureInfo) {
                     values.put("infoformat", request.getParameter("format"));
                 } else {

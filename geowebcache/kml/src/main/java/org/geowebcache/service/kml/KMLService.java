@@ -206,7 +206,7 @@ public class KMLService extends Service {
         ConveyorKMLTile tile = (ConveyorKMLTile) conv;
 
         TileLayer layer;
-        if (tile.getHint() == HINT_DEBUGGRID) {
+        if (HINT_DEBUGGRID.equals(tile.getHint())) {
             layer = KMLDebugGridLayer.getInstance();
 
             // Generate random tile for debugging
@@ -223,7 +223,7 @@ public class KMLService extends Service {
                 writeTileResponse(tile, false, stats, mimeStr);
                 return;
             }
-        } else if (tile.getHint() == HINT_SITEMAP_GLOBAL) {
+        } else if (HINT_SITEMAP_GLOBAL.equals(tile.getHint())) {
             layer = null;
         } else {
             layer = tld.getTileLayer(tile.getLayerId());
@@ -396,7 +396,7 @@ public class KMLService extends Service {
         TileLayer tileLayer = tile.getLayer();
 
         boolean packageData = false;
-        if (tile.getWrapperMimeType() == XMLMime.kmz) {
+        if (XMLMime.kmz.equals(tile.getWrapperMimeType())) {
             packageData = true;
         }
 

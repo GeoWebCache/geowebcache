@@ -89,7 +89,7 @@ class PagePyramid {
                     + " x "
                     + pagesY
                     + " ("
-                    + nf.format(pagesX * pagesY)
+                    + nf.format(pagesX * (long) pagesY)
                     + "), "
                     + "tiles:"
                     + tilesPerPageX

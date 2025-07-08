@@ -233,6 +233,7 @@ public class MBTilesLayerTest {
     }
 
     @Test
+    @SuppressWarnings("MissingFail")
     public void testEmptyTile() throws GeoWebCacheException, IOException {
         try {
             MBTilesLayer testLayer = (MBTilesLayer) config.getLayer("testName").get();

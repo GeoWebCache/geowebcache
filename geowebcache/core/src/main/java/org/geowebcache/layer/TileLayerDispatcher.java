@@ -14,12 +14,11 @@
 package org.geowebcache.layer;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,7 +27,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
@@ -65,8 +63,9 @@ public class TileLayerDispatcher
     private ApplicationContext applicationContext;
 
     /**
-     * Used for testing only, in production use {@link #TileLayerDispatcher(GridSetBroker)} instead, configurations are
-     * loaded from the application context, the {@code config} parameter will be overwritten
+     * Used for testing only, in production use {@link #TileLayerDispatcher(GridSetBroker, TileLayerDispatcherFilter)}
+     * instead, configurations are loaded from the application context, the {@code configs} parameter will be
+     * overwritten
      */
     public TileLayerDispatcher(
             GridSetBroker gridSetBroker,
@@ -154,13 +153,10 @@ public class TileLayerDispatcher
      *
      * @return all layers, but filtered based on the tileLayerDispatcherFilter.
      */
-    @SuppressWarnings("unchecked")
     public Iterable<TileLayer> getLayerListFiltered() {
         Iterable<TileLayer> result = getLayerList();
         if (tileLayerDispatcherFilter != null) {
-            Stream s = StreamSupport.stream(result.spliterator(), false)
-                    .filter(x -> !tileLayerDispatcherFilter.exclude(x));
-            result = s::iterator;
+            result = Iterables.filter(result, x -> !tileLayerDispatcherFilter.exclude(x));
         }
         return result;
     }
@@ -270,7 +266,7 @@ public class TileLayerDispatcher
     }
 
     public synchronized void removeGridSetRecursive(String gridsetToRemove) {
-        Collection<TileLayer> deletedLayers = new LinkedList<>();
+        List<TileLayer> deletedLayers = new ArrayList<>();
         try {
             for (TileLayer tl : getLayerList()) {
                 if (Objects.nonNull(tl.getGridSubset(gridsetToRemove))) {
@@ -334,6 +330,7 @@ public class TileLayerDispatcher
     }
 
     /** @deprecated use GeoWebCacheExtensions.reinitializeConfigurations instead */
+    @Deprecated
     public void reInit() { // do not know how to get rid of it, it's used in mock testing...
         GeoWebCacheExtensions.reinitialize(this.applicationContext);
     }

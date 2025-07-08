@@ -142,6 +142,7 @@ class DeleteManager implements Closeable {
         }
     }
 
+    @SuppressWarnings("Finally")
     public void issuePendingBulkDeletes() throws StorageException {
         final String pendingDeletesKey = keyBuilder.pendingDeletes();
         Lock lock;

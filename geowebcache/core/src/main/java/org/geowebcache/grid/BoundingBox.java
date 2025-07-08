@@ -222,7 +222,7 @@ public class BoundingBox implements Serializable {
      */
     @Override
     public boolean equals(Object obj) {
-        if (obj != null && obj.getClass() == this.getClass()) {
+        if (obj instanceof BoundingBox) {
             BoundingBox other = (BoundingBox) obj;
             return this.equals(other, EQUALITYTHRESHOLD);
         }
@@ -276,10 +276,12 @@ public class BoundingBox implements Serializable {
                 || other.getMaxY() < getMinY());
     }
 
+    @SuppressWarnings("AmbiguousMethodReference")
     public BoundingBox intersection(BoundingBox bboxB) {
-        return intersection(this, bboxB);
+        return BoundingBox.intersection(this, bboxB);
     }
 
+    @SuppressWarnings("AmbiguousMethodReference")
     public static BoundingBox intersection(BoundingBox bboxA, BoundingBox bboxB) {
         BoundingBox retBbox = new BoundingBox(0, 0, -1, -1);
         if (bboxA.intersects(bboxB)) {
