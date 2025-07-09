@@ -56,7 +56,7 @@
     <spring.security.version>5.7.13</spring.security.version>
     <xstream.version>1.4.21</xstream.version>
     <commons-codec.version>1.18.0</commons-codec.version>
-    <commons-fileupload.version>1.5</commons-fileupload.version>
+    <commons-fileupload.version>1.6.0</commons-fileupload.version>
     <hamcrest.version>3.0</hamcrest.version>
     <java.awt.headless>true</java.awt.headless>
     <jalopy.phase>disabled</jalopy.phase>
