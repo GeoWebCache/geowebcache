@@ -1,3 +1,17 @@
+GeoWebCache 1.27.2 (2025-07-17)
+-------------------------------
+
+Stable release
+
+Updates:
+++++++
+- Update to GeoTools 33.2
+- Upgrade postgresql from 42.7.5 to 42.7.6
+- Upgrade commons-io from 2.18.0 to 2.19.0
+- Upgrade jackson from 2.18.2 to 2.19.0
+- Bump org.postgresql:postgresql from 42.7.6 to 42.7.7
+
+
 GeoWebCache 1.27.1 (2025-05-13)
 -------------------------------
 
