@@ -14,12 +14,15 @@
 package org.geowebcache.filter.parameters;
 
 import com.google.common.collect.Lists;
+import java.io.Serial;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
 public abstract class CaseNormalizingParameterFilter extends ParameterFilter {
+    @Serial
     private static final long serialVersionUID = 1761619452677321350L;
+
     protected CaseNormalizer normalize;
 
     public CaseNormalizingParameterFilter() {

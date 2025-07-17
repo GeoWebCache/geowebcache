@@ -13,6 +13,7 @@
  */
 package org.geowebcache.storage.blobstore.memory;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -24,6 +25,7 @@ import java.util.Objects;
 public class CacheConfiguration implements Serializable {
 
     /** serialVersionUID */
+    @Serial
     private static final long serialVersionUID = 3875121032331372267L;
 
     /** Evction policy */

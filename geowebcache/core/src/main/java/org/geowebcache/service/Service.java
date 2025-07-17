@@ -69,8 +69,7 @@ public abstract class Service {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Service) {
-            Service other = (Service) obj;
+        if (obj instanceof Service other) {
             if (other.pathName != null && other.pathName.equalsIgnoreCase(pathName)) {
                 return true;
             }

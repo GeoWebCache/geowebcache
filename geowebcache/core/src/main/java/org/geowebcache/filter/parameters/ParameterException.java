@@ -13,11 +13,13 @@
  */
 package org.geowebcache.filter.parameters;
 
+import java.io.Serial;
 import org.geowebcache.GeoWebCacheException;
 
 /** A problem occurred while filtering a parameter. */
 public class ParameterException extends GeoWebCacheException {
 
+    @Serial
     private static final long serialVersionUID = 2471474123508934754L;
 
     private final int httpCode;

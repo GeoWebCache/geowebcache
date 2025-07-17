@@ -720,7 +720,7 @@ public class FileBlobStore implements BlobStore {
         } catch (IOException e) {
             log.log(
                     Level.WARNING,
-                    String.format("Failed to clean up metadata for parameters %s in layer %s", parametersId, layerName),
+                    "Failed to clean up metadata for parameters %s in layer %s".formatted(parametersId, layerName),
                     e);
         }
 

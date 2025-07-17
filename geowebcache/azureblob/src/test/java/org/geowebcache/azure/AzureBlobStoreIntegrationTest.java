@@ -539,7 +539,7 @@ public abstract class AzureBlobStoreIntegrationTest {
             int max = (int) Math.pow(2, z);
             for (int x = 0; x < max; x++) {
                 for (int y = 0; y < max; y++) {
-                    log.fine(String.format("seeding %d,%d,%d", x, y, z));
+                    log.fine("seeding %d,%d,%d".formatted(x, y, z));
                     put(x, y, z, gridset, formatExtension, parameters);
                 }
             }

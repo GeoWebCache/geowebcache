@@ -160,9 +160,9 @@ public class AzureBlobStoreData {
         String container = this.getContainer();
         String prefix = this.getPrefix();
         if (prefix == null) {
-            return String.format("container: %s", container);
+            return "container: %s".formatted(container);
         } else {
-            return String.format("container: %s prefix: %s", container, prefix);
+            return "container: %s prefix: %s".formatted(container, prefix);
         }
     }
 

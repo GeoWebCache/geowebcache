@@ -15,6 +15,7 @@ package org.geowebcache.filter.parameters;
 
 import com.google.common.base.Preconditions;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -27,6 +28,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @XStreamAlias("floatParameterFilter")
 public class FloatParameterFilter extends ParameterFilter {
 
+    @Serial
     private static final long serialVersionUID = 4186888723396139208L;
 
     private static Float DEFAULT_THRESHOLD = Float.valueOf(1E-6f);

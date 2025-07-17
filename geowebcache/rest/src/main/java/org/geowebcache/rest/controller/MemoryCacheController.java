@@ -84,16 +84,14 @@ public class MemoryCacheController {
         }
 
         // Getting the BlobStore if present
-        if (broker instanceof DefaultStorageBroker) {
-            store = ((DefaultStorageBroker) broker).getBlobStore();
+        if (broker instanceof DefaultStorageBroker storageBroker) {
+            store = storageBroker.getBlobStore();
         }
 
-        if (store != null && store instanceof MemoryBlobStore) {
+        if (store != null && store instanceof MemoryBlobStore memoryStore) {
             if (log.isLoggable(Level.FINE)) {
                 log.fine("Memory Blobstore found, now getting statistics");
             }
-            // Getting statistics
-            MemoryBlobStore memoryStore = (MemoryBlobStore) store;
             CacheStatistics stats = memoryStore.getCacheStatistics();
             CacheStatistics statistics = new CacheStatistics(stats);
 

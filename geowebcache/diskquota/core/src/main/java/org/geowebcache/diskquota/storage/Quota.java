@@ -13,6 +13,7 @@
  */
 package org.geowebcache.diskquota.storage;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -28,6 +29,7 @@ import java.text.NumberFormat;
  */
 public class Quota implements Cloneable, Comparable<Quota>, Serializable {
 
+    @Serial
     private static final long serialVersionUID = -3817255124248938529L;
 
     private static final NumberFormat NICE_FORMATTER = NumberFormat.getNumberInstance();

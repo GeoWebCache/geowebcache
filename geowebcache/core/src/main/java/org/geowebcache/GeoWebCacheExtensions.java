@@ -211,13 +211,13 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
             try {
                 bean.deinitialize();
             } catch (Exception e) {
-                if (bean instanceof BaseConfiguration) {
+                if (bean instanceof BaseConfiguration configuration) {
                     LOGGER.log(
                             Level.SEVERE,
                             "Error while preparing configuration to reinitialize "
-                                    + ((BaseConfiguration) bean).getIdentifier()
+                                    + configuration.getIdentifier()
                                     + " from "
-                                    + ((BaseConfiguration) bean).getLocation(),
+                                    + configuration.getLocation(),
                             e);
                 } else {
                     LOGGER.log(Level.SEVERE, "Error while preparing bean to reinitialize " + bean.toString(), e);
@@ -228,13 +228,13 @@ public class GeoWebCacheExtensions implements ApplicationContextAware, Applicati
             try {
                 bean.reinitialize();
             } catch (Exception e) {
-                if (bean instanceof BaseConfiguration) {
+                if (bean instanceof BaseConfiguration configuration) {
                     LOGGER.log(
                             Level.SEVERE,
                             "Error while reinitializing configuration "
-                                    + ((BaseConfiguration) bean).getIdentifier()
+                                    + configuration.getIdentifier()
                                     + " from "
-                                    + ((BaseConfiguration) bean).getLocation(),
+                                    + configuration.getLocation(),
                             e);
                 } else {
                     LOGGER.log(Level.SEVERE, "Error while reinitializing bean " + bean.toString(), e);

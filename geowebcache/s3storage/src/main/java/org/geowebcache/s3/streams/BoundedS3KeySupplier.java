@@ -13,8 +13,6 @@
  */
 package org.geowebcache.s3.streams;
 
-import static java.lang.String.format;
-
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.iterable.S3Objects;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
@@ -66,7 +64,7 @@ public class BoundedS3KeySupplier implements Supplier<S3ObjectSummary> {
             }
 
             if (iterator == null && nextX <= bounds.getMaxX()) {
-                String prefixWithX = format("%s%d/", prefixWithoutBounds, nextX);
+                String prefixWithX = "%s%d/".formatted(prefixWithoutBounds, nextX);
                 S3Objects s3Objects =
                         S3Objects.withPrefix(conn, bucket, prefixWithX).withBatchSize(batch);
                 iterator = s3Objects.iterator();
@@ -78,11 +76,10 @@ public class BoundedS3KeySupplier implements Supplier<S3ObjectSummary> {
         if (hasNext) {
             count++;
             S3ObjectSummary summary = iterator.next();
-            logger.fine(format("%s: %s", summary.getKey(), bounds));
+            logger.fine("%s: %s".formatted(summary.getKey(), bounds));
             return summary;
         } else {
-            logger.info(String.format(
-                    "Exhausted objects with prefix: %s supplied %d", prefixWithoutBounds + bounds, count));
+            logger.info("Exhausted objects with prefix: %s supplied %d".formatted(prefixWithoutBounds + bounds, count));
             return null;
         }
     }

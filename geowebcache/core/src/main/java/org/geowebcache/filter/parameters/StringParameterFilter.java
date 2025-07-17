@@ -15,6 +15,7 @@ package org.geowebcache.filter.parameters;
 
 import com.google.common.base.Preconditions;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +26,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @XStreamAlias("stringParameterFilter")
 public class StringParameterFilter extends CaseNormalizingParameterFilter {
 
+    @Serial
     private static final long serialVersionUID = 7383381085250203901L;
 
     private List<String> values;

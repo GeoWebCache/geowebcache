@@ -152,7 +152,7 @@ public final class SqliteConnectionManagerTest extends TestSupport {
         List<Future<Tuple<File, String>>> results = new ArrayList<>();
         for (int i = 0; i < workersNumber; i++) {
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(String.format("Submitted worker '%d'\\'%d'.", i, workersNumber));
+                LOGGER.fine("Submitted worker '%d'\\'%d'.".formatted(i, workersNumber));
             }
             executor.submit(() -> {
                 File file = files[random.nextInt(files.length)];
@@ -216,7 +216,7 @@ public final class SqliteConnectionManagerTest extends TestSupport {
 
     @FormatMethod
     private static void execute(Connection connection, String sql, Object... arguments) {
-        String finalSql = String.format(sql, arguments);
+        String finalSql = sql.formatted(arguments);
         try (PreparedStatement statement = connection.prepareStatement(finalSql)) {
             statement.execute();
         } catch (Exception exception) {
@@ -230,7 +230,7 @@ public final class SqliteConnectionManagerTest extends TestSupport {
 
         @FormatMethod
         public ExecuteQuery(Connection connection, String query, Object... arguments) {
-            String finalQuery = String.format(query, arguments);
+            String finalQuery = query.formatted(arguments);
             try (PreparedStatement statement = connection.prepareStatement(finalQuery)) {
                 extract(statement.executeQuery());
             } catch (Exception exception) {

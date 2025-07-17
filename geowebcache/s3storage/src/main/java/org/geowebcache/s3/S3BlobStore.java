@@ -15,7 +15,6 @@ package org.geowebcache.s3;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
 import static java.util.Objects.isNull;
 
 import com.amazonaws.AmazonServiceException;
@@ -240,8 +239,8 @@ public class S3BlobStore implements BlobStore {
 
     private ByteArrayInputStream toByteArray(final Resource blob) throws StorageException {
         final byte[] bytes;
-        if (blob instanceof ByteArrayResource) {
-            bytes = ((ByteArrayResource) blob).getContents();
+        if (blob instanceof ByteArrayResource resource) {
+            bytes = resource.getContents();
         } else {
             try (ByteArrayOutputStream out = new ByteArrayOutputStream((int) blob.getSize());
                     WritableByteChannel channel = Channels.newChannel(out)) {
@@ -300,7 +299,7 @@ public class S3BlobStore implements BlobStore {
     private String scheduleDeleteForZoomLevel(TileRange tileRange, int level) {
         String zoomPath = keyBuilder.forZoomLevel(tileRange, level);
         Bounds bounds = new Bounds(tileRange.rangeBounds(level));
-        String prefix = format("%s?%s", zoomPath, bounds);
+        String prefix = "%s?%s".formatted(zoomPath, bounds);
         try {
             s3Ops.scheduleAsyncDelete(prefix);
             return prefix;
@@ -519,7 +518,7 @@ public class S3BlobStore implements BlobStore {
 
         @Override
         public String toString() {
-            return format("bounds=%d,%d,%d,%d", minX, minY, maxX, maxY);
+            return "bounds=%d,%d,%d,%d".formatted(minX, minY, maxX, maxY);
         }
 
         public boolean predicate(S3ObjectSummary s3ObjectSummary) {

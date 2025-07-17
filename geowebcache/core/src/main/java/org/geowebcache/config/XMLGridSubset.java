@@ -13,6 +13,7 @@
  */
 package org.geowebcache.config;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,6 +31,7 @@ import org.geowebcache.grid.GridSubsetFactory;
  */
 public class XMLGridSubset implements Serializable, Cloneable {
 
+    @Serial
     private static final long serialVersionUID = 2758612849329765806L;
 
     private static Logger log = Logging.getLogger(XMLGridSubset.class.getName());

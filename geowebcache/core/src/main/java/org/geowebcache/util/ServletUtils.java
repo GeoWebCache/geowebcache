@@ -110,7 +110,7 @@ public class ServletUtils {
         for (String key : keys) {
             Object value = map.get(key);
             if (value != null) {
-                String sValue = value instanceof String[] ? ((String[]) value)[0] : String.valueOf(value);
+                String sValue = value instanceof String[] ss ? ss[0] : String.valueOf(value);
                 selected.put(key.toUpperCase(), URLDecode(sValue, encoding));
             }
         }

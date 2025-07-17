@@ -17,12 +17,14 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Serial;
 import javax.imageio.ImageIO;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.layer.TileLayer;
 
 public class FileRasterFilter extends RasterFilter {
 
+    @Serial
     private static final long serialVersionUID = -6950985531575208956L;
 
     private String storagePath;

@@ -182,7 +182,7 @@ public class SwiftBlobStore implements BlobStore {
         @Override
         public String apply(long[] loc) {
             // String in format "<prefix><z>/<x>/<y>.<ext>"
-            return String.format("%s%d/%d/%d.%s", coordsPrefix, loc[2], loc[0], loc[1], extension);
+            return "%s%d/%d/%d.%s".formatted(coordsPrefix, loc[2], loc[0], loc[1], extension);
         }
     }
 
@@ -373,8 +373,8 @@ public class SwiftBlobStore implements BlobStore {
         // Cancel all pending uploads to this path
         for (Object task : taskQueue.toArray()) {
             // Only cancel uploads. Leave all existing SwiftDeletionTask objects in queue
-            if (task instanceof SwiftUploadTask) {
-                String key = ((SwiftUploadTask) task).getKey(); // path to tile image
+            if (task instanceof SwiftUploadTask uploadTask) {
+                String key = uploadTask.getKey(); // path to tile image
 
                 // Cancel upload if image path will be deleted by this operation
                 if (key.startsWith(path)) {
@@ -389,7 +389,7 @@ public class SwiftBlobStore implements BlobStore {
         // Create task to delete this path and add it to the executor queue
         executor.execute(new SwiftDeleteTask(blobStore, path, config.getContainer(), notifier));
 
-        log.fine(String.format("Deleting Swift tile cache at %s/%s", config.getContainer(), path));
+        log.fine("Deleting Swift tile cache at %s/%s".formatted(config.getContainer(), path));
 
         // This operation can take a long time to complete and can
         // lead to timeout errors for the end-user when handled as a blocking
