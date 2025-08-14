@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
@@ -569,7 +570,7 @@ public abstract class JDBCQuotaStoreTest {
         Map<String, Quota> expectedById = new HashMap<>();
 
         for (TileSet tset : tileSets) {
-            Quota quotaDiff = new Quota(10D * Math.random(), StorageUnit.MiB);
+            Quota quotaDiff = new Quota(10D * ThreadLocalRandom.current().nextDouble(), StorageUnit.MiB);
             store.addToQuotaAndTileCounts(tset, quotaDiff, Collections.EMPTY_SET);
             store.addToQuotaAndTileCounts(tset, quotaDiff, Collections.EMPTY_SET);
             Quota tsetQuota = new Quota(quotaDiff);
@@ -590,7 +591,7 @@ public abstract class JDBCQuotaStoreTest {
         String paramId = DigestUtils.sha1Hex("&styles=polygon");
         TileSet tset = new TileSet("topp:states2", "EPSG:2163", "image/jpeg", paramId);
 
-        Quota quotaDiff = new Quota(10D * Math.random(), StorageUnit.MiB);
+        Quota quotaDiff = new Quota(10D * ThreadLocalRandom.current().nextDouble(), StorageUnit.MiB);
         PageStatsPayload stats = new PageStatsPayload(new TilePage(tset.getId(), 0, 0, 3));
         stats.setNumTiles(10);
         store.addToQuotaAndTileCounts(tset, quotaDiff, Collections.singletonList(stats));

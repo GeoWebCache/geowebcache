@@ -83,6 +83,7 @@ public class PNGImageEncoder extends ImageEncoderImpl {
     }
 
     @Override
+    @SuppressWarnings("PMD.CloseResource") // the caller is in charge of destination's life cycle if its a stream
     public void encode(
             RenderedImage image,
             Object destination,
@@ -104,7 +105,7 @@ public class PNGImageEncoder extends ImageEncoderImpl {
             OutputStream stream = null;
             try { // NOPMD stream not instantiated here
                 // Check if the input object is an OutputStream
-                if (destination instanceof OutputStream) {
+                if (destination instanceof OutputStream outputStream) {
                     boolean isScanlinePresent = writer.isScanlineSupported(image);
                     if (!isScanlinePresent) {
                         image = new ImageWorker(image)
@@ -122,7 +123,7 @@ public class PNGImageEncoder extends ImageEncoderImpl {
                     } else {
                         filter = (FilterType) filterObj;
                     }
-                    stream = (OutputStream) destination;
+                    stream = outputStream;
 
                     // Image preparation if an image helper is present
                     WriteHelper helper = getHelper();

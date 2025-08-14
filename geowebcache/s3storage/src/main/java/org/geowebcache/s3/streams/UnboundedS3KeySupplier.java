@@ -58,7 +58,7 @@ public class UnboundedS3KeySupplier implements Supplier<S3ObjectSummary> {
             count++;
             return iterator.next();
         } else {
-            logger.info(String.format("Exhausted objects with prefix: %s supplied %d", prefix, count));
+            logger.info("Exhausted objects with prefix: %s supplied %d".formatted(prefix, count));
             return null;
         }
     }

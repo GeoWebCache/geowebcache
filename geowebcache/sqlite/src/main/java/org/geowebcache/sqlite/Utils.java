@@ -86,14 +86,14 @@ final class Utils {
 
     @FormatMethod
     static RuntimeException exception(String message, Object... arguments) {
-        String finalMessage = String.format(message, arguments);
+        String finalMessage = message.formatted(arguments);
         LOGGER.severe(finalMessage);
         return new RuntimeException(finalMessage);
     }
 
     @FormatMethod
     static RuntimeException exception(Exception exception, String message, Object... arguments) {
-        String finalMessage = String.format(message, arguments);
+        String finalMessage = message.formatted(arguments);
         LOGGER.severe(finalMessage);
         return new RuntimeException(finalMessage, exception);
     }

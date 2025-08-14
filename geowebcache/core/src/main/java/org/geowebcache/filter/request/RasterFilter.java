@@ -15,6 +15,7 @@ package org.geowebcache.filter.request;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -37,6 +38,7 @@ import org.geowebcache.layer.TileLayer;
  */
 public abstract class RasterFilter extends RequestFilter {
 
+    @Serial
     private static final long serialVersionUID = -5695649347572928323L;
 
     private static Logger log = Logging.getLogger(RasterFilter.class.getName());

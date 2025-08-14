@@ -77,7 +77,7 @@ public class HttpClientRule extends ExternalResource {
 
     @Override
     public String toString() {
-        return String.format("HttpClientRule[%s]", name);
+        return "HttpClientRule[%s]".formatted(name);
     }
 
     public static HttpClientRule anonymous(String clientName) {

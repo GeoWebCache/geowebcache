@@ -13,6 +13,7 @@
  */
 package org.geowebcache.diskquota.storage;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -27,6 +28,7 @@ import java.math.RoundingMode;
 @SuppressWarnings("PMD.AvoidDecimalLiteralsInBigDecimalConstructor")
 public class PageStats implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 719776699585233200L;
 
     @SuppressWarnings("PMD.UnusedPrivateField")

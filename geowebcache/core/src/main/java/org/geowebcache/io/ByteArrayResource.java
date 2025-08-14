@@ -103,10 +103,9 @@ public class ByteArrayResource implements Resource, Serializable {
 
     /** @see org.geowebcache.io.Resource#transferFrom(java.nio.channels.ReadableByteChannel) */
     @Override
-    @SuppressWarnings("PMD.EmptyControlStatement")
+    @SuppressWarnings({"PMD.EmptyControlStatement", "PMD.CloseResource"})
     public long transferFrom(ReadableByteChannel channel) throws IOException {
-        if (channel instanceof FileChannel) {
-            FileChannel fc = (FileChannel) channel;
+        if (channel instanceof FileChannel fc) {
             offset = 0;
             length = (int) fc.size();
             if (data == null || data.length < length) {

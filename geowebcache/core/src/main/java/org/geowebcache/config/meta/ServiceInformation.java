@@ -13,12 +13,14 @@
  */
 package org.geowebcache.config.meta;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ServiceInformation implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = -4466383328619274445L;
 
     private String title;

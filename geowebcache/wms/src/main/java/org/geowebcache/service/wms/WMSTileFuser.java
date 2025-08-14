@@ -445,8 +445,7 @@ public class WMSTileFuser {
         Color bgColor = null;
         boolean transparent = true;
 
-        if (layer instanceof WMSLayer) {
-            WMSLayer wmsLayer = (WMSLayer) layer;
+        if (layer instanceof WMSLayer wmsLayer) {
             int[] colorAr = wmsLayer.getBackgroundColor();
 
             if (colorAr != null) {

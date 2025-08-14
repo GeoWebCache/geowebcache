@@ -13,11 +13,13 @@
  */
 package org.geowebcache;
 
+import java.io.Serial;
 import java.util.Objects;
 
 public class UncheckedGeoWebCacheException extends RuntimeException {
 
     /** serialVersionUID */
+    @Serial
     private static final long serialVersionUID = -7981050129260733945L;
 
     public UncheckedGeoWebCacheException(GeoWebCacheException cause) {

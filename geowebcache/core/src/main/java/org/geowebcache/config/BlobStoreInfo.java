@@ -13,6 +13,7 @@
  */
 package org.geowebcache.config;
 
+import java.io.Serial;
 import java.io.Serializable;
 import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.locks.LockProvider;
@@ -38,6 +39,7 @@ import org.geowebcache.storage.StorageException;
  */
 public abstract class BlobStoreInfo implements Serializable, Cloneable, Info {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private String name;

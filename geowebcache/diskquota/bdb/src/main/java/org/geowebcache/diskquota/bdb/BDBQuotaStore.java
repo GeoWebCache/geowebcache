@@ -327,8 +327,8 @@ public class BDBQuotaStore implements QuotaStore {
         } catch (ExecutionException e) {
             log.log(Level.WARNING, e.getMessage(), e);
             Throwable cause = e.getCause();
-            if (cause instanceof RuntimeException) {
-                throw (RuntimeException) cause;
+            if (cause instanceof RuntimeException exception) {
+                throw exception;
             }
             throw new RuntimeException(cause);
         }
