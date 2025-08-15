@@ -66,6 +66,7 @@ public class GridSetBuilderTest {
             LODInfo lodInfo = lodInfos.get(i);
             Assert.assertEquals(lodInfo.getResolution(), resolutions[i], 0d);
             Assert.assertEquals(lodInfo.getScale(), gridset.getGrid(i).getScaleDenominator(), 1e-6);
+            Assert.assertEquals(String.valueOf(lodInfo.getLevelID()), gridset.getGrid(i).getName());
         }
     }
 }
