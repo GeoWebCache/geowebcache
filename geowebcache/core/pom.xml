@@ -122,40 +122,18 @@
 
     <!-- Java Advanced Imaging (JAI) -->
     <dependency>
-      <groupId>javax.media</groupId>
-      <artifactId>jai_core</artifactId>
+      <groupId>org.eclipse.imagen</groupId>
+      <artifactId>imagen-core</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>javax.media</groupId>
-      <artifactId>jai_codec</artifactId>
+      <groupId>org.eclipse.imagen</groupId>
+      <artifactId>utilities</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>javax.media</groupId>
-      <artifactId>jai_imageio</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>it.geosolutions.jaiext.utilities</groupId>
-      <artifactId>jt-utilities</artifactId>
-      <exclusions>
-        <exclusion>
-          <artifactId>jts-core</artifactId>
-          <groupId>org.locationtech.jts</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>it.geosolutions.jaiext.colorindexer</groupId>
-      <artifactId>jt-colorindexer</artifactId>
-      <exclusions>
-        <exclusion>
-          <artifactId>jts-core</artifactId>
-          <groupId>org.locationtech.jts</groupId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.eclipse.imagen</groupId>
+      <artifactId>colorindexer</artifactId>
     </dependency>
 
     <dependency>

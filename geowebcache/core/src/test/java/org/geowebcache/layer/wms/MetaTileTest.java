@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import javax.media.jai.PlanarImage;
+import org.eclipse.imagen.PlanarImage;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;

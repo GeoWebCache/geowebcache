@@ -13,9 +13,6 @@
  */
 package org.geowebcache.mime;
 
-import it.geosolutions.jaiext.JAIExt;
-import it.geosolutions.jaiext.colorindexer.ColorIndexer;
-import it.geosolutions.jaiext.colorindexer.Quantizer;
 import java.awt.RenderingHints;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
@@ -28,10 +25,13 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageWriter;
-import javax.media.jai.ImageLayout;
-import javax.media.jai.JAI;
-import javax.media.jai.RenderedOp;
-import javax.media.jai.operator.ExtremaDescriptor;
+import org.eclipse.imagen.ImageLayout;
+import org.eclipse.imagen.JAI;
+import org.eclipse.imagen.RenderedOp;
+import org.eclipse.imagen.media.JAIExt;
+import org.eclipse.imagen.media.colorindexer.ColorIndexer;
+import org.eclipse.imagen.media.colorindexer.Quantizer;
+import org.eclipse.imagen.operator.ExtremaDescriptor;
 import org.geotools.util.logging.Logging;
 
 public class ImageMime extends MimeType {

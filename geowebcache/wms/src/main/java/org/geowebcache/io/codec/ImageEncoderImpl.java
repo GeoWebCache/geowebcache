@@ -15,8 +15,6 @@ package org.geowebcache.io.codec;
 
 import com.sun.media.imageioimpl.plugins.clib.CLibImageWriter;
 import it.geosolutions.imageio.stream.output.ImageOutputStreamAdapter;
-import it.geosolutions.jaiext.colorindexer.ColorIndexer;
-import it.geosolutions.jaiext.colorindexer.Quantizer;
 import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -34,6 +32,8 @@ import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
+import org.eclipse.imagen.media.colorindexer.ColorIndexer;
+import org.eclipse.imagen.media.colorindexer.Quantizer;
 import org.geotools.image.ImageWorker;
 import org.geotools.image.ImageWorker.PNGImageWriteParam;
 import org.geotools.util.logging.Logging;
