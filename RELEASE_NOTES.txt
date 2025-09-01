@@ -1,3 +1,13 @@
+GeoWebCache 1.26.4 (2025-09-01)
+-------------------------------
+
+Archive release of 1.26.x series.
+
+Improvements:
++++++++++++++
+- Updating GWC to imageio-ext 1.4.16
+
+
 GeoWebCache 1.26.3 (2025-05-13)
 -------------------------------
 
