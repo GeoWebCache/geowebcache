@@ -28,7 +28,6 @@ import javax.imageio.ImageWriter;
 import org.eclipse.imagen.ImageLayout;
 import org.eclipse.imagen.JAI;
 import org.eclipse.imagen.RenderedOp;
-import org.eclipse.imagen.media.JAIExt;
 import org.eclipse.imagen.media.colorindexer.ColorIndexer;
 import org.eclipse.imagen.media.colorindexer.Quantizer;
 import org.eclipse.imagen.operator.ExtremaDescriptor;
@@ -44,11 +43,6 @@ public class ImageMime extends MimeType {
     boolean supportsAlphaChannel;
 
     boolean supportsAlphaBit;
-
-    static {
-        // register the custom JAIExt operations, without forcing replacement of JAI own
-        JAIExt.initJAIEXT(false, false);
-    }
 
     public static final ImageMime png = new ImageMime("image/png", "png", "png", "image/png", true, true, true) {
 

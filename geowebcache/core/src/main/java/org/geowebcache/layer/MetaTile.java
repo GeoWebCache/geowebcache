@@ -319,6 +319,9 @@ public class MetaTile implements TileResponseReceiver {
                 Float.valueOf(minY),
                 Float.valueOf(tileWidth),
                 Float.valueOf(tileHeight),
+                null,
+                null,
+                null,
                 NO_CACHE);
         if (nativeAccelAvailable()) {
             log.finer("created cropped tile");
