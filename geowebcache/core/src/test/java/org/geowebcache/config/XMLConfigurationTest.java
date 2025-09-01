@@ -578,35 +578,35 @@ public class XMLConfigurationTest {
         }
     }
 
-	@Test
-	public void loadFromEmptyReadOnlyDirectoryFails() throws GeoWebCacheException, IOException {
-		File roEmptyDir = this.temp.newFolder();
+    @Test
+    public void loadFromEmptyReadOnlyDirectoryFails() throws GeoWebCacheException, IOException {
+        File roEmptyDir = this.temp.newFolder();
 
-		// Try to make it read-only
-		roEmptyDir.setWritable(false);
+        // Try to make it read-only
+        roEmptyDir.setWritable(false);
 
-		// Actively probe whether the directory is still writable (for gwc-release Docker on Windows)
-		File probe = new File(roEmptyDir, "probe");
-		boolean canWrite;
-		try {
-			canWrite = probe.createNewFile();
-			if (canWrite) {
-				probe.delete();
-			}
-		} catch (IOException e) {
-			canWrite = false;
-		}
+        // Actively probe whether the directory is still writable (for gwc-release Docker on Windows)
+        File probe = new File(roEmptyDir, "probe");
+        boolean canWrite;
+        try {
+            canWrite = probe.createNewFile();
+            if (canWrite) {
+                probe.delete();
+            }
+        } catch (IOException e) {
+            canWrite = false;
+        }
 
-		// Skip if we can still write, this may happen on Windows
-		Assume.assumeTrue("Skipping: directory is still writable", !canWrite);
+        // Skip if we can still write, this may happen on Windows
+        Assume.assumeTrue("Skipping: directory is still writable", !canWrite);
 
-		try {
-			config = new XMLConfiguration(null, roEmptyDir.getAbsolutePath());
-			config.setGridSetBroker(gridSetBroker);
+        try {
+            config = new XMLConfiguration(null, roEmptyDir.getAbsolutePath());
+            config.setGridSetBroker(gridSetBroker);
 
-			assertThrows(ConfigurationException.class, () -> config.afterPropertiesSet());
-		} finally {
-			roEmptyDir.setWritable(true);
-		}
-	}
+            assertThrows(ConfigurationException.class, () -> config.afterPropertiesSet());
+        } finally {
+            roEmptyDir.setWritable(true);
+        }
+    }
 }
