@@ -578,18 +578,35 @@ public class XMLConfigurationTest {
         }
     }
 
-    @Test
-    public void loadFromEmptyReadOnlyDirectoryFails() throws GeoWebCacheException, IOException {
-        File roEmptyDir = this.temp.newFolder();
-        Assume.assumeTrue(
-                "Ignore if setWritable(false) does not succeed, may happen on Windows", roEmptyDir.setWritable(false));
-        try {
-            config = new XMLConfiguration(null, roEmptyDir.getAbsolutePath());
-            config.setGridSetBroker(gridSetBroker);
+	@Test
+	public void loadFromEmptyReadOnlyDirectoryFails() throws GeoWebCacheException, IOException {
+		File roEmptyDir = this.temp.newFolder();
 
-            assertThrows(ConfigurationException.class, () -> config.afterPropertiesSet());
-        } finally {
-            roEmptyDir.setWritable(true);
-        }
-    }
+		// Try to make it read-only
+		roEmptyDir.setWritable(false);
+
+		// Actively probe whether the directory is still writable (for gwc-release Docker on Windows)
+		File probe = new File(roEmptyDir, "probe");
+		boolean canWrite;
+		try {
+			canWrite = probe.createNewFile();
+			if (canWrite) {
+				probe.delete();
+			}
+		} catch (IOException e) {
+			canWrite = false;
+		}
+
+		// Skip if we can still write, this may happen on Windows
+		Assume.assumeTrue("Skipping: directory is still writable", !canWrite);
+
+		try {
+			config = new XMLConfiguration(null, roEmptyDir.getAbsolutePath());
+			config.setGridSetBroker(gridSetBroker);
+
+			assertThrows(ConfigurationException.class, () -> config.afterPropertiesSet());
+		} finally {
+			roEmptyDir.setWritable(true);
+		}
+	}
 }
