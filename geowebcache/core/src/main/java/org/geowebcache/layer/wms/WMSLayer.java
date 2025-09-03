@@ -106,6 +106,11 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     @SuppressWarnings("unused")
     private String cachePrefix;
 
+    /**
+     * @deprecated This parameter is deprecated and ineffective due to the static singleton connection manager. Use
+     *     global HTTP connection settings in geowebcache.xml instead.
+     */
+    @Deprecated
     private Integer concurrency;
 
     // private transient int expireCacheInt = -1;
@@ -685,6 +690,9 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         log.fine("Setting sourceHelper on " + this.name);
         this.sourceHelper = source;
         if (concurrency != null) {
+            log.warning("Layer '" + this.name + "' uses deprecated 'concurrency' parameter. "
+                    + "This parameter is ineffective due to the static singleton connection manager. "
+                    + "Use global HTTP connection settings in geowebcache.xml instead.");
             this.sourceHelper.setConcurrency(concurrency);
         } else {
             this.sourceHelper.setConcurrency(32);

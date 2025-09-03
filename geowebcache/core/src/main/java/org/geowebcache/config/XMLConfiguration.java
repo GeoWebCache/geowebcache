@@ -88,6 +88,7 @@ import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.storage.UnsuitableStorageException;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.geowebcache.util.ExceptionUtils;
+import org.geowebcache.util.HttpClientConnectionManagerFactory;
 import org.geowebcache.util.URLs;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -799,6 +800,9 @@ public class XMLConfiguration
 
         this.setGwcConfig(loadConfiguration());
 
+        // Initialize HTTP connection manager with configuration settings
+        initializeHttpConnectionManager();
+
         log.config("Initializing GridSets from " + getIdentifier());
 
         getGridSetsInternal();
@@ -851,6 +855,29 @@ public class XMLConfiguration
         log.info("Initializing TileLayer '" + layer.getName() + "'");
         setDefaultValues(layer);
         layer.initialize(gridSetBroker);
+    }
+
+    /**
+     * Initialize the HTTP connection manager with settings from the configuration. This replaces the static singleton
+     * approach with a configurable solution.
+     */
+    private void initializeHttpConnectionManager() {
+        try {
+            HttpConnectionSettings settings = getGwcConfig().getHttpConnectionSettings();
+            if (settings == null) {
+                // Use default settings if none configured
+                settings = new HttpConnectionSettings();
+                log.info("No HTTP connection settings found in configuration, using defaults: " + settings);
+            } else {
+                log.info("Initializing HTTP connection manager with settings: " + settings);
+            }
+
+            HttpClientConnectionManagerFactory.getInstance().initialize(settings);
+        } catch (Exception e) {
+            log.warning("Failed to initialize HTTP connection manager with configuration settings: " + e.getMessage());
+            // Fall back to default settings
+            HttpClientConnectionManagerFactory.getInstance().initialize(new HttpConnectionSettings());
+        }
     }
 
     /** @see TileLayerConfiguration#getIdentifier() */
