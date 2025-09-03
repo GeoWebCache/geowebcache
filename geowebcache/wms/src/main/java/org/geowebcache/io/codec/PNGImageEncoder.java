@@ -59,11 +59,9 @@ public class PNGImageEncoder extends ImageEncoderImpl {
     public PNGImageEncoder(
             boolean aggressiveOutputStreamOptimization,
             Float quality,
-            List<String> writerSpi,
             Map<String, String> inputParams,
-            boolean disablePNG,
-            ImageIOInitializer initializer) {
-        super(aggressiveOutputStreamOptimization, supportedMimeTypes, writerSpi, inputParams, initializer);
+            boolean disablePNG) {
+        super(aggressiveOutputStreamOptimization, supportedMimeTypes, inputParams);
 
         if (quality != null) {
             this.quality = quality;

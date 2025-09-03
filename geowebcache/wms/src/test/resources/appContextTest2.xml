@@ -10,12 +10,6 @@
 
 	<context:annotation-config />
 
-  <bean id="ioInitializer" class="org.geowebcache.io.codec.ImageIOInitializer" factory-method="getInstance">
-  		<constructor-arg index="0">
-			<list></list>
-		</constructor-arg>
-  </bean>
-
 	<bean id="TIFFDecoder" class="org.geowebcache.io.codec.ImageDecoderImpl">
 		<constructor-arg type="boolean" value="false" />
 		<constructor-arg>
@@ -23,13 +17,7 @@
 				<value>image/tiff</value>
 			</list>
 		</constructor-arg>
-		<constructor-arg>
-			<list>
-				<value>it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReaderSpi</value>
-				<value>com.sun.media.imageioimpl.plugins.tiff.TIFFImageReaderSpi</value>
-			</list>
-		</constructor-arg>
-		<constructor-arg ref="ioInitializer" />
+        <constructor-arg value="it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReaderSpi"/>
 	</bean>
 
 	<bean id="decoderContainer" class="org.geowebcache.io.codec.ImageDecoderContainer" />

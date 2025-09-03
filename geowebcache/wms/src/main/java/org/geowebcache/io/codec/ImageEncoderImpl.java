@@ -13,22 +13,22 @@
  */
 package org.geowebcache.io.codec;
 
-import com.sun.media.imageioimpl.plugins.clib.CLibImageWriter;
 import it.geosolutions.imageio.stream.output.ImageOutputStreamAdapter;
 import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
-import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
@@ -80,20 +80,7 @@ public class ImageEncoderImpl implements ImageEncoder {
                     ImageWriter writer, String compression, boolean compressUsed, float compressionRate) {
                 ImageWriteParam params = null;
 
-                if (writer instanceof CLibImageWriter) {
-                    params = writer.getDefaultWriteParam();
-                    // Define compression mode
-                    params.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                    if (compressUsed) {
-                        // best compression
-                        params.setCompressionType(compression);
-                    }
-                    if (compressionRate > -1) {
-                        // we can control quality here
-                        params.setCompressionQuality(compressionRate);
-                    }
-                    // Use class name without import for JDK 11 compatibility
-                } else if ("com.sun.imageio.plugins.png.PNGImageWriter"
+                if ("com.sun.imageio.plugins.png.PNGImageWriter"
                         .equals(writer.getClass().getName())) {
                     params = new PNGImageWriteParam();
                     // Define compression mode
@@ -337,26 +324,51 @@ public class ImageEncoderImpl implements ImageEncoder {
     public ImageEncoderImpl(
             boolean aggressiveOutputStreamOptimization,
             List<String> supportedMimeTypes,
-            List<String> writerSpi,
+            Map<String, String> inputParams) {
+        this(aggressiveOutputStreamOptimization, supportedMimeTypes, inputParams, null); // No preferred SPI
+    }
+
+    /**
+     * Creates a new Instance of ImageEncoder supporting or not OutputStream optimization, with the defined MimeTypes
+     * and Spi classes.
+     */
+    public ImageEncoderImpl(
+            boolean aggressiveOutputStreamOptimization,
+            List<String> supportedMimeTypes,
             Map<String, String> inputParams,
-            ImageIOInitializer initializer) {
+            String preferredSpi) {
         this.isAggressiveOutputStreamSupported = aggressiveOutputStreamOptimization;
         this.supportedMimeTypes = new ArrayList<>(supportedMimeTypes);
         this.inputParams = inputParams;
-        // Get the IIORegistry if needed
-        IIORegistry theRegistry = initializer.getRegistry();
-        // Checks for each Spi class if it is present and then it is added to the list.
-        for (String spi : writerSpi) {
-            try {
-
-                Class<?> clazz = Class.forName(spi);
-                ImageWriterSpi writer = (ImageWriterSpi) theRegistry.getServiceProviderByClass(clazz);
-                if (writer != null) {
-                    this.spi = writer;
-                    break;
+        ImageWriterSpi backupSPI = null;
+        for (String mimeType : supportedMimeTypes) {
+            Iterator<ImageWriter> writer = ImageIO.getImageWritersByMIMEType(mimeType);
+            if (writer.hasNext()) {
+                ImageWriterSpi writerSpi = writer.next().getOriginatingProvider();
+                if (writerSpi != null) {
+                    if (preferredSpi == null) {
+                        this.spi = writerSpi;
+                        break;
+                    } else if (writerSpi.getClass().getName().equals(preferredSpi)) {
+                        this.spi = writerSpi;
+                        break;
+                    } else if (backupSPI == null) {
+                        // Keep the first available SPI as a backup
+                        backupSPI = writerSpi;
+                    }
                 }
-            } catch (ClassNotFoundException e) {
-                LOGGER.log(Level.SEVERE, e.getMessage(), e);
+            }
+        }
+        if (this.spi == null) {
+            if (backupSPI == null) {
+                throw new IllegalArgumentException(
+                        "No ImageWriterSpi found for the selected mimetypes: " + supportedMimeTypes);
+            } else {
+                LOGGER.log(
+                        Level.WARNING,
+                        "Preferred SPI not found, using the first available one: "
+                                + backupSPI.getClass().getName());
+                this.spi = backupSPI;
             }
         }
 
