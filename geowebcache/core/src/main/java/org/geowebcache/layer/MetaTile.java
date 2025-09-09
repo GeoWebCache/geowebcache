@@ -13,7 +13,6 @@
  */
 package org.geowebcache.layer;
 
-import it.geosolutions.jaiext.BufferedImageAdapter;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -34,10 +33,11 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
-import javax.media.jai.operator.CropDescriptor;
+import org.eclipse.imagen.JAI;
+import org.eclipse.imagen.PlanarImage;
+import org.eclipse.imagen.RenderedOp;
+import org.eclipse.imagen.media.BufferedImageAdapter;
+import org.eclipse.imagen.media.crop.CropDescriptor;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
@@ -319,6 +319,9 @@ public class MetaTile implements TileResponseReceiver {
                 Float.valueOf(minY),
                 Float.valueOf(tileWidth),
                 Float.valueOf(tileHeight),
+                null,
+                null,
+                null,
                 NO_CACHE);
         if (nativeAccelAvailable()) {
             log.finer("created cropped tile");

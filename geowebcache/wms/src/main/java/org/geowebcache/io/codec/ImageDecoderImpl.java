@@ -19,12 +19,13 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
-import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
@@ -51,30 +52,51 @@ public class ImageDecoderImpl implements ImageDecoder {
     private ImageReaderSpi spi;
 
     /**
+     * Creates a new Instance of ImageEncoder supporting or not OutputStream optimization, with the defined MimeTypes.
+     */
+    public ImageDecoderImpl(boolean aggressiveInputStreamOptimization, List<String> supportedMimeTypes) {
+        this(aggressiveInputStreamOptimization, supportedMimeTypes, null);
+    }
+
+    /**
      * Creates a new Instance of ImageEncoder supporting or not OutputStream optimization, with the defined MimeTypes
      * and Spi classes.
      */
     public ImageDecoderImpl(
-            boolean aggressiveInputStreamOptimization,
-            List<String> supportedMimeTypes,
-            List<String> readerSpi,
-            ImageIOInitializer initializer) {
-
+            boolean aggressiveInputStreamOptimization, List<String> supportedMimeTypes, String preferredSpi) {
         this.isAggressiveInputStreamSupported = aggressiveInputStreamOptimization;
         this.supportedMimeTypes = new ArrayList<>(supportedMimeTypes);
         // Get the IIORegistry if needed
-        IIORegistry theRegistry = initializer.getRegistry();
-        // Checks for each Spi class if it is present and then it is added to the list.
-        for (String spi : readerSpi) {
-            try {
-                Class<?> clazz = Class.forName(spi);
-                ImageReaderSpi reader = (ImageReaderSpi) theRegistry.getServiceProviderByClass(clazz);
-                if (reader != null) {
-                    this.spi = reader;
-                    break;
+        // Looks up an SPI for each supported MimeType, without breaking the JDK package sealing
+        ImageReaderSpi backupSPI = null;
+        for (String mimeType : supportedMimeTypes) {
+            Iterator<ImageReader> reader = ImageIO.getImageReadersByMIMEType(mimeType);
+            if (reader.hasNext()) {
+                ImageReaderSpi readerSpi = reader.next().getOriginatingProvider();
+                if (readerSpi != null) {
+                    if (preferredSpi == null) {
+                        this.spi = readerSpi;
+                        break;
+                    } else if (readerSpi.getClass().getName().equals(preferredSpi)) {
+                        this.spi = readerSpi;
+                        break;
+                    } else if (backupSPI == null) {
+                        // Keep the first available SPI as a backup
+                        backupSPI = readerSpi;
+                    }
                 }
-            } catch (ClassNotFoundException e) {
-                LOGGER.log(Level.SEVERE, e.getMessage(), e);
+            }
+        }
+        if (this.spi == null) {
+            if (backupSPI == null) {
+                throw new IllegalArgumentException(
+                        "No ImageReaderSpi found for the selected mimetypes: " + supportedMimeTypes);
+            } else {
+                LOGGER.log(
+                        Level.WARNING,
+                        "Preferred SPI not found, using the first available one: "
+                                + backupSPI.getClass().getName());
+                this.spi = backupSPI;
             }
         }
     }

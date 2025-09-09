@@ -9,12 +9,6 @@
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-  <bean id="ioInitializer" class="org.geowebcache.io.codec.ImageIOInitializer" factory-method="getInstance">
-  		<constructor-arg index="0">
-			<list></list>
-		</constructor-arg>
-  </bean>
-  
 	<!--Encoders -->
 
 <bean id="PNGEncoder" class="org.geowebcache.io.codec.PNGImageEncoder">
@@ -45,8 +39,7 @@
 		</constructor-arg>
 		<constructor-arg>
 			<list>
-				<value>com.sun.media.imageioimpl.plugins.gif.GIFImageWriterSpi</value>
-				<value>com.sun.media.imageio.plugins.gif.GIFImageWriterSpi</value>
+				<value>com.sun.imageio.plugins.gif.GIFImageWriterSpi</value>
 			</list>
 		</constructor-arg>
 		<constructor-arg>
@@ -67,7 +60,6 @@
 		</constructor-arg>
 		<constructor-arg>
 			<list>
-				<value>com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriterSpi</value>
 				<value>com.sun.imageio.plugins.jpeg.JPEGImageWriterSpi</value>
 			</list>
 		</constructor-arg>
