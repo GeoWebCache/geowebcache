@@ -20,9 +20,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.geotools.util.logging.Logging;
 
 /** Builder class for HttpClients */
@@ -35,7 +33,8 @@ public class HttpClientBuilder {
     private AuthScope authscope = null;
 
     private Integer backendTimeoutMillis = null;
-    private static final HttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+    private static final HttpClientConnectionManagerFactory connectionManagerFactory =
+            HttpClientConnectionManagerFactory.getInstance();
 
     private boolean doAuthentication = false;
 
@@ -71,8 +70,9 @@ public class HttpClientBuilder {
 
         clientBuilder = org.apache.http.impl.client.HttpClientBuilder.create();
         clientBuilder.useSystemProperties();
-        clientBuilder.setConnectionManager(connectionManager);
-        clientBuilder.setMaxConnTotal(concurrency);
+        clientBuilder.setConnectionManager(connectionManagerFactory.getConnectionManager());
+        // Note: concurrency parameter is now handled globally via HttpConnectionSettings
+        // The per-layer concurrency parameter is deprecated and ineffective
     }
 
     /*

@@ -72,6 +72,8 @@ public class GeoWebCacheConfiguration {
 
     private Boolean wmtsCiteCompliant;
 
+    private HttpConnectionSettings httpConnectionSettings;
+
     /** The persisted list of layers */
     private List<TileLayer> layers;
 
@@ -285,5 +287,15 @@ public class GeoWebCacheConfiguration {
      */
     public void setWmtsCiteCompliant(boolean wmtsCiteCompliant) {
         this.wmtsCiteCompliant = wmtsCiteCompliant;
+    }
+
+    /** @return the HTTP connection settings */
+    public HttpConnectionSettings getHttpConnectionSettings() {
+        return httpConnectionSettings;
+    }
+
+    /** @param httpConnectionSettings the HTTP connection settings to set */
+    public void setHttpConnectionSettings(HttpConnectionSettings httpConnectionSettings) {
+        this.httpConnectionSettings = httpConnectionSettings;
     }
 }

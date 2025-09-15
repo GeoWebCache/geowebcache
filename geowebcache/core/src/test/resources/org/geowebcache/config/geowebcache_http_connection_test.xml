@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://geowebcache.org/schema/1.27.0"
+  xsi:schemaLocation="http://geowebcache.org/schema/1.27.0 http://geowebcache.org/schema/1.27.0/geowebcache.xsd">
+  <version>1.27.0</version>
+  <backendTimeout>120</backendTimeout>
+  
+  <!-- Global HTTP connection settings -->
+  <httpConnectionSettings>
+    <maxConnectionsTotal>50</maxConnectionsTotal>
+    <maxConnectionsPerRoute>10</maxConnectionsPerRoute>
+    <connectionTimeout>45</connectionTimeout>
+    <socketTimeout>90</socketTimeout>
+  </httpConnectionSettings>
+
+  <serviceInformation>
+    <title>GeoWebCache Test</title>
+    <description>Test configuration for HTTP connection settings</description>
+    <keywords>
+      <string>WMS</string>
+      <string>WMTS</string>
+      <string>GEOWEBCACHE</string>
+    </keywords>
+  </serviceInformation>
+
+  <blobStores>
+    <FileBlobStore default="true">
+      <id>test-file-store</id>
+      <enabled>true</enabled>
+      <baseDirectory>/tmp/gwc-test</baseDirectory>
+    </FileBlobStore>
+  </blobStores>
+
+  <gridSets>
+    <gridSet>
+      <name>EPSG:4326</name>
+      <srs>
+        <number>4326</number>
+      </srs>
+      <extent>
+        <coords>
+          <double>-180.0</double>
+          <double>-90.0</double>
+          <double>180.0</double>
+          <double>90.0</double>
+        </coords>
+      </extent>
+      <scaleDenominators>
+        <double>279541132.014358</double>
+        <double>139770566.007179</double>
+        <double>69885283.0035895</double>
+        <double>34942641.5017947</double>
+        <double>17471320.7508974</double>
+      </scaleDenominators>
+      <tileHeight>256</tileHeight>
+      <tileWidth>256</tileWidth>
+    </gridSet>
+  </gridSets>
+
+  <layers>
+    <wmsLayer>
+      <name>test:layer</name>
+      <mimeFormats>
+        <string>image/png</string>
+        <string>image/jpeg</string>
+      </mimeFormats>
+      <gridSubsets>
+        <gridSubset>
+          <gridSetName>EPSG:4326</gridSetName>
+        </gridSubset>
+      </gridSubsets>
+      <wmsUrl>
+        <string>http://localhost:8080/geoserver/wms</string>
+      </wmsUrl>
+      <wmsLayers>test:layer</wmsLayers>
+      <wmsStyles></wmsStyles>
+      <transparent>true</transparent>
+      <opaque>false</opaque>
+    </wmsLayer>
+  </layers>
+</gwcConfiguration>
