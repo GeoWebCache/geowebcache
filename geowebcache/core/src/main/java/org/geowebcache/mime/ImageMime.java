@@ -27,10 +27,9 @@ import java.util.logging.Logger;
 import javax.imageio.ImageWriter;
 import org.eclipse.imagen.ImageLayout;
 import org.eclipse.imagen.JAI;
-import org.eclipse.imagen.RenderedOp;
 import org.eclipse.imagen.media.colorindexer.ColorIndexer;
 import org.eclipse.imagen.media.colorindexer.Quantizer;
-import org.eclipse.imagen.operator.ExtremaDescriptor;
+import org.geotools.image.ImageWorker;
 import org.geotools.util.logging.Logging;
 
 public class ImageMime extends MimeType {
@@ -261,16 +260,9 @@ public class ImageMime extends MimeType {
         boolean isBestFormatJpeg(RenderedImage renderedImage) {
             int numBands = renderedImage.getSampleModel().getNumBands();
             if (numBands == 4 || numBands == 2) {
-                RenderedOp extremaOp = ExtremaDescriptor.create(
-                        renderedImage,
-                        null,
-                        1,
-                        1,
-                        false,
-                        1,
-                        JAI.getDefaultInstance().getRenderingHints());
-                double[][] extrema = (double[][]) extremaOp.getProperty("Extrema");
-                double[] mins = extrema[0];
+                ImageWorker iw = new ImageWorker(renderedImage);
+                iw.setRenderingHints(JAI.getDefaultInstance().getRenderingHints());
+                double[] mins = iw.getMinimums();
 
                 return mins[mins.length - 1] == 255; // fully opaque
             } else if (renderedImage.getColorModel() instanceof IndexColorModel) {
