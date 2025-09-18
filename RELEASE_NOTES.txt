@@ -1,20 +1,49 @@
-GeoWebCache 1.28-SNAPSHOT (2025-04-03)
---------------------------------------
+GeoWebCache 1.28-M0 (2025-09-18)
+--------------------------------
 
-Stable release, GeoNetwork 1.28.0 is the first release requiring a Java 17 environment.
+Milestone release, GeoNetwork 1.28-M0 is the first release requiring a Java 17 environment.
 
 Improvements:
 +++++++++++++
-- Java 17 minimum
+- Update to Java 17 minimum, and apply OpenRewrite Improvements to codebase
+- Migrate from JAI to ImageN image processing engine
+- Use GeoTools ImageWorker transition to ImageN operators
 
-Fixes:
-++++++
-- <Bug fix>
 
 Updates:
 ++++++++
 
 - Upgrade to GeoTools 34.x
+- Migrate to ImageN 0.4.0
+
+GeoWebCache 1.27.2 (2025-07-17)
+-------------------------------
+
+Stable release
+
+Updates:
+++++++
+- Update to GeoTools 33.2
+- Upgrade postgresql from 42.7.5 to 42.7.6
+- Upgrade commons-io from 2.18.0 to 2.19.0
+- Upgrade jackson from 2.18.2 to 2.19.0
+- Bump org.postgresql:postgresql from 42.7.6 to 42.7.7
+
+
+GeoWebCache 1.27.1 (2025-05-13)
+-------------------------------
+
+Stable release
+
+Improvements:
++++++++++++++
+
+- Mime type: advertise preferred content disposition
+
+Fixes:
+++++++
+- Limit number of S3 requests when truncating based on tile range
+- Update to GeoTools 33.1
 
 GeoWebCache 1.27.0 (2025-04-02)
 ------------------------------
