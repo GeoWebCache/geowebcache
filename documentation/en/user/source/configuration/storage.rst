@@ -24,7 +24,7 @@ does not explicitly indicate which blobstore shall be used.
 .. note:: **there will always be a "default" blobstore**. If a blobstore to be used by default is not explicitly configured, one will
    be created automatically following the legacy cache location lookup mechanism used in versions prior to 1.8.0.
 
-.. _configuration.file
+.. _configuration.file:
 
 Configuration File
 ------------------
