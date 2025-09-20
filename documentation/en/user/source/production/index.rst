@@ -102,6 +102,33 @@ Resource Allocation
 
 Also see https://github.com/GeoWebCache/geowebcache/wiki/Estimating-the-number-of-tiles-and-size-on-disk for table that can be used to estimate how much storage you need and how long seeding will take
 
+Seeder thread pool configuration
+++++++++++++++++++++++++++++++
+
+The number of concurrent seed tasks that GeoWebCache can execute is controlled by an internal
+thread pool. You can configure its sizes using environment variables (values shown are
+defaults used when variables are not set):
+
+- ``GWC_SEEDER_CORE_POOL_SIZE``: core pool size, defaults to ``16``
+- ``GWC_SEEDER_MAX_POOL_SIZE``: maximum pool size, defaults to ``32``
+
+Example (Linux/macOS):
+
+.. code-block:: bash
+
+   export GWC_SEEDER_CORE_POOL_SIZE=8
+   export GWC_SEEDER_MAX_POOL_SIZE=16
+   # start your servlet container / GeoWebCache here
+
+On Windows (PowerShell):
+
+.. code-block:: powershell
+
+   $Env:GWC_SEEDER_CORE_POOL_SIZE = "8"
+   $Env:GWC_SEEDER_MAX_POOL_SIZE = "16"
+   # start your servlet container / GeoWebCache here
+
+These settings control the pool used to run seed tasks.
 
 Clustering
 ----------
