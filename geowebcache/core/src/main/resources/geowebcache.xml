@@ -99,6 +99,13 @@
 
   </blobStores>
 
+  <httpConnectionSettings>
+    <maxConnectionsTotal>20</maxConnectionsTotal>
+    <maxConnectionsPerRoute>6</maxConnectionsPerRoute>
+    <connectionTimeout>30</connectionTimeout>
+    <socketTimeout>60</socketTimeout>
+  </httpConnectionSettings>
+
   <gridSets>
     <!-- Grid Set Example, by default EPSG:900913 and EPSG:4326 are defined -->
     <gridSet>

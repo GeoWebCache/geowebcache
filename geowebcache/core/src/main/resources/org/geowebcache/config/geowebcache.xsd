@@ -148,6 +148,52 @@
           </xs:complexType>
         </xs:element>
         
+        <xs:element name="httpConnectionSettings" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              Global HTTP connection settings for all WMS layers. These settings control the connection pool
+              used by GeoWebCache when making requests to backend WMS servers.
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="maxConnectionsTotal" type="xs:positiveInteger" minOccurs="0" default="20">
+                <xs:annotation>
+                  <xs:documentation xml:lang="en">
+                    Maximum total number of connections in the connection pool. Defaults to 20.
+                    This controls the total number of connections that can be active simultaneously
+                    across all backend servers.
+                  </xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="maxConnectionsPerRoute" type="xs:positiveInteger" minOccurs="0" default="2">
+                <xs:annotation>
+                  <xs:documentation xml:lang="en">
+                    Maximum number of connections per route (per backend server). Defaults to 2.
+                    This is particularly important when GeoWebCache is installed side-by-side with
+                    GeoServer on localhost, where you might want to increase this value to 6 or more
+                    for better performance.
+                  </xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="connectionTimeout" type="xs:positiveInteger" minOccurs="0" default="30">
+                <xs:annotation>
+                  <xs:documentation xml:lang="en">
+                    Connection timeout in seconds. Defaults to 30 seconds.
+                  </xs:documentation>
+                </xs:annotation>
+              </xs:element>
+              <xs:element name="socketTimeout" type="xs:positiveInteger" minOccurs="0" default="60">
+                <xs:annotation>
+                  <xs:documentation xml:lang="en">
+                    Socket timeout in seconds. Defaults to 60 seconds.
+                  </xs:documentation>
+                </xs:annotation>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        
         <xs:element name="gridSets" minOccurs="0">
           <xs:annotation>
             <xs:documentation xml:lang="en">
@@ -729,8 +775,8 @@
             <xs:annotation>
               <xs:documentation xml:lang="en">
                 An indication of how many concurrent threads can simultaneously request tiles from this layer with
-                minimal thread contention. If not set defaults to 32. This property is deprecated and scheduled to
-                be removed in 1.4.0.
+                minimal thread contention. If not set defaults to 32. This property is deprecated and ineffective
+                due to the static singleton connection manager. Use global HTTP connection settings in geowebcache.xml instead.
               </xs:documentation> 
             </xs:annotation>
           </xs:element>
@@ -2236,4 +2282,5 @@
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
+
 </xs:schema>
