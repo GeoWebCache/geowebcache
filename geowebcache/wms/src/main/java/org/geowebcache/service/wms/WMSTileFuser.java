@@ -163,7 +163,7 @@ public class WMSTileFuser {
         HintsLevel(int numHint, String mode) {
             this.mode = mode;
             switch (numHint) {
-                    // QUALITY HINTS
+                // QUALITY HINTS
                 case 0:
                     hints = new RenderingHints(
                             RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
@@ -180,7 +180,7 @@ public class WMSTileFuser {
                     hints.add(new RenderingHints(
                             RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE));
                     break;
-                    // DEFAULT HINTS
+                // DEFAULT HINTS
                 case 1:
                     hints = new RenderingHints(
                             RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_DEFAULT);
@@ -198,7 +198,7 @@ public class WMSTileFuser {
                     hints.add(
                             new RenderingHints(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_DEFAULT));
                     break;
-                    // SPEED HINTS
+                // SPEED HINTS
                 case 2:
                     hints = new RenderingHints(
                             RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
