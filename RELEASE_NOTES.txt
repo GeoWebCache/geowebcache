@@ -1,7 +1,7 @@
-GeoWebCache 1.28-M0 (2025-09-18)
---------------------------------
+GeoWebCache 1.28.0 (2025-10-01)
+-------------------------------
 
-Milestone release, GeoNetwork 1.28-M0 is the first release requiring a Java 17 environment.
+Initial release, this is the first release requiring a Java 17 enviornment.
 
 Improvements:
 +++++++++++++
@@ -9,6 +9,17 @@ Improvements:
 - Migrate from JAI to ImageN image processing engine
 - Use GeoTools ImageWorker transition to ImageN operators
 
+
+GeoWebCache 1.28-M0 (2025-09-18)
+--------------------------------
+
+Milestone release, GeoWebCache 1.28-M0 is the first release requiring a Java 17 environment.
+
+Improvements:
++++++++++++++
+- Update to Java 17 minimum, and apply OpenRewrite Improvements to codebase
+- Migrate from JAI to ImageN image processing engine
+- Use GeoTools ImageWorker transition to ImageN operators
 
 Updates:
 ++++++++

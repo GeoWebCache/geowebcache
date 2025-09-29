@@ -26,7 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageWriter;
 import org.eclipse.imagen.ImageLayout;
-import org.eclipse.imagen.JAI;
+import org.eclipse.imagen.ImageN;
 import org.eclipse.imagen.media.colorindexer.ColorIndexer;
 import org.eclipse.imagen.media.colorindexer.Quantizer;
 import org.geotools.image.ImageWorker;
@@ -68,8 +68,8 @@ public class ImageMime extends MimeType {
                 ParameterBlock pb = new ParameterBlock();
                 pb.setSource(ri, 0);
                 pb.set(bands, 0);
-                final RenderingHints hints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, new ImageLayout(ri));
-                ri = JAI.create("BandSelect", pb, hints);
+                final RenderingHints hints = new RenderingHints(ImageN.KEY_IMAGE_LAYOUT, new ImageLayout(ri));
+                ri = ImageN.create("BandSelect", pb, hints);
             }
             return ri;
         }
@@ -92,8 +92,8 @@ public class ImageMime extends MimeType {
                         ParameterBlock pb = new ParameterBlock();
                         pb.setSource(canvas, 0); // The source image.
                         pb.set(indexer, 0);
-                        canvas = JAI.create(
-                                "ColorIndexer", pb, JAI.getDefaultInstance().getRenderingHints());
+                        canvas = ImageN.create(
+                                "ColorIndexer", pb, ImageN.getDefaultInstance().getRenderingHints());
                     }
                 }
             }
@@ -261,14 +261,14 @@ public class ImageMime extends MimeType {
             int numBands = renderedImage.getSampleModel().getNumBands();
             if (numBands == 4 || numBands == 2) {
                 ImageWorker iw = new ImageWorker(renderedImage);
-                iw.setRenderingHints(JAI.getDefaultInstance().getRenderingHints());
+                iw.setRenderingHints(ImageN.getDefaultInstance().getRenderingHints());
                 double[] mins = iw.getMinimums();
 
                 return mins[mins.length - 1] == 255; // fully opaque
             } else if (renderedImage.getColorModel() instanceof IndexColorModel) {
                 // JPEG would still compress a bit better, but in order to figure out
                 // if the image has transparency we'd have to expand to RGB or roll
-                // a new JAI image op that looks for the transparent pixels. Out of scope
+                // a new ImageN image op that looks for the transparent pixels. Out of scope
                 // for the moment
                 return false;
             } else {
