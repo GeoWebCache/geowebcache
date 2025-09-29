@@ -69,7 +69,7 @@ import org.easymock.CaptureType;
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.eclipse.imagen.ImageLayout;
-import org.eclipse.imagen.JAI;
+import org.eclipse.imagen.ImageN;
 import org.eclipse.imagen.RenderedOp;
 import org.eclipse.imagen.media.bandselect.BandSelectDescriptor;
 import org.geowebcache.GeoWebCacheException;
@@ -646,7 +646,7 @@ public class WMSLayerTest extends TileLayerTest {
             ImageLayout il = new ImageLayout();
             il.setSampleModel(sm);
             il.setColorModel(cm);
-            RenderingHints hints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, il);
+            RenderingHints hints = new RenderingHints(ImageN.KEY_IMAGE_LAYOUT, il);
             RenderedOp grayAlpha = BandSelectDescriptor.create(baseImage, new int[] {0, 3}, hints);
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             try {

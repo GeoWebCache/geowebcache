@@ -33,7 +33,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
-import org.eclipse.imagen.JAI;
+import org.eclipse.imagen.ImageN;
 import org.eclipse.imagen.PlanarImage;
 import org.eclipse.imagen.RenderedOp;
 import org.eclipse.imagen.media.BufferedImageAdapter;
@@ -54,7 +54,7 @@ public class MetaTile implements TileResponseReceiver {
 
     private static Logger log = Logging.getLogger(MetaTile.class.getName());
 
-    protected static final RenderingHints NO_CACHE = new RenderingHints(JAI.KEY_TILE_CACHE, null);
+    protected static final RenderingHints NO_CACHE = new RenderingHints(ImageN.KEY_TILE_CACHE, null);
 
     private static final boolean NATIVE_JAI_AVAILABLE;
 
@@ -70,7 +70,7 @@ public class MetaTile implements TileResponseReceiver {
         }
         NATIVE_JAI_AVAILABLE = nativeJAIAvailable;
         if (!NATIVE_JAI_AVAILABLE) {
-            log.config("Native JAI is not installed");
+            log.config("Native ImageN is not installed");
         }
     }
 
