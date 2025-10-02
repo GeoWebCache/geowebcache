@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~  (c) 2025 Open Source Geospatial Foundation - all rights reserved
+  ~  This code is licensed under the GPL 2.0 license, available at the root
+  ~  application directory.
+  ~  
+  -->
+
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+  <description>
+   Bean configuration file for the gwc-gcs-blob tests
+  </description>
+
+  <bean id="geoWebCacheExtensions" class="org.geowebcache.GeoWebCacheExtensions"/>
+  
+  <bean id="geoWebCacheEnvironment" class="org.geowebcache.GeoWebCacheEnvironment" depends-on="geoWebCacheExtensions"/>
+
+  <bean id="gcsBlobstoreConfigProvider"
+        class="org.geowebcache.storage.blobstore.gcs.GoogleCloudStorageConfigProvider"
+        depends-on="geoWebCacheEnvironment"/>
+</beans>
