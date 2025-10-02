@@ -11,11 +11,13 @@ Storage
 Cache
 -----
 
-Starting with version 1.8.0, there are two types of persistent storage mechanisms for tiles:
+Starting with version 1.8.0, GeoWebCache supports multiple persistent storage mechanisms for tiles:
 
-* File blob store: stores tiles in a directory structure consisting of various image files organized by layer and zoom level.  
-* S3 blob store: stores tiles in an `Amazon Simple Storage Service <http://aws.amazon.com/s3/>`_ bucket, as individual "objects" following a 
+* File blob store: stores tiles in a directory structure consisting of various image files organized by layer and zoom level.
+* S3 blob store: stores tiles in an `Amazon Simple Storage Service <http://aws.amazon.com/s3/>`_ bucket, as individual "objects" following a
   `TMS <http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification>`_-like key structure.
+* Google Cloud Storage blob store: stores tiles in a GCS bucket using the same TMS-like structure as S3.
+* Azure blob store, MBTiles blob store, Swift blob store: additional storage backends described below.
 
 Zero or more blobstores can be configured in the configuration file to store tiles at different locations and on different storage back-ends.
 One of the configured blobstores will be the **default** one. Meaning that it will be used to store the tiles of every layer whose configuration
@@ -287,7 +289,54 @@ GeoServer ``topp:states`` sample layer on a fictitious ``my-geowebcache-bucket``
         zoom: 2
       })
     });
-    
+
+
+Google Cloud Storage (GCS) Blob Store
++++++++++++++++++++++++++++++++++++++
+
+This blob store allows to configure a cache for layers on a Google Cloud Storage bucket with the same TMS-like key structure as S3:
+
+    [prefix]/<layer id>/<gridset id>/<format id>/<parameters hash | "default">/<z>/<x>/<y>.<extension>
+
+Configuration example:
+
+.. code-block:: xml
+
+    <GoogleCloudStorageBlobStore default="false">
+      <id>myGcsCache</id>
+      <enabled>true</enabled>
+      <bucket>my-gwc-bucket</bucket>
+      <prefix>test-cache</prefix>
+      <projectId>my-gcp-project</projectId>
+      <useDefaultCredentialsChain>true</useDefaultCredentialsChain>
+    </GoogleCloudStorageBlobStore>
+
+Properties:
+
+* **bucket**: Mandatory. The name of the GCS bucket where to store tiles.
+* **prefix**: Optional. A prefix path to use as the "root folder" to store tiles at.
+* **projectId**: Optional. The GCP project ID. Can be omitted if using service account credentials that already specify the project.
+* **quotaProjectId**: Optional. Project to bill for quota when using requester-pays buckets.
+* **endpointUrl**: Optional. Custom endpoint URL for use with GCS emulators or compatible services.
+* **useDefaultCredentialsChain**: Optional. Set to ``true`` to use Application Default Credentials. This will look for credentials in the following order: environment variable GOOGLE_APPLICATION_CREDENTIALS pointing to a service account key file, GCE/GKE metadata service, or gcloud CLI credentials.
+* **apiKey**: Optional. API key for authentication. If both apiKey and useDefaultCredentialsChain are provided, apiKey takes precedence.
+
+**Note**: Like S3, all configuration properties support environment variable expansion using the ``${VARIABLE_NAME}`` syntax:
+
+.. code-block:: xml
+
+      <bucket>${GCS_BUCKET}</bucket>
+      <projectId>${GCS_PROJECT_ID}</projectId>
+
+Authentication options:
+
+* **Application Default Credentials** (recommended): Set ``useDefaultCredentialsChain`` to ``true``. This works automatically on GCE/GKE and when GOOGLE_APPLICATION_CREDENTIALS points to a service account key.
+* **API Key**: Set the ``apiKey`` property. Less secure, mainly for testing.
+* **No auth**: For use with emulators only. Leave both auth options unset.
+
+Implementation notes:
+
+Delete operations run asynchronously in a background thread pool. When deleting tile ranges or layers, tiles are removed in batches using the GCS batch API for efficiency. The thread pool is sized based on available processors and shuts down gracefully on blob store destruction.
 
 Microsoft Azure Blob Store
 +++++++++++++++++++++++++++++++++++++++++++++
