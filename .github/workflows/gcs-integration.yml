@@ -1,0 +1,43 @@
+name: GCS BlobStore Integration
+
+on:
+  push:
+    tags:
+      - "**"
+  pull_request:
+    paths:
+      - ".github/workflows/gcs-integration.yml"
+      - "pom.xml"
+      - "geowebcache/pom.xml"
+      - "geowebcache/core/**"
+      - "geowebcache/gcsblob/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fake-gcs-server:
+    name: Fake GCS Server container
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java-version: [ 17, 21 ]
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: ${{ matrix.java-version }}
+        cache: 'maven'
+
+    - name: Tests against Fake GCS Server TestContainers
+      run: |
+         mvn verify -f geowebcache/pom.xml -pl :gcs-blob -am \
+         -Ponline \
+         -DskipTests=true \
+         -DskipITs=false -B -ntp
+
+    - name: Remove SNAPSHOT jars from repository
+      run: |
+        find .m2/repository -name "*SNAPSHOT*" -type d | xargs rm -rf {}
