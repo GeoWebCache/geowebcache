@@ -6,9 +6,9 @@ Initial release, this is the first release requiring a Java 17 enviornment.
 Improvements:
 +++++++++++++
 - Update to Java 17 minimum, and apply OpenRewrite Improvements to codebase
-- Migrate from JAI to ImageN image processing engine
+- Migrate from JAI 1.1.3 to ImageN 0.9.0 image processing engine
 - Use GeoTools ImageWorker transition to ImageN operators
-
+- Use GeoTools bill-of-materials to manage library dependencies and third party dependencies
 
 GeoWebCache 1.28-M0 (2025-09-18)
 --------------------------------
