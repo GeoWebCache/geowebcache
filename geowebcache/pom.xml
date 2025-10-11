@@ -29,6 +29,7 @@
     <module>azureblob</module>
     <module>swiftblob</module>
     <module>mbtiles</module>
+    <module>gcsblob</module>
   </modules>
 
   <scm>
