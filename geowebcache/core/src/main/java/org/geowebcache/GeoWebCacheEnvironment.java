@@ -178,7 +178,7 @@ public class GeoWebCacheEnvironment {
         } else if (type.isAssignableFrom(Boolean.class)) {
             if (!validateBoolean(resultValue))
                 throw new IllegalArgumentException("Illegal String parameter: Resolved value is not a boolean.");
-            Boolean boolValue = Boolean.valueOf(value);
+            Boolean boolValue = Boolean.valueOf(resultValue);
             return (Optional<T>) Optional.of(boolValue);
         }
         throw new IllegalArgumentException("No type convertion available for " + type);
