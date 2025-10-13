@@ -1,4 +1,4 @@
-GeoWebCache 1.28.0 (2025-10-01)
+GeoWebCache 1.28.0 (2025-10-12)
 -------------------------------
 
 Initial release, this is the first release requiring a Java 17 enviornment.
