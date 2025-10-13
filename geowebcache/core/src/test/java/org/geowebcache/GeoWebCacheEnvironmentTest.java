@@ -3,10 +3,14 @@ package org.geowebcache;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import org.junit.After;
 import org.junit.Assert;
@@ -74,5 +78,26 @@ public class GeoWebCacheEnvironmentTest {
 
         Assert.assertEquals("ABC", genv.resolveValue("${TEST_SYS_PROPERTY}"));
         Assert.assertEquals("WWW", genv.resolveValue("${TEST_PROPERTY}"));
+    }
+
+    @Test
+    public void testResolveValueIfEnabled() {
+        GeoWebCacheEnvironment genv = new GeoWebCacheEnvironment();
+        assertTrue(genv.isAllowEnvParametrization());
+
+        assertEquals(Optional.of("${ENV_NOT_SET}"), genv.resolveValueIfEnabled("${ENV_NOT_SET}", String.class));
+        assertEquals(Optional.of("ABC"), genv.resolveValueIfEnabled("${TEST_SYS_PROPERTY}", String.class));
+
+        System.setProperty("TEST_BOOL_PROPERTY", "true");
+        try {
+            assertEquals(Optional.of(true), genv.resolveValueIfEnabled("${TEST_BOOL_PROPERTY}", Boolean.class));
+            assertEquals(Optional.of("true"), genv.resolveValueIfEnabled("${TEST_BOOL_PROPERTY}", String.class));
+
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> genv.resolveValueIfEnabled("${TEST_BOOL_PROPERTY}", Integer.class));
+        } finally {
+            System.clearProperty("TEST_BOOL_PROPERTY");
+        }
     }
 }
