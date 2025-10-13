@@ -51,7 +51,7 @@
   </distributionManagement>
 
   <properties>
-    <gt.version>34-SNAPSHOT-SNAPSHOT</gt.version>
+    <gt.version>34-SNAPSHOT</gt.version>
     <spring.version>5.3.39</spring.version>
     <spring.security.version>5.7.13</spring.security.version>
     <xstream.version>1.4.21</xstream.version>
