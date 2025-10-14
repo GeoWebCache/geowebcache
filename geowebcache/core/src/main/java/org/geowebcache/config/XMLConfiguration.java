@@ -15,6 +15,7 @@ package org.geowebcache.config;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomReader;
 import java.io.FileNotFoundException;
@@ -290,7 +291,8 @@ public class XMLConfiguration
         }
     }
 
-    private GeoWebCacheConfiguration loadConfiguration() throws ConfigurationException {
+    @VisibleForTesting
+    GeoWebCacheConfiguration loadConfiguration() throws ConfigurationException {
         Assert.isTrue(resourceProvider.hasInput(), "Resource provider must have an input");
         try {
             try (InputStream in = resourceProvider.in()) {
@@ -969,19 +971,44 @@ public class XMLConfiguration
         } catch (IOException ioe) {
             // save failed, roll back the add
             blobStores.remove(info);
-            throw new ConfigurationPersistenceException("Unable to add BlobStoreInfo \"%s\"".formatted(info), ioe);
+            ConfigurationPersistenceException thrown =
+                    new ConfigurationPersistenceException("Unable to add BlobStoreInfo \"%s\"".formatted(info), ioe);
+
+            try { // reverting the stored config by re-saving
+                save();
+            } catch (IOException suppressed) {
+                log.log(
+                        Level.WARNING,
+                        "Unable to revert stored configuration after failure to store BlobStore " + info,
+                        suppressed);
+                thrown.addSuppressed(thrown);
+            }
+            throw thrown;
         }
         try {
             blobStoreListeners.safeForEach(listener -> {
                 listener.handleAddBlobStore(info);
             });
         } catch (IOException | GeoWebCacheException e) {
+            ConfigurationPersistenceException thrown;
             if (ExceptionUtils.isOrSuppresses(e, UnsuitableStorageException.class)) {
                 // Can't store here, roll back
                 blobStores.remove(info);
-                throw new ConfigurationPersistenceException("Unable to add BlobStoreInfo \"%s\"".formatted(info), e);
+                thrown = new ConfigurationPersistenceException("Unable to add BlobStoreInfo \"%s\"".formatted(info), e);
+                try { // reverting the stored config by re-saving
+                    save();
+                    log.log(Level.CONFIG, "Configuration reverted after failure to add BlobStore " + info);
+                } catch (IOException suppress) {
+                    log.log(
+                            Level.WARNING,
+                            "Unexpected error saving the reverted configuration after failure to add BlobStore " + info,
+                            suppress);
+                    thrown.addSuppressed(thrown);
+                }
+            } else {
+                thrown = new ConfigurationPersistenceException(e);
             }
-            throw new ConfigurationPersistenceException(e);
+            throw thrown;
         }
     }
 
@@ -1050,7 +1077,21 @@ public class XMLConfiguration
                 // Can't store here, roll back
                 blobStores.remove(info);
                 blobStores.add(infoToRemove);
-                throw new ConfigurationPersistenceException("Unable to modify BlobStoreInfo \"%s\"".formatted(info), e);
+                ConfigurationPersistenceException thrown = new ConfigurationPersistenceException(
+                        "Unable to modify BlobStoreInfo \"%s\"".formatted(info), e);
+                try {
+                    // roll-back stored config, leaving an invalid stored config will prevent application startup
+                    save();
+                    log.log(Level.CONFIG, "Configuration reverted after failure to modify BlobStore " + info);
+                } catch (IOException suppress) {
+                    log.log(
+                            Level.WARNING,
+                            "Unexpected error saving the reverted configuration after failure to modify BlobStore "
+                                    + info,
+                            suppress);
+                    thrown.addSuppressed(suppress);
+                }
+                throw thrown;
             }
             throw new ConfigurationPersistenceException(e);
         }
