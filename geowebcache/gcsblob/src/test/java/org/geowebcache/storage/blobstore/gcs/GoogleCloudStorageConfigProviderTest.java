@@ -94,7 +94,6 @@ public class GoogleCloudStorageConfigProviderTest {
         assertEquals("${GCS_PREFIX}", config.getPrefix());
         assertEquals("${GCS_ENDPOINT}", config.getEndpointUrl());
         assertEquals("${GCS_APIKEY}", config.getApiKey());
-        assertEquals("${GCS_DEFAULT_CREDENTIALS}", config.getUseDefaultCredentialsChain());
 
         setProperty("GCS_PROJECT_ID", "my-project");
         setProperty("GCS_QUOTA_PROJECT_ID", "bills-go-here");
@@ -112,6 +111,5 @@ public class GoogleCloudStorageConfigProviderTest {
         assertEquals("gwc", builder.prefix);
         assertEquals("https://goog.compatible.storage/api", builder.endpointUrl);
         assertEquals("goog-fake-api-key", builder.apiKey);
-        assertTrue(builder.useDefaultCredentialsChain);
     }
 }

@@ -126,9 +126,7 @@ class GoogleCloudStorageClient {
                 .resolveValueIfEnabled(config.getApiKey(), String.class)
                 .orElse(null));
 
-        builder.useDefaultCredentialsChain(environment
-                .resolveValueIfEnabled(config.getUseDefaultCredentialsChain(), Boolean.class)
-                .orElse(false));
+        builder.useDefaultCredentialsChain(config.getUseDefaultCredentialsChain());
 
         return builder;
     }
@@ -187,37 +185,43 @@ class GoogleCloudStorageClient {
         }
 
         public GoogleCloudStorageClient build() throws org.geowebcache.storage.StorageException {
-            StorageOptions.Builder builder = StorageOptions.getDefaultInstance().toBuilder();
+            try {
+                StorageOptions.Builder builder = StorageOptions.getDefaultInstance().toBuilder();
 
-            if (projectId != null) {
-                builder.setProjectId(projectId);
-            }
-            if (quotaProjectId != null) {
-                builder.setQuotaProjectId(quotaProjectId);
-            }
-            if (endpointUrl != null) {
-                // Set custom endpoint for emulators or non-standard GCS endpoints
-                builder.setHost(endpointUrl);
-            }
-            Credentials credentials = null;
-            if (apiKey != null) {
-                credentials = ApiKeyCredentials.create(apiKey);
-            } else if (useDefaultCredentialsChain) {
-                try {
-                    credentials = GoogleCredentials.getApplicationDefault();
-                } catch (IOException e) {
-                    throw new org.geowebcache.storage.StorageException("Error obtaining default credentials", e);
+                if (projectId != null) {
+                    builder.setProjectId(projectId);
                 }
-            }
-            if (credentials != null) {
-                // credentials need to be set after projectId and quotaProjectId so its setter will
-                // check whether projectId is null and get it from credentials if its a ServiceAccountCredentials
-                // or quotaProjectId is null and get it from credentials if it's a QuotaProjectIdProvider
-                builder.setCredentials(credentials);
-            }
-            Storage storageClient = builder.build().getService();
+                if (quotaProjectId != null) {
+                    builder.setQuotaProjectId(quotaProjectId);
+                }
+                if (endpointUrl != null) {
+                    // Set custom endpoint for emulators or non-standard GCS endpoints
+                    builder.setHost(endpointUrl);
+                }
+                Credentials credentials = null;
+                if (apiKey != null) {
+                    credentials = ApiKeyCredentials.create(apiKey);
+                } else if (useDefaultCredentialsChain) {
+                    try {
+                        credentials = GoogleCredentials.getApplicationDefault();
+                    } catch (IOException e) {
+                        throw new org.geowebcache.storage.StorageException(
+                                "Error obtaining default credentials: " + e.getMessage(), e);
+                    }
+                }
+                if (credentials != null) {
+                    // credentials need to be set after projectId and quotaProjectId so its setter will
+                    // check whether projectId is null and get it from credentials if its a ServiceAccountCredentials
+                    // or quotaProjectId is null and get it from credentials if it's a QuotaProjectIdProvider
+                    builder.setCredentials(credentials);
+                }
+                Storage storageClient = builder.build().getService();
 
-            return new GoogleCloudStorageClient(storageClient, bucket, prefix);
+                return new GoogleCloudStorageClient(storageClient, bucket, prefix);
+            } catch (StorageException gcse) {
+                throw new org.geowebcache.storage.StorageException(
+                        "Error creating GCS client: " + gcse.getMessage(), gcse);
+            }
         }
     }
 
@@ -265,9 +269,13 @@ class GoogleCloudStorageClient {
      * @param prefix The prefix to filter blobs by.
      * @return A stream of matching {@link Blob} objects.
      */
-    public Stream<Blob> list(String prefix) {
-        return storage.list(bucket, BlobListOption.prefix(requireNonNull(prefix)))
-                .streamAll();
+    public Stream<Blob> list(String prefix) throws org.geowebcache.storage.StorageException {
+        try {
+            return storage.list(bucket, BlobListOption.prefix(requireNonNull(prefix)))
+                    .streamAll();
+        } catch (StorageException gcse) {
+            throw new org.geowebcache.storage.StorageException(gcse.getMessage(), gcse);
+        }
     }
 
     /**
@@ -279,10 +287,15 @@ class GoogleCloudStorageClient {
      * @param path The directory path to check.
      * @return {@code true} if at least one blob exists with this path prefix, {@code false} otherwise.
      */
-    public boolean directoryExists(final String path) {
+    public boolean directoryExists(final String path) throws org.geowebcache.storage.StorageException {
         requireNonNull(path);
         String dirPrefix = dirPrefix(path);
-        Page<Blob> blobs = storage.list(bucket, BlobListOption.prefix(dirPrefix), BlobListOption.pageSize(1));
+        Page<Blob> blobs;
+        try {
+            blobs = storage.list(bucket, BlobListOption.prefix(dirPrefix), BlobListOption.pageSize(1));
+        } catch (StorageException gcse) {
+            throw new org.geowebcache.storage.StorageException(gcse.getMessage(), gcse);
+        }
         Iterator<Blob> iterator = blobs.getValues().iterator();
         boolean hasNext = iterator.hasNext();
         if (hasNext) {
@@ -307,7 +320,7 @@ class GoogleCloudStorageClient {
      * @return {@code true} if the directory existed and the delete task was submitted, {@code false} if the directory
      *     did not exist.
      */
-    public boolean deleteDirectory(String path) {
+    public boolean deleteDirectory(String path) throws org.geowebcache.storage.StorageException {
         requireNonNull(path);
         if (directoryExists(path)) {
             String dirPrefix = dirPrefix(path);

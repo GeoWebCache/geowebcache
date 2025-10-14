@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.XMLConfiguration;
 import org.geowebcache.filter.parameters.ParametersUtils;
 import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.Resource;
@@ -52,6 +53,7 @@ import org.geowebcache.storage.CompositeBlobStore;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
 import org.geowebcache.storage.TileRangeIterator;
+import org.geowebcache.storage.UnsuitableStorageException;
 import org.geowebcache.util.TMSKeyBuilder;
 
 /**
@@ -72,11 +74,16 @@ public class GoogleCloudStorageBlobStore implements BlobStore {
     /**
      * @param client a pre-configured {@link GoogleCloudStorageClient}
      * @param layers the tile layer dispatcher to build tile keys from
-     * @throws org.geowebcache.storage.StorageException if the target bucket is not suitable for a cache (e.g. it's not
-     *     empty and does not contain a {@code metadata.properties} marker file.
+     * @throws org.geowebcache.storage.UnsuitableStorageException if the target bucket is not suitable for a cache (e.g.
+     *     it's not empty and does not contain a {@code metadata.properties} marker file <strong>or</strong> the bucket
+     *     can't be accessed, for example due to bad credentials.
+     * @implNote {@link UnsuitableStorageException} will be thrown also if the bucket can't be accessed to account fot
+     *     {@link XMLConfiguration#addBlobStore} and {@link XMLConfiguration#modifyBlobStore} checking for
+     *     {@code instanceof UnsuitableStorageException} to prevent saving a misconfigured blob store. Otherwise the
+     *     blobstore would be saved even with an invalid state and prevent application startup later on.
      */
     public GoogleCloudStorageBlobStore(GoogleCloudStorageClient client, TileLayerDispatcher layers)
-            throws org.geowebcache.storage.StorageException {
+            throws org.geowebcache.storage.UnsuitableStorageException {
 
         this.client = requireNonNull(client);
         this.layers = requireNonNull(layers);
@@ -84,7 +91,18 @@ public class GoogleCloudStorageBlobStore implements BlobStore {
         String prefix = Optional.ofNullable(client.getPrefix()).orElse("");
         this.keyBuilder = new TMSKeyBuilder(prefix, layers);
 
-        ensureCacheSuitability(prefix);
+        try {
+            ensureCacheSuitability(prefix);
+        } catch (UnsuitableStorageException e) {
+            throw e;
+        } catch (org.geowebcache.storage.StorageException somethingElse) {
+            // throw  UnsuitableStorageException instead, which is a subclass of StorageException
+            // The GeoServer UI checks for instanceof UnsuitableStorageException when saving a blobstore that failed to
+            // be created. Otherwise it'll save it with the invalid configuration.
+            UnsuitableStorageException e = new UnsuitableStorageException(somethingElse.getMessage());
+            e.addSuppressed(somethingElse);
+            throw e;
+        }
     }
 
     void ensureCacheSuitability(String prefix) throws org.geowebcache.storage.StorageException {
@@ -213,10 +231,10 @@ public class GoogleCloudStorageBlobStore implements BlobStore {
 
         Set<String> gridsetAndFormatPrefixes = keyBuilder.forParameters(layerName, parametersId);
         // for each <prefix>/<layer>/<gridset>/<format>/<parametersId>/
-        boolean prefixExists = gridsetAndFormatPrefixes.stream()
-                .map(client::deleteDirectory)
-                .reduce(Boolean::logicalOr)
-                .orElse(false);
+        boolean prefixExists = false;
+        for (String prefix : gridsetAndFormatPrefixes) {
+            prefixExists |= client.deleteDirectory(prefix);
+        }
         if (prefixExists) {
             listeners.sendParametersDeleted(layerName, parametersId);
         }
@@ -444,18 +462,30 @@ public class GoogleCloudStorageBlobStore implements BlobStore {
     @Override
     public boolean layerExists(String layerName) {
         final String layerPrefix = keyBuilder.forLayer(layerName);
-        return client.directoryExists(layerPrefix);
+        try {
+            return client.directoryExists(layerPrefix);
+        } catch (org.geowebcache.storage.StorageException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws UncheckedIOException if {@link GoogleCloudStorageClient#list(String)} throws an
+     *     {@link org.geowebcache.storage.StorageException}
+     */
     @Override
     public Map<String, Optional<Map<String, String>>> getParametersMapping(String layerName) {
         String parametersMetadataPrefix = keyBuilder.parametersMetadataPrefix(layerName);
-        Stream<Blob> blobStream = client.list(parametersMetadataPrefix);
-
-        return blobStream
-                .map(Blob::getName)
-                .map(this::loadProperties)
-                .collect(Collectors.toMap(ParametersUtils::getId, Optional::ofNullable));
+        try (Stream<Blob> blobStream = client.list(parametersMetadataPrefix)) {
+            return blobStream
+                    .map(Blob::getName)
+                    .map(this::loadProperties)
+                    .collect(Collectors.toMap(ParametersUtils::getId, Optional::ofNullable));
+        } catch (org.geowebcache.storage.StorageException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private Optional<Properties> findProperties(String key) {
