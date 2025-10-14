@@ -44,7 +44,15 @@ public class GoogleCloudStorageBlobStoreInfo extends BlobStoreInfo {
     private String prefix;
     private String endpointUrl; // Custom endpoint for emulators or non-standard GCS endpoints
     private String apiKey;
-    private String useDefaultCredentialsChain;
+    private boolean useDefaultCredentialsChain;
+
+    public GoogleCloudStorageBlobStoreInfo() {
+        super();
+    }
+
+    public GoogleCloudStorageBlobStoreInfo(String id) {
+        super(id);
+    }
 
     @Override
     public GoogleCloudStorageBlobStore createInstance(TileLayerDispatcher layers, LockProvider lockProvider)
@@ -135,20 +143,20 @@ public class GoogleCloudStorageBlobStoreInfo extends BlobStoreInfo {
     }
 
     /**
-     * @return {@code "true"} if the default Google Cloud credentials chain should be used for authentication.
+     * @return {@code true} if the default Google Cloud credentials chain should be used for authentication.
      * @see com.google.auth.oauth2.GoogleCredentials#getApplicationDefault()
      */
-    public String getUseDefaultCredentialsChain() {
+    public boolean getUseDefaultCredentialsChain() {
         return useDefaultCredentialsChain;
     }
 
     /**
      * Sets whether to use the default Google Cloud credentials chain.
      *
-     * @param defaultCredentialsChain {@code "true"} to enable, {@code "false"} to disable.
+     * @param useDefaultCredentialsChain {@code true} to enable, {@code false} to disable.
      */
-    public void setUseDefaultCredentialsChain(String defaultCredentialsChain) {
-        this.useDefaultCredentialsChain = defaultCredentialsChain;
+    public void setUseDefaultCredentialsChain(boolean useDefaultCredentialsChain) {
+        this.useDefaultCredentialsChain = useDefaultCredentialsChain;
     }
 
     @Override
@@ -162,6 +170,7 @@ public class GoogleCloudStorageBlobStoreInfo extends BlobStoreInfo {
             GoogleCloudStorageBlobStoreInfo other = (GoogleCloudStorageBlobStoreInfo) o;
             return Objects.equals(projectId, other.projectId)
                     && Objects.equals(bucket, other.bucket)
+                    && Objects.equals(prefix, other.prefix)
                     && Objects.equals(endpointUrl, other.endpointUrl)
                     && Objects.equals(apiKey, other.apiKey)
                     && Objects.equals(useDefaultCredentialsChain, other.useDefaultCredentialsChain)
@@ -173,6 +182,7 @@ public class GoogleCloudStorageBlobStoreInfo extends BlobStoreInfo {
     @Override
     public int hashCode() {
         return 31 * super.hashCode()
-                + Objects.hash(projectId, bucket, endpointUrl, apiKey, useDefaultCredentialsChain, quotaProjectId);
+                + Objects.hash(
+                        projectId, bucket, prefix, endpointUrl, apiKey, useDefaultCredentialsChain, quotaProjectId);
     }
 }
