@@ -16,6 +16,7 @@ package org.geowebcache.config;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.greaterThan;
@@ -31,12 +32,15 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,13 +71,16 @@ import org.geowebcache.grid.GridSubsetFactory;
 import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
+import org.geowebcache.storage.UnsuitableStorageException;
 import org.geowebcache.util.TestUtils;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.WebApplicationContext;
 import org.xml.sax.SAXParseException;
 
 public class XMLConfigurationTest {
@@ -477,7 +484,7 @@ public class XMLConfigurationTest {
     }
 
     @Test
-    public void testSaveBlobStores() throws Exception {
+    public void testAddBlobStores() throws Exception {
         FileBlobStoreInfo store1 = new FileBlobStoreInfo();
         store1.setName("store1");
         store1.setDefault(true);
@@ -515,6 +522,150 @@ public class XMLConfigurationTest {
 
         assertNotSame(store2, stores.get(1));
         assertEquals(store2, stores.get(1));
+    }
+
+    @Test
+    public void testAddBlobStoreExceptionSaving() throws Exception {
+
+        XMLFileResourceProvider resourceProvider =
+                new XMLFileResourceProvider(
+                        XMLConfiguration.DEFAULT_CONFIGURATION_FILE_NAME,
+                        (WebApplicationContext) null,
+                        this.configDir.getAbsolutePath(),
+                        null) {
+
+                    // throw an ioexception the first time close() is called, the second time is the roll-back
+                    private boolean thrown = false;
+
+                    @Override
+                    public OutputStream out() throws IOException {
+                        OutputStream real = super.out();
+                        return new FilterOutputStream(real) {
+
+                            @Override
+                            public void close() throws IOException {
+                                real.close();
+                                if (thrown) {
+                                    return;
+                                }
+                                thrown = true;
+                                throw new IOException("forced io exception");
+                            }
+                        };
+                    }
+                };
+
+        config = new XMLConfiguration(null, resourceProvider);
+        config.setGridSetBroker(gridSetBroker);
+
+        FileBlobStoreInfo store1 = new FileBlobStoreInfo();
+        store1.setName("store1");
+        store1.setDefault(true);
+        store1.setEnabled(true);
+        store1.setFileSystemBlockSize(8096);
+        store1.setBaseDirectory("/tmp/test");
+
+        assertThrows(ConfigurationPersistenceException.class, () -> config.addBlobStore(store1));
+        assertEquals(0, config.getBlobStoreCount());
+        GeoWebCacheConfiguration configuration = config.loadConfiguration();
+        assertTrue("store shouldn't be saved", configuration.getBlobStores().isEmpty());
+    }
+
+    /**
+     * Verifies the blobstore configuration is rolled back from the persisted configuration if a
+     * {@link BlobStoreConfigurationListener#handleAddBlobStore} throws an {@link UnsuitableStorageException}.
+     *
+     * <p>Note I'm not sure why XMLConfiguration.addBlobStore() only rolls-back on UnsuitableStorageException and not on
+     * IOException or GeoWebCacheException
+     */
+    @Test
+    public void testAddBlobStoreExceptionFromListener() throws Exception {
+        FileBlobStoreInfo store1 = new FileBlobStoreInfo();
+        store1.setName("store1");
+        store1.setDefault(true);
+        store1.setEnabled(true);
+        store1.setFileSystemBlockSize(8096);
+        store1.setBaseDirectory("/tmp/test");
+
+        BlobStoreConfigurationListener listener;
+
+        listener = mock(BlobStoreConfigurationListener.class);
+        doThrow(new UnsuitableStorageException("fake")).when(listener).handleAddBlobStore(Mockito.any());
+        config.addBlobStoreListener(listener);
+
+        assertAddBlobStoreFails(store1, UnsuitableStorageException.class);
+
+        // note, I'm not sure why XMLConfiguration.addBlobStore() only rolls-back on UnsuitableStorageException and not
+        // on IOException or GeoWebCacheException
+        // doThrow(new IOException("fake")).when(listener).handleAddBlobStore(Mockito.any());
+        // assertAddBlobStoreFails(store1, IOException.class);
+        //
+        // doThrow(new GeoWebCacheException("fake")).when(listener).handleAddBlobStore(Mockito.any());
+        // assertAddBlobStoreFails(store1, GeoWebCacheException.class);
+    }
+
+    private void assertAddBlobStoreFails(FileBlobStoreInfo store, Class<? extends Exception> expectedCause)
+            throws ConfigurationException {
+        ConfigurationPersistenceException expected;
+        expected = assertThrows(ConfigurationPersistenceException.class, () -> config.addBlobStore(store));
+        assertThat(expected.getCause(), instanceOf(expectedCause));
+        assertEquals(0, config.getBlobStoreCount());
+        GeoWebCacheConfiguration configuration = config.loadConfiguration();
+        assertTrue("store shouldn't be saved", configuration.getBlobStores().isEmpty());
+    }
+
+    /**
+     * Verifies the blobstore configuration is rolled back from the persisted configuration if a
+     * {@link BlobStoreConfigurationListener#handleModifyBlobStore(BlobStoreInfo)} throws an
+     * {@link UnsuitableStorageException}.
+     *
+     * <p>Note I'm not sure why XMLConfiguration.modifyBobstore() only rolls-back on UnsuitableStorageException and not
+     * on IOException or GeoWebCacheException
+     */
+    @Test
+    public void testModifyBlobStoreExceptionFromListener() throws Exception {
+        FileBlobStoreInfo original = new FileBlobStoreInfo();
+        original.setName("store1");
+        original.setDefault(true);
+        original.setEnabled(true);
+        original.setFileSystemBlockSize(8096);
+        original.setBaseDirectory("/tmp/test");
+
+        config.addBlobStore(original);
+
+        BlobStoreConfigurationListener listener;
+
+        listener = mock(BlobStoreConfigurationListener.class);
+        doThrow(new UnsuitableStorageException("fake")).when(listener).handleModifyBlobStore(Mockito.any());
+        config.addBlobStoreListener(listener);
+
+        assertModifyBlobStoreFails(original, UnsuitableStorageException.class);
+
+        // note, I'm not sure why XMLConfiguration.addBlobStore() only rolls-back on UnsuitableStorageException and not
+        // on IOException or GeoWebCacheException
+        // doThrow(new IOException("fake")).when(listener).handleModifyBlobStore(Mockito.any());
+        // assertModifyBlobStoreFails(original, IOException.class);
+        //
+        // doThrow(new GeoWebCacheException("fake")).when(listener).handleModifyBlobStore(Mockito.any());
+        // assertModifyBlobStoreFails(original, GeoWebCacheException.class);
+    }
+
+    private void assertModifyBlobStoreFails(FileBlobStoreInfo original, Class<? extends Exception> expectedCause)
+            throws ConfigurationException {
+
+        FileBlobStoreInfo modified = (FileBlobStoreInfo) original.clone();
+        modified.setBaseDirectory("/tmp/test2");
+
+        assertEquals(1, config.getBlobStoreCount());
+
+        ConfigurationPersistenceException expected;
+        expected = assertThrows(ConfigurationPersistenceException.class, () -> config.modifyBlobStore(modified));
+        assertThat(expected.getCause(), instanceOf(expectedCause));
+        GeoWebCacheConfiguration reloaded = config.loadConfiguration();
+        assertEquals(1, reloaded.getBlobStores().size());
+
+        BlobStoreInfo stored = reloaded.getBlobStores().get(0);
+        assertEquals("store shouldn't be saved", original, stored);
     }
 
     @Test
