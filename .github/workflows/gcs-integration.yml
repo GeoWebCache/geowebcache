@@ -33,7 +33,7 @@ jobs:
 
     - name: Tests against Fake GCS Server TestContainers
       run: |
-         mvn verify -f geowebcache/pom.xml -pl :gcs-blob -am \
+         mvn verify -f geowebcache/pom.xml -pl :gwc-gcs-blob -am \
          -Ponline \
          -DskipTests=true \
          -DskipITs=false -B -ntp
