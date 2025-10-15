@@ -6,7 +6,7 @@
     <artifactId>geowebcache</artifactId>
     <version>1.28-SNAPSHOT</version>
   </parent>
-  <artifactId>gcs-blob</artifactId>
+  <artifactId>gwc-gcs-blob</artifactId>
   <name>Google Cloud Storage blob store</name>
 
   <properties>
