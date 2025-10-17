@@ -22,11 +22,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import jakarta.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
-import javax.servlet.ServletContext;
 import org.apache.commons.io.FileUtils;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.storage.DefaultStorageFinder;

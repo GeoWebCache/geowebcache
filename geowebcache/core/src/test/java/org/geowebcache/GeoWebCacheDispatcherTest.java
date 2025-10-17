@@ -18,8 +18,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Collections;
-import javax.servlet.http.HttpServletResponse;
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
 import org.easymock.MockType;

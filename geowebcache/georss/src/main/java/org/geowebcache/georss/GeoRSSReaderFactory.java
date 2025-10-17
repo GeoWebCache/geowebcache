@@ -13,6 +13,8 @@
  */
 package org.geowebcache.georss;
 
+import static org.apache.hc.client5.http.routing.RoutingSupport.determineHost;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -22,9 +24,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpException;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.util.HttpClientBuilder;
 
@@ -42,29 +45,34 @@ class GeoRSSReaderFactory {
         builder.setHttpCredentials(username, password, url);
         builder.setBackendTimeout(120);
 
-        HttpClient httpClient = builder.buildClient();
+        CloseableHttpClient httpClient = builder.buildClient();
 
         HttpGet getMethod = new HttpGet(url.toString());
 
         if (log.isLoggable(Level.FINE)) {
             log.fine("Executing HTTP GET requesr for feed URL " + url.toExternalForm());
         }
-        HttpResponse response = httpClient.execute(getMethod);
 
-        if (log.isLoggable(Level.FINE)) {
-            log.fine("Building GeoRSS reader out of URL response");
-        }
-        String contentEncoding = response.getEntity().getContentEncoding().getValue();
-        if (contentEncoding == null) {
-            contentEncoding = "UTF-8";
-        }
+        try {
+            ClassicHttpResponse response = httpClient.executeOpen(determineHost(getMethod), getMethod, null);
 
-        Reader reader =
-                new BufferedReader(new InputStreamReader(response.getEntity().getContent(), contentEncoding));
-        if (log.isLoggable(Level.FINE)) {
-            log.fine("GeoRSS reader created, returning.");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Building GeoRSS reader out of URL response");
+            }
+            String contentEncoding = response.getEntity().getContentEncoding();
+            if (contentEncoding == null) {
+                contentEncoding = "UTF-8";
+            }
+
+            Reader reader = new BufferedReader(
+                    new InputStreamReader(response.getEntity().getContent(), contentEncoding));
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("GeoRSS reader created, returning.");
+            }
+            return createReader(reader);
+        } catch (HttpException e) {
+            throw new IOException(e);
         }
-        return createReader(reader);
     }
 
     public GeoRSSReader createReader(final Reader feed) throws IOException {

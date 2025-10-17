@@ -19,6 +19,7 @@ import static org.geowebcache.diskquota.storage.StorageUnit.B;
 import static org.geowebcache.diskquota.storage.StorageUnit.GiB;
 import static org.geowebcache.diskquota.storage.StorageUnit.MiB;
 
+import jakarta.servlet.ServletContext;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,7 +27,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import javax.servlet.ServletContext;
 import org.easymock.EasyMock;
 import org.geowebcache.config.ConfigurationException;
 import org.geowebcache.diskquota.storage.LayerQuota;

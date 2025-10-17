@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.layer.wms.WMSLayer.HttpRequestMode;
 import org.junit.Rule;
@@ -88,7 +88,7 @@ public class WMSHttpHelperTest {
 
         WMSHttpHelper helper = spy(wmsHelper("${GWC_USER}", "${GWC_PWD}"));
         // do not actually execute the request
-        doReturn(null).when(helper).execute(any(HttpClient.class), any(HttpRequestBase.class));
+        doReturn(null).when(helper).execute(any(CloseableHttpClient.class), any(HttpUriRequestBase.class));
 
         // just check the http client is built with the resolved credeltials
         URL url = new URI("http://example.com/wms?request=getcapabilities").toURL();

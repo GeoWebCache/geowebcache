@@ -14,15 +14,17 @@
 package org.geowebcache.util;
 
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.cookie.StandardCookieSpec;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.geotools.util.logging.Logging;
 
 /** Builder class for HttpClients */
@@ -35,13 +37,12 @@ public class HttpClientBuilder {
     private AuthScope authscope = null;
 
     private Integer backendTimeoutMillis = null;
-    private static final HttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
 
     private boolean doAuthentication = false;
 
     private RequestConfig connectionConfig;
 
-    private org.apache.http.impl.client.HttpClientBuilder clientBuilder;
+    private org.apache.hc.client5.http.impl.classic.HttpClientBuilder clientBuilder;
 
     public HttpClientBuilder() {
         super();
@@ -58,21 +59,24 @@ public class HttpClientBuilder {
         if (url != null) {
             this.setHttpCredentials(httpUsername, httpPassword, new AuthScope(url.getHost(), url.getPort()));
         } else {
-            this.setHttpCredentials(httpUsername, httpPassword, AuthScope.ANY);
+            this.setHttpCredentials(httpUsername, httpPassword, new AuthScope(null, -1));
         }
         this.setBackendTimeout(backendTimeout);
         setConnectionConfig(RequestConfig.custom()
-                .setCookieSpec(CookieSpecs.DEFAULT)
+                .setCookieSpec(StandardCookieSpec.RELAXED)
                 .setExpectContinueEnabled(true)
-                .setSocketTimeout(backendTimeoutMillis)
-                .setConnectTimeout(backendTimeoutMillis)
+                .setResponseTimeout(backendTimeoutMillis, TimeUnit.MILLISECONDS)
+                .setConnectTimeout(backendTimeoutMillis, TimeUnit.MILLISECONDS)
                 .setRedirectsEnabled(true)
                 .build());
 
-        clientBuilder = org.apache.http.impl.client.HttpClientBuilder.create();
+        PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
+                .setMaxConnTotal(concurrency)
+                .build();
+
+        clientBuilder = HttpClients.custom();
         clientBuilder.useSystemProperties();
         clientBuilder.setConnectionManager(connectionManager);
-        clientBuilder.setMaxConnTotal(concurrency);
     }
 
     /*
@@ -88,7 +92,7 @@ public class HttpClientBuilder {
     public void setHttpCredentials(String username, String password, AuthScope authscope) {
         if (username != null && authscope != null) {
             this.authscope = authscope;
-            this.httpcredentials = new UsernamePasswordCredentials(username, password);
+            this.httpcredentials = new UsernamePasswordCredentials(username, password.toCharArray());
             this.doAuthentication = true;
         } else {
             this.authscope = null;
@@ -107,14 +111,14 @@ public class HttpClientBuilder {
      *
      * @return the generated HttpClient
      */
-    public HttpClient buildClient() {
+    public CloseableHttpClient buildClient() {
 
         if (authscope != null && httpcredentials != null) {
             BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
             credsProvider.setCredentials(authscope, httpcredentials);
             clientBuilder.setDefaultCredentialsProvider(credsProvider);
         }
-        HttpClient httpClient = clientBuilder.build();
+        CloseableHttpClient httpClient = clientBuilder.build();
 
         return httpClient;
     }

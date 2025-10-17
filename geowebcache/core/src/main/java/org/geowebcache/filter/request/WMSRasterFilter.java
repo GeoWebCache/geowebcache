@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import org.apache.http.HttpResponse;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.grid.BoundingBox;
@@ -117,12 +117,12 @@ public class WMSRasterFilter extends RasterFilter {
             backendTimeout = 120;
         }
 
-        HttpResponse httpResponse = null;
+        ClassicHttpResponse httpResponse = null;
         BufferedImage img = null;
 
         httpResponse = srcHelper.executeRequest(wmsUrl, requestParams, backendTimeout, WMSLayer.HttpRequestMode.Get);
 
-        int statusCode = httpResponse.getStatusLine().getStatusCode();
+        int statusCode = httpResponse.getCode();
         if (statusCode != 200) {
             throw new GeoWebCacheException("Received response code " + statusCode + "\n");
         }

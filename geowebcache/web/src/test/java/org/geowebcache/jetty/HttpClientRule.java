@@ -13,23 +13,24 @@ package org.geowebcache.jetty;
 
 import java.io.IOException;
 import java.util.Objects;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.CredentialsStore;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.junit.rules.ExternalResource;
 
 public class HttpClientRule extends ExternalResource {
 
-    private CredentialsProvider creds;
+    private CredentialsStore creds;
     private CloseableHttpClient client;
     private String name;
 
-    private static CredentialsProvider providerForCreds(String username, String password) {
-        CredentialsProvider creds = new BasicCredentialsProvider();
-        creds.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+    private static CredentialsStore providerForCreds(String username, String password) {
+        CredentialsStore creds = new BasicCredentialsProvider();
+        creds.setCredentials(
+                new AuthScope(null, -1), new UsernamePasswordCredentials(username, password.toCharArray()));
         return creds;
     }
 
@@ -37,7 +38,7 @@ public class HttpClientRule extends ExternalResource {
         this(providerForCreds(username, password), clientName);
     }
 
-    public HttpClientRule(CredentialsProvider creds, String clientName) {
+    public HttpClientRule(CredentialsStore creds, String clientName) {
         this.creds = creds;
         HttpClientBuilder builder = HttpClientBuilder.create();
         if (creds != null) {

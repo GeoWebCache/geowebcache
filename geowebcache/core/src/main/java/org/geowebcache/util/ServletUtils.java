@@ -13,6 +13,7 @@
  */
 package org.geowebcache.util;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -30,7 +31,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.geotools.util.logging.Logging;
 

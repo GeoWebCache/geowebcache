@@ -12,10 +12,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import jakarta.servlet.ServletContext;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.ServletContext;
 import org.geowebcache.util.PropertyRule;
 import org.hamcrest.Matchers;
 import org.junit.Rule;

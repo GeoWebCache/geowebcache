@@ -14,6 +14,7 @@
 package org.geowebcache.mbtiles.layer;
 
 import com.google.common.annotations.VisibleForTesting;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -25,7 +26,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
-import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.geotools.mbtiles.MBTilesFile;
 import org.geotools.mbtiles.MBTilesMetadata;
@@ -340,7 +340,7 @@ public class MBTilesLayer extends AbstractTileLayer implements TileJSONProvider 
         return null;
     }
 
-    /** @see org.geowebcache.layer.TileLayer#setExpirationHeader(javax.servlet.http.HttpServletResponse, int) */
+    /** @see org.geowebcache.layer.TileLayer#setExpirationHeader(jakarta.servlet.http.HttpServletResponse, int) */
     @Override
     public void setExpirationHeader(HttpServletResponse response, int zoomLevel) {
         /*

@@ -53,11 +53,11 @@
 
   <properties>
     <gt.version>35-SNAPSHOT</gt.version>
-    <spring.version>5.3.39</spring.version>
-    <spring.security.version>5.7.13</spring.security.version>
+    <spring.version>6.2.12</spring.version>
+    <spring.security.version>6.5.5</spring.security.version>
     <xstream.version>1.4.21</xstream.version>
     <commons-codec.version>1.18.0</commons-codec.version>
-    <commons-fileupload.version>1.6.0</commons-fileupload.version>
+    <commons-fileupload.version>2.0.0-M4</commons-fileupload.version>
     <hamcrest.version>3.0</hamcrest.version>
     <java.awt.headless>true</java.awt.headless>
     <jalopy.phase>disabled</jalopy.phase>
@@ -70,7 +70,7 @@
     <spotless.apply.skip>false</spotless.apply.skip>
     <pom.fmt.action>sort</pom.fmt.action>
     <pom.fmt.skip>${spotless.apply.skip}</pom.fmt.skip>
-    <jetty.version>10.0.25</jetty.version>
+    <jetty.version>12.0.28</jetty.version>
     <errorProneFlags></errorProneFlags>
     <errorProne.version>2.31.0</errorProne.version>
     <javac.version>9+181-r4173-1</javac.version>
@@ -138,9 +138,9 @@
       </dependency>
 
       <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>javax.servlet-api</artifactId>
-        <version>3.1.0</version>
+        <groupId>jakarta.servlet</groupId>
+        <artifactId>jakarta.servlet-api</artifactId>
+        <version>6.0.0</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
@@ -149,8 +149,8 @@
         <version>${commons-codec.version}</version>
       </dependency>
       <dependency>
-        <groupId>commons-fileupload</groupId>
-        <artifactId>commons-fileupload</artifactId>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-fileupload2-jakarta-servlet5</artifactId>
         <version>${commons-fileupload.version}</version>
       </dependency>
 
@@ -222,8 +222,8 @@
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-webapp</artifactId>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-webapp</artifactId>
         <version>${jetty.version}</version>
         <scope>test</scope>
       </dependency>
@@ -262,6 +262,13 @@
         <artifactId>system-rules</artifactId>
         <version>1.19.0</version>
         <scope>test</scope>
+      </dependency>
+
+      <!-- to be moved to GeoTools once it's upgraded to httpclient 5.x -->
+      <dependency>
+        <groupId>org.apache.httpcomponents.client5</groupId>
+        <artifactId>httpclient5</artifactId>
+        <version>5.4.4</version>
       </dependency>
 
     </dependencies>
@@ -345,7 +352,7 @@
               <!-- prevent ForkedBooter focus steal on macOS -->
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
-            <argLine>${maven.test.jvmargs} -XX:+IgnoreUnrecognizedVMOptions --illegal-access=warn --add-exports=java.desktop/sun.awt.image=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED</argLine>
+            <argLine>${maven.test.jvmargs} -XX:+IgnoreUnrecognizedVMOptions --add-exports=java.desktop/sun.awt.image=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED</argLine>
             <!-- allow skipping unit tests but run integration tests with -DskipTests -DskipITs=false, otherwise skipTests will also disable the failsafe run -->
             <skipTests>${skipITs}</skipTests>
           </configuration>

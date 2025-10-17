@@ -15,6 +15,8 @@ package org.geowebcache.demo;
 
 import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,8 +31,6 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;

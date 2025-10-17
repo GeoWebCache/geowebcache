@@ -13,11 +13,11 @@
  */
 package org.geowebcache.util;
 
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import org.geotools.util.factory.GeoTools;
 import org.geotools.util.logging.LoggerFactory;
 import org.geotools.util.logging.Logging;

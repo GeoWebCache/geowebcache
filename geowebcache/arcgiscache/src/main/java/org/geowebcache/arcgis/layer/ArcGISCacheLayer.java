@@ -14,6 +14,7 @@
 package org.geowebcache.arcgis.layer;
 
 import com.google.common.annotations.VisibleForTesting;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -24,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletResponse;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.arcgis.compact.ArcGISCompactCache;
@@ -452,7 +452,7 @@ public class ArcGISCacheLayer extends AbstractTileLayer {
         return null;
     }
 
-    /** @see org.geowebcache.layer.TileLayer#setExpirationHeader(javax.servlet.http.HttpServletResponse, int) */
+    /** @see org.geowebcache.layer.TileLayer#setExpirationHeader(jakarta.servlet.http.HttpServletResponse, int) */
     @Override
     public void setExpirationHeader(HttpServletResponse response, int zoomLevel) {
         /*

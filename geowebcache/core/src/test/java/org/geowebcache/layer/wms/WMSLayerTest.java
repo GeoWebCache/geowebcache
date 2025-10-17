@@ -27,6 +27,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -56,14 +58,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
-import org.apache.http.client.HttpClient;
-import org.apache.http.message.BasicHeader;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.message.BasicHeader;
 import org.easymock.Capture;
 import org.easymock.CaptureType;
 import org.easymock.EasyMock;
@@ -298,25 +296,22 @@ public class WMSLayerTest extends TileLayerTest {
         // setup the layer
         WMSLayer layer = createWMSLayer("image/png");
         final byte[] responseBody = "Fake body".getBytes();
-        HttpResponse response = EasyMock.createNiceMock(HttpResponse.class);
-        StatusLine statusLine = EasyMock.createMock(StatusLine.class);
-        expect(response.getStatusLine()).andReturn(statusLine);
+        ClassicHttpResponse response = EasyMock.createNiceMock(ClassicHttpResponse.class);
 
         HttpEntity entity = EasyMock.createMock(HttpEntity.class);
 
         expect(entity.getContent()).andReturn(new ByteArrayInputStream(responseBody));
         expect(response.getEntity()).andReturn(entity);
-        Header contentEncoding = new BasicHeader("ContentEncoding", "UTF-8");
-        expect(entity.getContentEncoding()).andReturn(contentEncoding);
+        expect(entity.getContentEncoding()).andReturn("UTF-8");
         expect(response.getFirstHeader("Content-Type")).andReturn(new BasicHeader("Content-Type", "image/png"));
 
         replay(entity);
         replay(response);
-        HttpClient httpClient = EasyMock.createNiceMock(HttpClient.class);
-        expect(httpClient.execute(anyObject())).andReturn(response);
+        CloseableHttpClient httpClient = EasyMock.createNiceMock(CloseableHttpClient.class);
+        expect(httpClient.executeOpen(anyObject(), anyObject(), anyObject())).andReturn(response);
         replay(httpClient);
         WMSHttpHelper httpHelper = new WMSHttpHelper() {
-            public WMSHttpHelper setClient(HttpClient httpClient) {
+            public WMSHttpHelper setClient(CloseableHttpClient httpClient) {
                 this.client = httpClient;
                 return this;
             }
@@ -345,23 +340,20 @@ public class WMSLayerTest extends TileLayerTest {
         final byte[] responseBody = "Fake body".getBytes();
         layer.setSourceHelper(new WMSHttpHelper() {
             @Override
-            public HttpResponse executeRequest(
+            public ClassicHttpResponse executeRequest(
                     URL url,
                     Map<String, String> queryParams,
                     Integer backendTimeout,
                     WMSLayer.HttpRequestMode httpRequestMode)
                     throws UnsupportedOperationException, IOException {
 
-                HttpResponse response = EasyMock.createNiceMock(HttpResponse.class);
-                StatusLine statusLine = EasyMock.createMock(StatusLine.class);
-                expect(response.getStatusLine()).andReturn(statusLine);
+                ClassicHttpResponse response = EasyMock.createNiceMock(ClassicHttpResponse.class);
 
                 HttpEntity entity = EasyMock.createMock(HttpEntity.class);
 
                 expect(entity.getContent()).andReturn(new ByteArrayInputStream(responseBody));
                 expect(response.getEntity()).andReturn(entity);
-                Header contentEncoding = new BasicHeader("ContentEncoding", "UTF-8");
-                expect(entity.getContentEncoding()).andReturn(contentEncoding);
+                expect(entity.getContentEncoding()).andReturn("UTF-8");
                 expect(response.getFirstHeader("Content-Type")).andReturn(new BasicHeader("Content-Type", "image/png"));
 
                 replay(entity);
@@ -404,22 +396,19 @@ public class WMSLayerTest extends TileLayerTest {
         final byte[] responseBody = "Fake body".getBytes();
         layer.setSourceHelper(new WMSHttpHelper() {
             @Override
-            public HttpResponse executeRequest(
+            public ClassicHttpResponse executeRequest(
                     URL url,
                     Map<String, String> queryParams,
                     Integer backendTimeout,
                     WMSLayer.HttpRequestMode httpRequestMode)
                     throws UnsupportedOperationException, IOException {
-                HttpResponse response = EasyMock.createNiceMock(HttpResponse.class);
-                StatusLine statusLine = EasyMock.createMock(StatusLine.class);
-                expect(response.getStatusLine()).andReturn(statusLine);
+                ClassicHttpResponse response = EasyMock.createNiceMock(ClassicHttpResponse.class);
                 expect(response.getFirstHeader("Content-Type")).andReturn(null);
                 HttpEntity entity = EasyMock.createMock(HttpEntity.class);
 
                 expect(entity.getContent()).andReturn(new ByteArrayInputStream(responseBody));
                 expect(response.getEntity()).andReturn(entity);
-                Header contentEncoding = new BasicHeader("ContentEncoding", "UTF-8");
-                expect(entity.getContentEncoding()).andReturn(contentEncoding);
+                expect(entity.getContentEncoding()).andReturn("UTF-8");
 
                 replay(entity);
                 // expectLastCall();

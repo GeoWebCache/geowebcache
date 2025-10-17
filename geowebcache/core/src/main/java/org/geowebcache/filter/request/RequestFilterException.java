@@ -13,8 +13,8 @@
  */
 package org.geowebcache.filter.request;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.Serial;
-import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.io.Resource;
 
 public class RequestFilterException extends Exception {

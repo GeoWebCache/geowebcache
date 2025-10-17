@@ -13,6 +13,7 @@
  */
 package org.geowebcache.layer.wms;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -23,10 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletResponse;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.XMLGridSubset;
@@ -781,7 +780,7 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         String queryStr = tile.servletReq.getQueryString();
         String serverStr = getWMSurl()[0];
 
-        HttpResponse httpResponse = null;
+        ClassicHttpResponse httpResponse = null;
         try {
             URL url;
             if (serverStr.contains("?")) {
@@ -800,12 +799,12 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
             HttpEntity entity = httpResponse.getEntity();
             try (InputStream is = entity.getContent()) {
                 HttpServletResponse response = tile.servletResp;
-                org.apache.http.Header contentType = httpResponse.getFirstHeader("Content-Type");
+                org.apache.hc.core5.http.Header contentType = httpResponse.getFirstHeader("Content-Type");
                 if (contentType != null) {
                     response.setContentType(contentType.getValue());
-                    Header contentEncoding = entity.getContentEncoding();
+                    String contentEncoding = entity.getContentEncoding();
                     if (!MimeType.isBinary(contentType.getValue())) {
-                        response.setCharacterEncoding(contentEncoding.getValue());
+                        response.setCharacterEncoding(contentEncoding);
                     }
                 }
 

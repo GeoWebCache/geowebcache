@@ -13,6 +13,8 @@
  */
 package org.geowebcache.layer.wms;
 
+import static org.apache.hc.client5.http.routing.RoutingSupport.determineHost;
+
 import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,16 +29,16 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.GeoWebCacheException;
@@ -84,7 +86,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
      */
     private final String httpPassword;
 
-    protected HttpClient client;
+    protected CloseableHttpClient client;
 
     public WMSHttpHelper() {
         this(null, null, null);
@@ -144,7 +146,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
      * reduce the overhead of synchronization. Otherwise PMD complains with a `Double checked locking is not thread safe
      * in Java.` error.
      */
-    synchronized HttpClient getHttpClient() {
+    synchronized CloseableHttpClient getHttpClient() {
         if (client == null) {
             int backendTimeout = getBackendTimeout();
             String user = getResolvedHttpUsername();
@@ -157,7 +159,8 @@ public class WMSHttpHelper extends WMSSourceHelper {
     }
 
     @VisibleForTesting
-    HttpClient buildHttpClient(int backendTimeout, String username, String password, URL proxy, int concurrency) {
+    CloseableHttpClient buildHttpClient(
+            int backendTimeout, String username, String password, URL proxy, int concurrency) {
 
         URL serverUrl = null;
         HttpClientBuilder builder =
@@ -234,13 +237,13 @@ public class WMSHttpHelper extends WMSSourceHelper {
             WMSLayer.HttpRequestMode httpRequestMode)
             throws GeoWebCacheException {
 
-        HttpResponse method = null;
+        ClassicHttpResponse method = null;
         final int responseCode;
         int responseLength = 0;
 
         try {
             method = executeRequest(wmsBackendUrl, wmsParams, backendTimeout, httpRequestMode);
-            responseCode = method.getStatusLine().getStatusCode();
+            responseCode = method.getCode();
             if (responseCode == 200) {
                 if (method.getFirstHeader("length") != null) {
                     responseLength =
@@ -351,7 +354,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
      *     {@link org.geowebcache.layer.wms.WMSLayer.HttpRequestMode#Get} will be used
      * @return executed method (that has to be closed after reading the response!)
      */
-    public HttpResponse executeRequest(
+    public ClassicHttpResponse executeRequest(
             final URL url,
             final Map<String, String> queryParams,
             final Integer backendTimeout,
@@ -370,7 +373,7 @@ public class WMSHttpHelper extends WMSSourceHelper {
             }
         }
 
-        HttpRequestBase method;
+        HttpUriRequestBase method;
         String urlString = url.toString();
         if (httpRequestMode == WMSLayer.HttpRequestMode.FormPost) {
             HttpPost pm = new HttpPost(urlString);
@@ -397,13 +400,17 @@ public class WMSHttpHelper extends WMSSourceHelper {
         if (log.isLoggable(Level.FINER)) {
             log.finer(method.toString());
         }
-        HttpClient httpClient = getHttpClient();
+        CloseableHttpClient httpClient = getHttpClient();
         return execute(httpClient, method);
     }
 
     @VisibleForTesting
-    HttpResponse execute(HttpClient httpClient, HttpRequestBase method) throws IOException, ClientProtocolException {
-        return httpClient.execute(method);
+    ClassicHttpResponse execute(CloseableHttpClient httpClient, HttpUriRequestBase method) throws IOException {
+        try {
+            return httpClient.executeOpen(determineHost(method), method, null);
+        } catch (HttpException e) {
+            throw new IOException(e);
+        }
     }
 
     private String processRequestParameters(Map<String, String> parameters) throws UnsupportedEncodingException {

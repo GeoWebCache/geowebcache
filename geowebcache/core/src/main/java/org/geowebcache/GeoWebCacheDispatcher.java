@@ -15,6 +15,10 @@ package org.geowebcache;
 
 import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,10 +33,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.config.BaseConfiguration;
 import org.geowebcache.config.BlobStoreInfo;

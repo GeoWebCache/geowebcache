@@ -13,10 +13,10 @@
  */
 package org.geowebcache;
 
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
 import java.io.IOException;
 import java.io.OutputStream;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
 
 /**
  * A wrapper for a Dispatcher destination output stream that signals {@link IOException}s thrown while writing to the

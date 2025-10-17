@@ -14,7 +14,7 @@
 package org.geowebcache.rest.controller;
 
 import com.google.common.annotations.VisibleForTesting;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;

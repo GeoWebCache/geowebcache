@@ -13,12 +13,12 @@
  */
 package org.geowebcache.rest.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletResponse;
 import org.geowebcache.rest.exception.RestException;
 import org.springframework.http.MediaType;
 import org.springframework.util.StreamUtils;
