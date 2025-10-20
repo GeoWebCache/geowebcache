@@ -142,13 +142,13 @@ public final class ResponseUtils {
         // (e.g. 'Sun, 06 Nov 1994 08:49:37 GMT'). See
         // http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3.1
 
-        final String lastModified = DateUtils.formatDate(new Date(tileTimeStamp));
+        final String lastModified = DateUtils.formatStandardDate(new Date(tileTimeStamp).toInstant());
         servletResp.setHeader("Last-Modified", lastModified);
 
         final Date ifModifiedSince;
         if (ifModSinceHeader != null && ifModSinceHeader.length() > 0) {
 
-            ifModifiedSince = DateUtils.parseDate(ifModSinceHeader);
+            ifModifiedSince = Date.from(DateUtils.parseStandardDate(ifModSinceHeader));
             // the HTTP header has second precision
             long ifModSinceSeconds = 1000 * (ifModifiedSince.getTime() / 1000);
             long tileTimeStampSeconds = 1000 * (tileTimeStamp / 1000);

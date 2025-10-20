@@ -780,7 +780,6 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
         String queryStr = tile.servletReq.getQueryString();
         String serverStr = getWMSurl()[0];
 
-        ClassicHttpResponse httpResponse = null;
         try {
             URL url;
             if (serverStr.contains("?")) {
@@ -794,27 +793,28 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
                 throw new GeoWebCacheException("Can only proxy if WMS Layer is backed by an HTTP backend");
             }
 
-            httpResponse =
-                    ((WMSHttpHelper) helper).executeRequest(url, null, getBackendTimeout(), getHttpRequestMode());
-            HttpEntity entity = httpResponse.getEntity();
-            try (InputStream is = entity.getContent()) {
-                HttpServletResponse response = tile.servletResp;
-                org.apache.hc.core5.http.Header contentType = httpResponse.getFirstHeader("Content-Type");
-                if (contentType != null) {
-                    response.setContentType(contentType.getValue());
-                    String contentEncoding = entity.getContentEncoding();
-                    if (!MimeType.isBinary(contentType.getValue())) {
-                        response.setCharacterEncoding(contentEncoding);
+            try (ClassicHttpResponse httpResponse =
+                    ((WMSHttpHelper) helper).executeRequest(url, null, getBackendTimeout(), getHttpRequestMode())) {
+                HttpEntity entity = httpResponse.getEntity();
+                try (InputStream is = entity.getContent()) {
+                    HttpServletResponse response = tile.servletResp;
+                    org.apache.hc.core5.http.Header contentType = httpResponse.getFirstHeader("Content-Type");
+                    if (contentType != null) {
+                        response.setContentType(contentType.getValue());
+                        String contentEncoding = entity.getContentEncoding();
+                        if (!MimeType.isBinary(contentType.getValue())) {
+                            response.setCharacterEncoding(contentEncoding);
+                        }
                     }
-                }
 
-                int read = 0;
-                byte[] data = new byte[1024];
+                    int read = 0;
+                    byte[] data = new byte[1024];
 
-                while (read > -1) {
-                    read = is.read(data);
-                    if (read > -1) {
-                        response.getOutputStream().write(data, 0, read);
+                    while (read > -1) {
+                        read = is.read(data);
+                        if (read > -1) {
+                            response.getOutputStream().write(data, 0, read);
+                        }
                     }
                 }
             }

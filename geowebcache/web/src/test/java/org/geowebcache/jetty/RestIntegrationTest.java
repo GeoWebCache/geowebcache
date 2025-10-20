@@ -15,6 +15,7 @@
  */
 package org.geowebcache.jetty;
 
+import static org.apache.hc.client5.http.routing.RoutingSupport.determineHost;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.describedAs;
@@ -30,7 +31,6 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
@@ -39,8 +39,11 @@ import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.classic.methods.HttpPut;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.http.message.StatusLine;
 import org.custommonkey.xmlunit.XMLUnit;
@@ -130,9 +133,8 @@ public class RestIntegrationTest {
                   <backendTimeout>120</backendTimeout>
                 </global>""";
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate)) {
-            System.out.println(response.getEntity().toString());
             assertEquals(200, response.getCode());
         }
     }
@@ -149,7 +151,7 @@ public class RestIntegrationTest {
 
     @Test
     public void testGetLogo() throws Exception {
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/web/geowebcache_logo.png"), anonymous.getClient())) {
             assertEquals(200, response.getCode());
         }
@@ -157,7 +159,7 @@ public class RestIntegrationTest {
 
     @Test
     public void testGetCss() throws Exception {
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/web/gwc.css"), anonymous.getClient())) {
             assertEquals(200, response.getCode());
         }
@@ -165,7 +167,7 @@ public class RestIntegrationTest {
 
     @Test
     public void testGetBadWebResource() throws Exception {
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/web/thisDoesNotExist"), anonymous.getClient())) {
             assertEquals(404, response.getCode());
         }
@@ -175,8 +177,7 @@ public class RestIntegrationTest {
 
     @Test
     public void testGetGlobal() throws Exception {
-        try (CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
+        try (ClassicHttpResponse response = handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
             Document doc = getResponseEntityAsXML(response);
@@ -245,13 +246,12 @@ public class RestIntegrationTest {
 
         testGetGlobal();
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate)) {
             assertEquals(200, response.getCode());
         }
 
-        try (CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
+        try (ClassicHttpResponse response = handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
             Document doc = getResponseEntityAsXML(response);
@@ -283,14 +283,13 @@ public class RestIntegrationTest {
         testGetGlobal();
 
         final String globalUpdate;
-        try (CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
+        try (ClassicHttpResponse response = handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
             globalUpdate = getResponseEntity(response);
         }
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate)) {
             assertEquals(200, response.getCode());
             response.close();
@@ -308,13 +307,12 @@ public class RestIntegrationTest {
 
         testGetGlobal();
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate)) {
             assertEquals(200, response.getCode());
         }
 
-        try (CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
+        try (ClassicHttpResponse response = handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
             Document doc = getResponseEntityAsXML(response);
@@ -348,8 +346,7 @@ public class RestIntegrationTest {
 
         final String globalUpdate = "<global><lockProvider>nioLock</lockProvider></global>";
 
-        try (CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
+        try (ClassicHttpResponse response = handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
             Document doc = getResponseEntityAsXML(response);
@@ -359,13 +356,12 @@ public class RestIntegrationTest {
             assertThat(doc, hasXPath("count(/global/lockProvider)", equalTo("0")));
         }
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate)) {
             assertEquals(200, response.getCode());
         }
 
-        try (CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
+        try (ClassicHttpResponse response = handleGet(URI.create("/geowebcache/rest/global.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
             Document doc = getResponseEntityAsXML(response);
@@ -379,7 +375,7 @@ public class RestIntegrationTest {
         // PUT a value that is read-only
         final String globalUpdate = "<global><location>foobar</location></global>";
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate)) {
             assertEquals(400, response.getCode());
         }
@@ -436,9 +432,7 @@ public class RestIntegrationTest {
                             + layers
                             + "</wmsLayers></wmsLayer>",
                     ContentType.APPLICATION_XML));
-            try (CloseableHttpResponse response = admin.getClient().execute(request)) {
-                assertThat(new StatusLine(response), hasProperty("statusCode", equalTo(200)));
-            }
+            admin.getClient().execute(request, new StatusCheckHandler(200));
 
             doGetXML("rest/layers.xml", admin.getClient(), equalTo(200), doc -> {
                 assertThat(
@@ -468,9 +462,7 @@ public class RestIntegrationTest {
                             + layers
                             + "</wmsLayers></wmsLayer>",
                     ContentType.APPLICATION_XML));
-            try (CloseableHttpResponse response = admin.getClient().execute(request)) {
-                assertThat(new StatusLine(response), hasProperty("statusCode", equalTo(200)));
-            }
+            admin.getClient().execute(request, new StatusCheckHandler(200));
             doGetXML("rest/layers/" + layerName + ".xml", admin.getClient(), equalTo(200), doc -> {
                 assertThat(doc, hasXPath("/wmsLayer/name", equalTo(layerName)));
                 assertThat(doc, hasXPath("/wmsLayer/wmsUrl/string", equalTo(url2)));
@@ -489,9 +481,7 @@ public class RestIntegrationTest {
         {
             final HttpDelete request =
                     new HttpDelete(jetty.getUri().resolve("rest/layers/").resolve(layerName + ".xml"));
-            try (CloseableHttpResponse response = admin.getClient().execute(request)) {
-                assertThat(new StatusLine(response), hasProperty("statusCode", equalTo(200)));
-            }
+            admin.getClient().execute(request, new StatusCheckHandler(200));
 
             doGetXML("rest/layers.xml", admin.getClient(), equalTo(200), doc -> {
                 assertThat(doc, not(hasXPath("/layers/layer[name/text()='" + layerName + "']")));
@@ -499,9 +489,7 @@ public class RestIntegrationTest {
 
             final HttpGet request2 =
                     new HttpGet(jetty.getUri().resolve("rest/layers/").resolve(layerName + ".xml"));
-            try (CloseableHttpResponse response = admin.getClient().execute(request2)) {
-                assertEquals(404, response.getCode());
-            }
+            admin.getClient().execute(request2, new StatusCheckHandler(404));
         }
         // GetCap
         {
@@ -592,14 +580,14 @@ public class RestIntegrationTest {
     protected void testSecured(HttpUriRequest request, Matcher<Integer> authenticatedStatus) throws Exception {
         {
             CloseableHttpClient client = admin.getClient();
-            try (CloseableHttpResponse response = client.execute(request);
+            try (ClassicHttpResponse response = client.executeOpen(determineHost(request), request, null);
                     InputStream in = response.getEntity().getContent()) {
                 assertThat(new StatusLine(response), hasProperty("statusCode", authenticatedStatus));
             }
         }
         for (CloseableHttpClient client :
                 Arrays.asList(anonymous.getClient(), notAUser.getClient(), badPassword.getClient())) {
-            try (CloseableHttpResponse response = client.execute(request);
+            try (ClassicHttpResponse response = client.executeOpen(determineHost(request), request, null);
                     InputStream in = response.getEntity().getContent()) {
                 final int code = 401;
                 assertThat(
@@ -628,7 +616,7 @@ public class RestIntegrationTest {
 
     @Test
     public void testGetBlobStoresXML() throws Exception {
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/blobstores.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
@@ -647,7 +635,7 @@ public class RestIntegrationTest {
 
     @Test
     public void testGetBlobStoresJSON() throws Exception {
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/blobstores.json"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
@@ -659,7 +647,7 @@ public class RestIntegrationTest {
 
     @Test
     public void testGetBlobStoreXML() throws Exception {
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/blobstores/defaultCache.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
@@ -674,7 +662,7 @@ public class RestIntegrationTest {
 
     @Test
     public void testGetBlobStoreJSON() throws Exception {
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/blobstores/defaultCache.json"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
@@ -699,17 +687,17 @@ public class RestIntegrationTest {
                 </FileBlobStore>""";
 
         // Make it sure doesn't exist
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/blobstores/newCache.xml"), admin.getClient())) {
             assertEquals(404, response.getCode());
         }
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/blobstores/newCache"), admin.getClient(), blobStore)) {
             assertEquals(201, response.getCode());
         }
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/blobstores/newCache.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
@@ -730,12 +718,12 @@ public class RestIntegrationTest {
                     <fileSystemBlockSize>2048</fileSystemBlockSize>
                 </FileBlobStore>""";
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/blobstores/newCache"), admin.getClient(), blobStoreUpdate)) {
             assertEquals(200, response.getCode());
         }
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/blobstores/newCache.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
@@ -747,12 +735,12 @@ public class RestIntegrationTest {
             assertThat(doc, hasXPath("//fileSystemBlockSize", equalTo("2048")));
         }
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleDelete(URI.create("/geowebcache/rest/blobstores/newCache.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
         }
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/blobstores/newCache.xml"), admin.getClient())) {
             assertEquals(404, response.getCode());
         }
@@ -762,7 +750,7 @@ public class RestIntegrationTest {
 
     @Test
     public void testGetGridSetsXML() throws Exception {
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/gridsets.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
@@ -784,7 +772,7 @@ public class RestIntegrationTest {
 
     @Test
     public void testGetGridSetsJSON() throws Exception {
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/gridsets.json"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
@@ -796,7 +784,7 @@ public class RestIntegrationTest {
 
     @Test
     public void testGetGridSetXML() throws Exception {
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/gridsets/EPSG:2163.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
@@ -819,7 +807,7 @@ public class RestIntegrationTest {
 
     @Test
     public void testGetGridSetJSON() throws Exception {
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/gridsets/EPSG:2163.json"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
@@ -873,17 +861,17 @@ public class RestIntegrationTest {
                 </gridSet>""";
 
         // Make it sure doesn't exist
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/gridsets/testGridset.xml"), admin.getClient())) {
             assertEquals(404, response.getCode());
         }
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/gridsets/testGridset.xml"), admin.getClient(), gridSet)) {
             assertEquals(201, response.getCode());
         }
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/gridsets/testGridset.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
@@ -935,12 +923,12 @@ public class RestIntegrationTest {
                   <yCoordinateFirst>false</yCoordinateFirst>
                 </gridSet>""";
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/gridsets/testGridset"), admin.getClient(), gridSetUpdate)) {
             assertEquals(200, response.getCode());
         }
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/gridsets/testGridset.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
 
@@ -955,12 +943,12 @@ public class RestIntegrationTest {
             assertThat(doc, hasXPath("//tileHeight", equalTo("200")));
         }
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleDelete(URI.create("/geowebcache/rest/gridsets/testGridset.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
         }
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/gridsets/testGridset.xml"), admin.getClient())) {
             assertEquals(404, response.getCode());
         }
@@ -970,7 +958,7 @@ public class RestIntegrationTest {
 
     @Test
     public void testDiskQuotaXML() throws Exception {
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/diskquota.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
             if (response.getCode() == 200) {
@@ -988,7 +976,7 @@ public class RestIntegrationTest {
 
     @Test
     public void testDiskQuotaJson() throws Exception {
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/diskquota.json"), admin.getClient())) {
             assertEquals(200, response.getCode());
             if (response.getCode() == 200) {
@@ -1036,7 +1024,7 @@ public class RestIntegrationTest {
                 + //
                 "</seedRequest>";
 
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePost(URI.create("/geowebcache/rest/seed/states.xml"), admin.getClient(), seedLayer)) {
             assertEquals(200, response.getCode());
         }
@@ -1044,37 +1032,35 @@ public class RestIntegrationTest {
 
     @Test
     public void testSeedGet() throws Exception {
-        try (CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/seed/states"), admin.getClient())) {
+        try (ClassicHttpResponse response = handleGet(URI.create("/geowebcache/rest/seed/states"), admin.getClient())) {
             assertEquals(200, response.getCode());
         }
     }
 
     @Test
     public void testSeedGetNoLayer() throws Exception {
-        try (CloseableHttpResponse response = handleGet(URI.create("/geowebcache/rest/seed"), admin.getClient())) {
+        try (ClassicHttpResponse response = handleGet(URI.create("/geowebcache/rest/seed"), admin.getClient())) {
             assertEquals(405, response.getCode());
         }
     }
 
     @Test
     public void testSeedGetSeedForm() throws Exception {
-        try (CloseableHttpResponse response =
-                handleGet(URI.create("/geowebcache/rest/seed/states"), admin.getClient())) {
+        try (ClassicHttpResponse response = handleGet(URI.create("/geowebcache/rest/seed/states"), admin.getClient())) {
             assertEquals(200, response.getCode());
         }
     }
 
     @Test
     public void testSeedGetJson() throws Exception {
-        try (CloseableHttpResponse response = handleGet(URI.create("/geowebcache/rest/seed.json"), admin.getClient())) {
+        try (ClassicHttpResponse response = handleGet(URI.create("/geowebcache/rest/seed.json"), admin.getClient())) {
             assertEquals(200, response.getCode());
         }
     }
 
     @Test
     public void testSeedGetLayerJson() throws Exception {
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/seed/states.json"), admin.getClient())) {
             assertEquals(200, response.getCode());
         }
@@ -1082,7 +1068,7 @@ public class RestIntegrationTest {
 
     @Test
     public void testSeedGetLayerXml() throws Exception {
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/seed/states.xml"), admin.getClient())) {
             assertEquals(200, response.getCode());
         }
@@ -1091,7 +1077,7 @@ public class RestIntegrationTest {
     @Test
     public void testKillAll() throws Exception {
         String killCommand = "kill_all=all";
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePost(URI.create("/geowebcache/rest/seed"), admin.getClient(), killCommand)) {
             assertEquals(200, response.getCode());
         }
@@ -1100,7 +1086,7 @@ public class RestIntegrationTest {
     @Test
     public void testLayerKillAll() throws Exception {
         String killCommand = "kill_all=all";
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePost(URI.create("/geowebcache/rest/seed/states"), admin.getClient(), killCommand)) {
             assertEquals(200, response.getCode());
         }
@@ -1146,54 +1132,53 @@ public class RestIntegrationTest {
         String layer2truncate = "<truncateLayer><layerName>" + layer2name + "</layerName></truncateLayer>";
 
         // Make it sure the blobstore doesn't exist already as that would invalidate the test
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/blobstores/maliciousCache.xml"), admin.getClient())) {
-            System.out.println(response);
             assertEquals(404, response.getCode());
         }
 
         // Create a store
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/blobstores/maliciousCache"), admin.getClient(), blobStore)) {
         } catch (Exception e) {
             // Ignore and keep going
         }
 
         // Create layers with the names of entries in that directory
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/layers/" + layer1name), admin.getClient(), layer1)) {
         } catch (Exception e) {
             // Ignore and keep going
         }
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/layers/" + layer2name), admin.getClient(), layer2)) {
         } catch (Exception e) {
             // Ignore and keep going
         }
 
         // Mass Truncate those layers
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePost(URI.create("/geowebcache/rest/masstruncate"), admin.getClient(), layer1truncate)) {}
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handlePost(URI.create("/geowebcache/rest/masstruncate"), admin.getClient(), layer2truncate)) {
         } catch (Exception e) {
             // Ignore and keep going
         }
 
         // Delete the layers
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleDelete(URI.create("/geowebcache/rest/layers/" + layer1name), admin.getClient())) {
         } catch (Exception e) {
             // Ignore and keep going
         }
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleDelete(URI.create("/geowebcache/rest/layers/" + layer2name), admin.getClient())) {
         } catch (Exception e) {
             // Ignore and keep going
         }
 
         // Delete the store
-        try (CloseableHttpResponse response =
+        try (ClassicHttpResponse response =
                 handleDelete(URI.create("/geowebcache/rest/blobstores/maliciousCache"), admin.getClient())) {
         } catch (Exception e) {
             // Ignore and keep going
@@ -1207,7 +1192,7 @@ public class RestIntegrationTest {
 
     /* Utility methods ***************************************************************************/
 
-    private Document getResponseEntityAsXML(CloseableHttpResponse response) throws Exception {
+    private Document getResponseEntityAsXML(ClassicHttpResponse response) throws Exception {
 
         Document doc =
                 XMLUnit.buildTestDocument(new InputSource(response.getEntity().getContent()));
@@ -1216,17 +1201,17 @@ public class RestIntegrationTest {
         return doc;
     }
 
-    private JSONObject getResponseEntityAsJSONObject(CloseableHttpResponse response) throws Exception {
+    private JSONObject getResponseEntityAsJSONObject(ClassicHttpResponse response) throws Exception {
         JSONObject jsonObject = new JSONObject(getResponseEntity(response));
         return jsonObject;
     }
 
-    private JSONArray getResponseEntityAsJSONArray(CloseableHttpResponse response) throws Exception {
+    private JSONArray getResponseEntityAsJSONArray(ClassicHttpResponse response) throws Exception {
         JSONArray jsonObject = new JSONArray(getResponseEntity(response));
         return jsonObject;
     }
 
-    private String getResponseEntity(CloseableHttpResponse response) {
+    private String getResponseEntity(ClassicHttpResponse response) {
         String doc;
         try {
             StringWriter writer = new StringWriter();
@@ -1239,10 +1224,9 @@ public class RestIntegrationTest {
         return doc;
     }
 
-    private CloseableHttpResponse handleGet(URI uri, CloseableHttpClient client) throws Exception {
+    private ClassicHttpResponse handleGet(URI uri, CloseableHttpClient client) throws Exception {
         HttpGet request = new HttpGet(jetty.getUri().resolve(uri));
-        CloseableHttpResponse response = client.execute(request);
-        return response;
+        return client.executeOpen(determineHost(request), request, null);
     }
 
     interface Assertions<T> {
@@ -1258,37 +1242,50 @@ public class RestIntegrationTest {
             throws Exception {
         final HttpGet request = new HttpGet(jetty.getUri().resolve(uri));
         final Document doc;
-        try (CloseableHttpResponse response = client.execute(request);
+        try (ClassicHttpResponse response = client.executeOpen(determineHost(request), request, null);
                 InputStream in = response.getEntity().getContent()) {
             if (response.getCode() != 401) {
                 doc = XMLUnit.buildTestDocument(new InputSource(in));
                 body.accept(doc);
-            } else {
-                System.out.println(IOUtils.toString(in, StandardCharsets.UTF_8));
             }
             assertThat(new StatusLine(response), hasProperty("statusCode", statusMatcher));
         }
     }
 
-    private CloseableHttpResponse handleDelete(URI uri, CloseableHttpClient client) throws Exception {
+    private ClassicHttpResponse handleDelete(URI uri, CloseableHttpClient client) throws Exception {
         HttpDelete request = new HttpDelete(jetty.getUri().resolve(uri));
-        CloseableHttpResponse response = client.execute(request);
-        return response;
+        return client.executeOpen(determineHost(request), request, null);
     }
 
-    private CloseableHttpResponse handlePut(URI uri, CloseableHttpClient client, String data) throws Exception {
+    @SuppressWarnings("PMD.CloseResource")
+    private ClassicHttpResponse handlePut(URI uri, CloseableHttpClient client, String data) throws Exception {
         HttpPut request = new HttpPut(jetty.getUri().resolve(uri));
         StringEntity entity = new StringEntity(data, ContentType.TEXT_XML);
         request.setEntity(entity);
-        CloseableHttpResponse response = client.execute(request);
-        return response;
+        return client.executeOpen(determineHost(request), request, null);
     }
 
-    private CloseableHttpResponse handlePost(URI uri, CloseableHttpClient client, String data) throws Exception {
+    @SuppressWarnings("PMD.CloseResource")
+    private ClassicHttpResponse handlePost(URI uri, CloseableHttpClient client, String data) throws Exception {
         HttpPost request = new HttpPost(jetty.getUri().resolve(uri));
         StringEntity entity = new StringEntity(data, ContentType.TEXT_XML);
         request.setEntity(entity);
-        CloseableHttpResponse response = client.execute(request);
-        return response;
+        return client.executeOpen(determineHost(request), request, null);
+    }
+
+    private static class StatusCheckHandler implements HttpClientResponseHandler<Object> {
+
+        private final int expectedStatus;
+
+        public StatusCheckHandler(int expectedStatus) {
+            this.expectedStatus = expectedStatus;
+        }
+
+        @Override
+        public Object handleResponse(ClassicHttpResponse response) throws HttpException, IOException {
+            assertEquals(expectedStatus, response.getCode());
+            EntityUtils.consumeQuietly(response.getEntity());
+            return null;
+        }
     }
 }

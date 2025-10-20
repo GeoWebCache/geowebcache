@@ -21,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.geotools.util.logging.Logging;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.PlaceholderConfigurerSupport;
-import org.springframework.core.Constants;
 import org.springframework.util.PropertyPlaceholderHelper;
 
 /**
@@ -47,8 +46,6 @@ public class GeoWebCacheEnvironment {
     /** logger */
     public static final Logger LOGGER = Logging.getLogger(GeoWebCacheEnvironment.class.getName());
 
-    private static final Constants constants = new Constants(PlaceholderConfigurerSupport.class);
-
     /**
      * Constant set via System Environment in order to instruct GeoWebCache to make use or not of the config
      * placeholders translation.
@@ -65,9 +62,10 @@ public class GeoWebCacheEnvironment {
     private static final String nullValue = "null";
 
     private final PropertyPlaceholderHelper helper = new PropertyPlaceholderHelper(
-            constants.asString("DEFAULT_PLACEHOLDER_PREFIX"),
-            constants.asString("DEFAULT_PLACEHOLDER_SUFFIX"),
-            constants.asString("DEFAULT_VALUE_SEPARATOR"),
+            PlaceholderConfigurerSupport.DEFAULT_PLACEHOLDER_PREFIX,
+            PlaceholderConfigurerSupport.DEFAULT_PLACEHOLDER_SUFFIX,
+            PlaceholderConfigurerSupport.DEFAULT_VALUE_SEPARATOR,
+            null,
             true);
 
     private Properties props;
