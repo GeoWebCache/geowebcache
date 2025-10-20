@@ -1,3 +1,15 @@
+GeoWebCache 1.27.2 (2025-10-20)
+-------------------------------
+
+Maintenacne release.
+
+Bug fixes:   
+++++++++++   
+- Fix loadFromEmptyReadOnlyDirectoryFails test
+
+Updates: 
+- Updating GWC to imageio-ext 1.4.16
+
 GeoWebCache 1.27.2 (2025-07-17)
 -------------------------------
 
