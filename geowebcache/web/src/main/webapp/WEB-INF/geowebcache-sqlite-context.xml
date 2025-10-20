@@ -11,6 +11,5 @@
                            http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd">
     <context:annotation-config/>
     <context:component-scan base-package="org.geowebcache.sqlite"/>
-    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
     <bean id="MbtilesConfigurationProvider" class="org.geowebcache.sqlite.MbtilesConfigurationProvider"/>
 </beans>

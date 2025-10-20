@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
@@ -131,6 +132,7 @@ public class RestIntegrationTest {
 
         try (CloseableHttpResponse response =
                 handlePut(URI.create("/geowebcache/rest/global"), admin.getClient(), globalUpdate)) {
+            System.out.println(response.getEntity().toString());
             assertEquals(200, response.getCode());
         }
     }
@@ -498,7 +500,7 @@ public class RestIntegrationTest {
             final HttpGet request2 =
                     new HttpGet(jetty.getUri().resolve("rest/layers/").resolve(layerName + ".xml"));
             try (CloseableHttpResponse response = admin.getClient().execute(request2)) {
-                assertThat(new StatusLine(response), hasProperty("statusCode", equalTo(404)));
+                assertEquals(404, response.getCode());
             }
         }
         // GetCap
@@ -1146,7 +1148,8 @@ public class RestIntegrationTest {
         // Make it sure the blobstore doesn't exist already as that would invalidate the test
         try (CloseableHttpResponse response =
                 handleGet(URI.create("/geowebcache/rest/blobstores/maliciousCache.xml"), admin.getClient())) {
-            assertThat(response, hasProperty("statusLine", hasProperty("statusCode", equalTo(404))));
+            System.out.println(response);
+            assertEquals(404, response.getCode());
         }
 
         // Create a store
@@ -1260,6 +1263,8 @@ public class RestIntegrationTest {
             if (response.getCode() != 401) {
                 doc = XMLUnit.buildTestDocument(new InputSource(in));
                 body.accept(doc);
+            } else {
+                System.out.println(IOUtils.toString(in, StandardCharsets.UTF_8));
             }
             assertThat(new StatusLine(response), hasProperty("statusCode", statusMatcher));
         }

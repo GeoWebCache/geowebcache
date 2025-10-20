@@ -39,6 +39,7 @@
     
     <security:http>
         <security:intercept-url method="GET" pattern="/rest/web/**" access="permitAll"/>
+        <security:intercept-url pattern="/service/**"               access="permitAll"/>
         <security:intercept-url method="GET" pattern="/rest/wmts/WMTSCapabilities.xml" access="permitAll"/>
         <security:intercept-url pattern="/rest/**" access="hasRole('ROLE_ADMINISTRATOR')"/>
         
