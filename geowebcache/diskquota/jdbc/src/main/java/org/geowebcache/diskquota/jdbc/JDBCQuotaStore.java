@@ -46,7 +46,7 @@ import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.util.SuppressFBWarnings;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DeadlockLoserDataAccessException;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -506,7 +506,7 @@ public class JDBCQuotaStore implements QuotaStore {
 
                             modified = createNewPageStats(stats, page);
                         }
-                    } catch (DeadlockLoserDataAccessException e) {
+                    } catch (PessimisticLockingFailureException e) {
                         if (log.isLoggable(Level.FINE)) {
                             log.log(Level.FINE, "Deadlock while updating page stats, will retry", e);
                         }
@@ -871,7 +871,7 @@ public class JDBCQuotaStore implements QuotaStore {
                         updatePageStats(payload, page, stats);
                         modified = createNewPageStats(stats, page);
                     }
-                } catch (DeadlockLoserDataAccessException e) {
+                } catch (PessimisticLockingFailureException e) {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "Deadlock while updating page stats, will retry", e);
                     }

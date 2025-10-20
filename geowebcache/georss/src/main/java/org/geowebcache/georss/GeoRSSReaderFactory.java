@@ -45,31 +45,31 @@ class GeoRSSReaderFactory {
         builder.setHttpCredentials(username, password, url);
         builder.setBackendTimeout(120);
 
-        CloseableHttpClient httpClient = builder.buildClient();
+        try (CloseableHttpClient httpClient = builder.buildClient()) {
 
-        HttpGet getMethod = new HttpGet(url.toString());
-
-        if (log.isLoggable(Level.FINE)) {
-            log.fine("Executing HTTP GET requesr for feed URL " + url.toExternalForm());
-        }
-
-        try {
-            ClassicHttpResponse response = httpClient.executeOpen(determineHost(getMethod), getMethod, null);
+            HttpGet getMethod = new HttpGet(url.toString());
 
             if (log.isLoggable(Level.FINE)) {
-                log.fine("Building GeoRSS reader out of URL response");
-            }
-            String contentEncoding = response.getEntity().getContentEncoding();
-            if (contentEncoding == null) {
-                contentEncoding = "UTF-8";
+                log.fine("Executing HTTP GET requesr for feed URL " + url.toExternalForm());
             }
 
-            Reader reader = new BufferedReader(
-                    new InputStreamReader(response.getEntity().getContent(), contentEncoding));
-            if (log.isLoggable(Level.FINE)) {
-                log.fine("GeoRSS reader created, returning.");
+            try (ClassicHttpResponse response = httpClient.executeOpen(determineHost(getMethod), getMethod, null)) {
+
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("Building GeoRSS reader out of URL response");
+                }
+                String contentEncoding = response.getEntity().getContentEncoding();
+                if (contentEncoding == null) {
+                    contentEncoding = "UTF-8";
+                }
+
+                Reader reader = new BufferedReader(
+                        new InputStreamReader(response.getEntity().getContent(), contentEncoding));
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("GeoRSS reader created, returning.");
+                }
+                return createReader(reader);
             }
-            return createReader(reader);
         } catch (HttpException e) {
             throw new IOException(e);
         }

@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.cookie.StandardCookieSpec;
 import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
@@ -66,16 +67,22 @@ public class HttpClientBuilder {
                 .setCookieSpec(StandardCookieSpec.RELAXED)
                 .setExpectContinueEnabled(true)
                 .setResponseTimeout(backendTimeoutMillis, TimeUnit.MILLISECONDS)
-                .setConnectTimeout(backendTimeoutMillis, TimeUnit.MILLISECONDS)
                 .setRedirectsEnabled(true)
                 .build());
 
+        ConnectionConfig connectionConfig = ConnectionConfig.custom()
+                .setConnectTimeout(backendTimeoutMillis, TimeUnit.MILLISECONDS)
+                .build();
+
+        @SuppressWarnings("PMD.CloseResource")
         PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
                 .setMaxConnTotal(concurrency)
+                .setDefaultConnectionConfig(connectionConfig)
                 .build();
 
         clientBuilder = HttpClients.custom();
         clientBuilder.useSystemProperties();
+        clientBuilder.setDefaultRequestConfig(this.connectionConfig);
         clientBuilder.setConnectionManager(connectionManager);
     }
 

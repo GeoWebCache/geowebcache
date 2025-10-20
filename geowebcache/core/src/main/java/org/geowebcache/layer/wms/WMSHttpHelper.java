@@ -34,7 +34,6 @@ import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpResponse;
-import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.http.io.entity.StringEntity;
@@ -378,7 +377,8 @@ public class WMSHttpHelper extends WMSSourceHelper {
         if (httpRequestMode == WMSLayer.HttpRequestMode.FormPost) {
             HttpPost pm = new HttpPost(urlString);
             if (queryParams != null && !queryParams.isEmpty()) {
-                HttpEntity requestEntity = new StringEntity(processRequestParameters(queryParams));
+                @SuppressWarnings("PMD.CloseResource")
+                StringEntity requestEntity = new StringEntity(processRequestParameters(queryParams));
                 pm.setEntity(requestEntity);
             }
             method = pm;

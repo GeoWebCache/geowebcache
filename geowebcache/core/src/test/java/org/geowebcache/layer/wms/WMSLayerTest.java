@@ -108,6 +108,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
  * @author Gabriel Roldan (OpenGeo)
  * @version $Id$
  */
+@SuppressWarnings("PMD.CloseResource")
 public class WMSLayerTest extends TileLayerTest {
 
     private final GridSetBroker gridSetBroker =

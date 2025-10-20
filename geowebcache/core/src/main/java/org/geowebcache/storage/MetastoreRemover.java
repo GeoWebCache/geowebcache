@@ -57,6 +57,7 @@ public class MetastoreRemover {
         try (Connection conn = getMetaStoreConnection(root)) {
             if (conn != null) {
                 log.info("Migrating the old metastore to filesystem storage");
+                @SuppressWarnings("PMD.CloseResource")
                 SingleConnectionDataSource ds = new SingleConnectionDataSource(conn, false);
                 JdbcTemplate template = new JdbcTemplate(ds);
 
