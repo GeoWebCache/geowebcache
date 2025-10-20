@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 @Controller
-@RequestMapping("**/sqlite")
+@RequestMapping("${gwc.context.suffix:}/sqlite")
 public class OperationsRest {
 
     private static Logger LOGGER = Logging.getLogger(OperationsRest.class.getName());
