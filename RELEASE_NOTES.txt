@@ -1,4 +1,4 @@
-GeoWebCache 1.27.2 (2025-10-20)
+GeoWebCache 1.27.3 (2025-10-20)
 -------------------------------
 
 Maintenacne release.
