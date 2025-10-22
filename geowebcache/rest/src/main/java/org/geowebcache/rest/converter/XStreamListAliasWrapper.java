@@ -93,9 +93,9 @@ public class XStreamListAliasWrapper {
                     UriComponents uriComponents = MvcUriComponentsBuilder.fromMethodName(
                                     controllerClass, alias + "Get", name)
                             .buildAndExpand("");
-                    // build URI with URI.normalize() to remove double slashes
+                    // remove the repeated gwc that GeoServer (sometimes) adds to the URL
                     String normalizedLayerUri = URI.create(
-                                    uriComponents.encode().toUriString().replace("$", ""))
+                                    uriComponents.encode().toUriString().replace("/gwc/gwc", "/gwc"))
                             .normalize()
                             .toASCIIString();
                     writer.addAttribute("href", normalizedLayerUri + ".xml");
