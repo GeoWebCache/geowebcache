@@ -110,14 +110,15 @@ public class SRS implements Comparable<SRS>, Serializable {
         if (!(obj instanceof SRS)) {
             return false;
         }
-        boolean equivalent = false;
         SRS other = (SRS) obj;
         if (other.number == this.number) {
-            equivalent = true;
-        } else if (this.aliases != null && other.aliases != null) {
-            equivalent = this.aliases.contains(other.number) || other.aliases.contains(this.number);
+            return true;
+        } else if (this.aliases != null && this.aliases.contains(other.number)) {
+            return true;
+        } else if (other.aliases != null && other.aliases.contains(this.number)) {
+            return true;
         }
-        return equivalent;
+        return false;
     }
 
     public int getNumber() {
