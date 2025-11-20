@@ -13,11 +13,11 @@
  */
 package org.geowebcache.azure;
 
-import static org.geowebcache.azure.AzureBlobStore.log;
-
 import com.azure.core.http.rest.PagedResponse;
 import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.batch.BlobBatchClient;
 import com.azure.storage.blob.models.BlobItem;
+import com.azure.storage.blob.models.DeleteSnapshotsOptionType;
 import com.azure.storage.blob.models.ListBlobsOptions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.io.Closeable;
@@ -32,14 +32,14 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
-import java.util.function.Predicate;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.LockProvider.Lock;
@@ -50,24 +50,28 @@ import org.geowebcache.util.TMSKeyBuilder;
  * Class handling deletes, which are normally handled in an asynchronous way in all other stores as well. These are bulk
  * operations like deleting an entire layer, or a rangeset, with potentially million of tiles involved.
  *
- * <p>Unfortunately the Azure BLOB API has no concept of bulk delete, and no concept of containment either, so tiles
- * have to be enumerated one by one and a delete issued on each one. This calls for a parallel execution, and requires
- * avoiding accumulation of references to all tiles that need removing in memory, as they could be millions or more,
- * hence code that tries to run over the tiles in pages
+ * <p>Using {@link BlobBatchClient}, tile URLs are partitioned into batches (max 256 per batch) to issue bulk delete
+ * requests, reducing network overhead, while keeping memory usage low.
  */
 class DeleteManager implements Closeable {
+
+    private static final Logger LOG = Logging.getLogger(AzureBlobStore.class.getName());
+
     /**
-     * the page size here is not about limiting the requests, but ensures that we don't end up using too much memory
-     * while processing millions of tiles, that would be otherwise all queued on the {@link ExecutorService}
+     * To manage blobs in batch through {@link BlobBatchClient}, we are limited to 256 blobs per request.
+     *
+     * @see <a
+     *     href="https://learn.microsoft.com/en-us/rest/api/storageservices/blob-batch?utm_source=chatgpt.com&tabs=microsoft-entra-id#request-body">Azure
+     *     Blob Batch REST API</a>
      */
-    static final int PAGE_SIZE = 1000;
+    static final int PAGE_SIZE = 256;
 
     private final TMSKeyBuilder keyBuilder;
     private final AzureClient client;
     private final LockProvider locks;
     private final int concurrency;
-    private ExecutorService deleteExecutor;
-    private Map<String, Long> pendingDeletesKeyTime = new ConcurrentHashMap<>();
+    private final ExecutorService deleteExecutor;
+    private final Map<String, Long> pendingDeletesKeyTime = new ConcurrentHashMap<>();
 
     public DeleteManager(AzureClient client, LockProvider locks, TMSKeyBuilder keyBuilder, int maxConnections) {
         this.keyBuilder = keyBuilder;
@@ -120,7 +124,7 @@ class DeleteManager implements Closeable {
         final long timestamp = currentTimeSeconds();
         String msg = "Issuing bulk delete on '%s/%s' for objects older than %d"
                 .formatted(client.getContainerName(), prefix, timestamp);
-        log.info(msg);
+        LOG.info(msg);
 
         try {
             Lock lock = locks.getLock(prefix);
@@ -157,8 +161,8 @@ class DeleteManager implements Closeable {
             for (Map.Entry<Object, Object> e : deletes.entrySet()) {
                 final String prefix = e.getKey().toString();
                 final long timestamp = Long.parseLong(e.getValue().toString());
-                if (log.isLoggable(Level.INFO))
-                    log.info("Restarting pending bulk delete on '%s/%s':%d"
+                if (LOG.isLoggable(Level.INFO))
+                    LOG.info("Restarting pending bulk delete on '%s/%s':%d"
                             .formatted(client.getContainerName(), prefix, timestamp));
                 if (!asyncDelete(prefix, timestamp)) {
                     deletesToClear.add(prefix);
@@ -186,7 +190,7 @@ class DeleteManager implements Closeable {
         // is there any task already deleting a larger set of times in the same prefix
         // folder?
         Long currentTaskTime = pendingDeletesKeyTime.get(prefix);
-        if (currentTaskTime != null && currentTaskTime.longValue() > timestamp) {
+        if (currentTaskTime != null && currentTaskTime > timestamp) {
             return false;
         }
 
@@ -216,8 +220,8 @@ class DeleteManager implements Closeable {
             long count = 0L;
             try {
                 checkInterrupted();
-                if (log.isLoggable(Level.INFO))
-                    log.info("Running bulk delete on '%s/%s':%d"
+                if (LOG.isLoggable(Level.INFO))
+                    LOG.info("Running bulk delete on '%s/%s':%d"
                             .formatted(client.getContainerName(), prefix, timestamp));
 
                 BlobContainerClient container = client.getContainer();
@@ -228,19 +232,26 @@ class DeleteManager implements Closeable {
                 Iterable<PagedResponse<BlobItem>> response =
                         container.listBlobs(options, null).iterableByPage();
 
+                BlobBatchClient batch = client.getBatch();
+
                 for (PagedResponse<BlobItem> segment : response) {
                     try (PagedResponse<BlobItem> s = segment) { // try-with-resources to please PMD
                         checkInterrupted();
-                        List<BlobItem> items = s.getValue();
-                        count += deleteItems(container, items, this::equalOrAfter);
+
+                        List<String> items = s.getValue().stream()
+                                .filter(this::equalOrAfter)
+                                .map(BlobItem::getName)
+                                .collect(Collectors.toList());
+
+                        count += deleteItems(container, batch, items);
                     }
                 }
             } catch (InterruptedException | IllegalStateException e) {
-                log.info("Azure bulk delete aborted for '%s/%s'. Will resume on next startup."
+                LOG.info("Azure bulk delete aborted for '%s/%s'. Will resume on next startup."
                         .formatted(client.getContainerName(), prefix));
                 throw e;
             } catch (RuntimeException e) {
-                log.log(
+                LOG.log(
                         Level.WARNING,
                         "Unknown error performing bulk Azure blobs delete of '%s/%s'"
                                 .formatted(client.getContainerName(), prefix),
@@ -248,8 +259,8 @@ class DeleteManager implements Closeable {
                 throw e;
             }
 
-            if (log.isLoggable(Level.INFO))
-                log.info("Finished bulk delete on '%s/%s':%d. %d objects deleted"
+            if (LOG.isLoggable(Level.INFO))
+                LOG.info("Finished bulk delete on '%s/%s':%d. %d objects deleted"
                         .formatted(client.getContainerName(), prefix, timestamp, count));
 
             clearPendingBulkDelete(prefix, timestamp);
@@ -268,7 +279,7 @@ class DeleteManager implements Closeable {
                 return; // someone else cleared it up for us. A task that run after this one but
                 // finished before?
             }
-            if (taskTime.longValue() > timestamp) {
+            if (taskTime > timestamp) {
                 return; // someone else issued a bulk delete after this one for the same key prefix
             }
             final String pendingDeletesKey = keyBuilder.pendingDeletes();
@@ -280,8 +291,8 @@ class DeleteManager implements Closeable {
                 long storedTimestamp = storedVal == null ? Long.MIN_VALUE : Long.parseLong(storedVal);
                 if (timestamp >= storedTimestamp) {
                     client.putProperties(pendingDeletesKey, deletes);
-                } else if (log.isLoggable(Level.INFO)) {
-                    log.info("bulk delete finished but there's a newer one ongoing for container '%s/%s'"
+                } else if (LOG.isLoggable(Level.INFO)) {
+                    LOG.info("bulk delete finished but there's a newer one ongoing for container '%s/%s'"
                             .formatted(client.getContainerName(), prefix));
                 }
             } catch (StorageException e) {
@@ -289,23 +300,6 @@ class DeleteManager implements Closeable {
             } finally {
                 lock.release();
             }
-        }
-
-        private long deleteItems(BlobContainerClient container, List<BlobItem> segment, Predicate<BlobItem> filter)
-                throws ExecutionException, InterruptedException {
-
-            List<Future<Object>> collect = segment.stream()
-                    .filter(filter)
-                    .map(item -> deleteExecutor.submit(() -> {
-                        deleteItem(container, item.getName());
-                        return null;
-                    }))
-                    .collect(Collectors.toList());
-
-            for (Future<Object> f : collect) {
-                f.get();
-            }
-            return collect.size();
         }
     }
 
@@ -322,44 +316,39 @@ class DeleteManager implements Closeable {
             long count = 0L;
             try {
                 checkInterrupted();
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer("Running delete delete on list of items on '%s':%s ... (only the first 100 items listed)"
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.finer("Running delete delete on list of items on '%s':%s ... (only the first 100 items listed)"
                             .formatted(client.getContainerName(), keys.subList(0, Math.min(keys.size(), 100))));
                 }
 
                 BlobContainerClient container = client.getContainer();
+                BlobBatchClient batch = client.getBatch();
 
                 for (int i = 0; i < keys.size(); i += PAGE_SIZE) {
-                    deleteItems(container, keys.subList(i, Math.min(i + PAGE_SIZE, keys.size())));
+                    count = deleteItems(container, batch, keys.subList(i, Math.min(i + PAGE_SIZE, keys.size())));
                 }
+
             } catch (InterruptedException | IllegalStateException e) {
-                log.log(Level.INFO, "Azure bulk delete aborted", e);
+                LOG.log(Level.INFO, "Azure bulk delete aborted", e);
                 throw e;
             } catch (Exception e) {
-                log.log(Level.WARNING, "Unknown error performing bulk Azure delete", e);
+                LOG.log(Level.WARNING, "Unknown error performing bulk Azure delete", e);
                 throw e;
             }
 
-            if (log.isLoggable(Level.INFO))
-                log.info("Finished bulk delete on %s, %d objects deleted".formatted(client.getContainerName(), count));
+            if (LOG.isLoggable(Level.INFO))
+                LOG.info("Finished bulk delete on %s, %d objects deleted".formatted(client.getContainerName(), count));
             return count;
-        }
-
-        private long deleteItems(BlobContainerClient container, List<String> itemNames)
-                throws ExecutionException, InterruptedException {
-            List<Future<Boolean>> collect = itemNames.stream()
-                    .map(item -> deleteExecutor.submit(() -> deleteItem(container, item)))
-                    .collect(Collectors.toList());
-
-            for (Future<Boolean> f : collect) {
-                f.get();
-            }
-            return collect.size();
         }
     }
 
-    private boolean deleteItem(BlobContainerClient container, String key) {
-        return container.getBlobClient(key).deleteIfExists();
+    private long deleteItems(BlobContainerClient container, BlobBatchClient batch, List<String> itemNames) {
+        List<String> blobsUrls = itemNames.stream()
+                .map(n -> container.getBlobClient(n).getBlobUrl())
+                .collect(Collectors.toList());
+
+        return batch.deleteBlobs(blobsUrls, DeleteSnapshotsOptionType.INCLUDE).stream()
+                .count();
     }
 
     void checkInterrupted() throws InterruptedException {
