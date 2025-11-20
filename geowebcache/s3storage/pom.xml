@@ -14,6 +14,10 @@
   <name>AWS S3 Storage</name>
   <url>https://geowebcache.osgeo.org</url>
 
+  <properties>
+    <aws.version>1.12.261</aws.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.geowebcache</groupId>
@@ -23,7 +27,13 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-s3</artifactId>
-      <version>1.12.261</version>
+      <version>${aws.version}</version>
+    </dependency>
+    <dependency>
+      <!-- Needed to support IAM roles for service accounts -->
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-sts</artifactId>
+      <version>${aws.version}</version>
     </dependency>
 
     <dependency>
