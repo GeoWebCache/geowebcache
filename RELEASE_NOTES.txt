@@ -1,3 +1,17 @@
+GeoWebCache 1.28.1 (2025-11-24)
+-------------------------------
+
+<Release Description>
+
+Improvements:
++++++++++++++
+- Google Cloud Storage blob store implementation
+
+Fixes:
+++++++
+- ImageN 0.9.1 update (allows co-existence of ImageN and JAI in the same process, if needed)
+
+
 GeoWebCache 1.28.0 (2025-10-12)
 -------------------------------
 
