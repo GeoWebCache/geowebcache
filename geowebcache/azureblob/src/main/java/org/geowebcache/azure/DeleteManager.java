@@ -325,7 +325,7 @@ class DeleteManager implements Closeable {
                 BlobBatchClient batch = client.getBatch();
 
                 for (int i = 0; i < keys.size(); i += PAGE_SIZE) {
-                    count = deleteItems(container, batch, keys.subList(i, Math.min(i + PAGE_SIZE, keys.size())));
+                    count += deleteItems(container, batch, keys.subList(i, Math.min(i + PAGE_SIZE, keys.size())));
                 }
 
             } catch (InterruptedException | IllegalStateException e) {
