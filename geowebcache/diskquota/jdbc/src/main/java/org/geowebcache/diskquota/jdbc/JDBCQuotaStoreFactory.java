@@ -39,7 +39,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 /**
- * Builds the quota store for the JDBC family (either H2, HSQL or JDBC)
+ * Builds the quota store for the JDBC family (either HSQL or JDBC)
  *
  * @author Andrea Aime - GeoSolutions
  */
@@ -48,8 +48,6 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
     private static final Logger log = Logging.getLogger(JDBCQuotaStore.class.getName());
 
     private static final String CONFIGURATION_FILE_NAME = "geowebcache-diskquota-jdbc.xml";
-
-    public static final String H2_STORE = "H2";
 
     public static final String HSQL_STORE = "HSQL";
 
@@ -74,13 +72,6 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         List<String> supportedStores = new ArrayList<>();
         supportedStores.add(HSQL_STORE);
         supportedStores.add(JDBC_STORE);
-        try {
-            // check if H2 driver is in the classpath
-            Class.forName("org.h2.Driver");
-            supportedStores.add(H2_STORE);
-        } catch (Exception e) {
-            // don't add h2 when its driver is not there
-        }
         return supportedStores;
     }
 
@@ -90,9 +81,7 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         DefaultStorageFinder cacheDirFinder = (DefaultStorageFinder) ctx.getBean("gwcDefaultStorageFinder");
         TilePageCalculator tilePageCalculator = (TilePageCalculator) ctx.getBean("gwcTilePageCalculator");
 
-        if (H2_STORE.equals(quotaStoreName)) {
-            return initializeH2Store(cacheDirFinder, tilePageCalculator);
-        } else if (HSQL_STORE.equals(quotaStoreName)) {
+        if (HSQL_STORE.equals(quotaStoreName)) {
             return initializeHSQLStore(cacheDirFinder, tilePageCalculator);
         } else if (JDBC_STORE.equals(quotaStoreName)) {
             return getJDBCStore(cacheDirFinder, tilePageCalculator);
@@ -232,22 +221,6 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         }
     }
 
-    private QuotaStore initializeH2Store(DefaultStorageFinder cacheDirFinder, TilePageCalculator tilePageCalculator)
-            throws ConfigurationException {
-        // get a default data source located in the cache directory
-        DataSource ds = getH2DataSource(cacheDirFinder);
-
-        // build up the store
-        JDBCQuotaStore store = new JDBCQuotaStore(cacheDirFinder, tilePageCalculator);
-        store.setDataSource(ds);
-        store.setDialect(new H2Dialect());
-
-        // initialize it
-        store.initialize();
-
-        return store;
-    }
-
     private QuotaStore initializeHSQLStore(DefaultStorageFinder cacheDirFinder, TilePageCalculator tilePageCalculator)
             throws ConfigurationException {
         // get a default data source located in the cache directory
@@ -262,25 +235,6 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         store.initialize();
 
         return store;
-    }
-
-    /** Prepares a simple data source for the embedded H2 */
-    private DataSource getH2DataSource(DefaultStorageFinder cacheDirFinder) throws ConfigurationException {
-        File storeDirectory = new File(cacheDirFinder.getDefaultPath(), "diskquota_page_store_h2");
-        storeDirectory.mkdirs();
-
-        BasicDataSource dataSource = new BasicDataSource();
-
-        dataSource.setDriverClassName("org.h2.Driver");
-        String database = new File(storeDirectory, "diskquota").getAbsolutePath();
-        dataSource.setUrl("jdbc:h2:" + database);
-        dataSource.setUsername("sa");
-        dataSource.setPoolPreparedStatements(true);
-        dataSource.setAccessToUnderlyingConnectionAllowed(true);
-        dataSource.setMinIdle(1);
-        dataSource.setMaxActive(-1); // boundless
-        dataSource.setMaxWait(5000);
-        return dataSource;
     }
 
     /** Prepares a simple data source for the embedded HSQL */

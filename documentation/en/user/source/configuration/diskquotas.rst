@@ -153,18 +153,14 @@ It is possible to set the amount of threads to use when processing the disk quot
 Disk quota storage
 ------------------
 
-The disk quota subystem defaults to use an embedded Berkeley DB whose storage is located in the cache directory, there is however also the possibility of using either an embedded H2 database, against storing information in the cache directory, or a standard Oracle or PostgreSQL database.
-
-In order to switch from the Berkeley DB to the embedded H2 storage the :file:`geowebcache-diskquota.xml` must contain the ``quotaStore`` element set to ``H2``:
-
+The disk quota subystem defaults to use an embedded Berkeley DB whose storage is located in the cache directory, there is however also the possibility of using either an embedded HSQL database, against storing information in the cache directory, or a standard Oracle or PostgreSQL database.
+In order to switch from the Berkeley DB to the embedded HSQL storage the :file:`geowebcache-diskquota.xml` must contain the ``quotaStore`` element set to ``HSQL``:
 .. code-block:: xml
-
     <?xml version="1.0" encoding="utf-8"?>
     <gwcQuotaConfiguration>
       <enabled>false</enabled>
-      <quotaStore>H2</quotaStore>
+      <quotaStore>HSQL</quotaStore>
       ...
-
     </gwcQuotaConfiguration>
 
 
@@ -180,7 +176,7 @@ In order to switch from the Berkeley DB to the freeform JDBC sources the :file:`
 
     </gwcQuotaConfiguration>
 
-In this case a separate file, :file:`geowebcache-diskquota-jdbc.xml` will contain the configuration for the chosen database containing the chosen DBMS dialect, at the time of writing the possible values are ``HSQL``, ``H2``, ``Oracle``, ``PostgreSQL``.
+In this case a separate file, :file:`geowebcache-diskquota-jdbc.xml` will contain the configuration for the chosen database containing the chosen DBMS dialect, at the time of writing the possible values are ``HSQL``, ``Oracle``, ``PostgreSQL``.
 
 The connection pool can be either provided locally, in such case a DBCP based connection pool will be instantiated, or provided via JNDI.
 The JDNI configuration is as simple as follows:
@@ -213,8 +209,7 @@ The local connection pool can instead be configured by specifying the following:
     </gwcJdbcConfiguration>
 
 .. note::
-   
-   The `validationQuery` parameter is optional. Any supplied value is restricted based on dialect: `H2` requires ``SELECT 1``, and `Oracle` uses ``SELECT 1 FROM DUAL``. Remaining dialects are recommendation to use ``SELECT 1``.
+The `validationQuery` parameter is optional. Any supplied value is restricted based on dialect: HSQL uses SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS, Oracle uses SELECT 1 FROM DUAL, and most other dialects can use plain SELECT 1.
 
 Disk quota schema
 -----------------

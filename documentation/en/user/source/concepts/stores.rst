@@ -7,8 +7,6 @@ GeoWebCache historically used to have three storage components, responsible for 
 
 The **blobstore** is a storage mechanism for tiles, whose default implementation is file system based.
 
-The **metastore** was an optional H2 based storage mechanism for meta-information about tiles, such as tile creation time, size and usage of request parameters.
-
 The **disk quota** mechanism uses a nosql embedded database to track the tiles disk usage and expire tiles based on user set policies.
 
 Since GeoWebCache 1.4.0 the metastore was replaced with a full filesystem based solution, making the blobstore responsible for the information previously tracked by the metastore.
