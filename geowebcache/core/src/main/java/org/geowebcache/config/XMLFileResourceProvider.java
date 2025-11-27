@@ -32,8 +32,8 @@ import org.geotools.util.logging.Logging;
 import org.geowebcache.storage.DefaultStorageFinder;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.geowebcache.util.GWCVars;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
-import org.springframework.lang.NonNull;
 import org.springframework.web.context.WebApplicationContext;
 
 /** Default implementation of ConfigurationResourceProvider that uses the file system. */

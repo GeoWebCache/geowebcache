@@ -54,9 +54,7 @@ public class MemoryCacheControllerTest {
         xmlConfig.afterPropertiesSet();
 
         mcc = new MemoryCacheController(null);
-        this.mockMvc = MockMvcBuilders.standaloneSetup(mcc)
-                .setUseSuffixPatternMatch(true)
-                .build();
+        this.mockMvc = MockMvcBuilders.standaloneSetup(mcc).build();
     }
 
     @Test
