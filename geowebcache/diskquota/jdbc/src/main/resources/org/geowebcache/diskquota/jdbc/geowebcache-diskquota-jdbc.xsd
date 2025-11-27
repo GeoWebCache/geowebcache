@@ -13,7 +13,7 @@
       <xs:sequence>
         <xs:element name="dialect" type="xs:string">
           <xs:annotation>
-            <xs:documentation>The dialect used for the JDBC connection. Valid values at the time of writing: H2, Oracle, PostgreSQL</xs:documentation>
+            <xs:documentation>The dialect used for the JDBC connection. Valid values at the time of writing: Oracle, PostgreSQL</xs:documentation>
           </xs:annotation>
         </xs:element>
         <xs:element name="JNDISource" type="xs:string" minOccurs="0">

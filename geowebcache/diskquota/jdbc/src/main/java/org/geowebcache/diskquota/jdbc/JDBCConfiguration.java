@@ -84,7 +84,7 @@ public class JDBCConfiguration implements Serializable {
      *
      * <p>Checks required JDBC driver and jdbc URL parameters are present.
      *
-     * <p>Checks H2 and Oracle validation query if provided.
+     * <p>Checks Oracle validation query if provided.
      *
      * @param conf configuration
      * @throws ConfigurationException for incomplete or inconsistent configuration.
@@ -92,12 +92,12 @@ public class JDBCConfiguration implements Serializable {
     public static void validateConfiguration(JDBCConfiguration conf) throws ConfigurationException {
         if (conf.getDialect() == null) {
             throw new ConfigurationException(
-                    "A dialect must be provided, possible values are H2, HSQL, Oracle, PostgresSQL");
+                    "A dialect must be provided, possible values are HSQL, Oracle, PostgresSQL");
         }
 
         ConnectionPoolConfiguration cp = conf.getConnectionPool();
         String dialect = conf.getDialect();
-        if (conf.getJNDISource() == null && cp == null && !"H2".equals(dialect) && !"HSQL".equals(dialect)) {
+        if (conf.getJNDISource() == null && cp == null && !"HSQL".equals(dialect)) {
             throw new ConfigurationException("No data source provided, either configure JNDISource or connectionPool");
         }
 
@@ -111,11 +111,7 @@ public class JDBCConfiguration implements Serializable {
 
             String vq = cp.getValidationQuery();
             if (vq != null) {
-                if ("H2".equalsIgnoreCase(dialect)) {
-                    if (!vq.equalsIgnoreCase("SELECT 1")) {
-                        throw new ConfigurationException("H2 validation query required to be: SELECT 1");
-                    }
-                } else if ("Oracle".equalsIgnoreCase(dialect)) {
+                if ("Oracle".equalsIgnoreCase(dialect)) {
                     if (!vq.equalsIgnoreCase("SELECT 1 FROM DUAL")) {
                         throw new ConfigurationException("Oracle validation query required to be: SELECT 1 FROM DUAL");
                     }

@@ -135,22 +135,7 @@ public class JDBCConfigurationTest {
     public void testValidationQueryValidation() throws Exception {
         JDBCConfiguration config = new JDBCConfiguration();
         ConnectionPoolConfiguration cp = new ConnectionPoolConfiguration();
-
-        // h2 testing
-        config.setDialect("H2");
-        cp.setDriver("org.h2.Driver");
-        cp.setUrl("jdbc:h2:database");
         config.setConnectionPool(cp);
-
-        cp.setValidationQuery("select 1");
-        JDBCConfiguration.validateConfiguration(config);
-
-        cp.setValidationQuery("select 1 from DUO");
-        try {
-            JDBCConfiguration.validateConfiguration(config);
-            Assert.fail("select 1 required");
-        } catch (ConfigurationException expected) {
-        }
 
         // oracle testing
         config.setDialect("Oracle");

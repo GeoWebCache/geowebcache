@@ -156,8 +156,6 @@ public abstract class JDBCQuotaStoreTest {
                             .collect(Collectors.toSet())));
 
             tilePageCalculator = new TilePageCalculator(layerDispatcher, storageBroker);
-
-            // prepare a connection pool for tests against a H2 database
             dataSource = getDataSource();
             SQLDialect dialect = getDialect();
 

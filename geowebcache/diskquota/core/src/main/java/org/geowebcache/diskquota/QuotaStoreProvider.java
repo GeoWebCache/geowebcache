@@ -51,17 +51,7 @@ public class QuotaStoreProvider implements ApplicationContextAware, Initializing
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        replaceH2WithHsql();
         reloadQuotaStore();
-    }
-
-    private void replaceH2WithHsql() throws IOException, ConfigurationException {
-        // migrate existing H2 DB selection to HSQL DB
-        DiskQuotaConfig config = loader.loadConfig();
-        if (config.getQuotaStore() != null && config.getQuotaStore().equals("H2")) {
-            config.setQuotaStore("HSQL");
-            loader.saveConfig(config);
-        }
     }
 
     public void reloadQuotaStore() throws IOException, ConfigurationException {
