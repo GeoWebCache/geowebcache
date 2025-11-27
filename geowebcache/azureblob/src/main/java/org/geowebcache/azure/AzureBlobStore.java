@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +37,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.geotools.util.logging.Logging;
@@ -193,15 +193,14 @@ public class AzureBlobStore implements BlobStore {
             return false;
         }
 
-        List<BlobItem> blobsToDelete = findTileBlobsToDelete(tileRange, coordsPrefix);
+        Stream<BlobItem> blobsToDelete = findTileBlobsToDelete(tileRange, coordsPrefix);
 
         if (listeners.isEmpty()) {
             // if there are no listeners, don't bother requesting every tile
             // metadata to notify the listeners
-            // split the iteration in parts to avoid memory accumulation
-            List<String> keysToDelete =
-                    blobsToDelete.stream().map(BlobItem::getName).collect(Collectors.toList());
+            List<String> keysToDelete = blobsToDelete.map(BlobItem::getName).collect(Collectors.toList());
 
+            // split the iteration in parts to avoid memory accumulation
             Iterator<List<String>> partition = Iterators.partition(keysToDelete.iterator(), DeleteManager.PAGE_SIZE);
 
             while (partition.hasNext() && !shutDown) {
@@ -212,7 +211,7 @@ public class AzureBlobStore implements BlobStore {
             // if we need to gather info, we'll end up just calling "delete" on each tile
             // this is run here instead of inside the delete manager as we need high level info
             // about tiles, e.g., TileObject, to inform the listeners
-            List<Callable<?>> tilesDeletions = blobsToDelete.stream()
+            List<Callable<?>> tilesDeletions = blobsToDelete
                     .map(blobItem -> {
                         TileObject tile = createTileObject(blobItem, tileRange);
                         tile.setParametersId(tileRange.getParametersId());
@@ -226,27 +225,24 @@ public class AzureBlobStore implements BlobStore {
         return true;
     }
 
-    private List<BlobItem> findTileBlobsToDelete(TileRange tileRange, String coordsPrefix) {
+    private Stream<BlobItem> findTileBlobsToDelete(TileRange tileRange, String coordsPrefix) {
+        return IntStream.rangeClosed(tileRange.getZoomStart(), tileRange.getZoomStop())
+                .boxed()
+                .flatMap(zoom -> {
+                    String zoomPrefix = coordsPrefix + "/" + zoom;
 
-        List<BlobItem> blobsToDelete = new ArrayList<>();
+                    if (!client.prefixExists(zoomPrefix)) {
+                        // empty level, skipping
+                        return Stream.empty();
+                    }
 
-        for (int zoom = tileRange.getZoomStart(); zoom <= tileRange.getZoomStop(); zoom++) {
+                    long[] rangeBoundsAtZoom = tileRange.rangeBounds(zoom);
 
-            String zoomPrefix = coordsPrefix + "/" + zoom;
-
-            if (!client.prefixExists(zoomPrefix)) {
-                // empty level, skipping
-                continue;
-            }
-
-            long[] rangeBoundsAtZoom = tileRange.rangeBounds(zoom);
-
-            client.listBlobs(zoomPrefix)
-                    .filter(tb -> isTileBlobInBounds(tb, rangeBoundsAtZoom))
-                    .forEach(blobsToDelete::add);
-        }
-
-        return blobsToDelete;
+                    return client.listBlobs(zoomPrefix)
+                            .filter(tb ->
+                                    TILE_BLOB_NAME_REGEXP.matcher(tb.getName()).find())
+                            .filter(tb -> isTileBlobInBounds(tb, rangeBoundsAtZoom));
+                });
     }
 
     private boolean isTileBlobInBounds(BlobItem tileBlob, long[] bounds) {
