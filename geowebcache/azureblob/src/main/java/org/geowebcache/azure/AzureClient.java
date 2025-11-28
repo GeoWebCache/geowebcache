@@ -26,6 +26,8 @@ import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.azure.storage.blob.batch.BlobBatchClient;
+import com.azure.storage.blob.batch.BlobBatchClientBuilder;
 import com.azure.storage.blob.models.BlobDownloadContentResponse;
 import com.azure.storage.blob.models.BlobHttpHeaders;
 import com.azure.storage.blob.models.BlobItem;
@@ -55,6 +57,7 @@ public class AzureClient {
 
     private AzureBlobStoreData configuration;
     private final BlobContainerClient container;
+    private final BlobBatchClient batch;
 
     public AzureClient(AzureBlobStoreData configuration) throws StorageException {
         this.configuration = configuration;
@@ -64,6 +67,7 @@ public class AzureClient {
 
             String containerName = configuration.getContainer();
             this.container = getOrCreateContainer(serviceClient, containerName);
+            this.batch = new BlobBatchClientBuilder(serviceClient).buildClient();
         } catch (StorageException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -282,6 +286,10 @@ public class AzureClient {
 
     public BlobContainerClient getContainer() {
         return container;
+    }
+
+    public BlobBatchClient getBatch() {
+        return batch;
     }
 
     public boolean deleteBlob(String key) {

@@ -43,6 +43,11 @@
       <artifactId>azure-storage-blob</artifactId>
       <version>${azure.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.azure</groupId>
+      <artifactId>azure-storage-blob-batch</artifactId>
+      <version>${azure.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
