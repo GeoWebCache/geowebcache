@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -39,6 +40,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.locks.LockProvider;
@@ -111,12 +113,12 @@ class DeleteManager implements Closeable {
         }
     }
 
-    /** Executes the removal of the specified keys in a parallel fashion, returning the number of removed keys */
-    public Long deleteParallel(List<String> keys) throws StorageException {
+    /** Executes the removal of the specified blobs in a streamed fashion, returning the number of removed keys */
+    public Long deleteStreamed(Stream<BlobItem> blobs) throws StorageException {
         try {
-            return new KeysBulkDelete(keys).call();
+            return new KeysBulkDelete(blobs.map(BlobItem::getName)).call();
         } catch (Exception e) {
-            throw new StorageException("Failed to submit parallel keys execution", e);
+            throw new StorageException("Failed to submit keys deletions", e);
         }
     }
 
@@ -305,10 +307,10 @@ class DeleteManager implements Closeable {
 
     public class KeysBulkDelete implements Callable<Long> {
 
-        private final List<String> keys;
+        private final Stream<String> keyStream;
 
-        public KeysBulkDelete(List<String> keys) {
-            this.keys = keys;
+        public KeysBulkDelete(Stream<String> keyStream) {
+            this.keyStream = keyStream;
         }
 
         @Override
@@ -316,18 +318,29 @@ class DeleteManager implements Closeable {
             long count = 0L;
             try {
                 checkInterrupted();
-                if (LOG.isLoggable(Level.FINER)) {
-                    LOG.finer("Running delete delete on list of items on '%s':%s ... (only the first 100 items listed)"
-                            .formatted(client.getContainerName(), keys.subList(0, Math.min(keys.size(), 100))));
-                }
 
                 BlobContainerClient container = client.getContainer();
                 BlobBatchClient batch = client.getBatch();
 
-                for (int i = 0; i < keys.size(); i += PAGE_SIZE) {
-                    count += deleteItems(container, batch, keys.subList(i, Math.min(i + PAGE_SIZE, keys.size())));
-                }
+                Iterator<String> keysIterator = keyStream.iterator();
 
+                while (keysIterator.hasNext()) {
+
+                    List<String> keys = new ArrayList<>(PAGE_SIZE);
+                    for (int i = 0; i < PAGE_SIZE && keysIterator.hasNext(); i++) {
+                        keys.add(keysIterator.next());
+                    }
+
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.finer(
+                                "Running delete delete on list of items on '%s':%s ... (only the first 100 items listed)"
+                                        .formatted(
+                                                client.getContainerName(),
+                                                keys.subList(0, Math.min(keys.size(), 100))));
+                    }
+
+                    count += deleteItems(container, batch, keys);
+                }
             } catch (InterruptedException | IllegalStateException e) {
                 LOG.log(Level.INFO, "Azure bulk delete aborted", e);
                 throw e;

@@ -15,6 +15,7 @@ package org.geowebcache.azure;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.isNull;
+import static org.geowebcache.azure.DeleteManager.PAGE_SIZE;
 
 import com.azure.core.util.BinaryData;
 import com.azure.storage.blob.models.BlobDownloadContentResponse;
@@ -22,11 +23,11 @@ import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.blob.models.BlobProperties;
 import com.azure.storage.blob.models.BlobStorageException;
 import com.azure.storage.blob.specialized.BlockBlobClient;
-import com.google.common.collect.Iterators;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -198,26 +199,18 @@ public class AzureBlobStore implements BlobStore {
         if (listeners.isEmpty()) {
             // if there are no listeners, don't bother requesting every tile
             // metadata to notify the listeners
-            List<String> keysToDelete = blobsToDelete.map(BlobItem::getName).collect(Collectors.toList());
-
-            // split the iteration in parts to avoid memory accumulation
-            Iterator<List<String>> partition = Iterators.partition(keysToDelete.iterator(), DeleteManager.PAGE_SIZE);
-
-            while (partition.hasNext() && !shutDown) {
-                deleteManager.deleteParallel(partition.next());
+            if (!shutDown) {
+                deleteManager.deleteStreamed(blobsToDelete);
             }
-
         } else {
             // if we need to gather info, we'll end up just calling "delete" on each tile
             // this is run here instead of inside the delete manager as we need high level info
             // about tiles, e.g., TileObject, to inform the listeners
-            List<Callable<?>> tilesDeletions = blobsToDelete
-                    .map(blobItem -> {
-                        TileObject tile = createTileObject(blobItem, tileRange);
-                        tile.setParametersId(tileRange.getParametersId());
-                        return (Callable<Object>) () -> delete(tile);
-                    })
-                    .collect(Collectors.toList());
+            Stream<Callable<?>> tilesDeletions = blobsToDelete.map(blobItem -> {
+                TileObject tile = createTileObject(blobItem, tileRange);
+                tile.setParametersId(tileRange.getParametersId());
+                return () -> delete(tile);
+            });
 
             executeParallelDeletions(tilesDeletions);
         }
@@ -278,13 +271,18 @@ public class AzureBlobStore implements BlobStore {
         };
     }
 
-    private void executeParallelDeletions(List<Callable<?>> tilesDeletions) throws StorageException {
-        Iterator<List<Callable<?>>> tilesDeletionsPartitions =
-                Iterators.partition(tilesDeletions.iterator(), DeleteManager.PAGE_SIZE);
+    private void executeParallelDeletions(Stream<Callable<?>> tilesDeletions) throws StorageException {
+        Iterator<Callable<?>> tilesDeletionsIterator = tilesDeletions.iterator();
 
-        // once a page of callables is ready, run them in parallel on the delete manager
-        while (tilesDeletionsPartitions.hasNext() && !shutDown) {
-            deleteManager.executeParallel(tilesDeletionsPartitions.next());
+        while (tilesDeletionsIterator.hasNext() && !shutDown) {
+
+            // once a page of callables is ready, run them in parallel on the delete manager
+            List<Callable<?>> callables = new ArrayList<>(PAGE_SIZE);
+            for (int i = 0; i < PAGE_SIZE && tilesDeletionsIterator.hasNext(); i++) {
+                callables.add(tilesDeletionsIterator.next());
+            }
+
+            deleteManager.executeParallel(callables);
         }
     }
 
