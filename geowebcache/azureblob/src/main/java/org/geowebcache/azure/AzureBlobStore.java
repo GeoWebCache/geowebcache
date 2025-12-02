@@ -15,6 +15,7 @@ package org.geowebcache.azure;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.isNull;
+import static org.geowebcache.azure.DeleteManager.PAGE_SIZE;
 
 import com.azure.core.util.BinaryData;
 import com.azure.storage.blob.models.BlobDownloadContentResponse;
@@ -22,12 +23,11 @@ import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.blob.models.BlobProperties;
 import com.azure.storage.blob.models.BlobStorageException;
 import com.azure.storage.blob.specialized.BlockBlobClient;
-import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Iterators;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +35,10 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.geotools.util.logging.Logging;
@@ -53,13 +56,14 @@ import org.geowebcache.storage.CompositeBlobStore;
 import org.geowebcache.storage.StorageException;
 import org.geowebcache.storage.TileObject;
 import org.geowebcache.storage.TileRange;
-import org.geowebcache.storage.TileRangeIterator;
 import org.geowebcache.util.TMSKeyBuilder;
 import org.springframework.http.HttpStatus;
 
 public class AzureBlobStore implements BlobStore {
 
-    static Logger log = Logging.getLogger(AzureBlobStore.class.getName());
+    private static final Logger LOG = Logging.getLogger(AzureBlobStore.class.getName());
+
+    private static final Pattern TILE_BLOB_NAME_REGEXP = Pattern.compile("(?<z>\\d+)/(?<x>\\d+)/(?<y>\\d+)\\.\\w+$");
 
     private final TMSKeyBuilder keyBuilder;
     private final BlobStoreListenerList listeners = new BlobStoreListenerList();
@@ -190,56 +194,96 @@ public class AzureBlobStore implements BlobStore {
             return false;
         }
 
-        // open an iterator oer tile locations, to avoid memory accumulation
-        final Iterator<long[]> tileLocations = new AbstractIterator<>() {
+        Stream<BlobItem> blobsToDelete = findTileBlobsToDelete(tileRange, coordsPrefix);
 
-            // TileRange iterator with 1x1 meta tiling factor
-            private TileRangeIterator trIter = new TileRangeIterator(tileRange, new int[] {1, 1});
-
-            @Override
-            protected long[] computeNext() {
-                long[] gridLoc = trIter.nextMetaGridLocation(new long[3]);
-                return gridLoc == null ? endOfData() : gridLoc;
-            }
-        };
-
-        // if no listeners, we don't need to gather extra tile info, use a dedicated fast path
         if (listeners.isEmpty()) {
             // if there are no listeners, don't bother requesting every tile
             // metadata to notify the listeners
-            Iterator<String> keysIterator = Iterators.transform(
-                    tileLocations, tl -> keyBuilder.forLocation(coordsPrefix, tl, tileRange.getMimeType()));
-            // split the iteration in parts to avoid memory accumulation
-            Iterator<List<String>> partition = Iterators.partition(keysIterator, DeleteManager.PAGE_SIZE);
-
-            while (partition.hasNext() && !shutDown) {
-                List<String> locations = partition.next();
-                deleteManager.deleteParallel(locations);
+            if (!shutDown) {
+                deleteManager.deleteStreamed(blobsToDelete);
             }
-
         } else {
             // if we need to gather info, we'll end up just calling "delete" on each tile
             // this is run here instead of inside the delete manager as we need high level info
             // about tiles, e.g., TileObject, to inform the listeners
-            String layerName = tileRange.getLayerName();
-            String gridSetId = tileRange.getGridSetId();
-            String format = tileRange.getMimeType().getFormat();
-            Map<String, String> parameters = tileRange.getParameters();
-
-            Iterator<Callable<?>> tilesIterator = Iterators.transform(tileLocations, xyz -> {
-                TileObject tile = TileObject.createQueryTileObject(layerName, xyz, gridSetId, format, parameters);
+            Stream<Callable<?>> tilesDeletions = blobsToDelete.map(blobItem -> {
+                TileObject tile = createTileObject(blobItem, tileRange);
                 tile.setParametersId(tileRange.getParametersId());
-                return (Callable<Object>) () -> delete(tile);
+                return () -> delete(tile);
             });
-            Iterator<List<Callable<?>>> partition = Iterators.partition(tilesIterator, DeleteManager.PAGE_SIZE);
 
-            // once a page of callables is ready, run them in parallel on the delete manager
-            while (partition.hasNext() && !shutDown) {
-                deleteManager.executeParallel(partition.next());
-            }
+            executeParallelDeletions(tilesDeletions);
         }
 
         return true;
+    }
+
+    private Stream<BlobItem> findTileBlobsToDelete(TileRange tileRange, String coordsPrefix) {
+        return IntStream.rangeClosed(tileRange.getZoomStart(), tileRange.getZoomStop())
+                .boxed()
+                .flatMap(zoom -> {
+                    String zoomPrefix = coordsPrefix + "/" + zoom;
+
+                    if (!client.prefixExists(zoomPrefix)) {
+                        // empty level, skipping
+                        return Stream.empty();
+                    }
+
+                    long[] rangeBoundsAtZoom = tileRange.rangeBounds(zoom);
+
+                    return client.listBlobs(zoomPrefix)
+                            .filter(tb ->
+                                    TILE_BLOB_NAME_REGEXP.matcher(tb.getName()).find())
+                            .filter(tb -> isTileBlobInBounds(tb, rangeBoundsAtZoom));
+                });
+    }
+
+    private boolean isTileBlobInBounds(BlobItem tileBlob, long[] bounds) {
+        long minX = bounds[0];
+        long minY = bounds[1];
+        long maxX = bounds[2];
+        long maxY = bounds[3];
+
+        long[] index = extractTileIndex(tileBlob);
+        long tileX = index[0];
+        long tileY = index[1];
+
+        return tileX >= minX && tileX <= maxX && tileY >= minY && tileY <= maxY;
+    }
+
+    private TileObject createTileObject(BlobItem blobItem, TileRange tileRange) {
+        String layerName = tileRange.getLayerName();
+        String gridSetId = tileRange.getGridSetId();
+        String format = tileRange.getMimeType().getFormat();
+        Map<String, String> parameters = tileRange.getParameters();
+        return TileObject.createQueryTileObject(layerName, extractTileIndex(blobItem), gridSetId, format, parameters);
+    }
+
+    private long[] extractTileIndex(BlobItem blobItem) {
+        Matcher matcher = TILE_BLOB_NAME_REGEXP.matcher(blobItem.getName());
+
+        if (!matcher.find()) {
+            throw new IllegalArgumentException("Invalid tile blob name");
+        }
+
+        return new long[] {
+            Long.parseLong(matcher.group("x")), Long.parseLong(matcher.group("y")), Long.parseLong(matcher.group("z"))
+        };
+    }
+
+    private void executeParallelDeletions(Stream<Callable<?>> tilesDeletions) throws StorageException {
+        Iterator<Callable<?>> tilesDeletionsIterator = tilesDeletions.iterator();
+
+        while (tilesDeletionsIterator.hasNext() && !shutDown) {
+
+            // once a page of callables is ready, run them in parallel on the delete manager
+            List<Callable<?>> callables = new ArrayList<>(PAGE_SIZE);
+            for (int i = 0; i < PAGE_SIZE && tilesDeletionsIterator.hasNext(); i++) {
+                callables.add(tilesDeletionsIterator.next());
+            }
+
+            deleteManager.executeParallel(callables);
+        }
     }
 
     @Override
@@ -373,7 +417,7 @@ public class AzureBlobStore implements BlobStore {
         // revisit: this seems to hold true only for GeoServerTileLayer, "standalone" TileLayers
         // return getName() from getId(), as in AbstractTileLayer. Unfortunately the only option
         // for non-GeoServerTileLayers would be copy and delete. Expensive.
-        log.fine("No need to rename layers, AzureBlobStore uses layer id as key root");
+        LOG.fine("No need to rename layers, AzureBlobStore uses layer id as key root");
         if (client.prefixExists(oldLayerName)) {
             listeners.sendLayerRenamed(oldLayerName, newLayerName);
         }
