@@ -17,6 +17,7 @@ import com.sun.media.imageioimpl.plugins.clib.CLibImageWriter;
 import it.geosolutions.imageio.stream.output.ImageOutputStreamAdapter;
 import it.geosolutions.jaiext.colorindexer.ColorIndexer;
 import it.geosolutions.jaiext.colorindexer.Quantizer;
+import java.awt.Transparency;
 import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -139,6 +140,21 @@ public class ImageEncoderImpl implements ImageEncoder {
                     params = jpegParams;
                 }
                 return params;
+            }
+
+            @Override
+            public RenderedImage prepareImage(RenderedImage image, MimeType type) {
+                // basic preps
+                ImageWorker imageWorker = new ImageWorker(image);
+                imageWorker.forceComponentColorModel(false, false, true);
+                imageWorker.rescaleToBytes();
+
+                if (imageWorker.getRenderedImage().getColorModel().getTransparency() == Transparency.OPAQUE) {
+                    return imageWorker.getRenderedImage();
+                }
+
+                int numBands = imageWorker.getNumBands() - 1;
+                return imageWorker.retainBands(numBands).getRenderedImage();
             }
         },
         GIF("image/gif") {
