@@ -453,10 +453,11 @@ public class WMSTileFuser {
         }
 
         int canvasType;
-        if (bgColor == null
-                && transparent
-                && (outputFormat.supportsAlphaBit() || outputFormat.supportsAlphaChannel())) {
+        if (bgColor == null && transparent) {
             canvasType = BufferedImage.TYPE_INT_ARGB;
+            if (!(outputFormat.supportsAlphaBit() || outputFormat.supportsAlphaChannel())) {
+                bgColor = Color.WHITE;
+            }
         } else {
             canvasType = BufferedImage.TYPE_INT_RGB;
             if (bgColor == null) {

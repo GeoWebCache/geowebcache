@@ -13,6 +13,7 @@
  */
 package org.geowebcache.service.wms;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -23,8 +24,13 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Transparency;
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,6 +50,7 @@ import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.grid.GridSetBroker;
 import org.geowebcache.grid.GridSubset;
 import org.geowebcache.grid.GridSubsetFactory;
+import org.geowebcache.io.ByteArrayResource;
 import org.geowebcache.io.FileResource;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.TileLayerDispatcher;
@@ -388,5 +395,91 @@ public class WMSTileFuserTest {
         layer.initialize(gridSetBroker);
 
         return layer;
+    }
+
+    /** Tests writing a fused opaque image from transparent tiles */
+    @Test
+    public void testOpaqueFromTransparent() throws Exception {
+        // prepare a transparent image with a red half
+        BufferedImage transparentImage = new BufferedImage(256, 256, BufferedImage.TYPE_4BYTE_ABGR);
+        Graphics graphics = transparentImage.getGraphics();
+        graphics.setColor(Color.RED);
+        graphics.fillRect(0, 0, 127, 256);
+        graphics.dispose();
+        ByteArrayOutputStream imageStream = new ByteArrayOutputStream();
+        ImageIO.write(transparentImage, "png", imageStream);
+        byte[] imageData = imageStream.toByteArray();
+
+        // request larger than -30.0,15.0,45.0,30
+        BoundingBox bounds = new BoundingBox(-36.0, 14.0, -26, 24);
+
+        // One in between
+        int width = (int) bounds.getWidth() * 25;
+        int height = (int) bounds.getHeight() * 25;
+        final TileLayer layer = createWMSLayer();
+        layer.getGridSubset(layer.getGridSubsets().iterator().next());
+        TileLayerDispatcher dispatcher = new TileLayerDispatcher(gridSetBroker, null) {
+
+            @Override
+            public TileLayer getTileLayer(String layerName) throws GeoWebCacheException {
+                return layer;
+            }
+        };
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addParameter("layers", new String[] {"test:layer"});
+        request.addParameter("srs", new String[] {"EPSG:4326"});
+        request.addParameter("format", new String[] {"image/jpeg"});
+        request.addParameter("width", width + "");
+        request.addParameter("height", height + "");
+        request.addParameter("bbox", bounds.toString());
+
+        File temp = File.createTempFile("gwc", "wms");
+        temp.delete();
+        temp.mkdirs();
+        StorageBroker broker = new DefaultStorageBroker(
+                new FileBlobStore(temp.getAbsolutePath()) {
+
+                    @Override
+                    public boolean get(TileObject stObj) throws StorageException {
+                        stObj.setBlob(new ByteArrayResource(imageData));
+                        stObj.setCreated((new Date()).getTime());
+                        stObj.setBlobSize(imageData.length);
+                        return true;
+                    }
+                },
+                new TransientCache(100, 1024, 2000));
+
+        WMSTileFuser tileFuser = new WMSTileFuser(dispatcher, broker, request);
+        tileFuser.setSecurityDispatcher(secDisp);
+
+        // Selection of the ApplicationContext associated
+        try (ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("appContextTest.xml")) {
+            tileFuser.setApplicationContext(context);
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            tileFuser.writeResponse(response, new RuntimeStats(1, Arrays.asList(1), Arrays.asList("desc")));
+
+            // check the result is a valid JPEG
+            assertEquals("image/jpeg", response.getContentType());
+            BufferedImage image = ImageIO.read(new ByteArrayInputStream(response.getContentAsByteArray()));
+            // and it's the expected size
+            assertEquals(width, image.getWidth());
+            assertEquals(height, image.getHeight());
+
+            // check that the image is opaque
+            assertEquals(Transparency.OPAQUE, image.getColorModel().getTransparency());
+            assertEquals(3, image.getColorModel().getNumColorComponents());
+            assertEquals(3, image.getSampleModel().getNumBands());
+
+            // the output image has two red stripes, the transparent pixels became white
+            // in particular, it's white, red, white, red
+            // red is not 255 because of JPEG compression
+            WritableRaster raster = image.getRaster();
+            assertArrayEquals(new int[] {255, 255, 255}, raster.getPixel(30, 125, new int[3]));
+            assertArrayEquals(new int[] {254, 0, 0}, raster.getPixel(90, 125, new int[3]));
+            assertArrayEquals(new int[] {255, 255, 255}, raster.getPixel(150, 125, new int[3]));
+            assertArrayEquals(new int[] {254, 0, 0}, raster.getPixel(210, 125, new int[3]));
+        }
     }
 }
