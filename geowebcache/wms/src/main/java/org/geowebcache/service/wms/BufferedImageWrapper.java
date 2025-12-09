@@ -75,10 +75,6 @@ class BufferedImageWrapper {
         if (gfx == null) {
             gfx = (Graphics2D) getCanvas().getGraphics();
         }
-        if (bgColor != null) {
-            gfx.setColor(bgColor);
-            gfx.fillRect(0, 0, canvasSize[0], canvasSize[1]);
-        }
         return gfx;
     }
 }
