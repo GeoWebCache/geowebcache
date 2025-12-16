@@ -18,7 +18,6 @@
 			xhr.open('GET', url+ "?" + param);
 			xhr.onload = function (e) {
 				response = xhr.response;
-				console.log(response);
 				if (idx==1)
 					loadMapFromParameter(response,url,mapServiceName);
 				else				
