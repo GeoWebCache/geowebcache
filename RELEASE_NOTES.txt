@@ -1,3 +1,17 @@
+GeoWebCache 1.28.2 (2026-01-21)
+-------------------------------
+
+Improvements:
++++++++++++++
+- Removing debug console logging response
+- FullWMS: support fusing transparent tiles and generating an opaque output
+- Revised AzureBlobStore deletions
+
+Fixes:
+++++++
+- fix(gwc-core): srs equals(..) should allow one-directional aliases
+
+
 GeoWebCache 1.28.1 (2025-11-24)
 -------------------------------
 
