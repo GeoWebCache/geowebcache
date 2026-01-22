@@ -146,15 +146,20 @@ public class MBTilesInfo {
             int index = -1;
             if (json != null && ((index = json.indexOf("[")) > 0)) {
                 // skip the "vector_layers initial part and go straight to the array
-                json = json.substring(index, json.length() - 1).trim();
-                ObjectMapper mapper = new ObjectMapper();
-                List<VectorLayerMetadata> layers = null;
-                try {
-                    layers = mapper.readValue(json, new TypeReference<>() {});
-                } catch (JacksonException e) {
-                    throw new IllegalArgumentException("Exception occurred while parsing the layers metadata. " + e);
+                // Find the closing bracket for the array
+                int endIndex = json.indexOf("]", index);
+                if (endIndex > 0) {
+                    json = json.substring(index, endIndex + 1).trim();
+                    ObjectMapper mapper = new ObjectMapper();
+                    List<VectorLayerMetadata> layers = null;
+                    try {
+                        layers = mapper.readValue(json, new TypeReference<>() {});
+                    } catch (JacksonException e) {
+                        throw new IllegalArgumentException(
+                                "Exception occurred while parsing the layers metadata. " + e);
+                    }
+                    tileJSON.setLayers(layers);
                 }
-                tileJSON.setLayers(layers);
             }
         }
     }
