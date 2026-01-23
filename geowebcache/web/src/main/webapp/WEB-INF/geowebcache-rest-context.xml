@@ -10,10 +10,22 @@
   <bean id="antPathMatcher" class="org.springframework.util.AntPathMatcher" />
   <bean id="contentNegotiationManager"
         class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
-    <property name="favorParameter" value="true"/>
-    <property name="parameterName" value="format"/>
-    <property name="ignoreAcceptHeader" value="false" />
-    <property name="defaultContentType" value="application/xml"/>
+    <property name="favorParameter" value="false"/>
+    <property name="ignoreAcceptHeader" value="true" />
+    <property name="strategies">
+      <list>
+        <bean class="org.geowebcache.rest.negotiation.SuffixContentNegotiationStrategy"/>
+        <bean class="org.springframework.web.accept.ParameterContentNegotiationStrategy">
+          <constructor-arg>
+            <map>
+              <entry key="json" value="application/json"/>
+              <entry key="xml" value="application/xml"/>
+            </map>
+          </constructor-arg>
+        </bean>
+        <bean class="org.springframework.web.accept.HeaderContentNegotiationStrategy"/>
+      </list>
+    </property>
   </bean>
   <mvc:annotation-driven content-negotiation-manager="contentNegotiationManager">
     <mvc:path-matching path-matcher="antPathMatcher"/>

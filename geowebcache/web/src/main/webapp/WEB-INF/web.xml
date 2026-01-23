@@ -26,6 +26,16 @@
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 
+  <!-- path extension (suffix) mapping -->
+  <filter>
+    <filter-name>pathSuffixStripFilter</filter-name>
+    <filter-class>org.geowebcache.rest.filter.SuffixStripFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>pathSuffixStripFilter</filter-name>
+    <url-pattern>/rest/*</url-pattern>
+  </filter-mapping>
+
   <!-- logging initializer, should execute before spring context startup -->
   <listener>
     <listener-class>org.geowebcache.util.LoggingContextListener</listener-class>
