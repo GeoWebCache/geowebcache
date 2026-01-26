@@ -106,11 +106,14 @@ public class SeedController {
     }
 
     /**
-     * POST method for Seeding and Truncating
+     * POST method for Seeding and Truncating via form submission
      *
      * @param params Query parameters, including urlencoded form values
      */
-    @RequestMapping(value = "/seed/{layer:.+}", method = RequestMethod.POST)
+    @RequestMapping(
+            value = "/seed/{layer:.+}",
+            method = RequestMethod.POST,
+            consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE, MediaType.ALL_VALUE})
     public ResponseEntity<?> doPost(
             HttpServletRequest request,
             InputStream inputStream,
@@ -133,7 +136,11 @@ public class SeedController {
         }
     }
 
-    @RequestMapping(value = "/seed/{layer}.json", method = RequestMethod.POST)
+    /** POST method for JSON seeding/truncating with path extension. */
+    @RequestMapping(
+            value = "/seed/{layer}.json",
+            method = RequestMethod.POST,
+            consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> seedOrTruncateWithJsonPayload(
             HttpServletRequest request, InputStream inputStream, @PathVariable(name = "layer") String layerName) {
 
@@ -142,8 +149,38 @@ public class SeedController {
         return seedService.doSeeding(request, layerName, extension, body);
     }
 
-    @RequestMapping(value = "/seed/{layer}.xml", method = RequestMethod.POST)
+    /** POST method for XML seeding/truncating without path extension. */
+    @RequestMapping(
+            value = "/seed/{layer}.xml",
+            method = RequestMethod.POST,
+            consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
     public ResponseEntity<?> seedOrTruncateWithXmlPayload(
+            HttpServletRequest request, InputStream inputStream, @PathVariable(name = "layer") String layerName) {
+
+        String body = readBody(inputStream);
+        String extension = "xml";
+        return seedService.doSeeding(request, layerName, extension, body);
+    }
+
+    /** POST method for JSON seeding/truncating without path extension. */
+    @RequestMapping(
+            value = "/seed/{layer:[^.]+}",
+            method = RequestMethod.POST,
+            consumes = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> seedOrTruncateJson(
+            HttpServletRequest request, InputStream inputStream, @PathVariable(name = "layer") String layerName) {
+
+        String body = readBody(inputStream);
+        String extension = "json";
+        return seedService.doSeeding(request, layerName, extension, body);
+    }
+
+    /** POST method for XML seeding/truncating without path extension. */
+    @RequestMapping(
+            value = "/seed/{layer:[^.]+}",
+            method = RequestMethod.POST,
+            consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
+    public ResponseEntity<?> seedOrTruncateXml(
             HttpServletRequest request, InputStream inputStream, @PathVariable(name = "layer") String layerName) {
 
         String body = readBody(inputStream);
