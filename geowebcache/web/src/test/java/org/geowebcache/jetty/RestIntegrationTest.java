@@ -1086,8 +1086,11 @@ public class RestIntegrationTest {
     @Test
     public void testLayerKillAll() throws Exception {
         String killCommand = "kill_all=all";
-        try (ClassicHttpResponse response =
-                handlePost(URI.create("/geowebcache/rest/seed/states"), admin.getClient(), killCommand)) {
+        try (ClassicHttpResponse response = handlePost(
+                URI.create("/geowebcache/rest/seed/states"),
+                admin.getClient(),
+                killCommand,
+                ContentType.APPLICATION_FORM_URLENCODED)) {
             assertEquals(200, response.getCode());
         }
     }
@@ -1266,11 +1269,16 @@ public class RestIntegrationTest {
     }
 
     @SuppressWarnings("PMD.CloseResource")
-    private ClassicHttpResponse handlePost(URI uri, CloseableHttpClient client, String data) throws Exception {
+    private ClassicHttpResponse handlePost(URI uri, CloseableHttpClient client, String data, ContentType contentType)
+            throws Exception {
         HttpPost request = new HttpPost(jetty.getUri().resolve(uri));
-        StringEntity entity = new StringEntity(data, ContentType.TEXT_XML);
+        StringEntity entity = new StringEntity(data, contentType);
         request.setEntity(entity);
         return client.executeOpen(determineHost(request), request, null);
+    }
+
+    private ClassicHttpResponse handlePost(URI uri, CloseableHttpClient client, String data) throws Exception {
+        return handlePost(uri, client, data, ContentType.TEXT_XML);
     }
 
     private static class StatusCheckHandler implements HttpClientResponseHandler<Object> {
