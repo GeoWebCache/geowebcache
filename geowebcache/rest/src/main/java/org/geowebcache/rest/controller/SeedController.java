@@ -62,10 +62,19 @@ public class SeedController {
 
     /** GET method for querying running GWC tasks */
     @RequestMapping(
-            value = "/seed.json",
+            value = "/seed",
             method = RequestMethod.GET,
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> doGet(HttpServletRequest req) {
+        return seedService.getRunningTasks(req);
+    }
+
+    /** GET method for querying running GWC tasks with path extension */
+    @RequestMapping(
+            value = "/seed.json",
+            method = RequestMethod.GET,
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> doGetJson(HttpServletRequest req) {
         return seedService.getRunningTasks(req);
     }
 
@@ -149,7 +158,7 @@ public class SeedController {
         return seedService.doSeeding(request, layerName, extension, body);
     }
 
-    /** POST method for XML seeding/truncating without path extension. */
+    /** POST method for XML seeding/truncating with path extension. */
     @RequestMapping(
             value = "/seed/{layer}.xml",
             method = RequestMethod.POST,

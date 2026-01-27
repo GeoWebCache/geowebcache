@@ -1031,22 +1031,22 @@ public class RestIntegrationTest {
     }
 
     @Test
-    public void testSeedGet() throws Exception {
+    public void testSeedGetLayer() throws Exception {
         try (ClassicHttpResponse response = handleGet(URI.create("/geowebcache/rest/seed/states"), admin.getClient())) {
             assertEquals(200, response.getCode());
         }
     }
 
     @Test
-    public void testSeedGetNoLayer() throws Exception {
-        try (ClassicHttpResponse response = handleGet(URI.create("/geowebcache/rest/seed"), admin.getClient())) {
-            assertEquals(405, response.getCode());
+    public void testSeedGetSeedForm() throws Exception {
+        try (ClassicHttpResponse response = handleGet(URI.create("/geowebcache/rest/seed/states"), admin.getClient())) {
+            assertEquals(200, response.getCode());
         }
     }
 
     @Test
-    public void testSeedGetSeedForm() throws Exception {
-        try (ClassicHttpResponse response = handleGet(URI.create("/geowebcache/rest/seed/states"), admin.getClient())) {
+    public void testSeedGet() throws Exception {
+        try (ClassicHttpResponse response = handleGet(URI.create("/geowebcache/rest/seed"), admin.getClient())) {
             assertEquals(200, response.getCode());
         }
     }
