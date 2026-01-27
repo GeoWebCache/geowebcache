@@ -27,23 +27,26 @@ import org.springframework.web.context.request.NativeWebRequest;
  */
 public class SuffixContentNegotiationStrategy implements ContentNegotiationStrategy {
 
+    List<MediaType> MEDIA_TYPE_ALL_LIST = Collections.singletonList(MediaType.ALL);
+
     public static final String FORMAT_ATTRIBUTE = "gwc.formatExtension";
 
     @Override
     public List<MediaType> resolveMediaTypes(NativeWebRequest request) {
         HttpServletRequest servletRequest = request.getNativeRequest(HttpServletRequest.class);
-        if (servletRequest != null) {
-            // Check if filter stored the extension
-            String extension = (String) servletRequest.getAttribute(FORMAT_ATTRIBUTE);
+        if (servletRequest == null) {
+            return MEDIA_TYPE_ALL_LIST;
+        }
+        // Check if filter stored the extension
+        String extension = (String) servletRequest.getAttribute(FORMAT_ATTRIBUTE);
 
-            if (extension != null) {
-                if ("json".equals(extension)) {
-                    return Collections.singletonList(MediaType.APPLICATION_JSON);
-                } else if ("xml".equals(extension)) {
-                    return Collections.singletonList(MediaType.APPLICATION_XML);
-                }
+        if (extension != null) {
+            if ("json".equals(extension)) {
+                return Collections.singletonList(MediaType.APPLICATION_JSON);
+            } else if ("xml".equals(extension)) {
+                return Collections.singletonList(MediaType.APPLICATION_XML);
             }
         }
-        return Collections.emptyList();
+        return MEDIA_TYPE_ALL_LIST;
     }
 }
