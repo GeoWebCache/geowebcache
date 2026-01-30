@@ -119,10 +119,7 @@ public class SeedController {
      *
      * @param params Query parameters, including urlencoded form values
      */
-    @RequestMapping(
-            value = "/seed/{layer:.+}",
-            method = RequestMethod.POST,
-            consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE, MediaType.ALL_VALUE})
+    @RequestMapping(value = "/seed/{layer:.+}", method = RequestMethod.POST)
     public ResponseEntity<?> doPost(
             HttpServletRequest request,
             InputStream inputStream,
@@ -146,10 +143,7 @@ public class SeedController {
     }
 
     /** POST method for JSON seeding/truncating with path extension. */
-    @RequestMapping(
-            value = "/seed/{layer}.json",
-            method = RequestMethod.POST,
-            consumes = {MediaType.APPLICATION_JSON_VALUE})
+    @RequestMapping(value = "/seed/{layer}.json", method = RequestMethod.POST)
     public ResponseEntity<?> seedOrTruncateWithJsonPayload(
             HttpServletRequest request, InputStream inputStream, @PathVariable(name = "layer") String layerName) {
 
@@ -159,10 +153,7 @@ public class SeedController {
     }
 
     /** POST method for XML seeding/truncating with path extension. */
-    @RequestMapping(
-            value = "/seed/{layer}.xml",
-            method = RequestMethod.POST,
-            consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
+    @RequestMapping(value = "/seed/{layer}.xml", method = RequestMethod.POST)
     public ResponseEntity<?> seedOrTruncateWithXmlPayload(
             HttpServletRequest request, InputStream inputStream, @PathVariable(name = "layer") String layerName) {
 
