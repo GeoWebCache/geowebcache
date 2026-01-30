@@ -53,8 +53,8 @@
 
   <properties>
     <gt.version>35-SNAPSHOT</gt.version>
-    <spring.version>7.0.1</spring.version>
-    <spring.security.version>6.5.5</spring.security.version>
+    <spring.version>7.0.2</spring.version>
+    <spring.security.version>7.0.2</spring.security.version>
     <xstream.version>1.4.21</xstream.version>
     <commons-codec.version>1.18.0</commons-codec.version>
     <commons-fileupload.version>2.0.0-M4</commons-fileupload.version>
