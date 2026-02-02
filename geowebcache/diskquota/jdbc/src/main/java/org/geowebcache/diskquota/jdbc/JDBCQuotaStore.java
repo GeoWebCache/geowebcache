@@ -51,7 +51,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
@@ -134,37 +133,33 @@ public class JDBCQuotaStore implements QuotaStore {
             throw new IllegalStateException(
                     "Please provide both the sql dialect and the data " + "source before calling inizialize");
         }
-        tt.execute(new TransactionCallbackWithoutResult() {
+        tt.executeWithoutResult(status -> {
 
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                // setup the tables if necessary
-                dialect.initializeTables(schema, jt);
+            // setup the tables if necessary
+            dialect.initializeTables(schema, jt);
 
-                // get the existing table names
-                List<String> existingLayers =
-                        jt.query(dialect.getAllLayersQuery(schema), (rs, rowNum) -> rs.getString(1));
+            // get the existing table names
+            List<String> existingLayers = jt.query(dialect.getAllLayersQuery(schema), (rs, rowNum) -> rs.getString(1));
 
-                // compare with the ones available in the config
-                final Set<String> layerNames = calculator.getLayerNames();
-                final Set<String> layersToDelete = new HashSet<>(existingLayers);
-                layersToDelete.removeAll(layerNames);
+            // compare with the ones available in the config
+            final Set<String> layerNames = calculator.getLayerNames();
+            final Set<String> layersToDelete = new HashSet<>(existingLayers);
+            layersToDelete.removeAll(layerNames);
 
-                // remove all the layers we don't need
-                for (String layerName : layersToDelete) {
-                    deleteLayer(layerName);
-                }
+            // remove all the layers we don't need
+            for (String layerName : layersToDelete) {
+                deleteLayer(layerName);
+            }
 
-                // add any missing tileset
-                for (String layerName : layerNames) {
-                    createLayerInternal(layerName);
-                }
+            // add any missing tileset
+            for (String layerName : layerNames) {
+                createLayerInternal(layerName);
+            }
 
-                // create the global quota if necessary
-                Quota global = getUsedQuotaByTileSetIdInternal(GLOBAL_QUOTA_NAME);
-                if (global == null) {
-                    createLayerInternal(GLOBAL_QUOTA_NAME);
-                }
+            // create the global quota if necessary
+            Quota global = getUsedQuotaByTileSetIdInternal(GLOBAL_QUOTA_NAME);
+            if (global == null) {
+                createLayerInternal(GLOBAL_QUOTA_NAME);
             }
         });
     }
@@ -175,21 +170,17 @@ public class JDBCQuotaStore implements QuotaStore {
     }
 
     private void createLayerInternal(final String layerName) {
-        tt.execute(new TransactionCallbackWithoutResult() {
-
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                Set<TileSet> layerTileSets;
-                if (!GLOBAL_QUOTA_NAME.equals(layerName)) {
-                    layerTileSets = calculator.getTileSetsFor(layerName);
-                } else {
-                    layerTileSets = Collections.singleton(new TileSet(GLOBAL_QUOTA_NAME));
-                }
-                for (TileSet tset : layerTileSets) {
-                    // other nodes in the cluster might be trying to create the same layer,
-                    // so use getOrCreate
-                    getOrCreateTileSet(tset);
-                }
+        tt.executeWithoutResult(status -> {
+            Set<TileSet> layerTileSets;
+            if (!GLOBAL_QUOTA_NAME.equals(layerName)) {
+                layerTileSets = calculator.getTileSetsFor(layerName);
+            } else {
+                layerTileSets = Collections.singleton(new TileSet(GLOBAL_QUOTA_NAME));
+            }
+            for (TileSet tset : layerTileSets) {
+                // other nodes in the cluster might be trying to create the same layer,
+                // so use getOrCreate
+                getOrCreateTileSet(tset);
             }
         });
     }
@@ -259,77 +250,61 @@ public class JDBCQuotaStore implements QuotaStore {
 
     @Override
     public void deleteLayer(final String layerName) {
-        tt.execute(new TransactionCallbackWithoutResult() {
-
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                deleteLayerInternal(layerName);
-            }
+        tt.executeWithoutResult(status -> {
+            deleteLayerInternal(layerName);
         });
     }
 
     @Override
     public void deleteGridSubset(final String layerName, final String gridSetId) {
-        tt.execute(new TransactionCallbackWithoutResult() {
-
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                // get the disk quota used by the layer gridset
-                Quota quota = getUsedQuotaByLayerGridset(layerName, gridSetId);
-                // we will subtracting the current disk quota value
-                quota.setBytes(quota.getBytes().negate());
-                // update the global disk quota by subtracting the value above
-                String updateQuota = dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
-                Map<String, Object> params = new HashMap<>();
-                params.put("tileSetId", GLOBAL_QUOTA_NAME);
-                params.put("bytes", new BigDecimal(quota.getBytes()));
-                jt.update(updateQuota, params);
-                // delete layer gridset
-                String statement = dialect.getLayerGridDeletionStatement(schema, "layerName", "gridSetId");
-                params = new HashMap<>();
-                params.put("layerName", layerName);
-                params.put("gridSetId", gridSetId);
-                jt.update(statement, params);
-            }
+        tt.executeWithoutResult(status -> {
+            // get the disk quota used by the layer gridset
+            Quota quota = getUsedQuotaByLayerGridset(layerName, gridSetId);
+            // we will subtracting the current disk quota value
+            quota.setBytes(quota.getBytes().negate());
+            // update the global disk quota by subtracting the value above
+            String updateQuota = dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
+            Map<String, Object> params = new HashMap<>();
+            params.put("tileSetId", GLOBAL_QUOTA_NAME);
+            params.put("bytes", new BigDecimal(quota.getBytes()));
+            jt.update(updateQuota, params);
+            // delete layer gridset
+            String statement = dialect.getLayerGridDeletionStatement(schema, "layerName", "gridSetId");
+            params = new HashMap<>();
+            params.put("layerName", layerName);
+            params.put("gridSetId", gridSetId);
+            jt.update(statement, params);
         });
     }
 
     public void deleteLayerInternal(final String layerName) {
         getUsedQuotaByLayerName(layerName);
-        tt.execute(new TransactionCallbackWithoutResult() {
+        tt.executeWithoutResult(status -> {
+            // update the global quota
+            Quota quota = getUsedQuotaByLayerName(layerName);
+            quota.setBytes(quota.getBytes().negate());
+            String updateQuota = dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
+            Map<String, Object> params = new HashMap<>();
+            params.put("tileSetId", GLOBAL_QUOTA_NAME);
+            params.put("bytes", new BigDecimal(quota.getBytes()));
+            jt.update(updateQuota, params);
 
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus arg0) {
-                // update the global quota
-                Quota quota = getUsedQuotaByLayerName(layerName);
-                quota.setBytes(quota.getBytes().negate());
-                String updateQuota = dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
-                Map<String, Object> params = new HashMap<>();
-                params.put("tileSetId", GLOBAL_QUOTA_NAME);
-                params.put("bytes", new BigDecimal(quota.getBytes()));
-                jt.update(updateQuota, params);
-
-                // delete the layer
-                log.info("Deleting disk quota information for layer '" + layerName + "'");
-                String statement = dialect.getLayerDeletionStatement(schema, "layerName");
-                jt.update(statement, Collections.singletonMap("layerName", layerName));
-            }
+            // delete the layer
+            log.info("Deleting disk quota information for layer '" + layerName + "'");
+            String statement = dialect.getLayerDeletionStatement(schema, "layerName");
+            jt.update(statement, Collections.singletonMap("layerName", layerName));
         });
     }
 
     @Override
     public void renameLayer(final String oldLayerName, final String newLayerName) throws InterruptedException {
-        tt.execute(new TransactionCallbackWithoutResult() {
-
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                String sql = dialect.getRenameLayerStatement(schema, "oldName", "newName");
-                Map<String, Object> params = new HashMap<>();
-                params.put("oldName", oldLayerName);
-                params.put("newName", newLayerName);
-                int updated = jt.update(sql, params);
-                log.info("Updated " + updated + " tile sets after layer rename");
-            }
+        tt.executeWithoutResult(status -> {
+            String sql = dialect.getRenameLayerStatement(schema, "oldName", "newName");
+            Map<String, Object> params = new HashMap<>();
+            params.put("oldName", oldLayerName);
+            params.put("newName", newLayerName);
+            int updated = jt.update(sql, params);
+            log.info("Updated " + updated + " tile sets after layer rename");
         });
     }
 
@@ -428,97 +403,14 @@ public class JDBCQuotaStore implements QuotaStore {
     public void addToQuotaAndTileCounts(
             final TileSet tileSet, final Quota quotaDiff, final Collection<PageStatsPayload> tileCountDiffs)
             throws InterruptedException {
-        tt.execute(new TransactionCallbackWithoutResult() {
+        tt.executeWithoutResult(status -> {
+            getOrCreateTileSet(tileSet);
+            updateQuotas(tileSet, quotaDiff);
 
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                getOrCreateTileSet(tileSet);
-                updateQuotas(tileSet, quotaDiff);
-
-                if (tileCountDiffs != null) {
-                    // sort the payloads by page id as a deadlock avoidance measure, out
-                    // of order updates may result in deadlock with the
-                    // addHitsAndSetAccessTime method
-                    List<PageStatsPayload> sorted = sortPayloads(tileCountDiffs);
-                    for (PageStatsPayload payload : sorted) {
-                        upsertTilePageFillFactor(payload);
-                    }
-                }
-            }
-
-            private void updateQuotas(final TileSet tileSet, final Quota quotaDiff) {
-                if (log.isLoggable(Level.FINE)) {
-                    log.info("Applying quota diff " + quotaDiff.getBytes() + " on tileset " + tileSet);
-                }
-
-                String updateQuota = dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
-                Map<String, Object> params = new HashMap<>();
-                params.put("tileSetId", tileSet.getId());
-                params.put("bytes", new BigDecimal(quotaDiff.getBytes()));
-                jt.update(updateQuota, params);
-                params.put("tileSetId", GLOBAL_QUOTA_NAME);
-                jt.update(updateQuota, params);
-            }
-
-            private void upsertTilePageFillFactor(PageStatsPayload payload) {
-                if (log.isLoggable(Level.FINE)) {
-                    log.info("Applying page stats payload " + payload);
-                }
-
-                // see http://en.wikipedia.org/wiki/Merge_(SQL)
-                // Even the Merge command that some databases support is prone to race
-                // conditions
-                // under concurrent load, but we don't want to lose data and it's difficult
-                // to
-                // tell apart the race conditions from other failures, so we use tolerant
-                // commands
-                // and loop over them.
-                // Loop conditions: we find the page stats, but they are deleted before we
-                // can
-                // update
-                // them, we don't find the page stats, but they are inserted before we can
-                // do so, in
-                // both cases we re-start from zero
-                TilePage page = payload.getPage();
-                final byte level = page.getZoomLevel();
-                final BigInteger tilesPerPage = calculator.getTilesPerPage(tileSet, level);
-
-                int modified = 0;
-                int count = 0;
-                while (modified == 0 && count < maxLoops) {
-                    try {
-                        count++;
-                        PageStats stats = getPageStats(page.getKey());
-                        if (stats != null) {
-                            float oldFillFactor = stats.getFillFactor();
-                            stats.addTiles(payload.getNumTiles(), tilesPerPage);
-                            // if no change, bail out early
-                            if (oldFillFactor == stats.getFillFactor()) {
-                                return;
-                            }
-
-                            // update the record in the db
-                            modified = updatePageFillFactor(page, stats, oldFillFactor);
-                        } else {
-                            // create the stats and update the fill factor
-                            stats = new PageStats(0);
-                            stats.addTiles(payload.getNumTiles(), tilesPerPage);
-
-                            modified = createNewPageStats(stats, page);
-                        }
-                    } catch (PessimisticLockingFailureException e) {
-                        if (log.isLoggable(Level.FINE)) {
-                            log.log(Level.FINE, "Deadlock while updating page stats, will retry", e);
-                        }
-                    }
-                }
-
-                if (modified == 0) {
-                    throw new ConcurrencyFailureException("Failed to create or update page stats for page "
-                            + payload.getPage()
-                            + " after "
-                            + count
-                            + " attempts");
+            if (tileCountDiffs != null) {
+                List<PageStatsPayload> sorted = sortPayloads(tileCountDiffs);
+                for (PageStatsPayload payload : sorted) {
+                    upsertTilePageFillFactor(tileSet, payload);
                 }
             }
         });
@@ -533,6 +425,82 @@ public class JDBCQuotaStore implements QuotaStore {
             return p1.getKey().compareTo(p2.getKey());
         });
         return result;
+    }
+
+    private void updateQuotas(final TileSet tileSet, final Quota quotaDiff) {
+        if (log.isLoggable(Level.FINE)) {
+            log.info("Applying quota diff " + quotaDiff.getBytes() + " on tileset " + tileSet);
+        }
+
+        String updateQuota = dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
+        Map<String, Object> params = new HashMap<>();
+        params.put("tileSetId", tileSet.getId());
+        params.put("bytes", new BigDecimal(quotaDiff.getBytes()));
+        jt.update(updateQuota, params);
+        params.put("tileSetId", GLOBAL_QUOTA_NAME);
+        jt.update(updateQuota, params);
+    }
+
+    private void upsertTilePageFillFactor(final TileSet tileSet, PageStatsPayload payload) {
+        if (log.isLoggable(Level.FINE)) {
+            log.info("Applying page stats payload " + payload);
+        }
+
+        // see http://en.wikipedia.org/wiki/Merge_(SQL)
+        // Even the Merge command that some databases support is prone to race
+        // conditions
+        // under concurrent load, but we don't want to lose data and it's difficult
+        // to
+        // tell apart the race conditions from other failures, so we use tolerant
+        // commands
+        // and loop over them.
+        // Loop conditions: we find the page stats, but they are deleted before we
+        // can
+        // update
+        // them, we don't find the page stats, but they are inserted before we can
+        // do so, in
+        // both cases we re-start from zero
+        TilePage page = payload.getPage();
+        final byte level = page.getZoomLevel();
+        final BigInteger tilesPerPage = calculator.getTilesPerPage(tileSet, level);
+
+        int modified = 0;
+        int count = 0;
+        while (modified == 0 && count < maxLoops) {
+            try {
+                count++;
+                PageStats stats = getPageStats(page.getKey());
+                if (stats != null) {
+                    float oldFillFactor = stats.getFillFactor();
+                    stats.addTiles(payload.getNumTiles(), tilesPerPage);
+                    // if no change, bail out early
+                    if (oldFillFactor == stats.getFillFactor()) {
+                        return;
+                    }
+
+                    // update the record in the db
+                    modified = updatePageFillFactor(page, stats, oldFillFactor);
+                } else {
+                    // create the stats and update the fill factor
+                    stats = new PageStats(0);
+                    stats.addTiles(payload.getNumTiles(), tilesPerPage);
+
+                    modified = createNewPageStats(stats, page);
+                }
+            } catch (PessimisticLockingFailureException e) {
+                if (log.isLoggable(Level.FINE)) {
+                    log.log(Level.FINE, "Deadlock while updating page stats, will retry", e);
+                }
+            }
+        }
+
+        if (modified == 0) {
+            throw new ConcurrencyFailureException("Failed to create or update page stats for page "
+                    + payload.getPage()
+                    + " after "
+                    + count
+                    + " attempts");
+        }
     }
 
     private int updatePageFillFactor(TilePage page, PageStats stats, float oldFillFactor) {
@@ -755,27 +723,23 @@ public class JDBCQuotaStore implements QuotaStore {
 
     @Override
     public void deleteParameters(final String layerName, final String parametersId) {
-        tt.execute(new TransactionCallbackWithoutResult() {
+        tt.executeWithoutResult(status -> {
+            // first gather the disk quota used by the gridset, and update the global
+            // quota
+            Quota quota = getUsedQuotaByParametersId(parametersId);
+            quota.setBytes(quota.getBytes().negate());
+            String updateQuota = dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
+            Map<String, Object> params = new HashMap<>();
+            params.put("tileSetId", GLOBAL_QUOTA_NAME);
+            params.put("bytes", new BigDecimal(quota.getBytes()));
+            jt.update(updateQuota, params);
 
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                // first gather the disk quota used by the gridset, and update the global
-                // quota
-                Quota quota = getUsedQuotaByParametersId(parametersId);
-                quota.setBytes(quota.getBytes().negate());
-                String updateQuota = dialect.getUpdateQuotaStatement(schema, "tileSetId", "bytes");
-                Map<String, Object> params = new HashMap<>();
-                params.put("tileSetId", GLOBAL_QUOTA_NAME);
-                params.put("bytes", new BigDecimal(quota.getBytes()));
-                jt.update(updateQuota, params);
-
-                // then delete all the gridsets with the specified id
-                String statement = dialect.getLayerParametersDeletionStatement(schema, "layerName", "parametersId");
-                params = new HashMap<>();
-                params.put("layerName", layerName);
-                params.put("parametersId", parametersId);
-                jt.update(statement, params);
-            }
+            // then delete all the gridsets with the specified id
+            String statement = dialect.getLayerParametersDeletionStatement(schema, "layerName", "parametersId");
+            params = new HashMap<>();
+            params.put("layerName", layerName);
+            params.put("parametersId", parametersId);
+            jt.update(statement, params);
         });
     }
 

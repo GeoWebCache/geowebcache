@@ -55,6 +55,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 @WebAppConfiguration
 @ContextConfiguration(classes = OperationsRestWebConfig.class)
+@SuppressWarnings("deprecation")
 @RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles("test")
 public class OperationsRestTest extends TestSupport {

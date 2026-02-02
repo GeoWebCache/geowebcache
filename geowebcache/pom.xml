@@ -53,8 +53,8 @@
 
   <properties>
     <gt.version>35-SNAPSHOT</gt.version>
-    <spring.version>6.2.12</spring.version>
-    <spring.security.version>6.5.5</spring.security.version>
+    <spring.version>7.0.2</spring.version>
+    <spring.security.version>7.0.2</spring.security.version>
     <xstream.version>1.4.21</xstream.version>
     <commons-codec.version>1.18.0</commons-codec.version>
     <commons-fileupload.version>2.0.0-M4</commons-fileupload.version>
@@ -254,7 +254,6 @@
         <artifactId>joda-time</artifactId>
         <version>${joda-time.version}</version>
       </dependency>
-
       <!-- Jackson dependencies managed by platform-dependencies BOM -->
       <dependency>
         <!-- used for tests that require environment variables -->
@@ -262,13 +261,6 @@
         <artifactId>system-rules</artifactId>
         <version>1.19.0</version>
         <scope>test</scope>
-      </dependency>
-
-      <!-- to be moved to GeoTools once it's upgraded to httpclient 5.x -->
-      <dependency>
-        <groupId>org.apache.httpcomponents.client5</groupId>
-        <artifactId>httpclient5</artifactId>
-        <version>5.4.4</version>
       </dependency>
 
     </dependencies>
@@ -336,7 +328,7 @@
       <plugins>
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>3.5.3</version>
+          <version>3.5.4</version>
           <executions>
             <execution>
               <goals>
@@ -387,7 +379,7 @@
 
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.5.3</version>
+          <version>3.5.4</version>
         </plugin>
 
         <plugin>

@@ -37,6 +37,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+@SuppressWarnings("deprecation")
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"file*:/webapp/WEB-INF/web.xml", "file*:/webapp/WEB-INF/geowebcache-servlet.xml"})
 public class MemoryCacheControllerTest {
@@ -54,9 +55,7 @@ public class MemoryCacheControllerTest {
         xmlConfig.afterPropertiesSet();
 
         mcc = new MemoryCacheController(null);
-        this.mockMvc = MockMvcBuilders.standaloneSetup(mcc)
-                .setUseSuffixPatternMatch(true)
-                .build();
+        this.mockMvc = MockMvcBuilders.standaloneSetup(mcc).build();
     }
 
     @Test

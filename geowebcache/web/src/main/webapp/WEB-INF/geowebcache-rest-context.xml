@@ -10,12 +10,25 @@
   <bean id="antPathMatcher" class="org.springframework.util.AntPathMatcher" />
   <bean id="contentNegotiationManager"
         class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
-    <property name="favorPathExtension" value="true" />
     <property name="favorParameter" value="false"/>
     <property name="ignoreAcceptHeader" value="true" />
+    <property name="strategies">
+      <list>
+        <bean class="org.geowebcache.rest.negotiation.SuffixContentNegotiationStrategy"/>
+        <bean class="org.springframework.web.accept.ParameterContentNegotiationStrategy">
+          <constructor-arg>
+            <map>
+              <entry key="json" value="application/json"/>
+              <entry key="xml" value="application/xml"/>
+            </map>
+          </constructor-arg>
+        </bean>
+        <bean class="org.springframework.web.accept.HeaderContentNegotiationStrategy"/>
+      </list>
+    </property>
   </bean>
   <mvc:annotation-driven content-negotiation-manager="contentNegotiationManager">
-    <mvc:path-matching suffix-pattern="true" path-matcher="antPathMatcher"/>
+    <mvc:path-matching path-matcher="antPathMatcher"/>
     <mvc:message-converters>
       <bean id="gwcConverter" class="org.geowebcache.rest.converter.GWCConverter">
         <constructor-arg ref="gwcAppCtx" />

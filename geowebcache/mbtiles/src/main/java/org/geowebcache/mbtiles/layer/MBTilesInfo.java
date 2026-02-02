@@ -16,9 +16,6 @@ package org.geowebcache.mbtiles.layer;
 import static org.geotools.mbtiles.MBTilesFile.SPHERICAL_MERCATOR;
 import static org.geotools.mbtiles.MBTilesFile.WORLD_ENVELOPE;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
@@ -35,6 +32,9 @@ import org.geotools.util.logging.Logging;
 import org.geowebcache.grid.BoundingBox;
 import org.geowebcache.layer.meta.TileJSON;
 import org.geowebcache.layer.meta.VectorLayerMetadata;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 /** Info Object storing basic MBTiles Cached info */
 public class MBTilesInfo {
@@ -146,15 +146,20 @@ public class MBTilesInfo {
             int index = -1;
             if (json != null && ((index = json.indexOf("[")) > 0)) {
                 // skip the "vector_layers initial part and go straight to the array
-                json = json.substring(index, json.length() - 1).trim();
-                ObjectMapper mapper = new ObjectMapper();
-                List<VectorLayerMetadata> layers = null;
-                try {
-                    layers = mapper.readValue(json, new TypeReference<>() {});
-                } catch (JsonProcessingException e) {
-                    throw new IllegalArgumentException("Exception occurred while parsing the layers metadata. " + e);
+                // Find the closing bracket for the array
+                int endIndex = json.indexOf("]", index);
+                if (endIndex > 0) {
+                    json = json.substring(index, endIndex + 1).trim();
+                    ObjectMapper mapper = new ObjectMapper();
+                    List<VectorLayerMetadata> layers = null;
+                    try {
+                        layers = mapper.readValue(json, new TypeReference<>() {});
+                    } catch (JacksonException e) {
+                        throw new IllegalArgumentException(
+                                "Exception occurred while parsing the layers metadata. " + e);
+                    }
+                    tileJSON.setLayers(layers);
                 }
-                tileJSON.setLayers(layers);
             }
         }
     }
