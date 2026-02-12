@@ -33,7 +33,6 @@ import org.geowebcache.diskquota.ConfigLoader;
 import org.geowebcache.diskquota.DiskQuotaConfig;
 import org.geowebcache.diskquota.DiskQuotaMonitor;
 import org.geowebcache.io.GeoWebCacheXStream;
-import org.geowebcache.storage.blobstore.memory.CacheStatistics;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -197,7 +196,6 @@ public class DiskQuotaController {
      */
     public static XStream getConfiguredXStream(XStream xs) {
         xs.setMode(XStream.NO_REFERENCES);
-        xs.alias("gwcInMemoryCacheStatistics", CacheStatistics.class);
         return xs;
     }
 }
