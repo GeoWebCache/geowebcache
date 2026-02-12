@@ -22,6 +22,12 @@ import org.geowebcache.GeoWebCacheException;
  */
 public interface LockProvider {
 
+    /**
+     * The amount of time, in seconds, to wait for a lock to be released before giving up and throwing an exception.
+     * Default is 2 minutes.
+     */
+    int GWC_LOCK_TIMEOUT = Integer.parseInt(System.getProperty("GWC_LOCK_TIMEOUT", String.valueOf(2 * 60)));
+
     /** Acquires a exclusive lock on the specified key */
     public Lock getLock(String lockKey) throws GeoWebCacheException;
 
