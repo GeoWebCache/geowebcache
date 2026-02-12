@@ -14,6 +14,7 @@
 package org.geowebcache.locks;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -69,7 +70,15 @@ public class MemoryLockProvider implements LockProvider {
             return internalLockAndCounter;
         });
 
-        lockAndCounter.lock.lock();
+        try {
+            if (!lockAndCounter.lock.tryLock(GWC_LOCK_TIMEOUT, TimeUnit.SECONDS)) {
+                // Throwing an exception prevents the thread from hanging indefinitely
+                throw new RuntimeException(String.format("Lock acquisition timeout for key [%s].", lockKey));
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted while trying to acquire lock for key " + lockKey, e);
+        }
 
         if (LOGGER.isLoggable(Level.FINE)) LOGGER.fine("Acquired lock key " + lockKey);
 
@@ -88,10 +97,8 @@ public class MemoryLockProvider implements LockProvider {
                     // Attempt to remove lock if no other thread is waiting for it
                     if (lockAndCounter.counter.decrementAndGet() == 0) {
 
-                        // Try to remove the lock, but we have to check the count AGAIN inside of
-                        // "compute"
-                        // so that we know it hasn't been incremented since the if-statement above
-                        // was evaluated
+                        // Try to remove the lock, but we have to check the count AGAIN inside of "compute" so that we
+                        // know it hasn't been incremented since the if-statement above was evaluated
                         lockAndCounters.compute(lockKey, (key, existingLockAndCounter) -> {
                             if (existingLockAndCounter == null || existingLockAndCounter.counter.get() == 0) {
                                 return null;
@@ -111,7 +118,7 @@ public class MemoryLockProvider implements LockProvider {
      * remove it during a release.
      */
     private static class LockAndCounter {
-        private final java.util.concurrent.locks.Lock lock = new ReentrantLock();
+        private final ReentrantLock lock = new ReentrantLock();
 
         // The count of threads holding or waiting for this lock
         private final AtomicInteger counter = new AtomicInteger(0);
