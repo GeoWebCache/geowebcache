@@ -518,9 +518,6 @@ public class RestIntegrationTest {
                 new HttpDelete(jetty.getUri().resolve("rest/diskquota")),
                 new HttpPut(jetty.getUri().resolve("rest/masstruncate")),
                 new HttpDelete(jetty.getUri().resolve("rest/masstruncate")),
-                new HttpPut(jetty.getUri().resolve("rest/statistics")),
-                new HttpPost(jetty.getUri().resolve("rest/statistics")),
-                new HttpDelete(jetty.getUri().resolve("rest/statistics")),
                 new HttpPut(jetty.getUri().resolve("rest/reload")),
                 new HttpGet(jetty.getUri().resolve("rest/reload")),
                 new HttpDelete(jetty.getUri().resolve("rest/reload")))) {
