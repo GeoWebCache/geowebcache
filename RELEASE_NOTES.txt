@@ -1,3 +1,18 @@
+GeoWebCache 1.27.5 (2026-02-18)
+-------------------------------
+
+Maintenance release
+
+Fixes:
+++++++
+-  Don't hold locks forever, use a configurable timeout instead (#1472)
+
+Update:
++++++++
+- Update to GeoTools 33.5
+
+
+
 GeoWebCache 1.27.4 (2025-12-19)
 -------------------------------
 
