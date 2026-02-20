@@ -10,7 +10,6 @@
   <name>Google Cloud Storage blob store</name>
 
   <properties>
-    <google-cloud-storage.version>2.55.0</google-cloud-storage.version>
     <testcontainers-fake-gcs-server.version>0.2.0</testcontainers-fake-gcs-server.version>
   </properties>
 
@@ -30,10 +29,10 @@
       <artifactId>gwc-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- Version managed by cloud-dependencies-bom (via google-cloud-storage-bom import) -->
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-storage</artifactId>
-      <version>${google-cloud-storage.version}</version>
     </dependency>
 
     <dependency>

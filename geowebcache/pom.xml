@@ -55,6 +55,7 @@
     <spring.version>7.0.2</spring.version>
     <spring.security.version>7.0.2</spring.security.version>
     <xstream.version>1.4.21</xstream.version>
+    <cloud-dependencies-bom.version>1.0.1</cloud-dependencies-bom.version>
     <commons-codec.version>1.18.0</commons-codec.version>
     <commons-fileupload.version>2.0.0-M4</commons-fileupload.version>
     <hamcrest.version>3.0</hamcrest.version>
@@ -117,6 +118,14 @@
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
         <version>${spring.security.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- Cloud SDK dependency management (Azure, GCS, AWS SDK v2) with Netty exclusions -->
+      <dependency>
+        <groupId>io.tileverse</groupId>
+        <artifactId>cloud-dependencies-bom</artifactId>
+        <version>${cloud-dependencies-bom.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
