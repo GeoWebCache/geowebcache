@@ -10,7 +10,7 @@
   <name>Google Cloud Storage blob store</name>
 
   <properties>
-    <google-cloud-storage.version>2.55.0</google-cloud-storage.version>
+    <google-cloud-storage.version>2.63.0</google-cloud-storage.version>
     <testcontainers-fake-gcs-server.version>0.2.0</testcontainers-fake-gcs-server.version>
   </properties>
 
