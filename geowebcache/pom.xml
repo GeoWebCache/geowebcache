@@ -52,7 +52,7 @@
 
   <properties>
     <gt.version>35-SNAPSHOT</gt.version>
-    <spring.version>7.0.2</spring.version>
+    <spring.version>7.0.6</spring.version>
     <spring.security.version>7.0.2</spring.security.version>
     <xstream.version>1.4.21</xstream.version>
     <cloud-dependencies-bom.version>1.0.1</cloud-dependencies-bom.version>
