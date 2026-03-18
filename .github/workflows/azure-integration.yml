@@ -25,7 +25,7 @@ jobs:
         java-version: [ 11, 17, 21 ]
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-java@v3
+    - uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
         java-version: ${{ matrix.java-version }}
@@ -54,7 +54,7 @@ jobs:
     #  !contains(needs.*.result, 'failure')
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-java@v3
+    - uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
         java-version: 11
