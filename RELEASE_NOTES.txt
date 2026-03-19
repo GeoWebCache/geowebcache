@@ -1,3 +1,11 @@
+GeoWebCache 1.28.3 (2026-03-19)
+-------------------------------
+
+Improvements:
++++++++++++++
+- Removed in memory caching options (actually harmful, could cause deadlocks)
+- Tile locking has timeouts
+
 GeoWebCache 1.28.2 (2026-01-21)
 -------------------------------
 
