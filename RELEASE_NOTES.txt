@@ -1,3 +1,8 @@
+GeoWebCache 2.0-RC (2026-04-17)
+-------------------------------
+
+GeoWebCache 2.0-RC was migrated to Jakarta EE 11, Spring 7 and Jackson 3. Other dependencies have been updated to follow up as well, along with cleanups such as removing obsolete H2 and gwc-distributed references, as well as the in memory cache. GeoWebCache 2.0-RC requires Java 17 as the minimum version, along with a Tomcat 11.
+
 GeoWebCache 2.0-SNAPSHOT (2026-03-01)
 -------------------------------------
 
