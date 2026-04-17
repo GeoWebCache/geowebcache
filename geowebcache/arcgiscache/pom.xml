@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.geowebcache</groupId>
     <artifactId>geowebcache</artifactId>
-    <version>2.0-RC</version>
+    <version>2.0-SNAPSHOT</version>
     <!-- GWC VERSION -->
   </parent>
   <groupId>org.geowebcache</groupId>
