@@ -155,7 +155,9 @@ Disk quota storage
 
 The disk quota subystem defaults to use an embedded Berkeley DB whose storage is located in the cache directory, there is however also the possibility of using either an embedded HSQL database, against storing information in the cache directory, or a standard Oracle or PostgreSQL database.
 In order to switch from the Berkeley DB to the embedded HSQL storage the :file:`geowebcache-diskquota.xml` must contain the ``quotaStore`` element set to ``HSQL``:
+  
 .. code-block:: xml
+
     <?xml version="1.0" encoding="utf-8"?>
     <gwcQuotaConfiguration>
       <enabled>false</enabled>
@@ -208,8 +210,7 @@ The local connection pool can instead be configured by specifying the following:
       </connectionPool>
     </gwcJdbcConfiguration>
 
-.. note::
-The `validationQuery` parameter is optional. Any supplied value is restricted based on dialect: HSQL uses SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS, Oracle uses SELECT 1 FROM DUAL, and most other dialects can use plain SELECT 1.
+.. note:: The `validationQuery` parameter is optional. Any supplied value is restricted based on dialect: HSQL uses SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS, Oracle uses SELECT 1 FROM DUAL, and most other dialects can use plain SELECT 1.
 
 Disk quota schema
 -----------------
