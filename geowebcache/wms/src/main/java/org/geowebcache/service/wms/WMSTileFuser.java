@@ -34,6 +34,7 @@ import org.eclipse.imagen.PlanarImage;
 import org.geotools.image.util.ImageUtilities;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.HintsLevel;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.request.RequestFilterException;
@@ -149,100 +150,6 @@ public class WMSTileFuser {
 
     private SecurityDispatcher securityDispatcher;
 
-    /** Enum storing the Hints associated to one of the 3 configurations(SPEED, QUALITY, DEFAULT) */
-    public enum HintsLevel {
-        QUALITY(0, "quality"),
-        DEFAULT(1, "default"),
-        SPEED(2, "speed");
-
-        @SuppressWarnings("ImmutableEnumChecker") // RenderingHints is mutable
-        private final RenderingHints hints;
-
-        private final String mode;
-
-        HintsLevel(int numHint, String mode) {
-            this.mode = mode;
-            switch (numHint) {
-                // QUALITY HINTS
-                case 0:
-                    hints = new RenderingHints(
-                            RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-                    hints.add(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
-                    hints.add(new RenderingHints(
-                            RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON));
-                    hints.add(new RenderingHints(
-                            RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY));
-                    hints.add(new RenderingHints(
-                            RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC));
-                    hints.add(new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY));
-                    hints.add(new RenderingHints(
-                            RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON));
-                    hints.add(new RenderingHints(
-                            RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE));
-                    break;
-                // DEFAULT HINTS
-                case 1:
-                    hints = new RenderingHints(
-                            RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_DEFAULT);
-                    hints.add(new RenderingHints(
-                            RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT));
-                    hints.add(new RenderingHints(
-                            RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_DEFAULT));
-                    hints.add(new RenderingHints(
-                            RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_DEFAULT));
-                    hints.add(new RenderingHints(
-                            RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR));
-                    hints.add(new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_DEFAULT));
-                    hints.add(new RenderingHints(
-                            RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT));
-                    hints.add(
-                            new RenderingHints(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_DEFAULT));
-                    break;
-                // SPEED HINTS
-                case 2:
-                    hints = new RenderingHints(
-                            RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
-                    hints.add(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF));
-                    hints.add(new RenderingHints(
-                            RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_OFF));
-                    hints.add(new RenderingHints(
-                            RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED));
-                    hints.add(new RenderingHints(
-                            RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR));
-                    hints.add(new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED));
-                    hints.add(new RenderingHints(
-                            RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF));
-                    hints.add(new RenderingHints(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE));
-                    break;
-                default:
-                    hints = null;
-            }
-        }
-
-        public RenderingHints getRenderingHints() {
-            return hints;
-        }
-
-        public String getModeName() {
-            return mode;
-        }
-
-        public static HintsLevel getHintsForMode(String mode) {
-
-            if (mode != null) {
-                if (mode.equalsIgnoreCase(QUALITY.getModeName())) {
-                    return QUALITY;
-                } else if (mode.equalsIgnoreCase(SPEED.getModeName())) {
-                    return SPEED;
-                } else {
-                    return DEFAULT;
-                }
-            } else {
-                return DEFAULT;
-            }
-        }
-    }
-
     protected WMSTileFuser(TileLayerDispatcher tld, StorageBroker sb, HttpServletRequest servReq)
             throws GeoWebCacheException {
         this.sb = sb;
@@ -256,7 +163,6 @@ public class WMSTileFuser {
 
         String layerName = values.get("layers");
         layer = tld.getTileLayer(layerName);
-
         gridSubset = layer.getGridSubsetForSRS(SRS.getSRS(values.get("srs")));
 
         outputFormat = (ImageMime) ImageMime.createFromFormat(values.get("format"));
@@ -294,6 +200,8 @@ public class WMSTileFuser {
         reqHeight = Integer.valueOf(values.get("height"));
 
         fullParameters = layer.getModifiableParameters(servReq.getParameterMap(), servReq.getCharacterEncoding());
+        this.hints = layer.getHintsLevel().getRenderingHints();
+
         if (values.get("hints") != null) {
             hints = HintsLevel.getHintsForMode(values.get("hints")).getRenderingHints();
         }
@@ -340,35 +248,33 @@ public class WMSTileFuser {
         xResolution = reqBounds.getWidth() / reqWidth;
         yResolution = reqBounds.getHeight() / reqHeight;
 
-        double tmpResolution;
-        // We use the smallest one
-        if (yResolution < xResolution) {
-            tmpResolution = yResolution;
-        } else {
-            tmpResolution = xResolution;
-        }
+        double tmpResolution = Math.min(xResolution, yResolution);
 
         log.fine("x res: " + xResolution + " y res: " + yResolution + " tmpResolution: " + tmpResolution);
 
         // Cut ourselves 0.5% slack
-        double compResolution = 1.005 * tmpResolution;
-
         double[] resArray = gridSubset.getResolutions();
 
         for (srcIdx = 0; srcIdx < resArray.length; srcIdx++) {
-            srcResolution = resArray[srcIdx];
-            if (srcResolution < compResolution) {
+            if (resArray[srcIdx] < tmpResolution) {
                 break;
             }
         }
 
         if (srcIdx >= resArray.length) {
+            // Clamp to last valid index
             srcIdx = resArray.length - 1;
+        } else if (srcIdx > 0) {
+            // Compare neighbors only if we have two valid ones
+            double res1 = resArray[srcIdx - 1];
+            double res2 = resArray[srcIdx];
+
+            if (Math.abs(res1 - tmpResolution) <= Math.abs(res2 - tmpResolution)) {
+                srcIdx = srcIdx - 1;
+            }
         }
-
+        srcResolution = resArray[srcIdx];
         log.fine("z: " + srcIdx + " , resolution: " + srcResolution + " (" + tmpResolution + ")");
-
-        // At worst, we have the best resolution possible
     }
 
     protected void determineCanvasLayout() {
@@ -678,5 +584,9 @@ public class WMSTileFuser {
 
     public void setSecurityDispatcher(SecurityDispatcher securityDispatcher) {
         this.securityDispatcher = securityDispatcher;
+    }
+
+    RenderingHints getHints() {
+        return hints;
     }
 }

@@ -568,7 +568,13 @@
       </xs:element>
     </xs:sequence>
   </xs:complexType>
-
+  <xs:simpleType name="HintsLevel">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SPEED"/>
+      <xs:enumeration value="DEFAULT"/>
+      <xs:enumeration value="QUALITY"/>
+    </xs:restriction>
+  </xs:simpleType>
   <xs:complexType name="WmsLayer">
     <xs:complexContent>
       <xs:extension base="gwc:AbstractTileLayer">
@@ -603,6 +609,15 @@
                 This is the value sent to the backend server for the STYLES
                 parameter.
                 It may contain commas.
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="hintsLevel" type="gwc:HintsLevel" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation xml:lang="en">
+                        Rendering hints level used when recombining tiles for full WMS responses.
+                        SPEED uses nearest-neighbor interpolation, DEFAULT uses bilinear interpolation,
+                        and QUALITY uses bicubic interpolation.
               </xs:documentation>
             </xs:annotation>
           </xs:element>
