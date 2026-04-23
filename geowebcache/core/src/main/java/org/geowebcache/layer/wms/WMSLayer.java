@@ -29,6 +29,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.HintsLevel;
 import org.geowebcache.config.XMLGridSubset;
 import org.geowebcache.config.legends.LegendsRawInfo;
 import org.geowebcache.conveyor.Conveyor.CacheResult;
@@ -123,6 +124,8 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
     private LegendsRawInfo legends;
 
     private HttpRequestMode httpRequestMode = HttpRequestMode.Get;
+
+    private HintsLevel hintsLevel;
 
     WMSLayer() {
         // default constructor for XStream
@@ -678,6 +681,15 @@ public class WMSLayer extends AbstractTileLayer implements ProxyLayer {
 
     public String getProxyUrl() {
         return proxyUrl;
+    }
+
+    @Override
+    public HintsLevel getHintsLevel() {
+        return hintsLevel != null ? hintsLevel : HintsLevel.DEFAULT;
+    }
+
+    public void setHintsLevel(HintsLevel hintsLevel) {
+        this.hintsLevel = hintsLevel;
     }
 
     /** Mandatory */

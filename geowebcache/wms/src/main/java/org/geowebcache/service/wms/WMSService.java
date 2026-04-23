@@ -34,6 +34,7 @@ import org.geowebcache.GeoWebCacheDispatcher;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
 import org.geowebcache.config.BaseConfiguration;
+import org.geowebcache.config.HintsLevel;
 import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.config.TileLayerConfiguration;
 import org.geowebcache.conveyor.Conveyor;
@@ -290,6 +291,13 @@ public class WMSService extends Service {
             } else if (tile.getHint().equalsIgnoreCase("getmap")) {
                 getSecurityDispatcher().checkSecurity(tile);
                 WMSTileFuser wmsFuser = getFuser(tile.servletReq);
+                TileLayer tileLayer = tile.getLayer();
+                if (tileLayer != null) {
+                    HintsLevel hintsLevel = tileLayer.getHintsLevel();
+                    if (hintsLevel != null) {
+                        wmsFuser.setHintsConfiguration(hintsLevel.getModeName());
+                    }
+                }
                 try {
                     wmsFuser.writeResponse(tile.servletResp, stats);
                 } catch (SecurityException e) {

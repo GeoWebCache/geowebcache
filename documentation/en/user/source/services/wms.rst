@@ -39,6 +39,31 @@ Note that to use WMS you should not have two grid sets with the same SRS defined
 Support for Regular WMS Clients
 -------------------------------
 
-GeoWebCache can recombine and resample tiles to answer arbitrary WMS requests. To enable this feature, open ``geowebcache-wmsservice-context.xml``, find ``<property name="fullWMS"><value>FALSE</value></property>`` and change to ``<property name="fullWMS"><value>TRUE</value></property>``. Another way to enable this feature is to add the following string to the ``geowebcache.xml`` file: ``<fullWMS>TRUE</fullWMS>``. All layers that are to support this feature must currently be configured to support a PNG format. Inside the WMS request the user can add a new WMS parameter called **hints** which can be set to one of the following configurations: *speed*, *default*, *quality*. Going from *speed* to *quality* the image quality is increased but also the computation time.    
-
+GeoWebCache can recombine and resample tiles to answer arbitrary WMS requests. To enable this feature, open ``geowebcache-wmsservice-context.xml``, find ``<property name="fullWMS"><value>FALSE</value></property>`` and change to ``<property name="fullWMS"><value>TRUE</value></property>``. Another way to enable this feature is to add the following string to the ``geowebcache.xml`` file: ``<fullWMS>TRUE</fullWMS>``. All layers that are to support this feature must currently be configured to support a PNG format. Inside the WMS request the user can add a new WMS parameter called **hints** which can be set to one of the following configurations: *speed*, *default*, *quality*. Going from *speed* to *quality* the image quality is increased but also the computation time.
 Note that this requires GeoWebCache to decompress many tiles and recompress the resulting canvas; also for PNG8 and GIF output formats an optimal palette is calculated. Response times will therefore be on the order of seconds, depending on the size of the requested image and the tile sizes. You may have to increase the heap size of the Java process (``-Xmx256M``) to use this functionality.
+The resolution used for tile recomposition is selected as the closest available match from the underlying grid set to the requested resolution. If an exact match is not available, the nearest resolution level is chosen based on proximity, and the resulting image is rescaled to the requested output size.
+
+
+Configuring interpolation for WMS Layer via HintsLevel
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+When GeoWebCache recombines tiles into a single image, the resulting raster is rescaled to match the requested output size. 
+The interpolation method used during this rescaling step can be controlled by setting an optional configuration parameter ``hintsLevel``.
+It can be specified on WMS layers in ``geowebcache.xml``:
+
+::
+
+   <wmsLayer>
+     ...
+     <hintsLevel>QUALITY</hintsLevel>
+     ...
+   </wmsLayer>
+
+Valid values are:
+
+- ``SPEED``   — uses nearest-neighbor interpolation (fastest, lowest quality)
+- ``DEFAULT`` — uses bilinear interpolation (balanced)
+- ``QUALITY`` — uses bicubic interpolation (highest quality, slowest)
+
+If not specified, the default behavior is equivalent to ``DEFAULT``.
+
+This setting affects the final scaling step when GeoWebCache assembles tiles into a single image for non-tiled WMS requests.

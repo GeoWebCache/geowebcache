@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import org.geotools.util.logging.Logging;
 import org.geowebcache.GeoWebCacheException;
+import org.geowebcache.config.HintsLevel;
 import org.geowebcache.config.Info;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.parameters.ParameterFilter;
@@ -186,6 +187,12 @@ public abstract class TileLayer implements Info {
     public abstract void setCacheBypassAllowed(boolean allowed);
 
     public abstract boolean isQueryable();
+
+    /** @return the hints level to use when rendering this layer */
+    public HintsLevel getHintsLevel() {
+        // default implementation, subclasses can override to provide a different hints level
+        return HintsLevel.DEFAULT;
+    }
 
     /**
      * The timeout used when querying the backend server. The same value is used for both the connection and the data
