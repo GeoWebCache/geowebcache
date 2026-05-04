@@ -26,6 +26,7 @@ import static org.mockito.Mockito.times;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -44,6 +45,7 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.DefaultGridsets;
+import org.geowebcache.config.HintsLevel;
 import org.geowebcache.conveyor.ConveyorTile;
 import org.geowebcache.filter.security.SecurityDispatcher;
 import org.geowebcache.grid.BoundingBox;
@@ -474,13 +476,59 @@ public class WMSTileFuserTest {
             assertEquals(3, image.getSampleModel().getNumBands());
 
             // the output image has two red stripes, the transparent pixels became white
-            // in particular, it's white, red, white, red
             // red is not 255 because of JPEG compression
             WritableRaster raster = image.getRaster();
             assertArrayEquals(new int[] {255, 255, 255}, raster.getPixel(30, 125, new int[3]));
             assertArrayEquals(new int[] {254, 0, 0}, raster.getPixel(90, 125, new int[3]));
-            assertArrayEquals(new int[] {255, 255, 255}, raster.getPixel(150, 125, new int[3]));
-            assertArrayEquals(new int[] {254, 0, 0}, raster.getPixel(210, 125, new int[3]));
+            assertArrayEquals(new int[] {254, 0, 0}, raster.getPixel(150, 125, new int[3]));
+            assertArrayEquals(new int[] {255, 255, 255}, raster.getPixel(210, 125, new int[3]));
         }
+    }
+
+    @Test
+    public void testHintsLevelFromLayerConfig() throws Exception {
+        WMSLayer layer = createWMSLayer();
+        layer.setHintsLevel(HintsLevel.QUALITY); // new field added to WMSLayer
+
+        BoundingBox bounds = new BoundingBox(-25.0, 17.0, 40.0, 22);
+        int width = (int) bounds.getWidth() * 10;
+        int height = (int) bounds.getHeight() * 10;
+        GridSubset gridSubset =
+                layer.getGridSubset(layer.getGridSubsets().iterator().next());
+
+        TileLayerDispatcher tld = mock(TileLayerDispatcher.class);
+        StorageBroker sb = mock(StorageBroker.class);
+        Mockito.when(tld.getTileLayer("test:layer")).thenReturn(layer);
+
+        WMSTileFuser tileFuser = new WMSTileFuser(tld, sb, fuserRequest(layer, gridSubset, bounds, width, height));
+
+        assertEquals(
+                RenderingHints.VALUE_INTERPOLATION_BICUBIC, tileFuser.getHints().get(RenderingHints.KEY_INTERPOLATION));
+        assertEquals(RenderingHints.VALUE_RENDER_QUALITY, tileFuser.getHints().get(RenderingHints.KEY_RENDERING));
+    }
+
+    @Test
+    public void testRequestHintsOverridesLayerConfig() throws Exception {
+        WMSLayer layer = createWMSLayer();
+        layer.setHintsLevel(HintsLevel.QUALITY);
+
+        BoundingBox bounds = new BoundingBox(-25.0, 17.0, 40.0, 22.0);
+        int width = (int) bounds.getWidth() * 10;
+        int height = (int) bounds.getHeight() * 10;
+        GridSubset gridSubset =
+                layer.getGridSubset(layer.getGridSubsets().iterator().next());
+
+        TileLayerDispatcher tld = mock(TileLayerDispatcher.class);
+        StorageBroker sb = mock(StorageBroker.class);
+        Mockito.when(tld.getTileLayer("test:layer")).thenReturn(layer);
+
+        MockHttpServletRequest req = (MockHttpServletRequest) fuserRequest(layer, gridSubset, bounds, width, height);
+        req.addParameter("hints", "speed");
+
+        WMSTileFuser tileFuser = new WMSTileFuser(tld, sb, req);
+
+        RenderingHints hints = tileFuser.getHints();
+        assertEquals(RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR, hints.get(RenderingHints.KEY_INTERPOLATION));
+        assertEquals(RenderingHints.VALUE_RENDER_SPEED, hints.get(RenderingHints.KEY_RENDERING));
     }
 }

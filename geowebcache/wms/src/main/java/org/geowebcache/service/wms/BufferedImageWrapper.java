@@ -17,6 +17,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import org.geowebcache.config.HintsLevel;
 
 class BufferedImageWrapper {
     /** Mosaic image */
@@ -57,7 +58,7 @@ class BufferedImageWrapper {
             }
 
             // Hints settings
-            RenderingHints hintsTemp = WMSTileFuser.HintsLevel.DEFAULT.getRenderingHints();
+            RenderingHints hintsTemp = HintsLevel.DEFAULT.getRenderingHints();
 
             if (hints != null) {
                 hintsTemp = hints;
