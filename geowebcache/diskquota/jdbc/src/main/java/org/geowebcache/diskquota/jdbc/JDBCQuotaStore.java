@@ -91,6 +91,14 @@ public class JDBCQuotaStore implements QuotaStore {
 
     private DataSource dataSource;
 
+    /**
+     * Whether {@link #close()} should close {@link #dataSource}. Set to {@code false} by {@link JDBCQuotaStoreFactory}
+     * when the DataSource is resolved from JNDI - in that case its lifecycle is owned by the JNDI provider, not by this
+     * store. Defaults to {@code true} so callers using only {@link #setDataSource(DataSource)} keep the previous
+     * behavior.
+     */
+    private boolean ownsDataSource = true;
+
     public JDBCQuotaStore(DefaultStorageFinder finder, TilePageCalculator tilePageCalculator) {
         this.finder = finder;
         this.calculator = tilePageCalculator;
@@ -115,6 +123,24 @@ public class JDBCQuotaStore implements QuotaStore {
     /** Sets the database schema used by this store */
     public void setSchema(String schema) {
         this.schema = schema;
+    }
+
+    /**
+     * @return whether {@link #close()} will close the {@link #setDataSource(DataSource) DataSource}. Defaults to
+     *     {@code true}; set to {@code false} for JNDI-resolved DataSources, whose lifecycle belongs to the JNDI
+     *     provider.
+     */
+    public boolean isOwnsDataSource() {
+        return ownsDataSource;
+    }
+
+    /**
+     * Controls whether {@link #close()} will close the configured {@link #setDataSource(DataSource) DataSource}. Set to
+     * {@code false} when the DataSource is borrowed (typically resolved from JNDI) so this store does not shut down a
+     * connection pool it does not own.
+     */
+    public void setOwnsDataSource(boolean ownsDataSource) {
+        this.ownsDataSource = ownsDataSource;
     }
 
     /** Sets the connection pool provider and initializes the tables in the dbms if missing */
@@ -652,11 +678,14 @@ public class JDBCQuotaStore implements QuotaStore {
     public void close() throws Exception {
         log.info("Closing up the JDBC quota store ");
 
-        // try to close the data source if possible
-        if (dataSource instanceof BasicDataSource source) {
-            source.close();
-        } else if (dataSource instanceof Closeable closeable) {
-            closeable.close();
+        // try to close the data source if possible, but only if we own it - JNDI-resolved
+        // DataSources are owned by the JNDI provider and must not be closed here.
+        if (ownsDataSource) {
+            if (dataSource instanceof BasicDataSource source) {
+                source.close();
+            } else if (dataSource instanceof Closeable closeable) {
+                closeable.close();
+            }
         }
 
         // release the templates
