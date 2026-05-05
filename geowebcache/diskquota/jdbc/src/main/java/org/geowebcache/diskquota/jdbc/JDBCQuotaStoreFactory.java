@@ -161,6 +161,9 @@ public class JDBCQuotaStoreFactory implements QuotaStoreFactory, ApplicationCont
         store.setDialect(dialect);
         // sets schema if configured in geowebcache-diskquota-jdbc.xml
         store.setSchema(expandedConfig.getSchema());
+        // JNDI-resolved DataSources are owned by the JNDI provider; inline connection pools are
+        // created here and owned by the store.
+        store.setOwnsDataSource(expandedConfig.getJNDISource() == null);
 
         // initialize it
         store.initialize();

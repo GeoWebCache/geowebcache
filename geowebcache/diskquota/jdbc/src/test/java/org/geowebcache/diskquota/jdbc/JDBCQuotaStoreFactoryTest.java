@@ -14,14 +14,19 @@
 package org.geowebcache.diskquota.jdbc;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.Closeable;
 import java.sql.Connection;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import org.geotools.util.factory.GeoTools;
 import org.geowebcache.config.ConfigurationException;
+import org.geowebcache.diskquota.storage.TilePageCalculator;
+import org.geowebcache.storage.DefaultStorageFinder;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -59,5 +64,53 @@ public class JDBCQuotaStoreFactoryTest {
         } finally {
             GeoTools.clearInitialContext();
         }
+    }
+
+    /** A {@link DataSource} that also implements {@link Closeable} so we can observe whether close() is called. */
+    private interface CloseableDataSource extends DataSource, Closeable {}
+
+    @Test
+    @SuppressWarnings({"PMD.CloseResource"})
+    public void closeDoesNotCloseJndiDataSource() throws Exception {
+        CloseableDataSource jndiDs = Mockito.mock(CloseableDataSource.class);
+
+        JDBCQuotaStore store =
+                new JDBCQuotaStore(Mockito.mock(DefaultStorageFinder.class), Mockito.mock(TilePageCalculator.class));
+        store.setDataSource(jndiDs);
+        // Mirror the wiring done by JDBCQuotaStoreFactory#getJDBCStore for a JNDI configuration.
+        store.setOwnsDataSource(false);
+
+        store.close();
+
+        assertFalse("ownsDataSource flag must be false after explicit set", store.isOwnsDataSource());
+        Mockito.verify(jndiDs, Mockito.never()).close();
+    }
+
+    @Test
+    @SuppressWarnings({"PMD.CloseResource"})
+    public void closeClosesOwnedDataSource() throws Exception {
+        CloseableDataSource ownedDs = Mockito.mock(CloseableDataSource.class);
+
+        JDBCQuotaStore store =
+                new JDBCQuotaStore(Mockito.mock(DefaultStorageFinder.class), Mockito.mock(TilePageCalculator.class));
+        store.setDataSource(ownedDs);
+        // Default ownsDataSource=true preserves the historical behavior.
+        assertTrue(store.isOwnsDataSource());
+
+        store.close();
+
+        Mockito.verify(ownedDs).close();
+    }
+
+    @Test
+    public void closeIsSafeWhenDataSourceLacksCloseable() throws Exception {
+        DataSource plainDs = Mockito.mock(DataSource.class);
+        JDBCQuotaStore store =
+                new JDBCQuotaStore(Mockito.mock(DefaultStorageFinder.class), Mockito.mock(TilePageCalculator.class));
+        store.setDataSource(plainDs);
+
+        // No assertion beyond the absence of an exception - the store should not try to close a
+        // DataSource that does not implement Closeable / BasicDataSource.
+        store.close();
     }
 }
