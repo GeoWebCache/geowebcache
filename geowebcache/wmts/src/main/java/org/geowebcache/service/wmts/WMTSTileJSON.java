@@ -15,6 +15,7 @@ package org.geowebcache.service.wmts;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -76,8 +77,11 @@ public class WMTSTileJSON {
             @SuppressWarnings("PMD.CloseResource") // managed by servlet container
             OutputStream os = convTile.servletResp.getOutputStream();
 
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            ObjectMapper mapper = JsonMapper.builder()
+                    .defaultPropertyInclusion(
+                            JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.USE_DEFAULTS))
+                    .build();
+
             mapper.writeValue(os, json);
             os.flush();
         } catch (IOException ioe) {
