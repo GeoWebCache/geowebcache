@@ -13,12 +13,18 @@
  */
 package org.geowebcache.diskquota.jdbc;
 
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.util.Arrays;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sql.DataSource;
+import org.geotools.util.logging.Logging;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.support.JdbcAccessor;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.MetaDataAccessException;
@@ -30,6 +36,8 @@ import org.springframework.jdbc.support.MetaDataAccessException;
  * @author Andrea Aime - GeoSolutions
  */
 public class SQLDialect {
+
+    private static final Logger LOG = Logging.getLogger(SQLDialect.class);
 
     // size guesses: 128 characters should be more than enough for layer name, the gridset id
     // is normally an epsg code so 32 is way more than enough, the blob format
@@ -54,70 +62,45 @@ public class SQLDialect {
         {
             put(
                     "TILESET",
-                    Arrays.asList( //
-                            "CREATE TABLE ${schema}TILESET (\n"
-                                    + //
-                                    "  KEY VARCHAR("
-                                    + TILESET_KEY_SIZE
-                                    + ") PRIMARY KEY,\n"
-                                    + //
-                                    "  LAYER_NAME VARCHAR("
-                                    + LAYER_NAME_SIZE
-                                    + "),\n"
-                                    + //
-                                    "  GRIDSET_ID VARCHAR("
-                                    + GRIDSET_ID_SIZE
-                                    + "),\n"
-                                    + //
-                                    "  BLOB_FORMAT VARCHAR("
-                                    + BLOB_FORMAT_SIZE
-                                    + "),\n"
-                                    + //
-                                    "  PARAMETERS_ID VARCHAR("
-                                    + PARAMETERS_ID_SIZE
-                                    + "),\n"
-                                    + //
-                                    "  BYTES NUMERIC("
-                                    + BYTES_SIZE
-                                    + ") NOT NULL DEFAULT 0\n"
-                                    + //
-                                    ")", //
+                    List.of(
+                            """
+	                        CREATE TABLE ${schema}TILESET (
+	                          KEY VARCHAR(%d) PRIMARY KEY,
+	                          LAYER_NAME VARCHAR(%d),
+	                          GRIDSET_ID VARCHAR(%d),
+	                          BLOB_FORMAT VARCHAR(%d),
+	                          PARAMETERS_ID VARCHAR(%d),
+	                          BYTES NUMERIC(%d) NOT NULL DEFAULT 0
+	                        )"""
+                                    .formatted(
+                                            TILESET_KEY_SIZE,
+                                            LAYER_NAME_SIZE,
+                                            GRIDSET_ID_SIZE,
+                                            BLOB_FORMAT_SIZE,
+                                            PARAMETERS_ID_SIZE,
+                                            BYTES_SIZE), //
                             "CREATE INDEX TILESET_LAYER ON ${schema}TILESET(LAYER_NAME)" //
                             ));
 
             // this one embeds both tile page and page stats, since they are linked 1-1
             put(
                     "TILEPAGE",
-                    Arrays.asList(
-                            "CREATE TABLE ${schema}TILEPAGE (\n"
-                                    + //
-                                    " KEY VARCHAR("
-                                    + TILEPAGE_KEY_SIZE
-                                    + ") PRIMARY KEY,\n"
-                                    + //
-                                    " TILESET_ID VARCHAR("
-                                    + TILESET_KEY_SIZE
-                                    + ") REFERENCES ${schema}TILESET(KEY) ON DELETE CASCADE,\n"
-                                    + //
-                                    " PAGE_Z SMALLINT,\n"
-                                    + //
-                                    " PAGE_X INTEGER,\n"
-                                    + //
-                                    " PAGE_Y INTEGER,\n"
-                                    + //
-                                    " CREATION_TIME_MINUTES INTEGER,\n"
-                                    + //
-                                    " FREQUENCY_OF_USE FLOAT,\n"
-                                    + //
-                                    " LAST_ACCESS_TIME_MINUTES INTEGER,\n"
-                                    + //
-                                    " FILL_FACTOR FLOAT,\n"
-                                    + //
-                                    " NUM_HITS NUMERIC("
-                                    + NUM_HITS_SIZE
-                                    + ")\n"
-                                    + //
-                                    ")", //
+                    List.of(
+                            """
+                            CREATE TABLE ${schema}TILEPAGE (
+                             KEY VARCHAR(%d) PRIMARY KEY,
+                             TILESET_ID VARCHAR(%d) REFERENCES ${schema}TILESET(KEY) ON UPDATE CASCADE ON DELETE CASCADE,
+                             PAGE_Z SMALLINT,
+                             PAGE_X INTEGER,
+                             PAGE_Y INTEGER,
+                             CREATION_TIME_MINUTES INTEGER,
+                             FREQUENCY_OF_USE FLOAT,
+                             LAST_ACCESS_TIME_MINUTES INTEGER,
+                             FILL_FACTOR FLOAT,
+                             NUM_HITS NUMERIC(%d)
+                            )
+                            """
+                                    .formatted(TILEPAGE_KEY_SIZE, TILESET_KEY_SIZE, NUM_HITS_SIZE), //
                             "CREATE INDEX TILEPAGE_TILESET ON ${schema}TILEPAGE(TILESET_ID, FILL_FACTOR)",
                             "CREATE INDEX TILEPAGE_FREQUENCY ON ${schema}TILEPAGE(FREQUENCY_OF_USE DESC)",
                             "CREATE INDEX TILEPAGE_LAST_ACCESS ON ${schema}TILEPAGE(LAST_ACCESS_TIME_MINUTES DESC)"));
@@ -140,6 +123,142 @@ public class SQLDialect {
                 }
             }
         }
+        // Bring pre-existing installations up to the current FK contract (ON UPDATE CASCADE).
+        // No-op for fresh schemas created above; no-op for dialects that cannot support it.
+        migrateForeignKeys(schema, template);
+    }
+
+    /**
+     * Upgrades the {@code TILEPAGE -> TILESET} foreign key on installations created before this dialect started
+     * declaring it {@code ON UPDATE CASCADE}, so that {@link #getRenameLayerStatement(String, String, String) renaming
+     * a layer} can rewrite {@code TILESET.KEY} without orphaning the dependent {@code TILEPAGE} rows.
+     *
+     * <p>Idempotent: looks up the existing FK via {@link DatabaseMetaData#getImportedKeys}, and only rewrites it when
+     * the current update rule is not {@link DatabaseMetaData#importedKeyCascade}. Dialects that cannot support
+     * {@code ON UPDATE CASCADE} (notably Oracle) override this method to no-op.
+     */
+    protected void migrateForeignKeys(String schema, SimpleJdbcTemplate template) {
+        JdbcAccessor accessor = (JdbcAccessor) template.getJdbcOperations();
+        DataSource ds = accessor.getDataSource();
+        if (ds == null) {
+            throw new IllegalStateException("JdbcTemplate has no DataSource configured");
+        }
+        try {
+            JdbcUtils.extractDatabaseMetaData(ds, dbmd -> upgradeTilepageForeignKey(dbmd, schema, template));
+        } catch (MetaDataAccessException e) {
+            LOG.log(
+                    Level.WARNING,
+                    "Could not migrate TILEPAGE foreign key to ON UPDATE CASCADE; layer renames may leave stale rows",
+                    e);
+        }
+    }
+
+    /**
+     * {@link DatabaseMetaDataCallback} body for {@link #migrateForeignKeys}: scans the FKs declared on TILEPAGE and,
+     * for any TILEPAGE -> TILESET FK whose update rule is not {@link DatabaseMetaData#importedKeyCascade}, drops it and
+     * re-adds it with {@code ON UPDATE CASCADE ON DELETE CASCADE}. Idempotent: a FK that already cascades on update is
+     * left untouched.
+     *
+     * <p>Concurrent-startup safe: if another instance races us to the upgrade, our drop/add may throw because the
+     * legacy constraint name no longer exists. In that case we re-check the live FK state and, if the cascade form is
+     * already in place, treat it as a concurrent success rather than a failure.
+     */
+    private Void upgradeTilepageForeignKey(DatabaseMetaData dbmd, String schema, SimpleJdbcTemplate template)
+            throws SQLException {
+
+        final String tilepageName = resolveTableName(dbmd, schema, "TILEPAGE");
+        if (tilepageName == null) {
+            return null;
+        }
+        final String prefix = schema == null ? "" : schema + ".";
+        final String prefixedTilepageName = prefix + tilepageName;
+        try (ResultSet rs = dbmd.getImportedKeys(null, schema, tilepageName)) {
+            while (rs.next()) {
+                String fkName = rs.getString("FK_NAME");
+                if (!isTilesetCascadeCandidate(rs, fkName)) {
+                    continue;
+                }
+                String drop = "ALTER TABLE %s DROP CONSTRAINT %s".formatted(prefixedTilepageName, fkName);
+                String add =
+                        """
+                        ALTER TABLE %s ADD FOREIGN KEY (TILESET_ID)
+                        REFERENCES %sTILESET(KEY)
+                        ON UPDATE CASCADE ON DELETE CASCADE
+                        """
+                                .formatted(prefixedTilepageName, prefix);
+
+                LOG.info(() -> "Upgrading TILEPAGE.TILESET_ID foreign key to ON UPDATE CASCADE (was constraint %s)"
+                        .formatted(fkName));
+                JdbcOperations jdbcOperations = template.getJdbcOperations();
+                try {
+                    jdbcOperations.execute(drop);
+                    jdbcOperations.execute(add);
+                } catch (DataAccessException raceLikely) {
+                    if (isTilepageFkAlreadyCascade(dbmd, schema, tilepageName)) {
+                        LOG.fine(() -> "TILEPAGE FK was migrated concurrently by another instance "
+                                + "while this instance was trying to drop %s; accepting concurrent migration"
+                                        .formatted(fkName));
+                        return null;
+                    }
+                    throw raceLikely;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Re-checks the live TILEPAGE -> TILESET FK state after a failed migration attempt. Returns {@code true} when the
+     * FK is already declared {@link DatabaseMetaData#importedKeyCascade}, i.e. another instance has completed the
+     * migration in the meantime.
+     */
+    private static boolean isTilepageFkAlreadyCascade(DatabaseMetaData dbmd, String schema, String tilepageName)
+            throws SQLException {
+        try (ResultSet rs = dbmd.getImportedKeys(null, schema, tilepageName)) {
+            while (rs.next()) {
+                String pkTable = rs.getString("PKTABLE_NAME");
+                String fkColumn = rs.getString("FKCOLUMN_NAME");
+                if (!"TILESET".equalsIgnoreCase(pkTable) || !"TILESET_ID".equalsIgnoreCase(fkColumn)) {
+                    continue;
+                }
+                if (rs.getShort("UPDATE_RULE") == DatabaseMetaData.importedKeyCascade) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * True when the current {@code getImportedKeys} row describes the TILEPAGE -> TILESET(KEY) FK and its update rule
+     * is something other than {@code CASCADE}.
+     */
+    private static boolean isTilesetCascadeCandidate(ResultSet rs, String fkName) throws SQLException {
+        if (fkName == null || fkName.isEmpty()) {
+            return false;
+        }
+        String pkTable = rs.getString("PKTABLE_NAME");
+        String fkColumn = rs.getString("FKCOLUMN_NAME");
+        boolean isTilesetFk = "TILESET".equalsIgnoreCase(pkTable) && "TILESET_ID".equalsIgnoreCase(fkColumn);
+        if (!isTilesetFk) {
+            return false;
+        }
+        short updateRule = rs.getShort("UPDATE_RULE");
+        return updateRule != DatabaseMetaData.importedKeyCascade;
+    }
+
+    private static String resolveTableName(DatabaseMetaData dbmd, String schema, String tableName) throws SQLException {
+        try (ResultSet rs = dbmd.getTables(null, schema, tableName.toLowerCase(), null)) {
+            if (rs.next()) {
+                return rs.getString("TABLE_NAME");
+            }
+        }
+        try (ResultSet rs = dbmd.getTables(null, schema, tableName, null)) {
+            if (rs.next()) {
+                return rs.getString("TABLE_NAME");
+            }
+        }
+        return null;
     }
 
     /** Checks if the specified table exists */
@@ -310,6 +429,19 @@ public class SQLDialect {
         return sb.toString();
     }
 
+    /**
+     * Returns the SQL to rename a layer, updating both {@code LAYER_NAME} and the layer-name prefix of {@code KEY} on
+     * the {@code TILESET} table.
+     *
+     * <p>{@code KEY} is built as {@code <layerName>#<gridsetId>#<blobFormat>[#<parametersId>]}, so the leading prefix
+     * (up to but not including the first {@code #}) must be rewritten in lockstep with {@code LAYER_NAME}. The
+     * companion FK on {@code TILEPAGE.TILESET_ID} is declared {@code ON UPDATE CASCADE} so {@code TILEPAGE} rows follow
+     * automatically; dialects that cannot declare an updating FK cascade (notably Oracle) override this method to keep
+     * {@code KEY} unchanged.
+     *
+     * <p>Default form uses standard SQL {@code SUBSTRING ... FROM POSITION(...)}, supported by PostgreSQL, H2, and
+     * HSQL. Dialects with different SUBSTRING/POSITION syntax override this method.
+     */
     public String getRenameLayerStatement(String schema, String oldLayerName, String newLayerName) {
         StringBuilder sb = new StringBuilder("UPDATE ");
         if (schema != null) {
@@ -317,6 +449,9 @@ public class SQLDialect {
         }
         sb.append("TILESET SET LAYER_NAME = :")
                 .append(newLayerName)
+                .append(", KEY = :")
+                .append(newLayerName)
+                .append(" || SUBSTRING(KEY FROM POSITION('#' IN KEY))")
                 .append(" WHERE LAYER_NAME = :")
                 .append(oldLayerName);
 
