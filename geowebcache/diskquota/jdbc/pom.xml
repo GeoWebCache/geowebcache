@@ -63,6 +63,30 @@
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- testcontainers for integration tests against real DB engines; see *IT classes under src/test -->
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>oracle-xe</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- Modern Oracle JDBC driver (the legacy ojdbc14 in the 'oracle' profile only loads when -Doracle is set
+         and is for Oracle 10g; the testcontainers IT uses the current driver against gvenzl/oracle-xe). -->
+    <dependency>
+      <groupId>com.oracle.database.jdbc</groupId>
+      <artifactId>ojdbc11</artifactId>
+      <version>23.4.0.24.05</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -80,6 +104,46 @@
           <version>10.2.0.3.0</version>
         </dependency>
       </dependencies>
+    </profile>
+    <profile>
+      <!-- activates failsafe for the testcontainers-backed *IT tests under
+           src/test/java/org/geowebcache/diskquota/jdbc/tests/container/ -->
+      <id>online</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <configuration>
+              <forkCount>1</forkCount>
+              <reuseForks>false</reuseForks>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <!-- skips the testcontainers ITs (used by CI builds without Docker) -->
+      <id>excludeDockerTests</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <configuration>
+              <forkCount>1</forkCount>
+              <reuseForks>false</reuseForks>
+              <excludes>
+                <exclude>org.geowebcache.diskquota.jdbc.tests.container.*IT</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>
