@@ -13,7 +13,7 @@
  */
 package org.geowebcache.diskquota.jdbc;
 
-import java.util.Arrays;
+import java.util.List;
 
 /**
  * HSQL dialect for the quota store
@@ -25,69 +25,44 @@ public class HSQLDialect extends SQLDialect {
 
         TABLE_CREATION_MAP.put(
                 "TILESET",
-                Arrays.asList( //
-                        "CREATE CACHED TABLE ${schema}TILESET (\n"
-                                + //
-                                "  KEY VARCHAR("
-                                + TILESET_KEY_SIZE
-                                + ") PRIMARY KEY,\n"
-                                + //
-                                "  LAYER_NAME VARCHAR("
-                                + LAYER_NAME_SIZE
-                                + "),\n"
-                                + //
-                                "  GRIDSET_ID VARCHAR("
-                                + GRIDSET_ID_SIZE
-                                + "),\n"
-                                + //
-                                "  BLOB_FORMAT VARCHAR("
-                                + BLOB_FORMAT_SIZE
-                                + "),\n"
-                                + //
-                                "  PARAMETERS_ID VARCHAR("
-                                + PARAMETERS_ID_SIZE
-                                + "),\n"
-                                + //
-                                "  BYTES NUMERIC("
-                                + BYTES_SIZE
-                                + ") DEFAULT 0 NOT NULL\n"
-                                + //
-                                ")", //
+                List.of( //
+                        """
+                        CREATE CACHED TABLE ${schema}TILESET (
+                          KEY VARCHAR(%d) PRIMARY KEY,
+                          LAYER_NAME VARCHAR(%d),
+                          GRIDSET_ID VARCHAR(%d),
+                          BLOB_FORMAT VARCHAR(%d),
+                          PARAMETERS_ID VARCHAR(%d),
+                          BYTES NUMERIC(%d) DEFAULT 0 NOT NULL
+                        )
+                        """
+                                .formatted(
+                                        TILESET_KEY_SIZE,
+                                        LAYER_NAME_SIZE,
+                                        GRIDSET_ID_SIZE,
+                                        BLOB_FORMAT_SIZE,
+                                        PARAMETERS_ID_SIZE,
+                                        BYTES_SIZE), //
                         "CREATE INDEX TILESET_LAYER ON ${schema}TILESET(LAYER_NAME)" //
                         ));
 
         TABLE_CREATION_MAP.put(
                 "TILEPAGE",
-                Arrays.asList(
-                        "CREATE CACHED TABLE ${schema}TILEPAGE (\n"
-                                + //
-                                " KEY VARCHAR("
-                                + TILEPAGE_KEY_SIZE
-                                + ") PRIMARY KEY,\n"
-                                + //
-                                " TILESET_ID VARCHAR("
-                                + TILESET_KEY_SIZE
-                                + ") REFERENCES ${schema}TILESET(KEY) ON DELETE CASCADE,\n"
-                                + //
-                                " PAGE_Z SMALLINT,\n"
-                                + //
-                                " PAGE_X INTEGER,\n"
-                                + //
-                                " PAGE_Y INTEGER,\n"
-                                + //
-                                " CREATION_TIME_MINUTES INTEGER,\n"
-                                + //
-                                " FREQUENCY_OF_USE FLOAT,\n"
-                                + //
-                                " LAST_ACCESS_TIME_MINUTES INTEGER,\n"
-                                + //
-                                " FILL_FACTOR FLOAT,\n"
-                                + //
-                                " NUM_HITS NUMERIC("
-                                + NUM_HITS_SIZE
-                                + ")\n"
-                                + //
-                                ")", //
+                List.of(
+                        """
+                        CREATE CACHED TABLE ${schema}TILEPAGE (
+                         KEY VARCHAR(%d) PRIMARY KEY,
+                         TILESET_ID VARCHAR(%d) REFERENCES ${schema}TILESET(KEY) ON UPDATE CASCADE ON DELETE CASCADE,
+                         PAGE_Z SMALLINT,
+                         PAGE_X INTEGER,
+                         PAGE_Y INTEGER,
+                         CREATION_TIME_MINUTES INTEGER,
+                         FREQUENCY_OF_USE FLOAT,
+                         LAST_ACCESS_TIME_MINUTES INTEGER,
+                         FILL_FACTOR FLOAT,
+                         NUM_HITS NUMERIC(%d)
+                        )"""
+                                .formatted(TILEPAGE_KEY_SIZE, TILESET_KEY_SIZE, NUM_HITS_SIZE), //
                         "CREATE INDEX TILEPAGE_TILESET ON ${schema}TILEPAGE(TILESET_ID, FILL_FACTOR)",
                         "CREATE INDEX TILEPAGE_FREQUENCY ON ${schema}TILEPAGE(FREQUENCY_OF_USE DESC)",
                         "CREATE INDEX TILEPAGE_LAST_ACCESS ON ${schema}TILEPAGE(LAST_ACCESS_TIME_MINUTES DESC)"));
