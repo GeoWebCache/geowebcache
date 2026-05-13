@@ -13,7 +13,6 @@
  */
 package org.geowebcache.diskquota.jdbc;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -34,69 +33,45 @@ public class OracleDialect extends SQLDialect {
     public OracleDialect() {
         TABLE_CREATION_MAP.put(
                 "TILESET",
-                Arrays.asList( //
-                        "CREATE TABLE ${schema}TILESET (\n"
-                                + //
-                                "  KEY VARCHAR("
-                                + TILESET_KEY_SIZE
-                                + ") PRIMARY KEY,\n"
-                                + //
-                                "  LAYER_NAME VARCHAR("
-                                + LAYER_NAME_SIZE
-                                + "),\n"
-                                + //
-                                "  GRIDSET_ID VARCHAR("
-                                + GRIDSET_ID_SIZE
-                                + "),\n"
-                                + //
-                                "  BLOB_FORMAT VARCHAR("
-                                + BLOB_FORMAT_SIZE
-                                + "),\n"
-                                + //
-                                "  PARAMETERS_ID VARCHAR("
-                                + PARAMETERS_ID_SIZE
-                                + "),\n"
-                                + //
-                                "  BYTES NUMBER("
-                                + numberPrecision(BYTES_SIZE)
-                                + ") DEFAULT 0 NOT NULL\n"
-                                + //
-                                ") ORGANIZATION INDEX", //
+                List.of( //
+                        """
+                        CREATE TABLE ${schema}TILESET (
+                          KEY VARCHAR(%d) PRIMARY KEY,
+                          LAYER_NAME VARCHAR(%d),
+                          GRIDSET_ID VARCHAR(%d),
+                          BLOB_FORMAT VARCHAR(%d),
+                          PARAMETERS_ID VARCHAR(%d),
+                          BYTES NUMBER(%d) DEFAULT 0 NOT NULL
+                        ) ORGANIZATION INDEX
+                        """
+                                .formatted(
+                                        TILESET_KEY_SIZE,
+                                        LAYER_NAME_SIZE,
+                                        GRIDSET_ID_SIZE,
+                                        BLOB_FORMAT_SIZE,
+                                        PARAMETERS_ID_SIZE,
+                                        numberPrecision(BYTES_SIZE)), //
                         "CREATE INDEX TILESET_LAYER ON TILESET(LAYER_NAME)" //
                         ));
 
         TABLE_CREATION_MAP.put(
                 "TILEPAGE",
-                Arrays.asList(
-                        "CREATE TABLE ${schema}TILEPAGE (\n"
-                                + //
-                                " KEY VARCHAR("
-                                + TILEPAGE_KEY_SIZE
-                                + ") PRIMARY KEY,\n"
-                                + //
-                                " TILESET_ID VARCHAR("
-                                + TILESET_KEY_SIZE
-                                + ") REFERENCES ${schema}TILESET(KEY) ON DELETE CASCADE,\n"
-                                + //
-                                " PAGE_Z SMALLINT,\n"
-                                + //
-                                " PAGE_X INTEGER,\n"
-                                + //
-                                " PAGE_Y INTEGER,\n"
-                                + //
-                                " CREATION_TIME_MINUTES INTEGER,\n"
-                                + //
-                                " FREQUENCY_OF_USE FLOAT,\n"
-                                + //
-                                " LAST_ACCESS_TIME_MINUTES INTEGER,\n"
-                                + //
-                                " FILL_FACTOR FLOAT,\n"
-                                + //
-                                " NUM_HITS NUMBER("
-                                + numberPrecision(NUM_HITS_SIZE)
-                                + ")\n"
-                                + //
-                                ") ORGANIZATION INDEX", //
+                List.of(
+                        """
+                        CREATE TABLE ${schema}TILEPAGE (
+                         KEY VARCHAR(%d) PRIMARY KEY,
+                         TILESET_ID VARCHAR(%d) REFERENCES ${schema}TILESET(KEY) ON DELETE CASCADE,
+                         PAGE_Z SMALLINT,
+                         PAGE_X INTEGER,
+                         PAGE_Y INTEGER,
+                         CREATION_TIME_MINUTES INTEGER,
+                         FREQUENCY_OF_USE FLOAT,
+                         LAST_ACCESS_TIME_MINUTES INTEGER,
+                         FILL_FACTOR FLOAT,
+                         NUM_HITS NUMBER(%d)
+                        ) ORGANIZATION INDEX
+                        """
+                                .formatted(TILEPAGE_KEY_SIZE, TILESET_KEY_SIZE, numberPrecision(NUM_HITS_SIZE)), //
                         "CREATE INDEX TILEPAGE_TILESET ON TILEPAGE(TILESET_ID)",
                         "CREATE INDEX TILEPAGE_FILL_FACTOR ON TILEPAGE(FILL_FACTOR)",
                         "CREATE INDEX TILEPAGE_FREQUENCY ON TILEPAGE(FREQUENCY_OF_USE DESC)",
@@ -106,6 +81,40 @@ public class OracleDialect extends SQLDialect {
     @Override
     protected void addEmtpyTableReference(StringBuilder sb) {
         sb.append("FROM DUAL");
+    }
+
+    /**
+     * No-op: Oracle does not support {@code ON UPDATE CASCADE} on foreign keys, so there is nothing portable to
+     * migrate. Companion to {@link #getRenameLayerStatement(String, String, String)}, which preserves the legacy
+     * LAYER_NAME-only behavior on this dialect.
+     */
+    @Override
+    public void migrateForeignKeys(String schema, SimpleJdbcTemplate template) {
+        // intentional no-op
+    }
+
+    /**
+     * Oracle does not support {@code ON UPDATE CASCADE} on foreign keys, so the {@code TILEPAGE.TILESET_ID -> TILESET
+     * .KEY} FK declared above only cascades on delete. As a result this dialect cannot safely rewrite {@code TILESET
+     * .KEY} during a rename without first dealing with the dangling {@code TILEPAGE} rows.
+     *
+     * <p>For now Oracle keeps the legacy behavior of only updating {@code LAYER_NAME}; lookups by id against the
+     * renamed layer will continue to miss the row and cause {@code getOrCreateTileSet} to insert duplicates. Fixing
+     * this on Oracle (e.g. via {@code DEFERRABLE INITIALLY DEFERRED} constraints, or by disabling the FK around the
+     * rename) is tracked separately.
+     */
+    @Override
+    public String getRenameLayerStatement(String schema, String oldLayerName, String newLayerName) {
+        StringBuilder sb = new StringBuilder("UPDATE ");
+        if (schema != null) {
+            sb.append(schema).append(".");
+        }
+        sb.append("TILESET SET LAYER_NAME = :")
+                .append(newLayerName)
+                .append(" WHERE LAYER_NAME = :")
+                .append(oldLayerName);
+
+        return sb.toString();
     }
 
     @Override
