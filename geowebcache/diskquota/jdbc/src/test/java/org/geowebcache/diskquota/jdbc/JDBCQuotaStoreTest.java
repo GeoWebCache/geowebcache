@@ -14,6 +14,8 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -211,7 +213,7 @@ public abstract class JDBCQuotaStoreTest {
 
     TilePageCalculator tilePageCalculator;
 
-    private BasicDataSource dataSource;
+    protected BasicDataSource dataSource;
 
     private TileSet testTileSet;
 
@@ -233,22 +235,22 @@ public abstract class JDBCQuotaStoreTest {
     protected abstract String getFixtureId();
 
     protected BasicDataSource getDataSource() throws IOException, SQLException {
-        BasicDataSource dataSource = new BasicDataSource();
+        BasicDataSource ds = new BasicDataSource();
 
-        dataSource.setDriverClassName(fixtureRule.getFixture().getProperty("driver"));
-        dataSource.setUrl(fixtureRule.getFixture().getProperty("url"));
-        dataSource.setUsername(fixtureRule.getFixture().getProperty("username"));
-        dataSource.setPassword(fixtureRule.getFixture().getProperty("password"));
-        dataSource.setPoolPreparedStatements(true);
-        dataSource.setAccessToUnderlyingConnectionAllowed(true);
-        dataSource.setMinIdle(1);
-        dataSource.setMaxActive(4);
+        ds.setDriverClassName(fixtureRule.getFixture().getProperty("driver"));
+        ds.setUrl(fixtureRule.getFixture().getProperty("url"));
+        ds.setUsername(fixtureRule.getFixture().getProperty("username"));
+        ds.setPassword(fixtureRule.getFixture().getProperty("password"));
+        ds.setPoolPreparedStatements(true);
+        ds.setAccessToUnderlyingConnectionAllowed(true);
+        ds.setMinIdle(1);
+        ds.setMaxActive(4);
         // if we cannot get a connection within 5 seconds give up
-        dataSource.setMaxWait(5000);
+        ds.setMaxWait(5000);
 
-        cleanupDatabase(dataSource);
+        cleanupDatabase(ds);
 
-        return dataSource;
+        return ds;
     }
 
     protected void cleanupDatabase(DataSource dataSource) throws SQLException {
@@ -330,15 +332,19 @@ public abstract class JDBCQuotaStoreTest {
     }
 
     @Test
-    public void testRenameLayer() throws InterruptedException {
+    public void testRenameLayer() throws Exception {
         assertEquals(16, countTileSetsByLayerName("topp:states"));
         store.renameLayer("topp:states", "states_renamed");
         assertEquals(0, countTileSetsByLayerName("topp:states"));
         assertEquals(16, countTileSetsByLayerName("states_renamed"));
+        // TILESET.KEY embeds the layer-name prefix; renaming must rewrite it too, otherwise
+        // subsequent getTileSetById lookups miss the row and getOrCreateTileSet inserts duplicates.
+        assertEquals(0, countTileSetKeysWithPrefix("topp:states#"));
+        assertEquals(16, countTileSetKeysWithPrefix("states_renamed#"));
     }
 
     @Test
-    public void testRenameLayer2() throws InterruptedException {
+    public void testRenameLayer2() throws Exception {
         final String oldLayerName =
                 tilePageCalculator.getLayerNames().iterator().next();
         final String newLayerName = "renamed_layer";
@@ -350,13 +356,17 @@ public abstract class JDBCQuotaStoreTest {
         TileSet tileSet =
                 tilePageCalculator.getTileSetsFor(oldLayerName).iterator().next();
         TilePage page = new TilePage(tileSet.getId(), 0, 0, (byte) 0);
-        store.addHitsAndSetAccesTime(Collections.singleton(new PageStatsPayload(page)));
+        // await the async write so the TILEPAGE row is in place before we rename
+        store.addHitsAndSetAccesTime(Collections.singleton(new PageStatsPayload(page)))
+                .get();
         store.addToQuotaAndTileCounts(tileSet, new Quota(BigInteger.valueOf(1024)), Collections.emptyList());
 
         Quota expectedQuota = store.getUsedQuotaByLayerName(oldLayerName);
         assertEquals(1024L, expectedQuota.getBytes().longValue());
 
         assertNotNull(store.getTileSetById(tileSet.getId()));
+        int tilePagesBefore = countTilePageTilesetIdsWithPrefix(oldLayerName + "#");
+        assertTrue("expected at least one TILEPAGE row to follow the rename", tilePagesBefore > 0);
 
         store.renameLayer(oldLayerName, newLayerName);
 
@@ -369,6 +379,12 @@ public abstract class JDBCQuotaStoreTest {
         // created new layer?
         Quota newLayerUsedQuota = store.getUsedQuotaByLayerName(newLayerName);
         assertEquals(expectedQuota.getBytes(), newLayerUsedQuota.getBytes());
+
+        // KEY column and the cascading TILEPAGE.TILESET_ID must reflect the new layer prefix
+        assertEquals(0, countTileSetKeysWithPrefix(oldLayerName + "#"));
+        assertTrue(countTileSetKeysWithPrefix(newLayerName + "#") > 0);
+        assertEquals(0, countTilePageTilesetIdsWithPrefix(oldLayerName + "#"));
+        assertEquals(tilePagesBefore, countTilePageTilesetIdsWithPrefix(newLayerName + "#"));
     }
 
     @Test
@@ -521,7 +537,7 @@ public abstract class JDBCQuotaStoreTest {
     }
 
     @Test
-    public void testVisitor() throws Exception {
+    public void testVisitor() {
         Set<TileSet> tileSets1 = store.getTileSets();
         final Set<TileSet> tileSets2 = new HashSet<>();
         store.accept((tileSet, quotaStore) -> tileSets2.add(tileSet));
@@ -855,6 +871,37 @@ public abstract class JDBCQuotaStoreTest {
         return count;
     }
 
+    /**
+     * Counts TILESET rows whose KEY column starts with the given prefix. Used by rename tests to verify that the KEY
+     * column itself - not just LAYER_NAME - has been rewritten on rename.
+     */
+    protected int countTileSetKeysWithPrefix(String prefix) throws SQLException {
+        return countRowsWithColumnPrefix("TILESET", "KEY", prefix);
+    }
+
+    /**
+     * Counts TILEPAGE rows whose TILESET_ID column starts with the given prefix. Used by rename tests to verify the FK
+     * cascade from TILESET.KEY -> TILEPAGE.TILESET_ID worked.
+     */
+    protected int countTilePageTilesetIdsWithPrefix(String prefix) throws SQLException {
+        return countRowsWithColumnPrefix("TILEPAGE", "TILESET_ID", prefix);
+    }
+
+    private int countRowsWithColumnPrefix(String table, String column, String prefix) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM " + table + " WHERE " + column + " LIKE ?";
+        try (Connection cx = dataSource.getConnection();
+                PreparedStatement ps = cx.prepareStatement(sql)) {
+            ps.setString(1, prefix + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                } else {
+                    throw new IllegalStateException();
+                }
+            }
+        }
+    }
+
     /** Asserts the quota used by this tile set is null */
     private void assertQuotaZero(TileSet tileSet) {
         Quota quota = store.getUsedQuotaByTileSetId(tileSet.getId());
@@ -863,7 +910,7 @@ public abstract class JDBCQuotaStoreTest {
     }
 
     /** Asserts the quota used by this tile set is null */
-    private void assertQuotaZero(String layerName) throws InterruptedException {
+    private void assertQuotaZero(String layerName) {
         Quota quota = store.getUsedQuotaByLayerName(layerName);
         assertNotNull(quota);
         assertEquals(0, quota.getBytes().longValue());
