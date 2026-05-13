@@ -1,0 +1,43 @@
+name: DiskQuota JDBC Integration
+
+on:
+  push:
+    tags:
+      - "**"
+  pull_request:
+    paths:
+      - ".github/workflows/diskquota-jdbc-integration.yml"
+      - "pom.xml"
+      - "geowebcache/pom.xml"
+      - "geowebcache/core/**"
+      - "geowebcache/diskquota/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  testcontainers:
+    name: DiskQuota JDBC Testcontainers (Postgres + Oracle XE)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java-version: [ 17, 21 ]
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-java@v5
+      with:
+        distribution: 'temurin'
+        java-version: ${{ matrix.java-version }}
+        cache: 'maven'
+
+    - name: Tests against PostgreSQL and Oracle XE TestContainers
+      run: |
+         mvn verify -f geowebcache/pom.xml -pl :gwc-diskquota-jdbc -am \
+         -Ponline \
+         -DskipTests=true \
+         -DskipITs=false -B -ntp
+
+    - name: Remove SNAPSHOT jars from repository
+      run: |
+        find .m2/repository -name "*SNAPSHOT*" -type d | xargs rm -rf {}
