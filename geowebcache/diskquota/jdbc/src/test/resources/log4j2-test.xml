@@ -21,6 +21,10 @@
         <Logger name="org.geowebcache" level="info" additivity="false">
             <AppenderRef ref="ConsoleAppender"/>
         </Logger>
+        <!-- Silence XML-schema validation chatter from the test fixture (gwc-test-config.xml has no schema). -->
+        <Logger name="org.geowebcache.config.XMLConfiguration" level="error" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+        </Logger>
         <Logger name="org.geotools" level="warn" additivity="false">
             <AppenderRef ref="ConsoleAppender"/>
         </Logger>

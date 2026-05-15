@@ -17,50 +17,46 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import javax.sql.DataSource;
+import org.geowebcache.diskquota.jdbc.AbstractJDBCQuotaStoreConcurrencyTest;
 import org.geowebcache.diskquota.jdbc.OracleDialect;
 import org.geowebcache.diskquota.jdbc.SQLDialect;
 import org.geowebcache.testcontainers.jdbc.OracleXEContainer;
 import org.junit.ClassRule;
-import org.testcontainers.containers.JdbcDatabaseContainer;
 
-/** Runs the full {@code JDBCQuotaStoreTest} suite against Oracle XE via Testcontainers. */
-public class OracleQuotaStoreIT extends AbstractJDBCQuotaStoreIT {
+/**
+ * Runs {@link AbstractJDBCQuotaStoreConcurrencyTest} against Oracle XE via Testcontainers. Oracle throws ORA-08176
+ * (consistent-read failure across recent DDL) and ORA-08177 (serialization failure); both go through the retry layer.
+ */
+public class OracleQuotaStoreConcurrencyIT extends AbstractJDBCQuotaStoreConcurrencyTest {
 
     @ClassRule
     public static final OracleXEContainer ORACLE = OracleXEContainer.latest().disabledWithoutDocker();
 
     @Override
-    protected SQLDialect getDialect() {
+    protected DataSource newDataSource() {
+        return newPooledDataSource(
+                ORACLE.getDriverClassName(), ORACLE.getJdbcUrl(), ORACLE.getUsername(), ORACLE.getPassword());
+    }
+
+    @Override
+    protected SQLDialect newDialect() {
         return new OracleDialect();
     }
 
+    /** Oracle requires {@code CASCADE CONSTRAINTS} (not just {@code CASCADE}) to drop tables with FK dependents. */
     @Override
-    protected String getFixtureId() {
-        return "oracle-testcontainer";
-    }
-
-    @Override
-    protected JdbcDatabaseContainer<?> getContainer() {
-        return ORACLE;
-    }
-
-    /**
-     * Oracle requires {@code CASCADE CONSTRAINTS}, not just {@code CASCADE}, to drop tables with dependents; the base
-     * cleanup uses the standard SQL form which silently fails on Oracle.
-     */
-    @Override
-    protected void cleanupDatabase(DataSource dataSource) throws SQLException {
-        try (Connection cx = dataSource.getConnection();
+    protected void cleanupDatabase(DataSource ds) throws SQLException {
+        try (Connection cx = ds.getConnection();
                 Statement st = cx.createStatement()) {
             try {
                 st.execute("DROP TABLE TILEPAGE CASCADE CONSTRAINTS");
-            } catch (Exception e) {
-                // fine, table may not exist
+            } catch (SQLException ignored) {
+                // table may not exist on first run
             }
             try {
                 st.execute("DROP TABLE TILESET CASCADE CONSTRAINTS");
-            } catch (Exception e) {
-                // fine too
+            } catch (SQLException ignored) {
+                // table may not exist on first run
             }
         }
     }
