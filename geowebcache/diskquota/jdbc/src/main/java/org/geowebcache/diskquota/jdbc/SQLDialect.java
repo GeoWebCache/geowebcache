@@ -172,26 +172,19 @@ public class SQLDialect {
         try (ResultSet rs = dbmd.getImportedKeys(null, schema, tilepageName)) {
             while (rs.next()) {
                 String fkName = rs.getString("FK_NAME");
-                if (!isTilesetCascadeCandidate(rs, fkName)) {
+                if (!isTilepageTilesetFkRow(rs, fkName) || tilepageFkIsMigrated(rs)) {
                     continue;
                 }
                 String drop = "ALTER TABLE %s DROP CONSTRAINT %s".formatted(prefixedTilepageName, fkName);
-                String add =
-                        """
-                        ALTER TABLE %s ADD FOREIGN KEY (TILESET_ID)
-                        REFERENCES %sTILESET(KEY)
-                        ON UPDATE CASCADE ON DELETE CASCADE
-                        """
-                                .formatted(prefixedTilepageName, prefix);
+                String add = tilepageFkAddSql(prefixedTilepageName, prefix);
 
-                LOG.info(() -> "Upgrading TILEPAGE.TILESET_ID foreign key to ON UPDATE CASCADE (was constraint %s)"
-                        .formatted(fkName));
+                LOG.info(() -> "Migrating TILEPAGE.TILESET_ID foreign key (was constraint %s)".formatted(fkName));
                 JdbcOperations jdbcOperations = template.getJdbcOperations();
                 try {
                     jdbcOperations.execute(drop);
                     jdbcOperations.execute(add);
                 } catch (DataAccessException raceLikely) {
-                    if (isTilepageFkAlreadyCascade(dbmd, schema, tilepageName)) {
+                    if (isTilepageFkAlreadyMigrated(dbmd, schema, tilepageName)) {
                         LOG.fine(() -> "TILEPAGE FK was migrated concurrently by another instance "
                                 + "while this instance was trying to drop %s; accepting concurrent migration"
                                         .formatted(fkName));
@@ -204,21 +197,27 @@ public class SQLDialect {
         return null;
     }
 
-    /**
-     * Re-checks the live TILEPAGE -> TILESET FK state after a failed migration attempt. Returns {@code true} when the
-     * FK is already declared {@link DatabaseMetaData#importedKeyCascade}, i.e. another instance has completed the
-     * migration in the meantime.
-     */
-    private static boolean isTilepageFkAlreadyCascade(DatabaseMetaData dbmd, String schema, String tilepageName)
+    /** Hook: {@code true} when this dialect's FK row already reflects the migrated shape. Oracle overrides. */
+    protected boolean tilepageFkIsMigrated(ResultSet rs) throws SQLException {
+        return rs.getShort("UPDATE_RULE") == DatabaseMetaData.importedKeyCascade;
+    }
+
+    /** Hook: the {@code ALTER TABLE ... ADD FOREIGN KEY} statement for this dialect's migrated FK shape. */
+    protected String tilepageFkAddSql(String prefixedTilepageName, String prefix) {
+        return """
+                ALTER TABLE %s ADD FOREIGN KEY (TILESET_ID)
+                REFERENCES %sTILESET(KEY)
+                ON UPDATE CASCADE ON DELETE CASCADE
+                """
+                .formatted(prefixedTilepageName, prefix);
+    }
+
+    /** Re-checks FK state after a failed migration attempt to detect a concurrent migration from another instance. */
+    private boolean isTilepageFkAlreadyMigrated(DatabaseMetaData dbmd, String schema, String tilepageName)
             throws SQLException {
         try (ResultSet rs = dbmd.getImportedKeys(null, schema, tilepageName)) {
             while (rs.next()) {
-                String pkTable = rs.getString("PKTABLE_NAME");
-                String fkColumn = rs.getString("FKCOLUMN_NAME");
-                if (!"TILESET".equalsIgnoreCase(pkTable) || !"TILESET_ID".equalsIgnoreCase(fkColumn)) {
-                    continue;
-                }
-                if (rs.getShort("UPDATE_RULE") == DatabaseMetaData.importedKeyCascade) {
+                if (isTilepageTilesetFkRow(rs, rs.getString("FK_NAME")) && tilepageFkIsMigrated(rs)) {
                     return true;
                 }
             }
@@ -226,22 +225,14 @@ public class SQLDialect {
         return false;
     }
 
-    /**
-     * True when the current {@code getImportedKeys} row describes the TILEPAGE -> TILESET(KEY) FK and its update rule
-     * is something other than {@code CASCADE}.
-     */
-    private static boolean isTilesetCascadeCandidate(ResultSet rs, String fkName) throws SQLException {
+    /** Identity-only check: is this metadata row the TILEPAGE -> TILESET(KEY) FK? */
+    private static boolean isTilepageTilesetFkRow(ResultSet rs, String fkName) throws SQLException {
         if (fkName == null || fkName.isEmpty()) {
             return false;
         }
         String pkTable = rs.getString("PKTABLE_NAME");
         String fkColumn = rs.getString("FKCOLUMN_NAME");
-        boolean isTilesetFk = "TILESET".equalsIgnoreCase(pkTable) && "TILESET_ID".equalsIgnoreCase(fkColumn);
-        if (!isTilesetFk) {
-            return false;
-        }
-        short updateRule = rs.getShort("UPDATE_RULE");
-        return updateRule != DatabaseMetaData.importedKeyCascade;
+        return "TILESET".equalsIgnoreCase(pkTable) && "TILESET_ID".equalsIgnoreCase(fkColumn);
     }
 
     private static String resolveTableName(DatabaseMetaData dbmd, String schema, String tableName) throws SQLException {

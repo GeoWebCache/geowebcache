@@ -387,6 +387,27 @@ public abstract class JDBCQuotaStoreTest {
         assertEquals(tilePagesBefore, countTilePageTilesetIdsWithPrefix(newLayerName + "#"));
     }
 
+    /**
+     * A layer name with an underscore must not drag sibling layers along on rename. TILESET.KEY embeds the layer-name
+     * prefix, and a rename that matches dependent rows by that prefix with a SQL {@code LIKE} would treat the
+     * underscore as a single-character wildcard, so renaming {@code ab_cd} would also rewrite {@code abXcd}'s rows.
+     *
+     * <p>Rows are seeded directly: {@code addToQuotaAndTileCounts} validates layer names against the GWC config, but
+     * this bug lives purely in the rename SQL, so two ad-hoc layers sharing one gridset/format suffice.
+     */
+    @Test
+    public void testRenameLayerWithUnderscoreLeavesSiblingUntouched() throws Exception {
+        insertTileSetWithPage("ab_cd#EPSG:4326#image/png", "ab_cd");
+        insertTileSetWithPage("abXcd#EPSG:4326#image/png", "abXcd"); // matches "ab_cd" when '_' is a LIKE wildcard
+        assertEquals(1, countTilePageTilesetIdsWithPrefix("abXcd#"));
+
+        store.renameLayer("ab_cd", "renamed_layer");
+
+        assertEquals(0, countTileSetsByLayerName("ab_cd"));
+        assertEquals(1, countTileSetsByLayerName("abXcd"));
+        assertEquals(1, countTilePageTilesetIdsWithPrefix("abXcd#"));
+    }
+
     @Test
     public void testDeleteGridSet() throws InterruptedException {
         // put some data into four gridsets using two layers
@@ -899,6 +920,27 @@ public abstract class JDBCQuotaStoreTest {
                     throw new IllegalStateException();
                 }
             }
+        }
+    }
+
+    /**
+     * Seeds a TILESET row keyed {@code tileSetKey} and one dependent TILEPAGE row, directly via JDBC. Used by rename
+     * tests that need ad-hoc layer names; {@code store.addToQuotaAndTileCounts} would reject them, validating the layer
+     * against the GWC configuration, but this exercises rename SQL only.
+     */
+    private void insertTileSetWithPage(String tileSetKey, String layerName) throws SQLException {
+        String insertTileSet = "INSERT INTO TILESET (KEY, LAYER_NAME, GRIDSET_ID, BLOB_FORMAT, PARAMETERS_ID, BYTES)"
+                + " VALUES (?, ?, 'EPSG:4326', 'image/png', NULL, 0)";
+        String insertTilePage = "INSERT INTO TILEPAGE (KEY, TILESET_ID) VALUES (?, ?)";
+        try (Connection cx = dataSource.getConnection();
+                PreparedStatement tileSet = cx.prepareStatement(insertTileSet);
+                PreparedStatement tilePage = cx.prepareStatement(insertTilePage)) {
+            tileSet.setString(1, tileSetKey);
+            tileSet.setString(2, layerName);
+            tileSet.executeUpdate();
+            tilePage.setString(1, layerName + "-page");
+            tilePage.setString(2, tileSetKey);
+            tilePage.executeUpdate();
         }
     }
 
