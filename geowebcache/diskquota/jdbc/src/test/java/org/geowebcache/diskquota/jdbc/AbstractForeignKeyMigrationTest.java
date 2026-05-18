@@ -16,6 +16,7 @@ package org.geowebcache.diskquota.jdbc;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -144,6 +145,27 @@ public abstract class AbstractForeignKeyMigrationTest {
                 requireTilepageFkState());
     }
 
+    /**
+     * Crash-recovery scenario raised in review of #1530. DDL is non-transactional (always on Oracle): an interrupted
+     * migration can commit the {@code DROP CONSTRAINT} and never reach the {@code ADD}, leaving the next startup with
+     * no TILEPAGE -> TILESET FK at all. Migration must treat a missing FK as a legitimate starting state and re-add the
+     * migrated FK, not silently no-op because the scan finds no legacy FK row to upgrade.
+     */
+    @Test
+    public void migrateRestoresForeignKeyDroppedByInterruptedMigration() throws SQLException {
+        dropTilepageForeignKey();
+        assertNull(
+                "Precondition: an interrupted migration leaves the TILEPAGE -> TILESET FK absent",
+                lookupTilepageFkState());
+
+        dialect().migrateForeignKeys(null, new SimpleJdbcTemplate(dataSource()));
+
+        assertEquals(
+                "Migration should re-add the TILEPAGE FK when a prior interrupted migration left it dropped",
+                expectedMigratedFkState(),
+                requireTilepageFkState());
+    }
+
     @Test
     public void migrateIsIdempotent() throws SQLException {
         SimpleJdbcTemplate template = new SimpleJdbcTemplate(dataSource());
@@ -153,6 +175,35 @@ public abstract class AbstractForeignKeyMigrationTest {
         // Second invocation must be a no-op (FK already in its migrated state).
         dialect().migrateForeignKeys(null, template);
         assertEquals(expectedMigratedFkState(), requireTilepageFkState());
+    }
+
+    /** Simulates a migration interrupted between its committed DROP and the ADD that never ran. */
+    private void dropTilepageForeignKey() throws SQLException {
+        try (Connection cx = dataSource().getConnection()) {
+            String fkName = lookupTilepageFkName(cx.getMetaData());
+            assertNotNull("Precondition: legacy TILEPAGE FK must exist before dropping it", fkName);
+            try (Statement st = cx.createStatement()) {
+                st.execute("ALTER TABLE TILEPAGE DROP CONSTRAINT " + fkName);
+            }
+        }
+    }
+
+    private String lookupTilepageFkName(DatabaseMetaData dbmd) throws SQLException {
+        String name = findTilesetFkName(dbmd, "tilepage");
+        return name != null ? name : findTilesetFkName(dbmd, "TILEPAGE");
+    }
+
+    private String findTilesetFkName(DatabaseMetaData dbmd, String tableName) throws SQLException {
+        try (ResultSet rs = dbmd.getImportedKeys(null, null, tableName)) {
+            while (rs.next()) {
+                String pkTable = rs.getString("PKTABLE_NAME");
+                String fkColumn = rs.getString("FKCOLUMN_NAME");
+                if ("TILESET".equalsIgnoreCase(pkTable) && "TILESET_ID".equalsIgnoreCase(fkColumn)) {
+                    return rs.getString("FK_NAME");
+                }
+            }
+        }
+        return null;
     }
 
     private short requireTilepageFkState() throws SQLException {

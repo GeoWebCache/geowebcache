@@ -19,13 +19,7 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.sql.DataSource;
-import org.geotools.util.logging.Logging;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.support.JdbcAccessor;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.MetaDataAccessException;
@@ -37,8 +31,6 @@ import org.springframework.jdbc.support.MetaDataAccessException;
  * @author Andrea Aime - GeoSolutions
  */
 public class SQLDialect {
-
-    private static final Logger LOG = Logging.getLogger(SQLDialect.class);
 
     // size guesses: 128 characters should be more than enough for layer name, the gridset id
     // is normally an epsg code so 32 is way more than enough, the blob format
@@ -124,85 +116,28 @@ public class SQLDialect {
                 }
             }
         }
-        // Bring pre-existing installations up to the current FK contract (ON UPDATE CASCADE).
-        // No-op for fresh schemas created above; no-op for dialects that cannot support it.
+        // Bring pre-existing installations up to the current per-dialect FK definition (ON UPDATE CASCADE, or
+        // DEFERRABLE INITIALLY DEFERRED on Oracle). No-op for the fresh schemas created above.
         migrateForeignKeys(schema, template);
     }
 
     /**
-     * Upgrades the {@code TILEPAGE -> TILESET} foreign key on installations created before this dialect started
-     * declaring it {@code ON UPDATE CASCADE}, so that {@link #getRenameLayerStatement(String, String, String) renaming
-     * a layer} can rewrite {@code TILESET.KEY} without orphaning the dependent {@code TILEPAGE} rows.
-     *
-     * <p>Idempotent: looks up the existing FK via {@link DatabaseMetaData#getImportedKeys}, and only rewrites it when
-     * the current update rule is not {@link DatabaseMetaData#importedKeyCascade}. Dialects that cannot support
-     * {@code ON UPDATE CASCADE} (notably Oracle) override this method to no-op.
+     * Upgrades the {@code TILEPAGE -> TILESET} foreign key on installations created before this dialect declared its
+     * current FK definition, letting {@link #getRenameLayerStatement renaming a layer} rewrite {@code TILESET.KEY}
+     * without orphaning the dependent {@code TILEPAGE} rows. The dialect contributes the two variation points
+     * ({@link #tilepageFkIsMigrated} and {@link #tilepageFkAddSql}); the crash- and concurrency-safe orchestration
+     * lives in {@link TilepageForeignKeyMigrator}.
      */
     protected void migrateForeignKeys(String schema, SimpleJdbcTemplate template) {
-        DataSource ds = Objects.requireNonNull(((JdbcAccessor) template.getJdbcOperations()).getDataSource());
-        try {
-            JdbcUtils.extractDatabaseMetaData(ds, dbmd -> upgradeTilepageForeignKey(dbmd, schema, template));
-        } catch (MetaDataAccessException e) {
-            LOG.log(
-                    Level.WARNING,
-                    "Could not migrate TILEPAGE foreign key to ON UPDATE CASCADE; layer renames may leave stale rows",
-                    e);
-        }
+        new TilepageForeignKeyMigrator(this::tilepageFkIsMigrated, this::tilepageFkAddSql).migrate(schema, template);
     }
 
-    /**
-     * {@link DatabaseMetaDataCallback} body for {@link #migrateForeignKeys}: scans the FKs declared on TILEPAGE and,
-     * for any TILEPAGE -> TILESET FK whose update rule is not {@link DatabaseMetaData#importedKeyCascade}, drops it and
-     * re-adds it with {@code ON UPDATE CASCADE ON DELETE CASCADE}. Idempotent: a FK that already cascades on update is
-     * left untouched.
-     *
-     * <p>Concurrent-startup safe: if another instance races us to the upgrade, our drop/add may throw because the
-     * legacy constraint name no longer exists. In that case we re-check the live FK state and, if the cascade form is
-     * already in place, treat it as a concurrent success rather than a failure.
-     */
-    private Void upgradeTilepageForeignKey(DatabaseMetaData dbmd, String schema, SimpleJdbcTemplate template)
-            throws SQLException {
-
-        final String tilepageName = resolveTableName(dbmd, schema, "TILEPAGE");
-        if (tilepageName == null) {
-            return null;
-        }
-        final String prefix = schema == null ? "" : schema + ".";
-        final String prefixedTilepageName = prefix + tilepageName;
-        try (ResultSet rs = dbmd.getImportedKeys(null, schema, tilepageName)) {
-            while (rs.next()) {
-                String fkName = rs.getString("FK_NAME");
-                if (!isTilepageTilesetFkRow(rs, fkName) || tilepageFkIsMigrated(rs)) {
-                    continue;
-                }
-                String drop = "ALTER TABLE %s DROP CONSTRAINT %s".formatted(prefixedTilepageName, fkName);
-                String add = tilepageFkAddSql(prefixedTilepageName, prefix);
-
-                LOG.info(() -> "Migrating TILEPAGE.TILESET_ID foreign key (was constraint %s)".formatted(fkName));
-                JdbcOperations jdbcOperations = template.getJdbcOperations();
-                try {
-                    jdbcOperations.execute(drop);
-                    jdbcOperations.execute(add);
-                } catch (DataAccessException raceLikely) {
-                    if (isTilepageFkAlreadyMigrated(dbmd, schema, tilepageName)) {
-                        LOG.fine(() -> "TILEPAGE FK was migrated concurrently by another instance "
-                                + "while this instance was trying to drop %s; accepting concurrent migration"
-                                        .formatted(fkName));
-                        return null;
-                    }
-                    throw raceLikely;
-                }
-            }
-        }
-        return null;
-    }
-
-    /** Hook: {@code true} when this dialect's FK row already reflects the migrated shape. Oracle overrides. */
+    /** Hook: {@code true} when this dialect's FK row is already migrated. Oracle overrides. */
     protected boolean tilepageFkIsMigrated(ResultSet rs) throws SQLException {
         return rs.getShort("UPDATE_RULE") == DatabaseMetaData.importedKeyCascade;
     }
 
-    /** Hook: the {@code ALTER TABLE ... ADD FOREIGN KEY} statement for this dialect's migrated FK shape. */
+    /** Hook: the {@code ALTER TABLE ... ADD FOREIGN KEY} statement for this dialect's migrated FK. */
     protected String tilepageFkAddSql(String prefixedTilepageName, String prefix) {
         return """
                 ALTER TABLE %s ADD FOREIGN KEY (TILESET_ID)
@@ -210,43 +145,6 @@ public class SQLDialect {
                 ON UPDATE CASCADE ON DELETE CASCADE
                 """
                 .formatted(prefixedTilepageName, prefix);
-    }
-
-    /** Re-checks FK state after a failed migration attempt to detect a concurrent migration from another instance. */
-    private boolean isTilepageFkAlreadyMigrated(DatabaseMetaData dbmd, String schema, String tilepageName)
-            throws SQLException {
-        try (ResultSet rs = dbmd.getImportedKeys(null, schema, tilepageName)) {
-            while (rs.next()) {
-                if (isTilepageTilesetFkRow(rs, rs.getString("FK_NAME")) && tilepageFkIsMigrated(rs)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /** Identity-only check: is this metadata row the TILEPAGE -> TILESET(KEY) FK? */
-    private static boolean isTilepageTilesetFkRow(ResultSet rs, String fkName) throws SQLException {
-        if (fkName == null || fkName.isEmpty()) {
-            return false;
-        }
-        String pkTable = rs.getString("PKTABLE_NAME");
-        String fkColumn = rs.getString("FKCOLUMN_NAME");
-        return "TILESET".equalsIgnoreCase(pkTable) && "TILESET_ID".equalsIgnoreCase(fkColumn);
-    }
-
-    private static String resolveTableName(DatabaseMetaData dbmd, String schema, String tableName) throws SQLException {
-        try (ResultSet rs = dbmd.getTables(null, schema, tableName.toLowerCase(), null)) {
-            if (rs.next()) {
-                return rs.getString("TABLE_NAME");
-            }
-        }
-        try (ResultSet rs = dbmd.getTables(null, schema, tableName, null)) {
-            if (rs.next()) {
-                return rs.getString("TABLE_NAME");
-            }
-        }
-        return null;
     }
 
     /** Checks if the specified table exists */
