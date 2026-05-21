@@ -45,7 +45,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
@@ -54,6 +53,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 import org.geotools.util.logging.Logging;
+import org.geotools.xml.XMLUtils;
 import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
@@ -616,7 +616,7 @@ public class XMLConfiguration
         try {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             docBuilderFactory.setNamespaceAware(true);
-            DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+            DocumentBuilder docBuilder = XMLUtils.newDocumentBuilder(docBuilderFactory);
             topNode = checkAndTransform(docBuilder.parse(xmlFile));
         } catch (Exception e) {
             throw (IOException) new IOException(e.getMessage()).initCause(e);
@@ -758,7 +758,7 @@ public class XMLConfiguration
 
         Document dom;
         try (InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd")) {
-            dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(is);
+            dom = XMLUtils.newDocumentBuilder().parse(is);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -777,7 +777,7 @@ public class XMLConfiguration
         try (InputStream is = XMLConfiguration.class.getResourceAsStream(xslFilename)) {
 
             try {
-                transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(is));
+                transformer = XMLUtils.newTransformer(new StreamSource(is));
                 transformer.transform(new DOMSource(oldRootNode), result);
             } catch (TransformerFactoryConfigurationError | TransformerException e) {
                 log.log(Level.FINE, e.getMessage(), e);
