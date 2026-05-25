@@ -1,3 +1,14 @@
+GeoWebCache 1.28.4 (2026-05-25)
+-------------------------------
+
+Improvements:
++++++++++++++
+- GWC improvements:better resolution choice and Support HintsLevel (#1519)
+- Resolve Jackson 2.21.0 builder deprecation warning 
+- Do not close JNDI-resolved DataSource in JDBCQuotaStore.close() 
+- diskquota/jdbc: Testcontainers-backed integration tests + CI workflow 
+- diskquota/jdbc: fix renameLayer leaving TILESET.KEY stale (#1526) 
+
 GeoWebCache 1.28.2 (2026-01-21)
 -------------------------------
 
