@@ -41,6 +41,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
@@ -742,6 +743,9 @@ public class XMLConfiguration
         // TODO dont know why this one suddenly failed to look up, revert to
         // XMLConstants.W3C_XML_SCHEMA_NS_URI
         SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+        // We normally don't need access to external schemas
+        factory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+        factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
         try (InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd")) {
 
             Schema schema = factory.newSchema(new StreamSource(is));
