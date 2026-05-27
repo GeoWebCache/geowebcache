@@ -614,7 +614,7 @@ public class XMLConfiguration
     static Node loadDocument(InputStream xmlFile) throws ConfigurationException, IOException {
         Node topNode = null;
         try {
-            DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory docBuilderFactory = XMLUtils.newDocumentBuilderFactory();
             docBuilderFactory.setNamespaceAware(true);
             DocumentBuilder docBuilder = XMLUtils.newDocumentBuilder(docBuilderFactory);
             topNode = checkAndTransform(docBuilder.parse(xmlFile));
