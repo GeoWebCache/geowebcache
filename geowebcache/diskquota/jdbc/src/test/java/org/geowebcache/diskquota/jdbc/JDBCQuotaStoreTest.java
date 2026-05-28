@@ -281,7 +281,7 @@ public abstract class JDBCQuotaStoreTest {
         return new XMLConfiguration(
                 null,
                 new MockConfigurationResourceProvider(() -> XMLConfiguration.class.getResourceAsStream(
-                        XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME)));
+                        XMLConfigurationBackwardsCompatibilityTest.GWC_130_CONFIG_FILE)));
     }
 
     @Test

@@ -33,6 +33,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import org.geotools.util.logging.Logging;
+import org.geotools.xml.XMLUtils;
 import org.geowebcache.georss.GML31ParsingUtils.GML;
 import org.locationtech.jts.geom.Geometry;
 
@@ -77,7 +78,7 @@ class StaxGeoRSSReader implements GeoRSSReader {
     private final GML31ParsingUtils gmlParser;
 
     public StaxGeoRSSReader(final Reader feed) throws XMLStreamException, FactoryConfigurationError {
-        XMLInputFactory factory = XMLInputFactory.newInstance();
+        XMLInputFactory factory = XMLUtils.newXMLInputFactory();
         reader = factory.createXMLStreamReader(feed);
 
         reader.nextTag();

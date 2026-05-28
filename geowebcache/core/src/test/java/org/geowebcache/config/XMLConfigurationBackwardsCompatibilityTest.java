@@ -29,6 +29,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.geotools.xml.XMLUtils;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.filter.request.RequestFilter;
@@ -45,7 +46,9 @@ public class XMLConfigurationBackwardsCompatibilityTest {
 
     public static final String GWC_125_CONFIG_FILE = "geowebcache_125.xml";
 
-    public static final String LATEST_FILENAME = "geowebcache_130.xml";
+    public static final String GWC_130_CONFIG_FILE = "geowebcache_130.xml";
+
+    public static final String LATEST_FILENAME = "geowebcache_200.xml";
 
     @Test
     public void testLoadPre10() throws Exception {
@@ -227,14 +230,14 @@ public class XMLConfigurationBackwardsCompatibilityTest {
 
     /** Utility method to print out a dom. */
     protected void print(Document dom) throws Exception {
-        TransformerFactory txFactory = TransformerFactory.newInstance();
+        TransformerFactory txFactory = XMLUtils.newTransformerFactory();
         try {
             txFactory.setAttribute("{http://xml.apache.org/xalan}indent-number", Integer.valueOf(2));
         } catch (Exception e) {
             // some
         }
 
-        Transformer tx = txFactory.newTransformer();
+        Transformer tx = XMLUtils.newTransformer(txFactory);
         tx.setOutputProperty(OutputKeys.METHOD, "xml");
         tx.setOutputProperty(OutputKeys.INDENT, "yes");
 

@@ -16,8 +16,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import org.easymock.EasyMock;
+import org.geotools.xml.XMLUtils;
 import org.geowebcache.config.DefaultGridsets;
 import org.geowebcache.config.legends.LegendRawInfo;
 import org.geowebcache.config.legends.LegendsRawInfo;
@@ -120,8 +120,7 @@ public class WMSGetCapabilitiesTest {
 
         String xml = capabilities.generateGetCapabilities(StandardCharsets.UTF_8);
 
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
+        DocumentBuilder builder = XMLUtils.newDocumentBuilder();
         InputSource is = new InputSource();
         is.setCharacterStream(new StringReader(xml));
         Document document = builder.parse(is);

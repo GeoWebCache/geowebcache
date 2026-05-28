@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                  xmlns="http://geowebcache.org/schema/1.25.0"
-                  xsi:schemaLocation="http://geowebcache.org/schema/1.25.0 https://raw.githubusercontent.com/GeoWebCache/geowebcache/refs/heads/main/geowebcache/core/src/main/resources/org/geowebcache/config/geowebcache_1250.xsd">
+                  xmlns="http://geowebcache.org/schema/2.0.0"
+                  xsi:schemaLocation="http://geowebcache.org/schema/2.0.0 https://raw.githubusercontent.com/GeoWebCache/geowebcache/refs/heads/main/geowebcache/core/src/main/resources/org/geowebcache/config/geowebcache_200.xsd">
 <!-- 
 Sample configuration with environmant variable placeholders
 for the global and per-layer http username and password 

@@ -21,7 +21,9 @@ import com.thoughtworks.xstream.io.xml.DomReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -41,19 +43,21 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 import org.geotools.util.logging.Logging;
+import org.geotools.xml.XMLUtils;
 import org.geowebcache.GeoWebCacheEnvironment;
 import org.geowebcache.GeoWebCacheException;
 import org.geowebcache.GeoWebCacheExtensions;
@@ -116,6 +120,10 @@ public class XMLConfiguration
                 GridSetConfiguration {
 
     public static final String DEFAULT_CONFIGURATION_FILE_NAME = "geowebcache.xml";
+
+    public static final String SCHEMA_NAMESPACE_PREFIX = "http://geowebcache.org/schema/";
+
+    public static final String DEFAULT_SCHEMA_RESOURCE = "geowebcache.xsd";
 
     private static Logger log = Logging.getLogger(XMLConfiguration.class.getName());
 
@@ -614,9 +622,9 @@ public class XMLConfiguration
     static Node loadDocument(InputStream xmlFile) throws ConfigurationException, IOException {
         Node topNode = null;
         try {
-            DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory docBuilderFactory = XMLUtils.newDocumentBuilderFactory();
             docBuilderFactory.setNamespaceAware(true);
-            DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+            DocumentBuilder docBuilder = XMLUtils.newDocumentBuilder(docBuilderFactory);
             topNode = checkAndTransform(docBuilder.parse(xmlFile));
         } catch (Exception e) {
             throw (IOException) new IOException(e.getMessage()).initCause(e);
@@ -629,14 +637,12 @@ public class XMLConfiguration
         Node rootNode = doc.getDocumentElement();
 
         // debugPrint(rootNode);
-
         if (!rootNode.getNodeName().equals("gwcConfiguration")) {
             log.config("The configuration file is of the pre 1.0 type, trying to convert.");
             rootNode = applyTransform(rootNode, "geowebcache_pre10.xsl").getFirstChild();
         }
 
         // debugPrint(rootNode);
-
         if (rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/1.0.0")) {
             log.config("Updating configuration from 1.0.0 to 1.0.1");
             rootNode = applyTransform(rootNode, "geowebcache_100.xsl").getFirstChild();
@@ -716,6 +722,11 @@ public class XMLConfiguration
             rootNode = applyTransform(rootNode, "geowebcache_151.xsl").getFirstChild();
         }
 
+        if (!rootNode.getNamespaceURI().equals("http://geowebcache.org/schema/2.0.0")) {
+            log.config("Updating configuration to 2.0.0");
+            rootNode = applyTransform(rootNode, "geowebcache_200.xsl").getFirstChild();
+        }
+
         // Check again after transform
         if (!rootNode.getNodeName().equals("gwcConfiguration")) {
             log.log(Level.SEVERE, "Unable to parse file, expected gwcConfiguration at root after transform.");
@@ -726,8 +737,8 @@ public class XMLConfiguration
                 validate(rootNode);
                 log.config("TileLayerConfiguration file validated fine.");
             } catch (SAXException e) {
-                log.warning("GWC configuration validation error: " + e.getMessage());
-                log.warning(
+                log.fine("GWC configuration validation error: " + e.getMessage());
+                log.fine(
                         "Will try to use configuration anyway. Please check the order of declared elements against the schema.");
             } catch (IOException e) {
                 throw new RuntimeException(e.getMessage(), e);
@@ -739,11 +750,14 @@ public class XMLConfiguration
 
     static void validate(Node rootNode) throws SAXException, IOException {
         // Perform validation
-        // TODO dont know why this one suddenly failed to look up, revert to
-        // XMLConstants.W3C_XML_SCHEMA_NS_URI
-        SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+        SchemaFactory factory = XMLUtils.newSchemaFactory(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        // We do not need access to external schemas
+        factory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+        factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
         try (InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd")) {
-
+            if (is == null) {
+                throw new IOException("Could not load schema resource 'geowebcache.xsd'");
+            }
             Schema schema = factory.newSchema(new StreamSource(is));
             Validator validator = schema.newValidator();
 
@@ -758,7 +772,7 @@ public class XMLConfiguration
 
         Document dom;
         try (InputStream is = XMLConfiguration.class.getResourceAsStream("geowebcache.xsd")) {
-            dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(is);
+            dom = XMLUtils.newDocumentBuilder().parse(is);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -777,7 +791,7 @@ public class XMLConfiguration
         try (InputStream is = XMLConfiguration.class.getResourceAsStream(xslFilename)) {
 
             try {
-                transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(is));
+                transformer = XMLUtils.newTransformer(new StreamSource(is));
                 transformer.transform(new DOMSource(oldRootNode), result);
             } catch (TransformerFactoryConfigurationError | TransformerException e) {
                 log.log(Level.FINE, e.getMessage(), e);
@@ -1461,5 +1475,18 @@ public class XMLConfiguration
         this.gridSets = null;
         this.layers = null;
         this.gwcConfig = null;
+    }
+
+    /** Print a DOM tree to an output stream or if there is an exception while doing so, print the stack trace. */
+    public static void printDom(Node dom, OutputStream os) {
+        Transformer trans;
+        PrintWriter w = new PrintWriter(os);
+        try {
+            trans = XMLUtils.newTransformer(); // XMLUtils.newTransformer()
+            trans.transform(new DOMSource(dom), new StreamResult(new OutputStreamWriter(os)));
+        } catch (TransformerException e) {
+            w.println("An error ocurred while transforming the given DOM:");
+            e.printStackTrace(w);
+        }
     }
 }

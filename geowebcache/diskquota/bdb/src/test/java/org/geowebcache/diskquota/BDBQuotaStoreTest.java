@@ -142,7 +142,7 @@ public class BDBQuotaStoreTest {
             xmlConfig = new XMLConfiguration(
                     context.getContextProvider(),
                     new MockConfigurationResourceProvider(() -> XMLConfiguration.class.getResourceAsStream(
-                            XMLConfigurationBackwardsCompatibilityTest.LATEST_FILENAME)));
+                            XMLConfigurationBackwardsCompatibilityTest.GWC_130_CONFIG_FILE)));
         } catch (Exception e) {
             // Do nothing
         }
