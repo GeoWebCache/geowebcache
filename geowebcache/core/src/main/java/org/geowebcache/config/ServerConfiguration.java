@@ -103,4 +103,23 @@ public interface ServerConfiguration extends BaseConfiguration {
 
     /** The version number should match the XSD namespace and the version of GWC */
     String getVersion();
+
+    /**
+     * The core pool size for the seeder thread pool. This is the number of threads to keep in the pool, even if they
+     * are idle.
+     *
+     * @return the configured core pool size, or {@code null} if not set (defaults to 16)
+     */
+    default Integer getSeederCorePoolSize() {
+        return null;
+    }
+
+    /**
+     * The maximum pool size for the seeder thread pool. This is the maximum number of threads allowed in the pool.
+     *
+     * @return the configured max pool size, or {@code null} if not set (defaults to 32)
+     */
+    default Integer getSeederMaxPoolSize() {
+        return null;
+    }
 }

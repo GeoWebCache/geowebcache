@@ -38,6 +38,26 @@
             </xs:documentation>
           </xs:annotation>
         </xs:element>
+        <xs:element name="seederCorePoolSize" type="xs:positiveInteger" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              The number of threads to keep in the seeder thread pool,
+              even if they are idle. Defaults to 16.
+              Can be overridden by the GWC_SEEDER_CORE_POOL_SIZE
+              system property or environment variable.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="seederMaxPoolSize" type="xs:positiveInteger" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              The maximum number of threads allowed in the seeder
+              thread pool. Defaults to 32.
+              Can be overridden by the GWC_SEEDER_MAX_POOL_SIZE
+              system property or environment variable.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
         <xs:element name="lockProvider" type="xs:string" minOccurs="0">
         <xs:annotation>
           <xs:documentation xml:lang="en">
