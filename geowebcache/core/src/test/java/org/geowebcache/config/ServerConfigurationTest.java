@@ -36,7 +36,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 public class ServerConfigurationTest {
 
-    private static final String VERSION_PATTERN = "1(\\.\\d+)+(\\-\\w+)*";
+    private static final String VERSION_PATTERN = "2(\\.\\d+)+(\\-\\w+)*";
 
     ServerConfiguration config;
 

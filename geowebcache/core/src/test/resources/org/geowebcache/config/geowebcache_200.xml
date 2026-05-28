@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns="http://geowebcache.org/schema/1.9.0"
-  xsi:schemaLocation="http://geowebcache.org/schema/1.9.0 http://geowebcache.org/schema/1.9.0/geowebcache.xsd">
-  <version>1.9.0</version>
+  xmlns="http://geowebcache.org/schema/2.0.0"
+  xsi:schemaLocation="http://geowebcache.org/schema/2.0.0 https://raw.githubusercontent.com/GeoWebCache/geowebcache/refs/heads/main/geowebcache/core/src/main/resources/org/geowebcache/config/geowebcache_200.xsd">
+  <version>2.0.0</version>
   <backendTimeout>120</backendTimeout>
   <serviceInformation>
     <title>GeoWebCache</title>
     <description>GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of protocols and
       formats, including WMS-C, WMTS, KML, Google Maps and Virtual Earth.</description>
     <keywords>
-      <string>WFS</string>
       <string>WMS</string>
       <string>WMTS</string>
       <string>GEOWEBCACHE</string>
@@ -43,7 +42,24 @@
       <baseDirectory>/tmp/defaultCache</baseDirectory>
       <fileSystemBlockSize>4096</fileSystemBlockSize>
     </FileBlobStore>
-    <!-- A sample AWS S3 blob store configuration.   -->
+
+    <!-- A sample Swift blob store configuration.   
+    <SwiftBlobStore default="true">
+        <id>ObjectStorageCache</id>
+        <enabled>true</enabled>
+        <container>put-your-actual-container-name-here</container>
+        <prefix>test-cache</prefix>
+        <endpoint>endpoint</endpoint>
+        <provider>openstack-swift</provider>
+        <region>put-region-here</region>
+        <keystoneVersion>3</keystoneVersion>
+        <keystoneScope>project</keystoneScope>
+        <keystoneDomainName>Default</keystoneDomainName>
+        <identity>tenant-name-here:put-username-here</identity>
+        <password>put-password-here</password>
+    </SwiftBlobStore> -->
+
+   <!-- A sample AWS S3 blob store configuration.   -->
     <!-- 
     <S3BlobStore>
       <id>myS3Cache</id>
@@ -63,12 +79,29 @@
       <useGzip>true</useGzip>
     </S3BlobStore>
      -->
+    <!-- A sample MBTiles blob store configuration.   -->
+    <!--
+    <MbtilesBlobStore default="true">
+      <id>mbtiles-store</id>
+      <enabled>true</enabled>
+      <rootDirectory>/tmp/gwc-mbtiles</rootDirectory>
+      <templatePath>{layer}{grid}{format}{params}/{z}-{x}-{y}.sqlite</templatePath>
+      <poolSize>1000</poolSize>
+      <poolReaperIntervalMs>500</poolReaperIntervalMs>
+      <rowRangeCount>250</rowRangeCount>
+      <columnRangeCount>250</columnRangeCount>
+      <eagerDelete>false</eagerDelete>
+      <useCreateTime>true</useCreateTime>
+      <executorConcurrency>5</executorConcurrency>
+      <mbtilesMetadataDirectory>/tmp/gwc-mbtiles/layersMetadata</mbtilesMetadataDirectory>
+    </MbtilesBlobStore>
+    -->
+
   </blobStores>
 
   <gridSets>
     <!-- Grid Set Example, by default EPSG:900913 and EPSG:4326 are defined -->
     <gridSet>
-      <!-- This does not have to be an EPSG code, you can also have multiple gridSet elements per SRS -->
       <name>EPSG:2163</name>
       <srs>
         <number>2163</number>
@@ -90,15 +123,36 @@
       <tileHeight>200</tileHeight>
       <tileWidth>200</tileWidth>
     </gridSet>
+    <gridSet>
+      <name>CanadaAtlasNonotree</name>
+      <srs>
+        <number>3979</number>
+      </srs>
+      <extent>
+        <coords>
+          <double>-2441613</double>
+          <double>-861451</double>
+          <double>3176326</double>
+          <double>3969977</double>
+        </coords>
+      </extent>
+      <resolutions>
+        <double>21945.0742188</double>
+        <double>7315.02473958</double>
+        <double>2438.34157986</double>
+        <double>812.78052662</double>
+        <double>270.926842207</double>
+      </resolutions>
+    </gridSet> 
   </gridSets>
 
   <layers>
-
+    
     <wmsLayer>
       <!-- 
       <blobStoreId>myS3Cache</blobStoreId>
       -->
-      <name>topp:states</name>
+      <name>states</name>
       <mimeFormats>
         <string>image/gif</string>
         <string>image/jpeg</string>
@@ -133,8 +187,17 @@
         </stringParameterFilter>
       </parameterFilters>
       <wmsUrl>
+        <!-- Use of workspace 'topp' web map service, allows name 'states' (rather than 'topp:states') -->
         <string>http://localhost:8080/geoserver/topp/wms</string>
       </wmsUrl>
+      <legends defaultWidth="81" defaultHeight="80" defaultFormat="image/png">
+        <legend style="population"/>
+        <legend style="pophatch"/>
+        <legend style="polygon">
+          <width>20</width>
+          <height>20</height>
+        </legend>
+      </legends>
     </wmsLayer>
 
     <wmsLayer>
@@ -145,10 +208,21 @@
         <string>image/png</string>
         <string>image/png8</string>
       </mimeFormats>
+      <gridSubsets>
+        <gridSubset>
+          <gridSetName>EPSG:4326</gridSetName>
+        </gridSubset>
+        <gridSubset>
+          <gridSetName>CanadaAtlasNonotree</gridSetName>
+        </gridSubset>
+      </gridSubsets>
       <wmsUrl>
         <string>http://localhost:8080/geoserver/wms</string>
       </wmsUrl>
-      <wmsLayers>nurc:Img_Sample</wmsLayers>
+      <wmsLayers>nurc:Arc_Sample</wmsLayers>
+      <legends defaultWidth="20" defaultHeight="20" defaultFormat="image/png">
+        <legend style=""/>
+      </legends>
     </wmsLayer>
 
     <wmsLayer>
@@ -183,12 +257,28 @@
       <expireClientsList>
         <expirationRule minZoom="0" expiration="500" />
       </expireClientsList>
+      <!-- global geoserver wms service allows layers different workspaces -->
       <wmsUrl>
         <string>http://localhost:8080/geoserver/wms</string>
       </wmsUrl>
+      <!-- layers from several workspaces -->
       <wmsLayers>nurc:Img_Sample,topp:states</wmsLayers>
       <transparent>false</transparent>
       <bgColor>0x0066FF</bgColor>
+      <legends defaultWidth="81" defaultHeight="80" defaultFormat="image/png">
+        <legend style="population"/>
+        <legend style="pophatch"/>
+        <legend style="polygon">
+          <width>20</width>
+          <height>20</height>
+          <minScale>5000</minScale>
+          <maxScale>10000</maxScale>
+        </legend>
+        <legend style="raster">
+          <width>20</width>
+          <height>20</height>
+        </legend>
+      </legends>
     </wmsLayer>
   </layers>
 
