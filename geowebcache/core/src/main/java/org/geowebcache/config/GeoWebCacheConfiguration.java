@@ -46,6 +46,10 @@ public class GeoWebCacheConfiguration {
     /* Default values */
     private Integer backendTimeout;
 
+    private Integer seederCorePoolSize;
+
+    private Integer seederMaxPoolSize;
+
     private String lockProvider;
 
     private transient LockProvider lockProviderInstance;
@@ -126,6 +130,26 @@ public class GeoWebCacheConfiguration {
     /** @see ServerConfiguration#setBackendTimeout(Integer) */
     public void setBackendTimeout(Integer backendTimeout) {
         this.backendTimeout = backendTimeout;
+    }
+
+    /** @see ServerConfiguration#getSeederCorePoolSize() */
+    public Integer getSeederCorePoolSize() {
+        return seederCorePoolSize;
+    }
+
+    /** @param seederCorePoolSize the core pool size for the seeder thread pool */
+    public void setSeederCorePoolSize(Integer seederCorePoolSize) {
+        this.seederCorePoolSize = seederCorePoolSize;
+    }
+
+    /** @see ServerConfiguration#getSeederMaxPoolSize() */
+    public Integer getSeederMaxPoolSize() {
+        return seederMaxPoolSize;
+    }
+
+    /** @param seederMaxPoolSize the maximum pool size for the seeder thread pool */
+    public void setSeederMaxPoolSize(Integer seederMaxPoolSize) {
+        this.seederMaxPoolSize = seederMaxPoolSize;
     }
 
     /** @return the cacheBypassAllowed */
