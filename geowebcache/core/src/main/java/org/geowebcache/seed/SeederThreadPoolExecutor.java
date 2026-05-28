@@ -61,12 +61,9 @@ public class SeederThreadPoolExecutor extends ThreadPoolExecutor implements Disp
         int core = resolvePoolSize(GWC_SEEDER_CORE_POOL_SIZE, defaultCore);
         int max = resolvePoolSize(GWC_SEEDER_MAX_POOL_SIZE, defaultMax);
         if (core > max) {
-            log.warning(GWC_SEEDER_CORE_POOL_SIZE
-                    + " ("
+            log.warning("Configured corePoolSize ("
                     + core
-                    + ") is greater than "
-                    + GWC_SEEDER_MAX_POOL_SIZE
-                    + " ("
+                    + ") is greater than maxPoolSize ("
                     + max
                     + "), adjusting maxPoolSize to match corePoolSize");
             max = core;
