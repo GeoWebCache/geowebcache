@@ -316,9 +316,6 @@ public class GeoWebCacheDispatcher extends AbstractController {
                     CacheResult.OTHER,
                     runtimeStats);
             LOG.warning(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            ResponseUtils.writeErrorPage(response, 400, e.getMessage(), runtimeStats);
-            LOG.log(Level.WARNING, e.getMessage());
         } catch (Exception e) {
             if (!(e instanceof BadTileException) || LOG.isLoggable(Level.FINE)) {
                 LOG.severe(e.getMessage() + " " + request.getRequestURL().toString());
