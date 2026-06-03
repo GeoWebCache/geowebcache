@@ -8,11 +8,16 @@
  *
  * <p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
  * <http://www.gnu.org/licenses/>.
+ *
+ * <p>Copyright 2026
  */
 package org.geowebcache.seed;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import org.geowebcache.config.ServerConfiguration;
 import org.geowebcache.util.PropertyRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,11 +32,14 @@ public class SeederThreadPoolExecutorTest {
 
     @Test
     public void testDefaultValues() {
-        // No system property set, should use the constructor-provided defaults
         corePoolSizeProp.setValue(null);
         maxPoolSizeProp.setValue(null);
 
-        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(16, 32);
+        ServerConfiguration config = mock(ServerConfiguration.class);
+        when(config.getSeederCorePoolSize()).thenReturn(null);
+        when(config.getSeederMaxPoolSize()).thenReturn(null);
+
+        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(config);
         try {
             assertEquals(16, executor.getCorePoolSize());
             assertEquals(32, executor.getMaximumPoolSize());
@@ -41,42 +49,72 @@ public class SeederThreadPoolExecutorTest {
     }
 
     @Test
-    public void testSystemPropertyOverride() {
-        corePoolSizeProp.setValue("24");
-        maxPoolSizeProp.setValue("64");
+    public void testConfiguredValues() {
+        corePoolSizeProp.setValue(null);
+        maxPoolSizeProp.setValue(null);
 
-        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(16, 32);
+        ServerConfiguration config = mock(ServerConfiguration.class);
+        when(config.getSeederCorePoolSize()).thenReturn(24);
+        when(config.getSeederMaxPoolSize()).thenReturn(48);
+
+        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(config);
         try {
             assertEquals(24, executor.getCorePoolSize());
-            assertEquals(64, executor.getMaximumPoolSize());
+            assertEquals(48, executor.getMaximumPoolSize());
         } finally {
             executor.shutdownNow();
         }
     }
 
     @Test
-    public void testInvalidValueFallsBackToDefault() {
+    public void testSystemPropertyOverridesConfig() {
+        corePoolSizeProp.setValue("100");
+        maxPoolSizeProp.setValue("200");
+
+        ServerConfiguration config = mock(ServerConfiguration.class);
+        when(config.getSeederCorePoolSize()).thenReturn(24);
+        when(config.getSeederMaxPoolSize()).thenReturn(48);
+
+        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(config);
+        try {
+            assertEquals(100, executor.getCorePoolSize());
+            assertEquals(200, executor.getMaximumPoolSize());
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    public void testInvalidValueFallsBackToConfig() {
         corePoolSizeProp.setValue("invalid");
         maxPoolSizeProp.setValue("notanumber");
 
-        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(16, 32);
+        ServerConfiguration config = mock(ServerConfiguration.class);
+        when(config.getSeederCorePoolSize()).thenReturn(24);
+        when(config.getSeederMaxPoolSize()).thenReturn(48);
+
+        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(config);
         try {
-            assertEquals(16, executor.getCorePoolSize());
-            assertEquals(32, executor.getMaximumPoolSize());
+            assertEquals(24, executor.getCorePoolSize());
+            assertEquals(48, executor.getMaximumPoolSize());
         } finally {
             executor.shutdownNow();
         }
     }
 
     @Test
-    public void testNegativeValueFallsBackToDefault() {
+    public void testNonPositiveValueFallsBackToConfig() {
         corePoolSizeProp.setValue("-5");
         maxPoolSizeProp.setValue("0");
 
-        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(16, 32);
+        ServerConfiguration config = mock(ServerConfiguration.class);
+        when(config.getSeederCorePoolSize()).thenReturn(24);
+        when(config.getSeederMaxPoolSize()).thenReturn(48);
+
+        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(config);
         try {
-            assertEquals(16, executor.getCorePoolSize());
-            assertEquals(32, executor.getMaximumPoolSize());
+            assertEquals(24, executor.getCorePoolSize());
+            assertEquals(48, executor.getMaximumPoolSize());
         } finally {
             executor.shutdownNow();
         }
@@ -84,28 +122,35 @@ public class SeederThreadPoolExecutorTest {
 
     @Test
     public void testPartialOverride() {
-        // Only override core pool size, leave max at default
         corePoolSizeProp.setValue("20");
         maxPoolSizeProp.setValue(null);
 
-        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(16, 32);
+        ServerConfiguration config = mock(ServerConfiguration.class);
+        when(config.getSeederCorePoolSize()).thenReturn(null);
+        when(config.getSeederMaxPoolSize()).thenReturn(48);
+
+        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(config);
         try {
             assertEquals(20, executor.getCorePoolSize());
-            assertEquals(32, executor.getMaximumPoolSize());
+            assertEquals(48, executor.getMaximumPoolSize());
         } finally {
             executor.shutdownNow();
         }
     }
 
     @Test
-    public void testWhitespaceValueFallsBackToDefault() {
+    public void testWhitespaceValueFallsBackToConfig() {
         corePoolSizeProp.setValue("  ");
         maxPoolSizeProp.setValue("");
 
-        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(16, 32);
+        ServerConfiguration config = mock(ServerConfiguration.class);
+        when(config.getSeederCorePoolSize()).thenReturn(24);
+        when(config.getSeederMaxPoolSize()).thenReturn(48);
+
+        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(config);
         try {
-            assertEquals(16, executor.getCorePoolSize());
-            assertEquals(32, executor.getMaximumPoolSize());
+            assertEquals(24, executor.getCorePoolSize());
+            assertEquals(48, executor.getMaximumPoolSize());
         } finally {
             executor.shutdownNow();
         }
@@ -116,7 +161,11 @@ public class SeederThreadPoolExecutorTest {
         corePoolSizeProp.setValue(" 24 ");
         maxPoolSizeProp.setValue(" 48 ");
 
-        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(16, 32);
+        ServerConfiguration config = mock(ServerConfiguration.class);
+        when(config.getSeederCorePoolSize()).thenReturn(null);
+        when(config.getSeederMaxPoolSize()).thenReturn(null);
+
+        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(config);
         try {
             assertEquals(24, executor.getCorePoolSize());
             assertEquals(48, executor.getMaximumPoolSize());
@@ -127,11 +176,14 @@ public class SeederThreadPoolExecutorTest {
 
     @Test
     public void testCorePoolSizeExceedsMaxPoolSizeAdjustsMax() {
-        // Set core higher than max — max should be adjusted upward to match core
         corePoolSizeProp.setValue("64");
         maxPoolSizeProp.setValue("32");
 
-        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(16, 32);
+        ServerConfiguration config = mock(ServerConfiguration.class);
+        when(config.getSeederCorePoolSize()).thenReturn(null);
+        when(config.getSeederMaxPoolSize()).thenReturn(null);
+
+        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(config);
         try {
             assertEquals(64, executor.getCorePoolSize());
             assertEquals(64, executor.getMaximumPoolSize());
@@ -141,15 +193,18 @@ public class SeederThreadPoolExecutorTest {
     }
 
     @Test
-    public void testCorePoolSizeOverrideExceedsDefaultMax() {
-        // Only override core to be higher than the default max — max should adjust
-        corePoolSizeProp.setValue("48");
+    public void testConfigCoreExceedsConfigMaxAdjustsMax() {
+        corePoolSizeProp.setValue(null);
         maxPoolSizeProp.setValue(null);
 
-        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(16, 32);
+        ServerConfiguration config = mock(ServerConfiguration.class);
+        when(config.getSeederCorePoolSize()).thenReturn(64);
+        when(config.getSeederMaxPoolSize()).thenReturn(32);
+
+        SeederThreadPoolExecutor executor = new SeederThreadPoolExecutor(config);
         try {
-            assertEquals(48, executor.getCorePoolSize());
-            assertEquals(48, executor.getMaximumPoolSize());
+            assertEquals(64, executor.getCorePoolSize());
+            assertEquals(64, executor.getMaximumPoolSize());
         } finally {
             executor.shutdownNow();
         }

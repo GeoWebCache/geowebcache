@@ -180,8 +180,7 @@
   <!-- Thread pool for seeding -->
   <bean id="gwcSeederThreadPoolExec" 
     class="org.geowebcache.seed.SeederThreadPoolExecutor">
-    <constructor-arg value="#{gwcXmlConfig.seederCorePoolSize != null ? gwcXmlConfig.seederCorePoolSize : 16}"/><!-- Size of core pool -->
-    <constructor-arg value="#{gwcXmlConfig.seederMaxPoolSize != null ? gwcXmlConfig.seederMaxPoolSize : 32}"/><!-- Maximum size of pool -->
+    <constructor-arg ref="gwcXmlConfig"/>
   </bean>
 
   <!-- Breeder (the one that seeds) -->
