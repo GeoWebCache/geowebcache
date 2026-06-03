@@ -19,8 +19,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.geotools.util.logging.Logging;
+import org.geowebcache.config.ServerConfiguration;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
+import org.springframework.util.StringUtils;
 
 public class SeederThreadPoolExecutor extends ThreadPoolExecutor implements DisposableBean {
 
@@ -28,22 +30,42 @@ public class SeederThreadPoolExecutor extends ThreadPoolExecutor implements Disp
 
     private static final ThreadFactory tf = new CustomizableThreadFactory("GWC Seeder Thread-");
 
+    protected static final int DEFAULT_CORE_POOL_SIZE = 16;
+
+    protected static final int DEFAULT_MAX_POOL_SIZE = 32;
+
     /**
      * Environment variable / system property name for configuring the core pool size. Looked up from Java system
      * properties first, then from OS environment variables. If neither is set or the value is not a valid positive
-     * integer, the {@code corePoolSize} constructor argument is used as the default.
+     * integer, the configuration value (or hardcoded default) is used.
      */
     public static final String GWC_SEEDER_CORE_POOL_SIZE = "GWC_SEEDER_CORE_POOL_SIZE";
 
     /**
      * Environment variable / system property name for configuring the maximum pool size. Looked up from Java system
      * properties first, then from OS environment variables. If neither is set or the value is not a valid positive
-     * integer, the {@code maxPoolSize} constructor argument is used as the default.
+     * integer, the configuration value (or hardcoded default) is used.
      */
     public static final String GWC_SEEDER_MAX_POOL_SIZE = "GWC_SEEDER_MAX_POOL_SIZE";
 
-    public SeederThreadPoolExecutor(int corePoolSize, int maxPoolSize) {
-        this(resolveAndValidateSizes(corePoolSize, maxPoolSize));
+    /**
+     * Creates the seeder thread pool, reading pool sizes from the given {@link ServerConfiguration}. The configuration
+     * values can be overridden by system properties or environment variables.
+     *
+     * <p>Precedence: environment variable / system property → ServerConfiguration → hardcoded default (16/32).
+     *
+     * @param config the server configuration providing pool size settings from geowebcache.xml
+     */
+    public SeederThreadPoolExecutor(ServerConfiguration config) {
+        this(configuredCorePoolSize(config), configuredMaxPoolSize(config));
+    }
+
+    /**
+     * Internal constructor that resolves env var overrides and validates sizes. Subclasses (e.g. GeoServer's
+     * SeederThreadLocalTransferExecutor) use this to pass in pool sizes read from their own configuration.
+     */
+    protected SeederThreadPoolExecutor(int defaultCore, int defaultMax) {
+        this(resolvedSizes(defaultCore, defaultMax));
     }
 
     private SeederThreadPoolExecutor(int[] sizes) {
@@ -54,10 +76,28 @@ public class SeederThreadPoolExecutor extends ThreadPoolExecutor implements Disp
                 + getMaximumPoolSize());
     }
 
-    /**
-     * Resolves both pool sizes once and validates the core <= max constraint. Returns a two-element array [core, max].
-     */
-    private static int[] resolveAndValidateSizes(int defaultCore, int defaultMax) {
+    private static int configuredCorePoolSize(ServerConfiguration config) {
+        if (config != null) {
+            Integer value = config.getSeederCorePoolSize();
+            if (value != null && value > 0) {
+                return value;
+            }
+        }
+        return DEFAULT_CORE_POOL_SIZE;
+    }
+
+    private static int configuredMaxPoolSize(ServerConfiguration config) {
+        if (config != null) {
+            Integer value = config.getSeederMaxPoolSize();
+            if (value != null && value > 0) {
+                return value;
+            }
+        }
+        return DEFAULT_MAX_POOL_SIZE;
+    }
+
+    /** Resolves both pool sizes applying env var overrides and the core <= max constraint. Returns [core, max]. */
+    private static int[] resolvedSizes(int defaultCore, int defaultMax) {
         int core = resolvePoolSize(GWC_SEEDER_CORE_POOL_SIZE, defaultCore);
         int max = resolvePoolSize(GWC_SEEDER_MAX_POOL_SIZE, defaultMax);
         if (core > max) {
@@ -82,10 +122,10 @@ public class SeederThreadPoolExecutor extends ThreadPoolExecutor implements Disp
      */
     static int resolvePoolSize(String propertyName, int defaultValue) {
         String value = System.getProperty(propertyName);
-        if (value == null || value.isBlank()) {
+        if (!StringUtils.hasText(value)) {
             value = System.getenv(propertyName);
         }
-        if (value != null && !value.isBlank()) {
+        if (StringUtils.hasText(value)) {
             try {
                 int parsed = Integer.parseInt(value.trim());
                 if (parsed > 0) {
