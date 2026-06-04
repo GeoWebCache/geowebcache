@@ -19,8 +19,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.geotools.util.logging.Logging;
+import org.geowebcache.config.ServerConfiguration;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
+import org.springframework.util.StringUtils;
 
 public class SeederThreadPoolExecutor extends ThreadPoolExecutor implements DisposableBean {
 
@@ -28,8 +30,125 @@ public class SeederThreadPoolExecutor extends ThreadPoolExecutor implements Disp
 
     private static final ThreadFactory tf = new CustomizableThreadFactory("GWC Seeder Thread-");
 
-    public SeederThreadPoolExecutor(int corePoolSize, int maxPoolSize) {
-        super(corePoolSize, maxPoolSize, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), tf);
+    protected static final int DEFAULT_CORE_POOL_SIZE = 16;
+
+    protected static final int DEFAULT_MAX_POOL_SIZE = 32;
+
+    /**
+     * Environment variable / system property name for configuring the core pool size. Looked up from Java system
+     * properties first, then from OS environment variables. If neither is set or the value is not a valid positive
+     * integer, the configuration value (or hardcoded default) is used.
+     */
+    public static final String GWC_SEEDER_CORE_POOL_SIZE = "GWC_SEEDER_CORE_POOL_SIZE";
+
+    /**
+     * Environment variable / system property name for configuring the maximum pool size. Looked up from Java system
+     * properties first, then from OS environment variables. If neither is set or the value is not a valid positive
+     * integer, the configuration value (or hardcoded default) is used.
+     */
+    public static final String GWC_SEEDER_MAX_POOL_SIZE = "GWC_SEEDER_MAX_POOL_SIZE";
+
+    /**
+     * Creates the seeder thread pool, reading pool sizes from the given {@link ServerConfiguration}. The configuration
+     * values can be overridden by system properties or environment variables.
+     *
+     * <p>Precedence: environment variable / system property → ServerConfiguration → hardcoded default (16/32).
+     *
+     * @param config the server configuration providing pool size settings from geowebcache.xml
+     */
+    public SeederThreadPoolExecutor(ServerConfiguration config) {
+        this(configuredCorePoolSize(config), configuredMaxPoolSize(config));
+    }
+
+    /**
+     * Internal constructor that resolves env var overrides and validates sizes. Subclasses (e.g. GeoServer's
+     * SeederThreadLocalTransferExecutor) use this to pass in pool sizes read from their own configuration.
+     */
+    protected SeederThreadPoolExecutor(int defaultCore, int defaultMax) {
+        this(resolvedSizes(defaultCore, defaultMax));
+    }
+
+    private SeederThreadPoolExecutor(int[] sizes) {
+        super(sizes[0], sizes[1], 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), tf);
+        log.info("Seeder thread pool initialized with corePoolSize="
+                + getCorePoolSize()
+                + ", maxPoolSize="
+                + getMaximumPoolSize());
+    }
+
+    private static int configuredCorePoolSize(ServerConfiguration config) {
+        if (config != null) {
+            Integer value = config.getSeederCorePoolSize();
+            if (value != null && value > 0) {
+                return value;
+            }
+        }
+        return DEFAULT_CORE_POOL_SIZE;
+    }
+
+    private static int configuredMaxPoolSize(ServerConfiguration config) {
+        if (config != null) {
+            Integer value = config.getSeederMaxPoolSize();
+            if (value != null && value > 0) {
+                return value;
+            }
+        }
+        return DEFAULT_MAX_POOL_SIZE;
+    }
+
+    /** Resolves both pool sizes applying env var overrides and the core <= max constraint. Returns [core, max]. */
+    private static int[] resolvedSizes(int defaultCore, int defaultMax) {
+        int core = resolvePoolSize(GWC_SEEDER_CORE_POOL_SIZE, defaultCore);
+        int max = resolvePoolSize(GWC_SEEDER_MAX_POOL_SIZE, defaultMax);
+        if (core > max) {
+            log.warning("Configured corePoolSize ("
+                    + core
+                    + ") is greater than maxPoolSize ("
+                    + max
+                    + "), adjusting maxPoolSize to match corePoolSize");
+            max = core;
+        }
+        return new int[] {core, max};
+    }
+
+    /**
+     * Resolves a pool size configuration value by looking up the given property name first as a Java system property,
+     * then as an OS environment variable. Falls back to the provided default if neither is set or the value is not a
+     * valid positive integer.
+     *
+     * @param propertyName the system property / environment variable name to look up
+     * @param defaultValue the fallback value if the property is not set or invalid
+     * @return the resolved pool size
+     */
+    static int resolvePoolSize(String propertyName, int defaultValue) {
+        String value = System.getProperty(propertyName);
+        if (!StringUtils.hasText(value)) {
+            value = System.getenv(propertyName);
+        }
+        if (StringUtils.hasText(value)) {
+            try {
+                int parsed = Integer.parseInt(value.trim());
+                if (parsed > 0) {
+                    log.info("Using configured value for " + propertyName + "=" + parsed);
+                    return parsed;
+                } else {
+                    log.warning("Invalid value for "
+                            + propertyName
+                            + "="
+                            + value
+                            + " (must be a positive integer), using default "
+                            + defaultValue);
+                }
+            } catch (NumberFormatException e) {
+                log.warning("Invalid value for "
+                        + propertyName
+                        + "="
+                        + value
+                        + " (not a valid integer), using default "
+                        + defaultValue);
+            }
+        }
+        return defaultValue;
     }
 
     /**

@@ -1318,6 +1318,18 @@ public class XMLConfiguration
         save();
     }
 
+    /** @see ServerConfiguration#getSeederCorePoolSize() */
+    @Override
+    public Integer getSeederCorePoolSize() {
+        return gwcConfig.getSeederCorePoolSize();
+    }
+
+    /** @see ServerConfiguration#getSeederMaxPoolSize() */
+    @Override
+    public Integer getSeederMaxPoolSize() {
+        return gwcConfig.getSeederMaxPoolSize();
+    }
+
     /** @see ServerConfiguration#isCacheBypassAllowed() */
     @Override
     public Boolean isCacheBypassAllowed() {
