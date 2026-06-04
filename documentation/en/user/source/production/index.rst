@@ -97,6 +97,43 @@ These applicaiton properties can be established by any of the following ways, in
 - As a System environment variable: `export GWC_SEED_ABORT_LIMIT=2000; <your usual command to run GWC here>` (or for Tomcat, use the Tomcat's `CATALINA_OPTS` in Tomcat's `bin/catalina.sh` as this: `CATALINA_OPTS="GWC_SEED_ABORT_LIMIT=2000 GWC_SEED_RETRY_COUNT=2`
 
 
+Seeder Thread Pool Size
++++++++++++++++++++++++
+
+The seeder thread pool controls how many seeding threads can run concurrently. By default, the core pool size is ``16`` and the maximum pool size is ``32``. These can be configured in ``geowebcache.xml``:
+
+.. code-block:: xml
+
+   <gwcConfiguration>
+     ...
+     <seederCorePoolSize>24</seederCorePoolSize>
+     <seederMaxPoolSize>64</seederMaxPoolSize>
+     ...
+   </gwcConfiguration>
+
+* ``seederCorePoolSize`` : the number of threads to keep in the pool, even if they are idle. Defaults to ``16``.
+* ``seederMaxPoolSize`` : the maximum number of threads allowed in the pool. Defaults to ``32``.
+
+The configuration can be overridden at runtime using Java system properties or OS environment variables (useful for Docker and cloud deployments):
+
+* ``GWC_SEEDER_CORE_POOL_SIZE`` : overrides ``seederCorePoolSize`` from the XML configuration.
+* ``GWC_SEEDER_MAX_POOL_SIZE`` : overrides ``seederMaxPoolSize`` from the XML configuration.
+
+These overrides are resolved in the following order of precedence:
+
+- As a Java system property: for example ``java -DGWC_SEEDER_CORE_POOL_SIZE=24 -DGWC_SEEDER_MAX_POOL_SIZE=64 ...``
+- As a System environment variable: ``export GWC_SEEDER_CORE_POOL_SIZE=24``
+
+If the value is not set or is not a valid positive integer, the default is used. Invalid values are logged as warnings.
+
+If ``seederCorePoolSize`` (or its override) is set to a value greater than ``seederMaxPoolSize``, the maximum pool size will be automatically adjusted upward to match the core pool size.
+
+.. note::
+   Unlike the seed failure tolerance settings above, the environment variable overrides are resolved directly by the Java code and do not support servlet context parameters in ``WEB-INF/web.xml``. Only Java system properties (``-D``) and OS environment variables are supported as overrides.
+
+Increasing these values is useful when seeding many layers in parallel, especially in combination with a larger HTTP connection pool to the backend WMS.
+
+
 Resource Allocation
 -------------------
 
