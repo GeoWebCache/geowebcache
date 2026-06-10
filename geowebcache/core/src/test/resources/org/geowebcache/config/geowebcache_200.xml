@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <gwcConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://geowebcache.org/schema/2.0.0"
-  xsi:schemaLocation="http://geowebcache.org/schema/2.0.0 https://raw.githubusercontent.com/GeoWebCache/geowebcache/refs/heads/main/geowebcache/core/src/main/resources/org/geowebcache/config/geowebcache_200.xsd">
-  <version>2.0.0</version>
+  xsi:schemaLocation="http://geowebcache.org/schema/2.0.0 http://geowebcache.org/schema/2.0.0/geowebcache.xsd">
+  <version>1.8.0</version>
   <backendTimeout>120</backendTimeout>
+  <!-- Seeder thread pool configuration (optional, can be overridden by
+       GWC_SEEDER_CORE_POOL_SIZE and GWC_SEEDER_MAX_POOL_SIZE env vars) -->
+  <!-- <seederCorePoolSize>16</seederCorePoolSize> -->
+  <!-- <seederMaxPoolSize>32</seederMaxPoolSize> -->
   <serviceInformation>
     <title>GeoWebCache</title>
     <description>GeoWebCache is an advanced tile cache for WMS servers. It supports a large variety of protocols and
