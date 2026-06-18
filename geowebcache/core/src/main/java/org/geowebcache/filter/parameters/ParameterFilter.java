@@ -56,6 +56,17 @@ public abstract class ParameterFilter implements Serializable, Cloneable {
         return key;
     }
 
+    /**
+     * Whether this filter should be shown to clients in user-facing surfaces (preview, seed form, WMS/WMTS
+     * capabilities). Synthetic filters that exist only to partition the cache should return {@code false} so they stay
+     * out of those surfaces while still taking part in cache key computation. One example of such parameter is an
+     * internal filter matching the current security setup, or whatever other machinery migth change the contents of a
+     * tile (e.g., a dispatcher callback clipping rasters as a home-grown security system)
+     */
+    public boolean isUserVisible() {
+        return true;
+    }
+
     /** Get the default value to use if the parameter is not specified. */
     public String getDefaultValue() {
         if (defaultValue == null) return "";

@@ -755,6 +755,7 @@ public class WMTSServiceTest {
             List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
 
             ParameterFilter styleFilter = mock(ParameterFilter.class);
+            when(styleFilter.isUserVisible()).thenReturn(true);
             when(styleFilter.getKey()).thenReturn("STYLES");
             when(styleFilter.getDefaultValue()).thenReturn("Foo");
             when(styleFilter.getLegalValues()).thenReturn(null);
@@ -813,6 +814,7 @@ public class WMTSServiceTest {
             List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
 
             ParameterFilter styleFilter = mock(ParameterFilter.class);
+            when(styleFilter.isUserVisible()).thenReturn(true);
             when(styleFilter.getKey()).thenReturn("STYLES");
             when(styleFilter.getDefaultValue()).thenReturn("Foo");
             when(styleFilter.getLegalValues()).thenReturn(Collections.emptyList());
@@ -871,6 +873,7 @@ public class WMTSServiceTest {
             List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
 
             ParameterFilter styleFilter = mock(ParameterFilter.class);
+            when(styleFilter.isUserVisible()).thenReturn(true);
             when(styleFilter.getKey()).thenReturn("STYLES");
             when(styleFilter.getDefaultValue()).thenReturn("Foo");
             when(styleFilter.getLegalValues()).thenReturn(Arrays.asList("Foo", "Bar", "Baz"));
@@ -972,16 +975,19 @@ public class WMTSServiceTest {
             List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
 
             ParameterFilter styleFilter = mock(ParameterFilter.class);
+            when(styleFilter.isUserVisible()).thenReturn(true);
             when(styleFilter.getKey()).thenReturn("STYLES");
             when(styleFilter.getDefaultValue()).thenReturn("Foo");
             when(styleFilter.getLegalValues()).thenReturn(Arrays.asList("Foo", "Bar", "Baz"));
 
             ParameterFilter elevationDimension = mock(ParameterFilter.class);
+            when(elevationDimension.isUserVisible()).thenReturn(true);
             when(elevationDimension.getKey()).thenReturn("elevation");
             when(elevationDimension.getDefaultValue()).thenReturn("0");
             when(elevationDimension.getLegalValues()).thenReturn(Arrays.asList("0", "200", "400", "600"));
 
             ParameterFilter timeDimension = mock(ParameterFilter.class);
+            when(timeDimension.isUserVisible()).thenReturn(true);
             when(timeDimension.getKey()).thenReturn("time");
             when(timeDimension.getDefaultValue()).thenReturn("2016-02-23T03:00:00.00");
             when(timeDimension.getLegalValues()).thenReturn(Collections.emptyList());
@@ -1049,6 +1055,7 @@ public class WMTSServiceTest {
             List<String> gridSetNames = Arrays.asList("GlobalCRS84Pixel", "GlobalCRS84Scale", "EPSG:4326");
 
             ParameterFilter styleFilter = mock(ParameterFilter.class);
+            when(styleFilter.isUserVisible()).thenReturn(true);
             when(styleFilter.getKey()).thenReturn("STYLES");
             when(styleFilter.getDefaultValue()).thenReturn("Foo");
             when(styleFilter.getLegalValues()).thenReturn(Arrays.asList("Foo", "Bar", "Baz"));
