@@ -406,6 +406,9 @@ public class Demo {
         doc.append("<table>\n");
         for (ParameterFilter pf : parameterFilters) {
             Assert.notNull(pf, "The parameter filter must be non null");
+            if (!pf.isUserVisible()) {
+                continue;
+            }
             String key = pf.getKey();
             String defaultValue = pf.getDefaultValue();
             List<String> legalValues = pf.getLegalValues();
