@@ -337,6 +337,9 @@ public class FormService {
         doc.append("<table>");
         for (ParameterFilter pf : parameterFilters) {
             Assert.notNull(pf, "Parameter filter must be non null");
+            if (!pf.isUserVisible()) {
+                continue;
+            }
             String key = pf.getKey();
             String defaultValue = pf.getDefaultValue();
             List<String> legalValues = pf.getLegalValues();
