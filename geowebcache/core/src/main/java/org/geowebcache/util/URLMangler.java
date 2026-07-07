@@ -13,20 +13,24 @@
  */
 package org.geowebcache.util;
 
-/**
- * subset copied from org.geoserver.ows.URLMangler
- *
- * <p>This hook allows others to plug in custom url generation.
- */
+import java.util.Map;
+
+/** Hook allowing custom URL generation and mangling. */
 public interface URLMangler {
 
+    enum URLType {
+        EXTERNAL,
+        RESOURCE,
+        SERVICE
+    }
+
     /**
-     * Allows for a custom url generation strategy
+     * Callback that can change the base URL, path, or query parameter map before URL serialization.
      *
-     * @param baseURL the base url - contains the url up to the domain and port
-     * @param contextPath the servlet context path, like /geoserver/gwc
-     * @param path the remaining path after the context path
-     * @return the full generated url from the pieces
+     * @param baseURL mutable base URL buffer containing host, port, and application base
+     * @param path mutable path buffer after the application name
+     * @param kvp mutable GET request parameters, which may be enriched or modified
+     * @param type URL type for consideration during mangling
      */
-    public String buildURL(String baseURL, String contextPath, String path);
+    void mangleURL(StringBuilder baseURL, StringBuilder path, Map<String, String> kvp, URLType type);
 }

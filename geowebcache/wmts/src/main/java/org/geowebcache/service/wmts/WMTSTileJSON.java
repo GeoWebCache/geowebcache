@@ -32,24 +32,22 @@ import org.geowebcache.layer.meta.TileJSON;
 import org.geowebcache.layer.meta.VectorLayerMetadata;
 import org.geowebcache.mime.ApplicationMime;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.util.URLMangler;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 public class WMTSTileJSON {
 
     private static Logger log = Logging.getLogger(WMTSTileJSON.class.getName());
-    private final String restBaseUrl;
+    private final WMTSUrlBuilder urlBuilder;
     private String style;
     private ConveyorTile convTile;
     private static final String ENDING_DIGITS_REGEX = "([0-9]+)$";
     private static final Pattern PATTERN_DIGITS = Pattern.compile(ENDING_DIGITS_REGEX);
 
-    public WMTSTileJSON(
-            ConveyorTile convTile, String baseUrl, String contextPath, String style, URLMangler urlMangler) {
+    public WMTSTileJSON(ConveyorTile convTile, WMTSUrlBuilder urls, String style) {
         this.convTile = convTile;
         this.style = style;
-        this.restBaseUrl = urlMangler.buildURL(baseUrl, contextPath, WMTSService.REST_PATH);
+        this.urlBuilder = urls;
     }
 
     public void writeResponse(TileLayer layer) {
@@ -108,8 +106,7 @@ public class WMTSTileJSON {
             zoomLevelStart = start;
         }
 
-        String tileUrl = restBaseUrl
-                + "/"
+        String tileUrl = urlBuilder.restUrl(WMTSService.REST_PATH + "/"
                 + layer.getName()
                 + "/"
                 + (style != null ? (style + "/") : "")
@@ -119,7 +116,7 @@ public class WMTSTileJSON {
                 + "{z}"
                 + "/{y}/{x}"
                 + "?format="
-                + mimeType;
+                + mimeType);
         urls.add(tileUrl);
     }
 }
