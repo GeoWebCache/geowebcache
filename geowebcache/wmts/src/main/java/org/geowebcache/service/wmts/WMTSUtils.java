@@ -16,10 +16,12 @@ package org.geowebcache.service.wmts;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.geowebcache.filter.parameters.ParameterFilter;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.mime.MimeType;
+import org.geowebcache.util.ServletUtils;
 
 final class WMTSUtils {
 
@@ -72,5 +74,54 @@ final class WMTSUtils {
         }
 
         return base + "SERVICE=wmts&REQUEST=getcapabilities&VERSION=1.0.0" + anchor;
+    }
+
+    /**
+     * Appends propagated query parameters to a URL while preserving the existing query string order and any anchor.
+     *
+     * <p>This helper stays local to WMTS because capability templates can still contain unresolved path placeholders
+     * such as {@code {TileRow}} or {@code {TileMatrixSet}} at the point where the final backlink URL is serialized.
+     * General-purpose URI builders such as Apache HttpComponents {@code URIBuilder} reject those template URLs as
+     * invalid URIs, so WMTS needs a lightweight string-based helper that keeps the path intact and appends the
+     * propagated query map at the end of the URL.
+     *
+     * <p>The method preserves the original path, keeps any fragment suffix at the end, and serializes the provided map
+     * in iteration order. It does not normalize or deduplicate template path components, but it does percent-encode
+     * each appended key and value so that propagated parameters (such as security tokens) cannot corrupt the query
+     * string or inject additional parameters.
+     */
+    public static String appendQueryParameters(String url, Map<String, String> queryParameters) {
+        if (queryParameters == null || queryParameters.isEmpty()) {
+            return url;
+        }
+
+        String base = url;
+        String anchor = "";
+        int anchorIndex = base.indexOf('#');
+        if (anchorIndex != -1) {
+            anchor = base.substring(anchorIndex);
+            base = base.substring(0, anchorIndex);
+        }
+
+        StringBuilder query = new StringBuilder();
+        for (Map.Entry<String, String> entry : queryParameters.entrySet()) {
+            if (!query.isEmpty()) {
+                query.append("&");
+            }
+            query.append(ServletUtils.URLEncode(entry.getKey())).append("=");
+            if (entry.getValue() != null) {
+                query.append(ServletUtils.URLEncode(entry.getValue()));
+            }
+        }
+
+        if (base.endsWith("?") || base.endsWith("&")) {
+            return base + query + anchor;
+        }
+
+        if (base.contains("?")) {
+            return base + "&" + query + anchor;
+        }
+
+        return base + "?" + query + anchor;
     }
 }

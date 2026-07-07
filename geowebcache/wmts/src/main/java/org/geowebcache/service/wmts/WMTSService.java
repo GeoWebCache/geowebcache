@@ -572,8 +572,8 @@ public class WMTSService extends Service {
 
         if (tile.getHint() != null) {
             if (tile.getHint().equals(GET_CAPABILITIES)) {
-                WMTSGetCapabilities wmsGC = new WMTSGetCapabilities(
-                        tld, gsb, tile.servletReq, servletBase, context, urlMangler, extensions);
+                WMTSUrls urls = buildUrls(servletBase, context);
+                WMTSGetCapabilities wmsGC = new WMTSGetCapabilities(tld, gsb, tile.servletReq, urls, extensions);
                 wmsGC.writeResponse(tile.servletResp, stats);
 
             } else if (tile.getHint().equals(GET_FEATUREINFO)) {
@@ -600,11 +600,20 @@ public class WMTSService extends Service {
                     if (!provider.supportsTileJSON()) {
                         throw new HttpErrorCodeException(404, "TileJSON Not supported");
                     }
-                    WMTSTileJSON wmtsTileJSON = new WMTSTileJSON(convTile, servletBase, context, style, urlMangler);
+                    WMTSUrls urls = buildUrls(servletBase, context);
+                    WMTSTileJSON wmtsTileJSON = new WMTSTileJSON(convTile, urls, style);
                     wmtsTileJSON.writeResponse(layer);
                 }
             }
         }
+    }
+
+    private WMTSUrls buildUrls(String servletBase, String context) {
+        URLMangler.UrlAndParams service =
+                urlMangler.buildURL(servletBase, context, SERVICE_PATH, Collections.emptyMap());
+        URLMangler.UrlAndParams rest = urlMangler.buildURL(servletBase, context, REST_PATH, Collections.emptyMap());
+
+        return new WMTSUrls(service.url(), service.queryParameters(), rest.url(), rest.queryParameters());
     }
 
     void addExtension(WMTSExtension extension) {

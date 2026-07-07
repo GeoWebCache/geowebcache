@@ -70,6 +70,7 @@ import org.geowebcache.service.OWSException;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.ResponseUtils;
+import org.geowebcache.util.URLMangler;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -207,6 +208,47 @@ public class WMTSRestTest {
         assertTrue(content.contains("vector_layers"));
     }
 
+    /**
+     * Verifies that WMTS REST capabilities and TileJSON links append the propagated project token after the existing
+     * endpoint query parameters, while leaving the template path portion untouched.
+     */
+    @Test
+    public void testProjectTokenPlacement() throws Exception {
+        WMTSService tokenService = wmtsServiceWithProjectToken();
+
+        MockHttpServletRequest capReq = new MockHttpServletRequest();
+        capReq.setPathInfo("geowebcache/service/wmts/rest/WMTSCapabilities.xml");
+        MockHttpServletResponse capResp = dispatch(capReq, tokenService);
+
+        assertEquals(200, capResp.getStatus());
+        Document capDoc = XMLUnit.buildTestDocument(capResp.getContentAsString());
+        assertXpathExists(
+                "//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='tile']"
+                        + "[@format='image/jpeg']"
+                        + "[@template='http://localhost/service/wmts/rest/mockLayer/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}?format=image/jpeg&time={time}&elevation={elevation}&projecttoken=abc123']",
+                capDoc);
+        assertXpathExists(
+                "//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='tile']"
+                        + "[@format='image/png']"
+                        + "[@template='http://localhost/service/wmts/rest/mockLayer/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}?format=image/png&time={time}&elevation={elevation}&projecttoken=abc123']",
+                capDoc);
+        assertXpathExists(
+                "//wmts:ServiceMetadataURL[@xlink:href='http://localhost/service/wmts/rest/WMTSCapabilities.xml?projecttoken=abc123']",
+                capDoc);
+
+        addTileLayerJsonMock("image/png");
+        MockHttpServletRequest tileJsonReq = new MockHttpServletRequest();
+        tileJsonReq.setPathInfo("geowebcache/service/wmts/rest/mockLayerTileJSON/style-a/tilejson/png");
+        tileJsonReq.addParameter("format", "application/json");
+        MockHttpServletResponse tileJsonResp = dispatch(tileJsonReq, tokenService);
+
+        assertEquals(200, tileJsonResp.getStatus());
+        String tileJsonContent = tileJsonResp.getContentAsString();
+        assertTrue(
+                tileJsonContent.contains(
+                        "\"tiles\":[\"http://localhost/service/wmts/rest/mockLayerTileJSON/style-a/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png&projecttoken=abc123\"]"));
+    }
+
     private void addTileLayerJsonMock(String mimeType) throws GeoWebCacheException {
 
         final MimeType mimeType1 = MimeType.createFromFormat(mimeType);
@@ -236,9 +278,13 @@ public class WMTSRestTest {
     }
 
     public MockHttpServletResponse dispatch(MockHttpServletRequest req) throws Exception {
+        return dispatch(req, wmtsService);
+    }
+
+    private MockHttpServletResponse dispatch(MockHttpServletRequest req, WMTSService service) throws Exception {
         MockHttpServletResponse resp = new MockHttpServletResponse();
         try {
-            final Conveyor conveyor = wmtsService.getConveyor(req, resp);
+            final Conveyor conveyor = service.getConveyor(req, resp);
 
             if (conveyor.reqHandler == Conveyor.RequestHandler.SERVICE) {
                 final String layerName = conveyor.getLayerId();
@@ -254,7 +300,7 @@ public class WMTSRestTest {
                         tile.setTileLayer(layer);
                     }
                 }
-                wmtsService.handleRequest(conveyor);
+                service.handleRequest(conveyor);
             } else {
                 ResponseUtils.writeTile(
                         securityDispatcher(),
@@ -275,6 +321,28 @@ public class WMTSRestTest {
         }
 
         return resp;
+    }
+
+    private WMTSService wmtsServiceWithProjectToken() {
+        URLMangler tokenMangler = new URLMangler() {
+            @Override
+            public String buildURL(String baseURL, String contextPath, String path) {
+                String context = contextPath == null ? "" : contextPath;
+                return baseURL + context + path;
+            }
+
+            @Override
+            public UrlAndParams buildURL(
+                    String baseURL, String contextPath, String path, Map<String, String> queryParameters) {
+                Map<String, String> resultParameters = new HashMap<>(queryParameters);
+                resultParameters.put("projecttoken", "abc123");
+                return new UrlAndParams(buildURL(baseURL, contextPath, path), resultParameters);
+            }
+        };
+        WMTSService service =
+                new WMTSService(storageBroker, tileLayerDispatcher, broker, runtimeStats, tokenMangler, null);
+        service.setSecurityDispatcher(securityDispatcher);
+        return service;
     }
 
     @Test

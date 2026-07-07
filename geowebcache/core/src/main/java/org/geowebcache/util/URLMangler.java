@@ -13,6 +13,9 @@
  */
 package org.geowebcache.util;
 
+import java.util.Collections;
+import java.util.Map;
+
 /**
  * subset copied from org.geoserver.ows.URLMangler
  *
@@ -29,4 +32,33 @@ public interface URLMangler {
      * @return the full generated url from the pieces
      */
     public String buildURL(String baseURL, String contextPath, String path);
+
+    /**
+     * Allows for a custom url generation strategy while also carrying query parameters separately from the path.
+     *
+     * <p>The default implementation preserves the legacy behavior and ignores the query parameter map. New callers
+     * should prefer overriding this method so propagated parameters can remain separated until the final URL is
+     * emitted.
+     *
+     * @param baseURL the base url, contains the url up to the domain and port
+     * @param contextPath the servlet context path, like /geoserver/gwc
+     * @param path the remaining path after the context path
+     * @param queryParameters propagated query parameters to preserve separately from the path
+     * @return the generated url (without serialized query parameters) together with the resulting query parameter map,
+     *     so implementations return their result instead of mutating the {@code queryParameters} argument
+     */
+    default UrlAndParams buildURL(
+            String baseURL, String contextPath, String path, Map<String, String> queryParameters) {
+        return new UrlAndParams(buildURL(baseURL, contextPath, path), queryParameters);
+    }
+
+    /**
+     * Result of {@link #buildURL(String, String, String, Map)}: the generated URL (without a serialized query string)
+     * and the query parameters that should eventually be appended to it.
+     */
+    record UrlAndParams(String url, Map<String, String> queryParameters) {
+        public UrlAndParams {
+            queryParameters = queryParameters == null ? Collections.emptyMap() : queryParameters;
+        }
+    }
 }

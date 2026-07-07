@@ -66,9 +66,7 @@ public class WMTSGetCapabilities {
 
     private GridSetBroker gsb;
 
-    private String baseUrl;
-
-    private String restBaseUrl;
+    private final WMTSUrls urls;
 
     private final Collection<WMTSExtension> extensions;
 
@@ -90,21 +88,31 @@ public class WMTSGetCapabilities {
             String contextPath,
             URLMangler urlMangler,
             Collection<WMTSExtension> extensions) {
+        this(tld, gsb, servReq, buildUrls(servReq, baseUrl, contextPath, urlMangler), extensions);
+    }
+
+    protected WMTSGetCapabilities(
+            TileLayerDispatcher tld,
+            GridSetBroker gsb,
+            HttpServletRequest servReq,
+            WMTSUrls urls,
+            Collection<WMTSExtension> extensions) {
         this.tld = tld;
         this.gsb = gsb;
+        this.urls = urls;
+        this.extensions = extensions;
+    }
 
+    private static WMTSUrls buildUrls(
+            HttpServletRequest servReq, String baseUrl, String contextPath, URLMangler urlMangler) {
         String forcedBaseUrl =
                 ServletUtils.stringFromMap(servReq.getParameterMap(), servReq.getCharacterEncoding(), "base_url");
-
-        if (forcedBaseUrl != null) {
-            this.baseUrl = forcedBaseUrl;
-        } else {
-            this.baseUrl = urlMangler.buildURL(baseUrl, contextPath, WMTSService.SERVICE_PATH);
-        }
-
-        this.restBaseUrl = urlMangler.buildURL(baseUrl, contextPath, WMTSService.REST_PATH);
-
-        this.extensions = extensions;
+        String effectiveBaseUrl = forcedBaseUrl != null ? forcedBaseUrl : baseUrl;
+        URLMangler.UrlAndParams service =
+                urlMangler.buildURL(effectiveBaseUrl, contextPath, WMTSService.SERVICE_PATH, Collections.emptyMap());
+        URLMangler.UrlAndParams rest =
+                urlMangler.buildURL(effectiveBaseUrl, contextPath, WMTSService.REST_PATH, Collections.emptyMap());
+        return new WMTSUrls(service.url(), service.queryParameters(), rest.url(), rest.queryParameters());
     }
 
     protected void writeResponse(HttpServletResponse response, RuntimeStats stats) {
@@ -169,11 +177,18 @@ public class WMTSGetCapabilities {
             contents(xml);
 
             xml.indentElement("ServiceMetadataURL")
-                    .attribute("xlink:href", WMTSUtils.getKvpServiceMetadataURL(baseUrl))
+                    .attribute(
+                            "xlink:href",
+                            WMTSUtils.appendQueryParameters(
+                                    WMTSUtils.getKvpServiceMetadataURL(urls.serviceBaseUrl()),
+                                    urls.serviceQueryParameters()))
                     .endElement();
 
             xml.indentElement("ServiceMetadataURL")
-                    .attribute("xlink:href", restBaseUrl + "/WMTSCapabilities.xml")
+                    .attribute(
+                            "xlink:href",
+                            WMTSUtils.appendQueryParameters(
+                                    urls.restBaseUrl() + "/WMTSCapabilities.xml", urls.restQueryParameters()))
                     .endElement();
 
             xml.endElement("Capabilities");
@@ -365,9 +380,9 @@ public class WMTSGetCapabilities {
                 xml.endElement();
             }
         } else {
-            appendTag(xml, "ows:ProviderName", baseUrl, null);
+            appendTag(xml, "ows:ProviderName", urls.serviceBaseUrl(), null);
             xml.indentElement("ows:ProviderSite")
-                    .attribute("xlink:href", baseUrl)
+                    .attribute("xlink:href", urls.serviceBaseUrl())
                     .endElement();
             xml.indentElement("ows:ServiceContact");
             appendTag(xml, "ows:IndividualName", "GeoWebCache User", null);
@@ -379,9 +394,9 @@ public class WMTSGetCapabilities {
 
     private void operationsMetadata(XMLBuilder xml) throws IOException {
         xml.indentElement("ows:OperationsMetadata");
-        operation(xml, "GetCapabilities", baseUrl);
-        operation(xml, "GetTile", baseUrl);
-        operation(xml, "GetFeatureInfo", baseUrl);
+        operation(xml, "GetCapabilities", urls.serviceBaseUrl(), urls.serviceQueryParameters());
+        operation(xml, "GetTile", urls.serviceBaseUrl(), urls.serviceQueryParameters());
+        operation(xml, "GetFeatureInfo", urls.serviceBaseUrl(), urls.serviceQueryParameters());
         // allow extension to inject their own metadata
         for (WMTSExtension extension : extensions) {
             List<WMTSExtension.OperationMetadata> operationsMetaData = extension.getExtraOperationsMetadata();
@@ -390,7 +405,10 @@ public class WMTSGetCapabilities {
                     operation(
                             xml,
                             operationMetadata.getName(),
-                            operationMetadata.getBaseUrl() == null ? baseUrl : operationMetadata.getBaseUrl());
+                            operationMetadata.getBaseUrl() == null
+                                    ? urls.serviceBaseUrl()
+                                    : operationMetadata.getBaseUrl(),
+                            urls.serviceQueryParameters());
                 }
             }
             extension.encodedOperationsMetadata(xml);
@@ -398,14 +416,16 @@ public class WMTSGetCapabilities {
         xml.endElement("ows:OperationsMetadata");
     }
 
-    private void operation(XMLBuilder xml, String operationName, String baseUrl) throws IOException {
+    private void operation(XMLBuilder xml, String operationName, String baseUrl, Map<String, String> queryParameters)
+            throws IOException {
         xml.indentElement("ows:Operation").attribute("name", operationName);
         xml.indentElement("ows:DCP");
         xml.indentElement("ows:HTTP");
-        if (baseUrl.contains("?")) {
-            xml.indentElement("ows:Get").attribute("xlink:href", baseUrl + "&");
+        String href = WMTSUtils.appendQueryParameters(baseUrl, queryParameters);
+        if (href.contains("?")) {
+            xml.indentElement("ows:Get").attribute("xlink:href", href + "&");
         } else {
-            xml.indentElement("ows:Get").attribute("xlink:href", baseUrl + "?");
+            xml.indentElement("ows:Get").attribute("xlink:href", href + "?");
         }
         xml.indentElement("ows:Constraint").attribute("name", "GetEncoding");
         xml.indentElement("ows:AllowedValues");
@@ -426,7 +446,7 @@ public class WMTSGetCapabilities {
             if (!layer.isEnabled() || !layer.isAdvertised()) {
                 continue;
             }
-            layer(xml, layer, baseUrl, usedGridsets);
+            layer(xml, layer, urls.serviceBaseUrl(), usedGridsets);
         }
 
         // only dump the gridsets actually used, as the OGC TMS spec introduced many default ones
@@ -488,7 +508,7 @@ public class WMTSGetCapabilities {
 
         layerGridSubSets(xml, layer, usedGridsets);
 
-        layerResourceUrls(xml, layer, filters, restBaseUrl);
+        layerResourceUrls(xml, layer, filters, urls.restBaseUrl(), urls.restQueryParameters());
 
         // allow extensions to contribute extra metadata to this layer
         for (WMTSExtension extension : extensions) {
@@ -712,7 +732,12 @@ public class WMTSGetCapabilities {
      * For each layer discovers the available image formats, feature info formats and dimensions and produce the
      * necessary <ResourceURL> elements.
      */
-    private void layerResourceUrls(XMLBuilder xml, TileLayer layer, List<ParameterFilter> filters, String baseurl)
+    private void layerResourceUrls(
+            XMLBuilder xml,
+            TileLayer layer,
+            List<ParameterFilter> filters,
+            String baseurl,
+            Map<String, String> queryParameters)
             throws IOException {
         String baseTemplate = baseurl + "/" + layer.getName();
         String commonTemplate = baseTemplate + "/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}";
@@ -728,13 +753,15 @@ public class WMTSGetCapabilities {
         // Extracts image formats
         List<String> mimeFormats = WMTSUtils.getLayerFormats(layer);
         for (String format : mimeFormats) {
-            String template = commonTemplate + "?format=" + format + commonDimensions;
+            String template = WMTSUtils.appendQueryParameters(
+                    commonTemplate + "?format=" + format + commonDimensions, queryParameters);
             layerResourceUrlsGen(xml, format, "tile", template);
         }
         // Extracts feature info formats
         List<String> infoFormats = WMTSUtils.getInfoFormats(layer);
         for (String format : infoFormats) {
-            String template = commonTemplate + "/{J}/{I}?format=" + format + commonDimensions;
+            String template = WMTSUtils.appendQueryParameters(
+                    commonTemplate + "/{J}/{I}?format=" + format + commonDimensions, queryParameters);
             layerResourceUrlsGen(xml, format, "FeatureInfo", template);
         }
         if (layer instanceof TileJSONProvider provider) {
@@ -742,7 +769,9 @@ public class WMTSGetCapabilities {
             String outputFormat = ApplicationMime.json.getFormat();
             if (provider.supportsTileJSON()) {
                 for (String tileJsonFormat : formatExtensions) {
-                    String template = baseTemplate + "/{style}/tilejson/" + tileJsonFormat + "?format=" + outputFormat;
+                    String template = WMTSUtils.appendQueryParameters(
+                            baseTemplate + "/{style}/tilejson/" + tileJsonFormat + "?format=" + outputFormat,
+                            queryParameters);
                     layerResourceUrlsGen(xml, outputFormat, "TileJSON", template);
                 }
             }
