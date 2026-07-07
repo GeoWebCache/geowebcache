@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContaining;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
@@ -14,6 +15,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -41,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
@@ -85,6 +88,7 @@ import org.geowebcache.service.OWSException;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.NullURLMangler;
+import org.geowebcache.util.URLMangler;
 import org.geowebcache.util.URLs;
 import org.junit.Before;
 import org.junit.Rule;
@@ -1346,6 +1350,203 @@ public class WMTSServiceTest {
         }
     }
 
+    /**
+     * Verifies that GetCapabilities builds distinct query parameter maps for the service and REST URLs so each one can
+     * be mutated independently before final serialization.
+     */
+    @Test
+    public void testGetCapabilitiesQueryMaps() throws Exception {
+        ProjectTokenCapabilitiesResult result = runProjectTokenCapabilitiesScenario();
+
+        // Expect two separate invocations: one for the service backlink and one for
+        // the REST capabilities backlink.
+        assertEquals(2, result.capturedQueryMaps.size());
+        assertEquals(2, result.capturedPaths.size());
+        assertThat(result.capturedPaths, contains(WMTSService.SERVICE_PATH, WMTSService.REST_PATH));
+
+        // The two query maps must not be shared, and both must carry the propagated
+        // project token before serialization.
+        assertNotSame(result.capturedQueryMaps.get(0), result.capturedQueryMaps.get(1));
+        assertEquals("abc123", result.capturedQueryMaps.get(0).get("projecttoken"));
+        assertEquals("abc123", result.capturedQueryMaps.get(1).get("projecttoken"));
+    }
+
+    /**
+     * Verifies that GetCapabilities serializes WMTS backlinks with propagated security parameters appended after the
+     * endpoint-specific query parameters.
+     */
+    @Test
+    public void testGetCapabilitiesQueryParamsPlacement() throws Exception {
+        ProjectTokenCapabilitiesResult result = runProjectTokenCapabilitiesScenario();
+        Document doc = result.document;
+        XpathEngine xpath = buildWMTSXPath();
+
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        "count(//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='tile']"
+                                + "[@format='image/png']"
+                                + "[contains(@template,'/mockLayer/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}?format=image/png&time={time}&elevation={elevation}&projecttoken=abc123')])",
+                        doc));
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        "count(//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='FeatureInfo']"
+                                + "[@format='text/plain']"
+                                + "[contains(@template,'/mockLayer/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}/{J}/{I}?format=text/plain&time={time}&elevation={elevation}&projecttoken=abc123')])",
+                        doc));
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        "count(//wmts:Contents/wmts:Layer/wmts:ResourceURL[@resourceType='TileJSON']"
+                                + "[@format='application/json']"
+                                + "[contains(@template,'/mockLayer/{style}/tilejson/png?format=application/json&projecttoken=abc123')])",
+                        doc));
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        "count(//wmts:ServiceMetadataURL[contains(@xlink:href,'SERVICE=wmts&REQUEST=getcapabilities&VERSION=1.0.0&projecttoken=abc123')])",
+                        doc));
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        "count(//wmts:ServiceMetadataURL[contains(@xlink:href,'/WMTSCapabilities.xml?projecttoken=abc123')])",
+                        doc));
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        "count(//ows:OperationsMetadata/ows:Operation[@name='GetCapabilities']"
+                                + "/ows:DCP/ows:HTTP/ows:Get[contains(@xlink:href,'?projecttoken=abc123&')])",
+                        doc));
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        "count(//ows:OperationsMetadata/ows:Operation[@name='GetTile']"
+                                + "/ows:DCP/ows:HTTP/ows:Get[contains(@xlink:href,'?projecttoken=abc123&')])",
+                        doc));
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        "count(//ows:OperationsMetadata/ows:Operation[@name='GetFeatureInfo']"
+                                + "/ows:DCP/ows:HTTP/ows:Get[contains(@xlink:href,'?projecttoken=abc123&')])",
+                        doc));
+    }
+
+    /**
+     * Verifies that {@code operationsMetadata} propagates the service query parameters (e.g. the security token added
+     * by a registered {@link URLMangler}) to a {@code WMTSExtension}-supplied {@code OperationMetadata} even when that
+     * extension provides its own custom base URL instead of {@code urls.serviceBaseUrl()}.
+     */
+    @Test
+    public void testGetCapabilitiesQueryParamPropagatesToExtensionCustomBaseUrl() throws Exception {
+        WMTSExtension extension = new WMTSExtensionImpl() {
+            @Override
+            public List<OperationMetadata> getExtraOperationsMetadata() throws IOException {
+                return Collections.singletonList(
+                        new OperationMetadata("ExtraOperation", "http://extension.example.com/custom"));
+            }
+        };
+
+        ProjectTokenCapabilitiesResult result =
+                runProjectTokenCapabilitiesScenario(Collections.singletonList(extension));
+        XpathEngine xpath = buildWMTSXPath();
+
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        "count(//ows:OperationsMetadata/ows:Operation[@name='ExtraOperation']"
+                                + "/ows:DCP/ows:HTTP/ows:Get[@xlink:href='http://extension.example.com/custom?projecttoken=abc123&'])",
+                        result.document));
+    }
+
+    private ProjectTokenCapabilitiesResult runProjectTokenCapabilitiesScenario() throws Exception {
+        return runProjectTokenCapabilitiesScenario(Collections.emptyList());
+    }
+
+    private ProjectTokenCapabilitiesResult runProjectTokenCapabilitiesScenario(List<WMTSExtension> extraExtensions)
+            throws Exception {
+        // Capture the paths and query maps passed to the URL mangler so we can
+        // verify that service and REST backlinks are built from separate inputs.
+        List<Map<String, String>> capturedQueryMaps = new ArrayList<>();
+        List<String> capturedPaths = new ArrayList<>();
+        // Record the WMTS URL-building calls while still returning a plausible URL
+        // string so the GetCapabilities flow can complete normally.
+        URLMangler recordingUrlMangler = new URLMangler() {
+            @Override
+            public String buildURL(String baseURL, String contextPath, String path) {
+                return StringUtils.strip(baseURL, "/")
+                        + "/"
+                        + StringUtils.strip(contextPath, "/")
+                        + "/"
+                        + StringUtils.strip(path, "/");
+            }
+
+            @Override
+            public UrlAndParams buildURL(
+                    String baseURL, String contextPath, String path, Map<String, String> queryParameters) {
+                capturedPaths.add(path);
+                Map<String, String> resultParameters = new HashMap<>(queryParameters);
+                resultParameters.put("projecttoken", "abc123");
+                capturedQueryMaps.add(resultParameters);
+                return new UrlAndParams(buildURL(baseURL, contextPath, path), resultParameters);
+            }
+        };
+        // Wire the service with the recording mangler and a minimal dispatcher so we
+        // can run the GetCapabilities request end to end.
+        GeoWebCacheDispatcher gwcd = mock(GeoWebCacheDispatcher.class);
+        when(gwcd.getServletPrefix()).thenReturn(null);
+        service = new WMTSService(sb, tld, gridsetBroker, mock(RuntimeStats.class), recordingUrlMangler, gwcd);
+        extraExtensions.forEach(service::addExtension);
+
+        // Provide one layer and one gridset so the capabilities document includes the
+        // backlinks that exercise this code path.
+        List<String> gridSetNames = Arrays.asList("EPSG:900913");
+        TileLayer tileLayer = mockTileLayerWithJSONSupport("mockLayer", gridSetNames);
+        when(tileLayer.getInfoMimeTypes())
+                .thenReturn(Collections.singletonList(MimeType.createFromFormat("text/plain")));
+        ParameterFilter time = mock(ParameterFilter.class);
+        when(time.isUserVisible()).thenReturn(true);
+        when(time.getKey()).thenReturn("time");
+        when(time.getDefaultValue()).thenReturn("2024-01-01");
+        when(time.getLegalValues()).thenReturn(Collections.singletonList("2024-01-01"));
+        ParameterFilter elevation = mock(ParameterFilter.class);
+        when(elevation.isUserVisible()).thenReturn(true);
+        when(elevation.getKey()).thenReturn("elevation");
+        when(elevation.getDefaultValue()).thenReturn("0");
+        when(elevation.getLegalValues()).thenReturn(Collections.singletonList("0"));
+        when(tileLayer.getParameterFilters()).thenReturn(Arrays.asList(time, elevation));
+        when(tld.getLayerList()).thenReturn(Collections.singletonList(tileLayer));
+        when(tld.getLayerListFiltered()).thenReturn(Collections.singletonList(tileLayer));
+
+        // Build a GetCapabilities request and let the WMTS service handle it.
+        MockHttpServletRequest req = new MockHttpServletRequest();
+        req.setPathInfo("geowebcache/service/wmts");
+        req.addParameter("service", "WMTS");
+        req.addParameter("request", "GetCapabilities");
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+
+        Conveyor conv = service.getConveyor(req, resp);
+        assertNotNull(conv);
+
+        service.handleRequest(conv);
+
+        return new ProjectTokenCapabilitiesResult(
+                capturedQueryMaps, capturedPaths, XMLUnit.buildTestDocument(resp.getContentAsString()));
+    }
+
+    private static final class ProjectTokenCapabilitiesResult {
+        private final List<Map<String, String>> capturedQueryMaps;
+        private final List<String> capturedPaths;
+        private final Document document;
+
+        private ProjectTokenCapabilitiesResult(
+                List<Map<String, String>> capturedQueryMaps, List<String> capturedPaths, Document document) {
+            this.capturedQueryMaps = capturedQueryMaps;
+            this.capturedPaths = capturedPaths;
+            this.document = document;
+        }
+    }
+
     @Test
     public void testGetCapWithTileJSONDifferentUrls() throws Exception {
 
@@ -1431,7 +1632,14 @@ public class WMTSServiceTest {
 
     private String writeTileJsonResponse(ConveyorTile conv, TileLayer tileLayer, MockHttpServletResponse resp)
             throws UnsupportedEncodingException {
-        WMTSTileJSON tileJSON = new WMTSTileJSON(conv, "http://localhost", "", null, new NullURLMangler());
+        WMTSTileJSON tileJSON = new WMTSTileJSON(
+                conv,
+                new WMTSUrls(
+                        "http://localhost/service/wmts",
+                        Collections.emptyMap(),
+                        "http://localhost/service/wmts/rest",
+                        Collections.emptyMap()),
+                null);
         tileJSON.writeResponse(tileLayer);
         return resp.getContentAsString();
     }

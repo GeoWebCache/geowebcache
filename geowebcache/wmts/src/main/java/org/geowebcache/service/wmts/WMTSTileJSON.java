@@ -32,35 +32,33 @@ import org.geowebcache.layer.meta.TileJSON;
 import org.geowebcache.layer.meta.VectorLayerMetadata;
 import org.geowebcache.mime.ApplicationMime;
 import org.geowebcache.mime.MimeType;
-import org.geowebcache.util.URLMangler;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 public class WMTSTileJSON {
 
     private static Logger log = Logging.getLogger(WMTSTileJSON.class.getName());
-    private final String restBaseUrl;
+    private final WMTSUrls urls;
     private String style;
     private ConveyorTile convTile;
     private static final String ENDING_DIGITS_REGEX = "([0-9]+)$";
     private static final Pattern PATTERN_DIGITS = Pattern.compile(ENDING_DIGITS_REGEX);
 
-    public WMTSTileJSON(
-            ConveyorTile convTile, String baseUrl, String contextPath, String style, URLMangler urlMangler) {
+    public WMTSTileJSON(ConveyorTile convTile, WMTSUrls urls, String style) {
         this.convTile = convTile;
         this.style = style;
-        this.restBaseUrl = urlMangler.buildURL(baseUrl, contextPath, WMTSService.REST_PATH);
+        this.urls = urls;
     }
 
     public void writeResponse(TileLayer layer) {
         TileJSONProvider provider = (TileJSONProvider) layer;
         TileJSON json = provider.getTileJSON();
 
-        List<String> urls = new ArrayList<>();
+        List<String> tileUrls = new ArrayList<>();
         MimeType mimeType = convTile.getMimeType();
         Set<String> gridSubSets = layer.getGridSubsets();
         for (String gridSubSet : gridSubSets) {
-            addTileUrl(layer, gridSubSet, mimeType, urls);
+            addTileUrl(layer, gridSubSet, mimeType, tileUrls);
         }
         List<VectorLayerMetadata> vectorLayers = json.getLayers();
         if (vectorLayers != null && !vectorLayers.isEmpty() && !mimeType.isVector()) {
@@ -68,8 +66,8 @@ public class WMTSTileJSON {
             json.setLayers(null);
         }
 
-        String[] tileUrls = urls.toArray(new String[urls.size()]);
-        json.setTiles(tileUrls);
+        String[] serializedTileUrls = tileUrls.toArray(new String[tileUrls.size()]);
+        json.setTiles(serializedTileUrls);
         convTile.servletResp.setStatus(HttpServletResponse.SC_OK);
         convTile.servletResp.setContentType(ApplicationMime.json.getMimeType());
 
@@ -87,7 +85,7 @@ public class WMTSTileJSON {
         }
     }
 
-    private void addTileUrl(TileLayer layer, String gridSubSet, MimeType mimeType, List<String> urls) {
+    private void addTileUrl(TileLayer layer, String gridSubSet, MimeType mimeType, List<String> tileUrls) {
         GridSubset grid = layer.getGridSubset(gridSubSet);
         int zoomLevelStart = -1;
         int start = -1;
@@ -108,7 +106,7 @@ public class WMTSTileJSON {
             zoomLevelStart = start;
         }
 
-        String tileUrl = restBaseUrl
+        String tileUrl = this.urls.restBaseUrl()
                 + "/"
                 + layer.getName()
                 + "/"
@@ -120,6 +118,7 @@ public class WMTSTileJSON {
                 + "/{y}/{x}"
                 + "?format="
                 + mimeType;
-        urls.add(tileUrl);
+        tileUrl = WMTSUtils.appendQueryParameters(tileUrl, this.urls.restQueryParameters());
+        tileUrls.add(tileUrl);
     }
 }
