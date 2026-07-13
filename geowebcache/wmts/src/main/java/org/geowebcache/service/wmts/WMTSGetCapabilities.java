@@ -470,8 +470,11 @@ public class WMTSGetCapabilities {
             }
         }
 
-        // We need the filters for styles and dimensions
+        // We need the filters for styles and dimensions; drop synthetic, non user-visible ones (e.g. security)
         List<ParameterFilter> filters = layer.getParameterFilters();
+        if (filters != null) {
+            filters = filters.stream().filter(ParameterFilter::isUserVisible).toList();
+        }
 
         layerStyles(xml, layer, filters);
 
