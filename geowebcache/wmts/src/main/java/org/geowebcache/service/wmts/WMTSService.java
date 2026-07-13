@@ -572,7 +572,7 @@ public class WMTSService extends Service {
 
         if (tile.getHint() != null) {
             if (tile.getHint().equals(GET_CAPABILITIES)) {
-                WMTSUrls urls = buildUrls(servletBase, context);
+                WMTSUrlBuilder urls = buildUrls(tile.servletReq, servletBase, context);
                 WMTSGetCapabilities wmsGC = new WMTSGetCapabilities(tld, gsb, tile.servletReq, urls, extensions);
                 wmsGC.writeResponse(tile.servletResp, stats);
 
@@ -600,7 +600,7 @@ public class WMTSService extends Service {
                     if (!provider.supportsTileJSON()) {
                         throw new HttpErrorCodeException(404, "TileJSON Not supported");
                     }
-                    WMTSUrls urls = buildUrls(servletBase, context);
+                    WMTSUrlBuilder urls = buildUrls(tile.servletReq, servletBase, context);
                     WMTSTileJSON wmtsTileJSON = new WMTSTileJSON(convTile, urls, style);
                     wmtsTileJSON.writeResponse(layer);
                 }
@@ -608,12 +608,11 @@ public class WMTSService extends Service {
         }
     }
 
-    private WMTSUrls buildUrls(String servletBase, String context) {
-        URLMangler.UrlAndParams service =
-                urlMangler.buildURL(servletBase, context, SERVICE_PATH, Collections.emptyMap());
-        URLMangler.UrlAndParams rest = urlMangler.buildURL(servletBase, context, REST_PATH, Collections.emptyMap());
-
-        return new WMTSUrls(service.url(), service.queryParameters(), rest.url(), rest.queryParameters());
+    private WMTSUrlBuilder buildUrls(HttpServletRequest request, String servletBase, String context) {
+        String forcedBaseUrl =
+                ServletUtils.stringFromMap(request.getParameterMap(), request.getCharacterEncoding(), "base_url");
+        String serviceBase = forcedBaseUrl == null ? servletBase : forcedBaseUrl;
+        return new WMTSUrlBuilder(serviceBase, servletBase, context, urlMangler);
     }
 
     void addExtension(WMTSExtension extension) {

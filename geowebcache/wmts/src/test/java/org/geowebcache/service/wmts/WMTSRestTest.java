@@ -326,17 +326,12 @@ public class WMTSRestTest {
     private WMTSService wmtsServiceWithProjectToken() {
         URLMangler tokenMangler = new URLMangler() {
             @Override
-            public String buildURL(String baseURL, String contextPath, String path) {
-                String context = contextPath == null ? "" : contextPath;
-                return baseURL + context + path;
-            }
-
-            @Override
-            public UrlAndParams buildURL(
-                    String baseURL, String contextPath, String path, Map<String, String> queryParameters) {
-                Map<String, String> resultParameters = new HashMap<>(queryParameters);
-                resultParameters.put("projecttoken", "abc123");
-                return new UrlAndParams(buildURL(baseURL, contextPath, path), resultParameters);
+            public void mangleURL(
+                    StringBuilder baseURL,
+                    StringBuilder path,
+                    Map<String, String> queryParameters,
+                    URLMangler.URLType type) {
+                queryParameters.put("projecttoken", "abc123");
             }
         };
         WMTSService service =

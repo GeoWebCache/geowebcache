@@ -11,56 +11,54 @@ public class NullURLManglerTest {
     private URLMangler urlMangler;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         urlMangler = new NullURLMangler();
     }
 
     @Test
     public void testBuildURL() {
-        String url = urlMangler.buildURL("http://foo.example.com", "/foo", "/bar");
-        Assert.assertEquals("http://foo.example.com/foo/bar", url);
+        Assert.assertEquals(
+                "http://foo.example.com/foo/bar",
+                URLManglerUtils.buildURL(
+                        "http://foo.example.com", "/foo", "/bar", null, urlMangler, URLMangler.URLType.SERVICE));
     }
 
     @Test
-    public void testBuildTrailingSlashes() throws Exception {
-        String url = urlMangler.buildURL("http://foo.example.com/", "/foo/", "/bar");
-        Assert.assertEquals("http://foo.example.com/foo/bar", url);
+    public void testBuildURLNormalizesSlashes() {
+        Assert.assertEquals(
+                "http://foo.example.com/foo/bar",
+                URLManglerUtils.buildURL(
+                        "http://foo.example.com/", "/foo/", "/bar", null, urlMangler, URLMangler.URLType.SERVICE));
+        Assert.assertEquals(
+                "http://foo.example.com/foo/bar",
+                URLManglerUtils.buildURL(
+                        "http://foo.example.com/", "foo/", "bar", null, urlMangler, URLMangler.URLType.SERVICE));
     }
 
     @Test
-    public void testBuildNoLeadingSlashes() throws Exception {
-        String url = urlMangler.buildURL("http://foo.example.com/", "foo/", "bar");
-        Assert.assertEquals("http://foo.example.com/foo/bar", url);
+    public void testBuildURLWithEmptyContext() {
+        Assert.assertEquals(
+                "http://foo.example.com/bar",
+                URLManglerUtils.buildURL(
+                        "http://foo.example.com/", "/", "/bar", null, urlMangler, URLMangler.URLType.SERVICE));
+        Assert.assertEquals(
+                "http://foo.example.com/bar",
+                URLManglerUtils.buildURL(
+                        "http://foo.example.com/", null, "/bar", null, urlMangler, URLMangler.URLType.SERVICE));
     }
 
     @Test
-    public void testBuildRootContext() throws Exception {
-        String url = urlMangler.buildURL("http://foo.example.com/", "/", "/bar");
-        Assert.assertEquals("http://foo.example.com/bar", url);
-    }
-
-    @Test
-    public void testBuildNullContext() throws Exception {
-        String url = urlMangler.buildURL("http://foo.example.com/", null, "/bar");
-        Assert.assertEquals("http://foo.example.com/bar", url);
-    }
-
-    @Test
-    public void testBuildEmptyContext() throws Exception {
-        String url = urlMangler.buildURL("http://foo.example.com/", "", "/bar");
-        Assert.assertEquals("http://foo.example.com/bar", url);
-    }
-
-    @Test
-    public void testBuildWithQueryParametersLeavesMapUntouched() throws Exception {
+    public void testBuildURLWithQueryParameters() {
         Map<String, String> queryParameters = new LinkedHashMap<>();
         queryParameters.put("projecttoken", "abc123");
-
-        URLMangler.UrlAndParams result =
-                urlMangler.buildURL("http://foo.example.com/", "/foo", "/bar", queryParameters);
-
-        Assert.assertEquals("http://foo.example.com/foo/bar", result.url());
-        Assert.assertEquals(1, result.queryParameters().size());
-        Assert.assertEquals("abc123", result.queryParameters().get("projecttoken"));
+        Assert.assertEquals(
+                "http://foo.example.com/foo/bar?projecttoken=abc123",
+                URLManglerUtils.buildURL(
+                        "http://foo.example.com/",
+                        "/foo",
+                        "/bar",
+                        queryParameters,
+                        urlMangler,
+                        URLMangler.URLType.SERVICE));
     }
 }
