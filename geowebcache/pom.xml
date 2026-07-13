@@ -252,7 +252,7 @@
       <dependency>
         <groupId>com.sleepycat</groupId>
         <artifactId>je</artifactId>
-        <version>4.1.10</version>
+        <version>18.3.12</version>
       </dependency>
 
       <!-- Pinned transitive dependency of gwc-aws-s3 via aws-java-sdk-core. -->
