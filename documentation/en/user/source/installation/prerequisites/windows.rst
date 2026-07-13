@@ -6,7 +6,7 @@ Windows
 Java Runtime Environment
 ------------------------
 
-Make sure you have a Java Runtime Environment (JRE) installed on your system. GeoWebCache requires a Java 17 or Java 21 environment.
+Make sure you have a Java Runtime Environment (JRE) installed on your system. GeoWebCache requires a Java 17 environment, and is also tested with Java 21.
 
 1. Download an OpenJDK release for your platform:
 
@@ -22,11 +22,10 @@ See :doc:`/installation/upgrading` for compatibility table.
 Apache Tomcat
 -------------
 
-1. Navigate to `<https://tomcat.apache.org>`_, find the **Tomcat 9.x** link in the **Downloads** section, and save the ``Windows Service Installer`` file listed under **Binary Distributions / Core**.
+GeoWebCache requires a container supporting the Jakarta EE Servlet 6.1 specification. Apache Tomcat 11 and Jetty 12 are tested; other compliant containers should work but are untested.
 
-   * Tomcat 9 Required: GeoWebCache uses the JavaEE environment last supported in Tomcat 9.
-   
-   * Tomcat 10 Unsupported: GeoWebCache is not yet compatibile with the JakartaEE environment used by Tomcat 10 and newer.
+1. Navigate to `<https://tomcat.apache.org>`_, find the **Tomcat 11.x** link in the **Downloads** section, and save the ``Windows Service Installer`` file listed under **Binary Distributions / Core**.
+
 2. Run this application to install Tomcat as a Windows service.
    
     After installing, use the small system tray icon. You can right click on it to ensure that it is running with the latest version of Java, and assign at least 256MB of heap memory.
@@ -38,7 +37,7 @@ Access Control
 
 If you wish to use Tomcat's web administration tool, you will need to create an account for the administrator.
 
-Do this by opening the :file:`conf\tomcat-users.xml` file in from your Tomcat Program Files directory (by default ``C:\Program Files\Apache Software Foundation\Tomcat 9.0`` in a text editor.  Immediately after ``<tomcat-users>`` insert:
+Do this by opening the :file:`conf\tomcat-users.xml` file in from your Tomcat Program Files directory (by default ``C:\Program Files\Apache Software Foundation\Tomcat 11.0`` in a text editor.  Immediately after ``<tomcat-users>`` insert:
 
 .. code-block:: xml
 
