@@ -11,7 +11,7 @@ Operating Environment
 Java Settings
 +++++++++++++
 
-GeoWebCache speed depends in part on the chosen Java Runtime Environment (JRE). GeoWebCache is compiled for Java 17, and is tested with both OpenJDK 17 and OpenJDK 11. JREs other than these may work correctly, but are not tested nor supported.
+GeoWebCache speed depends in part on the chosen Java Runtime Environment (JRE). GeoWebCache is compiled for Java 17, and is tested with both OpenJDK 17 and OpenJDK 21. JREs other than these may work correctly, but are not tested nor supported.
 
 GeoWebCache does not need a lot of heap memory assigned to the JVM. Usually 512M is just fine if its the only web application running on the servlet container.
 

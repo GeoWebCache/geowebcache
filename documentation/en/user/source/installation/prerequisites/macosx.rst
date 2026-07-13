@@ -8,7 +8,7 @@ MacOS has a number of command line package managers for open source components. 
 Java
 ----
 
-Make sure you have a Java Runtime Environment (JRE) installed on your system. GeoWebCache requires a Java 17 or Java 21 environment.
+Make sure you have a Java Runtime Environment (JRE) installed on your system. GeoWebCache requires a Java 17 environment, and is also tested with Java 21.
 
 * Required: Java Development Kit 17 (JDK 17)
 
@@ -34,25 +34,19 @@ See :doc:`/installation/upgrading` for compatibility table.
 Apache Tomcat
 -------------
 
-GeoWebCache requires Apache Tomcat 9 required for JavaEE environment.
+GeoWebCache requires a container supporting the Jakarta EE Servlet 6.1 specification. Apache Tomcat 11 and Jetty 12 are tested; other compliant containers should work but are untested.
 
-1. Navigate to `Tomcat 9 <https://tomcat.apache.org/download-90.cgi>`_ **Downloads** section, and save the ``zip`` file listed under **Binary Distributions / Core**.
-
-   * Tomcat 9 Required: GeoWebCache uses the JavaEE environment last supported in Tomcat 9.
-   
-   * Tomcat 10 Unsupported: GeoWebCache is not yet compatibile with the JakartaEE environment used by Tomcat 10 and newer.
+1. Navigate to `Tomcat 11 <https://tomcat.apache.org/download-11.cgi>`_ **Downloads** section, and save the ``zip`` file listed under **Binary Distributions / Core**.
 
 * SDKMan!
 
   .. code-block:: bash
-  
-     # list to determine latest Apache Tomcat 9
-     sdk list tomcat 9 
-     
-     # Installing latest Tomcat 9 shown above
-     sdk install tomcat 9.0.102 
-     
-     # Select tomcat for use
-     sdk use tomcat 9.0.102 
 
-GeoWebCache is not compatible with Apache Tomcat 10 JakarataEE environment.
+     # list to determine latest Apache Tomcat 11
+     sdk list tomcat 11
+
+     # Installing latest Tomcat 11 shown above
+     sdk install tomcat 11.0.6
+
+     # Select tomcat for use
+     sdk use tomcat 11.0.6
