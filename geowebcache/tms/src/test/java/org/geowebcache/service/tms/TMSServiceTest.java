@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import org.apache.commons.lang3.StringUtils;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
 import org.geowebcache.GeoWebCacheDispatcher;
@@ -35,6 +34,7 @@ import org.geowebcache.mime.MimeType;
 import org.geowebcache.stats.RuntimeStats;
 import org.geowebcache.storage.StorageBroker;
 import org.geowebcache.util.URLMangler;
+import org.geowebcache.util.URLManglerUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,15 +67,12 @@ public class TMSServiceTest {
             final Pattern PATTERN = Pattern.compile("http");
 
             @Override
-            public String buildURL(String baseURL, String contextPath, String path) {
-                String url = StringUtils.strip(baseURL, "/")
-                        + "/"
-                        + StringUtils.strip(contextPath, "/")
-                        + "/"
-                        + StringUtils.stripStart(path, "/");
-                url = url.startsWith("https") ? url : PATTERN.matcher(url).replaceFirst("https");
-
-                return url;
+            public void mangleURL(
+                    StringBuilder baseURL, StringBuilder path, Map<String, String> kvp, URLMangler.URLType type) {
+                if (!baseURL.toString().startsWith("https")) {
+                    baseURL.replace(
+                            0, baseURL.length(), PATTERN.matcher(baseURL).replaceFirst("https"));
+                }
             }
         };
         customFactory = new TMSCustomFactoryTest(
@@ -143,7 +140,7 @@ public class TMSServiceTest {
             StringBuilder str = new StringBuilder();
             str.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
             str.append("<TileMapService version=\"1.0.0\" services=\""
-                    + urlMangler.buildURL(baseUrl, contextPath, "")
+                    + URLManglerUtils.buildURL(baseUrl, contextPath, "", null, urlMangler, URLMangler.URLType.SERVICE)
                     + "\">\n");
             str.append("  <Title>Custom Tile Map Service</Title>\n");
             str.append("  <Abstract>A Custom Tile Map Service served by GeoWebCache</Abstract>\n");
@@ -173,7 +170,13 @@ public class TMSServiceTest {
             str.append("      href=\"");
 
             String tileMapName = layer.name + "@EPSG:4326" + "@" + format;
-            String url = urlMangler.buildURL(baseUrl, contextPath, TMSDocumentFactory.SERVICE_PATH + "/" + tileMapName);
+            String url = URLManglerUtils.buildURL(
+                    baseUrl,
+                    contextPath,
+                    TMSDocumentFactory.SERVICE_PATH + "/" + tileMapName,
+                    null,
+                    urlMangler,
+                    URLMangler.URLType.SERVICE);
             str.append(url).append("\" />\n");
         }
     }

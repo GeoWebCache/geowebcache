@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContaining;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
@@ -43,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
@@ -1360,15 +1358,15 @@ public class WMTSServiceTest {
 
         // Expect two separate invocations: one for the service backlink and one for
         // the REST capabilities backlink.
-        assertEquals(2, result.capturedQueryMaps.size());
-        assertEquals(2, result.capturedPaths.size());
-        assertThat(result.capturedPaths, contains(WMTSService.SERVICE_PATH, WMTSService.REST_PATH));
+        assertTrue(result.capturedQueryMaps.size() >= 2);
+        assertTrue(
+                result.capturedPaths.stream().anyMatch(path -> path.contains(WMTSService.SERVICE_PATH.substring(1))));
+        assertTrue(result.capturedPaths.stream().anyMatch(path -> path.contains(WMTSService.REST_PATH.substring(1))));
 
         // The two query maps must not be shared, and both must carry the propagated
         // project token before serialization.
         assertNotSame(result.capturedQueryMaps.get(0), result.capturedQueryMaps.get(1));
-        assertEquals("abc123", result.capturedQueryMaps.get(0).get("projecttoken"));
-        assertEquals("abc123", result.capturedQueryMaps.get(1).get("projecttoken"));
+        assertTrue(result.capturedQueryMaps.stream().allMatch(map -> "abc123".equals(map.get("projecttoken"))));
     }
 
     /**
@@ -1433,6 +1431,24 @@ public class WMTSServiceTest {
     }
 
     /**
+     * Verifies that the GetCapabilities {@code base_url} parameter overrides the service backlinks while REST resource
+     * URLs continue to use the regular servlet base URL.
+     */
+    @Test
+    public void testGetCapabilitiesHonorsForcedBaseUrl() throws Exception {
+        ProjectTokenCapabilitiesResult result = runProjectTokenCapabilitiesScenario("https://proxy.example.com");
+        XpathEngine xpath = buildWMTSXPath();
+
+        assertEquals(
+                "1",
+                xpath.evaluate(
+                        "count(//wmts:ServiceMetadataURL[contains(@xlink:href,'https://proxy.example.com')])",
+                        result.document));
+        assertTrue(result.capturedBaseUrls.contains("https://proxy.example.com"));
+        assertTrue(result.capturedBaseUrls.contains("http://localhost"));
+    }
+
+    /**
      * Verifies that {@code operationsMetadata} propagates the service query parameters (e.g. the security token added
      * by a registered {@link URLMangler}) to a {@code WMTSExtension}-supplied {@code OperationMetadata} even when that
      * extension provides its own custom base URL instead of {@code urls.serviceBaseUrl()}.
@@ -1460,35 +1476,38 @@ public class WMTSServiceTest {
     }
 
     private ProjectTokenCapabilitiesResult runProjectTokenCapabilitiesScenario() throws Exception {
-        return runProjectTokenCapabilitiesScenario(Collections.emptyList());
+        return runProjectTokenCapabilitiesScenario(Collections.emptyList(), null);
     }
 
     private ProjectTokenCapabilitiesResult runProjectTokenCapabilitiesScenario(List<WMTSExtension> extraExtensions)
             throws Exception {
+        return runProjectTokenCapabilitiesScenario(extraExtensions, null);
+    }
+
+    private ProjectTokenCapabilitiesResult runProjectTokenCapabilitiesScenario(String forcedBaseUrl) throws Exception {
+        return runProjectTokenCapabilitiesScenario(Collections.emptyList(), forcedBaseUrl);
+    }
+
+    private ProjectTokenCapabilitiesResult runProjectTokenCapabilitiesScenario(
+            List<WMTSExtension> extraExtensions, String forcedBaseUrl) throws Exception {
         // Capture the paths and query maps passed to the URL mangler so we can
         // verify that service and REST backlinks are built from separate inputs.
         List<Map<String, String>> capturedQueryMaps = new ArrayList<>();
         List<String> capturedPaths = new ArrayList<>();
+        List<String> capturedBaseUrls = new ArrayList<>();
         // Record the WMTS URL-building calls while still returning a plausible URL
         // string so the GetCapabilities flow can complete normally.
         URLMangler recordingUrlMangler = new URLMangler() {
             @Override
-            public String buildURL(String baseURL, String contextPath, String path) {
-                return StringUtils.strip(baseURL, "/")
-                        + "/"
-                        + StringUtils.strip(contextPath, "/")
-                        + "/"
-                        + StringUtils.strip(path, "/");
-            }
-
-            @Override
-            public UrlAndParams buildURL(
-                    String baseURL, String contextPath, String path, Map<String, String> queryParameters) {
-                capturedPaths.add(path);
-                Map<String, String> resultParameters = new HashMap<>(queryParameters);
-                resultParameters.put("projecttoken", "abc123");
-                capturedQueryMaps.add(resultParameters);
-                return new UrlAndParams(buildURL(baseURL, contextPath, path), resultParameters);
+            public void mangleURL(
+                    StringBuilder baseURL,
+                    StringBuilder path,
+                    Map<String, String> queryParameters,
+                    URLMangler.URLType type) {
+                capturedBaseUrls.add(baseURL.toString());
+                capturedPaths.add(path.toString());
+                queryParameters.put("projecttoken", "abc123");
+                capturedQueryMaps.add(new HashMap<>(queryParameters));
             }
         };
         // Wire the service with the recording mangler and a minimal dispatcher so we
@@ -1523,6 +1542,9 @@ public class WMTSServiceTest {
         req.setPathInfo("geowebcache/service/wmts");
         req.addParameter("service", "WMTS");
         req.addParameter("request", "GetCapabilities");
+        if (forcedBaseUrl != null) {
+            req.addParameter("base_url", forcedBaseUrl);
+        }
         MockHttpServletResponse resp = new MockHttpServletResponse();
 
         Conveyor conv = service.getConveyor(req, resp);
@@ -1531,16 +1553,24 @@ public class WMTSServiceTest {
         service.handleRequest(conv);
 
         return new ProjectTokenCapabilitiesResult(
-                capturedQueryMaps, capturedPaths, XMLUnit.buildTestDocument(resp.getContentAsString()));
+                capturedBaseUrls,
+                capturedQueryMaps,
+                capturedPaths,
+                XMLUnit.buildTestDocument(resp.getContentAsString()));
     }
 
     private static final class ProjectTokenCapabilitiesResult {
+        private final List<String> capturedBaseUrls;
         private final List<Map<String, String>> capturedQueryMaps;
         private final List<String> capturedPaths;
         private final Document document;
 
         private ProjectTokenCapabilitiesResult(
-                List<Map<String, String>> capturedQueryMaps, List<String> capturedPaths, Document document) {
+                List<String> capturedBaseUrls,
+                List<Map<String, String>> capturedQueryMaps,
+                List<String> capturedPaths,
+                Document document) {
+            this.capturedBaseUrls = capturedBaseUrls;
             this.capturedQueryMaps = capturedQueryMaps;
             this.capturedPaths = capturedPaths;
             this.document = document;
@@ -1633,13 +1663,7 @@ public class WMTSServiceTest {
     private String writeTileJsonResponse(ConveyorTile conv, TileLayer tileLayer, MockHttpServletResponse resp)
             throws UnsupportedEncodingException {
         WMTSTileJSON tileJSON = new WMTSTileJSON(
-                conv,
-                new WMTSUrls(
-                        "http://localhost/service/wmts",
-                        Collections.emptyMap(),
-                        "http://localhost/service/wmts/rest",
-                        Collections.emptyMap()),
-                null);
+                conv, new WMTSUrlBuilder("http://localhost", "http://localhost", "", new NullURLMangler()), null);
         tileJSON.writeResponse(tileLayer);
         return resp.getContentAsString();
     }

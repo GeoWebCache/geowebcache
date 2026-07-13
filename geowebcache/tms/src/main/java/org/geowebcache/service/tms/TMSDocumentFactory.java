@@ -27,6 +27,7 @@ import org.geowebcache.layer.TileLayerDispatcher;
 import org.geowebcache.layer.meta.LayerMetaInformation;
 import org.geowebcache.mime.MimeType;
 import org.geowebcache.util.URLMangler;
+import org.geowebcache.util.URLManglerUtils;
 
 /**
  * Basic implementation of the TMS documents. Not all of GWCs more advanced features can easily be accomodated by this
@@ -95,7 +96,7 @@ public class TMSDocumentFactory {
             xml.header("1.0", encoding);
             xml.indentElement("TileMapService")
                     .attribute("version", "1.0.0")
-                    .attribute("services", urlMangler.buildURL(baseUrl, contextPath, ""));
+                    .attribute("services", buildURL(baseUrl, contextPath, ""));
             // TODO can have these set through Spring
             xml.simpleElement("Title", "Tile Map Service", true);
             xml.simpleElement("Abstract", "A Tile Map Service served by GeoWebCache", true);
@@ -178,7 +179,7 @@ public class TMSDocumentFactory {
             xml.header("1.0", encoding);
             xml.indentElement("TileMap")
                     .attribute("version", "1.0.0")
-                    .attribute("tilemapservice", urlMangler.buildURL(baseUrl, contextPath, SERVICE_PATH));
+                    .attribute("tilemapservice", buildURL(baseUrl, contextPath, SERVICE_PATH));
             xml.simpleElement("Title", tileMapTitle(layer), true);
             xml.simpleElement("Abstract", tileMapDescription(layer), true);
 
@@ -243,12 +244,16 @@ public class TMSDocumentFactory {
 
     protected String tileMapUrl(
             TileLayer tl, GridSubset gridSub, MimeType mimeType, String baseUrl, String contextPath) {
-        return urlMangler.buildURL(baseUrl, contextPath, SERVICE_PATH + "/" + tileMapName(tl, gridSub, mimeType));
+        return buildURL(baseUrl, contextPath, SERVICE_PATH + "/" + tileMapName(tl, gridSub, mimeType));
+    }
+
+    private String buildURL(String baseUrl, String contextPath, String path) {
+        return URLManglerUtils.buildURL(baseUrl, contextPath, path, null, urlMangler, URLMangler.URLType.SERVICE);
     }
 
     protected String tileMapUrl(
             TileLayer tl, GridSubset gridSub, MimeType mimeType, int z, String baseUrl, String contextPath) {
-        return tileMapUrl(tl, gridSub, mimeType, baseUrl, contextPath) + "/" + z;
+        return buildURL(baseUrl, contextPath, SERVICE_PATH + "/" + tileMapName(tl, gridSub, mimeType) + "/" + z);
     }
 
     protected String tileMapName(TileLayer tl, GridSubset gridSub, MimeType mimeType) {
