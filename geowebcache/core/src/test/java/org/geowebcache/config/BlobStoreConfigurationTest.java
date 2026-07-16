@@ -219,7 +219,7 @@ public abstract class BlobStoreConfigurationTest extends ConfigurationTest<BlobS
         this.config.addBlobStoreListener(listener1);
         this.config.addBlobStoreListener(listener2);
         BlobStoreInfo goodInfo = this.getGoodInfo("test", 1);
-        listener1.handleAddBlobStore(EasyMock.eq(goodInfo));
+        listener1.handleAddBlobStore(EasyMock.eq(goodInfo)); // No change, checking rest of file
         EasyMock.expectLastCall().once();
         listener2.handleAddBlobStore(EasyMock.eq(goodInfo));
         EasyMock.expectLastCall().once();
