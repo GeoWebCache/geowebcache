@@ -20,7 +20,7 @@ public class ResolutionMismatchException extends GridMismatchException {
                 + wRes
                 + " , best match: "
                 + bestResolution
-                + " exceeds 10% threshold. Perhaps the client is configured "
+                + " exceeds ALLOWED_RESOLUTION_THRESHOLD. Perhaps the client is configured "
                 + " with an incorrect set of scales (resolutions), "
                 + " or the DPI setting is off compared to the one in GWC ?");
     }
