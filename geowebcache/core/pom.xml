@@ -135,17 +135,17 @@
 
     <dependency>
       <groupId>org.eclipse.imagen</groupId>
-      <artifactId>utilities</artifactId>
+      <artifactId>imagen-utilities</artifactId>
     </dependency>
 
     <dependency>
       <groupId>org.eclipse.imagen</groupId>
-      <artifactId>colorindexer</artifactId>
+      <artifactId>imagen-colorindexer</artifactId>
     </dependency>
 
     <dependency>
       <groupId>org.eclipse.imagen</groupId>
-      <artifactId>crop</artifactId>
+      <artifactId>imagen-crop</artifactId>
     </dependency>
 
     <dependency>
@@ -206,7 +206,7 @@
 
     <dependency>
       <groupId>org.eclipse.imagen</groupId>
-      <artifactId>bandselect</artifactId>
+      <artifactId>imagen-bandselect</artifactId>
       <scope>test</scope>
     </dependency>
 
