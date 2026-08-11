@@ -39,7 +39,7 @@ public class CacheInfoPersister {
         // TODO: replace this with a more narrow whitelist
         xs.allowTypesByWildcard(new String[] {"org.geowebcache.**"});
 
-        xs.setMode(XStream.NO_REFERENCES);
+        xs.setMode(XStream.ID_REFERENCES);
 
         xs.alias("SpatialReference", SpatialReference.class);
         xs.alias("TileOrigin", TileOrigin.class);
