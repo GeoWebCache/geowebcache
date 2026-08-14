@@ -1,3 +1,14 @@
+GeoWebCache 1.28.5 (2026-08-14)
+-------------------------------
+
+Maintenance release
+
+Improvements:
++++++++++++++
+- Supporting [GEOS-12149] GeoServer WMTS capabilities put query parameters in the wrong place in generated URLs
+- Allow parameter filters to be private and not exposed in capabilities OL preview and the like
+- Make seeder thread pool sizes configurable
+
 GeoWebCache 1.28.4 (2026-05-25)
 -------------------------------
 
