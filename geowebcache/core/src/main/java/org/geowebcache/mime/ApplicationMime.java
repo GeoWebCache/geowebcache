@@ -51,10 +51,18 @@ public class ApplicationMime extends MimeType {
             "application/vnd.mapbox-vector-tile",
             true);
 
-    static Set<ApplicationMime> ALL = ImmutableSet.of(bil16, bil32, json, topojson, geojson, utfgrid, mapboxVector);
+    public static final ApplicationMime maplibreVector = new ApplicationMime(
+            "application/vnd.maplibre-vector-tile",
+            "mlt",
+            "maplibre-vectortile",
+            "application/vnd.maplibre-vector-tile",
+            true);
 
-    private static final List<String> BINARY_FORMATS =
-            Arrays.asList(bil16.mimeType, bil32.mimeType, mapboxVector.mimeType, utfgrid.mimeType);
+    static Set<ApplicationMime> ALL =
+            ImmutableSet.of(bil16, bil32, json, topojson, geojson, utfgrid, mapboxVector, maplibreVector);
+
+    private static final List<String> BINARY_FORMATS = Arrays.asList(
+            bil16.mimeType, bil32.mimeType, mapboxVector.mimeType, maplibreVector.mimeType, utfgrid.mimeType);
 
     private static Map<String, ApplicationMime> BY_FORMAT = Maps.uniqueIndex(ALL, mimeType -> mimeType.getFormat());
 
