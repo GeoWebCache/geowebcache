@@ -20,14 +20,22 @@ import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.geowebcache.rest.exception.RestException;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
-/** Common Rest Exception Handler for Spring MVC Controllers. */
+/**
+ * Common Rest Exception Handler for Spring MVC Controllers.
+ *
+ * <p>Ordered first so GeoServer's catch-all handler, {@code org.geoserver.rest.RestControllerAdvice}, which returns
+ * 500, cannot take over a {@link RestException} when Spring registers its jar before this one.
+ */
 @ControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class RestExceptionHandler {
 
     private static final Logger LOGGER = Logger.getLogger(RestExceptionHandler.class.getName());
