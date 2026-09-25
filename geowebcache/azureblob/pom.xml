@@ -11,26 +11,6 @@
   <groupId>org.geowebcache</groupId>
   <artifactId>gwc-azure-blob</artifactId>
 
-  <properties>
-    <!-- Same sdk version as imageio-ext's cog-ragengereader-azure for GeoSever compatibility -->
-    <azure.version>12.27.1</azure.version>
-  </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <!--
-            Use the same netty version as imageio-ext's cog-ragengereader-s3 and cog-rangereader-azure
-            See https://github.com/geosolutions-it/imageio-ext/pull/312
-        -->
-        <groupId>io.netty</groupId>
-        <artifactId>netty-bom</artifactId>
-        <version>4.1.113.Final</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>org.geowebcache</groupId>
@@ -38,15 +18,19 @@
       <version>${project.version}</version>
     </dependency>
 
+    <!-- Azure SDK versions and Netty exclusions managed by cloud-dependencies-bom -->
     <dependency>
       <groupId>com.azure</groupId>
       <artifactId>azure-storage-blob</artifactId>
-      <version>${azure.version}</version>
     </dependency>
     <dependency>
       <groupId>com.azure</groupId>
       <artifactId>azure-storage-blob-batch</artifactId>
-      <version>${azure.version}</version>
+    </dependency>
+    <!-- JDK HttpClient replaces Netty as HTTP transport (Netty excluded by cloud-dependencies-bom) -->
+    <dependency>
+      <groupId>com.azure</groupId>
+      <artifactId>azure-core-http-jdk-httpclient</artifactId>
     </dependency>
 
     <dependency>
