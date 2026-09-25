@@ -17,6 +17,8 @@ package org.geowebcache.rest.filter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.geotools.util.logging.Logging;
@@ -48,13 +50,16 @@ public class ZipFilterUpdate {
                     throw new RestException("Zip file cannot contain directories.", HttpStatus.BAD_REQUEST);
                 }
 
-                String[] parsedName = parseName(ze.getName());
+                String[] parsedName = parseName(ze.getName(), filter.getName());
 
                 byte[] data = ServletUtils.readStream(zis, 16 * 1024, 1500, false);
 
                 try {
                     filter.update(data, tl, parsedName[0], Integer.parseInt(parsedName[1]));
 
+                } catch (IllegalArgumentException e) {
+                    throw new RestException(
+                            "Error updating " + filter.getName() + ": " + e.getMessage(), HttpStatus.BAD_REQUEST);
                 } catch (GeoWebCacheException e) {
                     throw new RestException(
                             "Error updating " + filter.getName() + ": " + e.getMessage(),
@@ -75,15 +80,16 @@ public class ZipFilterUpdate {
         }
     }
 
-    String[] parseName(String fileName) throws RestException {
-        String[] strs = fileName.split("_");
-
-        // Slice away the extension, we dont have the data to test it
-        String[] zExt = strs[2].split("\\.");
-        strs[2] = zExt[0];
-
-        String[] gridSetIdZ = {strs[1], strs[2]};
-
-        return gridSetIdZ;
+    /** Splits a {@code <filterName>_<gridSetId>_<z>.<extension>} entry name into grid set id and zoom level. */
+    String[] parseName(String fileName, String filterName) throws RestException {
+        // greedy grid set group, ids may contain '_'; up to 9 digits always fit an int
+        Matcher m = Pattern.compile(Pattern.quote(filterName) + "_(.+)_(\\d{1,9})(\\.\\w+)?")
+                .matcher(fileName);
+        if (!m.matches()) {
+            throw new RestException(
+                    "Invalid file name " + fileName + ", expected " + filterName + "_<gridSetId>_<z>.<extension>",
+                    HttpStatus.BAD_REQUEST);
+        }
+        return new String[] {m.group(1), m.group(2)};
     }
 }
