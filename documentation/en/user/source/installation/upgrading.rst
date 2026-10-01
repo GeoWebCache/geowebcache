@@ -1,5 +1,17 @@
 .. _upgrading:
 
+GeoWebCache 1.27.6 Update
+=========================
+
+SQLite and MBTiles blob stores removed
+--------------------------------------
+
+The ``gwc-sqlite`` module has been removed. It provided the SQLite and MBTiles blob stores,
+configured with the ``<MbtilesBlobStore>`` element. Caches stored this way are no longer
+readable. If you used one of these stores, move the cache to another blob store (file, S3,
+Azure or Swift) before upgrading. The MBTiles tile layer (``gwc-mbtiles`` module), which
+serves tiles from an MBTiles file as a layer, is not affected.
+
 Upgrading from a pre 1.15 release
 =================================
 
