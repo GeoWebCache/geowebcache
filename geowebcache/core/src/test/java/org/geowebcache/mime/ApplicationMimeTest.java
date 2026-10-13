@@ -1,7 +1,9 @@
 package org.geowebcache.mime;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,6 +56,17 @@ public class ApplicationMimeTest {
         public void testMapboxLegacyFormat() throws MimeException {
             MimeType mime = MimeType.createFromFormat(ApplicationMime.MAPBOX_TILES_LEGACY_MIME);
             assertNotNull(mime);
+        }
+
+        @Test
+        public void testMapLibreVectorFormat() throws MimeException {
+            MimeType mime = MimeType.createFromFormat("application/vnd.maplibre-vector-tile");
+            assertEquals(ApplicationMime.maplibreVector, mime);
+            assertEquals("mlt", mime.getFileExtension());
+            assertEquals("maplibre-vectortile", mime.getInternalName());
+            assertTrue(mime.isVector());
+            assertTrue(mime.isBinary());
+            assertFalse(mime.isInlinePreferred());
         }
     }
 }
