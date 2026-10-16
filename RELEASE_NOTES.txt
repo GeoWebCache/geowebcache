@@ -1,3 +1,16 @@
+GeoWebCache 1.28.6 (2026-10-16)
+-------------------------------
+
+Maintenance release
+
+Improvements:
++++++++++++++
+- Validate GWC files for Raster Masking (#1595) 
+- Removing the gwc-sqlite module
+- Import cloud-dependencies-bom for Azure, AWS, and GCS version management 
+- Upgrade cloud-dependencies-bom to 1.1.0 
+
+
 GeoWebCache 1.28.5 (2026-08-14)
 -------------------------------
 
