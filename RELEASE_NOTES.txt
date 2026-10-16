@@ -1,3 +1,18 @@
+GeoWebCache 2.0.2 (2026-10-15)
+------------------------------
+
+Maintenance release of the 2.0.x series, built against GeoTools 35.2.
+
+Improvements:
++++++++++++++
+- Upgrade to GeoTools 35.2
+- Update to ImageN 0.9.3, using the imagen- prefixed artifacts
+- Removed the gwc-sqlite module (SQLite and MBTiles blob stores); see upgrade notes. The gwc-mbtiles tile layer is not affected
+
+Fixes:
+++++++
+- Validate GWC files for Raster Masking (#1594)
+
 GeoWebCache 2.0.1 (2026-08-14)
 ------------------------------
 
