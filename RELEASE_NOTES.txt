@@ -1,3 +1,14 @@
+GeoWebCache 1.27.6 (2026-10-16)
+-------------------------------
+
+Maintenance release
+
+Improvements:
++++++++++++++
+- Validate GWC files for Raster Masking (#1596)
+- Removing the gwc-sqlite module
+
+
 GeoWebCache 1.27.5 (2026-02-18)
 -------------------------------
 
