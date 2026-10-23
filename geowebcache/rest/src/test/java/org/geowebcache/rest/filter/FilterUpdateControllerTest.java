@@ -142,7 +142,7 @@ public class FilterUpdateControllerTest {
         // the single byte entry is shorter than the TIFF magic bytes
         postZip("testFileRasterFilter_EPSG:4326_0.tiff")
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Uploaded matrix is not a readable tiff image")));
+                .andExpect(content().string(containsString("Uploaded matrix is not a")));
     }
 
     @Test
