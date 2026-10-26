@@ -601,6 +601,7 @@
             <descriptor>release/src.xml</descriptor>
             <descriptor>release/war.xml</descriptor>
             <descriptor>release/doc.xml</descriptor>
+            <descriptor>release/xsddoc.xml</descriptor>
           </descriptors>
           <finalName>geowebcache-2.1-SNAPSHOT</finalName>
           <outputDirectory>${project.build.directory}/release</outputDirectory>
@@ -629,6 +630,55 @@
             <enabled>true</enabled>
             <indexFile>${project.basedir}/.spotless-index</indexFile>
           </upToDateChecking>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>xml-maven-plugin</artifactId>
+        <version>1.2.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>transform</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>xalan</groupId>
+            <artifactId>xalan</artifactId>
+            <version>2.7.3</version>
+          </dependency>
+          <dependency>
+            <groupId>xalan</groupId>
+            <artifactId>serializer</artifactId>
+            <version>2.7.3</version>
+          </dependency>
+        </dependencies>
+        <inherited>false</inherited>
+        <configuration>
+          <transformationSets>
+            <transformationSet>
+              <dir>core/src/main/resources/org/geowebcache/config</dir>
+              <includes>
+                <include>geowebcache.xsd</include>
+              </includes>
+              <stylesheet>release/xs3p/xs3p.xsl</stylesheet>
+              <outputDir>${project.build.directory}/schema</outputDir>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>index.html</targetName>
+                </fileMapper>
+              </fileMappers>
+              <parameters>
+                <parameter>
+                  <name>title</name>
+                  <value>GeoWebCache Configuration Schema</value>
+                </parameter>
+              </parameters>
+            </transformationSet>
+          </transformationSets>
         </configuration>
       </plugin>
 
