@@ -1,0 +1,13 @@
+<assembly>
+	<id>xsddoc</id>
+	<formats>
+		<format>zip</format>
+	</formats>
+	<includeBaseDirectory>false</includeBaseDirectory>
+	<fileSets>
+		<fileSet>
+			<directory>${project.build.directory}/schema</directory>
+			<outputDirectory>geowebcache-${project.version}/schema</outputDirectory>
+		</fileSet>
+	</fileSets>
+</assembly>
