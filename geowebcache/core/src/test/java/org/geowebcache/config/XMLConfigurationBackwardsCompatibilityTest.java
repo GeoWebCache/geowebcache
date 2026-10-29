@@ -54,6 +54,7 @@ public class XMLConfigurationBackwardsCompatibilityTest {
     public static final String LATEST_FILENAME = "geowebcache_200.xml";
 
     private static final List<String> UPGRADE_FILES = List.of(
+            "geowebcache_124.xml",
             "geowebcache_126.xml",
             "geowebcache_130.xml",
             "geowebcache_140.xml",
@@ -178,6 +179,15 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         assertEquals("testWMSRasterFilter", filter0.getName());
         RequestFilter filter1 = filters.get(1);
         assertEquals("testFileRasterFilter", filter1.getName());
+    }
+
+    @Test
+    public void testLoad124Keywords() throws Exception {
+        XMLConfiguration config = loadConfig("geowebcache_124.xml");
+
+        assertEquals(
+                asList("WFS", "WMS", "WMTS", "GEOWEBCACHE"),
+                config.getServiceInformation().getKeywords());
     }
 
     @Test
