@@ -43,6 +43,7 @@ import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.ImageMime;
 import org.junit.Test;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 public class XMLConfigurationBackwardsCompatibilityTest {
@@ -54,7 +55,13 @@ public class XMLConfigurationBackwardsCompatibilityTest {
     public static final String LATEST_FILENAME = "geowebcache_200.xml";
 
     private static final List<String> UPGRADE_FILES = List.of(
+            "geowebcache_pre10.xml",
+            "geowebcache_10.xml",
+            "geowebcache_101.xml",
+            "geowebcache_114.xml",
+            "geowebcache_115.xml",
             "geowebcache_124.xml",
+            "geowebcache_125.xml",
             "geowebcache_126.xml",
             "geowebcache_130.xml",
             "geowebcache_140.xml",
@@ -234,7 +241,9 @@ public class XMLConfigurationBackwardsCompatibilityTest {
         List<String> failures = new ArrayList<>();
         for (String fileName : UPGRADE_FILES) {
             try (InputStream is = XMLConfiguration.class.getResourceAsStream(fileName)) {
-                XMLConfiguration.validate(XMLConfiguration.loadDocument(is));
+                Element root = (Element) XMLConfiguration.loadDocument(is);
+                new GeoWebCacheXMLUpdate().update(root);
+                XMLConfiguration.validate(root);
             } catch (SAXException e) {
                 failures.add(fileName + ": " + e.getMessage());
             }
