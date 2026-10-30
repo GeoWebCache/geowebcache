@@ -20,7 +20,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -41,6 +43,8 @@ import org.geowebcache.mime.FormatModifier;
 import org.geowebcache.mime.ImageMime;
 import org.junit.Test;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 public class XMLConfigurationBackwardsCompatibilityTest {
 
@@ -49,6 +53,45 @@ public class XMLConfigurationBackwardsCompatibilityTest {
     public static final String GWC_130_CONFIG_FILE = "geowebcache_130.xml";
 
     public static final String LATEST_FILENAME = "geowebcache_200.xml";
+
+    private static final List<String> UPGRADE_FILES = List.of(
+            "geowebcache_pre10.xml",
+            "geowebcache_10.xml",
+            "geowebcache_101.xml",
+            "geowebcache_114.xml",
+            "geowebcache_115.xml",
+            "geowebcache_124.xml",
+            "geowebcache_125.xml",
+            "geowebcache_126.xml",
+            "geowebcache_130.xml",
+            "geowebcache_140.xml",
+            "geowebcache_150.xml",
+            "geowebcache_151.xml",
+            "geowebcache_153.xml",
+            "geowebcache_160.xml",
+            "geowebcache_161.xml",
+            "geowebcache_170.xml",
+            "geowebcache_180.xml",
+            "geowebcache_190.xml",
+            "geowebcache_1100.xml",
+            "geowebcache_1110.xml",
+            "geowebcache_1120.xml",
+            "geowebcache_1130.xml",
+            "geowebcache_1140.xml",
+            "geowebcache_1150.xml",
+            "geowebcache_1170.xml",
+            "geowebcache_1180.xml",
+            "geowebcache_1190.xml",
+            "geowebcache_1200.xml",
+            "geowebcache_1210.xml",
+            "geowebcache_1220.xml",
+            "geowebcache_1230.xml",
+            "geowebcache_1240.xml",
+            "geowebcache_1250.xml",
+            "geowebcache_1260.xml",
+            "geowebcache_1270.xml",
+            "geowebcache_1280.xml",
+            "geowebcache_200.xml");
 
     @Test
     public void testLoadPre10() throws Exception {
@@ -146,6 +189,15 @@ public class XMLConfigurationBackwardsCompatibilityTest {
     }
 
     @Test
+    public void testLoad124Keywords() throws Exception {
+        XMLConfiguration config = loadConfig("geowebcache_124.xml");
+
+        assertEquals(
+                asList("WFS", "WMS", "WMTS", "GEOWEBCACHE"),
+                config.getServiceInformation().getKeywords());
+    }
+
+    @Test
     public void testLoad126() throws Exception {
 
         XMLConfiguration config = loadConfig("geowebcache_126.xml");
@@ -182,6 +234,21 @@ public class XMLConfigurationBackwardsCompatibilityTest {
 
         assertEquals(4, layer.getMimeTypes().size());
         assertTrue(layer.getGridSubsets().contains("EPSG:2163"));
+    }
+
+    @Test
+    public void testUpgradedConfigurationsValidate() throws Exception {
+        List<String> failures = new ArrayList<>();
+        for (String fileName : UPGRADE_FILES) {
+            try (InputStream is = XMLConfiguration.class.getResourceAsStream(fileName)) {
+                Element root = (Element) XMLConfiguration.loadDocument(is);
+                new GeoWebCacheXMLUpdate().update(root);
+                XMLConfiguration.validate(root);
+            } catch (SAXException e) {
+                failures.add(fileName + ": " + e.getMessage());
+            }
+        }
+        assertEquals(String.join("\n", failures), 0, failures.size());
     }
 
     private TileLayer findLayer(Iterable<TileLayer> layers, String layerName) throws GeoWebCacheException {

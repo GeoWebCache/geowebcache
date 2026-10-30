@@ -103,6 +103,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * XMLConfiguration class responsible for reading/writing layer configurations to and from XML file
@@ -124,6 +126,8 @@ public class XMLConfiguration
     public static final String SCHEMA_NAMESPACE_PREFIX = "http://geowebcache.org/schema/";
 
     public static final String DEFAULT_SCHEMA_RESOURCE = "geowebcache.xsd";
+
+    private static final String CURRENT_ELEMENT_NODE = "http://apache.org/xml/properties/dom/current-element-node";
 
     private static Logger log = Logging.getLogger(XMLConfiguration.class.getName());
 
@@ -312,10 +316,20 @@ public class XMLConfiguration
     }
 
     private GeoWebCacheConfiguration loadConfiguration(InputStream xmlFile) throws IOException, ConfigurationException {
-        Node rootNode = loadDocument(xmlFile);
+        Document document = parseDocument(xmlFile);
+        String version = schemaVersion(document.getDocumentElement());
+        Element rootNode = (Element) checkAndTransform(document);
+        boolean updated = update(rootNode, version, resourceProvider.getId());
         XStream xs = getConfiguredXStreamWithContext(new GeoWebCacheXStream(), Context.PERSIST);
 
-        GeoWebCacheConfiguration config = (GeoWebCacheConfiguration) xs.unmarshal(new DomReader((Element) rootNode));
+        GeoWebCacheConfiguration config = (GeoWebCacheConfiguration) xs.unmarshal(new DomReader(rootNode));
+        if (updated) {
+            try {
+                persistDocument(rootNode);
+            } catch (IOException e) {
+                log.log(Level.WARNING, "Unable to save updated configuration " + resourceProvider.getId(), e);
+            }
+        }
         return config;
     }
 
@@ -450,6 +464,28 @@ public class XMLConfiguration
             }
         }
         return xs;
+    }
+
+    /** Writes out a configuration document, preserving comments. */
+    private synchronized void persistDocument(Node rootNode) throws IOException {
+        if (!resourceProvider.hasOutput()) {
+            return;
+        }
+        for (Node child = rootNode.getFirstChild(); child != null; child = child.getNextSibling()) {
+            if (child instanceof Element && "version".equals(child.getLocalName())) {
+                child.setTextContent(getCurrentSchemaVersion());
+            }
+        }
+        try {
+            resourceProvider.backup();
+        } catch (Exception e) {
+            log.log(Level.WARNING, "Error creating back up of configuration file " + resourceProvider.getId(), e);
+        }
+        try (OutputStream out = resourceProvider.out()) {
+            XMLUtils.newTransformer().transform(new DOMSource(rootNode.getOwnerDocument()), new StreamResult(out));
+        } catch (TransformerException e) {
+            throw new IOException("Error writing to " + resourceProvider.getId() + ": " + e.getMessage(), e);
+        }
     }
 
     /**
@@ -620,17 +656,29 @@ public class XMLConfiguration
      * @return W3C DOM Document
      */
     static Node loadDocument(InputStream xmlFile) throws ConfigurationException, IOException {
-        Node topNode = null;
+        try {
+            return checkAndTransform(parseDocument(xmlFile));
+        } catch (ConfigurationException e) {
+            throw new IOException(e.getMessage(), e);
+        }
+    }
+
+    /** Parses a configuration document without applying any transforms. */
+    private static Document parseDocument(InputStream xmlFile) throws IOException {
         try {
             DocumentBuilderFactory docBuilderFactory = XMLUtils.newDocumentBuilderFactory();
             docBuilderFactory.setNamespaceAware(true);
             DocumentBuilder docBuilder = XMLUtils.newDocumentBuilder(docBuilderFactory);
-            topNode = checkAndTransform(docBuilder.parse(xmlFile));
+            return docBuilder.parse(xmlFile);
         } catch (Exception e) {
-            throw (IOException) new IOException(e.getMessage()).initCause(e);
+            throw new IOException(e.getMessage(), e);
         }
+    }
 
-        return topNode;
+    /** Schema version from the namespace of a configuration document. */
+    private static String schemaVersion(Element rootNode) {
+        String namespace = rootNode.getNamespaceURI();
+        return namespace == null ? "pre 1.0" : namespace.substring(namespace.lastIndexOf('/') + 1);
     }
 
     private static Node checkAndTransform(Document doc) throws ConfigurationException {
@@ -731,21 +779,44 @@ public class XMLConfiguration
         if (!rootNode.getNodeName().equals("gwcConfiguration")) {
             log.log(Level.SEVERE, "Unable to parse file, expected gwcConfiguration at root after transform.");
             throw new ConfigurationException("Unable to parse after transform.");
-        } else {
-            // Parsing the schema file
-            try {
-                validate(rootNode);
-                log.config("TileLayerConfiguration file validated fine.");
-            } catch (SAXException e) {
-                log.fine("GWC configuration validation error: " + e.getMessage());
-                log.fine(
-                        "Will try to use configuration anyway. Please check the order of declared elements against the schema.");
-            } catch (IOException e) {
-                throw new RuntimeException(e.getMessage(), e);
-            }
         }
 
         return rootNode;
+    }
+
+    /**
+     * Completes the update of an outdated configuration, or re-applies the update to a current configuration that fails
+     * validation.
+     *
+     * @return true if the configuration was updated to a valid document that should be saved
+     */
+    static boolean update(Element rootNode, String version, String id) throws IOException {
+        GeoWebCacheXMLUpdate update = new GeoWebCacheXMLUpdate();
+        boolean outdated = !update.getVersion().equals(version);
+        if (!outdated) {
+            try {
+                validate(rootNode);
+                log.config("TileLayerConfiguration file validated fine.");
+                return false;
+            } catch (SAXException e) {
+                log.fine("GWC configuration validation error: " + e.getMessage());
+            }
+        }
+        update.update(rootNode);
+        try {
+            validate(rootNode);
+        } catch (SAXException e) {
+            log.warning(
+                    "Configuration " + id + " is not valid, will try to use configuration anyway. " + e.getMessage());
+            return false;
+        }
+        if (outdated) {
+            log.config("Updated configuration " + id + " from " + version + " to " + update.getVersion());
+        } else {
+            log.warning("Configuration " + id + " elements were out of order, re-applied update to "
+                    + update.getVersion() + " to restore schema order");
+        }
+        return true;
     }
 
     static void validate(Node rootNode) throws SAXException, IOException {
@@ -763,9 +834,56 @@ public class XMLConfiguration
 
             // debugPrint(rootNode);
 
+            validator.setErrorHandler(new DefaultHandler() {
+                @Override
+                public void error(SAXParseException e) throws SAXException {
+                    throw locate(validator, e);
+                }
+
+                @Override
+                public void fatalError(SAXParseException e) throws SAXException {
+                    throw locate(validator, e);
+                }
+            });
+
             DOMSource domSrc = new DOMSource(rootNode);
             validator.validate(domSrc);
         }
+    }
+
+    /**
+     * Adds the path of the element being validated to a validation error.
+     *
+     * @param validator validator providing the current element
+     * @param e validation error
+     * @return validation error with element path, or the original error if the element is not known
+     */
+    private static SAXParseException locate(Validator validator, SAXParseException e) {
+        try {
+            Node node = (Node) validator.getProperty(CURRENT_ELEMENT_NODE);
+            if (node != null) {
+                return new SAXParseException(path(node) + ": " + e.getMessage(), null, e);
+            }
+        } catch (SAXException huh) {
+            // property not supported by this validator
+        }
+        return e;
+    }
+
+    /** Element path, including the name of layers, grid sets and other named elements. */
+    private static String path(Node node) {
+        StringBuilder path = new StringBuilder();
+        for (Node n = node; n instanceof Element element; n = n.getParentNode()) {
+            String segment = "/" + element.getLocalName();
+            for (Node child = element.getFirstChild(); child != null; child = child.getNextSibling()) {
+                if (child instanceof Element && "name".equals(child.getLocalName())) {
+                    segment += "[" + child.getTextContent().trim() + "]";
+                    break;
+                }
+            }
+            path.insert(0, segment);
+        }
+        return path.toString();
     }
 
     static String getCurrentSchemaVersion() {

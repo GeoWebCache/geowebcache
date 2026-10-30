@@ -13,6 +13,7 @@
  */
 package org.geowebcache.config;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
@@ -36,6 +37,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilterOutputStream;
@@ -124,6 +126,76 @@ public class XMLConfigurationTest {
             Node document = XMLConfiguration.loadDocument(xml);
             XMLConfiguration.validate(document);
         }
+    }
+
+    @Test
+    public void testUpdateOutdatedConfiguration() throws Exception {
+        File dir = temp.newFolder("outdated");
+        File file = new File(dir, "geowebcache.xml");
+        FileUtils.copyURLToFile(XMLConfiguration.class.getResource("geowebcache_125.xml"), file);
+        String original = FileUtils.readFileToString(file, UTF_8);
+
+        loadConfiguration(dir);
+
+        String saved = FileUtils.readFileToString(file, UTF_8);
+        assertTrue(saved.contains("http://geowebcache.org/schema/2.0.0"));
+        assertTrue(saved.contains("<version>2.0.0</version>"));
+        assertEquals(original.split("<!--").length, saved.split("<!--").length);
+        try (InputStream is = new FileInputStream(file)) {
+            XMLConfiguration.validate(XMLConfiguration.loadDocument(is));
+        }
+        assertEquals(1, dir.list((d, name) -> name.endsWith(".bak")).length);
+    }
+
+    @Test
+    public void testReapplyUpdateToOutOfOrderConfiguration() throws Exception {
+        File dir = temp.newFolder("outOfOrder");
+        File file = new File(dir, "geowebcache.xml");
+        FileUtils.writeStringToFile(
+                file,
+                """
+                <gwcConfiguration xmlns="http://geowebcache.org/schema/2.0.0">
+                  <version>2.0.0</version>
+                  <layers/>
+                  <!-- seconds -->
+                  <backendTimeout>120</backendTimeout>
+                </gwcConfiguration>
+                """,
+                UTF_8);
+
+        loadConfiguration(dir);
+
+        String saved = FileUtils.readFileToString(file, UTF_8);
+        assertTrue(saved, saved.indexOf("<!-- seconds -->") < saved.indexOf("<layers/>"));
+        try (InputStream is = new FileInputStream(file)) {
+            XMLConfiguration.validate(XMLConfiguration.loadDocument(is));
+        }
+        assertEquals(1, dir.list((d, name) -> name.endsWith(".bak")).length);
+    }
+
+    private void loadConfiguration(File dir) throws Exception {
+        XMLConfiguration loaded = new XMLConfiguration(null, dir.getAbsolutePath());
+        loaded.setGridSetBroker(gridSetBroker);
+        loaded.afterPropertiesSet();
+    }
+
+    @Test
+    public void testValidationMessageIncludesPath() throws Exception {
+        String xml =
+                """
+                <gwcConfiguration xmlns="http://geowebcache.org/schema/2.0.0">
+                  <version>2.0.0</version>
+                  <layers>
+                    <wmsLayer>
+                      <name>states</name>
+                      <unknown/>
+                    </wmsLayer>
+                  </layers>
+                </gwcConfiguration>
+                """;
+        Node root = XMLConfiguration.loadDocument(new ByteArrayInputStream(xml.getBytes(UTF_8)));
+        SAXParseException e = assertThrows(SAXParseException.class, () -> XMLConfiguration.validate(root));
+        assertTrue(e.getMessage(), e.getMessage().startsWith("/gwcConfiguration/layers/wmsLayer[states]/unknown: "));
     }
 
     @Test
