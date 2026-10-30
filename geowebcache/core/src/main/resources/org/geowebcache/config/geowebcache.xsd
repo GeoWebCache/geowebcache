@@ -167,6 +167,15 @@
             </xs:sequence>
           </xs:complexType>
         </xs:element>
+
+        <xs:element name="memoryCache" type="gwc:MemoryCache" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">
+              The shared in-memory tile cache, used by the layers that set memoryCached. Layer metadata and parameter
+              mappings stay in the layer's blob store.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
         
         <xs:element name="gridSets" minOccurs="0">
           <xs:annotation>
@@ -206,6 +215,53 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+
+  <xs:complexType name="MemoryCache">
+    <xs:sequence>
+      <xs:element name="enabled" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Whether the cache is used. Defaults to false.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="timeToLive" type="xs:positiveInteger" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Seconds a tile stays in the cache at most. Defaults to 300. A shorter expireCache on the layer applies
+            instead.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="passthrough" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Whether tiles are also written to, and read through from, the layer's blob store. Defaults to true. When
+            false, tiles live in the cache only.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="statsInterval" type="xs:nonNegativeInteger" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Seconds between two statistics lines per layer in the log. Defaults to 300, 0 turns them off.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="backend" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            The backend settings, named by the class attribute. Defaults to class="heapKeyValueStore", which keeps tiles
+            in the memory of each node, not shared, with maxSizeMB (default 64) as its size limit.
+          </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+          </xs:sequence>
+          <xs:attribute name="class" type="xs:string" use="required"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
 
   <xs:complexType name="AbstractBlobStore" abstract="true">
     <xs:sequence>
@@ -363,6 +419,13 @@
           <xs:documentation xml:lang="en">
             The identifier of the BlobStore this layer tiles shall be saved on.
 			If not provided, the default blob store will be used.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="memoryCached" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            Whether the tiles of this layer go through the in-memory tile cache, when enabled. Defaults to false.
           </xs:documentation>
         </xs:annotation>
       </xs:element>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+  <description>
+   Bean configuration file for the gwc-hazelcast module
+  </description>
+
+  <bean id="HazelcastKeyValueStoreConfigProvider" class="org.geowebcache.hazelcast.HazelcastKeyValueStoreConfigProvider">
+    <description>
+      Contributes XStream configuration settings to org.geowebcache.config.XMLConfiguration to encode the Hazelcast tile cache backend settings
+    </description>
+  </bean>
+
+  <!-- Both are idle until the memoryCache backend of geowebcache.xml selects one of them -->
+  <bean id="gwcHazelcastClientConnection" class="org.geowebcache.hazelcast.HazelcastClientConnection">
+    <constructor-arg>
+      <bean class="org.geowebcache.config.XMLFileResourceProvider">
+        <constructor-arg value="hazelcast-client.xml"/>
+        <constructor-arg ref="gwcAppCtx"/>
+        <constructor-arg ref="gwcDefaultStorageFinder"/>
+      </bean>
+    </constructor-arg>
+    <property name="lockProvider" ref="hazelcastLock"/>
+  </bean>
+
+  <bean id="gwcHazelcastEmbeddedMember" class="org.geowebcache.hazelcast.HazelcastEmbeddedMember">
+    <constructor-arg>
+      <bean class="org.geowebcache.config.XMLFileResourceProvider">
+        <constructor-arg value="hazelcast.xml"/>
+        <constructor-arg ref="gwcAppCtx"/>
+        <constructor-arg ref="gwcDefaultStorageFinder"/>
+      </bean>
+    </constructor-arg>
+    <property name="lockProvider" ref="hazelcastLock"/>
+  </bean>
+
+  <!-- Cluster-wide tile locks, used when geowebcache.xml names it as lockProvider; locks on the cluster of the selected backend -->
+  <bean id="hazelcastLock" class="org.geowebcache.hazelcast.HazelcastLockProvider"/>
+</beans>

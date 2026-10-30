@@ -16,6 +16,7 @@ package org.geowebcache.config;
 import java.io.IOException;
 import org.geowebcache.config.meta.ServiceInformation;
 import org.geowebcache.locks.LockProvider;
+import org.geowebcache.storage.memorycache.MemoryCacheInfo;
 
 /**
  * Interface for managing global server configuration information.
@@ -54,6 +55,11 @@ public interface ServerConfiguration extends BaseConfiguration {
 
     /** Set the lock provider for this configuration. */
     void setLockProvider(LockProvider lockProvider) throws IOException;
+
+    /** The tile cache settings, or null when this configuration does not hold them. */
+    default MemoryCacheInfo getMemoryCache() {
+        return null;
+    }
 
     /**
      * Used for getting the "fullWMS" parameter from GeoWebCacheConfigration if present

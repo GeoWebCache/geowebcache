@@ -410,7 +410,8 @@ public class S3BlobStore implements BlobStore {
         return s3Ops.getProperties(key);
     }
 
-    private void putParametersMetadata(String layerName, String parametersId, Map<String, String> parameters) {
+    @Override
+    public void putParametersMetadata(String layerName, String parametersId, Map<String, String> parameters) {
         if (isNull(parameters)) {
             return;
         }

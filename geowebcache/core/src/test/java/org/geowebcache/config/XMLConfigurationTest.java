@@ -19,6 +19,7 @@ import static org.easymock.EasyMock.replay;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -28,6 +29,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -43,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -73,6 +76,9 @@ import org.geowebcache.grid.SRS;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.layer.wms.WMSLayer;
 import org.geowebcache.storage.UnsuitableStorageException;
+import org.geowebcache.storage.memorycache.HeapKeyValueStoreInfo;
+import org.geowebcache.storage.memorycache.MemoryCacheInfo;
+import org.geowebcache.storage.memorycache.UnresolvedKeyValueStoreInfo;
 import org.geowebcache.util.TestUtils;
 import org.junit.Assume;
 import org.junit.Before;
@@ -792,5 +798,87 @@ public class XMLConfigurationTest {
         } finally {
             roEmptyDir.setWritable(true);
         }
+    }
+
+    @Test
+    public void testMemoryCacheAbsentByDefault() {
+        assertNull(config.getMemoryCache());
+        WMSLayer layer = (WMSLayer)
+                config.getLayer(config.getLayerNames().iterator().next()).get();
+        assertFalse(layer.isMemoryCached());
+    }
+
+    @Test
+    public void testSaveMemoryCache() throws Exception {
+        HeapKeyValueStoreInfo heap = new HeapKeyValueStoreInfo();
+        heap.setMaxSizeMB(128);
+        MemoryCacheInfo memoryCache = new MemoryCacheInfo();
+        memoryCache.setEnabled(true);
+        memoryCache.setTimeToLive(120);
+        memoryCache.setPassthrough(false);
+        memoryCache.setStatsInterval(60);
+        memoryCache.setBackend(heap);
+
+        config.setMemoryCache(memoryCache);
+
+        assertValidAgainstSchema();
+        MemoryCacheInfo reloaded = reload().getMemoryCache();
+        assertTrue(reloaded.isEnabled());
+        assertEquals(120, reloaded.getTimeToLive());
+        assertFalse(reloaded.isPassthrough());
+        assertEquals(60, reloaded.getStatsInterval());
+        assertEquals(128, ((HeapKeyValueStoreInfo) reloaded.getBackend()).getMaxSizeMB());
+    }
+
+    @Test
+    public void testUnknownBackendKeptAsIs() throws Exception {
+        MemoryCacheInfo memoryCache = new MemoryCacheInfo();
+        memoryCache.setEnabled(true);
+        memoryCache.setBackend(new HeapKeyValueStoreInfo());
+        config.setMemoryCache(memoryCache);
+        // as left by a removed backend module
+        String xml = Files.readString(configFile.toPath())
+                .replaceAll(
+                        "(?s)<backend class=\"heapKeyValueStore\"(/>|>.*?</backend>)",
+                        "<backend class=\"removedTileCache\"><host>cache-1</host><port>5701</port></backend>");
+        Files.writeString(configFile.toPath(), xml);
+
+        XMLConfiguration reloaded = reload();
+        UnresolvedKeyValueStoreInfo backend =
+                (UnresolvedKeyValueStoreInfo) reloaded.getMemoryCache().getBackend();
+        assertEquals("removedTileCache", backend.getAlias());
+
+        // saved back as it was, so reinstalling the module restores it
+        reloaded.setMemoryCache(reloaded.getMemoryCache());
+        assertValidAgainstSchema();
+        String saved = Files.readString(configFile.toPath());
+        assertThat(saved, containsString("<backend class=\"removedTileCache\">"));
+        assertThat(saved, containsString("<host>cache-1</host>"));
+        assertThat(saved, containsString("<port>5701</port>"));
+    }
+
+    @Test
+    public void testSaveMemoryCachedLayer() throws Exception {
+        String name = config.getLayerNames().iterator().next();
+        WMSLayer layer = (WMSLayer) config.getLayer(name).get();
+        layer.setMemoryCached(true);
+
+        config.modifyLayer(layer);
+
+        assertValidAgainstSchema();
+        assertTrue(reload().getLayer(name).get().isMemoryCached());
+    }
+
+    private void assertValidAgainstSchema() throws Exception {
+        try (InputStream in = new FileInputStream(configFile)) {
+            XMLConfiguration.validate(XMLConfiguration.loadDocument(in));
+        }
+    }
+
+    private XMLConfiguration reload() throws Exception {
+        XMLConfiguration reloaded = new XMLConfiguration(null, configDir.getAbsolutePath());
+        reloaded.setGridSetBroker(gridSetBroker);
+        reloaded.afterPropertiesSet();
+        return reloaded;
     }
 }
