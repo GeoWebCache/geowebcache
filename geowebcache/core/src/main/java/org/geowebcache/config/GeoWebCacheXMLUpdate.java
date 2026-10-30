@@ -57,8 +57,8 @@ public class GeoWebCacheXMLUpdate {
     /** Global elements that may be used in place of a substitution group head, by head name. */
     private final Map<String, List<Element>> substitutions = new HashMap<>();
 
-    /** Content model for each element declaration, built as required. */
-    private final IdentityHashMap<Element, ContentModel> models = new IdentityHashMap<>();
+    /** Sort model for each element declaration, built as required. */
+    private final IdentityHashMap<Element, SortModel> models = new IdentityHashMap<>();
 
     /** Schema version produced by this update. */
     private final String version;
@@ -110,10 +110,10 @@ public class GeoWebCacheXMLUpdate {
      * Sorts the children of element into schema order, and then sorts each child in turn.
      *
      * <ul>
-     *   <li>Children are grouped into chunks, each ending with an anchor element or commented out element.
-     *   <li>Each chunk carries the whitespace and descriptive comments that come before its anchor.
+     *   <li>Children are grouped into fragments, each ending with an anchor element or commented out element.
+     *   <li>Each fragment carries the whitespace and descriptive comments that come before its anchor.
      *   <li>A comment on the same line as the previous anchor is kept with that anchor.
-     *   <li>Chunks are sorted by schema position, unknown elements keep the position of their predecessor.
+     *   <li>Fragments are sorted by schema position, unknown elements keep the position of their predecessor.
      * </ul>
      *
      * @param element element to sort
@@ -121,12 +121,12 @@ public class GeoWebCacheXMLUpdate {
      * @return true if any nodes were moved
      */
     private boolean sort(Element element, Element declaration) {
-        ContentModel model = models.get(declaration);
+        SortModel model = models.get(declaration);
         if (model == null) {
-            model = new ContentModel(declaration);
+            model = new SortModel(declaration);
             models.put(declaration, model);
         }
-        List<Chunk> chunks = new ArrayList<>();
+        List<Fragment> fragments = new ArrayList<>();
         List<Node> pending = new ArrayList<>();
         int position = -1;
         for (Node node = element.getFirstChild(); node != null; node = node.getNextSibling()) {
@@ -134,41 +134,41 @@ public class GeoWebCacheXMLUpdate {
             String name = anchorName(node, model);
             if (name != null) {
                 position = model.position(name, position);
-                chunks.add(new Chunk(name, node, position, pending));
+                fragments.add(new Fragment(name, node, position, pending));
                 pending = new ArrayList<>();
-            } else if (node instanceof Comment && !chunks.isEmpty() && sameLine(pending)) {
-                chunks.get(chunks.size() - 1).nodes().addAll(pending);
+            } else if (node instanceof Comment && !fragments.isEmpty() && sameLine(pending)) {
+                fragments.get(fragments.size() - 1).nodes().addAll(pending);
                 pending = new ArrayList<>();
             }
         }
-        List<Chunk> sorted = new ArrayList<>(chunks);
-        sorted.sort(Comparator.comparingInt(Chunk::position));
+        List<Fragment> sorted = new ArrayList<>(fragments);
+        sorted.sort(Comparator.comparingInt(Fragment::position));
 
-        boolean changed = !sorted.equals(chunks);
+        boolean changed = !sorted.equals(fragments);
         if (changed) {
-            for (Chunk chunk : sorted) {
-                for (Node node : chunk.nodes()) {
+            for (Fragment fragment : sorted) {
+                for (Node node : fragment.nodes()) {
                     element.removeChild(node);
                 }
             }
             Node trailing = element.getFirstChild();
-            for (Chunk chunk : sorted) {
-                for (Node node : chunk.nodes()) {
+            for (Fragment fragment : sorted) {
+                for (Node node : fragment.nodes()) {
                     element.insertBefore(node, trailing);
                 }
             }
         }
-        for (Chunk chunk : chunks) {
-            Element childDeclaration = model.declaration(chunk.name());
-            if (chunk.anchor() instanceof Element child && childDeclaration != null) {
+        for (Fragment fragment : fragments) {
+            Element childDeclaration = model.declaration(fragment.name());
+            if (fragment.anchor() instanceof Element child && childDeclaration != null) {
                 changed |= sort(child, childDeclaration);
             }
         }
         return changed;
     }
 
-    /** Element name for an element, or a comment containing an element known to the content model. */
-    private static String anchorName(Node node, ContentModel model) {
+    /** Element name for an element, or a comment containing an element known to the sort model. */
+    private static String anchorName(Node node, SortModel model) {
         if (node instanceof Element) {
             return node.getLocalName();
         }
@@ -213,7 +213,7 @@ public class GeoWebCacheXMLUpdate {
     }
 
     /**
-     * Child elements allowed by an element declaration, used to sort that element's children.
+     * Schema order of the child elements allowed by an element declaration, used to sort that element's children.
      *
      * <p>Built from the declaration's complex type, including any extension base type:
      *
@@ -223,7 +223,7 @@ public class GeoWebCacheXMLUpdate {
      *   <li>Gotcha: elements in a substitution group take the position of the group head.
      * </ul>
      */
-    private class ContentModel {
+    private class SortModel {
         /** Schema order position by child element name. */
         private final Map<String, Integer> positions = new HashMap<>();
 
@@ -234,18 +234,18 @@ public class GeoWebCacheXMLUpdate {
         private int next;
 
         /**
-         * Content model for the child elements allowed by a declaration.
+         * Sort model for the child elements allowed by a declaration.
          *
-         * @param declaration xs:element declaration, simple types result in an empty content model
+         * @param declaration xs:element declaration, simple types result in an empty sort model
          */
-        ContentModel(Element declaration) {
+        SortModel(Element declaration) {
             Element type = type(declaration);
             if (type != null) {
                 addType(type);
             }
         }
 
-        /** True if name is an element allowed by this content model. */
+        /** True if name is an element allowed by this sort model. */
         boolean contains(String name) {
             return positions.containsKey(name);
         }
@@ -363,12 +363,12 @@ public class GeoWebCacheXMLUpdate {
     }
 
     /**
-     * Group of nodes moved together when sorting.
+     * Document fragment moved together when sorting.
      *
      * @param name element name of the anchor
      * @param anchor element, or comment containing a commented out element
      * @param position schema order position of the anchor
      * @param nodes anchor with the whitespace and comments that go with it
      */
-    private record Chunk(String name, Node anchor, int position, List<Node> nodes) {}
+    private record Fragment(String name, Node anchor, int position, List<Node> nodes) {}
 }
