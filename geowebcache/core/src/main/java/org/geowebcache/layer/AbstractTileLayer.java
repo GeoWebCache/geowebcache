@@ -51,6 +51,8 @@ public abstract class AbstractTileLayer extends TileLayer {
     @Nullable
     protected String blobStoreId;
 
+    protected Boolean memoryCached;
+
     protected Boolean enabled;
 
     protected Boolean advertised;
@@ -157,6 +159,16 @@ public abstract class AbstractTileLayer extends TileLayer {
     @Override
     public void setBlobStoreId(@Nullable String blobStoreId) {
         this.blobStoreId = blobStoreId;
+    }
+
+    @Override
+    public boolean isMemoryCached() {
+        return Boolean.TRUE.equals(memoryCached);
+    }
+
+    /** Sets whether the tiles of this layer go through the in-memory tile cache. */
+    public void setMemoryCached(boolean memoryCached) {
+        this.memoryCached = memoryCached;
     }
 
     /** Then name of the layer */

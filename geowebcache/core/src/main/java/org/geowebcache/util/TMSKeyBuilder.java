@@ -90,11 +90,15 @@ public final class TMSKeyBuilder {
 
     public String forTile(TileObject obj) {
         checkNotNull(obj.getLayerName());
+        return forTile(obj, layerId(obj.getLayerName()));
+    }
+
+    /** Same as {@link #forTile(TileObject)}, for a caller that already knows the id of the tile's layer. */
+    public String forTile(TileObject obj, String layer) {
         checkNotNull(obj.getGridSetId());
         checkNotNull(obj.getBlobFormat());
         checkNotNull(obj.getXYZ());
 
-        String layer = layerId(obj.getLayerName());
         String gridset = obj.getGridSetId();
         String shortFormat;
         String parametersId = obj.getParametersId();

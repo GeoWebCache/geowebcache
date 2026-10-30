@@ -163,6 +163,15 @@ public interface BlobStore {
      */
     Map<String, Optional<Map<String, String>>> getParametersMapping(String layerName);
 
+    /**
+     * Records the parameter combination used by a tile, so that {@link #getParametersMapping} lists it. Called from
+     * {@link #put(TileObject)}, and by a cache whose tiles do not reach this store.
+     */
+    default void putParametersMetadata(String layerName, String parametersId, Map<String, String> parameters)
+            throws StorageException {
+        // stores that do not track parameter mappings ignore this
+    }
+
     /** If the given layer is cached, remove */
     public default boolean purgeOrphans(TileLayer layer) throws StorageException {
         // TODO maybe do purging based on gridset and format

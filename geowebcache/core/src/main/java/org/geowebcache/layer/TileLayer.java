@@ -94,6 +94,11 @@ public abstract class TileLayer implements Info {
 
     public abstract void setBlobStoreId(@Nullable String blobStoreId);
 
+    /** Whether the tiles of this layer go through the in-memory tile cache, when one is configured. */
+    public boolean isMemoryCached() {
+        return false;
+    }
+
     /** Then name of the layer */
     @Override
     public abstract String getName();
