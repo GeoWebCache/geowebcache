@@ -90,4 +90,13 @@ public interface QuotaStore {
 
     /** Closes the quota store, releasing any resources the store might be depending onto */
     public abstract void close() throws Exception;
+
+    /**
+     * Returns whether this store records disk usage. When false, {@link DiskQuotaMonitor} skips the startup traversal
+     * of the tile cache, since this store would discard the computed usage. A store that wraps another must delegate
+     * this call.
+     */
+    default boolean tracksUsage() {
+        return true;
+    }
 }
