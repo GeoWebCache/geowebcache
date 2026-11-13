@@ -28,6 +28,7 @@
     <module>swiftblob</module>
     <module>mbtiles</module>
     <module>gcsblob</module>
+    <module>hazelcast</module>
   </modules>
 
   <scm>
