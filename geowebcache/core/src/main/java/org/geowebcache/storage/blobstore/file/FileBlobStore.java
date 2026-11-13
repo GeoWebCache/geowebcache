@@ -489,13 +489,16 @@ public class FileBlobStore implements BlobStore {
         }
     }
 
-    private void putParametersMetadata(String layerName, String parametersId, Map<String, String> parameters)
+    @Override
+    public void putParametersMetadata(String layerName, String parametersId, Map<String, String> parameters)
             throws StorageException {
         // check if we even need to use any IO
         if (parametersId == null || parameters == null || parameters.isEmpty()) return;
 
         File parametersFile = parametersFile(layerName, parametersId);
         if (parametersFile.exists()) return;
+        // a tile put creates the layer directory, a tile cache with passthrough off never does
+        parametersFile.getParentFile().mkdirs();
 
         writeFile(parametersFile, false, file -> {
             Properties properties = new Properties();
@@ -820,15 +823,26 @@ public class FileBlobStore implements BlobStore {
 
     @Override
     public Set<String> getParameterIds(String layerName) {
-        try (Stream<Path> layerChildStream = layerChildStream(layerName, (p) -> Files.isDirectory(p))) {
+        try (Stream<Path> layerChildStream = layerChildStream(layerName, p -> true)) {
             return layerChildStream
-                    .map(p -> p.getFileName().toString())
-                    .map(s -> s.substring(s.lastIndexOf('_') + 1))
+                    .map(FileBlobStore::parameterId)
                     .filter(s -> s.length() == paramIdLength) // Zoom level should never be the same
                     // length so this should be safe
                     .collect(Collectors.toSet());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    /** The id ending a tile directory name, or held in a mapping file name; empty for any other file. */
+    private static String parameterId(Path child) {
+        String name = child.getFileName().toString();
+        if (Files.isDirectory(child)) return name.substring(name.lastIndexOf('_') + 1);
+        // mapping files exist without tile directories when a tile cache keeps the tiles
+        if (!name.startsWith(PARAMETERS_METADATA_OBJECT_PREFIX) || !name.endsWith(PARAMETERS_METADATA_OBJECT_SUFFIX)) {
+            return "";
+        }
+        return name.substring(
+                PARAMETERS_METADATA_OBJECT_PREFIX.length(), name.length() - PARAMETERS_METADATA_OBJECT_SUFFIX.length());
     }
 }

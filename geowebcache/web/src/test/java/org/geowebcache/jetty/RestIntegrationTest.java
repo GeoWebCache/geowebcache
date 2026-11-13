@@ -1192,6 +1192,29 @@ public class RestIntegrationTest {
 
     /* Utility methods ***************************************************************************/
 
+    @Test
+    public void testPutMemoryCacheHazelcastBackend() throws Exception {
+        // disabled, so that no client starts on the unreachable member
+        String settings =
+                """
+                <memoryCache>
+                  <enabled>false</enabled>
+                  <backend class="hazelcastClientKeyValueStore">
+                    <clusterName>tiles</clusterName>
+                    <members>localhost:1</members>
+                  </backend>
+                </memoryCache>""";
+        URI memoryCache = URI.create("/geowebcache/rest/memorycache");
+        try (ClassicHttpResponse response = handlePut(memoryCache, admin.getClient(), settings)) {
+            assertEquals(200, response.getCode());
+        }
+
+        doGetXML("rest/memorycache.xml", admin.getClient(), equalTo(200), doc -> {
+            assertThat(doc, hasXPath("/memoryCache/backend/@class", equalTo("hazelcastClientKeyValueStore")));
+            assertThat(doc, hasXPath("/memoryCache/backend/members", equalTo("localhost:1")));
+        });
+    }
+
     private Document getResponseEntityAsXML(ClassicHttpResponse response) throws Exception {
 
         Document doc =

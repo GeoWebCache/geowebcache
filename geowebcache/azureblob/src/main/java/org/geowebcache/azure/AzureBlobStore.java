@@ -372,7 +372,8 @@ public class AzureBlobStore implements BlobStore {
         return mimeType;
     }
 
-    private void putParametersMetadata(String layerName, String parametersId, Map<String, String> parameters) {
+    @Override
+    public void putParametersMetadata(String layerName, String parametersId, Map<String, String> parameters) {
         assert (isNull(parametersId) == isNull(parameters));
         if (isNull(parametersId)) {
             return;
