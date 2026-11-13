@@ -347,9 +347,13 @@ public class DiskQuotaMonitor implements DisposableBean, ApplicationListener<Con
 
     /**
      * Launches a background task to traverse the cache and compute the disk usage of each layer that has no
-     * {@link LayerQuota#getUsedQuota() used quota} already loaded.
+     * {@link LayerQuota#getUsedQuota() used quota} already loaded, when the store records usage.
      */
     private LayerCacheInfoBuilder launchCacheInfoGatheringThreads() throws InterruptedException {
+        if (!quotaStore.tracksUsage()) {
+            log.config("The quota store does not record disk usage, skipping the tile cache traversal");
+            return null;
+        }
 
         File cacheRoot;
         try {
