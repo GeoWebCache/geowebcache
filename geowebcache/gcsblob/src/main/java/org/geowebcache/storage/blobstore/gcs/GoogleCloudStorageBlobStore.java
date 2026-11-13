@@ -386,7 +386,8 @@ public class GoogleCloudStorageBlobStore implements BlobStore {
      */
     private Map<String, String> existingParametersMedatata = new ConcurrentHashMap<>();
 
-    void putParametersMetadata(String layerName, String parametersId, Map<String, String> parameters) {
+    @Override
+    public void putParametersMetadata(String layerName, String parametersId, Map<String, String> parameters) {
         assert (isNull(parametersId) == isNull(parameters));
         if (isNull(parametersId)) {
             return;

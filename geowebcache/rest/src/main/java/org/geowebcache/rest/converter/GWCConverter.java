@@ -36,6 +36,7 @@ import org.geowebcache.grid.GridSet;
 import org.geowebcache.io.GeoWebCacheXStream;
 import org.geowebcache.layer.TileLayer;
 import org.geowebcache.rest.exception.RestException;
+import org.geowebcache.storage.memorycache.MemoryCacheInfo;
 import org.geowebcache.util.ApplicationContextProvider;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -54,7 +55,8 @@ import org.springframework.web.context.WebApplicationContext;
  * Spring MVC Converter for GeoWebCache
  *
  * <p>Supports conversion of {@link BlobStoreInfo}, {@link GridSet}, {@link TileLayer}, {@link ServerConfigurationPOJO},
- * and {@link XStreamListAliasWrapper} containing lists of those classes to and from JSON and XML via XStream
+ * {@link MemoryCacheInfo} and {@link XStreamListAliasWrapper} containing lists of those classes to and from JSON and
+ * XML via XStream
  *
  * @param <T>
  */
@@ -62,8 +64,8 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T> implements 
 
     private final WebApplicationContext context;
 
-    public final List<Class> supportedClasses = Collections.unmodifiableList(
-            Arrays.asList(BlobStoreInfo.class, GridSet.class, TileLayer.class, ServerConfigurationPOJO.class));
+    public final List<Class> supportedClasses = Collections.unmodifiableList(Arrays.asList(
+            BlobStoreInfo.class, GridSet.class, TileLayer.class, ServerConfigurationPOJO.class, MemoryCacheInfo.class));
 
     public GWCConverter(ApplicationContextProvider appCtx) {
         super(MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML);
@@ -78,6 +80,7 @@ public class GWCConverter<T> extends AbstractHttpMessageConverter<T> implements 
      */
     private XStream configureXStream(XStream xs) {
         xs.alias("global", ServerConfigurationPOJO.class);
+        xs.alias("memoryCache", MemoryCacheInfo.class);
         return xs;
     }
 

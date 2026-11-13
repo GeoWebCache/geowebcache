@@ -21,6 +21,7 @@ import org.geowebcache.layer.TileLayer;
 import org.geowebcache.locks.LockProvider;
 import org.geowebcache.locks.MemoryLockProvider;
 import org.geowebcache.mime.FormatModifier;
+import org.geowebcache.storage.memorycache.MemoryCacheInfo;
 
 /**
  * POJO for geowebcache.xml configuration
@@ -69,6 +70,9 @@ public class GeoWebCacheConfiguration {
     private List<FormatModifier> formatModifiers;
 
     private List<BlobStoreInfo> blobStores;
+
+    // volatile, as tile requests read it while a save replaces it; the instance is never changed once set
+    private volatile MemoryCacheInfo memoryCache;
 
     private List<XMLGridSet> gridSets;
 
@@ -224,6 +228,16 @@ public class GeoWebCacheConfiguration {
 
     public List<BlobStoreInfo> getBlobStores() {
         return blobStores;
+    }
+
+    /** The {@code <memoryCache>} settings, null when the element is absent. */
+    public MemoryCacheInfo getMemoryCache() {
+        return memoryCache;
+    }
+
+    /** Replaces the {@code <memoryCache>} settings, null removes the element. */
+    public void setMemoryCache(MemoryCacheInfo memoryCache) {
+        this.memoryCache = memoryCache;
     }
 
     /** @return the gridSets */
