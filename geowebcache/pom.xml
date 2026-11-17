@@ -605,7 +605,6 @@
             <descriptor>release/doc.xml</descriptor>
             <descriptor>release/xsddoc.xml</descriptor>
           </descriptors>
-          <finalName>geowebcache-1.28-SNAPSHOT</finalName>
           <outputDirectory>${project.build.directory}/release</outputDirectory>
         </configuration>
       </plugin>
