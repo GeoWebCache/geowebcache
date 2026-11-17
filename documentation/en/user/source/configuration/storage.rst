@@ -596,7 +596,7 @@ The Hazelcast backends keep tiles in a `Hazelcast <https://hazelcast.com/>`_ map
 on a private network or with network policies, as anyone reaching it can read and change the tiles.
 
 Client backend
-~~~~~~~~~~~~~~
+``````````````
 
 .. code-block:: xml
 
@@ -632,7 +632,7 @@ the cache, unless it sets ``hazelcast.client.invocation.timeout.seconds``, ``mul
 apply on restart only.
 
 Embedded backend
-~~~~~~~~~~~~~~~~
+````````````````
 
 .. code-block:: xml
 
@@ -675,7 +675,7 @@ endpoints and pods in their namespace:
     </hazelcast>
 
 Declaring the map
-~~~~~~~~~~~~~~~~~
+`````````````````
 
 With both backends, the map must be declared in the cluster configuration with an eviction policy and a size bound. **A map without
 them grows until the members run out of memory**, as Hazelcast keeps every entry by default. The embedded backend refuses to start on an
@@ -714,7 +714,7 @@ the log, so that the node memory stays bounded: the extra tiles are rendered aga
 zoom level; it applies when the cache settings are next saved or on restart.
 
 Cluster-wide tile locks
-~~~~~~~~~~~~~~~~~~~~~~~
+```````````````````````
 
 When a tile is missing, a node renders its whole metatile, and other requests for the same metatile on that node wait for it. Separate
 nodes do not: when several of them miss the same metatile at once, for example right after its tiles expired, each of them renders it.
