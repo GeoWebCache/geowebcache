@@ -80,25 +80,17 @@ public class DiskQuotaController {
     }
 
     @RequestMapping(value = "/diskquota", method = RequestMethod.PUT)
-    public ResponseEntity<?> doPut(HttpServletRequest request) {
+    public synchronized ResponseEntity<?> doPut(HttpServletRequest request) {
         DiskQuotaConfig config = monitor.getConfig();
-        DiskQuotaConfig newConfig = null;
-        String reqData = "";
         try {
             StringWriter writer = new StringWriter();
             IOUtils.copy(request.getInputStream(), writer, Charset.defaultCharset());
-            reqData = writer.toString();
-            if (request.getPathInfo().contains("json")) {
-                newConfig = fromJSON(reqData);
-                applyDiff(config, newConfig);
-
-                return getJsonRepresentation(config);
-            } else {
-                newConfig = fromXML(reqData);
-                applyDiff(config, newConfig);
-                return getXmlRepresentation(config);
-            }
-
+            String reqData = writer.toString();
+            boolean json = request.getPathInfo().contains("json");
+            DiskQuotaConfig newConfig = json ? fromJSON(reqData) : fromXML(reqData);
+            applyDiff(config, newConfig);
+            monitor.saveConfig();
+            return json ? getJsonRepresentation(config) : getXmlRepresentation(config);
         } catch (IOException | JSONException e) {
             return new ResponseEntity<>("Error writing input stream to string", HttpStatus.INTERNAL_SERVER_ERROR);
         }
